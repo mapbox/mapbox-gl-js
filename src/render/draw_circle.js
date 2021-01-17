@@ -109,7 +109,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     for (const segmentsState of segmentsRenderStates) {
         const {programConfiguration, program, layoutVertexBuffer, indexBuffer, uniformValues, tile} = segmentsState.state;
         const segments = segmentsState.segments;
-        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, {useDepthForOcclusion: true});
+        // if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, {useDepthForOcclusion: true});
 
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id,

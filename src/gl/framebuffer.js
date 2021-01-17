@@ -2,6 +2,7 @@
 import {ColorAttachment, DepthAttachment} from './value';
 
 import type Context from './context';
+import type Painter from '../render/painter';
 import assert from 'assert';
 
 class Framebuffer {
@@ -24,6 +25,15 @@ class Framebuffer {
             this.depthAttachment = new DepthAttachment(context, fbo);
         }
         assert(gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE);
+    }
+
+    makeActive() {
+        const context = this.context;
+        const gl = context.gl;
+
+        gl.bindTexture(gl.TEXTURE_2D, this.colorAttachment.get());
+        context.bindFramebuffer.set(this.framebuffer);
+        context.viewport.set([0, 0, this.width, this.height]);
     }
 
     destroy() {

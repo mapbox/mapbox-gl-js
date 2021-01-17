@@ -37,6 +37,7 @@ import browser from '../util/browser';
 import DEMData from '../data/dem_data';
 import rasterFade from '../render/raster_fade';
 import {create as createSource} from '../source/source';
+import {HeightmapCascade} from './heightmap_cascade';
 
 import type Map from '../ui/map';
 import type Painter from '../render/painter';
@@ -178,6 +179,7 @@ export class Terrain extends Elevation {
     style: Style;
     orthoMatrix: mat4;
     enabled: boolean;
+    heightmapCascade: HeightmapCascade
 
     drapeFirst: boolean;
     drapeFirstPending: boolean;
@@ -240,6 +242,7 @@ export class Terrain extends Elevation {
         this._tilesDirty = {};
         this.style = style;
         this._useVertexMorphing = true;
+        this.heightmapCascade = new HeightmapCascade();
         style.on('data', this._onStyleDataEvent.bind(this));
     }
 
@@ -295,6 +298,7 @@ export class Terrain extends Elevation {
             this.proxySourceCache.update(transform);
 
             this._depthDone = false;
+            this._heightDone = false;
             this._emptyDEMTextureDirty = true;
         } else {
             this._disable();
@@ -585,7 +589,10 @@ export class Terrain extends Elevation {
         const painter = this.painter;
         if (painter.renderPass !== 'translucent') {
             // Depth texture is used only for POI symbols and circles, to skip render of symbols occluded by e.g. hill.
-            if (!this._depthDone && (layer.type === 'symbol' || layer.type === 'circle')) this.drawDepth();
+            if (layer.type === 'symbol' || layer.type === 'circle') {
+                if(!this._depthDone) this.drawDepth();
+                if(!this._heightDone) this.drawHeight();
+            }
             return true; // Early leave: all rendering is done in translucent pass.
         }
         if (this.drapeFirst && this.drapeFirstPending) {
@@ -982,6 +989,11 @@ export class Terrain extends Elevation {
         return p;
     }
 
+    drawHeight() {
+        this.heightmapCascade.draw(this, this.painter, this.proxySourceCache, this.proxyCoords);
+        this._heightDone = true;
+    }
+
     drawDepth() {
         const painter = this.painter;
         const context = painter.context;
@@ -1014,6 +1026,8 @@ export class Terrain extends Elevation {
 
         this._depthDone = true;
     }
+
+
 
     _isLayerDrapedOverTerrain(styleLayer: StyleLayer): boolean {
         if (!this.enabled) return false;

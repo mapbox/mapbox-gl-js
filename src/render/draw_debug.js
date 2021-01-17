@@ -3,7 +3,7 @@
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import CullFaceMode from '../gl/cull_face_mode';
-import {debugUniformValues} from './program/debug_program';
+import {debugUniformValues, debugTextureUniformValues} from './program/debug_program';
 import Color from '../style-spec/util/color';
 import ColorMode from '../gl/color_mode';
 import browser from '../util/browser';
@@ -11,6 +11,7 @@ import browser from '../util/browser';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type {OverscaledTileID} from '../source/tile_id';
+import type Framebuffer from '../gl/framebuffer';
 
 export default drawDebug;
 
@@ -40,6 +41,23 @@ export function drawDebugQueryGeometry(painter: Painter, sourceCache: SourceCach
     for (let i = 0; i < coords.length; i++) {
         drawTileQueryGeometry(painter, sourceCache, coords[i]);
     }
+}
+
+export function drawDebugFramebuffer(painter: Painter, fbo: Framebuffer, viewport: [number, number, number, number]) {
+    const context = painter.context;
+    const gl = context.gl;
+    context.viewport.set(viewport);
+
+    context.activeTexture.set(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
+
+    painter.useProgram('debugTexture').draw(context, gl.TRIANGLES,
+        DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.disabled,
+        debugTextureUniformValues(painter, 0),
+        '$debug_fbo', painter.viewportBuffer, painter.quadTriangleIndexBuffer,
+        painter.viewportSegments);
+
+    context.viewport.set([0, 0, painter.width, painter.height]);
 }
 
 function drawCrosshair(painter: Painter, x: number, y: number, color: Color) {

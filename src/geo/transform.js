@@ -4,7 +4,7 @@ import LngLat from './lng_lat';
 import LngLatBounds from './lng_lat_bounds';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, radToDeg, degToRad} from '../util/util';
+import {wrap, clamp, radToDeg, degToRad, distanceToLine} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
@@ -1060,7 +1060,14 @@ class Transform {
         if (cache[posMatrixKey]) {
             return cache[posMatrixKey];
         }
+        const posMatrix = this.calcTranslationScaleMatrix(unwrappedTileID);
+        mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
 
+        cache[posMatrixKey] = new Float32Array(posMatrix);
+        return cache[posMatrixKey];
+    }
+
+    calcTranslationScaleMatrix(unwrappedTileID: UnwrappedTileID): Float64Array {
         const canonical = unwrappedTileID.canonical;
         const scale = this.worldSize / this.zoomScale(canonical.z);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
@@ -1068,10 +1075,8 @@ class Transform {
         const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
-        mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
 
-        cache[posMatrixKey] = new Float32Array(posMatrix);
-        return cache[posMatrixKey];
+        return posMatrix;
     }
 
     customLayerMatrix(): Array<number> {

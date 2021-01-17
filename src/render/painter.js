@@ -34,7 +34,7 @@ import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
-import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug';
+import debug, {drawDebugPadding, drawDebugQueryGeometry, drawDebugFramebuffer} from './draw_debug';
 import custom from './draw_custom';
 import sky from './draw_sky';
 import {Terrain} from '../terrain/terrain';
@@ -532,6 +532,14 @@ class Painter {
             if (selectedSource) {
                 if (this.options.showTileBoundaries) {
                     draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates());
+                }
+
+                if(this.terrain) {
+                    drawDebugFramebuffer(this, this.terrain.heightmapCascade._nearFBO, [0, 0, 512, 512]);
+
+                    if(this.terrain.heightmapCascade.needsFarCascade) {
+                        drawDebugFramebuffer(this, this.terrain.heightmapCascade._farFBO, [0, 515, 512, 512]);
+                    }
                 }
 
                 Debug.run(() => {
