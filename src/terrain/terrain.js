@@ -581,7 +581,7 @@ export class Terrain extends Elevation {
 
     // For each proxy tile, render all layers until the non-draped layer (and
     // render the tile to the screen) before advancing to the next proxy tile.
-    // In cached mode, returns the last drawn index that is used as a start
+    // Returns the last drawn index that is used as a start
     // layer for interleaved draped rendering.
     // Apart to layer-by-layer rendering used in 2D, here we have proxy-tile-by-proxy-tile
     // rendering.

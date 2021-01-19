@@ -393,7 +393,7 @@ class Style extends Evented {
 
     get order(): Array<string> {
         if (this.map._optimizeForTerrain && this.terrain) {
-            if (this._drapedFirstOrder.length !== this._order.length) {
+            if (!this._drapedFirstOrder.length) {
                 this._updateDrapeFirstLayers();
             }
             return this._drapedFirstOrder;
