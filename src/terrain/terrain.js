@@ -178,7 +178,7 @@ export class Terrain extends Elevation {
     proxyToSource: {[number]: {[string]: Array<ProxiedTileID>}};
     proxySourceCache: ProxySourceCache;
     renderingToTexture: boolean;
-    style: Style;
+    _style: Style;
     orthoMatrix: mat4;
     enabled: boolean;
 
@@ -242,7 +242,13 @@ export class Terrain extends Elevation {
         this._tilesDirty = {};
         this.style = style;
         this._useVertexMorphing = true;
+    }
+
+    set style(style: Style) {
         style.on('data', this._onStyleDataEvent.bind(this));
+        style.on('neworder', this._checkRenderCacheEfficiency.bind(this));
+        this._style = style;
+        this._checkRenderCacheEfficiency();
     }
 
     /*
@@ -253,8 +259,7 @@ export class Terrain extends Elevation {
      */
     update(style: Style, transform: Transform, cameraChanging: boolean) {
         if (style && style.terrain) {
-            if (this.style !== style) {
-                style.on('data', this._onStyleDataEvent.bind(this));
+            if (this._style !== style) {
                 this.style = style;
             }
             this.enabled = true;
@@ -302,6 +307,17 @@ export class Terrain extends Elevation {
         }
     }
 
+    _checkRenderCacheEfficiency() {
+        const renderCacheInfo = this.renderCacheEfficiency(this._style);
+        if (this._style.map._optimizeForTerrain) {
+            assert(renderCacheInfo.efficiency === 100);
+        } else if (renderCacheInfo.efficiency !== 100) {
+            warnOnce(`Terrain render cache efficiency is not optimal (${renderCacheInfo.efficiency}%) and
+                performance may be affected negatively, consider adding draped layers before layer with id
+                '${renderCacheInfo.firstUndrapedLayer}' or create a map using optimizeForTerrain option.`);
+        }
+    }
+
     _onStyleDataEvent(event: any) {
         if (event.coord && event.dataType === 'source') {
             this._clearRenderCacheForTile(event.sourceCacheId, event.coord);
@@ -315,9 +331,9 @@ export class Terrain extends Elevation {
         if (!this.enabled) return;
         this.enabled = false;
         this.proxySourceCache.deallocRenderCache();
-        if (this.style) {
-            for (const id in this.style._sourceCaches) {
-                this.style._sourceCaches[id].usedForTerrain = false;
+        if (this._style) {
+            for (const id in this._style._sourceCaches) {
+                this._style._sourceCaches[id].usedForTerrain = false;
             }
         }
     }
@@ -397,7 +413,7 @@ export class Terrain extends Elevation {
         });
 
         this.terrainTileForTile = {};
-        const sourceCaches = this.style._sourceCaches;
+        const sourceCaches = this._style._sourceCaches;
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (!sourceCache.used) continue;
@@ -642,7 +658,7 @@ export class Terrain extends Elevation {
             for (let j = drapedLayerBatch.start; j <= drapedLayerBatch.end; ++j) {
                 const layer = painter.style._layers[layerIds[j]];
                 const hidden = layer.isHidden(painter.transform.zoom);
-                assert(this.style.isLayerDraped(layer) || hidden);
+                assert(this._style.isLayerDraped(layer) || hidden);
                 if (hidden) continue;
 
                 const sourceCache = painter.style._getLayerSourceCache(layer);
@@ -688,6 +704,10 @@ export class Terrain extends Elevation {
     renderCacheEfficiency(style: Style): Object {
         const layerCount = style.order.length;
 
+        if (layerCount === 0) {
+            return {efficiency: 100.0};
+        }
+
         let uncacheableLayerCount = 0;
         let drapedLayerCount = 0;
         let reachedUndrapedLayer = false;
@@ -695,7 +715,7 @@ export class Terrain extends Elevation {
 
         for (let i = 0; i < layerCount; ++i) {
             const layer = style._layers[style.order[i]];
-            if (!this.style.isLayerDraped(layer)) {
+            if (!this._style.isLayerDraped(layer)) {
                 if (!reachedUndrapedLayer) {
                     reachedUndrapedLayer = true;
                     firstUndrapedLayer = layer.id;
@@ -706,6 +726,10 @@ export class Terrain extends Elevation {
                 }
                 ++drapedLayerCount;
             }
+        }
+
+        if (drapedLayerCount === 0) {
+            return {efficiency: 100.0};
         }
 
         return {efficiency: (1.0 - uncacheableLayerCount / drapedLayerCount) * 100.0, firstUndrapedLayer};
@@ -789,19 +813,19 @@ export class Terrain extends Elevation {
     _shouldDisableRenderCache(): boolean {
         // Disable render caches on dynamic events due to fading.
         const isCrossFading = id => {
-            const layer = this.style._layers[id];
+            const layer = this._style._layers[id];
             const isHidden = !layer.isHidden(this.painter.transform.zoom);
             const crossFade = layer.getCrossfadeParameters();
             const isFading = !!crossFade && crossFade.t !== 1;
             return layer.type !== 'custom' && !isHidden && isFading;
         };
-        return !this.renderCached || this.style.order.some(isCrossFading);
+        return !this.renderCached || this._style.order.some(isCrossFading);
     }
 
     _clearRasterFadeFromRenderCache() {
         let hasRasterSource = false;
-        for (const id in this.style._sourceCaches) {
-            if (this.style._sourceCaches[id]._source instanceof RasterTileSource) {
+        for (const id in this._style._sourceCaches) {
+            if (this._style._sourceCaches[id]._source instanceof RasterTileSource) {
                 hasRasterSource = true;
                 break;
             }
@@ -811,10 +835,10 @@ export class Terrain extends Elevation {
         }
 
         // Check if any raster tile is in a fading state
-        for (let i = 0; i < this.style.order.length; ++i) {
-            const layer = this.style._layers[this.style.order[i]];
+        for (let i = 0; i < this._style.order.length; ++i) {
+            const layer = this._style._layers[this._style.order[i]];
             const isHidden = layer.isHidden(this.painter.transform.zoom);
-            const sourceCache = this.style._getLayerSourceCache(layer);
+            const sourceCache = this._style._getLayerSourceCache(layer);
             if (layer.type !== 'raster' || isHidden || !sourceCache) { continue; }
 
             const rasterLayer = ((layer: any): RasterStyleLayer);
@@ -838,7 +862,7 @@ export class Terrain extends Elevation {
     }
 
     _setupDrapedRenderBatches() {
-        const layerIds = this.style.order;
+        const layerIds = this._style.order;
         const layerCount = layerIds.length;
         if (layerCount === 0) {
             return;
@@ -847,18 +871,18 @@ export class Terrain extends Elevation {
         const batches = [];
 
         let currentLayer = 0;
-        let layer = this.style._layers[layerIds[currentLayer]];
-        while (!this.style.isLayerDraped(layer) && layer.isHidden(this.painter.transform.zoom) && ++currentLayer < layerCount) {
-            layer = this.style._layers[layerIds[currentLayer]];
+        let layer = this._style._layers[layerIds[currentLayer]];
+        while (!this._style.isLayerDraped(layer) && layer.isHidden(this.painter.transform.zoom) && ++currentLayer < layerCount) {
+            layer = this._style._layers[layerIds[currentLayer]];
         }
 
         let batchStart;
         for (; currentLayer < layerCount; ++currentLayer) {
-            const layer = this.style._layers[layerIds[currentLayer]];
+            const layer = this._style._layers[layerIds[currentLayer]];
             if (layer.isHidden(this.painter.transform.zoom)) {
                 continue;
             }
-            if (!this.style.isLayerDraped(layer)) {
+            if (!this._style.isLayerDraped(layer)) {
                 if (batchStart !== undefined) {
                     batches.push({start: batchStart, end: currentLayer - 1});
                     batchStart = undefined;
@@ -874,7 +898,7 @@ export class Terrain extends Elevation {
             batches.push({start: batchStart, end: currentLayer - 1});
         }
 
-        if (this.style.map._optimizeForTerrain) {
+        if (this._style.map._optimizeForTerrain) {
             // Draped first approach should result in a single or no batch
             assert(batches.length === 1 || batches.length === 0);
         }
