@@ -72,7 +72,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
             flatRoofsUpdate(context, source, coord, bucket, layer, terrain);
             if (!bucket.centroidVertexBuffer) {
-                const attrIndex: number | void = program.attributes['aCentroidPos'];
+                const attrIndex: number | void = program.attributes['a_centroid_pos'];
                 if (attrIndex !== undefined) gl.vertexAttrib2f(attrIndex, 0, 0);
             }
         }

@@ -77,8 +77,8 @@ class FillExtrusionStyleLayer extends StyleLayer {
             const centroidOffset = layoutVertexArrayOffset + 1;
             if (centroidOffset < centroidVertexArray.length) {
                 const centroidVertexObject = centroidVertexArray.get(centroidOffset);
-                centroid[0] = centroidVertexObject.aCentroidPos0;
-                centroid[1] = centroidVertexObject.aCentroidPos1;
+                centroid[0] = centroidVertexObject.a_centroid_pos0;
+                centroid[1] = centroidVertexObject.a_centroid_pos1;
             }
         }
 

@@ -11,7 +11,7 @@ uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 
 attribute vec4 a_pos_normal_ed;
-attribute vec2 aCentroidPos;
+attribute vec2 a_centroid_pos;
 
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
@@ -62,7 +62,7 @@ void main() {
     float z = t > 0.0 ? height : base;
 
 #ifdef TERRAIN
-    vec2 centroid_pos = aCentroidPos;
+    vec2 centroid_pos = a_centroid_pos;
     bool flat_roof = centroid_pos.x != 0.0;
     float ele = elevation(pos_nx.xy);
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);

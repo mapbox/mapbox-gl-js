@@ -6,7 +6,7 @@ uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
 
 attribute vec4 a_pos_normal_ed;
-attribute vec2 aCentroidPos;
+attribute vec2 a_centroid_pos;
 
 varying vec4 v_color;
 
@@ -36,7 +36,7 @@ void main() {
     float t = top_up_ny.x;
 
 #ifdef TERRAIN
-    vec2 centroid_pos = aCentroidPos;
+    vec2 centroid_pos = a_centroid_pos;
     bool flat_roof = centroid_pos.x != 0.0;
     float ele = elevation(pos_nx.xy);
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
