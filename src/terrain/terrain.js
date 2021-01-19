@@ -183,6 +183,7 @@ export class Terrain extends Elevation {
     enabled: boolean;
 
     renderCached: boolean;
+    forceRenderCached: boolean; // debugging purpose.
 
     _visibleDemTiles: Array<Tile>;
     _sourceTilesOverlap: {[string]: boolean};
@@ -396,7 +397,9 @@ export class Terrain extends Elevation {
             this._emptyDEMTextureDirty = !this._initializing;
         }
 
-        this.renderCached = !this._invalidateRenderCache;
+        const options = this.painter.options;
+        this.renderCached = (options.zooming || options.moving || options.rotating || !!this.forceRenderCached) && !this._invalidateRenderCache;
+
         this._invalidateRenderCache = false;
         const coords = this.proxyCoords = psc.getIds().map((id) => {
             const tileID = psc.getTileByID(id).tileID;
