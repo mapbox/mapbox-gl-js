@@ -313,9 +313,9 @@ export class Terrain extends Elevation {
         if (this._style.map._optimizeForTerrain) {
             assert(renderCacheInfo.efficiency === 100);
         } else if (renderCacheInfo.efficiency !== 100) {
-            warnOnce(`Terrain render cache efficiency is not optimal (${renderCacheInfo.efficiency}%) and
-                performance may be affected negatively, consider adding draped layers before layer with id
-                '${renderCacheInfo.firstUndrapedLayer}' or create a map using optimizeForTerrain option.`);
+            warnOnce(`Terrain render cache efficiency is not optimal (${renderCacheInfo.efficiency}%) and performance
+                may be affected negatively, consider placing all background, fill and line layers before layer
+                with id '${renderCacheInfo.firstUndrapedLayer}' or create a map using optimizeForTerrain: true option.`);
         }
     }
 

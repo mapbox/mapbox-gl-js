@@ -463,7 +463,7 @@ class Painter {
         // Terrain depth offscreen render pass ==========================
         // With terrain on, renders the depth buffer into a texture.
         // This texture is used for occlusion testing (labels)
-        if (this.terrain && (this.style.hasLayerType('symbol') || this.style.hasLayerType('circle'))) {
+        if (this.terrain && (this.style.hasSymbolLayers() || this.style.hasCircleLayers())) {
             this.terrain.drawDepth();
         }
 

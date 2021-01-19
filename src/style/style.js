@@ -126,6 +126,8 @@ class Style extends Evented {
     _spriteRequest: ?Cancelable;
     _layers: {[_: string]: StyleLayer};
     _num3DLayers: number;
+    _numSymbolLayers: number;
+    _numCircleLayers: number;
     _serializedLayers: {[_: string]: Object};
     _order: Array<string>;
     _drapedFirstOrder: Array<string>;
@@ -167,6 +169,8 @@ class Style extends Evented {
 
         this._layers = {};
         this._num3DLayers = 0;
+        this._numSymbolLayers = 0;
+        this._numCircleLayers = 0;
         this._serializedLayers = {};
         this._sourceCaches = {};
         this._otherSourceCaches = {};
@@ -259,6 +263,20 @@ class Style extends Evented {
         this._load(empty, false);
     }
 
+    _updateLayerCount(layer: StyleLayer, add: boolean) {
+        // Typed layer bookkeeping
+        const count = add ? 1 : -1;
+        if (layer.is3D()) {
+            this._num3DLayers += count;
+        }
+        if (layer.type === 'circle') {
+            this._numCircleLayers += count;
+        }
+        if (layer.type === 'symbol') {
+            this._numSymbolLayers += count;
+        }
+    }
+
     _load(json: StyleSpecification, validate: boolean) {
         if (validate && emitValidationErrors(this, validateStyle(json))) {
             return;
@@ -290,9 +308,7 @@ class Style extends Evented {
             layer.setEventedParent(this, {layer: {id: layer.id}});
             this._layers[layer.id] = layer;
             this._serializedLayers[layer.id] = layer.serialize();
-            if (layer.is3D()) {
-                this._num3DLayers++;
-            }
+            this._updateLayerCount(layer, true);
         }
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
@@ -300,6 +316,7 @@ class Style extends Evented {
         if (this.stylesheet.terrain) {
             this._createTerrain(this.stylesheet.terrain);
         }
+        this._updateDrapeFirstLayers();
 
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
@@ -393,9 +410,7 @@ class Style extends Evented {
 
     get order(): Array<string> {
         if (this.map._optimizeForTerrain && this.terrain) {
-            if (!this._drapedFirstOrder.length) {
-                this._updateDrapeFirstLayers();
-            }
+            assert(this._drapedFirstOrder.length === this._order.length);
             return this._drapedFirstOrder;
         }
         return this._order;
@@ -403,7 +418,7 @@ class Style extends Evented {
 
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;
-        return drapedLayers.hasOwnProperty(layer.type);
+        return drapedLayers[layer.type];
     }
 
     _checkLoaded() {
@@ -763,9 +778,7 @@ class Style extends Evented {
 
             layer.setEventedParent(this, {layer: {id}});
             this._serializedLayers[layer.id] = layer.serialize();
-            if (layer.is3D()) {
-                this._num3DLayers++;
-            }
+            this._updateLayerCount(layer, true);
         }
 
         const index = before ? this._order.indexOf(before) : this._order.length;
@@ -860,9 +873,7 @@ class Style extends Evented {
 
         layer.setEventedParent(null);
 
-        if (layer.is3D()) {
-            this._num3DLayers--;
-        }
+        this._updateLayerCount(layer, false);
 
         const index = this._order.indexOf(id);
         this._order.splice(index, 1);
@@ -1639,6 +1650,14 @@ class Style extends Evented {
 
     has3DLayers(): boolean {
         return this._num3DLayers > 0;
+    }
+
+    hasSymbolLayers(): boolean {
+        return this._numSymbolLayers > 0;
+    }
+
+    hasCircleLayers(): boolean {
+        return this._numCircleLayers > 0;
     }
 }
 

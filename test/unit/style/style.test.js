@@ -1806,7 +1806,7 @@ test('Style#setLayerZoomRange', (t) => {
     t.end();
 });
 
-test('Style#hasLayer, Style#hasLayerType', (t) => {
+test('Style#hasLayer, Style#has*Layers()', (t) => {
     function createStyle() {
         const style = new Style(new StubMap());
         style.loadJSON({
@@ -1848,13 +1848,18 @@ test('Style#hasLayer, Style#hasLayerType', (t) => {
         t.notOk(style.hasLayer('non_existing_background_id'));
         t.notOk(style.hasLayer('non_existing_fill_id'));
         t.notOk(style.hasLayer('non_existing_line_id'));
-        t.ok(style.hasLayerType('symbol'));
-        t.ok(style.hasLayerType('background'));
-        t.ok(style.hasLayerType('fill'));
-        t.ok(style.hasLayerType('line'));
-        t.notOk(style.hasLayerType('hillshade'));
-        t.notOk(style.hasLayerType('raster'));
-        t.notOk(style.hasLayerType('fill-extrusion'));
+
+        t.ok(style.hasSymbolLayers());
+        t.notOk(style.has3DLayers());
+        t.notOk(style.hasCircleLayers());
+
+        style.addLayer({id: 'first', source: 'geojson', type: 'fill-extrusion'});
+        style.removeLayer('symbol_id');
+
+        t.notOk(style.hasSymbolLayers());
+        t.ok(style.has3DLayers());
+        t.notOk(style.hasCircleLayers());
+
         t.end();
     });
 });
