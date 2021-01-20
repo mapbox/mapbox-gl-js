@@ -82,8 +82,8 @@ export default class DEMData {
     get(x: number, y: number, clampToEdge: boolean = false) {
         const pixels = new Uint8Array(this.data.buffer);
         if (clampToEdge) {
-            x = clamp(x, 0, this.dim);
-            y = clamp(y, 0, this.dim);
+            x = clamp(x, -1, this.dim);
+            y = clamp(y, -1, this.dim);
         }
         const index = this._idx(x, y) * 4;
         const unpack = this.encoding === "terrarium" ? this._unpackTerrarium : this._unpackMapbox;
