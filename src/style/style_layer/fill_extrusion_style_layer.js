@@ -310,13 +310,21 @@ function getTerrainHeightOffset(x: number, y: number, zBase: number, zTop: numbe
     };
 }
 
+// Elevation is encoded into unit16 in fill_extrusion_bucket.js FillExtrusionBucket#encodeCentroid
+// Factor of 7.3 is used to scale elevation values to make best use of 16 bits
+// Height of mt everest * 7.3 is roughly 64k
 function elevationFromUint16(n: number): number {
     return n / 7.3;
 }
 
+// Equivalent GPU side function is in _prelude_terrain.vertex.glsl
 function flatElevation(demSampler: DEMSampler, centroid: vec2, lat: number): number {
+    // Span and pos are packed two 16 bit uint16 values in fill_extrusion_bucket.js FillExtrusionBucket#encodeCentroid
+    // pos is conded by << by 3 bits so divide by 8 to perform equivalent of right shift
     const posX = Math.floor(centroid[0] / 8);
     const posY = Math.floor(centroid[1] / 8);
+
+    // Span is stored in the lower three bits in multiples of 10
     const spanX = 10 * (centroid[0] - posX * 8);
     const spanY = 10 * (centroid[1] - posY * 8);
 
