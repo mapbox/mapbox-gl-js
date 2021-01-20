@@ -99,21 +99,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const params = {
         page: pages[0],
-        version: 'latest'
+        version: 'latest',
+        access_token: mapboxgl.accessToken
     };
 
     location.hash.substr(1).split('&').forEach(function (param) {
         const entry = param.split('=', 2);
         params[entry[0]] = entry[1];
     });
-
-    if (!params.access_token) {
-        if (mapboxgl.accessToken) {
-            params.access_token = mapboxgl.accessToken;
-        } else {
-            params.access_token = prompt("Access Token");
-        }
-    }
 
     let pageIndex = pageKeys.indexOf(params.page);
     if (pageIndex < 0) pageIndex = 0;
