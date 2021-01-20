@@ -186,7 +186,7 @@ createStructArrayType('feature_index', createLayout([
     { type: 'Uint16', name: 'sourceLayerIndex' },
     // the bucket the feature appears in
     { type: 'Uint16', name: 'bucketIndex' },
-    // Offsetinto bucket.layoutVertexArray the vertcies for this feature appear in
+    // Offset into bucket.layoutVertexArray
     { type: 'Uint16', name: 'layoutVertexArrayOffset' },
 ]), true);
 

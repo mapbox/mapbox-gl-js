@@ -265,6 +265,7 @@ function projectExtrusion2D(geometry: Array<Array<Point>>, zBase: number, zTop: 
 function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: DEMSampler, centroid: vec2, exaggeration: number, lat: number) {
     const projectedBase = [];
     const projectedTop = [];
+    const v = [0, 0, 0];
 
     for (const r of geometry) {
         const ringBase = [];
@@ -274,8 +275,15 @@ function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: 
             const y = p.y + translation.y;
             const heightOffset = getTerrainHeightOffset(x, y, zBase, zTop, demSampler, centroid, exaggeration, lat);
 
-            const base = toPoint(vec3.transformMat4([], [x, y, heightOffset.base], m));
-            const top = toPoint(vec3.transformMat4([], [x, y, heightOffset.top], m));
+            v[0] = x;
+            v[1] = y;
+            v[2] = heightOffset.base;
+            const base = toPoint(vec3.transformMat4(v, v, m));
+
+            v[0] = x;
+            v[1] = y;
+            v[2] = heightOffset.top;
+            const top = toPoint(vec3.transformMat4(v, v, m));
 
             ringBase.push(base);
             ringTop.push(top);
@@ -307,41 +315,44 @@ function elevationFromUint16(n: number): number {
 }
 
 function flatElevation(demSampler: DEMSampler, centroid: vec2, lat: number): number {
-    const pos = [Math.floor(centroid[0] / 8), Math.floor(centroid[1] / 8)];
-    const span = [10 * (centroid[0] - pos[0] * 8), 10 * (centroid[1] - pos[1] * 8)];
+    const posX = Math.floor(centroid[0] / 8);
+    const posY = Math.floor(centroid[1] / 8);
+    const spanX = 10 * (centroid[0] - posX * 8);
+    const spanY = 10 * (centroid[1] - posY * 8);
 
     // Get height at centroid
-    const z = demSampler.getElevationAt(pos[0], pos[1], true, true);
+    const z = demSampler.getElevationAt(posX, posY, true, true);
     const meterToDEM = demSampler.getMeterToDEM(lat);
-    const w = [
-        Math.floor(0.5 * (span[0] * meterToDEM - 1)),
-        Math.floor(0.5 * (span[1] * meterToDEM - 1))
-    ];
-    const posPx = demSampler.tileCoordToPixel(pos[0], pos[1]);
 
-    const offset = [2 * w[0] + 1, 2 * w[1] + 1];
-    const corners = fourSample(demSampler, [posPx.x - w[0], posPx.y - w[1]], offset);
-    const diff = [
-        Math.abs(corners[0] - corners[1]),
-        Math.abs(corners[2] - corners[3]),
-        Math.abs(corners[0] - corners[2]),
-        Math.abs(corners[1] - corners[3])
-    ];
-    const diffSum = [diff[0] + diff[1], diff[2] + diff[3]];
-    const slope = [
-        Math.min(0.25, meterToDEM * 0.5 * diffSum[0] / offset[0]),
-        Math.min(0.25, meterToDEM * 0.5 * diffSum[1] / offset[1])
-    ];
+    const wX = Math.floor(0.5 * (spanX * meterToDEM - 1));
+    const wY = Math.floor(0.5 * (spanY * meterToDEM - 1));
 
-    return z + Math.max(slope[0] * span[0], slope[1] * span[1]);
+    const posPx = demSampler.tileCoordToPixel(posX, posY);
+
+    const offsetX = 2 * wX + 1;
+    const offsetY = 2 * wY + 1;
+    const corners = fourSample(demSampler, posPx.x - wX, posPx.y - wY, offsetX, offsetY);
+
+    const diffX = Math.abs(corners[0] - corners[1]);
+    const diffY = Math.abs(corners[2] - corners[3]);
+    const diffZ = Math.abs(corners[0] - corners[2]);
+    const diffW = Math.abs(corners[1] - corners[3]);
+
+    const diffSumX = diffX + diffY;
+    const diffSumY = diffZ + diffW;
+
+    const slopeX = Math.min(0.25, meterToDEM * 0.5 * diffSumX / offsetX);
+    const slopeY = Math.min(0.25, meterToDEM * 0.5 * diffSumY / offsetY);
+
+    return z + Math.max(slopeX * spanX, slopeY * spanY);
 }
 
-function fourSample(demSampler: DEMSampler, pos: vec2, offset: vec2): vec4 {
+function fourSample(demSampler: DEMSampler, posX: number, posY: number, offsetX: number, offsetY: number): vec4 {
     return [
-        demSampler.getElevationAtPixel(pos[0], pos[1], true),
-        demSampler.getElevationAtPixel(pos[0] + offset[0], pos[1], true),
-        demSampler.getElevationAtPixel(pos[0], pos[1] + offset[1], true),
-        demSampler.getElevationAtPixel(pos[0] + offset[0], pos[1] + offset[1], true)
+        demSampler.getElevationAtPixel(posX, posY, true),
+        demSampler.getElevationAtPixel(posX + offsetY, posY, true),
+        demSampler.getElevationAtPixel(posX, posY + offsetY, true),
+        demSampler.getElevationAtPixel(posX + offsetX, posY + offsetY, true)
     ];
 }
 
