@@ -44,16 +44,6 @@ const repo = 'mapbox-gl-js';
     //get current sizes
     const currentSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
     console.log(currentSizes);
-    // Why we need to add GitHub's public key to known_hosts:
-    // https://circleci.com/docs/2.0/gh-bb-integration/#establishing-the-authenticity-of-an-ssh-host
-    // execSync(`mkdir -p ~/.ssh`);
-    // execSync(`echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-    // bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
-    // ' >> ~/.ssh/known_hosts`);
-    // execSync(`git reset --hard && git checkout origin/main`);
-    // execSync('yarn install');
-    // execSync('yarn run build-prod-min');
-    // execSync('yarn run build-css');
 
     async function getMergeBase() {
         const pr = process.env['CIRCLE_PULL_REQUEST'];
@@ -115,7 +105,6 @@ const repo = 'mapbox-gl-js';
     priorSizes.push(['JS', await getPriorSize(mergeBase, 'JS')]);
     priorSizes.push(['CSS', await getPriorSize(mergeBase, 'CSS')]);
 
-    // const priorSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
     console.log(priorSizes);
 
     // Generate a github check for each filetype
@@ -136,17 +125,17 @@ const repo = 'mapbox-gl-js';
         console.log(`Title: ${title}`);
         console.log(`Summary: ${summary}`);
 
-        // await github.checks.create({
-        //     owner,
-        //     repo,
-        //     name,
-        //     head_branch: process.env['CIRCLE_BRANCH'],
-        //     head_sha: process.env['CIRCLE_SHA1'],
-        //     status: 'completed',
-        //     conclusion: 'success',
-        //     completed_at: new Date().toISOString(),
-        //     output: { title, summary }
-        // });
+        await github.checks.create({
+            owner,
+            repo,
+            name,
+            head_branch: process.env['CIRCLE_BRANCH'],
+            head_sha: process.env['CIRCLE_SHA1'],
+            status: 'completed',
+            conclusion: 'success',
+            completed_at: new Date().toISOString(),
+            output: { title, summary }
+        });
     }
 })();
 
