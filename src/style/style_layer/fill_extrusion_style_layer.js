@@ -1,7 +1,7 @@
 // @flow
 
 import StyleLayer from '../style_layer';
-import FillExtrusionBucket, { ELEVATION_SCALE } from '../../data/bucket/fill_extrusion_bucket';
+import FillExtrusionBucket, {ELEVATION_SCALE} from '../../data/bucket/fill_extrusion_bucket';
 import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
 import {translateDistance, tilespaceTranslate} from '../query_utils';
 import properties from './fill_extrusion_style_layer_properties';
