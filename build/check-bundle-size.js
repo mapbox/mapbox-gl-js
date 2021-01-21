@@ -46,27 +46,26 @@ const repo = 'mapbox-gl-js';
     console.log(currentSizes);
 
     async function getMergeBase() {
+        const head = process.env['CIRCLE_SHA1'];
         const pr = process.env['CIRCLE_PULL_REQUEST'];
         if (pr) {
             const number = +pr.match(/\/(\d+)\/?$/)[1];
             return github.pulls.get({
-                owner: 'mapbox',
-                repo: 'mapbox-gl-js',
+                owner,
+                repo,
                 pull_number: number
             }).then(({data}) => {
                 const base = data.base.ref;
-                const head = process.env['CIRCLE_SHA1'];
                 return execSync(`git merge-base origin/${base} ${head}`).toString().trim();
             });
         } else {
             // Walk backward through the history (maximum of 10 commits) until
             // finding a commit on either master or release-*; assume that's the
             // base branch.
-            const head = process.env['CIRCLE_SHA1'];
             for (const sha of execSync(`git rev-list --max-count=10 ${head}`).toString().trim().split('\n')) {
-                const base = execSync(`git branch -r --contains ${sha} origin/master origin/release-* origin/publisher-production`).toString().split('\n')[0].trim().replace(/^origin\//, '');
+                const base = execSync(`git branch -r --contains ${sha} origin/main origin/release-*`).toString().split('\n')[0].trim();
                 if (base) {
-                    return Promise.resolve(execSync(`git merge-base origin/${base} ${head}`).toString().trim());
+                    return Promise.resolve(execSync(`git merge-base ${base} ${head}`).toString().trim());
                 }
             }
         }
@@ -74,16 +73,15 @@ const repo = 'mapbox-gl-js';
         return Promise.resolve(null);
     }
 
-    async function getPriorSize(mergeBase, label) {
-        const name = `Size - ${label}`;
+    async function getPriorSize(mergeBase, name) {
         if (!mergeBase) {
             console.log('No merge base available.');
             return Promise.resolve(null);
         }
 
         return github.checks.listForRef({
-            owner: 'mapbox',
-            repo: 'mapbox-gl-js',
+            owner,
+            repo,
             ref: mergeBase
         }).then(({data}) => {
             const run = data.check_runs.find(run => run.name === name);
@@ -101,18 +99,14 @@ const repo = 'mapbox-gl-js';
     }
 
     const mergeBase = await getMergeBase();
-    const priorSizes = [];
-    priorSizes.push(['JS', await getPriorSize(mergeBase, 'JS')]);
-    priorSizes.push(['CSS', await getPriorSize(mergeBase, 'CSS')]);
-
-    console.log(priorSizes);
 
     // Generate a github check for each filetype
     for(let check_idx=0; check_idx<FILES.length; check_idx++){
         const [label, file] = FILES[check_idx];
         const name = `Size - ${label}`;
         const size = currentSizes[check_idx][1];
-        const priorSize = priorSizes[check_idx][1];
+        const priorSize = await getPriorSize(mergeBase, name);
+        console.log('priorSize: ', label, priorSize);
 
         const title = `${formatSize(size.size, priorSize.size)}, gzipped ${formatSize(size.gzipSize, priorSize.gzipSize)}`;
 
