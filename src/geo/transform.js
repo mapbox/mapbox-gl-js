@@ -331,7 +331,8 @@ class Transform {
 
     /**
      * Computes a zoom value relative to a map plane that goes through the provided mercator position.
-     * @param {*} position A position defining the altitude of the the map plane
+     * @param {MercatorCoordinate} position A position defining the altitude of the the map plane.
+     * @returns {number} The zoom value.
      */
     computeZoomRelativeTo(position: MercatorCoordinate): number {
         // Find map center position on the target plane by casting a ray from screen center towards the plane.
@@ -447,10 +448,10 @@ class Transform {
     }
 
     /**
-     * Returns if the padding params match
+     * Returns true if the padding options are equal.
      *
-     * @param {PaddingOptions} padding
-     * @returns {boolean}
+     * @param {PaddingOptions} padding The padding options to compare.
+     * @returns {boolean} True if the padding options are equal.
      * @memberof Transform
      */
     isPaddingEqual(padding: PaddingOptions): boolean {
@@ -458,10 +459,11 @@ class Transform {
     }
 
     /**
-     * Helper method to upadte edge-insets inplace
+     * Helper method to update edge-insets inplace.
      *
-     * @param {PaddingOptions} target
-     * @param {number} t
+     * @param {PaddingOptions} start The initial padding options.
+     * @param {PaddingOptions} target The target padding options.
+     * @param {number} t The interpolation variable.
      * @memberof Transform
      */
     interpolatePadding(start: PaddingOptions, target: PaddingOptions, t: number) {
@@ -1224,9 +1226,9 @@ class Transform {
 
     /**
      * Returns the minimum zoom at which `this.width` can fit `this.lngRange`
-     * and `this.height` can fit `this.latRange`
+     * and `this.height` can fit `this.latRange`.
      *
-     * @returns {number}
+     * @returns {number} The zoom value.
      */
     _minZoomForBounds(): number {
         const minZoomForDim = (dim: number, range: [number, number]): number => {
@@ -1251,7 +1253,7 @@ class Transform {
      * `this.width` can fit `this.lngRange` and `this.height` can fit `this.latRange`.
      * In mercator units.
      *
-     * @returns {number}
+     * @returns {number} The mercator z coordinate.
      */
     _maxCameraBoundsDistance(): number {
         return this._mercatorZfromZoom(this._minZoomForBounds());
@@ -1389,7 +1391,7 @@ class Transform {
      * Apply a 3d translation to the camera position, but clamping it so that
      * it respects the bounds set by `this.latRange` and `this.lngRange`.
      *
-     * @param {vec3} translation
+     * @param {vec3} translation The translation vector.
      */
     _translateCameraConstrained(translation: vec3) {
         const maxDistance = this._maxCameraBoundsDistance();
@@ -1508,9 +1510,10 @@ class Transform {
     }
 
     /**
-     * Converts a zoom delta value into a physical distance travelled in web mercator coordinates
+     * Converts a zoom delta value into a physical distance travelled in web mercator coordinates.
      * @param {vec3} center Destination mercator point of the movement.
-     * @param {number} zoomDelta Change in the zoom value
+     * @param {number} zoomDelta Change in the zoom value.
+     * @returns {number} The distance in mercator coordinates.
      */
     zoomDeltaToMovement(center: vec3, zoomDelta: number): number {
         const distance = vec3.length(vec3.sub([], this._camera.position, center));

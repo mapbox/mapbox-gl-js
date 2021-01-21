@@ -48,9 +48,9 @@ export class QueryGeometry {
      * Factory method to help contruct an instance  while accounting for current map state.
      *
      * @static
-     * @param {(PointLike | [PointLike, PointLike])} geometry
-     * @param {Transform} transform
-     * @returns {QueryGeometry}
+     * @param {(PointLike | [PointLike, PointLike])} geometry The query geometry.
+     * @param {Transform} transform The current map transform.
+     * @returns {QueryGeometry} An instance of the QueryGeometry class.
      */
     static createFromScreenPoints(geometry: PointLike | [PointLike, PointLike], transform: Transform): QueryGeometry {
         let screenGeometry;
@@ -76,8 +76,8 @@ export class QueryGeometry {
      * Each tile calculates a tile level max padding value (in screenspace pixels) when its parsed, this function
      * lets us calculate a buffered version of the screenspace query geometry for each tile.
      *
-     * @param {number} buffer
-     * @returns {Point[]}
+     * @param {number} buffer The tile padding in screenspace pixels.
+     * @returns {Point[]} The buffered query geometry.
      */
     bufferedScreenGeometry(buffer: number): Point[] {
         return polygonizeBounds(
@@ -96,8 +96,8 @@ export class QueryGeometry {
      * of the query frustum, and the top of the triangle being the point underneath the camera.
      * Similar to `bufferedScreenGeometry`, buffering is added to account for variation in paint properties.
      *
-     * @param {number} buffer
-     * @returns {Point[]}
+     * @param {number} buffer The tile padding in screenspace pixels.
+     * @returns {Point[]} The buffered query geometry.
      */
     bufferedCameraGeometry(buffer: number): Point[] {
         const cameraTriangle = [
@@ -112,9 +112,9 @@ export class QueryGeometry {
     /**
      * Checks if a tile is contained within this query geometry.
      *
-     * @param {Tile} tile
-     * @param {Transform} transform
-     * @param {boolean} use3D
+     * @param {Tile} tile The tile to check.
+     * @param {Transform} transform The current map transform.
+     * @param {boolean} use3D A boolean indicating whether to query 3D features.
      * @returns {?TilespaceQueryGeometry} Returns undefined if the tile does not intersect
      */
     containsTile(tile: Tile, transform: Transform, use3D: boolean): ?TilespaceQueryGeometry {

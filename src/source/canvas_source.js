@@ -173,6 +173,7 @@ class CanvasSource extends ImageSource {
      *   They do not have to represent a rectangle.
      * @returns {CanvasSource} this
      */
+
     // setCoordinates inherited from ImageSource
 
     prepare() {

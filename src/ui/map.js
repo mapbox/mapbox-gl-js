@@ -2151,6 +2151,7 @@ class Map extends Camera {
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
+     * @returns {Map} The map object.
      *
      * @example
      * // When the mouse moves over the `my-layer` layer, update
