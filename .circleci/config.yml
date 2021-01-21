@@ -94,13 +94,6 @@ workflows:
               only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
             branches:
               ignore: /.*/
-      - check-bundle-size:
-          requires:
-            - build
-            - deploy-release
-          filters:
-            tags:
-              only: /.*/
               
 
 defaults: &defaults
@@ -157,6 +150,10 @@ jobs:
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
       - run: yarn run test-build
+      - run:
+          name: Check bundle size
+          command: |
+            node build/check-bundle-size.js
       - deploy:
           name: Trigger memory metrics when merging to main
           command: |
@@ -301,13 +298,3 @@ jobs:
             upload mapbox-gl-csp.js.map        application/octet-stream
             upload mapbox-gl-csp-worker.js     application/javascript
             upload mapbox-gl-csp-worker.js.map application/octet-stream
-
-  check-bundle-size:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Check bundle size
-          command: |
-            node build/check-bundle-size.js
