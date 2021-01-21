@@ -185,7 +185,9 @@ createStructArrayType('feature_index', createLayout([
     // the source layer the feature appears in
     { type: 'Uint16', name: 'sourceLayerIndex' },
     // the bucket the feature appears in
-    { type: 'Uint16', name: 'bucketIndex' }
+    { type: 'Uint16', name: 'bucketIndex' },
+    // Offset into bucket.layoutVertexArray
+    { type: 'Uint16', name: 'layoutVertexArrayOffset' },
 ]), true);
 
 // triangle index array
@@ -230,12 +232,13 @@ createStructArrayLayoutType(createLayout([{
 }], 4));
 
 // Fill extrusion specific array
-createStructArrayType(`fill_extrusion_centroid`, centroidAttributes);
+createStructArrayType(`fill_extrusion_centroid`, centroidAttributes, true);
 
 const layouts = Object.keys(layoutCache).map(k => layoutCache[k]);
 
 fs.writeFileSync('src/data/array_types.js',
     `// This file is generated. Edit build/generate-struct-arrays.js, then run \`yarn run codegen\`.
+/* eslint-disable camelcase */
 // @flow
 
 import assert from 'assert';

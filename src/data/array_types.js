@@ -1,4 +1,5 @@
 // This file is generated. Edit build/generate-struct-arrays.js, then run `yarn run codegen`.
+/* eslint-disable camelcase */
 // @flow
 
 import assert from 'assert';
@@ -692,11 +693,11 @@ register('StructArrayLayout3i6', StructArrayLayout3i6);
 /**
  * Implementation of the StructArray layout:
  * [0]: Uint32[1]
- * [4]: Uint16[2]
+ * [4]: Uint16[3]
  *
  * @private
  */
-class StructArrayLayout1ul2ui8 extends StructArray {
+class StructArrayLayout1ul3ui12 extends StructArray {
     uint8: Uint8Array;
     uint32: Uint32Array;
     uint16: Uint16Array;
@@ -707,24 +708,25 @@ class StructArrayLayout1ul2ui8 extends StructArray {
         this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number) {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number) {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2);
+        return this.emplace(i, v0, v1, v2, v3);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number) {
-        const o4 = i * 2;
-        const o2 = i * 4;
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number) {
+        const o4 = i * 3;
+        const o2 = i * 6;
         this.uint32[o4 + 0] = v0;
         this.uint16[o2 + 2] = v1;
         this.uint16[o2 + 3] = v2;
+        this.uint16[o2 + 4] = v3;
         return i;
     }
 }
 
-StructArrayLayout1ul2ui8.prototype.bytesPerElement = 8;
-register('StructArrayLayout1ul2ui8', StructArrayLayout1ul2ui8);
+StructArrayLayout1ul3ui12.prototype.bytesPerElement = 12;
+register('StructArrayLayout1ul3ui12', StructArrayLayout1ul3ui12);
 
 /**
  * Implementation of the StructArray layout:
@@ -1039,19 +1041,21 @@ class FeatureIndexStruct extends Struct {
     featureIndex: number;
     sourceLayerIndex: number;
     bucketIndex: number;
+    layoutVertexArrayOffset: number;
     get featureIndex() { return this._structArray.uint32[this._pos4 + 0]; }
     get sourceLayerIndex() { return this._structArray.uint16[this._pos2 + 2]; }
     get bucketIndex() { return this._structArray.uint16[this._pos2 + 3]; }
+    get layoutVertexArrayOffset() { return this._structArray.uint16[this._pos2 + 4]; }
 }
 
-FeatureIndexStruct.prototype.size = 8;
+FeatureIndexStruct.prototype.size = 12;
 
 export type FeatureIndex = FeatureIndexStruct;
 
 /**
  * @private
  */
-export class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
+export class FeatureIndexArray extends StructArrayLayout1ul3ui12 {
     /**
      * Return the FeatureIndexStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -1064,6 +1068,35 @@ export class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
 }
 
 register('FeatureIndexArray', FeatureIndexArray);
+
+class FillExtrusionCentroidStruct extends Struct {
+    _structArray: FillExtrusionCentroidArray;
+    a_centroid_pos0: number;
+    a_centroid_pos1: number;
+    get a_centroid_pos0() { return this._structArray.uint16[this._pos2 + 0]; }
+    get a_centroid_pos1() { return this._structArray.uint16[this._pos2 + 1]; }
+}
+
+FillExtrusionCentroidStruct.prototype.size = 4;
+
+export type FillExtrusionCentroid = FillExtrusionCentroidStruct;
+
+/**
+ * @private
+ */
+export class FillExtrusionCentroidArray extends StructArrayLayout2ui4 {
+    /**
+     * Return the FillExtrusionCentroidStruct at the given location in the array.
+     * @param {number} index The index of the element.
+     * @private
+     */
+    get(index: number): FillExtrusionCentroidStruct {
+        assert(!this.isTransferred);
+        return new FillExtrusionCentroidStruct(this, index);
+    }
+}
+
+register('FillExtrusionCentroidArray', FillExtrusionCentroidArray);
 
 export {
     StructArrayLayout2i4,
@@ -1083,7 +1116,7 @@ export {
     StructArrayLayout8i15ui1ul4f68,
     StructArrayLayout1f4,
     StructArrayLayout3i6,
-    StructArrayLayout1ul2ui8,
+    StructArrayLayout1ul3ui12,
     StructArrayLayout2ui4,
     StructArrayLayout1ui2,
     StructArrayLayout4f16,
@@ -1107,6 +1140,5 @@ export {
     StructArrayLayout3ui6 as TriangleIndexArray,
     StructArrayLayout2ui4 as LineIndexArray,
     StructArrayLayout1ui2 as LineStripIndexArray,
-    StructArrayLayout3f12 as SkyboxVertexArray,
-    StructArrayLayout2ui4 as FillExtrusionCentroidArray
+    StructArrayLayout3f12 as SkyboxVertexArray
 };

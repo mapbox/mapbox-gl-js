@@ -48,6 +48,14 @@ map.on('style.load', function() {
         }
     });
 
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
+    map.setTerrain({"source": "mapbox-dem"});
+
     let hovered = [];
     window.addEventListener('mousemove', function(e) {
         e.point = new mapboxgl.Point(e.clientX, e.clientY);

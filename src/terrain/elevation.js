@@ -1,12 +1,12 @@
 // @flow
 
-import MercatorCoordinate from '../geo/mercator_coordinate';
+import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
 import DEMData from '../data/dem_data';
 import SourceCache from '../source/source_cache';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
 import {vec3} from 'gl-matrix';
-
+import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id';
 
 import type Tile from '../source/tile';
@@ -168,12 +168,16 @@ export class Elevation {
  * Helper class computes and caches data required to lookup elevation offsets at the tile level.
  */
 export class DEMSampler {
+    _demTile: Tile;
     _dem: DEMData;
     _scale: number;
     _offset: [number, number];
 
-    constructor(dem: DEMData, scale: number, offset: [number, number]) {
-        this._dem = dem;
+    constructor(demTile: Tile, scale: number, offset: [number, number]) {
+        this._demTile = demTile;
+        // demTile.dem will always exist because the factory method `create` does the check
+        // Make flow happy with a cast through any
+        this._dem = (((this._demTile.dem): any): DEMData);
         this._scale = scale;
         this._offset = offset;
     }
@@ -188,20 +192,38 @@ export class DEMSampler {
         const yOffset = (tileID.canonical.y / scale - demTileID.canonical.y) * dem.dim;
         const k = demTile.tileSize / EXTENT / scale;
 
-        return new DEMSampler(dem, k, [xOffset, yOffset]);
+        return new DEMSampler(demTile, k, [xOffset, yOffset]);
     }
 
-    getElevationAt(x: number, y: number, interpolated: ?boolean): number {
+    tileCoordToPixel(x: number, y: number): Point {
+        const px = x * this._scale + this._offset[0];
+        const py = y * this._scale + this._offset[1];
+        const i = Math.floor(px);
+        const j = Math.floor(py);
+        return new Point(i, j);
+    }
+
+    getElevationAt(x: number, y: number, interpolated: ?boolean, clampToEdge: ?boolean): number {
         const px = x * this._scale + this._offset[0];
         const py = y * this._scale + this._offset[1];
         const i = Math.floor(px);
         const j = Math.floor(py);
         const dem = this._dem;
 
+        clampToEdge = !!clampToEdge;
+
         return interpolated ? interpolate(
-            interpolate(dem.get(i, j), dem.get(i, j + 1), py - j),
-            interpolate(dem.get(i + 1, j), dem.get(i + 1, j + 1), py - j),
+            interpolate(dem.get(i, j, clampToEdge), dem.get(i, j + 1, clampToEdge), py - j),
+            interpolate(dem.get(i + 1, j, clampToEdge), dem.get(i + 1, j + 1, clampToEdge), py - j),
             px - i) :
-            dem.get(i, j);
+            dem.get(i, j, clampToEdge);
+    }
+
+    getElevationAtPixel(x: number, y: number, clampToEdge: ?boolean): number {
+        return this._dem.get(x, y, !!clampToEdge);
+    }
+
+    getMeterToDEM(lat: number): number {
+        return (1 << this._demTile.tileID.canonical.z) * mercatorZfromAltitude(1, lat) * this._dem.stride;
     }
 }

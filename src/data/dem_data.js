@@ -1,7 +1,7 @@
 // @flow
 import {RGBAImage} from '../util/image';
 
-import {warnOnce} from '../util/util';
+import {warnOnce, clamp} from '../util/util';
 import {register} from '../util/web_worker_transfer';
 import DemMinMaxQuadTree from './dem_tree';
 import assert from 'assert';
@@ -79,8 +79,12 @@ export default class DEMData {
         this._tree = new DemMinMaxQuadTree(this);
     }
 
-    get(x: number, y: number) {
+    get(x: number, y: number, clampToEdge: boolean = false) {
         const pixels = new Uint8Array(this.data.buffer);
+        if (clampToEdge) {
+            x = clamp(x, -1, this.dim);
+            y = clamp(y, -1, this.dim);
+        }
         const index = this._idx(x, y) * 4;
         const unpack = this.encoding === "terrarium" ? this._unpackTerrarium : this._unpackMapbox;
         return unpack(pixels[index], pixels[index + 1], pixels[index + 2]);

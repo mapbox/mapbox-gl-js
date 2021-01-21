@@ -70,6 +70,15 @@ export class QueryGeometry {
     }
 
     /**
+     * Returns true if the initial query by the user was a single point
+     *
+     * @returns {boolean}
+     */
+    isPointQuery(): boolean {
+        return this.screenBounds.length === 1;
+    }
+
+    /**
      * Due to data-driven styling features do not uniform size(eg `circle-radius`) and can be offset differntly
      * from their original location(for eg. with `*-translate`). This means we have to expand our query region for
      * each tile to account for variation in these properties.

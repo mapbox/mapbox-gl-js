@@ -1,3 +1,6 @@
+// Also declared in data/bucket/fill_extrusion_bucket.js
+#define ELEVATION_SCALE 7.3
+
 #ifdef TERRAIN
 
 uniform sampler2D u_dem;
@@ -94,6 +97,10 @@ float occlusionFade(vec4 frag) {
     return dot(vec4(0.25), vec4(1.0) - clamp(300.0 * (vec4(coord.z - 0.001) - depth), 0.0, 1.0));
 }
 
+ // BEGIN: code for fill-extrusion height offseting
+ // When making changes here please also update associated JS ports in src/style/style_layer/fill-extrusion-style-layer.js
+ // This is so that rendering changes are reflected on CPU side for feature querying.
+
 vec4 fourSample(vec2 pos, vec2 off) {
     vec4 demtl = vec4(texture2D(u_dem, pos).xyz * 255.0, -1.0);
     float tl = dot(demtl, u_dem_unpack);
@@ -125,7 +132,7 @@ float flatElevation(vec2 pack) {
     vec2 w = floor(0.5 * (span * u_meter_to_dem - 1.0));
     vec2 d = dd * w;
     vec4 bounds = vec4(d, vec2(1.0) - d);
-    
+
     // Get building wide sample, to get better slope estimate.
     h = fourSample(pos - d, 2.0 * d + vec2(dd));
 
@@ -137,8 +144,10 @@ float flatElevation(vec2 pack) {
 }
 
 float elevationFromUint16(float word) {
-    return u_exaggeration * word / 7.3;
+    return u_exaggeration * word / ELEVATION_SCALE;
 }
+
+// END: code for fill-extrusion height offseting
 
 #else
 

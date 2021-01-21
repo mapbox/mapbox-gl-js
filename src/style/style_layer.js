@@ -62,7 +62,8 @@ class StyleLayer extends Evented {
                               zoom: number,
                               transform: Transform,
                               pixelPosMatrix: Float32Array,
-                              elevationHelper: ?DEMSampler) => boolean | number;
+                              elevationHelper: ?DEMSampler,
+                              layoutVertexArrayOffset: number) => boolean | number;
 
     +onAdd: ?(map: Map) => void;
     +onRemove: ?(map: Map) => void;

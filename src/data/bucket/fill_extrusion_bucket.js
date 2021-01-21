@@ -39,6 +39,11 @@ import type {ImagePosition} from '../../render/image_atlas';
 
 const FACTOR = Math.pow(2, 13);
 
+// Also declared in _prelude_terrain.vertex.glsl
+// Used to scale most likely elevation values to fit well in an uint16
+// Height of mt everest * 7.3 is roughly 64k
+export const ELEVATION_SCALE = 7.3;
+
 function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
     vertexArray.emplaceBack(
         // a_pos_normal_ed:
@@ -233,13 +238,14 @@ class FillExtrusionBucket implements Bucket {
                 patterns: {}
             };
 
+            const vertexArrayOffset = this.layoutVertexArray.length;
             if (this.hasPattern) {
                 this.features.push(addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, options));
             } else {
                 this.addFeature(bucketFeature, bucketFeature.geometry, index, canonical, {});
             }
 
-            options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index);
+            options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
         }
         this.sortBorders();
     }
@@ -452,7 +458,7 @@ class FillExtrusionBucket implements Bucket {
                 x = (Math.max(c.x, 1) << 3) + Math.min(7, Math.round(span.x / 10));
                 y = (Math.max(c.y, 1) << 3) + Math.min(7, Math.round(span.y / 10));
             } else { // encode height:
-                x = Math.ceil(c.x * 7.3);
+                x = Math.ceil(c.x * ELEVATION_SCALE);
                 y = 0;
             }
         } else {
