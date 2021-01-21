@@ -84,7 +84,8 @@ const repo = 'mapbox-gl-js';
         return Promise.resolve(null);
     }
 
-    async function getPriorSize(mergeBase) {
+    async function getPriorSize(mergeBase, label) {
+        const name = `Size - ${label}`;
         if (!mergeBase) {
             console.log('No merge base available.');
             return Promise.resolve(null);
@@ -95,6 +96,7 @@ const repo = 'mapbox-gl-js';
             repo: 'mapbox-gl-js',
             ref: mergeBase
         }).then(({data}) => {
+            console.log('**** prior size ref', data);
             const run = data.check_runs.find(run => run.name === name);
             if (run) {
                 const match = run.output.summary.match(/`[^`]+` is (\d+) bytes \([^\)]+\) uncompressed, (\d+) bytes \([^\)]+\) gzipped\./);
@@ -110,7 +112,9 @@ const repo = 'mapbox-gl-js';
     }
 
     const mergeBase = await getMergeBase();
-    const priorSizes = await getPriorSize(mergeBase);
+    const priorSizes = {};
+    priorSizes.js = await getPriorSize(mergeBase, 'JS');
+    priorSizes.css = await getPriorSize(mergeBase, 'CSS');
 
     // const priorSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
     console.log(priorSizes);
