@@ -59,7 +59,7 @@ const repo = 'mapbox-gl-js';
         const pr = process.env['CIRCLE_PULL_REQUEST'];
         if (pr) {
             const number = +pr.match(/\/(\d+)\/?$/)[1];
-            return github.pullRequests.get({
+            return github.pulls.get({
                 owner: 'mapbox',
                 repo: 'mapbox-gl-js',
                 pull_number: number
