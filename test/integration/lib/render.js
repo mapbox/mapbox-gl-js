@@ -97,6 +97,7 @@ async function testFunc(t) {
         axonometric: options.axonometric || false,
         skew: options.skew || [0, 0],
         fadeDuration: options.fadeDuration || 0,
+        optimizeForTerrain: options.optimizeForTerrain || false,
         localIdeographFontFamily: options.localIdeographFontFamily || false,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
         transformRequest: (url, resourceType) => {

@@ -27,6 +27,7 @@ import {clippingMaskUniformValues} from './program/clipping_mask_program';
 import Color from '../style-spec/util/color';
 import symbol from './draw_symbol';
 import circle from './draw_circle';
+import assert from 'assert';
 import heatmap from './draw_heatmap';
 import line from './draw_line';
 import fill from './draw_fill';
@@ -188,7 +189,7 @@ class Painter {
         this.context.viewport.set([0, 0, this.width, this.height]);
 
         if (this.style) {
-            for (const layerId of this.style._order) {
+            for (const layerId of this.style.order) {
                 this.style._layers[layerId].resize();
             }
         }
@@ -403,7 +404,7 @@ class Painter {
 
         this.imageManager.beginFrame();
 
-        const layerIds = this.style._order;
+        const layerIds = this.style.order;
         const sourceCaches = this.style._sourceCaches;
 
         for (const id in sourceCaches) {
@@ -457,28 +458,39 @@ class Painter {
             this.renderLayer(this, sourceCache, layer, coords);
         }
 
+        this.depthRangeFor3D = [0, 1 - ((style.order.length + 2) * this.numSublayers * this.depthEpsilon)];
+
+        // Terrain depth offscreen render pass ==========================
+        // With terrain on, renders the depth buffer into a texture.
+        // This texture is used for occlusion testing (labels)
+        if (this.terrain && (this.style.hasSymbolLayers() || this.style.hasCircleLayers())) {
+            this.terrain.drawDepth();
+        }
+
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
         this.context.bindFramebuffer.set(null);
+        this.context.viewport.set([0, 0, this.width, this.height]);
 
         // Clear buffers in preparation for drawing to the main framebuffer
         this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
-        this.depthRangeFor3D = [0, 1 - ((style._order.length + 2) * this.numSublayers * this.depthEpsilon)];
 
         // Opaque pass ===============================================
         // Draw opaque layers top-to-bottom first.
         this.renderPass = 'opaque';
 
-        for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
-            const layer = this.style._layers[layerIds[this.currentLayer]];
-            const sourceCache = style._getLayerSourceCache(layer);
-            if ((this.terrain && this.terrain.renderLayer(layer, sourceCache)) || layer.isSky()) continue;
-            const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
+        if (!this.terrain) {
+            for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
+                const layer = this.style._layers[layerIds[this.currentLayer]];
+                const sourceCache = style._getLayerSourceCache(layer);
+                if (layer.isSky()) continue;
+                const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
 
-            this._renderTileClippingMasks(layer, sourceCache, coords);
-            this.renderLayer(this, sourceCache, layer, coords);
+                this._renderTileClippingMasks(layer, sourceCache, coords);
+                this.renderLayer(this, sourceCache, layer, coords);
+            }
         }
 
         // Sky pass ======================================================
@@ -501,10 +513,31 @@ class Painter {
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
 
-        for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
+        this.currentLayer = 0;
+        while (this.currentLayer < layerIds.length) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
-            if ((this.terrain && this.terrain.renderLayer(layer, sourceCache)) || layer.isSky()) continue;
+
+            // Nothing to draw in translucent pass for sky layers, advance
+            if (layer.isSky()) {
+                ++this.currentLayer;
+                continue;
+            }
+
+            // With terrain on and for draped layers only, issue rendering and progress
+            // this.currentLayer until the next non-draped layer.
+            // Otherwise we interleave terrain draped render with non-draped layers on top
+            if (this.terrain && this.style.isLayerDraped(layer)) {
+                if (layer.isHidden(this.transform.zoom)) {
+                    ++this.currentLayer;
+                    continue;
+                }
+                const terrain = (((this.terrain): any): Terrain);
+                const prevLayer = this.currentLayer;
+                this.currentLayer = terrain.renderBatch(this.currentLayer);
+                assert(this.currentLayer > prevLayer);
+                continue;
+            }
 
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
@@ -515,6 +548,12 @@ class Painter {
 
             this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
             this.renderLayer(this, sourceCache, layer, coords);
+
+            ++this.currentLayer;
+        }
+
+        if (this.terrain) {
+            this.terrain.postRender();
         }
 
         if (this.options.showTileBoundaries || this.options.showQueryGeometry) {

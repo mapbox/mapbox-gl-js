@@ -1806,6 +1806,64 @@ test('Style#setLayerZoomRange', (t) => {
     t.end();
 });
 
+test('Style#hasLayer, Style#has*Layers()', (t) => {
+    function createStyle() {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": createGeoJSONSource()
+            },
+            "layers": [{
+                "id": "symbol_id",
+                "type": "symbol",
+                "source": "geojson"
+            },
+            {
+                "id": "background_id",
+                "type": "background"
+            },
+            {
+                "id": "fill_id",
+                "type": "fill",
+                "source": "geojson"
+            },
+            {
+                "id": "line_id",
+                "type": "line",
+                "source": "geojson"
+            }]
+        });
+        return style;
+    }
+
+    const style = createStyle();
+
+    style.on('style.load', () => {
+        t.ok(style.hasLayer('symbol_id'));
+        t.ok(style.hasLayer('background_id'));
+        t.ok(style.hasLayer('fill_id'));
+        t.ok(style.hasLayer('line_id'));
+        t.notOk(style.hasLayer('non_existing_symbol_id'));
+        t.notOk(style.hasLayer('non_existing_background_id'));
+        t.notOk(style.hasLayer('non_existing_fill_id'));
+        t.notOk(style.hasLayer('non_existing_line_id'));
+
+        t.ok(style.hasSymbolLayers());
+        t.notOk(style.has3DLayers());
+        t.notOk(style.hasCircleLayers());
+
+        style.addLayer({id: 'first', source: 'geojson', type: 'fill-extrusion'});
+        style.removeLayer('symbol_id');
+
+        t.notOk(style.hasSymbolLayers());
+        t.ok(style.has3DLayers());
+        t.notOk(style.hasCircleLayers());
+
+        t.end();
+    });
+});
+
 test('Style#queryRenderedFeatures', (t) => {
     const style = new Style(new StubMap());
     const transform = new Transform();
