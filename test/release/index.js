@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const params = {
         page: pages[0],
         version: 'latest',
-        access_token: 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ'
+        access_token: mapboxgl.accessToken
     };
 
     location.hash.substr(1).split('&').forEach(function (param) {
