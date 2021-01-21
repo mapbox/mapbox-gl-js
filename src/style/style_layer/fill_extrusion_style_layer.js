@@ -1,7 +1,7 @@
 // @flow
 
 import StyleLayer from '../style_layer';
-import FillExtrusionBucket from '../../data/bucket/fill_extrusion_bucket';
+import FillExtrusionBucket, { ELEVATION_SCALE } from '../../data/bucket/fill_extrusion_bucket';
 import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
 import {translateDistance, tilespaceTranslate} from '../query_utils';
 import properties from './fill_extrusion_style_layer_properties';
@@ -311,16 +311,14 @@ function getTerrainHeightOffset(x: number, y: number, zBase: number, zTop: numbe
 }
 
 // Elevation is encoded into unit16 in fill_extrusion_bucket.js FillExtrusionBucket#encodeCentroid
-// Factor of 7.3 is used to scale elevation values to make best use of 16 bits
-// Height of mt everest * 7.3 is roughly 64k
 function elevationFromUint16(n: number): number {
-    return n / 7.3;
+    return n / ELEVATION_SCALE;
 }
 
 // Equivalent GPU side function is in _prelude_terrain.vertex.glsl
 function flatElevation(demSampler: DEMSampler, centroid: vec2, lat: number): number {
     // Span and pos are packed two 16 bit uint16 values in fill_extrusion_bucket.js FillExtrusionBucket#encodeCentroid
-    // pos is conded by << by 3 bits so divide by 8 to perform equivalent of right shift
+    // pos is encoded by << by 3 bits thus dividing by 8 performs equivalent of right shifting it back.
     const posX = Math.floor(centroid[0] / 8);
     const posY = Math.floor(centroid[1] / 8);
 

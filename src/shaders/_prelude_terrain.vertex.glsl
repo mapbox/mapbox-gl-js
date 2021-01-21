@@ -1,3 +1,6 @@
+// Also declared in data/bucket/fill_extrusion_bucket.js
+#define ELEVATION_SCALE 7.3
+
 #ifdef TERRAIN
 
 uniform sampler2D u_dem;
@@ -141,7 +144,7 @@ float flatElevation(vec2 pack) {
 }
 
 float elevationFromUint16(float word) {
-    return u_exaggeration * word / 7.3;
+    return u_exaggeration * word / ELEVATION_SCALE;
 }
 
 // END: code for fill-extrusion height offseting
