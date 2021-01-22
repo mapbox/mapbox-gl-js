@@ -1,0 +1,81 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "operations": [
+        [
+          "addImage",
+          "graySquares~0",
+          "./sprites/32px-grey-square.png"
+        ],
+        [
+          "addImage",
+          "graySquares~1",
+          "./sprites/64px-grey-square.png"
+        ],
+        [
+          "addImage",
+          "graySquares~2",
+          "./sprites/128px-grey-square.png"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "layer",
+            "type": "fill",
+            "source": "square",
+            "paint": {
+              "fill-pattern": [
+                "step",
+                ["zoom"],
+                ["concat", ["string", ["get", "patternId"]], "~0"],
+                1,
+                ["concat", ["string", ["get", "patternId"]], "~1"],
+                2,
+                ["concat", ["string", ["get", "patternId"]], "~2"]
+              ]
+            }
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 0,
+  "sources": {
+    "square": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-50, -50],
+              [-50, 50],
+              [50, 50],
+              [50, -50],
+              [-50, -50]
+            ]
+          ]
+        },
+        "properties": {
+          "patternId": "graySquares"
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }
+    }
+  ]
+}
