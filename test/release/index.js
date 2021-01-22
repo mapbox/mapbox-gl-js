@@ -74,7 +74,11 @@ const pages = {
     },
     "image-on-a-map": {
         "title": "Image Source"
-    }
+    },
+    "3d-playground": {
+        "title": "3D Playground",
+        "url": "./3d-playground.html"
+    },
 };
 
 const pageKeys = Object.keys(pages);
