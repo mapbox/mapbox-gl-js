@@ -79,7 +79,7 @@ const pages = {
         "title": "3D Playground",
         "url": "./3d-playground.html"
     },
-    "skybox-gradient: {
+    "skybox-gradient": {
         "title": "Skybox gradient",
         "url": "./skybox-gradient.html"
     }
