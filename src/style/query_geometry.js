@@ -101,21 +101,81 @@ export class QueryGeometry {
      * the query at the surface of the earth. Instead the feature may be closer and only intersect
      * the query because it extrudes into the air.
      *
-     * This returns a geometry thats a triangle, with the base of the triangle being the far points
-     * of the query frustum, and the top of the triangle being the point underneath the camera.
+     * This returns a geometry thats a convex polygon that encomapasses the query frustum and the point underneath the camera.
      * Similar to `bufferedScreenGeometry`, buffering is added to account for variation in paint properties.
+     *
+     *
+     * Case 1: point underneath camera is exactly behind query volume
+     *              +----------+
+     *              |          |
+     *              |          |
+     *              |          |
+     *              +          +
+     *               X        X
+     *                X      X
+     *                 X    X
+     *                  X  X
+     *                   XX
+     *
+     *
+     *
+     *
+     * Case 2: point is behind and to the right
+     *              +----------+
+     *              |          X
+     *              |           X
+     *              |           XX
+     *              +            X
+     *              XXX          XX
+     *                 XXXX       X
+     *                    XXX     XX
+     *                        XX   X
+     *                           XXX
+     *
+     *
+     *
+     * Case 3: point is behind and to the left
+     *              +----------+
+     *             X           |
+     *             X           |
+     *            XX           |
+     *            X            +
+     *           X          XXXX
+     *          XX       XXX
+     *          X    XXXX
+     *         X XXXX
+     *         XXX
+     *
+     *
      *
      * @param {number} buffer The tile padding in screenspace pixels.
      * @returns {Point[]} The buffered query geometry.
      */
     bufferedCameraGeometry(buffer: number): Point[] {
-        const cameraTriangle = [
-            this.screenBounds[0],
-            this.screenBounds.length === 1 ? this.screenBounds[0].add(new Point(1, 0)) : this.screenBounds[1],
-            this.cameraPoint
-        ];
+        const min = this.screenBounds[0];
+        const max = this.screenBounds.length === 1 ? this.screenBounds[0].add(new Point(1, 1)) : this.screenBounds[1];
+        const cameraPolygon = polygonizeBounds(min, max, 0, false);
 
-        return bufferConvexPolygon(cameraTriangle, buffer);
+        // Only need to account for point underneath camera if its behind query volume
+        if (this.cameraPoint.y > max.y) {
+            //case 1: insert point in the middle
+            if (this.cameraPoint.x > min.x && this.cameraPoint.x < max.x) {
+                cameraPolygon.push(this.cameraPoint);
+                // Swap camera point and last point of polygon
+                const t = cameraPolygon[3];
+                cameraPolygon[3] = cameraPolygon[4];
+                cameraPolygon[4] = t;
+
+            //case 2: replace btm right point
+            } else if (this.cameraPoint.x >= max.x) {
+                cameraPolygon[2] = this.cameraPoint;
+            //case 3: replace btm left point
+            } else if (this.cameraPoint.x <= min.x) {
+                cameraPolygon[3] = this.cameraPoint;
+            }
+        }
+
+        return bufferConvexPolygon(cameraPolygon, buffer);
     }
 
     /**
