@@ -198,7 +198,8 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
 
             const resourceTiming = {};
-            if (perf) {
+            // because of two-phase tile loading, it's necessary to dedupe perf marking to avoid errors
+            if (perf && !perf._marksWereCleared()) {
                 const resourceTimingData = perf.finish();
                 // it's necessary to eval the result of getEntriesByName() here via parse/stringify
                 // late evaluation in the main thread causes TypeError: illegal invocation

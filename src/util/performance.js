@@ -178,6 +178,10 @@ export class RequestPerformance {
 
         performance.mark(this._marks.start);
     }
+    
+    _marksWereCleared() {
+        return performance.getEntriesByName(this._marks.start).length === 0;
+    }
 
     finish() {
         performance.mark(this._marks.end);
