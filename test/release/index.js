@@ -5,67 +5,150 @@
 /* global mapboxgl */
 /* global mapboxglVersions */
 
-const pages = {
-    "geojson-markers": {
+const pages = [
+    {
+        "key": "geojson-markers",
         "title": "Add GeoJSON marker"
     },
-    "animate-point-along-line": {
+    {
+        "key": "animate-point-along-line",
         "title": "Animate point"
     },
-    "queryrenderedfeatures": {
+    {
+        "key": "queryrenderedfeatures",
         "title": "Get features under the mouse pointer"
     },
-    "scroll-fly-to": {
+    {
+        "key": "queryrenderedfeatures",
+        "title": "Get features under the mouse pointer (3d)",
+        "inject3d": true
+    },
+    {
+        "key": "scroll-fly-to",
         "title": "Fly to a location based on scroll position"
     },
-    "popup-on-click": {
+    {
+        "key": "popup-on-click",
         "title": "Display a popup on click"
     },
-    "hover-styles": {
+    {
+        "key": "hover-styles",
         "title": "Create a hover effect"
     },
-    "satellite-map": {
+    {
+        "key": "satellite-map",
         "title": "Display a satellite map"
     },
-    "custom-marker-icons": {
+    {
+        "key": "satellite-map",
+        "title": "Display a satellite map (3d)",
+        "inject3d": true
+    },
+    {
+        "key": "custom-marker-icons",
         "title": "Add custom icons with Markers"
     },
-    "filter-features-within-map-view": {
+    {
+        "key": "filter-features-within-map-view",
         "title": "Filter features within map view"
     },
-    "video-on-a-map": {
+    {
+        "key": "video-on-a-map",
         "title": "Add a video"
     },
-    "custom-style-layer": {
+    {
+        "key": "video-on-a-map",
+        "title": "Add a video (3d)",
+        "inject3d": true
+    },
+    {
+        "key": "custom-style-layer",
         "title": "Add a custom style layer"
     },
-    "adjust-layer-opacity": {
+    {
+        "key": "custom-style-layer",
+        "title": "Add a custom style layer (3d)",
+        "inject3d": true
+    },
+    {
+        "key": "adjust-layer-opacity",
         "title": "Adjust a layer's opacity"
     },
-    "check-for-support": {
+    {
+        "key": "check-for-support",
         "title": "Check for browser support"
     },
-    "mapbox-gl-geocoder": {
+    {
+        "key": "mapbox-gl-geocoder",
         "title": "Add a geocoder"
     },
-    "mapbox-gl-directions": {
+    {
+        "key": "mapbox-gl-directions",
         "title": "Display driving directions"
     },
-    "mapbox-gl-draw": {
+    {
+        "key": "mapbox-gl-directions",
+        "title": "Display driving directions (3d)",
+        "inject3d": true
+    },
+    {
+        "key": "mapbox-gl-draw",
         "title": "Show drawn polygon area"
     },
-    "mapbox-gl-compare": {
+    {
+        "key": "mapbox-gl-draw",
+        "title": "Show drawn polygon area (3d)",
+        "inject3d": true
+    },
+    {
+        "key": "mapbox-gl-compare",
         "title": "Swipe between maps"
     },
-    "mapbox-gl-rtl-text": {
+    {
+        "key": "mapbox-gl-rtl-text",
         "title": "Add support for right-to-left scripts"
     },
-    "heatmap-layer": {
+    {
+        "key": "heatmap-layer",
         "title": "Add a heatmap layer"
+    },
+    {
+        "key": "heatmap-layer",
+        "title": "Add a heatmap layer (3d)",
+        "inject3d": true
+    },
+    {
+        "key": "add-terrain",
+        "title": "Add Terrain"
+    },
+    {
+        "key": "atmospheric-sky",
+        "title": "Atmospheric Sky"
+    },
+    {
+        "key": "free-camera-point",
+        "title": "Free Camera Point"
+    },
+    {
+        "key": "image-on-a-map",
+        "title": "Image Source"
+    },
+    {
+        "key": "image-on-a-map",
+        "title": "Image Source (3d)",
+        "inject3d": true
+    },
+    {
+        "key": "3d-playground",
+        "title": "3D Playground",
+        "url": "./3d-playground.html"
+    },
+    {
+        "key": "skybox-gradient",
+        "title": "Skybox gradient",
+        "url": "./skybox-gradient.html"
     }
-};
-
-const pageKeys = Object.keys(pages);
+];
 
 const versions = {
     'latest': {}
@@ -98,8 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     const params = {
-        page: pages[0],
-        version: 'latest'
+        page: pages[0].page,
+        version: 'latest',
+        index: 0
     };
 
     location.hash.substr(1).split('&').forEach(function (param) {
@@ -115,31 +199,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    let pageIndex = pageKeys.indexOf(params.page);
-    if (pageIndex < 0) pageIndex = 0;
-    params.page = pageKeys[pageIndex];
-
     titleElement.addEventListener('click', function() {
         versionItem.classList.remove('active');
         titleItem.classList[titleItem.classList.contains('active') ? 'remove' : 'add']('active');
     });
 
-    Object.keys(pages).forEach(function(page) {
+    let pageIndex = params.index;
+    if (pageIndex < 0) pageIndex = 0;
+    params.page = pages[pageIndex];
+    params.index = pageIndex;
+
+    for (let i = 0; i < pages.length; ++i) {
+        const page = pages[i];
         const item = document.createElement('a');
         item.classList.add('dropdown-item');
-        const metadata = pages[page];
-        item.innerHTML = '<span class="item-title">' + metadata.title + '</span>';
+        item.innerHTML = '<span class="item-title">' + page.title + '</span>';
         item.dataset.page = page;
+        item.dataset.index = i;
         item.addEventListener('click', function() {
             params.page = this.dataset.page;
-            pageIndex = pageKeys.indexOf(this.dataset.page);
+            pageIndex = this.dataset.index;
             if (pageIndex < 0) pageIndex = 0;
-            params.page = pageKeys[pageIndex];
+            params.page = pages[pageIndex];
+            params.index = pageIndex;
             titleItem.classList.remove('active');
             load();
         });
         titleDropdown.appendChild(item);
-    });
+    }
 
     if (!(params.version in versions)) {
         params.version = 'latest';
@@ -178,17 +265,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         while (container.firstChild) container.removeChild(container.firstChild);
 
-        params.page = pageKeys[pageIndex];
-        const page = params.page;
+        params.page = pages[pageIndex].page;
         const version = params.version;
 
-        const metadata = pages[page];
-        titleElement.innerText = metadata.title;
+        const page = pages[pageIndex];
+        titleElement.innerText = page.title;
         versionNumber.innerText = params.version;
 
         req = new XMLHttpRequest();
         req.addEventListener("load", loadedHTML);
-        url = metadata.url ? metadata.url : 'https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/example/' + page + '.html';
+        url = page.url ? page.url : 'https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/example/' + page.key + '.html';
         req.open("GET", url);
         req.send();
 
@@ -204,6 +290,44 @@ document.addEventListener('DOMContentLoaded', function() {
             const js = version === 'latest' ? jsLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.js';
             const css = version === 'latest' ? cssLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.css';
 
+            let doc = req.response;
+            // Only inject 3d code in version > v1
+            if (page.inject3d && params.version.substr(0, 2) !== 'v1' && params.version.substr(0, 2) !== 'v0') {
+                const regex0 = /new mapboxgl\.Map((.|\n)*?)}\)\);/g;
+                const regex1 = /new mapboxgl\.Map((.|\n)*?)}\);/g;
+                const match = req.response.match(regex0);
+                const regex = match && match.length > 0 ? regex0 : regex1;
+                doc = req.response.replace(regex, '$&' +
+                    `map.on('style.load', function () {
+                        map.addSource('mapbox_dem', {
+                            "type": "raster-dem",
+                            "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+                            "tileSize": 512,
+                            "maxzoom": 14
+                        });
+
+                        map.addLayer({
+                            'id': 'sky_layer',
+                            'type': 'sky',
+                            'paint': {
+                                'sky-type': 'atmosphere',
+                                'sky-atmosphere-sun': [0, 0],
+                                'sky-opacity': [
+                                    'interpolate',
+                                    ['exponential', 0.1],
+                                    ['zoom'],
+                                    5,
+                                    0,
+                                    22,
+                                    1
+                                ]
+                            }
+                        });
+
+                        map.setTerrain({"source": "mapbox_dem", "exaggeration": 1.2});
+                    });`
+                );
+            }
             iframeDoc.write([
                 '<!DOCTYPE html>',
                 '<html>',
@@ -220,14 +344,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 '    </style>',
                 '</head>',
                 '<body>',
-                req.response,
+                doc,
                 '</body>',
                 '</html>' ].join(''));
             iframeDoc.close();
         }
 
         prevButton.classList[(pageIndex === 0) ? 'add' : 'remove']('disabled');
-        nextButton.classList[(pageIndex + 1 === pageKeys.length) ? 'add' : 'remove']('disabled');
+        nextButton.classList[(pageIndex + 1 === pages.length) ? 'add' : 'remove']('disabled');
 
         let hash = 'page=' + page;
         if (version !== 'latest') {
@@ -247,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     nextButton.addEventListener('click', function() {
-        if (pageIndex + 1 <= pageKeys.length) {
+        if (pageIndex + 1 <= pages.length) {
             pageIndex++;
             load();
         }
