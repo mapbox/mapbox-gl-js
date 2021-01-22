@@ -44,25 +44,69 @@ const repo = 'mapbox-gl-js';
     //get current sizes
     const currentSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
     console.log(currentSizes);
-    // Why we need to add GitHub's public key to known_hosts:
-    // https://circleci.com/docs/2.0/gh-bb-integration/#establishing-the-authenticity-of-an-ssh-host
-    execSync(`mkdir -p ~/.ssh`);
-    execSync(`echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-    bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
-    ' >> ~/.ssh/known_hosts`);
-    execSync(`git reset --hard && git checkout origin/main`);
-    execSync('yarn install');
-    execSync('yarn run build-prod-min');
-    execSync('yarn run build-css');
-    const priorSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
-    console.log(priorSizes);
+
+    async function getMergeBase() {
+        const head = process.env['CIRCLE_SHA1'];
+        const pr = process.env['CIRCLE_PULL_REQUEST'];
+        if (pr) {
+            const number = +pr.match(/\/(\d+)\/?$/)[1];
+            return github.pulls.get({
+                owner,
+                repo,
+                pull_number: number
+            }).then(({data}) => {
+                const base = data.base.ref;
+                return execSync(`git merge-base origin/${base} ${head}`).toString().trim();
+            });
+        } else {
+            // Walk backward through the history (maximum of 10 commits) until
+            // finding a commit on either master or release-*; assume that's the
+            // base branch.
+            for (const sha of execSync(`git rev-list --max-count=10 ${head}`).toString().trim().split('\n')) {
+                const base = execSync(`git branch -r --contains ${sha} origin/main origin/release-*`).toString().split('\n')[0].trim();
+                if (base) {
+                    return Promise.resolve(execSync(`git merge-base ${base} ${head}`).toString().trim());
+                }
+            }
+        }
+
+        return Promise.resolve(null);
+    }
+
+    async function getPriorSize(mergeBase, name) {
+        if (!mergeBase) {
+            console.log('No merge base available.');
+            return Promise.resolve(null);
+        }
+
+        return github.checks.listForRef({
+            owner,
+            repo,
+            ref: mergeBase
+        }).then(({data}) => {
+            const run = data.check_runs.find(run => run.name === name);
+            if (run) {
+                const match = run.output.summary.match(/`[^`]+` is (\d+) bytes \([^\)]+\) uncompressed, (\d+) bytes \([^\)]+\) gzipped\./);
+                if (match) {
+                    const prior = { size: +match[1], gzipSize: +match[2] };
+                    console.log(`Prior size was ${prettyBytes(prior.size)}, gzipped ${prior.gzipSize}.`);
+                    return prior;
+                }
+            }
+            console.log('No matching check found.');
+            return Promise.resolve(null);
+        });
+    }
+
+    const mergeBase = await getMergeBase();
 
     // Generate a github check for each filetype
     for(let check_idx=0; check_idx<FILES.length; check_idx++){
         const [label, file] = FILES[check_idx];
         const name = `Size - ${label}`;
         const size = currentSizes[check_idx][1];
-        const priorSize = priorSizes[check_idx][1];
+        const priorSize = await getPriorSize(mergeBase, name);
+        console.log('priorSize: ', label, priorSize);
 
         const title = `${formatSize(size.size, priorSize.size)}, gzipped ${formatSize(size.gzipSize, priorSize.gzipSize)}`;
 
