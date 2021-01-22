@@ -290,11 +290,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const js = version === 'latest' ? jsLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.js';
             const css = version === 'latest' ? cssLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.css';
 
-            var doc = req.response;
+            let doc = req.response;
             // Only inject 3d code in version > v1
             if (page.inject3d && params.version.substr(0, 2) !== 'v1' && params.version.substr(0, 2) !== 'v0') {
-                const regex0 = /new mapboxgl\.Map((.|\n)*?)}\)\);/g
-                const regex1 = /new mapboxgl\.Map((.|\n)*?)}\);/g
+                const regex0 = /new mapboxgl\.Map((.|\n)*?)}\)\);/g;
+                const regex1 = /new mapboxgl\.Map((.|\n)*?)}\);/g;
                 const match = req.response.match(regex0);
                 const regex = match && match.length > 0 ? regex0 : regex1;
                 doc = req.response.replace(regex, '$&' +
