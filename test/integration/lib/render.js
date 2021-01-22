@@ -87,6 +87,7 @@ async function testFunc(t) {
     container.style.height = `${options.height}px`;
 
     //2. Initialize the Map
+    mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ';
     const map = new mapboxgl.Map({
         container,
         style,
