@@ -79,6 +79,10 @@ const pages = {
         "title": "3D Playground",
         "url": "./3d-playground.html"
     },
+    "skybox-gradient: {
+        "title": "Skybox gradient",
+        "url": "./skybox-gradient.html"
+    }
 };
 
 const pageKeys = Object.keys(pages);
