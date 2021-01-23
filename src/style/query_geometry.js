@@ -160,12 +160,7 @@ export class QueryGeometry {
         if (this.cameraPoint.y > max.y) {
             //case 1: insert point in the middle
             if (this.cameraPoint.x > min.x && this.cameraPoint.x < max.x) {
-                cameraPolygon.push(this.cameraPoint);
-                // Swap camera point and last point of polygon
-                const t = cameraPolygon[3];
-                cameraPolygon[3] = cameraPolygon[4];
-                cameraPolygon[4] = t;
-
+                cameraPolygon.splice(3, 0, this.cameraPoint);
             //case 2: replace btm right point
             } else if (this.cameraPoint.x >= max.x) {
                 cameraPolygon[2] = this.cameraPoint;
