@@ -108,7 +108,7 @@ const repo = 'mapbox-gl-js';
         const priorSize = await getPriorSize(mergeBase, name);
         console.log('priorSize: ', label, priorSize);
 
-        const title = `${formatSize(size.size, priorSize.size)}, gzipped ${formatSize(size.gzipSize, priorSize.gzipSize)}`;
+        const title = `${formatSize(size.size, priorSize ? priorSize.size : null)}, gzipped ${formatSize(size.gzipSize, priorSize ? priorSize.gzipSize : null)}`;
 
         const megabit = Math.pow(2, 12);
         const downloadTime3G = (size.gzipSize / (3 * megabit)).toFixed(0);
