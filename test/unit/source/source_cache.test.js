@@ -687,10 +687,6 @@ test('SourceCache#update', (t) => {
             if (e.sourceDataType === 'metadata') {
                 sourceCache.update(transform);
                 t.deepEqual(sourceCache.getIds(), [
-                    new OverscaledTileID(11, 0, 11, 1024, 1022).key,
-                    new OverscaledTileID(11, 0, 11, 1023, 1022).key,
-                    new OverscaledTileID(12, 0, 12, 2048, 2046).key,
-                    new OverscaledTileID(12, 0, 12, 2047, 2046).key,
                     new OverscaledTileID(13, 0, 13, 4096, 4094).key,
                     new OverscaledTileID(13, 0, 13, 4095, 4094).key,
                     new OverscaledTileID(14, 0, 14, 8192, 8192).key,
@@ -704,7 +700,7 @@ test('SourceCache#update', (t) => {
                 transform.center = new LngLat(0, -0.005);
                 sourceCache.update(transform);
 
-                t.deepEqual(sourceCache.getRenderableIds().length, 14);
+                t.deepEqual(sourceCache.getRenderableIds().length, 10);
                 t.end();
             }
         });

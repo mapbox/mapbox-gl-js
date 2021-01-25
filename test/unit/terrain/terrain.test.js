@@ -548,6 +548,8 @@ test('Raycast projection 2D/3D', t => {
         }
     });
 
+    map.transform._horizonShift = 0;
+
     map.once('style.load', () => {
         setMockElevationTerrain(map, zeroDem, TILE_SIZE);
         map.once('render', () => {
@@ -1101,6 +1103,7 @@ test('Marker interaction and raycast', (t) => {
             "tileSize": TILE_SIZE,
             "maxzoom": 14
         });
+        map.transform._horizonShift = 0;
         const cache = map.style._getSourceCache('mapbox-dem');
         cache.used = cache._sourceLoaded = true;
         cache._loadTile = (tile, callback) => {
@@ -1191,6 +1194,7 @@ test('terrain getBounds', (t) => {
     });
     map.setPitch(85);
     map.setZoom(13);
+    map.transform._horizonShift = 0;
 
     const tr = map.transform;
     map.once('style.load', () => {
@@ -1212,7 +1216,7 @@ test('terrain getBounds', (t) => {
         };
 
         t.deepEqual(map.getBounds().getCenter().lng.toFixed(10), 0, 'horizon, no terrain getBounds');
-        t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), 0.4076172064, 'horizon, no terrain getBounds');
+        t.ok(Math.abs(map.getBounds().getCenter().lat.toFixed(10) - 0.4076172064) < 0.0000001, 'horizon, no terrain getBounds');
 
         map.setTerrain({"source": "mapbox-dem"});
         map.once('render', () => {
