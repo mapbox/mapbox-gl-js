@@ -94,7 +94,7 @@ export default class Worker {
             for (const source in ws) {
                 if (ws[source] instanceof VectorTileWorkerSource) {
                     ws[source].isSpriteLoaded = bool;
-                    ws[source].fire(new Event('isSpriteLoaded'));   
+                    ws[source].fire(new Event('isSpriteLoaded'));
                 }
             }
         }
