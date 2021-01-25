@@ -144,7 +144,8 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     loading: {[_: number]: WorkerTile };
     loaded: {[_: number]: WorkerTile };
     deduped: DedupedRequest;
-    isSpriteLoaded: Boolean;
+    isSpriteLoaded: boolean;
+    scheduler: ?Scheduler;
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile
@@ -153,7 +154,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * loads the pbf at `params.url`.
      * @private
      */
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: Boolean, loadVectorData: ?LoadVectorData) {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadVectorData: ?LoadVectorData) {
         super();
         this.actor = actor;
         this.layerIndex = layerIndex;
@@ -163,6 +164,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         this.loaded = {};
         this.deduped = new DedupedRequest(actor.scheduler);
         this.isSpriteLoaded = isSpriteLoaded;
+        this.scheduler = actor.scheduler;
     }
 
     /**
@@ -219,9 +221,9 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             if (this.isSpriteLoaded) {
                 parseTile();
             } else {
-                const metadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
                 this.once('isSpriteLoaded', () => {
                     if (this.scheduler) {
+                        const metadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
                         this.scheduler.add(parseTile, metadata);
                     } else {
                         parseTile();

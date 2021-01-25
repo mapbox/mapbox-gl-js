@@ -11,6 +11,7 @@ import {plugin as globalRTLTextPlugin} from './rtl_text_plugin';
 import {enforceCacheSizeLimit} from '../util/tile_request_cache';
 import {extend} from '../util/util';
 import {PerformanceUtils} from '../util/performance';
+import {Event} from '../util/evented';
 
 import type {
     WorkerSource,
@@ -91,8 +92,10 @@ export default class Worker {
         for (const workerSource in this.workerSources[mapId]) {
             const ws = this.workerSources[mapId][workerSource];
             for (const source in ws) {
-                ws[source].isSpriteLoaded = bool;
-                ws[source].fire('isSpriteLoaded');
+                if (ws[source] instanceof VectorTileWorkerSource) {
+                    ws[source].isSpriteLoaded = bool;
+                    ws[source].fire(new Event('isSpriteLoaded'));   
+                }
             }
         }
     }
