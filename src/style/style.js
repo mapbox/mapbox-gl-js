@@ -293,6 +293,7 @@ class Style extends Evented {
             this._loadSprite(json.sprite);
         } else {
             this.imageManager.setLoaded(true);
+            this.dispatcher.broadcast('spriteLoaded', true);
         }
 
         this.glyphManager.setURL(json.glyphs);
