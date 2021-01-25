@@ -1,6 +1,6 @@
 import {test} from '../../util/test';
 import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';
-import GlyphManager from '../../../src/render/glyph_manager';
+import GlyphManager, {LocalGlyphMode} from '../../../src/render/glyph_manager';
 import fs from 'fs';
 
 const glyphs = {};
@@ -9,6 +9,19 @@ for (const glyph of parseGlyphPBF(fs.readFileSync('./test/fixtures/0-255.pbf')))
 }
 
 const identityTransform = (url) => ({url});
+
+const TinySDF = class {
+    constructor() {
+        this.fontWeight = '400';
+    }
+    // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
+    drawWithMetrics() {
+        return {
+            alphaChannel: new Uint8ClampedArray(900),
+            metrics: {width: 48, height: 48, sdfWidth: 30, sdfHeight: 30, advance: 48}
+        };
+    }
+};
 
 const createLoadGlyphRangeStub = (t) => {
     return t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
@@ -20,8 +33,10 @@ const createLoadGlyphRangeStub = (t) => {
     });
 };
 
-const createGlyphManager = (font) => {
-    const manager = new GlyphManager(identityTransform, font);
+const createGlyphManager = (font, allGlyphs) => {
+    const manager = new GlyphManager(identityTransform,
+        font ? (allGlyphs ? LocalGlyphMode.all : LocalGlyphMode.ideographs) : LocalGlyphMode.none,
+        font);
     manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
     return manager;
 };
@@ -82,12 +97,7 @@ test('GlyphManager does not cache CJK chars that should be rendered locally', (t
         }
         setImmediate(() => callback(null, overlappingGlyphs));
     });
-    t.stub(GlyphManager, 'TinySDF').value(class {
-        // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
-        draw() {
-            return new Uint8ClampedArray(900);
-        }
-    });
+    t.stub(GlyphManager, 'TinySDF').value(TinySDF);
     const manager = createGlyphManager('sans-serif');
 
     //Request char that overlaps Katakana range
@@ -107,12 +117,7 @@ test('GlyphManager does not cache CJK chars that should be rendered locally', (t
 });
 
 test('GlyphManager generates CJK PBF locally', (t) => {
-    t.stub(GlyphManager, 'TinySDF').value(class {
-        // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
-        draw() {
-            return new Uint8ClampedArray(900);
-        }
-    });
+    t.stub(GlyphManager, 'TinySDF').value(TinySDF);
 
     const manager = createGlyphManager('sans-serif');
 
@@ -124,12 +129,7 @@ test('GlyphManager generates CJK PBF locally', (t) => {
 });
 
 test('GlyphManager generates Katakana PBF locally', (t) => {
-    t.stub(GlyphManager, 'TinySDF').value(class {
-        // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
-        draw() {
-            return new Uint8ClampedArray(900);
-        }
-    });
+    t.stub(GlyphManager, 'TinySDF').value(TinySDF);
 
     const manager = createGlyphManager('sans-serif');
 
@@ -142,12 +142,7 @@ test('GlyphManager generates Katakana PBF locally', (t) => {
 });
 
 test('GlyphManager generates Hiragana PBF locally', (t) => {
-    t.stub(GlyphManager, 'TinySDF').value(class {
-        // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
-        draw() {
-            return new Uint8ClampedArray(900);
-        }
-    });
+    t.stub(GlyphManager, 'TinySDF').value(TinySDF);
 
     const manager = createGlyphManager('sans-serif');
 
@@ -162,10 +157,16 @@ test('GlyphManager generates Hiragana PBF locally', (t) => {
 test('GlyphManager caches locally generated glyphs', (t) => {
     let drawCallCount = 0;
     t.stub(GlyphManager, 'TinySDF').value(class {
+        constructor() {
+            this.fontWeight = '400';
+        }
         // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
-        draw() {
+        drawWithMetrics() {
             drawCallCount++;
-            return new Uint8ClampedArray(900);
+            return {
+                alphaChannel: new Uint8ClampedArray(900),
+                metrics: {width: 48, height: 48, sdfWidth: 30, sdfHeight: 30, advance: 48}
+            };
         }
     });
 
@@ -182,3 +183,27 @@ test('GlyphManager caches locally generated glyphs', (t) => {
     });
 });
 
+test('GlyphManager locally generates latin glyphs', (t) => {
+    t.stub(GlyphManager, 'TinySDF').value(class {
+        constructor() {
+            this.fontWeight = '400';
+        }
+        // Return empty 18x24 bitmap (made up glyph size + 3 * 2 buffer)
+        drawWithMetrics() {
+            return {
+                alphaChannel: new Uint8ClampedArray(480),
+                metrics: {width: 28, height: 36, sdfWidth: 20, sdfHeight: 24, advance: 20}
+            };
+        }
+    });
+
+    const manager = createGlyphManager('sans-serif', true);
+
+    manager.getGlyphs({'Arial Unicode MS': ['A']}, (err, glyphs) => {
+        t.ifError(err);
+        t.equal(glyphs['Arial Unicode MS']['A'].metrics.advance, 10);
+        t.equal(glyphs['Arial Unicode MS']['A'].metrics.width, 14);
+        t.equal(glyphs['Arial Unicode MS']['A'].metrics.height, 18);
+        t.end();
+    });
+});

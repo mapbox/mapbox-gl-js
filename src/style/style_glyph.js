@@ -7,7 +7,8 @@ export type GlyphMetrics = {
     height: number,
     left: number,
     top: number,
-    advance: number
+    advance: number,
+    localGlyph?: boolean
 };
 
 export type StyleGlyph = {

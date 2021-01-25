@@ -1,12 +1,21 @@
 // @flow
 
+import {SDF_SCALE} from '../render/glyph_manager';
 import {AlphaImage} from '../util/image';
 import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
 
 import type {GlyphMetrics, StyleGlyph} from '../style/style_glyph';
 
-const padding = 1;
+const glyphPadding = 1;
+/*
+    The glyph padding is just to prevent sampling errors at the boundaries between
+    glyphs in the atlas texture, and for that purpose there's no need to make it
+    bigger with high-res SDFs. However, layout is done based on the glyph size
+    including this padding, so scaling this padding is the easiest way to keep
+    layout exactly the same as the SDF_SCALE changes.
+*/
+const localGlyphPadding = glyphPadding * SDF_SCALE;
 
 export type Rect = {
     x: number,
@@ -38,6 +47,7 @@ export default class GlyphAtlas {
                 const src = glyphs[+id];
                 if (!src || src.bitmap.width === 0 || src.bitmap.height === 0) continue;
 
+                const padding = src.metrics.localGlyph ? localGlyphPadding : glyphPadding;
                 const bin = {
                     x: 0,
                     y: 0,
@@ -59,6 +69,7 @@ export default class GlyphAtlas {
                 const src = glyphs[+id];
                 if (!src || src.bitmap.width === 0 || src.bitmap.height === 0) continue;
                 const bin = positions[stack][id].rect;
+                const padding = src.metrics.localGlyph ? localGlyphPadding : glyphPadding;
                 AlphaImage.copy(src.bitmap, image, {x: 0, y: 0}, {x: bin.x + padding, y: bin.y + padding}, src.bitmap);
             }
         }

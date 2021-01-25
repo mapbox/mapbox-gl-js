@@ -7,7 +7,7 @@ import StyleLayer from './style_layer';
 import createStyleLayer from './create_style_layer';
 import loadSprite from './load_sprite';
 import ImageManager from '../render/image_manager';
-import GlyphManager from '../render/glyph_manager';
+import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager';
 import Light from './light';
 import Terrain from './terrain';
 import LineAtlas from '../render/line_atlas';
@@ -99,6 +99,7 @@ const empty = emptyStyle();
 
 export type StyleOptions = {
     validate?: boolean,
+    localFontFamily?: string,
     localIdeographFontFamily?: string
 };
 
@@ -163,7 +164,11 @@ class Style extends Evented {
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.imageManager = new ImageManager();
         this.imageManager.setEventedParent(this);
-        this.glyphManager = new GlyphManager(map._requestManager, options.localIdeographFontFamily);
+        this.glyphManager = new GlyphManager(map._requestManager,
+            options.localFontFamily ?
+                LocalGlyphMode.all :
+                (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
+            options.localFontFamily || options.localIdeographFontFamily);
         this.lineAtlas = new LineAtlas(256, 512);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
