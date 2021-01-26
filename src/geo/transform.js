@@ -1025,7 +1025,7 @@ class Transform {
         const h = this.height / 2 / Math.tan(this._fov / 2) / Math.tan(Math.max(this._pitch, 0.1)) + this.centerOffset.y;
         // incorporate 3% of the area above center to account for reduced precision.
         const horizonEpsilon = 0.03;
-        const offset = this.height / 2 + this._horizonShiftPixels() - h * (1 - horizonEpsilon);
+        const offset = this.height / 2 - h * (1 - horizonEpsilon);
         return clampToTop ? Math.max(0, offset) : offset;
     }
 
@@ -1263,15 +1263,6 @@ class Transform {
         return this._mercatorZfromZoom(this._minZoomForBounds());
     }
 
-    /**
-     * Returns the distance in pixels the horizon is shifted down by _horizonShift.
-     *
-     * @returns {number}
-     */
-    _horizonShiftPixels(): number {
-        return (Math.PI / 2 - this._pitch) * (this.height / this._fov) * this._horizonShift;
-    }
-
     _calcMatrices() {
         if (!this.height) return;
 
@@ -1336,9 +1327,11 @@ class Transform {
         mat4.rotateZ(view, view, this.angle);
 
         const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, nearZ, farZ);
+        // The distance in pixels the skybox needs to be shifted down by to meet the shifted horizon.
+        const skyboxHorizonShift = (Math.PI / 2 - this._pitch) * (this.height / this._fov) * this._horizonShift;
         // Apply center of perspective offset to skybox projection
         projection[8] = -offset.x * 2 / this.width;
-        projection[9] = (offset.y + this._horizonShiftPixels()) * 2 / this.height;
+        projection[9] = (offset.y + skyboxHorizonShift) * 2 / this.height;
         this.skyboxMatrix = mat4.multiply(view, projection, view);
 
         // Make a second projection matrix that is aligned to a pixel grid for rendering raster tiles.
