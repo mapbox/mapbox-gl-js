@@ -298,6 +298,7 @@ class Style extends Evented {
             this._loadSprite(json.sprite);
         } else {
             this.imageManager.setLoaded(true);
+            this.dispatcher.broadcast('spriteLoaded', true);
         }
 
         this.glyphManager.setURL(json.glyphs);
@@ -341,6 +342,7 @@ class Style extends Evented {
             this.imageManager.setLoaded(true);
             this._availableImages = this.imageManager.listImages();
             this.dispatcher.broadcast('setImages', this._availableImages);
+            this.dispatcher.broadcast('spriteLoaded', true);
             this.fire(new Event('data', {dataType: 'style'}));
         });
     }

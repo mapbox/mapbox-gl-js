@@ -7,6 +7,7 @@ import Protobuf from 'pbf';
 import WorkerTile from './worker_tile';
 import {extend} from '../util/util';
 import {RequestPerformance} from '../util/performance';
+import {Evented} from '../util/evented';
 
 import type {
     WorkerSource,
@@ -135,7 +136,7 @@ export function loadVectorTile(params: RequestedTileParameters, callback: LoadVe
  *
  * @private
  */
-class VectorTileWorkerSource implements WorkerSource {
+class VectorTileWorkerSource extends Evented implements WorkerSource {
     actor: Actor;
     layerIndex: StyleLayerIndex;
     availableImages: Array<string>;
@@ -143,6 +144,8 @@ class VectorTileWorkerSource implements WorkerSource {
     loading: {[_: number]: WorkerTile };
     loaded: {[_: number]: WorkerTile };
     deduped: DedupedRequest;
+    isSpriteLoaded: boolean;
+    scheduler: ?Scheduler;
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile
@@ -151,7 +154,8 @@ class VectorTileWorkerSource implements WorkerSource {
      * loads the pbf at `params.url`.
      * @private
      */
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, loadVectorData: ?LoadVectorData) {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadVectorData: ?LoadVectorData) {
+        super();
         this.actor = actor;
         this.layerIndex = layerIndex;
         this.availableImages = availableImages;
@@ -159,6 +163,8 @@ class VectorTileWorkerSource implements WorkerSource {
         this.loading = {};
         this.loaded = {};
         this.deduped = new DedupedRequest(actor.scheduler);
+        this.isSpriteLoaded = isSpriteLoaded;
+        this.scheduler = actor.scheduler;
     }
 
     /**
@@ -203,13 +209,27 @@ class VectorTileWorkerSource implements WorkerSource {
             // response.vectorTile will be present in the GeoJSON worker case (which inherits from this class)
             // because we stub the vector tile interface around JSON data instead of parsing it directly
             workerTile.vectorTile = response.vectorTile || new vt.VectorTile(new Protobuf(rawTileData));
+            const parseTile = () => {
+                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, (err, result) => {
+                    if (err || !result) return callback(err);
 
-            workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, (err, result) => {
-                if (err || !result) return callback(err);
+                    // Transferring a copy of rawTileData because the worker needs to retain its copy.
+                    callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
+                });
+            };
 
-                // Transferring a copy of rawTileData because the worker needs to retain its copy.
-                callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
-            });
+            if (this.isSpriteLoaded) {
+                parseTile();
+            } else {
+                this.once('isSpriteLoaded', () => {
+                    if (this.scheduler) {
+                        const metadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
+                        this.scheduler.add(parseTile, metadata);
+                    } else {
+                        parseTile();
+                    }
+                });
+            }
 
             this.loaded = this.loaded || {};
             this.loaded[uid] = workerTile;
