@@ -79,6 +79,10 @@ class AJAXError extends Error {
         super(message);
         this.status = status;
         this.url = url;
+
+        // work around for https://github.com/Rich-Harris/buble/issues/40
+        this.name = this.constructor.name;
+        this.message = message;
     }
 
     toString() {
@@ -232,9 +236,10 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
 
 export const makeRequest = function(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
     // We're trying to use the Fetch API if possible. However, in some situations we can't use it:
+    // - IE11 doesn't support it at all. In this case, we dispatch the request to the main thread so
+    //   that we can get an accruate referrer header.
     // - Safari exposes window.AbortController, but it doesn't work actually abort any requests in
-    //   older versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2). In this case,
-    //   we dispatch the request to the main thread so that we can get an accruate referrer header.
+    //   some versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2)
     // - Requests for resources with the file:// URI scheme don't work with the Fetch API either. In
     //   this case we unconditionally use XHR on the current thread since referrers don't matter.
     if (!isFileURL(requestParameters.url)) {

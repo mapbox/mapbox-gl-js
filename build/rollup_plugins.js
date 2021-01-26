@@ -1,5 +1,6 @@
 
 import flowRemoveTypes from '@mapbox/flow-remove-types';
+import buble from 'rollup-plugin-buble';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
@@ -27,6 +28,7 @@ export const plugins = (minified, production, test, bench) => [
         'process.env.UPDATE': JSON.stringify(process.env.UPDATE)
     }) : false,
     glsl('./src/shaders/*.glsl', production),
+    buble({transforms: {dangerousForOf: true, asyncAwait: !test}, objectAssign: "Object.assign"}),
     minified ? terser({
         compress: {
             pure_getters: true,

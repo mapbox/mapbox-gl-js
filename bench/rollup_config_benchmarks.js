@@ -2,6 +2,7 @@ import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from 'rollup-plugin-replace';
 import {plugins} from '../build/rollup_plugins';
+import buble from 'rollup-plugin-buble';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 
@@ -57,6 +58,7 @@ const viewConfig = {
         sourcemap: false
     },
     plugins: [
+        buble({transforms: {dangerousForOf: true}, objectAssign: true}),
         resolve({browser: true, preferBuiltins: false}),
         commonjs(),
         replace(replaceConfig)
