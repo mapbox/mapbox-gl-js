@@ -130,6 +130,14 @@ const pages = [
         "title": "Free Camera Point"
     },
     {
+        "key": "add-3d-model",
+        "title": "Add a 3d model"
+    },
+    {
+        "key": "free-camera-path",
+        "title": "Animate the camera along a path"
+    },
+    {
         "key": "image-on-a-map",
         "title": "Image Source"
     },
