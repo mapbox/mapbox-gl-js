@@ -357,12 +357,13 @@ class CollisionIndex {
 
     projectAndGetPerspectiveRatio(posMatrix: mat4, x: number, y: number, elevation?: number) {
         const p = [x, y, elevation || 0, 1];
+        let aboveHorizon = false;
         if (elevation || this.transform.pitch > 0) {
             vec4.transformMat4(p, p, posMatrix);
+            aboveHorizon = p[2] > p[3];
         } else {
             projection.xyTransformMat4(p, p, posMatrix);
         }
-        const aboveHorizon = p[2] / p[3] > 1;
         const a = new Point(
             (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
             (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding
