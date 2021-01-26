@@ -79,7 +79,7 @@ class CollisionIndex {
         // https://github.com/mapbox/mapbox-gl-native/wiki/Text-Rendering#perspective-scaling
         // 0.55 === projection.getPerspectiveRatio(camera_to_center, camera_to_center * 10)
         const minPerspectiveRatio = 0.55;
-        const isClipped = projectedPoint.perspectiveRatio <= minPerspectiveRatio;
+        const isClipped = projectedPoint.perspectiveRatio <= minPerspectiveRatio || projectedPoint.aboveHorizon;
 
         if (!this.isInsideGrid(tlX, tlY, brX, brY) ||
             (!allowOverlap && this.grid.hitTest(tlX, tlY, brX, brY, collisionGroupPredicate)) ||
@@ -116,8 +116,8 @@ class CollisionIndex {
 
         const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
         const anchorElevation = getElevation(tileUnitAnchorPoint);
-        const screenAnchorPoint = projection.project(tileUnitAnchorPoint, posMatrix, anchorElevation);
-        const perspectiveRatio = projection.getPerspectiveRatio(this.transform.cameraToCenterDistance, screenAnchorPoint.signedDistanceFromCamera);
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, anchorElevation);
+        const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
 
@@ -147,7 +147,7 @@ class CollisionIndex {
         let inGrid = false;
         let entirelyOffscreen = true;
 
-        if (firstAndLastGlyph) {
+        if (firstAndLastGlyph && !screenAnchorPoint.aboveHorizon) {
             const radius = circlePixelDiameter * 0.5 * perspectiveRatio + textPixelPadding;
             const screenPlaneMin = new Point(-viewportPadding, -viewportPadding);
             const screenPlaneMax = new Point(this.screenRightBoundary, this.screenBottomBoundary);
@@ -356,10 +356,11 @@ class CollisionIndex {
     }
 
     projectAndGetPerspectiveRatio(posMatrix: mat4, x: number, y: number, elevation?: number) {
-        const p = [x, y, 0, 1];
-        if (elevation) {
-            p[2] = elevation;
+        const p = [x, y, elevation || 0, 1];
+        let aboveHorizon = false;
+        if (elevation || this.transform.pitch > 0) {
             vec4.transformMat4(p, p, posMatrix);
+            aboveHorizon = p[2] > p[3];
         } else {
             projection.xyTransformMat4(p, p, posMatrix);
         }
@@ -372,7 +373,9 @@ class CollisionIndex {
             // See perspective ratio comment in symbol_sdf.vertex
             // We're doing collision detection in viewport space so we need
             // to scale down boxes in the distance
-            perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3]), 1.5)
+            perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3]), 1.5),
+            signedDistanceFromCamera: p[3],
+            aboveHorizon
         };
     }
 
