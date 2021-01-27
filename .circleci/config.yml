@@ -71,7 +71,7 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              only: main
+              only: restore-gl-stats
       - deploy-benchmarks:
           requires:
             - lint
