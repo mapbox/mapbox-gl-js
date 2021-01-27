@@ -4,7 +4,7 @@
 
 - Added `localFontFamily` map option that enables local generation of all font glyphs. ([#10298](https://github.com/mapbox/mapbox-gl-js/pull/10298))
 - Introduced high resolution local glyph generation for improved rendering quality of glyphs generated using `localIdeographFontFamily` or `localFontFamily` options. ([#10298](https://github.com/mapbox/mapbox-gl-js/pull/10298))
-- Added `optimizeForTerrain` map options allowing to use terrain in _layer draw-order_ or _performance_ priority mode. This fixes terrain not always preserving layer draw-order during animations by making the behavior explicit. ([#10258](https://github.com/mapbox/mapbox-gl-js/pull/10258))
+- Added `optimizeForTerrain` map option allowing to use terrain in _layer draw-order_ or _performance_ priority mode. This fixes terrain not always preserving layer draw-order during animations by making the behavior explicit. ([#10258](https://github.com/mapbox/mapbox-gl-js/pull/10258))
 - Improved performance by slightly shifting the horizon down, reducing the number of tiles loaded for highly-pitched maps. ([#10304](https://github.com/mapbox/mapbox-gl-js/pull/10304))
 - Improved event-based APIs ergonomic `evented.once(eventName` by returning a promise if no listener function is provided, which allows them to be used with `async/await`. ([#10203](https://github.com/mapbox/mapbox-gl-js/pull/10203))
 
