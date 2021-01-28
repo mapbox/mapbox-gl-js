@@ -1,6 +1,6 @@
 
-import ValidationError from '../error/validation_error';
-import getType from '../util/get_type';
+import ValidationError from '../error/validation_error.js';
+import getType from '../util/get_type.js';
 import {parseCSSColor} from 'csscolorparser';
 
 export default function validateColor(options) {

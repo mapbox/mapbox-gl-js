@@ -1,5 +1,5 @@
 
-import extend from './util/extend';
+import extend from './util/extend.js';
 
 export default declassStyle;
 

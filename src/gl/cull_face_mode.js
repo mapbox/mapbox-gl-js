@@ -1,6 +1,6 @@
 // @flow
 
-import type {CullFaceModeType, FrontFaceType} from './types';
+import type {CullFaceModeType, FrontFaceType} from './types.js';
 
 const BACK = 0x0405;
 const FRONT = 0x0404;

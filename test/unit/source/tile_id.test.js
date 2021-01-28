@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id';
+import {test} from '../../util/test.js';
+import {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id.js';
 
 test('CanonicalTileID', (t) => {
     t.test('#constructor', (t) => {

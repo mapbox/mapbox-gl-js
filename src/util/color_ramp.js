@@ -1,10 +1,10 @@
 // @flow
 
-import {RGBAImage} from './image';
-import {isPowerOfTwo} from './util';
+import {RGBAImage} from './image.js';
+import {isPowerOfTwo} from './util.js';
 import assert from 'assert';
 
-import type {StylePropertyExpression} from '../style-spec/expression/index';
+import type {StylePropertyExpression} from '../style-spec/expression/index.js';
 
 export type ColorRampParams = {
     expression: StylePropertyExpression;

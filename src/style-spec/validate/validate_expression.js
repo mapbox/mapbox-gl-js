@@ -1,10 +1,10 @@
 // @flow
 
-import ValidationError from '../error/validation_error';
+import ValidationError from '../error/validation_error.js';
 
-import {createExpression, createPropertyExpression} from '../expression';
-import {deepUnbundle} from '../util/unbundle_jsonlint';
-import {isStateConstant, isGlobalPropertyConstant, isFeatureConstant} from '../expression/is_constant';
+import {createExpression, createPropertyExpression} from '../expression/index.js';
+import {deepUnbundle} from '../util/unbundle_jsonlint.js';
+import {isStateConstant, isGlobalPropertyConstant, isFeatureConstant} from '../expression/is_constant.js';
 
 export default function validateExpression(options: any): Array<ValidationError> {
     const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(deepUnbundle(options.value), options.valueSpec);

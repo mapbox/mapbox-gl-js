@@ -1,13 +1,13 @@
 // @flow
 
-import styleSpec from '../style-spec/reference/latest';
-import {endsWith} from '../util/util';
-import {Evented} from '../util/evented';
-import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties';
+import styleSpec from '../style-spec/reference/latest.js';
+import {endsWith} from '../util/util.js';
+import {Evented} from '../util/evented.js';
+import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
 
-import type EvaluationParameters from './evaluation_parameters';
-import type {TransitionParameters} from './properties';
-import type {TerrainSpecification} from '../style-spec/types';
+import type EvaluationParameters from './evaluation_parameters.js';
+import type {TransitionParameters} from './properties.js';
+import type {TerrainSpecification} from '../style-spec/types.js';
 
 type Props = {|
     "source": DataConstantProperty<string>,

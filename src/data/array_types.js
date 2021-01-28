@@ -3,8 +3,8 @@
 // @flow
 
 import assert from 'assert';
-import {Struct, StructArray} from '../util/struct_array';
-import {register} from '../util/web_worker_transfer';
+import {Struct, StructArray} from '../util/struct_array.js';
+import {register} from '../util/web_worker_transfer.js';
 import Point from '@mapbox/point-geometry';
 
 /**

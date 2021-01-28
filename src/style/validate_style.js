@@ -1,8 +1,8 @@
 // @flow
-import validateStyleMin from '../style-spec/validate_style.min';
-import {ErrorEvent} from '../util/evented';
+import validateStyleMin from '../style-spec/validate_style.min.js';
+import {ErrorEvent} from '../util/evented.js';
 
-import type {Evented} from '../util/evented';
+import type {Evented} from '../util/evented.js';
 
 type ValidationError = {
     message: string,

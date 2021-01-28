@@ -1,7 +1,7 @@
 // @flow
 
-import CompoundExpression from './compound_expression';
-import Within from './definitions/within';
+import CompoundExpression from './compound_expression.js';
+import Within from './definitions/within.js';
 import type {Expression} from './expression.js';
 
 function isFeatureConstant(e: Expression) {

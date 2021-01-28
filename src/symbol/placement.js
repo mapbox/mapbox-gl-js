@@ -1,23 +1,23 @@
 // @flow
 
-import CollisionIndex from './collision_index';
-import EXTENT from '../data/extent';
-import * as symbolSize from './symbol_size';
-import * as projection from './projection';
-import {getAnchorJustification, evaluateVariableOffset} from './symbol_layout';
-import {getAnchorAlignment, WritingMode} from './shaping';
+import CollisionIndex from './collision_index.js';
+import EXTENT from '../data/extent.js';
+import * as symbolSize from './symbol_size.js';
+import * as projection from './projection.js';
+import {getAnchorJustification, evaluateVariableOffset} from './symbol_layout.js';
+import {getAnchorAlignment, WritingMode} from './shaping.js';
 import {mat4} from 'gl-matrix';
 import assert from 'assert';
-import pixelsToTileUnits from '../source/pixels_to_tile_units';
+import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import Point from '@mapbox/point-geometry';
-import type Transform from '../geo/transform';
-import type StyleLayer from '../style/style_layer';
-import type Tile from '../source/tile';
-import type SymbolBucket, {CollisionArrays, SingleCollisionBox} from '../data/bucket/symbol_bucket';
-import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types';
-import type FeatureIndex from '../data/feature_index';
-import type {OverscaledTileID} from '../source/tile_id';
-import type {TextAnchor} from './symbol_layout';
+import type Transform from '../geo/transform.js';
+import type StyleLayer from '../style/style_layer.js';
+import type Tile from '../source/tile.js';
+import type SymbolBucket, {CollisionArrays, SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
+import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types.js';
+import type FeatureIndex from '../data/feature_index.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
+import type {TextAnchor} from './symbol_layout.js';
 
 class OpacityState {
     opacity: number;

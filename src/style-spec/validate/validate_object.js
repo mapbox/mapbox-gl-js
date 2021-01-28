@@ -1,7 +1,7 @@
 
-import ValidationError from '../error/validation_error';
-import getType from '../util/get_type';
-import validateSpec from './validate';
+import ValidationError from '../error/validation_error.js';
+import getType from '../util/get_type.js';
+import validateSpec from './validate.js';
 
 export default function validateObject(options) {
     const key = options.key;

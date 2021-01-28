@@ -1,6 +1,6 @@
 // @flow
 
-import type {SymbolFeature} from '../data/bucket/symbol_bucket';
+import type {SymbolFeature} from '../data/bucket/symbol_bucket.js';
 
 export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
     const leftIndex: {[_: string]: number} = {};

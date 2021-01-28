@@ -1,7 +1,7 @@
 // @flow
-import {number} from "../style-spec/util/interpolate";
+import {number} from "../style-spec/util/interpolate.js";
 import Point  from "@mapbox/point-geometry";
-import {clamp} from "../util/util";
+import {clamp} from "../util/util.js";
 
 /**
  * An `EdgeInset` object represents screen space padding applied to the edges of the viewport.

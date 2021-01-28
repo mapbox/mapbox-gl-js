@@ -1,8 +1,8 @@
 // @flow
 
-import type {Type} from './types';
-import type ParsingContext from './parsing_context';
-import type EvaluationContext from './evaluation_context';
+import type {Type} from './types.js';
+import type ParsingContext from './parsing_context.js';
+import type EvaluationContext from './evaluation_context.js';
 
 type SerializedExpression = Array<mixed> | string | number | boolean | null;
 

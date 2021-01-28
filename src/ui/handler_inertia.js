@@ -1,10 +1,10 @@
 // @flow
 
-import browser from '../util/browser';
-import type Map from './map';
-import {bezier, clamp, extend} from '../util/util';
+import browser from '../util/browser.js';
+import type Map from './map.js';
+import {bezier, clamp, extend} from '../util/util.js';
 import Point from '@mapbox/point-geometry';
-import type {DragPanOptions} from './handler/shim/drag_pan';
+import type {DragPanOptions} from './handler/shim/drag_pan.js';
 
 const defaultInertiaOptions = {
     linearity: 0.3,

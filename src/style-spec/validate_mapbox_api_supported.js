@@ -1,10 +1,10 @@
 // @flow
 
-import validateStyle from './validate_style.min';
-import {v8} from './style-spec';
-import readStyle from './read_style';
-import ValidationError from './error/validation_error';
-import getType from './util/get_type';
+import validateStyle from './validate_style.min.js';
+import {v8} from './style-spec.js';
+import readStyle from './read_style.js';
+import ValidationError from './error/validation_error.js';
+import getType from './util/get_type.js';
 
 const SUPPORTED_SPEC_VERSION = 8;
 const MAX_SOURCES_IN_STYLE = 15;

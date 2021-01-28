@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import GridIndex from '../../../src/symbol/grid_index';
+import {test} from '../../util/test.js';
+import GridIndex from '../../../src/symbol/grid_index.js';
 
 test('GridIndex', (t) => {
 

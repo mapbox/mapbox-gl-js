@@ -1,9 +1,9 @@
-import {test} from '../../util/test';
-import VectorTileSource from '../../../src/source/vector_tile_source';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import window from '../../../src/util/window';
-import {Evented} from '../../../src/util/evented';
-import {RequestManager} from '../../../src/util/mapbox';
+import {test} from '../../util/test.js';
+import VectorTileSource from '../../../src/source/vector_tile_source.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import window from '../../../src/util/window.js';
+import {Evented} from '../../../src/util/evented.js';
+import {RequestManager} from '../../../src/util/mapbox.js';
 
 const wrapDispatcher = (dispatcher) => {
     return {

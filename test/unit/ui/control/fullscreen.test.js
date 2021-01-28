@@ -1,7 +1,7 @@
-import {test} from '../../../util/test';
-import window from '../../../../src/util/window';
-import {createMap} from '../../../util';
-import FullscreenControl from '../../../../src/ui/control/fullscreen_control';
+import {test} from '../../../util/test.js';
+import window from '../../../../src/util/window.js';
+import {createMap} from '../../../util/index.js';
+import FullscreenControl from '../../../../src/ui/control/fullscreen_control.js';
 
 test('FullscreenControl appears when fullscreen is enabled', (t) => {
     window.document.fullscreenEnabled = true;

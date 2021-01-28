@@ -1,4 +1,4 @@
-import latest from './reference/latest';
+import latest from './reference/latest.js';
 
 export default function emptyStyle() {
     const style = {};

@@ -1,22 +1,22 @@
 // @flow
 
-import type {CircleDefinesType} from './circle_program';
-import type {SymbolDefinesType} from './symbol_program';
-import {fillExtrusionUniforms, fillExtrusionPatternUniforms} from './fill_extrusion_program';
-import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms} from './fill_program';
-import {circleUniforms} from './circle_program';
-import {collisionUniforms, collisionCircleUniforms} from './collision_program';
-import {debugUniforms} from './debug_program';
-import {clippingMaskUniforms} from './clipping_mask_program';
-import {heatmapUniforms, heatmapTextureUniforms} from './heatmap_program';
-import {hillshadeUniforms, hillshadePrepareUniforms} from './hillshade_program';
-import {lineUniforms, lineGradientUniforms, linePatternUniforms, lineSDFUniforms} from './line_program';
-import {rasterUniforms} from './raster_program';
-import {symbolIconUniforms, symbolSDFUniforms, symbolTextAndIconUniforms} from './symbol_program';
-import {backgroundUniforms, backgroundPatternUniforms} from './background_program';
-import {terrainRasterUniforms} from '../../terrain/terrain_raster_program';
-import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program';
-import {skyboxCaptureUniforms} from './skybox_capture_program';
+import type {CircleDefinesType} from './circle_program.js';
+import type {SymbolDefinesType} from './symbol_program.js';
+import {fillExtrusionUniforms, fillExtrusionPatternUniforms} from './fill_extrusion_program.js';
+import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms} from './fill_program.js';
+import {circleUniforms} from './circle_program.js';
+import {collisionUniforms, collisionCircleUniforms} from './collision_program.js';
+import {debugUniforms} from './debug_program.js';
+import {clippingMaskUniforms} from './clipping_mask_program.js';
+import {heatmapUniforms, heatmapTextureUniforms} from './heatmap_program.js';
+import {hillshadeUniforms, hillshadePrepareUniforms} from './hillshade_program.js';
+import {lineUniforms, lineGradientUniforms, linePatternUniforms, lineSDFUniforms} from './line_program.js';
+import {rasterUniforms} from './raster_program.js';
+import {symbolIconUniforms, symbolSDFUniforms, symbolTextAndIconUniforms} from './symbol_program.js';
+import {backgroundUniforms, backgroundPatternUniforms} from './background_program.js';
+import {terrainRasterUniforms} from '../../terrain/terrain_raster_program.js';
+import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program.js';
+import {skyboxCaptureUniforms} from './skybox_capture_program.js';
 
 export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType;
 

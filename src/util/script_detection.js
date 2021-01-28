@@ -2,7 +2,7 @@
 
 /* eslint-disable new-cap */
 
-import isChar from './is_char_in_unicode_block';
+import isChar from './is_char_in_unicode_block.js';
 
 export function allowsIdeographicBreaking(chars: string) {
     for (const char of chars) {

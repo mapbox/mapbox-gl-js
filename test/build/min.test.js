@@ -1,7 +1,7 @@
-import {test} from '../util/test';
+import {test} from '../util/test.js';
 import fs from 'fs';
 import path from 'path';
-import reference from '../../src/style-spec/reference/latest';
+import reference from '../../src/style-spec/reference/latest.js';
 import {scripts} from '../../package.json';
 
 const minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');

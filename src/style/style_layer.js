@@ -1,35 +1,35 @@
 // @flow
 
-import {endsWith, filterObject} from '../util/util';
+import {endsWith, filterObject} from '../util/util.js';
 
-import styleSpec from '../style-spec/reference/latest';
+import styleSpec from '../style-spec/reference/latest.js';
 import {
     validateStyle,
     validateLayoutProperty,
     validatePaintProperty,
     emitValidationErrors
-} from './validate_style';
-import {Evented} from '../util/evented';
-import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties';
-import {supportsPropertyExpression} from '../style-spec/util/properties';
-import ProgramConfiguration from '../data/program_configuration';
+} from './validate_style.js';
+import {Evented} from '../util/evented.js';
+import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties.js';
+import {supportsPropertyExpression} from '../style-spec/util/properties.js';
+import ProgramConfiguration from '../data/program_configuration.js';
 
-import type {FeatureState} from '../style-spec/expression';
-import type {Bucket} from '../data/bucket';
+import type {FeatureState} from '../style-spec/expression/index.js';
+import type {Bucket} from '../data/bucket.js';
 import type Point from '@mapbox/point-geometry';
-import type {FeatureFilter} from '../style-spec/feature_filter';
-import type {TransitionParameters, PropertyValue} from './properties';
-import type EvaluationParameters, {CrossfadeParameters} from './evaluation_parameters';
-import type Transform from '../geo/transform';
+import type {FeatureFilter} from '../style-spec/feature_filter/index.js';
+import type {TransitionParameters, PropertyValue} from './properties.js';
+import type EvaluationParameters, {CrossfadeParameters} from './evaluation_parameters.js';
+import type Transform from '../geo/transform.js';
 import type {
     LayerSpecification,
     FilterSpecification
-} from '../style-spec/types';
-import type {CustomLayerInterface} from './style_layer/custom_style_layer';
-import type Map from '../ui/map';
-import type {StyleSetterOptions} from './style';
-import type {TilespaceQueryGeometry} from './query_geometry';
-import type {DEMSampler} from '../terrain/elevation';
+} from '../style-spec/types.js';
+import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
+import type Map from '../ui/map.js';
+import type {StyleSetterOptions} from './style.js';
+import type {TilespaceQueryGeometry} from './query_geometry.js';
+import type {DEMSampler} from '../terrain/elevation.js';
 
 const TRANSITION_SUFFIX = '-transition';
 

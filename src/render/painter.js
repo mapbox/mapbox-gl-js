@@ -1,45 +1,45 @@
 // @flow
 
-import browser from '../util/browser';
-import window from '../util/window';
+import browser from '../util/browser.js';
+import window from '../util/window.js';
 
 import {mat4} from 'gl-matrix';
-import SourceCache from '../source/source_cache';
-import EXTENT from '../data/extent';
-import pixelsToTileUnits from '../source/pixels_to_tile_units';
-import SegmentVector from '../data/segment';
-import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types';
-import {values, MAX_SAFE_INTEGER} from '../util/util';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import posAttributes from '../data/pos_attributes';
-import ProgramConfiguration from '../data/program_configuration';
-import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
-import * as shaders from '../shaders';
-import Program from './program';
-import {programUniforms} from './program/program_uniforms';
-import Context from '../gl/context';
-import DepthMode from '../gl/depth_mode';
-import StencilMode from '../gl/stencil_mode';
-import ColorMode from '../gl/color_mode';
-import CullFaceMode from '../gl/cull_face_mode';
-import Texture from './texture';
-import {clippingMaskUniformValues} from './program/clipping_mask_program';
-import Color from '../style-spec/util/color';
-import symbol from './draw_symbol';
-import circle from './draw_circle';
+import SourceCache from '../source/source_cache.js';
+import EXTENT from '../data/extent.js';
+import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
+import SegmentVector from '../data/segment.js';
+import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
+import {values, MAX_SAFE_INTEGER} from '../util/util.js';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import posAttributes from '../data/pos_attributes.js';
+import ProgramConfiguration from '../data/program_configuration.js';
+import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
+import * as shaders from '../shaders/index.js';
+import Program from './program.js';
+import {programUniforms} from './program/program_uniforms.js';
+import Context from '../gl/context.js';
+import DepthMode from '../gl/depth_mode.js';
+import StencilMode from '../gl/stencil_mode.js';
+import ColorMode from '../gl/color_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
+import Texture from './texture.js';
+import {clippingMaskUniformValues} from './program/clipping_mask_program.js';
+import Color from '../style-spec/util/color.js';
+import symbol from './draw_symbol.js';
+import circle from './draw_circle.js';
 import assert from 'assert';
-import heatmap from './draw_heatmap';
-import line from './draw_line';
-import fill from './draw_fill';
-import fillExtrusion from './draw_fill_extrusion';
-import hillshade from './draw_hillshade';
-import raster from './draw_raster';
-import background from './draw_background';
-import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug';
-import custom from './draw_custom';
-import sky from './draw_sky';
-import {Terrain} from '../terrain/terrain';
-import {Debug} from '../util/debug';
+import heatmap from './draw_heatmap.js';
+import line from './draw_line.js';
+import fill from './draw_fill.js';
+import fillExtrusion from './draw_fill_extrusion.js';
+import hillshade from './draw_hillshade.js';
+import raster from './draw_raster.js';
+import background from './draw_background.js';
+import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
+import custom from './draw_custom.js';
+import sky from './draw_sky.js';
+import {Terrain} from '../terrain/terrain.js';
+import {Debug} from '../util/debug.js';
 
 const draw = {
     symbol,
@@ -56,20 +56,20 @@ const draw = {
     custom
 };
 
-import type Transform from '../geo/transform';
-import type Tile from '../source/tile';
-import type {OverscaledTileID} from '../source/tile_id';
-import type Style from '../style/style';
-import type StyleLayer from '../style/style_layer';
-import type {CrossFaded} from '../style/properties';
-import type LineAtlas from './line_atlas';
-import type ImageManager from './image_manager';
-import type GlyphManager from './glyph_manager';
-import type VertexBuffer from '../gl/vertex_buffer';
-import type IndexBuffer from '../gl/index_buffer';
-import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
-import type ResolvedImage from '../style-spec/expression/types/resolved_image';
-import type {DynamicDefinesType} from './program/program_uniforms';
+import type Transform from '../geo/transform.js';
+import type Tile from '../source/tile.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
+import type Style from '../style/style.js';
+import type StyleLayer from '../style/style_layer.js';
+import type {CrossFaded} from '../style/properties.js';
+import type LineAtlas from './line_atlas.js';
+import type ImageManager from './image_manager.js';
+import type GlyphManager from './glyph_manager.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
+import type IndexBuffer from '../gl/index_buffer.js';
+import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types.js';
+import type ResolvedImage from '../style-spec/expression/types/resolved_image.js';
+import type {DynamicDefinesType} from './program/program_uniforms.js';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky';
 export type CanvasCopyInstances = {

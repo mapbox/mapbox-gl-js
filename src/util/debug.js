@@ -1,6 +1,6 @@
 // @flow
-import {extend} from './util';
-import window from './window';
+import {extend} from './util.js';
+import window from './window.js';
 
 /**
  * This is a private namespace for utility functions that will get automatically stripped

@@ -1,19 +1,19 @@
 // @flow
 
 import assert from 'assert';
-import {clone, extend, easeCubicInOut} from '../util/util';
-import * as interpolate from '../style-spec/util/interpolate';
-import {normalizePropertyExpression} from '../style-spec/expression';
-import Color from '../style-spec/util/color';
-import {register} from '../util/web_worker_transfer';
-import EvaluationParameters from './evaluation_parameters';
+import {clone, extend, easeCubicInOut} from '../util/util.js';
+import * as interpolate from '../style-spec/util/interpolate.js';
+import {normalizePropertyExpression} from '../style-spec/expression/index.js';
+import Color from '../style-spec/util/color.js';
+import {register} from '../util/web_worker_transfer.js';
+import EvaluationParameters from './evaluation_parameters.js';
 
-import type {CanonicalTileID} from '../source/tile_id';
-import type {StylePropertySpecification} from '../style-spec/style-spec';
+import type {CanonicalTileID} from '../source/tile_id.js';
+import type {StylePropertySpecification} from '../style-spec/style-spec.js';
 import type {
     TransitionSpecification,
     PropertyValueSpecification
-} from '../style-spec/types';
+} from '../style-spec/types.js';
 
 import type {
     Feature,
@@ -21,7 +21,7 @@ import type {
     StylePropertyExpression,
     SourceExpression,
     CompositeExpression
-} from '../style-spec/expression';
+} from '../style-spec/expression/index.js';
 
 type TimePoint = number;
 

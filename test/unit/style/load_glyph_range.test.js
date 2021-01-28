@@ -1,11 +1,11 @@
 // @flow
 
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import fs from 'fs';
 import path from 'path';
-import window from '../../../src/util/window';
-import {RequestManager} from '../../../src/util/mapbox';
-import loadGlyphRange from '../../../src/style/load_glyph_range';
+import window from '../../../src/util/window.js';
+import {RequestManager} from '../../../src/util/mapbox.js';
+import loadGlyphRange from '../../../src/style/load_glyph_range.js';
 
 test('loadGlyphRange', (t) => {
     window.useFakeXMLHttpRequest();

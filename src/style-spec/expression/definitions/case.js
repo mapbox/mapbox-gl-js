@@ -2,12 +2,12 @@
 
 import assert from 'assert';
 
-import {BooleanType} from '../types';
+import {BooleanType} from '../types.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type} from '../types.js';
 
 type Branches = Array<[Expression, Expression]>;
 

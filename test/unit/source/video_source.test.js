@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
-import VideoSource from '../../../src/source/video_source';
-import {extend} from '../../../src/util/util';
-import window from '../../../src/util/window';
+import {test} from '../../util/test.js';
+import VideoSource from '../../../src/source/video_source.js';
+import {extend} from '../../../src/util/util.js';
+import window from '../../../src/util/window.js';
 
 function createSource(options) {
 

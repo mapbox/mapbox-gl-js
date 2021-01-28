@@ -12,25 +12,25 @@ import {
     CollatorType,
     array,
     toString as typeToString
-} from '../types';
+} from '../types.js';
 
-import {typeOf, Color, validateRGBA, toString as valueToString} from '../values';
-import CompoundExpression from '../compound_expression';
-import RuntimeError from '../runtime_error';
-import Let from './let';
-import Var from './var';
-import Literal from './literal';
-import Assertion from './assertion';
-import Coercion from './coercion';
-import At from './at';
-import In from './in';
-import IndexOf from './index_of';
-import Match from './match';
-import Case from './case';
-import Slice from './slice';
-import Step from './step';
-import Interpolate from './interpolate';
-import Coalesce from './coalesce';
+import {typeOf, Color, validateRGBA, toString as valueToString} from '../values.js';
+import CompoundExpression from '../compound_expression.js';
+import RuntimeError from '../runtime_error.js';
+import Let from './let.js';
+import Var from './var.js';
+import Literal from './literal.js';
+import Assertion from './assertion.js';
+import Coercion from './coercion.js';
+import At from './at.js';
+import In from './in.js';
+import IndexOf from './index_of.js';
+import Match from './match.js';
+import Case from './case.js';
+import Slice from './slice.js';
+import Step from './step.js';
+import Interpolate from './interpolate.js';
+import Coalesce from './coalesce.js';
 import {
     Equals,
     NotEquals,
@@ -38,16 +38,16 @@ import {
     GreaterThan,
     LessThanOrEqual,
     GreaterThanOrEqual
-} from './comparison';
-import CollatorExpression from './collator';
-import NumberFormat from './number_format';
-import FormatExpression from './format';
-import ImageExpression from './image';
-import Length from './length';
-import Within from './within';
+} from './comparison.js';
+import CollatorExpression from './collator.js';
+import NumberFormat from './number_format.js';
+import FormatExpression from './format.js';
+import ImageExpression from './image.js';
+import Length from './length.js';
+import Within from './within.js';
 
-import type {Varargs} from '../compound_expression';
-import type {ExpressionRegistry} from '../expression';
+import type {Varargs} from '../compound_expression.js';
+import type {ExpressionRegistry} from '../expression.js';
 
 const expressions: ExpressionRegistry = {
     // special forms

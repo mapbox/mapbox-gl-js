@@ -1,9 +1,9 @@
 // @flow
 
-import DEMData from "./dem_data";
+import DEMData from "./dem_data.js";
 import {vec3} from 'gl-matrix';
-import {number as interpolate} from '../style-spec/util/interpolate';
-import {clamp} from '../util/util';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
+import {clamp} from '../util/util.js';
 
 type vec3Like = vec3 | [number, number, number];
 

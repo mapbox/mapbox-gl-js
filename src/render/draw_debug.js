@@ -1,16 +1,16 @@
 // @flow
 
-import DepthMode from '../gl/depth_mode';
-import StencilMode from '../gl/stencil_mode';
-import CullFaceMode from '../gl/cull_face_mode';
-import {debugUniformValues} from './program/debug_program';
-import Color from '../style-spec/util/color';
-import ColorMode from '../gl/color_mode';
-import browser from '../util/browser';
+import DepthMode from '../gl/depth_mode.js';
+import StencilMode from '../gl/stencil_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
+import {debugUniformValues} from './program/debug_program.js';
+import Color from '../style-spec/util/color.js';
+import ColorMode from '../gl/color_mode.js';
+import browser from '../util/browser.js';
 
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
 
 export default drawDebug;
 

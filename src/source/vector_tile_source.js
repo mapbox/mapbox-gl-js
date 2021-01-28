@@ -1,26 +1,26 @@
 // @flow
 
-import {Event, ErrorEvent, Evented} from '../util/evented';
+import {Event, ErrorEvent, Evented} from '../util/evented.js';
 
-import {extend, pick} from '../util/util';
-import loadTileJSON from './load_tilejson';
-import {postTurnstileEvent} from '../util/mapbox';
-import TileBounds from './tile_bounds';
-import {ResourceType} from '../util/ajax';
-import browser from '../util/browser';
-import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
-import {DedupedRequest, loadVectorTile} from './vector_tile_worker_source';
+import {extend, pick} from '../util/util.js';
+import loadTileJSON from './load_tilejson.js';
+import {postTurnstileEvent} from '../util/mapbox.js';
+import TileBounds from './tile_bounds.js';
+import {ResourceType} from '../util/ajax.js';
+import browser from '../util/browser.js';
+import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
+import {DedupedRequest, loadVectorTile} from './vector_tile_worker_source.js';
 
-import type {Source} from './source';
-import type {OverscaledTileID} from './tile_id';
-import type Map from '../ui/map';
-import type Dispatcher from '../util/dispatcher';
-import type Tile from './tile';
-import type {Callback} from '../types/callback';
-import type {Cancelable} from '../types/cancelable';
-import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
-import type Actor from '../util/actor';
-import type {LoadVectorTileResult} from './vector_tile_worker_source';
+import type {Source} from './source.js';
+import type {OverscaledTileID} from './tile_id.js';
+import type Map from '../ui/map.js';
+import type Dispatcher from '../util/dispatcher.js';
+import type Tile from './tile.js';
+import type {Callback} from '../types/callback.js';
+import type {Cancelable} from '../types/cancelable.js';
+import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
+import type Actor from '../util/actor.js';
+import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
 
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).

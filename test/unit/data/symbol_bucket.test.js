@@ -1,18 +1,18 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import fs from 'fs';
 import path from 'path';
 import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
-import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
-import {CollisionBoxArray} from '../../../src/data/array_types';
-import {performSymbolLayout} from '../../../src/symbol/symbol_layout';
-import {Placement} from '../../../src/symbol/placement';
-import Transform from '../../../src/geo/transform';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import Tile from '../../../src/source/tile';
-import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index';
-import FeatureIndex from '../../../src/data/feature_index';
-import {createSymbolBucket} from '../../util/create_symbol_layer';
+import SymbolBucket from '../../../src/data/bucket/symbol_bucket.js';
+import {CollisionBoxArray} from '../../../src/data/array_types.js';
+import {performSymbolLayout} from '../../../src/symbol/symbol_layout.js';
+import {Placement} from '../../../src/symbol/placement.js';
+import Transform from '../../../src/geo/transform.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import Tile from '../../../src/source/tile.js';
+import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index.js';
+import FeatureIndex from '../../../src/data/feature_index.js';
+import {createSymbolBucket} from '../../util/create_symbol_layer.js';
 
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));

@@ -1,18 +1,18 @@
 // @flow
 
-import StencilMode from '../gl/stencil_mode';
-import DepthMode from '../gl/depth_mode';
-import ColorMode from '../gl/color_mode';
-import CullFaceMode from '../gl/cull_face_mode';
-import Context from '../gl/context';
-import Texture from './texture';
-import Program from './program';
-import type SourceCache from '../source/source_cache';
-import SkyboxGeometry from './skybox_geometry';
-import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program';
-import {skyboxCaptureUniformValues} from './program/skybox_capture_program';
-import SkyLayer from '../style/style_layer/sky_style_layer';
-import type Painter from './painter';
+import StencilMode from '../gl/stencil_mode.js';
+import DepthMode from '../gl/depth_mode.js';
+import ColorMode from '../gl/color_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
+import Context from '../gl/context.js';
+import Texture from './texture.js';
+import Program from './program.js';
+import type SourceCache from '../source/source_cache.js';
+import SkyboxGeometry from './skybox_geometry.js';
+import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program.js';
+import {skyboxCaptureUniformValues} from './program/skybox_capture_program.js';
+import SkyLayer from '../style/style_layer/sky_style_layer.js';
+import type Painter from './painter.js';
 import {vec3, mat3, mat4} from 'gl-matrix';
 import assert from 'assert';
 

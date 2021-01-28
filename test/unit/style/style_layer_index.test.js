@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
-import {mapObject} from '../../../src/util/util';
-import StyleLayerIndex from '../../../src/style/style_layer_index';
+import {test} from '../../util/test.js';
+import {mapObject} from '../../../src/util/util.js';
+import StyleLayerIndex from '../../../src/style/style_layer_index.js';
 
 test('StyleLayerIndex#replace', (t) => {
     const index = new StyleLayerIndex([

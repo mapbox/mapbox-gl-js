@@ -5,13 +5,13 @@ import {
     Uniform1f,
     Uniform2f,
     UniformMatrix4f
-} from '../uniform_binding';
-import {extend} from '../../util/util';
-import browser from '../../util/browser';
+} from '../uniform_binding.js';
+import {extend} from '../../util/util.js';
+import browser from '../../util/browser.js';
 
-import type Context from '../../gl/context';
-import type Painter from '../painter';
-import type {UniformValues, UniformLocations} from '../uniform_binding';
+import type Context from '../../gl/context.js';
+import type Painter from '../painter.js';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 
 export type SymbolIconUniformsType = {|
     'u_is_size_zoom_constant': Uniform1i,

@@ -1,22 +1,22 @@
 // @flow
 
-import {prelude, preludeTerrain} from '../shaders';
+import {prelude, preludeTerrain} from '../shaders/index.js';
 import assert from 'assert';
-import ProgramConfiguration from '../data/program_configuration';
-import VertexArrayObject from './vertex_array_object';
-import Context from '../gl/context';
-import {terrainUniforms} from '../terrain/terrain';
-import type {TerrainUniformsType} from '../terrain/terrain';
+import ProgramConfiguration from '../data/program_configuration.js';
+import VertexArrayObject from './vertex_array_object.js';
+import Context from '../gl/context.js';
+import {terrainUniforms} from '../terrain/terrain.js';
+import type {TerrainUniformsType} from '../terrain/terrain.js';
 
-import type SegmentVector from '../data/segment';
-import type VertexBuffer from '../gl/vertex_buffer';
-import type IndexBuffer from '../gl/index_buffer';
-import type DepthMode from '../gl/depth_mode';
-import type StencilMode from '../gl/stencil_mode';
-import type ColorMode from '../gl/color_mode';
-import type CullFaceMode from '../gl/cull_face_mode';
-import type {UniformBindings, UniformValues, UniformLocations} from './uniform_binding';
-import type {BinderUniform} from '../data/program_configuration';
+import type SegmentVector from '../data/segment.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
+import type IndexBuffer from '../gl/index_buffer.js';
+import type DepthMode from '../gl/depth_mode.js';
+import type StencilMode from '../gl/stencil_mode.js';
+import type ColorMode from '../gl/color_mode.js';
+import type CullFaceMode from '../gl/cull_face_mode.js';
+import type {UniformBindings, UniformValues, UniformLocations} from './uniform_binding.js';
+import type {BinderUniform} from '../data/program_configuration.js';
 
 export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'LINES'>

@@ -1,9 +1,9 @@
-import {test} from '../../../util/test';
-import Map from '../../../../src/ui/map';
-import DOM from '../../../../src/util/dom';
-import window from '../../../../src/util/window';
-import simulate from '../../../util/simulate_interaction';
-import {extend} from '../../../../src/util/util';
+import {test} from '../../../util/test.js';
+import Map from '../../../../src/ui/map.js';
+import DOM from '../../../../src/util/dom.js';
+import window from '../../../../src/util/window.js';
+import simulate from '../../../util/simulate_interaction.js';
+import {extend} from '../../../../src/util/util.js';
 
 function createMap(t, options) {
     t.stub(Map.prototype, '_detectMissingCSS');

@@ -1,7 +1,7 @@
-import {test} from '../../../util/test';
-import window from '../../../../src/util/window';
-import {createMap} from '../../../util';
-import GeolocateControl from '../../../../src/ui/control/geolocate_control';
+import {test} from '../../../util/test.js';
+import window from '../../../../src/util/window.js';
+import {createMap} from '../../../util/index.js';
+import GeolocateControl from '../../../../src/ui/control/geolocate_control.js';
 
 // window and navigator globals need to be set for mock-geolocation
 global.window = {};

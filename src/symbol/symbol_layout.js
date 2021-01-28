@@ -1,33 +1,33 @@
 // @flow
 
-import Anchor from './anchor';
+import Anchor from './anchor.js';
 
-import {getAnchors, getCenterAnchor} from './get_anchors';
-import clipLine from './clip_line';
-import {shapeText, shapeIcon, WritingMode, fitIconToText} from './shaping';
-import {getGlyphQuads, getIconQuads} from './quads';
-import {warnOnce, degToRad} from '../util/util';
+import {getAnchors, getCenterAnchor} from './get_anchors.js';
+import clipLine from './clip_line.js';
+import {shapeText, shapeIcon, WritingMode, fitIconToText} from './shaping.js';
+import {getGlyphQuads, getIconQuads} from './quads.js';
+import {warnOnce, degToRad} from '../util/util.js';
 import {
     allowsVerticalWritingMode,
     allowsLetterSpacing
-} from '../util/script_detection';
-import findPoleOfInaccessibility from '../util/find_pole_of_inaccessibility';
-import classifyRings from '../util/classify_rings';
-import EXTENT from '../data/extent';
-import SymbolBucket from '../data/bucket/symbol_bucket';
-import EvaluationParameters from '../style/evaluation_parameters';
-import {SIZE_PACK_FACTOR} from './symbol_size';
-import ONE_EM from './one_em';
-import type {CanonicalTileID} from '../source/tile_id';
-import type {Shaping, PositionedIcon, TextJustify} from './shaping';
-import type {CollisionBoxArray} from '../data/array_types';
-import type {SymbolFeature} from '../data/bucket/symbol_bucket';
-import type {StyleImage} from '../style/style_image';
-import type {StyleGlyph} from '../style/style_glyph';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-import type {ImagePosition} from '../render/image_atlas';
-import type {GlyphPosition} from '../render/glyph_atlas';
-import type {PossiblyEvaluatedPropertyValue} from '../style/properties';
+} from '../util/script_detection.js';
+import findPoleOfInaccessibility from '../util/find_pole_of_inaccessibility.js';
+import classifyRings from '../util/classify_rings.js';
+import EXTENT from '../data/extent.js';
+import SymbolBucket from '../data/bucket/symbol_bucket.js';
+import EvaluationParameters from '../style/evaluation_parameters.js';
+import {SIZE_PACK_FACTOR} from './symbol_size.js';
+import ONE_EM from './one_em.js';
+import type {CanonicalTileID} from '../source/tile_id.js';
+import type {Shaping, PositionedIcon, TextJustify} from './shaping.js';
+import type {CollisionBoxArray} from '../data/array_types.js';
+import type {SymbolFeature} from '../data/bucket/symbol_bucket.js';
+import type {StyleImage} from '../style/style_image.js';
+import type {StyleGlyph} from '../style/style_glyph.js';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
+import type {ImagePosition} from '../render/image_atlas.js';
+import type {GlyphPosition} from '../render/glyph_atlas.js';
+import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
 
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';

@@ -1,7 +1,7 @@
 // @flow
 
-import StyleLayer from '../style_layer';
-import type Map from '../../ui/map';
+import StyleLayer from '../style_layer.js';
+import type Map from '../../ui/map.js';
 import assert from 'assert';
 
 type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => void;

@@ -1,18 +1,18 @@
 // @flow
 
-import DepthMode from '../gl/depth_mode';
-import CullFaceMode from '../gl/cull_face_mode';
-import {terrainRasterUniformValues} from './terrain_raster_program';
-import {Terrain} from './terrain';
-import Tile from '../source/tile';
+import DepthMode from '../gl/depth_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
+import {terrainRasterUniformValues} from './terrain_raster_program.js';
+import {Terrain} from './terrain.js';
+import Tile from '../source/tile.js';
 import assert from 'assert';
-import {easeCubicInOut} from '../util/util';
+import {easeCubicInOut} from '../util/util.js';
 
-import type Painter from '../render/painter';
-import type SourceCache from '../source/source_cache';
-import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
-import StencilMode from '../gl/stencil_mode';
-import ColorMode from '../gl/color_mode';
+import type Painter from '../render/painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
+import StencilMode from '../gl/stencil_mode.js';
+import ColorMode from '../gl/color_mode.js';
 
 export {
     drawTerrainRaster,

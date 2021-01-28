@@ -1,14 +1,14 @@
 // @flow
 
-import {getJSON, getImage, ResourceType} from '../util/ajax';
+import {getJSON, getImage, ResourceType} from '../util/ajax.js';
 
-import browser from '../util/browser';
-import {RGBAImage} from '../util/image';
+import browser from '../util/browser.js';
+import {RGBAImage} from '../util/image.js';
 
-import type {StyleImage} from './style_image';
-import type {RequestManager} from '../util/mapbox';
-import type {Callback} from '../types/callback';
-import type {Cancelable} from '../types/cancelable';
+import type {StyleImage} from './style_image.js';
+import type {RequestManager} from '../util/mapbox.js';
+import type {Callback} from '../types/callback.js';
+import type {Cancelable} from '../types/cancelable.js';
 
 export default function(baseURL: string,
                           requestManager: RequestManager,

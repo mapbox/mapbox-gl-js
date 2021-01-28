@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
-import LngLat from '../../../src/geo/lng_lat';
-import MercatorCoordinate, {mercatorScale} from '../../../src/geo/mercator_coordinate';
+import {test} from '../../util/test.js';
+import LngLat from '../../../src/geo/lng_lat.js';
+import MercatorCoordinate, {mercatorScale} from '../../../src/geo/mercator_coordinate.js';
 
 test('LngLat', (t) => {
     t.test('#constructor', (t) => {

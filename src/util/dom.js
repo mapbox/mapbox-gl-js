@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 
-import window from './window';
+import window from './window.js';
 import assert from 'assert';
 
 const DOM = {};

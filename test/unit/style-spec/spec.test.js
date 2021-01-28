@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 
 /* eslint-disable import/namespace */
-import * as spec from '../../../src/style-spec/style-spec';
+import * as spec from '../../../src/style-spec/style-spec.js';
 
 ['v8', 'latest'].forEach((version) => {
     ['', 'min'].forEach((kind) => {

@@ -1,4 +1,4 @@
-import ParsingError from './error/parsing_error';
+import ParsingError from './error/parsing_error.js';
 import jsonlint from '@mapbox/jsonlint-lines-primitives';
 
 export default function readStyle(style) {

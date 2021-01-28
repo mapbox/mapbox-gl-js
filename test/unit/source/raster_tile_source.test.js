@@ -1,9 +1,9 @@
-import {test} from '../../util/test';
-import RasterTileSource from '../../../src/source/raster_tile_source';
-import window from '../../../src/util/window';
-import config from '../../../src/util/config';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import {RequestManager} from '../../../src/util/mapbox';
+import {test} from '../../util/test.js';
+import RasterTileSource from '../../../src/source/raster_tile_source.js';
+import window from '../../../src/util/window.js';
+import config from '../../../src/util/config.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import {RequestManager} from '../../../src/util/mapbox.js';
 
 function createSource(options, transformCallback) {
     const source = new RasterTileSource('id', options, {send() {}}, options.eventedParent);

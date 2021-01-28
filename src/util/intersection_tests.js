@@ -1,6 +1,6 @@
 // @flow
 
-import {isCounterClockwise} from './util';
+import {isCounterClockwise} from './util.js';
 
 import Point from '@mapbox/point-geometry';
 

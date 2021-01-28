@@ -1,5 +1,5 @@
 
-import refProperties from './util/ref_properties';
+import refProperties from './util/ref_properties.js';
 
 function stringify(obj) {
     const type = typeof obj;

@@ -1,21 +1,21 @@
 // @flow
 
-import Texture from './texture';
-import StencilMode from '../gl/stencil_mode';
-import DepthMode from '../gl/depth_mode';
-import CullFaceMode from '../gl/cull_face_mode';
+import Texture from './texture.js';
+import StencilMode from '../gl/stencil_mode.js';
+import DepthMode from '../gl/depth_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
 import {
     hillshadeUniformValues,
     hillshadeUniformPrepareValues
-} from './program/hillshade_program';
+} from './program/hillshade_program.js';
 
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type Tile from '../source/tile';
-import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type Tile from '../source/tile.js';
+import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
-import DEMData from '../data/dem_data';
+import DEMData from '../data/dem_data.js';
 
 export default drawHillshade;
 

@@ -1,8 +1,8 @@
 // @flow
 
-import EXTENT from '../data/extent';
+import EXTENT from '../data/extent.js';
 
-import type {OverscaledTileID} from './tile_id';
+import type {OverscaledTileID} from './tile_id.js';
 
 /**
  * Converts a pixel value at a the given zoom level to tile units.

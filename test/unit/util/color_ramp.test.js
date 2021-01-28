@@ -1,7 +1,7 @@
 
-import {test} from '../../util/test';
-import {renderColorRamp} from '../../../src/util/color_ramp';
-import {createPropertyExpression} from '../../../src/style-spec/expression';
+import {test} from '../../util/test.js';
+import {renderColorRamp} from '../../../src/util/color_ramp.js';
+import {createPropertyExpression} from '../../../src/style-spec/expression/index.js';
 
 const spec = {
     'function': true,

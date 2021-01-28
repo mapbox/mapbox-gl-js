@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import Point from '@mapbox/point-geometry';
-import PathInterpolator from '../../../src/symbol/path_interpolator';
+import PathInterpolator from '../../../src/symbol/path_interpolator.js';
 
 test('PathInterpolator', (t) => {
 

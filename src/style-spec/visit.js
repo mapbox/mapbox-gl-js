@@ -1,14 +1,14 @@
 // @flow
 
 import Reference from './reference/v8.json';
-import type {StylePropertySpecification} from './style-spec';
+import type {StylePropertySpecification} from './style-spec.js';
 import type {
     StyleSpecification,
     SourceSpecification,
     LayerSpecification,
     PropertyValueSpecification,
     DataDrivenPropertyValueSpecification
-} from './types';
+} from './types.js';
 
 function getPropertyReference(propertyName): StylePropertySpecification {
     for (let i = 0; i < Reference.layout.length; i++) {

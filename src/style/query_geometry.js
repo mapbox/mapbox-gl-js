@@ -1,17 +1,17 @@
 // @flow
 
 import Point from '@mapbox/point-geometry';
-import {getBounds, clamp, polygonizeBounds, bufferConvexPolygon} from '../util/util';
-import {polygonIntersectsBox} from '../util/intersection_tests';
-import EXTENT from '../data/extent';
+import {getBounds, clamp, polygonizeBounds, bufferConvexPolygon} from '../util/util.js';
+import {polygonIntersectsBox} from '../util/intersection_tests.js';
+import EXTENT from '../data/extent.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import type Transform from '../geo/transform';
-import type Tile from '../source/tile';
-import pixelsToTileUnits from '../source/pixels_to_tile_units';
+import type Transform from '../geo/transform.js';
+import type Tile from '../source/tile.js';
+import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import {vec3} from 'gl-matrix';
-import {Ray} from '../util/primitives';
-import MercatorCoordinate from '../geo/mercator_coordinate';
-import type {OverscaledTileID} from '../source/tile_id';
+import {Ray} from '../util/primitives.js';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
 
 /**
  * A data-class that represents a screenspace query from `Map#queryRenderedFeatures`.

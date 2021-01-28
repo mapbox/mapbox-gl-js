@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
-import * as interpolate from '../../../src/style-spec/util/interpolate';
-import Color from '../../../src/style-spec/util/color';
+import {test} from '../../util/test.js';
+import * as interpolate from '../../../src/style-spec/util/interpolate.js';
+import Color from '../../../src/style-spec/util/color.js';
 
 test('interpolate.number', (t) => {
     t.equal(interpolate.number(0, 1, 0.5), 0.5);

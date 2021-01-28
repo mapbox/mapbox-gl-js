@@ -1,10 +1,10 @@
 // @flow
 
-import window from '../util/window';
+import window from '../util/window.js';
 
-import Dispatcher from './dispatcher';
-import getWorkerPool from './global_worker_pool';
-import {PerformanceUtils} from './performance';
+import Dispatcher from './dispatcher.js';
+import getWorkerPool from './global_worker_pool.js';
+import {PerformanceUtils} from './performance.js';
 
 const performance = window.performance;
 

@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import LineAtlas from '../../../src/render/line_atlas';
+import {test} from '../../util/test.js';
+import LineAtlas from '../../../src/render/line_atlas.js';
 
 test('LineAtlas', (t) => {
     const lineAtlas = new LineAtlas(64, 64);

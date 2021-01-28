@@ -1,6 +1,6 @@
-import SymbolBucket from '../../src/data/bucket/symbol_bucket';
-import SymbolStyleLayer from '../../src/style/style_layer/symbol_style_layer';
-import featureFilter from '../../src/style-spec/feature_filter';
+import SymbolBucket from '../../src/data/bucket/symbol_bucket.js';
+import SymbolStyleLayer from '../../src/style/style_layer/symbol_style_layer.js';
+import featureFilter from '../../src/style-spec/feature_filter/index.js';
 
 export function createSymbolBucket(layerId, font, text, collisionBoxArray) {
     const layer = new SymbolStyleLayer({

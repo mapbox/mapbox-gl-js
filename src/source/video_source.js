@@ -1,18 +1,18 @@
 // @flow
 
-import {getVideo, ResourceType} from '../util/ajax';
+import {getVideo, ResourceType} from '../util/ajax.js';
 
-import ImageSource from './image_source';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import SegmentVector from '../data/segment';
-import Texture from '../render/texture';
-import {ErrorEvent} from '../util/evented';
-import ValidationError from '../style-spec/error/validation_error';
+import ImageSource from './image_source.js';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import SegmentVector from '../data/segment.js';
+import Texture from '../render/texture.js';
+import {ErrorEvent} from '../util/evented.js';
+import ValidationError from '../style-spec/error/validation_error.js';
 
-import type Map from '../ui/map';
-import type Dispatcher from '../util/dispatcher';
-import type {Evented} from '../util/evented';
-import type {VideoSourceSpecification} from '../style-spec/types';
+import type Map from '../ui/map.js';
+import type Dispatcher from '../util/dispatcher.js';
+import type {Evented} from '../util/evented.js';
+import type {VideoSourceSpecification} from '../style-spec/types.js';
 
 /**
  * A data source containing video.

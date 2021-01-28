@@ -1,14 +1,14 @@
 
-import * as colorSpaces from '../util/color_spaces';
-import Color from '../util/color';
-import extend from '../util/extend';
-import getType from '../util/get_type';
-import * as interpolate from '../util/interpolate';
-import Interpolate from '../expression/definitions/interpolate';
-import Formatted from '../expression/types/formatted';
-import ResolvedImage from '../expression/types/resolved_image';
-import {supportsInterpolation} from '../util/properties';
-import {findStopLessThanOrEqualTo} from '../expression/stops';
+import * as colorSpaces from '../util/color_spaces.js';
+import Color from '../util/color.js';
+import extend from '../util/extend.js';
+import getType from '../util/get_type.js';
+import * as interpolate from '../util/interpolate.js';
+import Interpolate from '../expression/definitions/interpolate.js';
+import Formatted from '../expression/types/formatted.js';
+import ResolvedImage from '../expression/types/resolved_image.js';
+import {supportsInterpolation} from '../util/properties.js';
+import {findStopLessThanOrEqualTo} from '../expression/stops.js';
 
 export function isFunction(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);

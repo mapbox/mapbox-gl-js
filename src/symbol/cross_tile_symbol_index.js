@@ -1,14 +1,14 @@
 // @flow
 
-import EXTENT from '../data/extent';
+import EXTENT from '../data/extent.js';
 
-import {SymbolInstanceArray} from '../data/array_types';
+import {SymbolInstanceArray} from '../data/array_types.js';
 
-import type {SymbolInstance} from '../data/array_types';
-import type {OverscaledTileID} from '../source/tile_id';
-import type SymbolBucket from '../data/bucket/symbol_bucket';
-import type StyleLayer from '../style/style_layer';
-import type Tile from '../source/tile';
+import type {SymbolInstance} from '../data/array_types.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
+import type SymbolBucket from '../data/bucket/symbol_bucket.js';
+import type StyleLayer from '../style/style_layer.js';
+import type Tile from '../source/tile.js';
 
 /*
     The CrossTileSymbolIndex generally works on the assumption that

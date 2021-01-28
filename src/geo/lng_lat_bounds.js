@@ -1,8 +1,8 @@
 // @flow
 
-import LngLat from './lng_lat';
+import LngLat from './lng_lat.js';
 
-import type {LngLatLike} from './lng_lat';
+import type {LngLatLike} from './lng_lat.js';
 
 /**
  * A `LngLatBounds` object represents a geographical bounding box,

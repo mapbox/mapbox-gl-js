@@ -1,12 +1,12 @@
 // @flow
 
-import {RGBAImage} from '../util/image';
-import {register} from '../util/web_worker_transfer';
+import {RGBAImage} from '../util/image.js';
+import {register} from '../util/web_worker_transfer.js';
 import potpack from 'potpack';
 
-import type {StyleImage} from '../style/style_image';
-import type ImageManager from './image_manager';
-import type Texture from './texture';
+import type {StyleImage} from '../style/style_image.js';
+import type ImageManager from './image_manager.js';
+import type Texture from './texture.js';
 
 const IMAGE_PADDING: number = 1;
 export {IMAGE_PADDING};

@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import browser from '../../../src/util/browser';
+import {test} from '../../util/test.js';
+import browser from '../../../src/util/browser.js';
 
 test('browser', (t) => {
     t.test('frame', (t) => {

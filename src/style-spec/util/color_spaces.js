@@ -1,8 +1,8 @@
 // @flow
 
-import Color from './color';
+import Color from './color.js';
 
-import {number as interpolateNumber} from './interpolate';
+import {number as interpolateNumber} from './interpolate.js';
 
 type LABColor = {
     l: number,

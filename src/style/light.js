@@ -1,29 +1,28 @@
 // @flow
 
-import styleSpec from '../style-spec/reference/latest';
+import styleSpec from '../style-spec/reference/latest.js';
 
-import {endsWith, extend, degToRad} from '../util/util';
-import {Evented} from '../util/evented';
+import {endsWith, extend, degToRad} from '../util/util.js';
+import {Evented} from '../util/evented.js';
 import {
     validateStyle,
     validateLight,
     emitValidationErrors
-} from './validate_style';
-import Color from '../style-spec/util/color';
-import {number as interpolate} from '../style-spec/util/interpolate';
+} from './validate_style.js';
+import Color from '../style-spec/util/color.js';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
+import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
 
-import type {StylePropertySpecification} from '../style-spec/style-spec';
-import type EvaluationParameters from './evaluation_parameters';
-import type {StyleSetterOptions} from '../style/style';
-import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties';
-
+import type {StylePropertySpecification} from '../style-spec/style-spec.js';
+import type EvaluationParameters from './evaluation_parameters.js';
+import type {StyleSetterOptions} from '../style/style.js';
 import type {
     Property,
     PropertyValue,
     TransitionParameters
-} from './properties';
+} from './properties.js';
 
-import type {LightSpecification} from '../style-spec/types';
+import type {LightSpecification} from '../style-spec/types.js';
 
 export type LightPosition = {
     x: number,

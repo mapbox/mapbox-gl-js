@@ -1,12 +1,12 @@
 // @flow
 
-import StyleLayer from '../style_layer';
+import StyleLayer from '../style_layer.js';
 
-import properties from './background_style_layer_properties';
-import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
+import properties from './background_style_layer_properties.js';
+import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
 
-import type {PaintProps} from './background_style_layer_properties';
-import type {LayerSpecification} from '../../style-spec/types';
+import type {PaintProps} from './background_style_layer_properties.js';
+import type {LayerSpecification} from '../../style-spec/types.js';
 
 class BackgroundStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;

@@ -1,8 +1,8 @@
-import {test} from '../../util/test';
-import Anchor from '../../../src/symbol/anchor';
-import {evaluateCircleCollisionFeature, evaluateBoxCollisionFeature} from '../../../src/symbol/symbol_layout';
+import {test} from '../../util/test.js';
+import Anchor from '../../../src/symbol/anchor.js';
+import {evaluateCircleCollisionFeature, evaluateBoxCollisionFeature} from '../../../src/symbol/symbol_layout.js';
 import Point from '@mapbox/point-geometry';
-import {CollisionBoxArray} from '../../../src/data/array_types';
+import {CollisionBoxArray} from '../../../src/data/array_types.js';
 
 test('CollisionFeature', (t) => {
 

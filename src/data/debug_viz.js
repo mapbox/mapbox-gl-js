@@ -1,13 +1,13 @@
 // @flow
-import {PosArray, LineStripIndexArray} from "./array_types";
-import SegmentVector from "./segment";
-import posAttributes from './pos_attributes';
-import Color from "../style-spec/util/color";
+import {PosArray, LineStripIndexArray} from "./array_types.js";
+import SegmentVector from "./segment.js";
+import posAttributes from './pos_attributes.js';
+import Color from "../style-spec/util/color.js";
 
-import type VertexBuffer from "../gl/vertex_buffer";
-import type IndexBuffer from "../gl/index_buffer";
+import type VertexBuffer from "../gl/vertex_buffer.js";
+import type IndexBuffer from "../gl/index_buffer.js";
 import type Point from '@mapbox/point-geometry';
-import type Context from "../gl/context";
+import type Context from "../gl/context.js";
 
 /**
  * Helper class that can be used to draw debug geometry in tile-space

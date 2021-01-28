@@ -1,8 +1,8 @@
 // @flow
 
-import {TapRecognizer} from './tap_recognizer';
+import {TapRecognizer} from './tap_recognizer.js';
 import type Point from '@mapbox/point-geometry';
-import type Map from '../map';
+import type Map from '../map.js';
 
 export default class TapZoomHandler {
 

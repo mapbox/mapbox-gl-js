@@ -1,11 +1,11 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import {
     Uniform1i,
     Uniform1f,
     Uniform2f,
     Uniform3f,
     Uniform4f
-} from '../../../src/render/uniform_binding';
+} from '../../../src/render/uniform_binding.js';
 
 test('Uniform1i', (t) => {
     // test counts ensure we don't call the gl.uniform* setters more than expected

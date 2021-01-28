@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import LngLat from '../../../src/geo/lng_lat';
+import {test} from '../../util/test.js';
+import LngLat from '../../../src/geo/lng_lat.js';
 
 test('LngLat', (t) => {
     t.test('#constructor', (t) => {

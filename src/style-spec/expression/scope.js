@@ -1,6 +1,6 @@
 // @flow
 
-import type {Expression} from './expression';
+import type {Expression} from './expression.js';
 
 /**
  * Tracks `let` bindings during expression parsing.

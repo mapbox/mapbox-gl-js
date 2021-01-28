@@ -1,12 +1,12 @@
 // @flow
 
-import type {StyleSpecification} from '../../src/style-spec/types';
-import Benchmark from '../lib/benchmark';
-import fetchStyle from '../lib/fetch_style';
-import TileParser from '../lib/tile_parser';
-import {OverscaledTileID} from '../../src/source/tile_id';
-import {serialize, deserialize} from '../../src/util/web_worker_transfer';
-import {values} from '../../src/util/util';
+import type {StyleSpecification} from '../../src/style-spec/types.js';
+import Benchmark from '../lib/benchmark.js';
+import fetchStyle from '../lib/fetch_style.js';
+import TileParser from '../lib/tile_parser.js';
+import {OverscaledTileID} from '../../src/source/tile_id.js';
+import {serialize, deserialize} from '../../src/util/web_worker_transfer.js';
+import {values} from '../../src/util/util.js';
 
 export default class WorkerTransfer extends Benchmark {
     parser: TileParser;

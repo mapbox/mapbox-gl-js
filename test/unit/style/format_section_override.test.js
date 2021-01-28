@@ -1,9 +1,9 @@
-import {test} from '../../util/test';
-import {createExpression, ZoomConstantExpression} from '../../../src/style-spec/expression';
-import EvaluationContext from '../../../src/style-spec/expression/evaluation_context';
-import properties from '../../../src/style/style_layer/symbol_style_layer_properties';
-import {PossiblyEvaluatedPropertyValue} from '../../../src/style/properties';
-import FormatSectionOverride from '../../../src/style/format_section_override';
+import {test} from '../../util/test.js';
+import {createExpression, ZoomConstantExpression} from '../../../src/style-spec/expression/index.js';
+import EvaluationContext from '../../../src/style-spec/expression/evaluation_context.js';
+import properties from '../../../src/style/style_layer/symbol_style_layer_properties.js';
+import {PossiblyEvaluatedPropertyValue} from '../../../src/style/properties.js';
+import FormatSectionOverride from '../../../src/style/format_section_override.js';
 
 test('evaluate', (t) => {
 

@@ -1,9 +1,9 @@
 // @flow
-import {RGBAImage} from '../util/image';
+import {RGBAImage} from '../util/image.js';
 
-import {warnOnce, clamp} from '../util/util';
-import {register} from '../util/web_worker_transfer';
-import DemMinMaxQuadTree from './dem_tree';
+import {warnOnce, clamp} from '../util/util.js';
+import {register} from '../util/web_worker_transfer.js';
+import DemMinMaxQuadTree from './dem_tree.js';
 import assert from 'assert';
 
 // DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders

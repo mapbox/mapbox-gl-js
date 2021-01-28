@@ -1,13 +1,13 @@
-import {test} from '../../util/test';
-import Camera from '../../../src/ui/camera';
-import {FreeCameraOptions} from '../../../src/ui/free_camera';
-import Transform from '../../../src/geo/transform';
-import TaskQueue from '../../../src/util/task_queue';
-import browser from '../../../src/util/browser';
-import {fixedLngLat, fixedNum, fixedVec3} from '../../util/fixed';
-import {equalWithPrecision} from '../../util';
-import MercatorCoordinate from '../../../src/geo/mercator_coordinate';
-import LngLat from '../../../src/geo/lng_lat';
+import {test} from '../../util/test.js';
+import Camera from '../../../src/ui/camera.js';
+import {FreeCameraOptions} from '../../../src/ui/free_camera.js';
+import Transform from '../../../src/geo/transform.js';
+import TaskQueue from '../../../src/util/task_queue.js';
+import browser from '../../../src/util/browser.js';
+import {fixedLngLat, fixedNum, fixedVec3} from '../../util/fixed.js';
+import {equalWithPrecision} from '../../util/index.js';
+import MercatorCoordinate from '../../../src/geo/mercator_coordinate.js';
+import LngLat from '../../../src/geo/lng_lat.js';
 import {vec3, quat} from 'gl-matrix';
 
 test('camera', (t) => {

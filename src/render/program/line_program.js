@@ -6,19 +6,19 @@ import {
     Uniform2f,
     Uniform3f,
     UniformMatrix4f
-} from '../uniform_binding';
-import pixelsToTileUnits from '../../source/pixels_to_tile_units';
-import {extend} from '../../util/util';
-import browser from '../../util/browser';
+} from '../uniform_binding.js';
+import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
+import {extend} from '../../util/util.js';
+import browser from '../../util/browser.js';
 
-import type Context from '../../gl/context';
-import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type Transform from '../../geo/transform';
-import type Tile from '../../source/tile';
-import type {CrossFaded} from '../../style/properties';
-import type LineStyleLayer from '../../style/style_layer/line_style_layer';
-import type Painter from '../painter';
-import type {CrossfadeParameters} from '../../style/evaluation_parameters';
+import type Context from '../../gl/context.js';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type Transform from '../../geo/transform.js';
+import type Tile from '../../source/tile.js';
+import type {CrossFaded} from '../../style/properties.js';
+import type LineStyleLayer from '../../style/style_layer/line_style_layer.js';
+import type Painter from '../painter.js';
+import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
 
 export type LineUniformsType = {|
     'u_matrix': UniformMatrix4f,

@@ -1,7 +1,7 @@
 // @flow
 
 import assert from 'assert';
-import type {StylePropertySpecification} from '../style-spec';
+import type {StylePropertySpecification} from '../style-spec.js';
 
 export default convertFunction;
 

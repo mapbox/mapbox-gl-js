@@ -1,21 +1,21 @@
 // @flow
 
-import LngLat from './lng_lat';
-import LngLatBounds from './lng_lat_bounds';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate';
+import LngLat from './lng_lat.js';
+import LngLatBounds from './lng_lat_bounds.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, radToDeg, degToRad} from '../util/util';
-import {number as interpolate} from '../style-spec/util/interpolate';
-import EXTENT from '../data/extent';
+import {wrap, clamp, radToDeg, degToRad} from '../util/util.js';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
+import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
 import {Aabb, Frustum, Ray} from '../util/primitives.js';
-import EdgeInsets from './edge_insets';
-import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
+import EdgeInsets from './edge_insets.js';
+import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
 
-import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id';
-import type {Elevation} from '../terrain/elevation';
-import type {PaddingOptions} from './edge_insets';
+import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
+import type {Elevation} from '../terrain/elevation.js';
+import type {PaddingOptions} from './edge_insets.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;

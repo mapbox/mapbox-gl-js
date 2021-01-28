@@ -1,5 +1,5 @@
-import DEMData from '../../src/data/dem_data';
-import {RGBAImage} from '../../src/util/image';
+import DEMData from '../../src/data/dem_data.js';
+import {RGBAImage} from '../../src/util/image.js';
 
 export function createConstElevationDEM(elevation, tileSize) {
     const pixelCount = (tileSize + 2) * (tileSize + 2);

@@ -1,36 +1,36 @@
 // @flow
 
-import {FillLayoutArray} from '../array_types';
+import {FillLayoutArray} from '../array_types.js';
 
-import {members as layoutAttributes} from './fill_attributes';
-import SegmentVector from '../segment';
-import {ProgramConfigurationSet} from '../program_configuration';
-import {LineIndexArray, TriangleIndexArray} from '../index_array_type';
+import {members as layoutAttributes} from './fill_attributes.js';
+import SegmentVector from '../segment.js';
+import {ProgramConfigurationSet} from '../program_configuration.js';
+import {LineIndexArray, TriangleIndexArray} from '../index_array_type.js';
 import earcut from 'earcut';
-import classifyRings from '../../util/classify_rings';
+import classifyRings from '../../util/classify_rings.js';
 import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
-import {register} from '../../util/web_worker_transfer';
-import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
-import loadGeometry from '../load_geometry';
-import toEvaluationFeature from '../evaluation_feature';
-import EvaluationParameters from '../../style/evaluation_parameters';
+import {register} from '../../util/web_worker_transfer.js';
+import {hasPattern, addPatternDependencies} from './pattern_bucket_features.js';
+import loadGeometry from '../load_geometry.js';
+import toEvaluationFeature from '../evaluation_feature.js';
+import EvaluationParameters from '../../style/evaluation_parameters.js';
 
-import type {CanonicalTileID} from '../../source/tile_id';
+import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
     BucketFeature,
     IndexedFeature,
     PopulateParameters
-} from '../bucket';
-import type FillStyleLayer from '../../style/style_layer/fill_style_layer';
-import type Context from '../../gl/context';
-import type IndexBuffer from '../../gl/index_buffer';
-import type VertexBuffer from '../../gl/vertex_buffer';
+} from '../bucket.js';
+import type FillStyleLayer from '../../style/style_layer/fill_style_layer.js';
+import type Context from '../../gl/context.js';
+import type IndexBuffer from '../../gl/index_buffer.js';
+import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Point from '@mapbox/point-geometry';
-import type {FeatureStates} from '../../source/source_state';
-import type {ImagePosition} from '../../render/image_atlas';
+import type {FeatureStates} from '../../source/source_state.js';
+import type {ImagePosition} from '../../render/image_atlas.js';
 
 class FillBucket implements Bucket {
     index: number;

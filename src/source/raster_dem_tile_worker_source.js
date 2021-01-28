@@ -1,11 +1,11 @@
 // @flow
 
-import DEMData from '../data/dem_data';
-import {RGBAImage} from '../util/image';
-import window from '../util/window';
+import DEMData from '../data/dem_data.js';
+import {RGBAImage} from '../util/image.js';
+import window from '../util/window.js';
 
-import type Actor from '../util/actor';
-import type {WorkerDEMTileParameters, WorkerDEMTileCallback} from './worker_source';
+import type Actor from '../util/actor.js';
+import type {WorkerDEMTileParameters, WorkerDEMTileCallback} from './worker_source.js';
 const {ImageBitmap} = window;
 
 class RasterDEMTileWorkerSource {

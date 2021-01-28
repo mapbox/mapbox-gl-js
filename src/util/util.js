@@ -3,10 +3,10 @@
 import UnitBezier from '@mapbox/unitbezier';
 
 import Point from '@mapbox/point-geometry';
-import window from './window';
+import window from './window.js';
 import assert from 'assert';
 
-import type {Callback} from '../types/callback';
+import type {Callback} from '../types/callback.js';
 
 // Number.MAX_SAFE_INTEGER not available in IE
 export const MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
@@ -420,7 +420,7 @@ export function filterObject(input: Object, iterator: Function, context?: Object
     return output;
 }
 
-import deepEqual from '../style-spec/util/deep_equal';
+import deepEqual from '../style-spec/util/deep_equal.js';
 export {deepEqual};
 
 /**

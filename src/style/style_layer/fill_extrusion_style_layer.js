@@ -1,22 +1,22 @@
 // @flow
 
-import StyleLayer from '../style_layer';
-import FillExtrusionBucket, {ELEVATION_SCALE} from '../../data/bucket/fill_extrusion_bucket';
-import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
-import {translateDistance, tilespaceTranslate} from '../query_utils';
-import properties from './fill_extrusion_style_layer_properties';
-import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
+import StyleLayer from '../style_layer.js';
+import FillExtrusionBucket, {ELEVATION_SCALE} from '../../data/bucket/fill_extrusion_bucket.js';
+import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests.js';
+import {translateDistance, tilespaceTranslate} from '../query_utils.js';
+import properties from './fill_extrusion_style_layer_properties.js';
+import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
 import Point from '@mapbox/point-geometry';
-import ProgramConfiguration from '../../data/program_configuration';
+import ProgramConfiguration from '../../data/program_configuration.js';
 import {vec2, vec3} from 'gl-matrix';
 
-import type {FeatureState} from '../../style-spec/expression';
-import type {BucketParameters} from '../../data/bucket';
-import type {PaintProps} from './fill_extrusion_style_layer_properties';
-import type Transform from '../../geo/transform';
-import type {LayerSpecification} from '../../style-spec/types';
-import type {TilespaceQueryGeometry} from '../query_geometry';
-import type {DEMSampler} from '../../terrain/elevation';
+import type {FeatureState} from '../../style-spec/expression/index.js';
+import type {BucketParameters} from '../../data/bucket.js';
+import type {PaintProps} from './fill_extrusion_style_layer_properties.js';
+import type Transform from '../../geo/transform.js';
+import type {LayerSpecification} from '../../style-spec/types.js';
+import type {TilespaceQueryGeometry} from '../query_geometry.js';
+import type {DEMSampler} from '../../terrain/elevation.js';
 import type {vec4} from 'gl-matrix';
 
 class FillExtrusionStyleLayer extends StyleLayer {

@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import Anchor from '../../../src/symbol/anchor';
+import {test} from '../../util/test.js';
+import Anchor from '../../../src/symbol/anchor.js';
 
 test('Anchor', (t) => {
     t.test('#constructor', (t) => {

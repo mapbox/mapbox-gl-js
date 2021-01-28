@@ -1,28 +1,28 @@
 // @flow
 
-import {extend, pick} from '../util/util';
+import {extend, pick} from '../util/util.js';
 
-import {getImage, ResourceType} from '../util/ajax';
-import {Event, ErrorEvent, Evented} from '../util/evented';
-import loadTileJSON from './load_tilejson';
-import {postTurnstileEvent} from '../util/mapbox';
-import TileBounds from './tile_bounds';
-import Texture from '../render/texture';
-import browser from '../util/browser';
+import {getImage, ResourceType} from '../util/ajax.js';
+import {Event, ErrorEvent, Evented} from '../util/evented.js';
+import loadTileJSON from './load_tilejson.js';
+import {postTurnstileEvent} from '../util/mapbox.js';
+import TileBounds from './tile_bounds.js';
+import Texture from '../render/texture.js';
+import browser from '../util/browser.js';
 
-import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
+import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 
-import type {Source} from './source';
-import type {OverscaledTileID} from './tile_id';
-import type Map from '../ui/map';
-import type Dispatcher from '../util/dispatcher';
-import type Tile from './tile';
-import type {Callback} from '../types/callback';
-import type {Cancelable} from '../types/cancelable';
+import type {Source} from './source.js';
+import type {OverscaledTileID} from './tile_id.js';
+import type Map from '../ui/map.js';
+import type Dispatcher from '../util/dispatcher.js';
+import type Tile from './tile.js';
+import type {Callback} from '../types/callback.js';
+import type {Cancelable} from '../types/cancelable.js';
 import type {
     RasterSourceSpecification,
     RasterDEMSourceSpecification
-} from '../style-spec/types';
+} from '../style-spec/types.js';
 
 class RasterTileSource extends Evented implements Source {
     type: 'raster' | 'raster-dem';

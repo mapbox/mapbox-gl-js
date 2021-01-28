@@ -1,9 +1,9 @@
 // @flow
 import assert from 'assert';
 
-import type {StructArray} from '../util/struct_array';
-import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type';
-import type Context from '../gl/context';
+import type {StructArray} from '../util/struct_array.js';
+import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type.js';
+import type Context from '../gl/context.js';
 
 class IndexBuffer {
     context: Context;

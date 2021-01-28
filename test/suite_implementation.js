@@ -1,16 +1,16 @@
 import {PNG} from 'pngjs';
-import Map from '../src/ui/map';
-import config from '../src/util/config';
-import window from '../src/util/window';
-import browser from '../src/util/browser';
-import {plugin as rtlTextPlugin} from '../src/source/rtl_text_plugin';
+import Map from '../src/ui/map.js';
+import config from '../src/util/config.js';
+import window from '../src/util/window.js';
+import browser from '../src/util/browser.js';
+import {plugin as rtlTextPlugin} from '../src/source/rtl_text_plugin.js';
 import rtlText from '@mapbox/mapbox-gl-rtl-text';
 import fs from 'fs';
 import path from 'path';
-import customLayerImplementations from './integration/custom_layer_implementations';
-import MercatorCoordinate, {mercatorZfromAltitude} from '../src/geo/mercator_coordinate';
-import LngLat from '../src/geo/lng_lat';
-import {clamp} from '../src/util/util';
+import customLayerImplementations from './integration/custom_layer_implementations.js';
+import MercatorCoordinate, {mercatorZfromAltitude} from '../src/geo/mercator_coordinate.js';
+import LngLat from '../src/geo/lng_lat.js';
+import {clamp} from '../src/util/util.js';
 import {vec3, vec4} from 'gl-matrix';
 
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;

@@ -1,11 +1,11 @@
 
-import ValidationError from '../error/validation_error';
-import {unbundle} from '../util/unbundle_jsonlint';
-import validateObject from './validate_object';
-import validateEnum from './validate_enum';
-import validateExpression from './validate_expression';
-import validateString from './validate_string';
-import getType from '../util/get_type';
+import ValidationError from '../error/validation_error.js';
+import {unbundle} from '../util/unbundle_jsonlint.js';
+import validateObject from './validate_object.js';
+import validateEnum from './validate_enum.js';
+import validateExpression from './validate_expression.js';
+import validateString from './validate_string.js';
+import getType from '../util/get_type.js';
 
 const objectElementValidators = {
     promoteId: validatePromoteId

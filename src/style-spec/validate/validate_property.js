@@ -1,10 +1,10 @@
 
-import validate from './validate';
-import ValidationError from '../error/validation_error';
-import getType from '../util/get_type';
-import {isFunction} from '../function';
-import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
-import {supportsPropertyExpression} from '../util/properties';
+import validate from './validate.js';
+import ValidationError from '../error/validation_error.js';
+import getType from '../util/get_type.js';
+import {isFunction} from '../function/index.js';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
+import {supportsPropertyExpression} from '../util/properties.js';
 
 export default function validateProperty(options, propertyType) {
     const key = options.key;

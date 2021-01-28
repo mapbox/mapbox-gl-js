@@ -2,13 +2,13 @@
 
 import assert from 'assert';
 
-import Color from '../util/color';
-import Collator from './types/collator';
-import Formatted from './types/formatted';
-import ResolvedImage from './types/resolved_image';
-import {NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, CollatorType, FormattedType, ResolvedImageType, array} from './types';
+import Color from '../util/color.js';
+import Collator from './types/collator.js';
+import Formatted from './types/formatted.js';
+import ResolvedImage from './types/resolved_image.js';
+import {NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, CollatorType, FormattedType, ResolvedImageType, array} from './types.js';
 
-import type {Type} from './types';
+import type {Type} from './types.js';
 
 export function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): string | null {
     if (!(

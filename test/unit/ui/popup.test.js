@@ -1,10 +1,10 @@
-import {test} from '../../util/test';
-import window from '../../../src/util/window';
-import {createMap as globalCreateMap} from '../../util';
-import Popup from '../../../src/ui/popup';
-import LngLat from '../../../src/geo/lng_lat';
+import {test} from '../../util/test.js';
+import window from '../../../src/util/window.js';
+import {createMap as globalCreateMap} from '../../util/index.js';
+import Popup from '../../../src/ui/popup.js';
+import LngLat from '../../../src/geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
-import simulate from '../../util/simulate_interaction';
+import simulate from '../../util/simulate_interaction.js';
 
 const containerWidth = 512;
 const containerHeight = 512;

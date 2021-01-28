@@ -2,7 +2,7 @@
 
 import quickselect from 'quickselect';
 
-import {calculateSignedArea} from './util';
+import {calculateSignedArea} from './util.js';
 
 import type Point from '@mapbox/point-geometry';
 

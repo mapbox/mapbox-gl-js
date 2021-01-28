@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import EdgeInsets from '../../../src/geo/edge_insets';
+import {test} from '../../util/test.js';
+import EdgeInsets from '../../../src/geo/edge_insets.js';
 
 test('EdgeInsets', (t) => {
     t.test('#constructor', (t) => {

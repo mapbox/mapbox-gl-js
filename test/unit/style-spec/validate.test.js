@@ -1,8 +1,8 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import glob from 'glob';
 import fs from 'fs';
 import path from 'path';
-import validate from '../../../src/style-spec/validate_style';
+import validate from '../../../src/style-spec/validate_style.js';
 
 const UPDATE = !!process.env.UPDATE;
 
@@ -20,7 +20,7 @@ glob.sync(`${__dirname}/fixture/*.input.json`).forEach((file) => {
 
 const fixtures = glob.sync(`${__dirname}/fixture/*.input.json`);
 const style = JSON.parse(fs.readFileSync(fixtures[0]));
-import reference from '../../../src/style-spec/reference/latest';
+import reference from '../../../src/style-spec/reference/latest.js';
 
 test('validate.parsed exists', (t) => {
     t.equal(typeof validate.parsed, 'function');

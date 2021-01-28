@@ -1,14 +1,14 @@
-import {test} from '../../../util/test';
-import browser from '../../../../src/util/browser';
-import window from '../../../../src/util/window';
-import Map from '../../../../src/ui/map';
-import DOM from '../../../../src/util/dom';
-import simulate from '../../../util/simulate_interaction';
-import {equalWithPrecision} from '../../../util';
+import {test} from '../../../util/test.js';
+import browser from '../../../../src/util/browser.js';
+import window from '../../../../src/util/window.js';
+import Map from '../../../../src/ui/map.js';
+import DOM from '../../../../src/util/dom.js';
+import simulate from '../../../util/simulate_interaction.js';
+import {equalWithPrecision} from '../../../util/index.js';
 import sinon from 'sinon';
-import {createConstElevationDEM, setMockElevationTerrain} from '../../../util/dem_mock';
-import {fixedNum} from '../../../util/fixed';
-import MercatorCoordinate from '../../../../src/geo/mercator_coordinate';
+import {createConstElevationDEM, setMockElevationTerrain} from '../../../util/dem_mock.js';
+import {fixedNum} from '../../../util/fixed.js';
+import MercatorCoordinate from '../../../../src/geo/mercator_coordinate.js';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');

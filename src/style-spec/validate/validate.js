@@ -1,26 +1,26 @@
 
-import extend from '../util/extend';
-import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
-import {isExpression} from '../expression';
-import {isFunction} from '../function';
+import extend from '../util/extend.js';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
+import {isExpression} from '../expression/index.js';
+import {isFunction} from '../function/index.js';
 
-import validateFunction from './validate_function';
-import validateExpression from './validate_expression';
-import validateObject from './validate_object';
-import validateArray from './validate_array';
-import validateBoolean from './validate_boolean';
-import validateNumber from './validate_number';
-import validateColor from './validate_color';
-import validateConstants from './validate_constants';
-import validateEnum from './validate_enum';
-import validateFilter from './validate_filter';
-import validateLayer from './validate_layer';
-import validateSource from './validate_source';
-import validateLight from './validate_light';
-import validateTerrain from './validate_terrain';
-import validateString from './validate_string';
-import validateFormatted from './validate_formatted';
-import validateImage from './validate_image';
+import validateFunction from './validate_function.js';
+import validateExpression from './validate_expression.js';
+import validateObject from './validate_object.js';
+import validateArray from './validate_array.js';
+import validateBoolean from './validate_boolean.js';
+import validateNumber from './validate_number.js';
+import validateColor from './validate_color.js';
+import validateConstants from './validate_constants.js';
+import validateEnum from './validate_enum.js';
+import validateFilter from './validate_filter.js';
+import validateLayer from './validate_layer.js';
+import validateSource from './validate_source.js';
+import validateLight from './validate_light.js';
+import validateTerrain from './validate_terrain.js';
+import validateString from './validate_string.js';
+import validateFormatted from './validate_formatted.js';
+import validateImage from './validate_image.js';
 
 const VALIDATORS = {
     '*'() {

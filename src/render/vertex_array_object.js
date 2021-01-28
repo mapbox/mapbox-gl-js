@@ -2,10 +2,10 @@
 
 import assert from 'assert';
 
-import type Program from './program';
-import type VertexBuffer from '../gl/vertex_buffer';
-import type IndexBuffer from '../gl/index_buffer';
-import type Context from '../gl/context';
+import type Program from './program.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
+import type IndexBuffer from '../gl/index_buffer.js';
+import type Context from '../gl/context.js';
 
 class VertexArrayObject {
     context: Context;

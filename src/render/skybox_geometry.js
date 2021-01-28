@@ -1,11 +1,11 @@
 // @flow
 
-import {members as skyboxAttributes} from './skybox_attributes';
-import {SkyboxVertexArray, TriangleIndexArray} from '../data/array_types';
-import SegmentVector from '../data/segment';
-import type IndexBuffer from '../gl/index_buffer';
-import type VertexBuffer from '../gl/vertex_buffer';
-import type Context from '../gl/context';
+import {members as skyboxAttributes} from './skybox_attributes.js';
+import {SkyboxVertexArray, TriangleIndexArray} from '../data/array_types.js';
+import SegmentVector from '../data/segment.js';
+import type IndexBuffer from '../gl/index_buffer.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
+import type Context from '../gl/context.js';
 
 function addVertex(vertexArray, x, y, z) {
     vertexArray.emplaceBack(

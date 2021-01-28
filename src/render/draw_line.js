@@ -1,23 +1,23 @@
 // @flow
 
-import DepthMode from '../gl/depth_mode';
-import CullFaceMode from '../gl/cull_face_mode';
-import Texture from './texture';
+import DepthMode from '../gl/depth_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
+import Texture from './texture.js';
 import {
     lineUniformValues,
     linePatternUniformValues,
     lineSDFUniformValues,
     lineGradientUniformValues
-} from './program/line_program';
+} from './program/line_program.js';
 
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type LineStyleLayer from '../style/style_layer/line_style_layer';
-import type LineBucket from '../data/bucket/line_bucket';
-import type {OverscaledTileID} from '../source/tile_id';
-import {clamp, nextPowerOfTwo} from '../util/util';
-import {renderColorRamp} from '../util/color_ramp';
-import EXTENT from '../data/extent';
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type LineStyleLayer from '../style/style_layer/line_style_layer.js';
+import type LineBucket from '../data/bucket/line_bucket.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
+import {clamp, nextPowerOfTwo} from '../util/util.js';
+import {renderColorRamp} from '../util/color_ramp.js';
+import EXTENT from '../data/extent.js';
 
 export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;

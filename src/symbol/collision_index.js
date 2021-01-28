@@ -1,23 +1,23 @@
 // @flow
 
 import Point from '@mapbox/point-geometry';
-import clipLine from './clip_line';
-import PathInterpolator from './path_interpolator';
+import clipLine from './clip_line.js';
+import PathInterpolator from './path_interpolator.js';
 
-import * as intersectionTests from '../util/intersection_tests';
-import Grid from './grid_index';
+import * as intersectionTests from '../util/intersection_tests.js';
+import Grid from './grid_index.js';
 import {mat4, vec4} from 'gl-matrix';
-import ONE_EM from '../symbol/one_em';
+import ONE_EM from '../symbol/one_em.js';
 import assert from 'assert';
 
-import * as projection from '../symbol/projection';
-import type Transform from '../geo/transform';
-import type {SingleCollisionBox} from '../data/bucket/symbol_bucket';
+import * as projection from '../symbol/projection.js';
+import type Transform from '../geo/transform.js';
+import type {SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
 import type {
     GlyphOffsetArray,
     SymbolLineVertexArray
-} from '../data/array_types';
-import {OverscaledTileID} from '../source/tile_id';
+} from '../data/array_types.js';
+import {OverscaledTileID} from '../source/tile_id.js';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around

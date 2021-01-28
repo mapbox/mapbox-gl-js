@@ -1,23 +1,23 @@
 // @flow
 
-import Tile from './tile';
-import {Event, ErrorEvent, Evented} from '../util/evented';
-import TileCache from './tile_cache';
-import {keysDifference, values} from '../util/util';
-import Context from '../gl/context';
+import Tile from './tile.js';
+import {Event, ErrorEvent, Evented} from '../util/evented.js';
+import TileCache from './tile_cache.js';
+import {keysDifference, values} from '../util/util.js';
+import Context from '../gl/context.js';
 import Point from '@mapbox/point-geometry';
-import browser from '../util/browser';
-import {OverscaledTileID} from './tile_id';
+import browser from '../util/browser.js';
+import {OverscaledTileID} from './tile_id.js';
 import assert from 'assert';
-import SourceFeatureState from './source_state';
+import SourceFeatureState from './source_state.js';
 
-import type {Source} from './source';
-import type Map from '../ui/map';
-import type Style from '../style/style';
-import type Transform from '../geo/transform';
-import type {TileState} from './tile';
-import type {Callback} from '../types/callback';
-import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
+import type {Source} from './source.js';
+import type Map from '../ui/map.js';
+import type Style from '../style/style.js';
+import type Transform from '../geo/transform.js';
+import type {TileState} from './tile.js';
+import type {Callback} from '../types/callback.js';
+import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry.js';
 
 /**
  * `SourceCache` is responsible for

@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import Point from '@mapbox/point-geometry';
-import clipLine from '../../../src/symbol/clip_line';
+import clipLine from '../../../src/symbol/clip_line.js';
 
 test('clipLines', (t) => {
 

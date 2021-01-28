@@ -1,21 +1,21 @@
 // @flow
-import IndexBuffer from './index_buffer';
+import IndexBuffer from './index_buffer.js';
 
-import VertexBuffer from './vertex_buffer';
-import Framebuffer from './framebuffer';
-import DepthMode from './depth_mode';
-import StencilMode from './stencil_mode';
-import ColorMode from './color_mode';
-import CullFaceMode from './cull_face_mode';
-import {deepEqual} from '../util/util';
-import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, BlendEquation, CullFace, CullFaceSide, FrontFace, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY} from './value';
+import VertexBuffer from './vertex_buffer.js';
+import Framebuffer from './framebuffer.js';
+import DepthMode from './depth_mode.js';
+import StencilMode from './stencil_mode.js';
+import ColorMode from './color_mode.js';
+import CullFaceMode from './cull_face_mode.js';
+import {deepEqual} from '../util/util.js';
+import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, BlendEquation, CullFace, CullFaceSide, FrontFace, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY} from './value.js';
 
-import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type';
+import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type.js';
 import type {
     StructArray,
     StructArrayMember
-} from '../util/struct_array';
-import type Color from '../style-spec/util/color';
+} from '../util/struct_array.js';
+import type Color from '../style-spec/util/color.js';
 
 type ClearArgs = {
     color?: Color,

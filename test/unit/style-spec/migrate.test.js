@@ -1,13 +1,13 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import fs from 'fs';
 import glob from 'glob';
 import path from 'path';
-import validate from '../../../src/style-spec/validate_style';
-import v8 from '../../../src/style-spec/reference/v8';
-import migrate from '../../../src/style-spec/migrate';
+import validate from '../../../src/style-spec/validate_style.js';
+import v8 from '../../../src/style-spec/reference/v8.json';
+import migrate from '../../../src/style-spec/migrate.js';
 
 /* eslint-disable import/namespace */
-import * as spec from '../../../src/style-spec/style-spec';
+import * as spec from '../../../src/style-spec/style-spec.js';
 
 const UPDATE = !!process.env.UPDATE;
 

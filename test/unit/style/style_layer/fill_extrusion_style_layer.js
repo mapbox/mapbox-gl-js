@@ -1,5 +1,5 @@
-import {test} from '../../../util/test';
-import {getIntersectionDistance} from '../../../../src/style/style_layer/fill_extrusion_style_layer';
+import {test} from '../../../util/test.js';
+import {getIntersectionDistance} from '../../../../src/style/style_layer/fill_extrusion_style_layer.js';
 import Point from '@mapbox/point-geometry';
 
 test('getIntersectionDistance', (t) => {

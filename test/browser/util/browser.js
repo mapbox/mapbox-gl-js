@@ -6,12 +6,12 @@ import http from 'http';
 import webdriver from 'selenium-webdriver';
 const {Builder, By} = webdriver;
 
-import chrome from 'selenium-webdriver/chrome';
-import firefox from 'selenium-webdriver/firefox';
-import safari from 'selenium-webdriver/safari';
+import chrome from 'selenium-webdriver/chrome.js';
+import firefox from 'selenium-webdriver/firefox.js';
+import safari from 'selenium-webdriver/safari.js';
 
-import doubleClick from './doubleclick';
-import mouseWheel from './mousewheel';
+import doubleClick from './doubleclick.js';
+import mouseWheel from './mousewheel.js';
 
 const defaultViewportSize = {width: 800, height: 600};
 

@@ -1,5 +1,5 @@
 
-import validateStyle from '../validate_style.min';
+import validateStyle from '../validate_style.min.js';
 
 /*
  * Validate a style against the latest specification. This method is optimized

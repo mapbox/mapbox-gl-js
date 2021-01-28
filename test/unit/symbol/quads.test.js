@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import {getIconQuads} from '../../../src/symbol/quads';
+import {test} from '../../util/test.js';
+import {getIconQuads} from '../../../src/symbol/quads.js';
 
 test('getIconQuads', (t) => {
     const image = Object.freeze({

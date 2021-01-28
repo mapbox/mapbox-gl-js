@@ -1,11 +1,11 @@
-import {run} from './integration/lib/expression';
-import {createPropertyExpression} from '../src/style-spec/expression';
-import {isFunction} from '../src/style-spec/function';
-import convertFunction from '../src/style-spec/function/convert';
-import {toString} from '../src/style-spec/expression/types';
+import {run} from './integration/lib/expression.js';
+import {createPropertyExpression} from '../src/style-spec/expression/index.js';
+import {isFunction} from '../src/style-spec/function/index.js';
+import convertFunction from '../src/style-spec/function/convert.js';
+import {toString} from '../src/style-spec/expression/types.js';
 import ignores from './ignores.json';
-import {CanonicalTileID} from '../src/source/tile_id';
-import MercatorCoordinate from '../src/geo/mercator_coordinate';
+import {CanonicalTileID} from '../src/source/tile_id.js';
+import MercatorCoordinate from '../src/geo/mercator_coordinate.js';
 
 function getPoint(coord, canonical) {
     const p = canonical.getTilePoint(MercatorCoordinate.fromLngLat({lng: coord[0], lat: coord[1]}, 0));

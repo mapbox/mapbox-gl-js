@@ -22,6 +22,12 @@
     "no-duplicate-imports": "off",
     "import/no-duplicates": "error",
 
+    // ensure compatibility with Node's native ESM
+    "import/extensions": ["error", {
+      "js": "always",
+      "json": "always"
+    }],
+
     // temporarily disabled for easier upgrading of dependencies
     "implicit-arrow-linebreak": "off",
     "arrow-parens": "off",
@@ -72,7 +78,7 @@
         "parameters": "off"
       }
     }],
-    "no-multiple-empty-lines": [ "error", { 
+    "no-multiple-empty-lines": [ "error", {
         "max": 1
     }],
     "jsdoc/check-param-names": "warn",

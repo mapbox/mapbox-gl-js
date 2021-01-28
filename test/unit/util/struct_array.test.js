@@ -1,7 +1,7 @@
 // @flow
 
-import {test} from '../../util/test';
-import {StructArrayLayout3i6, FeatureIndexArray} from '../../../src/data/array_types';
+import {test} from '../../util/test.js';
+import {StructArrayLayout3i6, FeatureIndexArray} from '../../../src/data/array_types.js';
 
 test('StructArray', (t) => {
     class TestArray extends StructArrayLayout3i6 {}

@@ -1,6 +1,6 @@
 // @flow
-import type Color from '../../util/color';
-import type ResolvedImage from '../types/resolved_image';
+import type Color from '../../util/color.js';
+import type ResolvedImage from '../types/resolved_image.js';
 
 export class FormattedSection {
     text: string;

@@ -1,8 +1,8 @@
 // @flow
 
-import ThrottledInvoker from './throttled_invoker';
-import {bindAll, isWorker} from './util';
-import {PerformanceUtils} from './performance';
+import ThrottledInvoker from './throttled_invoker.js';
+import {bindAll, isWorker} from './util.js';
+import {PerformanceUtils} from './performance.js';
 
 class Scheduler {
 

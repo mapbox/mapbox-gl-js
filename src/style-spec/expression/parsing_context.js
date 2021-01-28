@@ -1,20 +1,20 @@
 // @flow
 
-import Scope from './scope';
-import {checkSubtype} from './types';
-import ParsingError from './parsing_error';
-import Literal from './definitions/literal';
-import Assertion from './definitions/assertion';
-import Coercion from './definitions/coercion';
-import EvaluationContext from './evaluation_context';
-import CompoundExpression from './compound_expression';
-import CollatorExpression from './definitions/collator';
-import Within from './definitions/within';
-import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant';
-import Var from './definitions/var';
+import Scope from './scope.js';
+import {checkSubtype} from './types.js';
+import ParsingError from './parsing_error.js';
+import Literal from './definitions/literal.js';
+import Assertion from './definitions/assertion.js';
+import Coercion from './definitions/coercion.js';
+import EvaluationContext from './evaluation_context.js';
+import CompoundExpression from './compound_expression.js';
+import CollatorExpression from './definitions/collator.js';
+import Within from './definitions/within.js';
+import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant.js';
+import Var from './definitions/var.js';
 
-import type {Expression, ExpressionRegistry} from './expression';
-import type {Type} from './types';
+import type {Expression, ExpressionRegistry} from './expression.js';
+import type {Type} from './types.js';
 
 /**
  * State associated parsing at a given point in an expression tree.

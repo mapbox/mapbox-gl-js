@@ -4,7 +4,7 @@
 
 import assert from 'assert';
 
-import type {Transferable} from '../types/transferable';
+import type {Transferable} from '../types/transferable.js';
 
 const viewTypes = {
     'Int8': Int8Array,

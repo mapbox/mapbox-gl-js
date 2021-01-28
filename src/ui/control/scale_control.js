@@ -1,9 +1,9 @@
 // @flow
 
-import DOM from '../../util/dom';
-import {extend, bindAll} from '../../util/util';
+import DOM from '../../util/dom.js';
+import {extend, bindAll} from '../../util/util.js';
 
-import type Map from '../map';
+import type Map from '../map.js';
 
 type Unit = 'imperial' | 'metric' | 'nautical';
 

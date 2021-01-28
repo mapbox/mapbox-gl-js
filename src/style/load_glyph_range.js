@@ -1,12 +1,12 @@
 // @flow
 
-import {getArrayBuffer, ResourceType} from '../util/ajax';
+import {getArrayBuffer, ResourceType} from '../util/ajax.js';
 
-import parseGlyphPBF from './parse_glyph_pbf';
+import parseGlyphPBF from './parse_glyph_pbf.js';
 
-import type {StyleGlyph} from './style_glyph';
-import type {RequestManager} from '../util/mapbox';
-import type {Callback} from '../types/callback';
+import type {StyleGlyph} from './style_glyph.js';
+import type {RequestManager} from '../util/mapbox.js';
+import type {Callback} from '../types/callback.js';
 
 export default function (fontstack: string,
                            range: number,

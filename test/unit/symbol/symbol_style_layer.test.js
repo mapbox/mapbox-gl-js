@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
-import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
-import FormatSectionOverride from '../../../src/style/format_section_override';
-import properties from '../../../src/style/style_layer/symbol_style_layer_properties';
+import {test} from '../../util/test.js';
+import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer.js';
+import FormatSectionOverride from '../../../src/style/format_section_override.js';
+import properties from '../../../src/style/style_layer/symbol_style_layer_properties.js';
 
 function createSymbolLayer(layerProperties) {
     const layer = new SymbolStyleLayer(layerProperties);

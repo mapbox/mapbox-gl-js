@@ -1,5 +1,5 @@
-import {test} from '../util/test';
-import browser from './util/browser';
+import {test} from '../util/test.js';
+import browser from './util/browser.js';
 
 test("zooming", async t => {
     const {driver} = browser;

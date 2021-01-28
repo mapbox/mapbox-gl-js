@@ -4,10 +4,10 @@ import {
     Uniform1i,
     Uniform1f,
     UniformMatrix4f
-} from '../render/uniform_binding';
+} from '../render/uniform_binding.js';
 
-import type Context from '../gl/context';
-import type {UniformValues, UniformLocations} from '../render/uniform_binding';
+import type Context from '../gl/context.js';
+import type {UniformValues, UniformLocations} from '../render/uniform_binding.js';
 
 export type TerrainRasterUniformsType = {|
     'u_matrix': UniformMatrix4f,

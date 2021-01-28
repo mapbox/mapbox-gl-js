@@ -1,7 +1,7 @@
 // @flow
 
-import {OverscaledTileID} from './tile_id';
-import type Tile from './tile';
+import {OverscaledTileID} from './tile_id.js';
+import type Tile from './tile.js';
 
 /**
  * A [least-recently-used cache](http://en.wikipedia.org/wiki/Cache_algorithms)

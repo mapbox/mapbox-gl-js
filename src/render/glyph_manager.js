@@ -1,15 +1,15 @@
 // @flow
 
-import loadGlyphRange from '../style/load_glyph_range';
+import loadGlyphRange from '../style/load_glyph_range.js';
 
 import TinySDF from '@mapbox/tiny-sdf';
-import isChar from '../util/is_char_in_unicode_block';
-import {asyncAll} from '../util/util';
-import {AlphaImage} from '../util/image';
+import isChar from '../util/is_char_in_unicode_block.js';
+import {asyncAll} from '../util/util.js';
+import {AlphaImage} from '../util/image.js';
 
-import type {StyleGlyph} from '../style/style_glyph';
-import type {RequestManager} from '../util/mapbox';
-import type {Callback} from '../types/callback';
+import type {StyleGlyph} from '../style/style_glyph.js';
+import type {RequestManager} from '../util/mapbox.js';
+import type {Callback} from '../types/callback.js';
 
 /*
   SDF_SCALE controls the pixel density of locally generated glyphs relative

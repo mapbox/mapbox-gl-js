@@ -1,11 +1,11 @@
 // @flow
 
-import {warnOnce} from '../util/util';
+import {warnOnce} from '../util/util.js';
 
-import {register} from '../util/web_worker_transfer';
+import {register} from '../util/web_worker_transfer.js';
 
-import type VertexArrayObject from '../render/vertex_array_object';
-import type {StructArray} from '../util/struct_array';
+import type VertexArrayObject from '../render/vertex_array_object.js';
+import type {StructArray} from '../util/struct_array.js';
 
 export type Segment = {
     sortKey: number | void,

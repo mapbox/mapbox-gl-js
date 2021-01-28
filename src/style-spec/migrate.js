@@ -1,6 +1,6 @@
 
-import migrateToV8 from './migrate/v8';
-import migrateToExpressions from './migrate/expressions';
+import migrateToV8 from './migrate/v8.js';
+import migrateToExpressions from './migrate/expressions.js';
 
 /**
  * Migrate a Mapbox GL Style to the latest version.

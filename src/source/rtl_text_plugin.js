@@ -1,10 +1,10 @@
 // @flow
 
-import {Event, Evented} from '../util/evented';
-import {getArrayBuffer} from '../util/ajax';
-import browser from '../util/browser';
+import {Event, Evented} from '../util/evented.js';
+import {getArrayBuffer} from '../util/ajax.js';
+import browser from '../util/browser.js';
 import assert from 'assert';
-import {isWorker} from '../util/util';
+import {isWorker} from '../util/util.js';
 
 const status = {
     unavailable: 'unavailable', // Not loaded

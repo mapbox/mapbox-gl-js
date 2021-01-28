@@ -1,7 +1,7 @@
 // @flow
 
-import {wrap} from '../util/util';
-import LngLatBounds from './lng_lat_bounds';
+import {wrap} from '../util/util.js';
+import LngLatBounds from './lng_lat_bounds.js';
 
 /*
 * Approximate radius of the earth in meters.

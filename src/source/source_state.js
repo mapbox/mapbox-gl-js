@@ -1,8 +1,8 @@
 // @flow
 
-import {extend} from '../util/util';
-import Tile from './tile';
-import type {FeatureState} from '../style-spec/expression';
+import {extend} from '../util/util.js';
+import Tile from './tile.js';
+import type {FeatureState} from '../style-spec/expression/index.js';
 
 export type FeatureStates = {[feature_id: string]: FeatureState};
 export type LayerFeatureStates = {[layer: string]: FeatureStates};

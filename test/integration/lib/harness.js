@@ -7,7 +7,7 @@ import {shuffle} from 'shuffle-seed';
 import {queue} from 'd3';
 import colors from 'chalk';
 import template from 'lodash.template';
-import createServer from './server';
+import createServer from './server.js';
 
 export default function (directory, implementation, options, run) {
     const q = queue(1);

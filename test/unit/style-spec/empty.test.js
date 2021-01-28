@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
-import emptyStyle from '../../../src/style-spec/empty';
-import validateStyleMin from '../../../src/style-spec/validate_style.min';
+import {test} from '../../util/test.js';
+import emptyStyle from '../../../src/style-spec/empty.js';
+import validateStyleMin from '../../../src/style-spec/validate_style.min.js';
 
 test('it generates something', (t) => {
     const style = emptyStyle();

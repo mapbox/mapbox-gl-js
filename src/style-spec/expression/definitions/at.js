@@ -1,14 +1,14 @@
 // @flow
 
-import {array, ValueType, NumberType} from '../types';
+import {array, ValueType, NumberType} from '../types.js';
 
-import RuntimeError from '../runtime_error';
+import RuntimeError from '../runtime_error.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Type, ArrayType} from '../types';
-import type {Value} from '../values';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type, ArrayType} from '../types.js';
+import type {Value} from '../values.js';
 
 class At implements Expression {
     type: Type;

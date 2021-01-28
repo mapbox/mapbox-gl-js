@@ -1,13 +1,13 @@
 // @flow
 
-import {ValueType, NumberType, StringType, array, toString, isValidType, isValidNativeType} from '../types';
-import RuntimeError from '../runtime_error';
-import {typeOf} from '../values';
+import {ValueType, NumberType, StringType, array, toString, isValidType, isValidNativeType} from '../types.js';
+import RuntimeError from '../runtime_error.js';
+import {typeOf} from '../values.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type} from '../types.js';
 
 class Slice implements Expression {
     type: Type;

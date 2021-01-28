@@ -1,8 +1,8 @@
 
-import ValidationError from '../error/validation_error';
-import validate from './validate';
-import getType from '../util/get_type';
-import {unbundle} from '../util/unbundle_jsonlint';
+import ValidationError from '../error/validation_error.js';
+import validate from './validate.js';
+import getType from '../util/get_type.js';
+import {unbundle} from '../util/unbundle_jsonlint.js';
 
 export default function validateTerrain(options) {
     const terrain = options.value;

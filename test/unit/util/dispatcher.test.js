@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
-import Dispatcher from '../../../src/util/dispatcher';
-import WebWorker from '../../../src/util/web_worker';
-import WorkerPool from '../../../src/util/worker_pool';
+import {test} from '../../util/test.js';
+import Dispatcher from '../../../src/util/dispatcher.js';
+import WebWorker from '../../../src/util/web_worker.js';
+import WorkerPool from '../../../src/util/worker_pool.js';
 
 test('Dispatcher', (t) => {
     t.test('requests and releases workers from pool', (t) => {
