@@ -2,17 +2,17 @@
 
 import Point from '@mapbox/point-geometry';
 
-import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
+import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf.js';
 
-import type Anchor from './anchor';
-import type {PositionedIcon, Shaping} from './shaping';
-import {SHAPING_DEFAULT_OFFSET} from './shaping';
-import {IMAGE_PADDING} from '../render/image_atlas';
-import {SDF_SCALE} from '../render/glyph_manager';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-import type {Feature} from '../style-spec/expression';
-import type {StyleImage} from '../style/style_image';
-import ONE_EM from './one_em';
+import type Anchor from './anchor.js';
+import type {PositionedIcon, Shaping} from './shaping.js';
+import {SHAPING_DEFAULT_OFFSET} from './shaping.js';
+import {IMAGE_PADDING} from '../render/image_atlas.js';
+import {SDF_SCALE} from '../render/glyph_manager.js';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
+import type {Feature} from '../style-spec/expression/index.js';
+import type {StyleImage} from '../style/style_image.js';
+import ONE_EM from './one_em.js';
 
 /**
  * A textured quad for rendering a single icon or glyph.

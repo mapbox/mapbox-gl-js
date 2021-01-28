@@ -1,39 +1,39 @@
 // @flow
 
-import {LineLayoutArray, LineExtLayoutArray} from '../array_types';
+import {LineLayoutArray, LineExtLayoutArray} from '../array_types.js';
 
-import {members as layoutAttributes} from './line_attributes';
-import {members as layoutAttributesExt} from './line_attributes_ext';
-import SegmentVector from '../segment';
-import {ProgramConfigurationSet} from '../program_configuration';
-import {TriangleIndexArray} from '../index_array_type';
-import EXTENT from '../extent';
+import {members as layoutAttributes} from './line_attributes.js';
+import {members as layoutAttributesExt} from './line_attributes_ext.js';
+import SegmentVector from '../segment.js';
+import {ProgramConfigurationSet} from '../program_configuration.js';
+import {TriangleIndexArray} from '../index_array_type.js';
+import EXTENT from '../extent.js';
 import mvt from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
-import {register} from '../../util/web_worker_transfer';
-import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
-import loadGeometry from '../load_geometry';
-import toEvaluationFeature from '../evaluation_feature';
-import EvaluationParameters from '../../style/evaluation_parameters';
+import {register} from '../../util/web_worker_transfer.js';
+import {hasPattern, addPatternDependencies} from './pattern_bucket_features.js';
+import loadGeometry from '../load_geometry.js';
+import toEvaluationFeature from '../evaluation_feature.js';
+import EvaluationParameters from '../../style/evaluation_parameters.js';
 
-import type {CanonicalTileID} from '../../source/tile_id';
+import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
     BucketFeature,
     IndexedFeature,
     PopulateParameters
-} from '../bucket';
-import type LineStyleLayer from '../../style/style_layer/line_style_layer';
+} from '../bucket.js';
+import type LineStyleLayer from '../../style/style_layer/line_style_layer.js';
 import type Point from '@mapbox/point-geometry';
-import type {Segment} from '../segment';
-import {RGBAImage} from '../../util/image';
-import type Context from '../../gl/context';
-import type Texture from '../../render/texture';
-import type IndexBuffer from '../../gl/index_buffer';
-import type VertexBuffer from '../../gl/vertex_buffer';
-import type {FeatureStates} from '../../source/source_state';
-import type {ImagePosition} from '../../render/image_atlas';
+import type {Segment} from '../segment.js';
+import {RGBAImage} from '../../util/image.js';
+import type Context from '../../gl/context.js';
+import type Texture from '../../render/texture.js';
+import type IndexBuffer from '../../gl/index_buffer.js';
+import type VertexBuffer from '../../gl/vertex_buffer.js';
+import type {FeatureStates} from '../../source/source_state.js';
+import type {ImagePosition} from '../../render/image_atlas.js';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.

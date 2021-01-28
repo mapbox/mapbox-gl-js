@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
-import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';
-import GlyphManager, {LocalGlyphMode} from '../../../src/render/glyph_manager';
+import {test} from '../../util/test.js';
+import parseGlyphPBF from '../../../src/style/parse_glyph_pbf.js';
+import GlyphManager, {LocalGlyphMode} from '../../../src/render/glyph_manager.js';
 import fs from 'fs';
 
 const glyphs = {};

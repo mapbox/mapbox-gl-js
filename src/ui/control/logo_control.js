@@ -1,10 +1,10 @@
 // @flow
 
-import DOM from '../../util/dom';
+import DOM from '../../util/dom.js';
 
-import {bindAll} from '../../util/util';
+import {bindAll} from '../../util/util.js';
 
-import type Map from '../map';
+import type Map from '../map.js';
 
 /**
  * A `LogoControl` is a control that adds the Mapbox watermark

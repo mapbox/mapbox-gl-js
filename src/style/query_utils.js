@@ -2,10 +2,10 @@
 
 import Point from '@mapbox/point-geometry';
 
-import type {PossiblyEvaluatedPropertyValue} from "./properties";
-import type StyleLayer from '../style/style_layer';
-import type CircleBucket from '../data/bucket/circle_bucket';
-import type LineBucket from '../data/bucket/line_bucket';
+import type {PossiblyEvaluatedPropertyValue} from './properties.js';
+import type StyleLayer from '../style/style_layer.js';
+import type CircleBucket from '../data/bucket/circle_bucket.js';
+import type LineBucket from '../data/bucket/line_bucket.js';
 
 export function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: CircleBucket<*> | LineBucket): number {
     const value = ((layer.paint: any).get(property): PossiblyEvaluatedPropertyValue<any>).value;

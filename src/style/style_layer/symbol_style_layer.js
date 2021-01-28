@@ -1,11 +1,11 @@
 // @flow
 
-import StyleLayer from '../style_layer';
+import StyleLayer from '../style_layer.js';
 
 import assert from 'assert';
-import SymbolBucket from '../../data/bucket/symbol_bucket';
-import resolveTokens from '../../util/resolve_tokens';
-import properties from './symbol_style_layer_properties';
+import SymbolBucket from '../../data/bucket/symbol_bucket.js';
+import resolveTokens from '../../util/resolve_tokens.js';
+import properties from './symbol_style_layer_properties.js';
 
 import {
     Transitionable,
@@ -14,29 +14,29 @@ import {
     PossiblyEvaluated,
     PossiblyEvaluatedPropertyValue,
     PropertyValue
-} from '../properties';
+} from '../properties.js';
 
 import {
     isExpression,
     StyleExpression,
     ZoomConstantExpression,
     ZoomDependentExpression
-} from '../../style-spec/expression';
+} from '../../style-spec/expression/index.js';
 
-import type {BucketParameters} from '../../data/bucket';
-import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
-import type EvaluationParameters from '../evaluation_parameters';
-import type {LayerSpecification} from '../../style-spec/types';
-import type {Feature, SourceExpression, CompositeExpression} from '../../style-spec/expression';
-import type {Expression} from '../../style-spec/expression/expression';
-import type {CanonicalTileID} from '../../source/tile_id';
-import {FormattedType} from '../../style-spec/expression/types';
-import {typeOf} from '../../style-spec/expression/values';
-import Formatted from '../../style-spec/expression/types/formatted';
-import FormatSectionOverride from '../format_section_override';
-import FormatExpression from '../../style-spec/expression/definitions/format';
-import Literal from '../../style-spec/expression/definitions/literal';
-import ProgramConfiguration from '../../data/program_configuration';
+import type {BucketParameters} from '../../data/bucket.js';
+import type {LayoutProps, PaintProps} from './symbol_style_layer_properties.js';
+import type EvaluationParameters from '../evaluation_parameters.js';
+import type {LayerSpecification} from '../../style-spec/types.js';
+import type {Feature, SourceExpression, CompositeExpression} from '../../style-spec/expression/index.js';
+import type {Expression} from '../../style-spec/expression/expression.js';
+import type {CanonicalTileID} from '../../source/tile_id.js';
+import {FormattedType} from '../../style-spec/expression/types.js';
+import {typeOf} from '../../style-spec/expression/values.js';
+import Formatted from '../../style-spec/expression/types/formatted.js';
+import FormatSectionOverride from '../format_section_override.js';
+import FormatExpression from '../../style-spec/expression/definitions/format.js';
+import Literal from '../../style-spec/expression/definitions/literal.js';
+import ProgramConfiguration from '../../data/program_configuration.js';
 
 class SymbolStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;

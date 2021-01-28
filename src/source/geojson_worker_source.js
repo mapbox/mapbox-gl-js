@@ -1,29 +1,29 @@
 // @flow
 
-import {getJSON} from '../util/ajax';
+import {getJSON} from '../util/ajax.js';
 
-import {RequestPerformance} from '../util/performance';
+import {RequestPerformance} from '../util/performance.js';
 import rewind from '@mapbox/geojson-rewind';
-import GeoJSONWrapper from './geojson_wrapper';
+import GeoJSONWrapper from './geojson_wrapper.js';
 import vtpbf from 'vt-pbf';
 import Supercluster from 'supercluster';
 import geojsonvt from 'geojson-vt';
 import assert from 'assert';
-import VectorTileWorkerSource from './vector_tile_worker_source';
-import {createExpression} from '../style-spec/expression';
+import VectorTileWorkerSource from './vector_tile_worker_source.js';
+import {createExpression} from '../style-spec/expression/index.js';
 
 import type {
     RequestedTileParameters,
     WorkerTileParameters,
     WorkerTileCallback,
-} from '../source/worker_source';
+} from '../source/worker_source.js';
 
-import type Actor from '../util/actor';
-import type StyleLayerIndex from '../style/style_layer_index';
+import type Actor from '../util/actor.js';
+import type StyleLayerIndex from '../style/style_layer_index.js';
 
-import type {LoadVectorDataCallback} from './vector_tile_worker_source';
-import type {RequestParameters, ResponseCallback} from '../util/ajax';
-import type {Callback} from '../types/callback';
+import type {LoadVectorDataCallback} from './vector_tile_worker_source.js';
+import type {RequestParameters, ResponseCallback} from '../util/ajax.js';
+import type {Callback} from '../types/callback.js';
 import type {GeoJSONFeature} from '@mapbox/geojson-types';
 
 export type LoadGeoJSONParameters = {

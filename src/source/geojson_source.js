@@ -1,20 +1,20 @@
 // @flow
 
-import {Event, ErrorEvent, Evented} from '../util/evented';
+import {Event, ErrorEvent, Evented} from '../util/evented.js';
 
-import {extend} from '../util/util';
-import EXTENT from '../data/extent';
-import {ResourceType} from '../util/ajax';
-import browser from '../util/browser';
+import {extend} from '../util/util.js';
+import EXTENT from '../data/extent.js';
+import {ResourceType} from '../util/ajax.js';
+import browser from '../util/browser.js';
 
-import type {Source} from './source';
-import type Map from '../ui/map';
-import type Dispatcher from '../util/dispatcher';
-import type Tile from './tile';
-import type Actor from '../util/actor';
-import type {Callback} from '../types/callback';
+import type {Source} from './source.js';
+import type Map from '../ui/map.js';
+import type Dispatcher from '../util/dispatcher.js';
+import type Tile from './tile.js';
+import type Actor from '../util/actor.js';
+import type {Callback} from '../types/callback.js';
 import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
-import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
+import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
 
 /**
  * A source containing GeoJSON.

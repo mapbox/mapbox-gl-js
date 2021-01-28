@@ -2,18 +2,18 @@
 
 import assert from 'assert';
 
-import {BooleanType, ColorType, NumberType, StringType, ValueType} from '../types';
-import {Color, toString as valueToString, validateRGBA} from '../values';
-import RuntimeError from '../runtime_error';
-import Formatted from '../types/formatted';
-import FormatExpression from '../definitions/format';
-import ImageExpression from '../definitions/image';
-import ResolvedImage from '../types/resolved_image';
+import {BooleanType, ColorType, NumberType, StringType, ValueType} from '../types.js';
+import {Color, toString as valueToString, validateRGBA} from '../values.js';
+import RuntimeError from '../runtime_error.js';
+import Formatted from '../types/formatted.js';
+import FormatExpression from '../definitions/format.js';
+import ImageExpression from '../definitions/image.js';
+import ResolvedImage from '../types/resolved_image.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type} from '../types.js';
 
 const types = {
     'to-boolean': BooleanType,

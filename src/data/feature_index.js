@@ -2,31 +2,31 @@
 
 import Point from '@mapbox/point-geometry';
 
-import loadGeometry from './load_geometry';
-import toEvaluationFeature from './evaluation_feature';
-import EXTENT from './extent';
-import featureFilter from '../style-spec/feature_filter';
+import loadGeometry from './load_geometry.js';
+import toEvaluationFeature from './evaluation_feature.js';
+import EXTENT from './extent.js';
+import featureFilter from '../style-spec/feature_filter/index.js';
 import Grid from 'grid-index';
-import DictionaryCoder from '../util/dictionary_coder';
+import DictionaryCoder from '../util/dictionary_coder.js';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
-import GeoJSONFeature from '../util/vectortile_to_geojson';
-import {arraysIntersect, mapObject, extend} from '../util/util';
-import {OverscaledTileID} from '../source/tile_id';
-import {register} from '../util/web_worker_transfer';
-import EvaluationParameters from '../style/evaluation_parameters';
-import SourceFeatureState from '../source/source_state';
-import {polygonIntersectsBox} from '../util/intersection_tests';
-import {PossiblyEvaluated} from '../style/properties';
-import {FeatureIndexArray} from './array_types';
-import {DEMSampler} from '../terrain/elevation';
+import GeoJSONFeature from '../util/vectortile_to_geojson.js';
+import {arraysIntersect, mapObject, extend} from '../util/util.js';
+import {OverscaledTileID} from '../source/tile_id.js';
+import {register} from '../util/web_worker_transfer.js';
+import EvaluationParameters from '../style/evaluation_parameters.js';
+import SourceFeatureState from '../source/source_state.js';
+import {polygonIntersectsBox} from '../util/intersection_tests.js';
+import {PossiblyEvaluated} from '../style/properties.js';
+import {FeatureIndexArray} from './array_types.js';
+import {DEMSampler} from '../terrain/elevation.js';
 
-import type StyleLayer from '../style/style_layer';
-import type {FeatureFilter} from '../style-spec/feature_filter';
-import type Transform from '../geo/transform';
-import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types';
-import type {TilespaceQueryGeometry} from '../style/query_geometry';
-import type {FeatureIndex as FeatureIndexStruct} from './array_types';
+import type StyleLayer from '../style/style_layer.js';
+import type {FeatureFilter} from '../style-spec/feature_filter/index.js';
+import type Transform from '../geo/transform.js';
+import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types.js';
+import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
+import type {FeatureIndex as FeatureIndexStruct} from './array_types.js';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array,

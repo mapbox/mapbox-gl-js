@@ -1,9 +1,9 @@
 // @flow
 
-import {Color} from './values';
-import type {FormattedSection} from './types/formatted';
-import type {GlobalProperties, Feature, FeatureState} from './index';
-import type {CanonicalTileID} from '../../source/tile_id';
+import {Color} from './values.js';
+import type {FormattedSection} from './types/formatted.js';
+import type {GlobalProperties, Feature, FeatureState} from './index.js';
+import type {CanonicalTileID} from '../../source/tile_id.js';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 

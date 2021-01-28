@@ -1,10 +1,10 @@
 // @flow
 
-import window from '../util/window';
+import window from '../util/window.js';
 const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData, ImageBitmap} = window;
 
-import type Context from '../gl/context';
-import type {RGBAImage, AlphaImage} from '../util/image';
+import type Context from '../gl/context.js';
+import type {RGBAImage, AlphaImage} from '../util/image.js';
 
 export type TextureFormat =
     | $PropertyType<WebGLRenderingContext, 'RGBA'>

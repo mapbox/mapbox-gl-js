@@ -1,6 +1,6 @@
 // @flow
 
-import {clamp} from '../util/util';
+import {clamp} from '../util/util.js';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 

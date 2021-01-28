@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
-import Hash from '../../../src/ui/hash';
-import window from '../../../src/util/window';
-import {createMap as globalCreateMap} from '../../util';
+import {test} from '../../util/test.js';
+import Hash from '../../../src/ui/hash.js';
+import window from '../../../src/util/window.js';
+import {createMap as globalCreateMap} from '../../util/index.js';
 
 test('hash', (t) => {
     function createHash(name) {

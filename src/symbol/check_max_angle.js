@@ -3,7 +3,7 @@
 export default checkMaxAngle;
 
 import type Point from '@mapbox/point-geometry';
-import type Anchor from './anchor';
+import type Anchor from './anchor.js';
 
 /**
  * Labels placed around really sharp angles aren't readable. Check if any

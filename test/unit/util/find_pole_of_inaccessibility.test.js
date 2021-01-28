@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import Point from '@mapbox/point-geometry';
-import findPoleOfInaccessibility from '../../../src/util/find_pole_of_inaccessibility';
+import findPoleOfInaccessibility from '../../../src/util/find_pole_of_inaccessibility.js';
 
 test('polygon_poi', (t) => {
 

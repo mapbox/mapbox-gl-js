@@ -1,15 +1,15 @@
 // @flow
 
-import {Event, Evented} from '../../util/evented';
-import DOM from '../../util/dom';
-import window from '../../util/window';
-import {extend, bindAll, warnOnce} from '../../util/util';
+import {Event, Evented} from '../../util/evented.js';
+import DOM from '../../util/dom.js';
+import window from '../../util/window.js';
+import {extend, bindAll, warnOnce} from '../../util/util.js';
 import assert from 'assert';
-import LngLat from '../../geo/lng_lat';
-import Marker from '../marker';
+import LngLat from '../../geo/lng_lat.js';
+import Marker from '../marker.js';
 
-import type Map from '../map';
-import type {AnimationOptions, CameraOptions} from '../camera';
+import type Map from '../map.js';
+import type {AnimationOptions, CameraOptions} from '../camera.js';
 
 type Options = {
     positionOptions?: PositionOptions,

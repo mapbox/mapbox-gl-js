@@ -3,18 +3,18 @@
 import Point from '@mapbox/point-geometry';
 
 import {mat4, vec4} from 'gl-matrix';
-import * as symbolSize from './symbol_size';
-import {addDynamicAttributes} from '../data/bucket/symbol_bucket';
+import * as symbolSize from './symbol_size.js';
+import {addDynamicAttributes} from '../data/bucket/symbol_bucket.js';
 
-import type Painter from '../render/painter';
-import type Transform from '../geo/transform';
-import type SymbolBucket from '../data/bucket/symbol_bucket';
+import type Painter from '../render/painter.js';
+import type Transform from '../geo/transform.js';
+import type SymbolBucket from '../data/bucket/symbol_bucket.js';
 import type {
     GlyphOffsetArray,
     SymbolLineVertexArray,
     SymbolDynamicLayoutArray
-} from '../data/array_types';
-import {WritingMode} from '../symbol/shaping';
+} from '../data/array_types.js';
+import {WritingMode} from '../symbol/shaping.js';
 
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 

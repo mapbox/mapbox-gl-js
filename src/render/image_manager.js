@@ -2,18 +2,18 @@
 
 import potpack from 'potpack';
 
-import {Event, ErrorEvent, Evented} from '../util/evented';
-import {RGBAImage} from '../util/image';
-import {ImagePosition} from './image_atlas';
-import Texture from './texture';
+import {Event, ErrorEvent, Evented} from '../util/evented.js';
+import {RGBAImage} from '../util/image.js';
+import {ImagePosition} from './image_atlas.js';
+import Texture from './texture.js';
 import assert from 'assert';
-import {renderStyleImage} from '../style/style_image';
-import {warnOnce} from '../util/util';
+import {renderStyleImage} from '../style/style_image.js';
+import {warnOnce} from '../util/util.js';
 
-import type {StyleImage} from '../style/style_image';
-import type Context from '../gl/context';
+import type {StyleImage} from '../style/style_image.js';
+import type Context from '../gl/context.js';
 import type {Bin} from 'potpack';
-import type {Callback} from '../types/callback';
+import type {Callback} from '../types/callback.js';
 
 type Pattern = {
     bin: Bin,

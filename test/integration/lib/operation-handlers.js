@@ -1,6 +1,6 @@
 /* eslint-env browser */
 /* global mapboxgl:readonly */
-import customLayerImplementations from '../custom_layer_implementations';
+import customLayerImplementations from '../custom_layer_implementations.js';
 
 function handleOperation(map, options, opIndex, doneCb) {
     const operations = options.operations;

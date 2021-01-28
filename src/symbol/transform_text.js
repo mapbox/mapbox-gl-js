@@ -1,10 +1,10 @@
 // @flow
 
-import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin';
+import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin.js';
 
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-import type {Feature} from '../style-spec/expression';
-import Formatted from '../style-spec/expression/types/formatted';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
+import type {Feature} from '../style-spec/expression/index.js';
+import Formatted from '../style-spec/expression/types/formatted.js';
 
 function transformText(text: string, layer: SymbolStyleLayer, feature: Feature) {
     const transform = layer.layout.get('text-transform').evaluate(feature, {});

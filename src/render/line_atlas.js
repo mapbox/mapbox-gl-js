@@ -1,8 +1,8 @@
 // @flow
 
-import {warnOnce} from '../util/util';
+import {warnOnce} from '../util/util.js';
 
-import type Context from '../gl/context';
+import type Context from '../gl/context.js';
 
 /**
  * A LineAtlas lets us reuse rendered dashed lines

@@ -1,8 +1,8 @@
 // @flow
 
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 
-import throttle from '../../../src/util/throttle';
+import throttle from '../../../src/util/throttle.js';
 
 test('throttle', (t) => {
 

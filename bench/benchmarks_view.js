@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as d3 from 'd3';
-import {kde, probabilitiesOfSuperiority, summaryStatistics, regression} from './lib/statistics';
+import {kde, probabilitiesOfSuperiority, summaryStatistics, regression} from './lib/statistics.js';
 
 const versionColor = d3.scaleOrdinal(['#1b9e77', '#7570b3', '#d95f02']);
 const formatSample = d3.format(".3r");

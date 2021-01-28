@@ -1,16 +1,16 @@
 // @flow
 
-import Benchmark from '../lib/benchmark';
+import Benchmark from '../lib/benchmark.js';
 
-import spec from '../../src/style-spec/reference/latest';
-import convertFunction from '../../src/style-spec/function/convert';
-import {isFunction, createFunction} from '../../src/style-spec/function';
-import {createPropertyExpression} from '../../src/style-spec/expression';
-import fetchStyle from '../lib/fetch_style';
+import spec from '../../src/style-spec/reference/latest.js';
+import convertFunction from '../../src/style-spec/function/convert.js';
+import {isFunction, createFunction} from '../../src/style-spec/function/index.js';
+import {createPropertyExpression} from '../../src/style-spec/expression/index.js';
+import fetchStyle from '../lib/fetch_style.js';
 
-import type {StyleSpecification} from '../../src/style-spec/types';
-import type {StylePropertySpecification} from '../../src/style-spec/style-spec';
-import type {StylePropertyExpression} from '../../src/style-spec/expression';
+import type {StyleSpecification} from '../../src/style-spec/types.js';
+import type {StylePropertySpecification} from '../../src/style-spec/style-spec.js';
+import type {StylePropertyExpression} from '../../src/style-spec/expression/index.js';
 
 class ExpressionBenchmark extends Benchmark {
     data: Array<{

@@ -9,25 +9,25 @@ import {
     ease as defaultEasing,
     pick,
     degToRad
-} from '../util/util';
-import {number as interpolate} from '../style-spec/util/interpolate';
-import browser from '../util/browser';
-import LngLat from '../geo/lng_lat';
-import LngLatBounds from '../geo/lng_lat_bounds';
+} from '../util/util.js';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
+import browser from '../util/browser.js';
+import LngLat from '../geo/lng_lat.js';
+import LngLatBounds from '../geo/lng_lat_bounds.js';
 import Point from '@mapbox/point-geometry';
-import {Event, Evented} from '../util/evented';
+import {Event, Evented} from '../util/evented.js';
 import assert from 'assert';
-import {Debug} from '../util/debug';
-import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
+import {Debug} from '../util/debug.js';
+import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {vec3} from 'gl-matrix';
-import type {FreeCameraOptions} from './free_camera';
-import type Transform from '../geo/transform';
-import type {LngLatLike} from '../geo/lng_lat';
-import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
-import type {TaskID} from '../util/task_queue';
+import type {FreeCameraOptions} from './free_camera.js';
+import type Transform from '../geo/transform.js';
+import type {LngLatLike} from '../geo/lng_lat.js';
+import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+import type {TaskID} from '../util/task_queue.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import {Aabb, Frustum} from '../util/primitives.js';
-import type {PaddingOptions} from '../geo/edge_insets';
+import type {PaddingOptions} from '../geo/edge_insets.js';
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,

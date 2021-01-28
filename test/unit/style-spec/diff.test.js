@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import diffStyles from '../../../src/style-spec/diff';
+import {test} from '../../util/test.js';
+import diffStyles from '../../../src/style-spec/diff.js';
 
 test('diff', (t) => {
 

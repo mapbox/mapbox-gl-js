@@ -6,9 +6,9 @@
 // when Rollup builds the main bundle.
 // See package.json#browser
 
-import Worker from '../source/worker';
+import Worker from '../source/worker.js';
 
-import type {WorkerSource} from '../source/worker_source';
+import type {WorkerSource} from '../source/worker_source.js';
 
 type MessageListener = ({data: Object}) => mixed;
 

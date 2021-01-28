@@ -1,33 +1,33 @@
 // @flow
 
-import FeatureIndex from '../data/feature_index';
+import FeatureIndex from '../data/feature_index.js';
 
-import {performSymbolLayout} from '../symbol/symbol_layout';
-import {CollisionBoxArray} from '../data/array_types';
-import DictionaryCoder from '../util/dictionary_coder';
-import SymbolBucket from '../data/bucket/symbol_bucket';
-import LineBucket from '../data/bucket/line_bucket';
-import FillBucket from '../data/bucket/fill_bucket';
-import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
-import {warnOnce, mapObject, values} from '../util/util';
+import {performSymbolLayout} from '../symbol/symbol_layout.js';
+import {CollisionBoxArray} from '../data/array_types.js';
+import DictionaryCoder from '../util/dictionary_coder.js';
+import SymbolBucket from '../data/bucket/symbol_bucket.js';
+import LineBucket from '../data/bucket/line_bucket.js';
+import FillBucket from '../data/bucket/fill_bucket.js';
+import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
+import {warnOnce, mapObject, values} from '../util/util.js';
 import assert from 'assert';
-import ImageAtlas from '../render/image_atlas';
-import GlyphAtlas from '../render/glyph_atlas';
-import EvaluationParameters from '../style/evaluation_parameters';
-import {OverscaledTileID} from './tile_id';
-import {PerformanceUtils} from '../util/performance';
+import ImageAtlas from '../render/image_atlas.js';
+import GlyphAtlas from '../render/glyph_atlas.js';
+import EvaluationParameters from '../style/evaluation_parameters.js';
+import {OverscaledTileID} from './tile_id.js';
+import {PerformanceUtils} from '../util/performance.js';
 
-import type {Bucket} from '../data/bucket';
-import type Actor from '../util/actor';
-import type StyleLayer from '../style/style_layer';
-import type StyleLayerIndex from '../style/style_layer_index';
-import type {StyleImage} from '../style/style_image';
-import type {StyleGlyph} from '../style/style_glyph';
+import type {Bucket} from '../data/bucket.js';
+import type Actor from '../util/actor.js';
+import type StyleLayer from '../style/style_layer.js';
+import type StyleLayerIndex from '../style/style_layer_index.js';
+import type {StyleImage} from '../style/style_image.js';
+import type {StyleGlyph} from '../style/style_glyph.js';
 import type {
     WorkerTileParameters,
     WorkerTileCallback,
-} from '../source/worker_source';
-import type {PromoteIdSpecification} from '../style-spec/types';
+} from '../source/worker_source.js';
+import type {PromoteIdSpecification} from '../style-spec/types.js';
 
 class WorkerTile {
     tileID: OverscaledTileID;

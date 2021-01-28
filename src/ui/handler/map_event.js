@@ -1,7 +1,7 @@
 // @flow
 
-import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../events';
-import type Map from '../map';
+import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../events.js';
+import type Map from '../map.js';
 
 export class MapEventHandler {
 

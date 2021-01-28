@@ -5,12 +5,12 @@ import {
     Uniform1i,
     Uniform3f,
     Uniform1f
-} from '../uniform_binding';
+} from '../uniform_binding.js';
 import {vec3} from 'gl-matrix';
-import {degToRad} from '../../util/util';
+import {degToRad} from '../../util/util.js';
 
-import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type Context from '../../gl/context';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type Context from '../../gl/context.js';
 
 export type SkyboxUniformsType = {|
     'u_matrix': UniformMatrix4f,

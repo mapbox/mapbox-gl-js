@@ -6,11 +6,11 @@ import {
     Uniform2f,
     Uniform3f,
     UniformMatrix4f
-} from '../uniform_binding';
+} from '../uniform_binding.js';
 
-import type Context from '../../gl/context';
-import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type RasterStyleLayer from '../../style/style_layer/raster_style_layer';
+import type Context from '../../gl/context.js';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type RasterStyleLayer from '../../style/style_layer/raster_style_layer.js';
 
 export type RasterUniformsType = {|
     'u_matrix': UniformMatrix4f,

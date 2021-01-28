@@ -1,18 +1,18 @@
 // @flow
 
-import StyleLayer from '../style_layer';
-import properties from './sky_style_layer_properties';
-import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
-import {renderColorRamp} from '../../util/color_ramp';
-import type {PaintProps} from './sky_style_layer_properties';
-import type Texture from '../../render/texture';
-import type Painter from '../../render/painter';
-import type {LayerSpecification} from '../../style-spec/types';
-import type Framebuffer from '../../gl/framebuffer';
-import type {RGBAImage} from '../../util/image';
-import type SkyboxGeometry from '../../render/skybox_geometry';
-import type {LightPosition} from '../light';
-import {warnOnce, degToRad} from '../../util/util';
+import StyleLayer from '../style_layer.js';
+import properties from './sky_style_layer_properties.js';
+import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
+import {renderColorRamp} from '../../util/color_ramp.js';
+import type {PaintProps} from './sky_style_layer_properties.js';
+import type Texture from '../../render/texture.js';
+import type Painter from '../../render/painter.js';
+import type {LayerSpecification} from '../../style-spec/types.js';
+import type Framebuffer from '../../gl/framebuffer.js';
+import type {RGBAImage} from '../../util/image.js';
+import type SkyboxGeometry from '../../render/skybox_geometry.js';
+import type {LightPosition} from '../light.js';
+import {warnOnce, degToRad} from '../../util/util.js';
 import {vec3, quat} from 'gl-matrix';
 
 function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean): vec3 {

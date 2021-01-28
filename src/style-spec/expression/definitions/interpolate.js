@@ -2,16 +2,16 @@
 
 import UnitBezier from '@mapbox/unitbezier';
 
-import * as interpolate from '../../util/interpolate';
-import {toString, NumberType, ColorType} from '../types';
-import {findStopLessThanOrEqualTo} from '../stops';
-import {hcl, lab} from '../../util/color_spaces';
+import * as interpolate from '../../util/interpolate.js';
+import {toString, NumberType, ColorType} from '../types.js';
+import {findStopLessThanOrEqualTo} from '../stops.js';
+import {hcl, lab} from '../../util/color_spaces.js';
 
-import type {Stops} from '../stops';
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Type} from '../types';
+import type {Stops} from '../stops.js';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type} from '../types.js';
 
 export type InterpolationType =
     { name: 'linear' } |

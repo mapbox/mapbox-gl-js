@@ -1,19 +1,19 @@
 // @flow
 
 import {vec3} from 'gl-matrix';
-import type Color from '../../style-spec/util/color';
+import type Color from '../../style-spec/util/color.js';
 
 import {
     UniformMatrix3f,
     Uniform1f,
     Uniform3f,
     Uniform4f,
-} from '../uniform_binding';
+} from '../uniform_binding.js';
 import type {
     UniformValues,
     UniformLocations,
-} from '../uniform_binding';
-import type Context from '../../gl/context';
+} from '../uniform_binding.js';
+import type Context from '../../gl/context.js';
 
 export type SkyboxCaptureUniformsType = {|
     'u_matrix_3f': UniformMatrix3f,

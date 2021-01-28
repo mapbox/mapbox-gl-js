@@ -1,14 +1,14 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import {
     getArrayBuffer,
     getJSON,
     postData,
     getImage,
     resetImageRequestQueue
-} from '../../../src/util/ajax';
-import window from '../../../src/util/window';
-import config from '../../../src/util/config';
-import webpSupported from '../../../src/util/webp_supported';
+} from '../../../src/util/ajax.js';
+import window from '../../../src/util/window.js';
+import config from '../../../src/util/config.js';
+import webpSupported from '../../../src/util/webp_supported.js';
 
 test('ajax', (t) => {
     t.beforeEach(callback => {

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from 'rollup-plugin-replace';
-import {plugins} from '../build/rollup_plugins';
+import {plugins} from '../build/rollup_plugins.js';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 

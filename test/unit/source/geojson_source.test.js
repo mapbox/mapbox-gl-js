@@ -1,10 +1,10 @@
-import {test} from '../../util/test';
-import Tile from '../../../src/source/tile';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import GeoJSONSource from '../../../src/source/geojson_source';
-import Transform from '../../../src/geo/transform';
-import LngLat from '../../../src/geo/lng_lat';
-import {extend} from '../../../src/util/util';
+import {test} from '../../util/test.js';
+import Tile from '../../../src/source/tile.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import GeoJSONSource from '../../../src/source/geojson_source.js';
+import Transform from '../../../src/geo/transform.js';
+import LngLat from '../../../src/geo/lng_lat.js';
+import {extend} from '../../../src/util/util.js';
 
 const wrapDispatcher = (dispatcher) => {
     return {

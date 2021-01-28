@@ -1,13 +1,13 @@
 // @flow
 
-import {NumberType, ValueType, FormattedType, array, StringType, ColorType, ResolvedImageType} from '../types';
-import Formatted, {FormattedSection} from '../types/formatted';
-import {toString, typeOf} from '../values';
+import {NumberType, ValueType, FormattedType, array, StringType, ColorType, ResolvedImageType} from '../types.js';
+import Formatted, {FormattedSection} from '../types/formatted.js';
+import {toString, typeOf} from '../values.js';
 
-import type {Expression} from '../expression';
-import type EvaluationContext from '../evaluation_context';
-import type ParsingContext from '../parsing_context';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type ParsingContext from '../parsing_context.js';
+import type {Type} from '../types.js';
 
 type FormattedSectionExpression = {
     // Content of a section may be Image expression or other

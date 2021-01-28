@@ -1,12 +1,12 @@
 // @flow
 
-import {StringType, BooleanType, CollatorType} from '../types';
-import Collator from '../types/collator';
+import {StringType, BooleanType, CollatorType} from '../types.js';
+import Collator from '../types/collator.js';
 
-import type {Expression} from '../expression';
-import type EvaluationContext from '../evaluation_context';
-import type ParsingContext from '../parsing_context';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type ParsingContext from '../parsing_context.js';
+import type {Type} from '../types.js';
 
 export default class CollatorExpression implements Expression {
     type: Type;

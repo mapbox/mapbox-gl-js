@@ -1,26 +1,26 @@
 // @flow
 
-import {CanonicalTileID} from './tile_id';
-import {Event, ErrorEvent, Evented} from '../util/evented';
-import {getImage, ResourceType} from '../util/ajax';
-import EXTENT from '../data/extent';
-import {RasterBoundsArray} from '../data/array_types';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import SegmentVector from '../data/segment';
-import Texture from '../render/texture';
-import MercatorCoordinate from '../geo/mercator_coordinate';
+import {CanonicalTileID} from './tile_id.js';
+import {Event, ErrorEvent, Evented} from '../util/evented.js';
+import {getImage, ResourceType} from '../util/ajax.js';
+import EXTENT from '../data/extent.js';
+import {RasterBoundsArray} from '../data/array_types.js';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import SegmentVector from '../data/segment.js';
+import Texture from '../render/texture.js';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
 
-import type {Source} from './source';
-import type {CanvasSourceSpecification} from './canvas_source';
-import type Map from '../ui/map';
-import type Dispatcher from '../util/dispatcher';
-import type Tile from './tile';
-import type {Callback} from '../types/callback';
-import type VertexBuffer from '../gl/vertex_buffer';
+import type {Source} from './source.js';
+import type {CanvasSourceSpecification} from './canvas_source.js';
+import type Map from '../ui/map.js';
+import type Dispatcher from '../util/dispatcher.js';
+import type Tile from './tile.js';
+import type {Callback} from '../types/callback.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
 import type {
     ImageSourceSpecification,
     VideoSourceSpecification
-} from '../style-spec/types';
+} from '../style-spec/types.js';
 
 type Coordinates = [[number, number], [number, number], [number, number], [number, number]];
 

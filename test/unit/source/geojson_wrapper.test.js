@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import Wrapper from '../../../src/source/geojson_wrapper';
+import {test} from '../../util/test.js';
+import Wrapper from '../../../src/source/geojson_wrapper.js';
 
 test('geojsonwrapper', (t) => {
 

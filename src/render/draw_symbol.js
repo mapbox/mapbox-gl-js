@@ -1,38 +1,38 @@
 // @flow
 
 import Point from '@mapbox/point-geometry';
-import drawCollisionDebug from './draw_collision_debug';
+import drawCollisionDebug from './draw_collision_debug.js';
 
-import SegmentVector from '../data/segment';
-import pixelsToTileUnits from '../source/pixels_to_tile_units';
-import * as symbolProjection from '../symbol/projection';
-import * as symbolSize from '../symbol/symbol_size';
+import SegmentVector from '../data/segment.js';
+import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
+import * as symbolProjection from '../symbol/projection.js';
+import * as symbolSize from '../symbol/symbol_size.js';
 import {mat4} from 'gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
-import StencilMode from '../gl/stencil_mode';
-import DepthMode from '../gl/depth_mode';
-import CullFaceMode from '../gl/cull_face_mode';
-import {addDynamicAttributes} from '../data/bucket/symbol_bucket';
-import {getAnchorAlignment, WritingMode} from '../symbol/shaping';
-import ONE_EM from '../symbol/one_em';
-import {evaluateVariableOffset} from '../symbol/symbol_layout';
-import Tile from '../source/tile';
+import StencilMode from '../gl/stencil_mode.js';
+import DepthMode from '../gl/depth_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
+import {addDynamicAttributes} from '../data/bucket/symbol_bucket.js';
+import {getAnchorAlignment, WritingMode} from '../symbol/shaping.js';
+import ONE_EM from '../symbol/one_em.js';
+import {evaluateVariableOffset} from '../symbol/symbol_layout.js';
+import Tile from '../source/tile.js';
 
 import {
     symbolIconUniformValues,
     symbolSDFUniformValues,
     symbolTextAndIconUniformValues
-} from './program/symbol_program';
+} from './program/symbol_program.js';
 
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-import type SymbolBucket, {SymbolBuffers} from '../data/bucket/symbol_bucket';
-import type Texture from '../render/texture';
-import type {OverscaledTileID} from '../source/tile_id';
-import type {UniformValues} from './uniform_binding';
-import type {SymbolSDFUniformsType} from '../render/program/symbol_program';
-import type {CrossTileID, VariableOffset} from '../symbol/placement';
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
+import type SymbolBucket, {SymbolBuffers} from '../data/bucket/symbol_bucket.js';
+import type Texture from '../render/texture.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
+import type {UniformValues} from './uniform_binding.js';
+import type {SymbolSDFUniformsType} from '../render/program/symbol_program.js';
+import type {CrossTileID, VariableOffset} from '../symbol/placement.js';
 
 export default drawSymbols;
 

@@ -1,22 +1,17 @@
+import path from 'path';
+import isBuiltin from 'is-builtin-module';
+import {rollup} from 'rollup';
 
-/* eslint-disable import/no-commonjs */
+import {test} from '../util/test.js';
+import rollupConfig from '../../src/style-spec/rollup.config.js';
 
-const path = require('path');
-const isBuiltin = require('is-builtin-module');
-
-const rollup = require('rollup');
-
-import {test} from '../util/test';
-import rollupConfig from '../../src/style-spec/rollup.config';
-
-// some paths
 const styleSpecDirectory = path.join(__dirname, '../../src/style-spec');
-const styleSpecPackage = require('../../src/style-spec/package.json');
+import styleSpecPackage from '../../src/style-spec/package.json';
 
 test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
     t.test('builds self-contained bundle without undeclared dependencies', (t) => {
         t.stub(console, 'warn');
-        rollup.rollup({
+        rollup({
             input: `${styleSpecDirectory}/style-spec.js`,
             plugins: [{
                 resolveId: (id, importer) => {

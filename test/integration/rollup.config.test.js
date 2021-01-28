@@ -1,4 +1,4 @@
-import {plugins} from '../../build/rollup_plugins';
+import {plugins} from '../../build/rollup_plugins.js';
 
 const suiteName = process.env.SUITE_NAME;
 

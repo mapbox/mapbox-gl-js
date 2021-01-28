@@ -1,55 +1,55 @@
 // @flow
 
 import {version} from '../../package.json';
-import {extend, bindAll, warnOnce, uniqueId} from '../util/util';
-import browser from '../util/browser';
-import window from '../util/window';
+import {extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
+import browser from '../util/browser.js';
+import window from '../util/window.js';
 const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
-import DOM from '../util/dom';
-import {getImage, getJSON, ResourceType} from '../util/ajax';
-import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG} from '../util/mapbox';
-import Style from '../style/style';
-import EvaluationParameters from '../style/evaluation_parameters';
-import Painter from '../render/painter';
-import Transform from '../geo/transform';
-import Hash from './hash';
-import HandlerManager from './handler_manager';
-import Camera from './camera';
-import LngLat from '../geo/lng_lat';
-import LngLatBounds from '../geo/lng_lat_bounds';
+import DOM from '../util/dom.js';
+import {getImage, getJSON, ResourceType} from '../util/ajax.js';
+import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG} from '../util/mapbox.js';
+import Style from '../style/style.js';
+import EvaluationParameters from '../style/evaluation_parameters.js';
+import Painter from '../render/painter.js';
+import Transform from '../geo/transform.js';
+import Hash from './hash.js';
+import HandlerManager from './handler_manager.js';
+import Camera from './camera.js';
+import LngLat from '../geo/lng_lat.js';
+import LngLatBounds from '../geo/lng_lat_bounds.js';
 import Point from '@mapbox/point-geometry';
-import AttributionControl from './control/attribution_control';
-import LogoControl from './control/logo_control';
+import AttributionControl from './control/attribution_control.js';
+import LogoControl from './control/logo_control.js';
 import {supported} from '@mapbox/mapbox-gl-supported';
-import {RGBAImage} from '../util/image';
-import {Event, ErrorEvent} from '../util/evented';
-import {MapMouseEvent} from './events';
-import TaskQueue from '../util/task_queue';
-import webpSupported from '../util/webp_supported';
-import {PerformanceMarkers, PerformanceUtils} from '../util/performance';
+import {RGBAImage} from '../util/image.js';
+import {Event, ErrorEvent} from '../util/evented.js';
+import {MapMouseEvent} from './events.js';
+import TaskQueue from '../util/task_queue.js';
+import webpSupported from '../util/webp_supported.js';
+import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 
-import {setCacheLimits} from '../util/tile_request_cache';
+import {setCacheLimits} from '../util/tile_request_cache.js';
 
 import type {PointLike} from '@mapbox/point-geometry';
-import type {RequestTransformFunction} from '../util/mapbox';
-import type {LngLatLike} from '../geo/lng_lat';
-import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
-import type {StyleOptions, StyleSetterOptions} from '../style/style';
-import type {MapEvent, MapDataEvent} from './events';
-import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
-import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
+import type {RequestTransformFunction} from '../util/mapbox.js';
+import type {LngLatLike} from '../geo/lng_lat.js';
+import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+import type {StyleOptions, StyleSetterOptions} from '../style/style.js';
+import type {MapEvent, MapDataEvent} from './events.js';
+import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer.js';
+import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image.js';
 
-import type ScrollZoomHandler from './handler/scroll_zoom';
-import type BoxZoomHandler from './handler/box_zoom';
-import type {TouchPitchHandler} from './handler/touch_zoom_rotate';
-import type DragRotateHandler from './handler/shim/drag_rotate';
-import type DragPanHandler, {DragPanOptions} from './handler/shim/drag_pan';
-import type KeyboardHandler from './handler/keyboard';
-import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom';
-import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
-import defaultLocale from './default_locale';
-import type {TaskID} from '../util/task_queue';
-import type {Cancelable} from '../types/cancelable';
+import type ScrollZoomHandler from './handler/scroll_zoom.js';
+import type BoxZoomHandler from './handler/box_zoom.js';
+import type {TouchPitchHandler} from './handler/touch_zoom_rotate.js';
+import type DragRotateHandler from './handler/shim/drag_rotate.js';
+import type DragPanHandler, {DragPanOptions} from './handler/shim/drag_pan.js';
+import type KeyboardHandler from './handler/keyboard.js';
+import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom.js';
+import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate.js';
+import defaultLocale from './default_locale.js';
+import type {TaskID} from '../util/task_queue.js';
+import type {Cancelable} from '../types/cancelable.js';
 import type {
     LayerSpecification,
     FilterSpecification,
@@ -57,7 +57,7 @@ import type {
     LightSpecification,
     TerrainSpecification,
     SourceSpecification
-} from '../style-spec/types';
+} from '../style-spec/types.js';
 
 type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */

@@ -1,11 +1,11 @@
 // @flow
 
-import DOM from '../../util/dom';
+import DOM from '../../util/dom.js';
 
-import {bindAll, warnOnce} from '../../util/util';
-import window from '../../util/window';
+import {bindAll, warnOnce} from '../../util/util.js';
+import window from '../../util/window.js';
 
-import type Map from '../map';
+import type Map from '../map.js';
 
 type Options = {
     container?: HTMLElement

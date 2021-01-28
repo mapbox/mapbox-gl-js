@@ -1,8 +1,8 @@
 // @flow
 
-import Benchmark from '../lib/benchmark';
-import createMap from '../lib/create_map';
-import type {StyleSpecification} from '../../src/style-spec/types';
+import Benchmark from '../lib/benchmark.js';
+import createMap from '../lib/create_map.js';
+import type {StyleSpecification} from '../../src/style-spec/types.js';
 
 export default class HillshadeLoad extends Benchmark {
     style: StyleSpecification;

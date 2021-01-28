@@ -1,12 +1,12 @@
 
-import ValidationError from '../error/validation_error';
-import {unbundle} from '../util/unbundle_jsonlint';
-import validateObject from './validate_object';
-import validateFilter from './validate_filter';
-import validatePaintProperty from './validate_paint_property';
-import validateLayoutProperty from './validate_layout_property';
-import validateSpec from './validate';
-import extend from '../util/extend';
+import ValidationError from '../error/validation_error.js';
+import {unbundle} from '../util/unbundle_jsonlint.js';
+import validateObject from './validate_object.js';
+import validateFilter from './validate_filter.js';
+import validatePaintProperty from './validate_paint_property.js';
+import validateLayoutProperty from './validate_layout_property.js';
+import validateSpec from './validate.js';
+import extend from '../util/extend.js';
 
 export default function validateLayer(options) {
     let errors = [];

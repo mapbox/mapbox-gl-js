@@ -2,31 +2,31 @@
 
 import assert from 'assert';
 
-import extend from '../util/extend';
-import ParsingError from './parsing_error';
-import ParsingContext from './parsing_context';
-import EvaluationContext from './evaluation_context';
-import CompoundExpression from './compound_expression';
-import Step from './definitions/step';
-import Interpolate from './definitions/interpolate';
-import Coalesce from './definitions/coalesce';
-import Let from './definitions/let';
-import definitions from './definitions';
-import * as isConstant from './is_constant';
-import RuntimeError from './runtime_error';
-import {success, error} from '../util/result';
-import {supportsPropertyExpression, supportsZoomExpression, supportsInterpolation} from '../util/properties';
+import extend from '../util/extend.js';
+import ParsingError from './parsing_error.js';
+import ParsingContext from './parsing_context.js';
+import EvaluationContext from './evaluation_context.js';
+import CompoundExpression from './compound_expression.js';
+import Step from './definitions/step.js';
+import Interpolate from './definitions/interpolate.js';
+import Coalesce from './definitions/coalesce.js';
+import Let from './definitions/let.js';
+import definitions from './definitions/index.js';
+import * as isConstant from './is_constant.js';
+import RuntimeError from './runtime_error.js';
+import {success, error} from '../util/result.js';
+import {supportsPropertyExpression, supportsZoomExpression, supportsInterpolation} from '../util/properties.js';
 
-import type {Type, EvaluationKind} from './types';
-import type {Value} from './values';
-import type {Expression} from './expression';
-import type {StylePropertySpecification} from '../style-spec';
-import type {Result} from '../util/result';
-import type {InterpolationType} from './definitions/interpolate';
-import type {PropertyValueSpecification} from '../types';
-import type {FormattedSection} from './types/formatted';
+import type {Type, EvaluationKind} from './types.js';
+import type {Value} from './values.js';
+import type {Expression} from './expression.js';
+import type {StylePropertySpecification} from '../style-spec.js';
+import type {Result} from '../util/result.js';
+import type {InterpolationType} from './definitions/interpolate.js';
+import type {PropertyValueSpecification} from '../types.js';
+import type {FormattedSection} from './types/formatted.js';
 import type Point from '@mapbox/point-geometry';
-import type {CanonicalTileID} from '../../source/tile_id';
+import type {CanonicalTileID} from '../../source/tile_id.js';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -260,8 +260,8 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
         (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType): CompositeExpression));
 }
 
-import {isFunction, createFunction} from '../function';
-import {Color} from './values';
+import {isFunction, createFunction} from '../function/index.js';
+import {Color} from './values.js';
 
 // serialization wrapper for old-style stop functions normalized to the
 // expression interface
@@ -357,7 +357,7 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
     return result;
 }
 
-import {ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, ResolvedImageType, array} from './types';
+import {ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, ResolvedImageType, array} from './types.js';
 
 function getExpectedType(spec: StylePropertySpecification): Type {
     const types = {

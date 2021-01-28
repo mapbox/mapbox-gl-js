@@ -1,6 +1,6 @@
 // @flow
 
-import loadGeometry from './load_geometry';
+import loadGeometry from './load_geometry.js';
 
 type EvaluationFeature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',

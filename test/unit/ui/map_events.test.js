@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
-import {createMap} from '../../util';
-import simulate, {window} from '../../util/simulate_interaction';
+import {test} from '../../util/test.js';
+import {createMap} from '../../util/index.js';
+import simulate, {window} from '../../util/simulate_interaction.js';
 
 test('Map#on adds a non-delegated event listener', (t) => {
     const map = createMap(t);

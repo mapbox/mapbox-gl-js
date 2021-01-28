@@ -5,11 +5,11 @@ import {
     UniformMatrix4f,
     Uniform1i,
     Uniform1f
-} from '../uniform_binding';
+} from '../uniform_binding.js';
 
-import type Context from '../../gl/context';
-import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type Color from '../../style-spec/util/color';
+import type Context from '../../gl/context.js';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type Color from '../../style-spec/util/color.js';
 
 export type DebugUniformsType = {|
     'u_color': UniformColor,

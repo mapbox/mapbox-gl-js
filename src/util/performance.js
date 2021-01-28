@@ -1,7 +1,7 @@
 // @flow
 
-import window from '../util/window';
-import type {RequestParameters} from '../util/ajax';
+import window from '../util/window.js';
+import type {RequestParameters} from '../util/ajax.js';
 
 const performance = window.performance;
 

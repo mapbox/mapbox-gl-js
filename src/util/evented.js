@@ -1,6 +1,6 @@
 // @flow
 
-import {extend} from './util';
+import {extend} from './util.js';
 
 type Listener = (Object) => any;
 type Listeners = {[_: string]: Array<Listener> };

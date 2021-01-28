@@ -1,7 +1,7 @@
 // @flow
-import Color from '../style-spec/util/color';
+import Color from '../style-spec/util/color.js';
 
-import type {BlendFuncType, ColorMaskType} from './types';
+import type {BlendFuncType, ColorMaskType} from './types.js';
 
 const ZERO = 0x0000;
 const ONE = 0x0001;

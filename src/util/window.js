@@ -11,7 +11,7 @@ import jsdom from 'jsdom';
 import gl from 'gl';
 import sinon from 'sinon';
 
-import type {Window} from '../types/window';
+import type {Window} from '../types/window.js';
 
 const {window: _window} = new jsdom.JSDOM('', {
     virtualConsole: new jsdom.VirtualConsole().sendTo(console)

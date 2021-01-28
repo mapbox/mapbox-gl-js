@@ -1,9 +1,9 @@
-import {test} from '../../util/test';
-import CanvasSource from '../../../src/source/canvas_source';
-import Transform from '../../../src/geo/transform';
-import {Event, Evented} from '../../../src/util/evented';
-import {extend} from '../../../src/util/util';
-import window from '../../../src/util/window';
+import {test} from '../../util/test.js';
+import CanvasSource from '../../../src/source/canvas_source.js';
+import Transform from '../../../src/geo/transform.js';
+import {Event, Evented} from '../../../src/util/evented.js';
+import {extend} from '../../../src/util/util.js';
+import window from '../../../src/util/window.js';
 
 function createSource(options) {
     window.useFakeHTMLCanvasGetContext();

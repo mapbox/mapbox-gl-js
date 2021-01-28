@@ -1,6 +1,6 @@
 
-import ValidationError from '../error/validation_error';
-import validateString from './validate_string';
+import ValidationError from '../error/validation_error.js';
+import validateString from './validate_string.js';
 
 export default function(options) {
     const value = options.value;

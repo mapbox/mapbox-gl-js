@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import declass from '../../../src/style-spec/declass';
+import {test} from '../../util/test.js';
+import declass from '../../../src/style-spec/declass.js';
 
 test('declass a style, one class', (t) => {
     const style = {

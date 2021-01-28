@@ -1,13 +1,13 @@
 // @flow
 
 import assert from 'assert';
-import {isValue, typeOf, Color} from '../values';
-import Formatted from '../types/formatted';
+import {isValue, typeOf, Color} from '../values.js';
+import Formatted from '../types/formatted.js';
 
-import type {Type} from '../types';
-import type {Value}  from '../values';
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
+import type {Type} from '../types.js';
+import type {Value}  from '../values.js';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
 
 class Literal implements Expression {
     type: Type;

@@ -1,11 +1,11 @@
 // @flow
 
-import {SDF_SCALE} from '../render/glyph_manager';
-import {AlphaImage} from '../util/image';
-import {register} from '../util/web_worker_transfer';
+import {SDF_SCALE} from '../render/glyph_manager.js';
+import {AlphaImage} from '../util/image.js';
+import {register} from '../util/web_worker_transfer.js';
 import potpack from 'potpack';
 
-import type {GlyphMetrics, StyleGlyph} from '../style/style_glyph';
+import type {GlyphMetrics, StyleGlyph} from '../style/style_glyph.js';
 
 const glyphPadding = 1;
 /*

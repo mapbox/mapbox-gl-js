@@ -1,7 +1,7 @@
 
-import validateStyleMin from './validate_style.min';
-import {v8} from './style-spec';
-import readStyle from './read_style';
+import validateStyleMin from './validate_style.min.js';
+import {v8} from './style-spec.js';
+import readStyle from './read_style.js';
 
 /**
  * Validate a Mapbox GL style against the style specification.

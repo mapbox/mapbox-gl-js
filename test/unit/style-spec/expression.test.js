@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
-import {createPropertyExpression} from '../../../src/style-spec/expression';
-import definitions from '../../../src/style-spec/expression/definitions';
-import v8 from '../../../src/style-spec/reference/v8';
+import {test} from '../../util/test.js';
+import {createPropertyExpression} from '../../../src/style-spec/expression/index.js';
+import definitions from '../../../src/style-spec/expression/definitions/index.js';
+import v8 from '../../../src/style-spec/reference/v8.json';
 
 // filter out interal "error" and "filter-*" expressions from definition list
 const filterExpressionRegex = /filter-/;

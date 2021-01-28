@@ -1,14 +1,14 @@
 // @flow
 
-import {toString} from './types';
+import {toString} from './types.js';
 
-import ParsingContext from './parsing_context';
-import EvaluationContext from './evaluation_context';
+import ParsingContext from './parsing_context.js';
+import EvaluationContext from './evaluation_context.js';
 import assert from 'assert';
 
-import type {Expression, ExpressionRegistry} from './expression';
-import type {Type} from './types';
-import type {Value} from './values';
+import type {Expression, ExpressionRegistry} from './expression.js';
+import type {Type} from './types.js';
+import type {Value} from './values.js';
 
 export type Varargs = {| type: Type |};
 type Signature = Array<Type> | Varargs;

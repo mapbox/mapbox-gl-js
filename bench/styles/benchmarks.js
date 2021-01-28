@@ -1,15 +1,14 @@
-import mapboxgl from '../../src';
-import accessToken from '../lib/access_token';
-import locationsWithTileID from '../lib/locations_with_tile_id';
+import mapboxgl from '../../src/index.js';
+import accessToken from '../lib/access_token.js';
+import locationsWithTileID from '../lib/locations_with_tile_id.js';
 import styleBenchmarkLocations from '@mapbox/gazetteer/benchmark/style-benchmark-locations.json';
-import StyleLayerCreate from '../benchmarks/style_layer_create';
-import Validate from '../benchmarks/style_validate';
-import Layout from '../benchmarks/layout';
-import Paint from '../benchmarks/paint';
-import QueryPoint from '../benchmarks/query_point';
-import QueryBox from '../benchmarks/query_box';
-
-import getWorkerPool from '../../src/util/global_worker_pool';
+import StyleLayerCreate from '../benchmarks/style_layer_create.js';
+import Validate from '../benchmarks/style_validate.js';
+import Layout from '../benchmarks/layout.js';
+import Paint from '../benchmarks/paint.js';
+import QueryPoint from '../benchmarks/query_point.js';
+import QueryBox from '../benchmarks/query_box.js';
+import getWorkerPool from '../../src/util/global_worker_pool.js';
 
 const locations = locationsWithTileID(styleBenchmarkLocations.features);
 

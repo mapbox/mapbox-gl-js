@@ -1,15 +1,15 @@
-import {test} from '../../util/test';
-import SourceCache from '../../../src/source/source_cache';
-import {create, setType} from '../../../src/source/source';
-import Tile from '../../../src/source/tile';
-import {QueryGeometry} from '../../../src/style/query_geometry';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import Transform from '../../../src/geo/transform';
-import LngLat from '../../../src/geo/lng_lat';
+import {test} from '../../util/test.js';
+import SourceCache from '../../../src/source/source_cache.js';
+import {create, setType} from '../../../src/source/source.js';
+import Tile from '../../../src/source/tile.js';
+import {QueryGeometry} from '../../../src/style/query_geometry.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import Transform from '../../../src/geo/transform.js';
+import LngLat from '../../../src/geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
-import {Event, ErrorEvent, Evented} from '../../../src/util/evented';
-import {extend} from '../../../src/util/util';
-import browser from '../../../src/util/browser';
+import {Event, ErrorEvent, Evented} from '../../../src/util/evented.js';
+import {extend} from '../../../src/util/util.js';
+import browser from '../../../src/util/browser.js';
 
 // Add a mocked source type for use in these tests
 function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {

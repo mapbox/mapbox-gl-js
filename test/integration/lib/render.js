@@ -5,11 +5,11 @@
 // refer testem.js#before_tests()
 import fixtures from '../dist/render-fixtures.json';
 import ignores from '../../ignores.json';
-import config from '../../../src/util/config';
-import {clamp} from '../../../src/util/util';
-import {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate';
+import config from '../../../src/util/config.js';
+import {clamp} from '../../../src/util/util.js';
+import {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate.js';
 import {setupHTML, updateHTML} from '../../util/html_generator.js';
-import {applyOperations} from './operation-handlers';
+import {applyOperations} from './operation-handlers.js';
 import pixelmatch from 'pixelmatch';
 import {vec3, vec4} from 'gl-matrix';
 

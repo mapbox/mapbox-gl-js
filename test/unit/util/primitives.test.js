@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import {Aabb, Frustum, Ray} from '../../../src/util/primitives';
+import {test} from '../../util/test.js';
+import {Aabb, Frustum, Ray} from '../../../src/util/primitives.js';
 import {mat4, vec3} from 'gl-matrix';
 
 test('primitives', (t) => {

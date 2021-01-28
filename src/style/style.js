@@ -2,45 +2,45 @@
 
 import assert from 'assert';
 
-import {Event, ErrorEvent, Evented} from '../util/evented';
-import StyleLayer from './style_layer';
-import createStyleLayer from './create_style_layer';
-import loadSprite from './load_sprite';
-import ImageManager from '../render/image_manager';
-import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager';
-import Light from './light';
-import Terrain from './terrain';
-import LineAtlas from '../render/line_atlas';
-import {pick, clone, extend, deepEqual, filterObject} from '../util/util';
-import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax';
-import {isMapboxURL} from '../util/mapbox';
-import browser from '../util/browser';
-import Dispatcher from '../util/dispatcher';
-import {validateStyle, emitValidationErrors as _emitValidationErrors} from './validate_style';
-import {QueryGeometry} from '../style/query_geometry';
+import {Event, ErrorEvent, Evented} from '../util/evented.js';
+import StyleLayer from './style_layer.js';
+import createStyleLayer from './create_style_layer.js';
+import loadSprite from './load_sprite.js';
+import ImageManager from '../render/image_manager.js';
+import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
+import Light from './light.js';
+import Terrain from './terrain.js';
+import LineAtlas from '../render/line_atlas.js';
+import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
+import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
+import {isMapboxURL} from '../util/mapbox.js';
+import browser from '../util/browser.js';
+import Dispatcher from '../util/dispatcher.js';
+import {validateStyle, emitValidationErrors as _emitValidationErrors} from './validate_style.js';
+import {QueryGeometry} from '../style/query_geometry.js';
 import {
     create as createSource,
     getType as getSourceType,
     setType as setSourceType,
     type SourceClass
-} from '../source/source';
-import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '../source/query_features';
-import SourceCache from '../source/source_cache';
-import GeoJSONSource from '../source/geojson_source';
-import styleSpec from '../style-spec/reference/latest';
-import getWorkerPool from '../util/global_worker_pool';
-import deref from '../style-spec/deref';
-import emptyStyle from '../style-spec/empty';
-import diffStyles, {operations as diffOperations} from '../style-spec/diff';
+} from '../source/source.js';
+import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '../source/query_features.js';
+import SourceCache from '../source/source_cache.js';
+import GeoJSONSource from '../source/geojson_source.js';
+import styleSpec from '../style-spec/reference/latest.js';
+import getWorkerPool from '../util/global_worker_pool.js';
+import deref from '../style-spec/deref.js';
+import emptyStyle from '../style-spec/empty.js';
+import diffStyles, {operations as diffOperations} from '../style-spec/diff.js';
 import {
     registerForPluginStateChange,
     evented as rtlTextPluginEvented,
     triggerPluginCompletionEvent
-} from '../source/rtl_text_plugin';
-import PauseablePlacement from './pauseable_placement';
-import ZoomHistory from './zoom_history';
-import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
-import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
+} from '../source/rtl_text_plugin.js';
+import PauseablePlacement from './pauseable_placement.js';
+import ZoomHistory from './zoom_history.js';
+import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
+import {validateCustomStyleLayer} from './style_layer/custom_style_layer.js';
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -48,15 +48,15 @@ import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
 const emitValidationErrors = (evented: Evented, errors: ?$ReadOnlyArray<{message: string, identifier?: string}>) =>
     _emitValidationErrors(evented, errors && errors.filter(error => error.identifier !== 'source.canvas'));
 
-import type Map from '../ui/map';
-import type Transform from '../geo/transform';
-import type {StyleImage} from './style_image';
-import type {StyleGlyph} from './style_glyph';
-import type {Callback} from '../types/callback';
-import type EvaluationParameters from './evaluation_parameters';
-import type {Placement} from '../symbol/placement';
-import type {Cancelable} from '../types/cancelable';
-import type {RequestParameters, ResponseCallback} from '../util/ajax';
+import type Map from '../ui/map.js';
+import type Transform from '../geo/transform.js';
+import type {StyleImage} from './style_image.js';
+import type {StyleGlyph} from './style_glyph.js';
+import type {Callback} from '../types/callback.js';
+import type EvaluationParameters from './evaluation_parameters.js';
+import type {Placement} from '../symbol/placement.js';
+import type {Cancelable} from '../types/cancelable.js';
+import type {RequestParameters, ResponseCallback} from '../util/ajax.js';
 import type {GeoJSON} from '@mapbox/geojson-types';
 import type {
     LayerSpecification,
@@ -65,10 +65,10 @@ import type {
     LightSpecification,
     SourceSpecification,
     TerrainSpecification
-} from '../style-spec/types';
-import type {CustomLayerInterface} from './style_layer/custom_style_layer';
-import type {Validator} from './validate_style';
-import type {OverscaledTileID} from '../source/tile_id';
+} from '../style-spec/types.js';
+import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
+import type {Validator} from './validate_style.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
 import type {PointLike} from '@mapbox/point-geometry';
 
 const supportedDiffOperations = pick(diffOperations, [

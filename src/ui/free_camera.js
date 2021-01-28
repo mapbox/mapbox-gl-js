@@ -1,11 +1,11 @@
 // @flow
 
-import MercatorCoordinate from '../geo/mercator_coordinate';
-import {degToRad, wrap} from '../util/util';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import {degToRad, wrap} from '../util/util.js';
 import {vec3, vec4, quat, mat4} from 'gl-matrix';
-import type {Elevation} from '../terrain/elevation';
+import type {Elevation} from '../terrain/elevation.js';
 
-import type {LngLatLike} from '../geo/lng_lat';
+import type {LngLatLike} from '../geo/lng_lat.js';
 
 function getColumn(matrix: mat4, col: number): vec4 {
     return [matrix[col * 4], matrix[col * 4 + 1], matrix[col * 4 + 2], matrix[col * 4 + 3]];

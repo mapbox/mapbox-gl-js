@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
-import VertexBuffer from '../../../src/gl/vertex_buffer';
-import {StructArrayLayout3i6} from '../../../src/data/array_types';
-import Context from '../../../src/gl/context';
+import {test} from '../../util/test.js';
+import VertexBuffer from '../../../src/gl/vertex_buffer.js';
+import {StructArrayLayout3i6} from '../../../src/data/array_types.js';
+import Context from '../../../src/gl/context.js';
 
 test('VertexBuffer', (t) => {
     class TestArray extends StructArrayLayout3i6 {}

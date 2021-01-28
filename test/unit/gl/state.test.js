@@ -1,8 +1,8 @@
-import {test} from '../../util/test';
-import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha} from '../../../src/gl/value';
-import Context from '../../../src/gl/context';
-import Color from '../../../src/style-spec/util/color';
-import {deepEqual} from '../../../src/util/util';
+import {test} from '../../util/test.js';
+import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha} from '../../../src/gl/value.js';
+import Context from '../../../src/gl/context.js';
+import Color from '../../../src/style-spec/util/color.js';
+import {deepEqual} from '../../../src/util/util.js';
 import gl from 'gl';
 
 const context = new Context(gl(10, 10));

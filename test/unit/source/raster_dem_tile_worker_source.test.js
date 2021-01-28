@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
-import RasterDEMTileWorkerSource from '../../../src/source/raster_dem_tile_worker_source';
-import StyleLayerIndex from '../../../src/style/style_layer_index';
-import DEMData from '../../../src/data/dem_data';
+import {test} from '../../util/test.js';
+import RasterDEMTileWorkerSource from '../../../src/source/raster_dem_tile_worker_source.js';
+import StyleLayerIndex from '../../../src/style/style_layer_index.js';
+import DEMData from '../../../src/data/dem_data.js';
 
 test('loadTile', (t) => {
     t.test('loads DEM tile', (t) => {

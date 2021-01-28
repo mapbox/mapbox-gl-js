@@ -5,8 +5,8 @@
 // refer testem.js#before_tests()
 import fixtures from '../dist/query-fixtures.json';
 import ignores from '../../ignores.json';
-import {applyOperations} from './operation-handlers';
-import {deepEqual, generateDiffLog} from './json-diff';
+import {applyOperations} from './operation-handlers.js';
+import {deepEqual, generateDiffLog} from './json-diff.js';
 import {setupHTML, updateHTML} from '../../util/html_generator.js';
 
 window._suiteName = 'query-tests';

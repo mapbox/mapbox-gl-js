@@ -1,17 +1,17 @@
 // @flow
 
-import DOM from '../util/dom';
-import window from '../util/window';
-import LngLat from '../geo/lng_lat';
+import DOM from '../util/dom.js';
+import window from '../util/window.js';
+import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
-import smartWrap from '../util/smart_wrap';
-import {bindAll, extend} from '../util/util';
-import {type Anchor, anchorTranslate, applyAnchorClass} from './anchor';
-import {Event, Evented} from '../util/evented';
-import type Map from './map';
-import type Popup from './popup';
-import type {LngLatLike} from "../geo/lng_lat";
-import type {MapMouseEvent, MapTouchEvent} from './events';
+import smartWrap from '../util/smart_wrap.js';
+import {bindAll, extend} from '../util/util.js';
+import {type Anchor, anchorTranslate, applyAnchorClass} from './anchor.js';
+import {Event, Evented} from '../util/evented.js';
+import type Map from './map.js';
+import type Popup from './popup.js';
+import type {LngLatLike} from "../geo/lng_lat.js";
+import type {MapMouseEvent, MapTouchEvent} from './events.js';
 import type {PointLike} from '@mapbox/point-geometry';
 
 type Options = {

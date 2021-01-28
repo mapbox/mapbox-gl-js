@@ -1,6 +1,6 @@
 // @flow strict
 
-import window from './window';
+import window from './window.js';
 
 const exported = {
     supported: false,

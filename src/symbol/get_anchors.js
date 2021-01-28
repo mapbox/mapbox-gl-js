@@ -1,12 +1,12 @@
 // @flow
 
-import {number as interpolate} from '../style-spec/util/interpolate';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
 
-import Anchor from '../symbol/anchor';
-import checkMaxAngle from './check_max_angle';
+import Anchor from '../symbol/anchor.js';
+import checkMaxAngle from './check_max_angle.js';
 
 import type Point from '@mapbox/point-geometry';
-import type {Shaping, PositionedIcon} from './shaping';
+import type {Shaping, PositionedIcon} from './shaping.js';
 
 export {getAnchors, getCenterAnchor};
 

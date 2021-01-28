@@ -1,10 +1,10 @@
 // @flow
 
-import type SourceCache from '../source/source_cache';
-import {clamp} from '../util/util';
-import browser from '../util/browser';
-import Tile from '../source/tile';
-import type Transform from '../geo/transform';
+import type SourceCache from '../source/source_cache.js';
+import {clamp} from '../util/util.js';
+import browser from '../util/browser.js';
+import Tile from '../source/tile.js';
+import type Transform from '../geo/transform.js';
 
 export type RasterFade = {|
     opacity: number,

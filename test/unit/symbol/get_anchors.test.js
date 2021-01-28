@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import Point from '@mapbox/point-geometry';
-import {getAnchors, getCenterAnchor} from '../../../src/symbol/get_anchors';
+import {getAnchors, getCenterAnchor} from '../../../src/symbol/get_anchors.js';
 
 const TILE_EXTENT = 4096;
 

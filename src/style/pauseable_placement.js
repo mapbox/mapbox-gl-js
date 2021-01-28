@@ -1,14 +1,14 @@
 // @flow
 
-import browser from '../util/browser';
+import browser from '../util/browser.js';
 
-import {Placement} from '../symbol/placement';
+import {Placement} from '../symbol/placement.js';
 
-import type Transform from '../geo/transform';
-import type StyleLayer from './style_layer';
-import type SymbolStyleLayer from './style_layer/symbol_style_layer';
-import type Tile from '../source/tile';
-import type {BucketPart} from '../symbol/placement';
+import type Transform from '../geo/transform.js';
+import type StyleLayer from './style_layer.js';
+import type SymbolStyleLayer from './style_layer/symbol_style_layer.js';
+import type Tile from '../source/tile.js';
+import type {BucketPart} from '../symbol/placement.js';
 
 class LayerPlacement {
     _sortAcrossTiles: boolean;

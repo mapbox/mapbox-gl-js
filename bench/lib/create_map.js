@@ -1,6 +1,6 @@
 // @flow
 
-import Map from '../../src/ui/map';
+import Map from '../../src/ui/map.js';
 
 export default function (options: any): Promise<Map> {
     return new Promise((resolve, reject) => {

@@ -1,10 +1,10 @@
 // @flow
 
-import {uniqueId, asyncAll} from './util';
-import Actor from './actor';
+import {uniqueId, asyncAll} from './util.js';
+import Actor from './actor.js';
 import assert from 'assert';
 
-import type WorkerPool from './worker_pool';
+import type WorkerPool from './worker_pool.js';
 
 /**
  * Responsible for sending messages from a {@link Source} to an associated

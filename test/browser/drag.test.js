@@ -1,7 +1,7 @@
-import {test} from '../util/test';
-import browser from './util/browser';
+import {test} from '../util/test.js';
+import browser from './util/browser.js';
 import {Origin} from 'selenium-webdriver';
-import {equalWithPrecision} from '../util';
+import {equalWithPrecision} from '../util/index.js';
 
 test("dragging", async t => {
     const {driver} = browser;

@@ -1,16 +1,16 @@
 // @flow
 
-import window from './window';
-import {extend, warnOnce, isWorker} from './util';
-import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox';
-import config from './config';
+import window from './window.js';
+import {extend, warnOnce, isWorker} from './util.js';
+import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox.js';
+import config from './config.js';
 import assert from 'assert';
-import {cacheGet, cachePut} from './tile_request_cache';
-import webpSupported from './webp_supported';
-import offscreenCanvasSupported from './offscreen_canvas_supported';
+import {cacheGet, cachePut} from './tile_request_cache.js';
+import webpSupported from './webp_supported.js';
+import offscreenCanvasSupported from './offscreen_canvas_supported.js';
 
-import type {Callback} from '../types/callback';
-import type {Cancelable} from '../types/cancelable';
+import type {Callback} from '../types/callback.js';
+import type {Cancelable} from '../types/cancelable.js';
 
 /**
  * The type of a resource.

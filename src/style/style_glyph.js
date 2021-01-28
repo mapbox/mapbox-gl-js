@@ -1,6 +1,6 @@
 // @flow
 
-import type {AlphaImage} from '../util/image';
+import type {AlphaImage} from '../util/image.js';
 
 export type GlyphMetrics = {
     width: number,

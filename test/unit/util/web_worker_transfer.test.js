@@ -1,9 +1,9 @@
 // @flow
 
-import {test} from '../../util/test';
-import {register, serialize, deserialize} from '../../../src/util/web_worker_transfer';
+import {test} from '../../util/test.js';
+import {register, serialize, deserialize} from '../../../src/util/web_worker_transfer.js';
 
-import type {Serialized} from '../../../src/util/web_worker_transfer';
+import type {Serialized} from '../../../src/util/web_worker_transfer.js';
 
 test('round trip', (t) => {
     class Foo {

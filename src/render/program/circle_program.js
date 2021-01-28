@@ -4,16 +4,16 @@ import {
     Uniform1f,
     Uniform2f,
     UniformMatrix4f
-} from '../uniform_binding';
-import pixelsToTileUnits from '../../source/pixels_to_tile_units';
+} from '../uniform_binding.js';
+import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
 
-import type Context from '../../gl/context';
-import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type {OverscaledTileID} from '../../source/tile_id';
-import type Tile from '../../source/tile';
-import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
-import type Painter from '../painter';
-import browser from '../../util/browser';
+import type Context from '../../gl/context.js';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type {OverscaledTileID} from '../../source/tile_id.js';
+import type Tile from '../../source/tile.js';
+import type CircleStyleLayer from '../../style/style_layer/circle_style_layer.js';
+import type Painter from '../painter.js';
+import browser from '../../util/browser.js';
 
 export type CircleUniformsType = {|
     'u_camera_to_center_distance': Uniform1f,

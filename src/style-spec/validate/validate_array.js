@@ -1,7 +1,7 @@
 
-import getType from '../util/get_type';
-import validate from './validate';
-import ValidationError from '../error/validation_error';
+import getType from '../util/get_type.js';
+import validate from './validate.js';
+import ValidationError from '../error/validation_error.js';
 
 export default function validateArray(options) {
     const array = options.value;

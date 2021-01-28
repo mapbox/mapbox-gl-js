@@ -1,8 +1,8 @@
 // @flow
 
-import {warnOnce, clamp} from '../util/util';
+import {warnOnce, clamp} from '../util/util.js';
 
-import EXTENT from './extent';
+import EXTENT from './extent.js';
 
 import type Point from '@mapbox/point-geometry';
 

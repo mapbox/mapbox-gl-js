@@ -1,8 +1,8 @@
 // @flow
 
-import Benchmark from '../lib/benchmark';
-import TileParser from '../lib/tile_parser';
-import {OverscaledTileID} from '../../src/source/tile_id';
+import Benchmark from '../lib/benchmark.js';
+import TileParser from '../lib/tile_parser.js';
+import {OverscaledTileID} from '../../src/source/tile_id.js';
 
 const LAYER_COUNT = 2;
 

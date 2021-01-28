@@ -1,6 +1,6 @@
 // @flow
 
-import Color from './color';
+import Color from './color.js';
 
 export function number(a: number, b: number, t: number) {
     return (a * (1 - t)) + (b * t);

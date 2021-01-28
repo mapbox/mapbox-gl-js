@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
-import DEMData from '../../../src/data/dem_data';
-import DemMinMaxQuadTree, {buildDemMipmap, sampleElevation} from '../../../src/data/dem_tree';
-import {fixedNum} from '../../util/fixed';
+import {test} from '../../util/test.js';
+import DEMData from '../../../src/data/dem_data.js';
+import DemMinMaxQuadTree, {buildDemMipmap, sampleElevation} from '../../../src/data/dem_tree.js';
+import {fixedNum} from '../../util/fixed.js';
 
 const unpackVector = [65536, 256, 1];
 

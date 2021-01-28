@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
-import Worker from '../../../src/source/worker';
-import window from '../../../src/util/window';
+import {test} from '../../util/test.js';
+import Worker from '../../../src/source/worker.js';
+import window from '../../../src/util/window.js';
 
 const _self = {
     addEventListener() {}

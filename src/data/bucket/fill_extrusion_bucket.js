@@ -1,41 +1,41 @@
 // @flow
 
-import {FillExtrusionLayoutArray, FillExtrusionCentroidArray} from '../array_types';
+import {FillExtrusionLayoutArray, FillExtrusionCentroidArray} from '../array_types.js';
 
-import {members as layoutAttributes, centroidAttributes} from './fill_extrusion_attributes';
-import SegmentVector from '../segment';
-import {ProgramConfigurationSet} from '../program_configuration';
-import {TriangleIndexArray} from '../index_array_type';
-import EXTENT from '../extent';
+import {members as layoutAttributes, centroidAttributes} from './fill_extrusion_attributes.js';
+import SegmentVector from '../segment.js';
+import {ProgramConfigurationSet} from '../program_configuration.js';
+import {TriangleIndexArray} from '../index_array_type.js';
+import EXTENT from '../extent.js';
 import earcut from 'earcut';
 import mvt from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
-import classifyRings from '../../util/classify_rings';
+import classifyRings from '../../util/classify_rings.js';
 import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
-import {register} from '../../util/web_worker_transfer';
-import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
-import loadGeometry from '../load_geometry';
-import toEvaluationFeature from '../evaluation_feature';
-import EvaluationParameters from '../../style/evaluation_parameters';
+import {register} from '../../util/web_worker_transfer.js';
+import {hasPattern, addPatternDependencies} from './pattern_bucket_features.js';
+import loadGeometry from '../load_geometry.js';
+import toEvaluationFeature from '../evaluation_feature.js';
+import EvaluationParameters from '../../style/evaluation_parameters.js';
 import Point from '@mapbox/point-geometry';
-import {number as interpolate} from '../../style-spec/util/interpolate';
+import {number as interpolate} from '../../style-spec/util/interpolate.js';
 
-import type {CanonicalTileID} from '../../source/tile_id';
+import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
     BucketFeature,
     IndexedFeature,
     PopulateParameters
-} from '../bucket';
+} from '../bucket.js';
 
-import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
-import type Context from '../../gl/context';
-import type IndexBuffer from '../../gl/index_buffer';
-import type VertexBuffer from '../../gl/vertex_buffer';
-import type {FeatureStates} from '../../source/source_state';
-import type {ImagePosition} from '../../render/image_atlas';
+import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer.js';
+import type Context from '../../gl/context.js';
+import type IndexBuffer from '../../gl/index_buffer.js';
+import type VertexBuffer from '../../gl/vertex_buffer.js';
+import type {FeatureStates} from '../../source/source_state.js';
+import type {ImagePosition} from '../../render/image_atlas.js';
 
 const FACTOR = Math.pow(2, 13);
 

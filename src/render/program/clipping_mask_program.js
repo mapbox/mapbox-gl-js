@@ -1,9 +1,9 @@
 // @flow
 
-import {UniformMatrix4f} from '../uniform_binding';
+import {UniformMatrix4f} from '../uniform_binding.js';
 
-import type Context from '../../gl/context';
-import type {UniformValues, UniformLocations} from '../uniform_binding';
+import type Context from '../../gl/context.js';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 
 export type ClippingMaskUniformsType = {|
     'u_matrix': UniformMatrix4f

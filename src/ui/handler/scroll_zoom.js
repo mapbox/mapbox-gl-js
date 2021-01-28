@@ -1,17 +1,17 @@
 // @flow
 
 import assert from 'assert';
-import DOM from '../../util/dom';
+import DOM from '../../util/dom.js';
 
-import {ease as _ease, bindAll, bezier} from '../../util/util';
-import browser from '../../util/browser';
-import window from '../../util/window';
-import {number as interpolate} from '../../style-spec/util/interpolate';
+import {ease as _ease, bindAll, bezier} from '../../util/util.js';
+import browser from '../../util/browser.js';
+import window from '../../util/window.js';
+import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import Point from '@mapbox/point-geometry';
 
-import type Map from '../map';
-import type HandlerManager from '../handler_manager';
-import MercatorCoordinate from '../../geo/mercator_coordinate';
+import type Map from '../map.js';
+import type HandlerManager from '../handler_manager.js';
+import MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;

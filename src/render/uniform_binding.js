@@ -1,8 +1,8 @@
 // @flow
 
-import Color from '../style-spec/util/color';
+import Color from '../style-spec/util/color.js';
 
-import type Context from '../gl/context';
+import type Context from '../gl/context.js';
 
 export type UniformValues<Us: Object>
     = $Exact<$ObjMap<Us, <V>(u: Uniform<V>) => V>>;

@@ -1,11 +1,11 @@
 
-import ValidationError from '../error/validation_error';
-import validateExpression from './validate_expression';
-import validateEnum from './validate_enum';
-import getType from '../util/get_type';
-import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
-import extend from '../util/extend';
-import {isExpressionFilter} from '../feature_filter';
+import ValidationError from '../error/validation_error.js';
+import validateExpression from './validate_expression.js';
+import validateEnum from './validate_enum.js';
+import getType from '../util/get_type.js';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
+import extend from '../util/extend.js';
+import {isExpressionFilter} from '../feature_filter/index.js';
 
 export default function validateFilter(options) {
     if (isExpressionFilter(deepUnbundle(options.value))) {

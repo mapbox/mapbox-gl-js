@@ -1,10 +1,10 @@
 // @flow
 
-import {bindAll} from '../util/util';
-import window from '../util/window';
-import throttle from '../util/throttle';
+import {bindAll} from '../util/util.js';
+import window from '../util/window.js';
+import throttle from '../util/throttle.js';
 
-import type Map from './map';
+import type Map from './map.js';
 
 /*
  * Adds the map's position to its page's location hash.

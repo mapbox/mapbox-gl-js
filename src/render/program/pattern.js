@@ -6,16 +6,16 @@ import {
     Uniform1f,
     Uniform2f,
     Uniform3f
-} from '../uniform_binding';
-import pixelsToTileUnits from '../../source/pixels_to_tile_units';
+} from '../uniform_binding.js';
+import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
 
-import type Painter from '../painter';
-import type {OverscaledTileID} from '../../source/tile_id';
-import type {CrossFaded} from '../../style/properties';
-import type {CrossfadeParameters} from '../../style/evaluation_parameters';
-import type {UniformValues} from '../uniform_binding';
-import type Tile from '../../source/tile';
-import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
+import type Painter from '../painter.js';
+import type {OverscaledTileID} from '../../source/tile_id.js';
+import type {CrossFaded} from '../../style/properties.js';
+import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
+import type {UniformValues} from '../uniform_binding.js';
+import type Tile from '../../source/tile.js';
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 
 type BackgroundPatternUniformsType = {|
     'u_image': Uniform1i,

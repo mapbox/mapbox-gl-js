@@ -1,6 +1,6 @@
-import {test} from '../../util/test';
-import LngLat from '../../../src/geo/lng_lat';
-import LngLatBounds from '../../../src/geo/lng_lat_bounds';
+import {test} from '../../util/test.js';
+import LngLat from '../../../src/geo/lng_lat.js';
+import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
 
 test('LngLatBounds', (t) => {
     t.test('#constructor', (t) => {

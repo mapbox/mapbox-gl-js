@@ -5,7 +5,7 @@ import {symbolLayoutAttributes,
     collisionVertexAttributesExt,
     collisionBoxLayout,
     dynamicLayoutAttributes
-} from './symbol_attributes';
+} from './symbol_attributes.js';
 
 import {SymbolLayoutArray,
     SymbolDynamicLayoutArray,
@@ -17,50 +17,50 @@ import {SymbolLayoutArray,
     SymbolInstanceArray,
     GlyphOffsetArray,
     SymbolLineVertexArray
-} from '../array_types';
+} from '../array_types.js';
 
-import ONE_EM from '../../symbol/one_em';
-import * as symbolSize from '../../symbol/symbol_size';
+import ONE_EM from '../../symbol/one_em.js';
+import * as symbolSize from '../../symbol/symbol_size.js';
 import Point from '@mapbox/point-geometry';
-import SegmentVector from '../segment';
-import {ProgramConfigurationSet} from '../program_configuration';
-import {TriangleIndexArray, LineIndexArray} from '../index_array_type';
-import transformText from '../../symbol/transform_text';
-import mergeLines from '../../symbol/mergelines';
-import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/script_detection';
-import {WritingMode} from '../../symbol/shaping';
-import loadGeometry from '../load_geometry';
-import toEvaluationFeature from '../evaluation_feature';
+import SegmentVector from '../segment.js';
+import {ProgramConfigurationSet} from '../program_configuration.js';
+import {TriangleIndexArray, LineIndexArray} from '../index_array_type.js';
+import transformText from '../../symbol/transform_text.js';
+import mergeLines from '../../symbol/mergelines.js';
+import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/script_detection.js';
+import {WritingMode} from '../../symbol/shaping.js';
+import loadGeometry from '../load_geometry.js';
+import toEvaluationFeature from '../evaluation_feature.js';
 import mvt from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
-import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
-import Anchor from '../../symbol/anchor';
-import {getSizeData} from '../../symbol/symbol_size';
-import {MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
-import {register} from '../../util/web_worker_transfer';
-import EvaluationParameters from '../../style/evaluation_parameters';
-import Formatted from '../../style-spec/expression/types/formatted';
-import ResolvedImage from '../../style-spec/expression/types/resolved_image';
-import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin';
+import {verticalizedCharacterMap} from '../../util/verticalize_punctuation.js';
+import Anchor from '../../symbol/anchor.js';
+import {getSizeData} from '../../symbol/symbol_size.js';
+import {MAX_PACKED_SIZE} from '../../symbol/symbol_layout.js';
+import {register} from '../../util/web_worker_transfer.js';
+import EvaluationParameters from '../../style/evaluation_parameters.js';
+import Formatted from '../../style-spec/expression/types/formatted.js';
+import ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
+import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin.js';
 import {mat4} from 'gl-matrix';
 
-import type {CanonicalTileID} from '../../source/tile_id';
+import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
     IndexedFeature,
     PopulateParameters
-} from '../bucket';
-import type {CollisionBoxArray, CollisionBox, SymbolInstance} from '../array_types';
-import type {StructArray, StructArrayMember} from '../../util/struct_array';
-import SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
-import type Context from '../../gl/context';
-import type IndexBuffer from '../../gl/index_buffer';
-import type VertexBuffer from '../../gl/vertex_buffer';
-import type {SymbolQuad} from '../../symbol/quads';
-import type {SizeData} from '../../symbol/symbol_size';
-import type {FeatureStates} from '../../source/source_state';
-import type {ImagePosition} from '../../render/image_atlas';
+} from '../bucket.js';
+import type {CollisionBoxArray, CollisionBox, SymbolInstance} from '../array_types.js';
+import type {StructArray, StructArrayMember} from '../../util/struct_array.js';
+import SymbolStyleLayer from '../../style/style_layer/symbol_style_layer.js';
+import type Context from '../../gl/context.js';
+import type IndexBuffer from '../../gl/index_buffer.js';
+import type VertexBuffer from '../../gl/vertex_buffer.js';
+import type {SymbolQuad} from '../../symbol/quads.js';
+import type {SizeData} from '../../symbol/symbol_size.js';
+import type {FeatureStates} from '../../source/source_state.js';
+import type {ImagePosition} from '../../render/image_atlas.js';
 
 export type SingleCollisionBox = {
     x1: number;

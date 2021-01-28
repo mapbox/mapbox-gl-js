@@ -1,13 +1,13 @@
 // @flow
 
 import assert from 'assert';
-import type {Expression} from '../style-spec/expression/expression';
-import type EvaluationContext from '../style-spec/expression/evaluation_context';
-import type {Type} from '../style-spec/expression/types';
-import type {ZoomConstantExpression} from '../style-spec/expression';
-import {NullType} from '../style-spec/expression/types';
-import {PossiblyEvaluatedPropertyValue} from './properties';
-import {register} from '../util/web_worker_transfer';
+import type {Expression} from '../style-spec/expression/expression.js';
+import type EvaluationContext from '../style-spec/expression/evaluation_context.js';
+import type {Type} from '../style-spec/expression/types.js';
+import type {ZoomConstantExpression} from '../style-spec/expression/index.js';
+import {NullType} from '../style-spec/expression/types.js';
+import {PossiblyEvaluatedPropertyValue} from './properties.js';
+import {register} from '../util/web_worker_transfer.js';
 
 // This is an internal expression class. It is only used in GL JS and
 // has GL JS dependencies which can break the standalone style-spec module

@@ -1,5 +1,5 @@
 
-import isEqual from './util/deep_equal';
+import isEqual from './util/deep_equal.js';
 
 const operations = {
 

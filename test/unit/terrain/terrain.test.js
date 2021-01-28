@@ -1,22 +1,22 @@
-import {test} from '../../util/test';
-import {extend} from '../../../src/util/util';
-import {createMap} from '../../util';
-import DEMData from '../../../src/data/dem_data';
-import {RGBAImage} from '../../../src/util/image';
-import MercatorCoordinate from '../../../src/geo/mercator_coordinate';
-import window from '../../../src/util/window';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import styleSpec from '../../../src/style-spec/reference/latest';
-import Terrain from '../../../src/style/terrain';
-import Tile from '../../../src/source/tile';
-import {VertexMorphing} from '../../../src/terrain/draw_terrain_raster';
-import {fixedLngLat, fixedCoord, fixedPoint} from '../../util/fixed';
+import {test} from '../../util/test.js';
+import {extend} from '../../../src/util/util.js';
+import {createMap} from '../../util/index.js';
+import DEMData from '../../../src/data/dem_data.js';
+import {RGBAImage} from '../../../src/util/image.js';
+import MercatorCoordinate from '../../../src/geo/mercator_coordinate.js';
+import window from '../../../src/util/window.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import styleSpec from '../../../src/style-spec/reference/latest.js';
+import Terrain from '../../../src/style/terrain.js';
+import Tile from '../../../src/source/tile.js';
+import {VertexMorphing} from '../../../src/terrain/draw_terrain_raster.js';
+import {fixedLngLat, fixedCoord, fixedPoint} from '../../util/fixed.js';
 import Point from '@mapbox/point-geometry';
-import LngLat from '../../../src/geo/lng_lat';
-import Marker from '../../../src/ui/marker';
-import Popup from '../../../src/ui/popup';
-import simulate from '../../util/simulate_interaction';
-import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock';
+import LngLat from '../../../src/geo/lng_lat.js';
+import Marker from '../../../src/ui/marker.js';
+import Popup from '../../../src/ui/popup.js';
+import simulate from '../../util/simulate_interaction.js';
+import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock.js';
 
 function createStyle() {
     return {

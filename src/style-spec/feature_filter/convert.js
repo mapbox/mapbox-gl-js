@@ -1,8 +1,8 @@
 // @flow
 
-import {isExpressionFilter} from './index';
+import {isExpressionFilter} from './index.js';
 
-import type {FilterSpecification} from '../types';
+import type {FilterSpecification} from '../types.js';
 
 type ExpectedTypes = {[_: string]: 'string' | 'number' | 'boolean'};
 

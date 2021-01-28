@@ -1,17 +1,17 @@
 // @flow
 
-import Actor from '../util/actor';
+import Actor from '../util/actor.js';
 
-import StyleLayerIndex from '../style/style_layer_index';
-import VectorTileWorkerSource from './vector_tile_worker_source';
-import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source';
-import GeoJSONWorkerSource from './geojson_worker_source';
+import StyleLayerIndex from '../style/style_layer_index.js';
+import VectorTileWorkerSource from './vector_tile_worker_source.js';
+import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source.js';
+import GeoJSONWorkerSource from './geojson_worker_source.js';
 import assert from 'assert';
-import {plugin as globalRTLTextPlugin} from './rtl_text_plugin';
-import {enforceCacheSizeLimit} from '../util/tile_request_cache';
-import {extend} from '../util/util';
-import {PerformanceUtils} from '../util/performance';
-import {Event} from '../util/evented';
+import {plugin as globalRTLTextPlugin} from './rtl_text_plugin.js';
+import {enforceCacheSizeLimit} from '../util/tile_request_cache.js';
+import {extend} from '../util/util.js';
+import {PerformanceUtils} from '../util/performance.js';
+import {Event} from '../util/evented.js';
 
 import type {
     WorkerSource,
@@ -20,12 +20,12 @@ import type {
     WorkerTileCallback,
     WorkerDEMTileCallback,
     TileParameters
-} from '../source/worker_source';
+} from '../source/worker_source.js';
 
-import type {WorkerGlobalScopeInterface} from '../util/web_worker';
-import type {Callback} from '../types/callback';
-import type {LayerSpecification} from '../style-spec/types';
-import type {PluginState} from './rtl_text_plugin';
+import type {WorkerGlobalScopeInterface} from '../util/web_worker.js';
+import type {Callback} from '../types/callback.js';
+import type {LayerSpecification} from '../style-spec/types.js';
+import type {PluginState} from './rtl_text_plugin.js';
 
 /**
  * @private

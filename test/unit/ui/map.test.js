@@ -1,14 +1,14 @@
-import {test} from '../../util/test';
-import {extend} from '../../../src/util/util';
-import window from '../../../src/util/window';
-import Map from '../../../src/ui/map';
-import {createMap} from '../../util';
-import LngLat from '../../../src/geo/lng_lat';
-import Tile from '../../../src/source/tile';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import {Event, ErrorEvent} from '../../../src/util/evented';
-import simulate from '../../util/simulate_interaction';
-import {fixedLngLat, fixedNum} from '../../util/fixed';
+import {test} from '../../util/test.js';
+import {extend} from '../../../src/util/util.js';
+import window from '../../../src/util/window.js';
+import Map from '../../../src/ui/map.js';
+import {createMap} from '../../util/index.js';
+import LngLat from '../../../src/geo/lng_lat.js';
+import Tile from '../../../src/source/tile.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import {Event, ErrorEvent} from '../../../src/util/evented.js';
+import simulate from '../../util/simulate_interaction.js';
+import {fixedLngLat, fixedNum} from '../../util/fixed.js';
 
 function createStyleSource() {
     return {

@@ -1,15 +1,15 @@
 // @flow
 
-import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
-import DEMData from '../data/dem_data';
-import SourceCache from '../source/source_cache';
-import {number as interpolate} from '../style-spec/util/interpolate';
-import EXTENT from '../data/extent';
+import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
+import DEMData from '../data/dem_data.js';
+import SourceCache from '../source/source_cache.js';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
+import EXTENT from '../data/extent.js';
 import {vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
-import {OverscaledTileID} from '../source/tile_id';
+import {OverscaledTileID} from '../source/tile_id.js';
 
-import type Tile from '../source/tile';
+import type Tile from '../source/tile.js';
 
 /**
  * Provides access to elevation data from raster-dem source cache.

@@ -1,9 +1,9 @@
 // @flow
 
-import {warnOnce, parseCacheControl} from './util';
-import window from './window';
+import {warnOnce, parseCacheControl} from './util.js';
+import window from './window.js';
 
-import type Dispatcher from './dispatcher';
+import type Dispatcher from './dispatcher.js';
 
 const CACHE_NAME = 'mapbox-tiles';
 let cacheLimit = 500; // 50MB / (100KB/tile) ~= 500 tiles

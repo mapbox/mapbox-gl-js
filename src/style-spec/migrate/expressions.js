@@ -3,12 +3,12 @@
 import {
     eachLayer,
     eachProperty
-} from '../visit';
-import {isExpression} from '../expression';
-import convertFunction, {convertTokenString} from '../function/convert';
-import convertFilter from '../feature_filter/convert';
+} from '../visit.js';
+import {isExpression} from '../expression/index.js';
+import convertFunction, {convertTokenString} from '../function/convert.js';
+import convertFilter from '../feature_filter/convert.js';
 
-import type {StyleSpecification} from '../types';
+import type {StyleSpecification} from '../types.js';
 
 /**
  * Migrate the given style object in place to use expressions. Specifically,

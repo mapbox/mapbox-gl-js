@@ -1,6 +1,6 @@
 // @flow
 
-import {createLayout} from '../../util/struct_array';
+import {createLayout} from '../../util/struct_array.js';
 
 export const symbolLayoutAttributes = createLayout([
     {name: 'a_pos_offset',  components: 4, type: 'Int16'},

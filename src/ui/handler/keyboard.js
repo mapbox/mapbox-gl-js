@@ -1,6 +1,6 @@
 // @flow
 
-import type Map from '../map';
+import type Map from '../map.js';
 
 const defaultOptions = {
     panStep: 100,

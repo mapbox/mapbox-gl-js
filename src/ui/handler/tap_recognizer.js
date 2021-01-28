@@ -1,7 +1,7 @@
 // @flow
 
 import Point from '@mapbox/point-geometry';
-import {indexTouches} from './handler_util';
+import {indexTouches} from './handler_util.js';
 
 function getCentroid(points: Array<Point>) {
     const sum = new Point(0, 0);

@@ -1,8 +1,8 @@
 // @flow
 
-import {createExpression} from '../expression';
-import type {GlobalProperties, Feature} from '../expression';
-import type {CanonicalTileID} from '../../source/tile_id';
+import {createExpression} from '../expression/index.js';
+import type {GlobalProperties, Feature} from '../expression/index.js';
+import type {CanonicalTileID} from '../../source/tile_id.js';
 
 type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
 export type FeatureFilter ={filter: FilterExpression, needGeometry: boolean};

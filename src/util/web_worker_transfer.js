@@ -3,15 +3,15 @@
 import assert from 'assert';
 
 import Grid from 'grid-index';
-import Color from '../style-spec/util/color';
-import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomConstantExpression} from '../style-spec/expression';
-import CompoundExpression from '../style-spec/expression/compound_expression';
-import expressions from '../style-spec/expression/definitions';
-import ResolvedImage from '../style-spec/expression/types/resolved_image';
-import window from './window';
+import Color from '../style-spec/util/color.js';
+import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomConstantExpression} from '../style-spec/expression/index.js';
+import CompoundExpression from '../style-spec/expression/compound_expression.js';
+import expressions from '../style-spec/expression/definitions/index.js';
+import ResolvedImage from '../style-spec/expression/types/resolved_image.js';
+import window from './window.js';
 const {ImageData, ImageBitmap} = window;
 
-import type {Transferable} from '../types/transferable';
+import type {Transferable} from '../types/transferable.js';
 
 type SerializedObject = {[_: string]: Serialized }; // eslint-disable-line
 export type Serialized =

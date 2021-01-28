@@ -2,13 +2,13 @@
 
 import assert from 'assert';
 
-import {checkSubtype, ValueType} from '../types';
-import ResolvedImage from '../types/resolved_image';
+import {checkSubtype, ValueType} from '../types.js';
+import ResolvedImage from '../types/resolved_image.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type} from '../types.js';
 
 class Coalesce implements Expression {
     type: Type;

@@ -2,7 +2,7 @@
 // @flow
 /* eslint-disable */
 
-import styleSpec from '../../style-spec/reference/latest';
+import styleSpec from '../../style-spec/reference/latest.js';
 
 import {
     Properties,
@@ -11,13 +11,13 @@ import {
     CrossFadedDataDrivenProperty,
     CrossFadedProperty,
     ColorRampProperty
-} from '../properties';
+} from '../properties.js';
 
-import type Color from '../../style-spec/util/color';
+import type Color from '../../style-spec/util/color.js';
 
-import type Formatted from '../../style-spec/expression/types/formatted';
+import type Formatted from '../../style-spec/expression/types/formatted.js';
 
-import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 
 export type LayoutProps = {|
     "fill-sort-key": DataDrivenProperty<number>,

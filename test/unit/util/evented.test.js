@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import {Event, Evented} from '../../../src/util/evented';
+import {test} from '../../util/test.js';
+import {Event, Evented} from '../../../src/util/evented.js';
 
 test('Evented', (t) => {
 

@@ -1,20 +1,20 @@
 // @flow
 
-import Color from '../style-spec/util/color';
-import DepthMode from '../gl/depth_mode';
-import CullFaceMode from '../gl/cull_face_mode';
+import Color from '../style-spec/util/color.js';
+import DepthMode from '../gl/depth_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
 import {
     fillUniformValues,
     fillPatternUniformValues,
     fillOutlineUniformValues,
     fillOutlinePatternUniformValues
-} from './program/fill_program';
+} from './program/fill_program.js';
 
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type FillStyleLayer from '../style/style_layer/fill_style_layer';
-import type FillBucket from '../data/bucket/fill_bucket';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type FillStyleLayer from '../style/style_layer/fill_style_layer.js';
+import type FillBucket from '../data/bucket/fill_bucket.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
 
 export default drawFill;
 

@@ -1,6 +1,6 @@
-import {test} from '../../../util/test';
-import {createMap as globalCreateMap} from '../../../util';
-import VectorTileSource from '../../../../src/source/vector_tile_source';
+import {test} from '../../../util/test.js';
+import {createMap as globalCreateMap} from '../../../util/index.js';
+import VectorTileSource from '../../../../src/source/vector_tile_source.js';
 
 function createMap(t, logoPosition, logoRequired) {
     return globalCreateMap(t, {

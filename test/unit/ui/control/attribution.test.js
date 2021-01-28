@@ -1,8 +1,8 @@
-import {test} from '../../../util/test';
-import config from '../../../../src/util/config';
-import AttributionControl from '../../../../src/ui/control/attribution_control';
-import {createMap as globalCreateMap} from '../../../util';
-import simulate from '../../../util/simulate_interaction';
+import {test} from '../../../util/test.js';
+import config from '../../../../src/util/config.js';
+import AttributionControl from '../../../../src/ui/control/attribution_control.js';
+import {createMap as globalCreateMap} from '../../../util/index.js';
+import simulate from '../../../util/simulate_interaction.js';
 
 function createMap(t) {
     config.ACCESS_TOKEN = 'pk.123';

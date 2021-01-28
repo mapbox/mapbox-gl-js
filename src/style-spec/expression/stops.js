@@ -1,8 +1,8 @@
 // @flow
 
-import RuntimeError from './runtime_error';
+import RuntimeError from './runtime_error.js';
 
-import type {Expression} from './expression';
+import type {Expression} from './expression.js';
 
 export type Stops = Array<[number, Expression]>;
 

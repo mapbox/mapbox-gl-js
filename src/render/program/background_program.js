@@ -1,23 +1,23 @@
 // @flow
 
-import {bgPatternUniformValues} from './pattern';
+import {bgPatternUniformValues} from './pattern.js';
 import {
     Uniform1i,
     Uniform1f,
     Uniform2f,
     UniformColor,
     UniformMatrix4f
-} from '../uniform_binding';
-import {extend} from '../../util/util';
+} from '../uniform_binding.js';
+import {extend} from '../../util/util.js';
 
-import type Painter from '../painter';
-import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type Context from '../../gl/context';
-import type Color from '../../style-spec/util/color';
-import type {CrossFaded} from '../../style/properties';
-import type {CrossfadeParameters} from '../../style/evaluation_parameters';
-import type {OverscaledTileID} from '../../source/tile_id';
-import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
+import type Painter from '../painter.js';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type Context from '../../gl/context.js';
+import type Color from '../../style-spec/util/color.js';
+import type {CrossFaded} from '../../style/properties.js';
+import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
+import type {OverscaledTileID} from '../../source/tile_id.js';
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 
 export type BackgroundUniformsType = {|
     'u_matrix': UniformMatrix4f,

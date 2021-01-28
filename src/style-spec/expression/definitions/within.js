@@ -1,14 +1,14 @@
 // @flow
 
-import {isValue} from '../values';
-import type {Type} from '../types';
-import {BooleanType} from '../types';
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
+import {isValue} from '../values.js';
+import type {Type} from '../types.js';
+import {BooleanType} from '../types.js';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
 import type {GeoJSON, GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson-types';
 import Point from '@mapbox/point-geometry';
-import type {CanonicalTileID} from '../../../source/tile_id';
+import type {CanonicalTileID} from '../../../source/tile_id.js';
 
 type GeoJSONPolygons =| GeoJSONPolygon | GeoJSONMultiPolygon;
 

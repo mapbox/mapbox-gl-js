@@ -7,14 +7,14 @@ import {
     Uniform1f,
     Uniform2f,
     UniformMatrix4f
-} from '../uniform_binding';
-import pixelsToTileUnits from '../../source/pixels_to_tile_units';
+} from '../uniform_binding.js';
+import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
 
-import type Context from '../../gl/context';
-import type Tile from '../../source/tile';
-import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type Painter from '../painter';
-import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer';
+import type Context from '../../gl/context.js';
+import type Tile from '../../source/tile.js';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type Painter from '../painter.js';
+import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer.js';
 
 export type HeatmapUniformsType = {|
     'u_extrude_scale': Uniform1f,

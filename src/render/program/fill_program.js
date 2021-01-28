@@ -1,20 +1,20 @@
 // @flow
 
-import {patternUniformValues} from './pattern';
+import {patternUniformValues} from './pattern.js';
 import {
     Uniform1i,
     Uniform1f,
     Uniform2f,
     Uniform3f,
     UniformMatrix4f
-} from '../uniform_binding';
-import {extend} from '../../util/util';
+} from '../uniform_binding.js';
+import {extend} from '../../util/util.js';
 
-import type Painter from '../painter';
-import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type Context from '../../gl/context';
-import type {CrossfadeParameters} from '../../style/evaluation_parameters';
-import type Tile from '../../source/tile';
+import type Painter from '../painter.js';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type Context from '../../gl/context.js';
+import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
+import type Tile from '../../source/tile.js';
 
 export type FillUniformsType = {|
     'u_matrix': UniformMatrix4f
