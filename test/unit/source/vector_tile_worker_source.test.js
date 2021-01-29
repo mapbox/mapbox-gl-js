@@ -237,9 +237,7 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
 
     const source = new VectorTileWorkerSource(actor, layerIndex, [], true, loadVectorData);
 
-    t.stub(perf, 'getEntriesByName').callsFake(() => {
-        return [ exampleResourceTiming ];
-    });
+    t.stub(perf, 'getEntriesByName').callsFake(() => { return [ exampleResourceTiming ]; });
 
     source.loadTile({
         source: 'source',
