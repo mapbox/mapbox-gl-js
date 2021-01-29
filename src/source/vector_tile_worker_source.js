@@ -44,9 +44,25 @@ export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVec
 export class DedupedRequest {
     entries: { [string]: Object };
     scheduler: ?Scheduler;
+    _perf: RequestPerformance | boolean;
+    _resourceTiming: { [string]: Object };
+
     constructor(scheduler?: Scheduler) {
         this.entries = {};
         this.scheduler = scheduler;
+        this._resourceTiming = {};
+    }
+
+    _measurePerformance() {
+        if (this._perf && this._perf instanceof RequestPerformance) {
+            const resourceTimingData = this._perf.getMeasurement();
+            // console.log('resourceTimingData: ', resourceTimingData);
+            // it's necessary to eval the result of getEntriesByName() here via parse/stringify
+            // late evaluation in the main thread causes TypeError: illegal invocation
+            if (resourceTimingData.length > 0) {
+                this._resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
+            }
+        }
     }
 
     request(key: string, metadata: Object, request: any, callback: LoadVectorDataCallback) {
@@ -61,6 +77,7 @@ export class DedupedRequest {
             } else {
                 callback(err, result);
             }
+            this._measurePerformance();
             return () => {};
         }
 
@@ -77,6 +94,7 @@ export class DedupedRequest {
                     } else {
                         cb(err, result);
                     }
+                    this._measurePerformance();
                 }
                 setTimeout(() => delete this.entries[key], 1000 * 3);
             });
@@ -176,8 +194,9 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     loadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
         const uid = params.uid;
 
-        const perf = (params && params.request && params.request.collectResourceTiming) ?
-            new RequestPerformance(params.request) : false;
+        const requestParam = params && params.request;
+        this.deduped._perf = (requestParam && requestParam.collectResourceTiming) ?
+            new RequestPerformance(requestParam) : false;
 
         const workerTile = this.loading[uid] = new WorkerTile(params);
         workerTile.abort = this.loadVectorData(params, (err, response) => {
@@ -197,16 +216,6 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             if (response.expires) cacheControl.expires = response.expires;
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
 
-            const resourceTiming = {};
-            // because of two-phase tile loading, it's necessary to dedupe perf marking to avoid errors
-            if (perf && !perf._marksWereCleared()) {
-                const resourceTimingData = perf.finish();
-                // it's necessary to eval the result of getEntriesByName() here via parse/stringify
-                // late evaluation in the main thread causes TypeError: illegal invocation
-                if (resourceTimingData)
-                    resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
-            }
-
             // response.vectorTile will be present in the GeoJSON worker case (which inherits from this class)
             // because we stub the vector tile interface around JSON data instead of parsing it directly
             workerTile.vectorTile = response.vectorTile || new vt.VectorTile(new Protobuf(rawTileData));
@@ -215,7 +224,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                     if (err || !result) return callback(err);
 
                     // Transferring a copy of rawTileData because the worker needs to retain its copy.
-                    callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
+                    callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, this.deduped._resourceTiming));
                 });
             };
 

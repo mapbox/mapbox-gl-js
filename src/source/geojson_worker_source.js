@@ -196,7 +196,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
 
                 const result = {};
                 if (perf) {
-                    const resourceTimingData = perf.finish();
+                    const resourceTimingData = perf.getMeasurement();
                     // it's necessary to eval the result of getEntriesByName() here via parse/stringify
                     // late evaluation in the main thread causes TypeError: illegal invocation
                     if (resourceTimingData) {
