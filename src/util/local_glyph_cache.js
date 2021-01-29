@@ -36,45 +36,84 @@ export function cacheClose() {
     sharedCache = undefined;
 }
 
-function cacheURL(fontname: string, id: number): string {
-    return `/${fontname}/${id}`;
+function cacheURL(fontname: string): string {
+    return `http://mapbox.com/${fontname}`;
 }
 
-function serialize(glyph: StyleGlyph): Response {
-    return new Response(writeGlyphPBF([glyph]));
+function serialize(glyphs: Array<StyleGlyph>): Response {
+    return new Response(writeGlyphPBF(glyphs));
 }
 
-function deserialize(response: Response, callback: (error: ?any, response: ?StyleGlyph) => void): StyleGlyph {
-    response.arrayBuffer().then((pbf) => {
-        callback(null, parseGlyphPBF(pbf, SDF_SCALE)[0]); // TODO: hardwired glyph border, hardwired index
-    });
-}
-
-export function cachePut(fontname: string, glyph: StyleGlyph) {
-    cacheOpen();
-    if (!sharedCache) return;
-
+function _cachePut(fontname: string, glyphs: Array<StyleGlyph>) {
     cacheOpen();
     if (!sharedCache) return;
     sharedCache
-        .then(cache => cache.put(cacheURL(fontname, glyph.id), serialize(glyph)))
+        .then(cache => cache.put(cacheURL(fontname), serialize(glyphs)))
         .catch(e => warnOnce(e.message));
 }
 
-export function cacheGet(fontname: string, id: number, callback: (error: ?any, response: ?StyleGlyph) => void) {
+let lastPut = window.performance.now();
+
+export function cachePut(fontname: string, glyph: StyleGlyph) {
+    //return;
+    cachedGlyphs[fontname][glyph.id] = glyph;
+    if (window.performance.now() - lastPut > 10000) {
+        lastPut = window.performance.now();
+        for (const fontname of ['400', '500', '900']) {
+            _cachePut(fontname, Object.values(cachedGlyphs[fontname]));
+        }
+    }
+}
+
+const cachedGlyphs = { '400': {}, '500': {}, '900': {}};
+let cacheLoaded = { '400': false, '500': false, '900': false};
+const loadingCallbacks = { '400': [], '500': [], '900': []};
+
+function deserialize(response: Response, fontname: string): void {
+    response.arrayBuffer().then((pbf) => {
+        console.log(`PBF size: ${pbf.byteLength}`);
+        const glyphs = parseGlyphPBF(pbf, SDF_SCALE);
+        for (const glyph of glyphs) {
+            cachedGlyphs[fontname][glyph.id] = glyph;
+        }
+        cacheLoaded[fontname] = true;
+        for (loadingCallback of loadingCallbacks[fontname]) {
+            loadingCallback.callback(null, cachedGlyphs[loadingCallback.id]);
+        }
+    });
+}
+
+function loadCache(fontname) {
     cacheOpen();
-    if (!sharedCache) return callback(null);
+    if (sharedCache) {
+        sharedCache
+            .then(cache => {
+                cache.match(cacheURL(fontname))
+                    .then(response => {
+                        if (response) {
+                            deserialize(response, fontname);
+                        } else {
+                            cacheLoaded[fontname] = true;
+                            for (loadingCallback of loadingCallbacks[fontname]) {
+                                loadingCallback.callback();
+                            }
+                        }
+                    });
+            })
+    }
+}
 
-    sharedCache
-        .then(cache => {
-            cache.match(cacheURL(fontname, id))
-                .then(response => {
-                    deserialize(response, callback);
-                })
-                .catch(callback);
-        })
-        .catch(callback);
+loadCache('400');
+loadCache('500');
+loadCache('900');
 
+export function cacheGet(fontname: string, id: number, callback: (error: ?any, response: ?StyleGlyph) => void) {
+    //return callback();
+    if (cacheLoaded[fontname]) {
+        return callback(null, cachedGlyphs[fontname][id]);
+    } else {
+        loadingCallbacks[fontname].push({id, callback});
+    }
 }
 
 function isFresh(response) {
