@@ -56,7 +56,6 @@ export class DedupedRequest {
     _measurePerformance() {
         if (this._perf && this._perf instanceof RequestPerformance) {
             const resourceTimingData = this._perf.getMeasurement();
-            // console.log('resourceTimingData: ', resourceTimingData);
             // it's necessary to eval the result of getEntriesByName() here via parse/stringify
             // late evaluation in the main thread causes TypeError: illegal invocation
             if (resourceTimingData.length > 0) {
