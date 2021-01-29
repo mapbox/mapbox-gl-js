@@ -300,8 +300,7 @@ class FillExtrusionBucket implements Bucket {
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
-        const flatRoof = this.enableTerrain && feature.properties && feature.properties.hasOwnProperty('type') &&
-            feature.properties.hasOwnProperty('height') && vectorTileFeatureTypes[feature.type] === 'Polygon';
+        const flatRoof = this.enableTerrain && vectorTileFeatureTypes[feature.type] === 'Polygon';
 
         const metadata = flatRoof ? new PartMetadata() : null;
 
