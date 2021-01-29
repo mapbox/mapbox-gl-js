@@ -70,6 +70,7 @@
     "flow-bin": "^0.100.0",
     "gl": "^4.5.3",
     "glob": "^7.1.4",
+    "htm": "^3.0.4",
     "is-builtin-module": "^3.0.0",
     "jsdom": "^13.0.0",
     "json-stringify-pretty-compact": "^2.0.0",
