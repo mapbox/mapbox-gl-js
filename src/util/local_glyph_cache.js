@@ -4,6 +4,10 @@ import {warnOnce, parseCacheControl} from './util';
 import type {StyleGlyph} from '../style/style_glyph';
 import window from './window';
 import {AlphaImage} from './image';
+import parseGlyphPBF from '../style/parse_glyph_pbf';
+import writeGlyphPBF from '../style/write_glyph_pbf';
+
+import {SDF_SCALE} from '../render/glyph_manager';
 
 import type Dispatcher from './dispatcher';
 
@@ -37,27 +41,12 @@ function cacheURL(fontname: string, id: number): string {
 }
 
 function serialize(glyph: StyleGlyph): Response {
-    var formData = new FormData();
-    formData.append('id', glyph.id);
-    formData.append('metrics', JSON.stringify(glyph.metrics));
-    formData.append('width', glyph.bitmap.width);
-    formData.append('height', glyph.bitmap.height);
-    formData.append('bitmap', new Blob([glyph.bitmap.data.buffer]));
-    return new Response(formData);
+    return new Response(writeGlyphPBF([glyph]));
 }
 
 function deserialize(response: Response, callback: (error: ?any, response: ?StyleGlyph) => void): StyleGlyph {
-    response.formData().then((formData) => {
-        formData.get('bitmap').arrayBuffer().then((bitmap) => {
-            callback(null, {
-                id: +formData.get('id'),
-                metrics: JSON.parse(formData.get('metrics')),
-                bitmap: new AlphaImage({
-                    width: +formData.get('width'),
-                    height: +formData.get('height')
-                }, new Uint8Array(bitmap))
-            });
-        })
+    response.arrayBuffer().then((pbf) => {
+        callback(null, parseGlyphPBF(pbf, SDF_SCALE)[0]); // TODO: hardwired glyph border, hardwired index
     });
 }
 
