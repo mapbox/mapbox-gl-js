@@ -138,6 +138,13 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
     ];
 
     const getLoadedBucket = (nid) => {
+        if (nid.overscaledZ === nid.canonical.z) {
+            const n = source.getTileByID(nid.key);
+            if (n && n.hasData()) {
+                const nBucket: ?FillExtrusionBucket = (n.getBucket(layer): any);
+                if (nBucket) return nBucket;
+            }
+        }
         const maxzoom = source.getSource().maxzoom;
         // In overscale range, look one tile zoom above and under. We do this to
         // avoid flickering and use the content in Z-1 and Z+1 buckets until Z bucket is loaded.
