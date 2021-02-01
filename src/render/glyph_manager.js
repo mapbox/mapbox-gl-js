@@ -11,7 +11,7 @@ import type {StyleGlyph} from '../style/style_glyph';
 import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 
-import {cachePut, cacheGet} from '../util/local_glyph_cache';
+import {cacheOpen, cachePut, cacheGet} from '../util/local_glyph_cache';
 
 /*
   SDF_SCALE controls the pixel density of locally generated glyphs relative
@@ -68,6 +68,7 @@ class GlyphManager {
         this.requestManager = requestManager;
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
+        cacheOpen(localFontFamily);
         this.entries = {};
         this.localGlyphs = {
             // Only these four font weights are supported
