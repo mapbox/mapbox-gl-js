@@ -115,10 +115,20 @@ function cacheKey(fontname: string, id: number) {
     return `${fontname}/${id}`;
 }
 
+function delayPut(put) {
+    // Spread out cache writes to avoid blocking foreground
+    // Not a big deal if some writes don't get committed before session ends
+    if (window.requestIdleCallback) {
+        window.requestIdleCallback(put);
+    } else {
+        setTimeout(put, 5000 + Math.round(Math.random * 10000))
+    }
+}
+
 export function cachePut(fontname: string, glyph: StyleGlyph) {
     if (!db) return;
 
-    setTimeout(() => {
+    delayPut(() => {
         db.then(db => {
             const transaction = db.transaction([CACHE_NAME], "readwrite");
             const objectStore = transaction.objectStore(CACHE_NAME);
@@ -129,9 +139,7 @@ export function cachePut(fontname: string, glyph: StyleGlyph) {
                 warnOnce(request.error);
             }
         });
-    // Spread out cache writes to avoid blocking foreground
-    // Not a big deal if some writes don't get committed
-    }, 5000 + Math.round(Math.random * 10000));
+    });
 }
 
 export function cacheGet(fontname: string, id: number, callback: (error: ?any, response: ?StyleGlyph) => void) {
