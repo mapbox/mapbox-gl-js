@@ -3,27 +3,26 @@
 import {AlphaImage} from '../util/image';
 
 import Protobuf from 'pbf';
-
-export const GLYPH_PBF_BORDER = 3;
+const border = 3;
 
 import type {StyleGlyph} from './style_glyph';
 
-function readFontstacks(tag: number, output: Array<StyleGlyph>, pbf: Protobuf) {
+function readFontstacks(tag: number, glyphs: Array<StyleGlyph>, pbf: Protobuf) {
     if (tag === 1) {
-        pbf.readMessage(readFontstack, output);
+        pbf.readMessage(readFontstack, glyphs);
     }
 }
 
-function readFontstack(tag: number, output: Array<StyleGlyph>, pbf: Protobuf) {
+function readFontstack(tag: number, glyphs: Array<StyleGlyph>, pbf: Protobuf) {
     if (tag === 3) {
         const {id, bitmap, width, height, left, top, advance} = pbf.readMessage(readGlyph, {});
-        output.glyphs.push({
+        glyphs.push({
             id,
             bitmap: new AlphaImage({
-                width: width + output.scale * 2 * GLYPH_PBF_BORDER,
-                height: height + output.scale * 2 * GLYPH_PBF_BORDER
+                width: width + 2 * border,
+                height: height + 2 * border
             }, bitmap),
-            metrics: {width: width / output.scale, height: height / output.scale, left, top, advance, localGlyph: true}
+            metrics: {width, height, left, top, advance}
         });
     }
 }
@@ -38,6 +37,8 @@ function readGlyph(tag: number, glyph: Object, pbf: Protobuf) {
     else if (tag === 7) glyph.advance = pbf.readVarint();
 }
 
-export default function (data: ArrayBuffer | Uint8Array, scale: ?number): Array<StyleGlyph> {
-    return new Protobuf(data).readFields(readFontstacks, { scale: scale || 1, glyphs: [] }).glyphs;
+export default function (data: ArrayBuffer | Uint8Array): Array<StyleGlyph> {
+    return new Protobuf(data).readFields(readFontstacks, []);
 }
+
+export const GLYPH_PBF_BORDER = border;
