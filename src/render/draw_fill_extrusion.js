@@ -65,12 +65,14 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
-
+        const shouldUseFlatRoofs = layer.paint.get('fill-extrusion-flat-roofs');
         if (painter.terrain) {
             const terrain = painter.terrain;
             if (!bucket.enableTerrain) continue;
             terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
-            flatRoofsUpdate(context, source, coord, bucket, layer, terrain);
+            if (shouldUseFlatRoofs) {
+                flatRoofsUpdate(context, source, coord, bucket, layer, terrain);
+            }
             if (!bucket.centroidVertexBuffer) {
                 const attrIndex: number | void = program.attributes['a_centroid_pos'];
                 if (attrIndex !== undefined) gl.vertexAttrib2f(attrIndex, 0, 0);
@@ -98,8 +100,8 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
 
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord, crossfade, tile) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity);
+            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, shouldUseFlatRoofs, opacity, coord, crossfade, tile) :
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, shouldUseFlatRoofs, opacity);
 
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,

@@ -353,6 +353,7 @@ export type FillExtrusionLayerSpecification = {|
     |},
     "paint"?: {|
         "fill-extrusion-opacity"?: PropertyValueSpecification<number>,
+        "fill-extrusion-flat-roofs"?: PropertyValueSpecification<boolean>,
         "fill-extrusion-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-extrusion-translate"?: PropertyValueSpecification<[number, number]>,
         "fill-extrusion-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,

@@ -4052,6 +4052,23 @@
       },
       "property-type": "data-constant"
     },
+    "fill-extrusion-flat-roofs": {
+      "type": "boolean",
+      "default": true,
+      "doc": "Whether or not the extruded fill should use flat roofs when used along with terrain.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.2.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
     "fill-extrusion-color": {
       "type": "color",
       "default": "#000000",

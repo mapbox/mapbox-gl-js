@@ -25,6 +25,7 @@ export type FillExtrusionUniformsType = {|
     'u_lightintensity': Uniform1f,
     'u_lightcolor': Uniform3f,
     'u_vertical_gradient': Uniform1f,
+    'u_flat_roofs': Uniform1i,
     'u_opacity': Uniform1f
 |};
 
@@ -35,6 +36,7 @@ export type FillExtrusionPatternUniformsType = {|
     'u_lightcolor': Uniform3f,
     'u_height_factor': Uniform1f,
     'u_vertical_gradient': Uniform1f,
+    'u_flat_roofs': Uniform1i,
     // pattern uniforms:
     'u_texsize': Uniform2f,
     'u_image': Uniform1i,
@@ -51,6 +53,7 @@ const fillExtrusionUniforms = (context: Context, locations: UniformLocations): F
     'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
     'u_lightcolor': new Uniform3f(context, locations.u_lightcolor),
     'u_vertical_gradient': new Uniform1f(context, locations.u_vertical_gradient),
+    'u_flat_roofs': new Uniform1i(context, locations.u_flat_roofs),
     'u_opacity': new Uniform1f(context, locations.u_opacity)
 });
 
@@ -60,6 +63,7 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
     'u_lightcolor': new Uniform3f(context, locations.u_lightcolor),
     'u_vertical_gradient': new Uniform1f(context, locations.u_vertical_gradient),
+    'u_flat_roofs': new Uniform1i(context, locations.u_flat_roofs),
     'u_height_factor': new Uniform1f(context, locations.u_height_factor),
     // pattern uniforms
     'u_image': new Uniform1i(context, locations.u_image),
@@ -75,6 +79,7 @@ const fillExtrusionUniformValues = (
     matrix: Float32Array,
     painter: Painter,
     shouldUseVerticalGradient: boolean,
+    shouldUseFlatRoofs: boolean,
     opacity: number
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
@@ -95,6 +100,7 @@ const fillExtrusionUniformValues = (
         'u_lightintensity': light.properties.get('intensity'),
         'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b],
         'u_vertical_gradient': +shouldUseVerticalGradient,
+        'u_flat_roofs': +shouldUseFlatRoofs,
         'u_opacity': opacity
     };
 };
@@ -103,12 +109,13 @@ const fillExtrusionPatternUniformValues = (
     matrix: Float32Array,
     painter: Painter,
     shouldUseVerticalGradient: boolean,
+    shouldUseFlatRoofs: boolean,
     opacity: number,
     coord: OverscaledTileID,
     crossfade: CrossfadeParameters,
     tile: Tile
 ): UniformValues<FillExtrusionPatternUniformsType> => {
-    return extend(fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity),
+    return extend(fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, shouldUseFlatRoofs, opacity),
         patternUniformValues(crossfade, painter, tile),
         {
             'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8

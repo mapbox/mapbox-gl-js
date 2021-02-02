@@ -4,6 +4,7 @@ uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
+uniform bool u_flat_roofs;
 
 attribute vec4 a_pos_normal_ed;
 attribute vec2 a_centroid_pos;
@@ -37,7 +38,7 @@ void main() {
 
 #ifdef TERRAIN
     vec2 centroid_pos = a_centroid_pos;
-    bool flat_roof = centroid_pos.x != 0.0;
+    bool flat_roof = centroid_pos.x != 0.0 && u_flat_roofs;
     float ele = elevation(pos_nx.xy);
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
