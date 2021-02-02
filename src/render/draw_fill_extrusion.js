@@ -138,25 +138,23 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
     ];
 
     const getLoadedBucket = (nid) => {
-        if (nid.overscaledZ === nid.canonical.z) {
-            const n = source.getTileByID(nid.key);
-            if (n && n.hasData()) {
-                const nBucket: ?FillExtrusionBucket = (n.getBucket(layer): any);
-                if (nBucket) return nBucket;
-            }
-        }
         const maxzoom = source.getSource().maxzoom;
-        // In overscale range, look one tile zoom above and under. We do this to
-        // avoid flickering and use the content in Z-1 and Z+1 buckets until Z bucket is loaded.
-        for (const j of [0, -1, 1]) {
-            if (nid.overscaledZ + j < maxzoom) continue;
-            if (j > 0 && nid.overscaledZ < maxzoom) continue;
-            const n = source.getTileByID(nid.calculateScaledKey(nid.overscaledZ + j));
+        const getBucket = (key) => {
+            const n = source.getTileByID(key);
             if (n && n.hasData()) {
-                const nBucket: ?FillExtrusionBucket = (n.getBucket(layer): any);
-                if (nBucket) return nBucket;
+                return n.getBucket(layer);
             }
-        }
+        };
+        // In overscale range, we look one tile zoom above and under. We do this to avoid
+        // flickering and use the content in Z-1 and Z+1 buckets until Z bucket is loaded.
+        let b0, b1, b2;
+        if (nid.overscaledZ === nid.canonical.z || nid.overscaledZ >= maxzoom)
+            b0 = getBucket(nid.key);
+        if (nid.overscaledZ >= maxzoom)
+            b1 = getBucket(nid.calculateScaledKey(nid.overscaledZ + 1));
+        if (nid.overscaledZ > maxzoom)
+            b2 = getBucket(nid.calculateScaledKey(nid.overscaledZ - 1));
+        return b0 || b1 || b2;
     };
 
     const projectedToBorder = [0, 0, 0]; // [min, max, maxOffsetFromBorder]
