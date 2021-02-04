@@ -125,7 +125,7 @@ async function testFunc(t) {
 
         browserWriteFile.postMessage(fileInfo);
 
-    }catch (e){
+    } catch (e) {
         t.error(e);
         updateHTML({name: t.name, status:'failed', jsonDiff: e.message});
     }

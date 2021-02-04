@@ -61,7 +61,7 @@ async function testFunc(t) {
     const currentFixture = fixtures[currentTestName];
     const style = currentFixture.style;
     const options = style.metadata.test;
-    try{
+    try {
 
         // there may be multiple expected images, covering different platforms
         const expectedPaths = [];
@@ -115,7 +115,6 @@ async function testFunc(t) {
                 }
             }
         });
-        map.once('error', (e) => {throw e;});
 
         map.repaint = true;
 
@@ -133,7 +132,7 @@ async function testFunc(t) {
         map.painter.context.extTextureFilterAnisotropicForceOff = true;
 
         const gl = map.painter.context.gl;
-        await map.once('load')
+        await map.once('load');
         // Disable vertex morphing by default
         if (map.painter.terrain) {
             map.painter.terrain.useVertexMorphing = false;
@@ -257,7 +256,7 @@ async function testFunc(t) {
 
         browserWriteFile.postMessage(fileInfo);
 
-    }catch(e){
+    } catch (e) {
         t.error(e);
         updateHTML({name: t.name, status:'failed', jsonDiff: e.message});
     }

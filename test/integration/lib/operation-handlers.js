@@ -108,7 +108,7 @@ export const operationHandlers = {
 };
 
 export function applyOperations(map, options) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
         const operations = options.operations;
         // No operations specified, end immediately and invoke doneCb.
         if (!operations || operations.length === 0) {
