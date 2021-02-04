@@ -491,6 +491,39 @@ test('GeolocateControl accuracy circle radius matches reported accuracy', (t) =>
     geolocation.send({latitude: 10, longitude: 20, accuracy: 700});
 });
 
+test("GeolocateControl accuracy circle doesn't flicker in size", (t) => {
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+    });
+    map.addControl(geolocate);
+
+    geolocate.once('geolocate', () => {
+        t.ok(geolocate._accuracyCircleMarker._map, 'userLocation accuracy circle marker on map');
+        t.equal(geolocate._accuracy, 150);
+        map.jumpTo({
+            center: [20.123123, 10.123123]
+        });
+        map.once('zoomend', () => {
+            const circleWidth = geolocate._circleElement.style.width;
+            map.once('zoomend', () => {
+                map.once('zoomend', () => {
+                    t.equal(geolocate._circleElement.style.width, circleWidth);
+                    t.end();
+                });
+                map.zoomTo(18, {duration: 0});
+            });
+            map.panBy([123, 123], {duration:0});
+            map.zoomTo(17, {duration: 0});
+        });
+        map.zoomTo(18, {duration: 0});
+    });
+
+    geolocate._geolocateButton.dispatchEvent(new window.Event('click'));
+    geolocation.send({longitude: 20.123123, latitude: 10.123123, accuracy: 150});
+});
+
 test('GeolocateControl shown even if trackUserLocation = false', (t) => {
     const map = createMap(t);
     const geolocate = new GeolocateControl({
