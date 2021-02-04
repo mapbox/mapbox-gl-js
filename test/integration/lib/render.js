@@ -54,14 +54,18 @@ for (const testName in fixtures) {
 }
 
 async function testFunc(t) {
-    let map;
+    let map, style, options;
     // This needs to be read from the `t` object because this function runs async in a closure.
     const currentTestName = t.name;
     const writeFileBasePath = `test/integration/${currentTestName}`;
     const currentFixture = fixtures[currentTestName];
-    const style = currentFixture.style;
-    const options = style.metadata.test;
     try {
+        style = currentFixture.style;
+        if (style.PARSE_ERROR) {
+            throw new Error(`Error occured while parsing style.json: ${style.message}`);
+        }
+
+        options = style.metadata.test;
 
         // there may be multiple expected images, covering different platforms
         const expectedPaths = [];
@@ -262,12 +266,14 @@ async function testFunc(t) {
     }
 
     //Cleanup WebGL context
-    map.remove();
-    delete map.painter.context.gl;
+    if (map) {
+        map.remove();
+        delete map.painter.context.gl;
+    }
     expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
     diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
 
-    if (options.addFakeCanvas) {
+    if (options && options.addFakeCanvas) {
         const canvas = window.document.getElementById(options.addFakeCanvas.id);
         canvas.parentNode.removeChild(canvas);
     }

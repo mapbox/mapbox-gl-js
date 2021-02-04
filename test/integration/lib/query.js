@@ -40,15 +40,23 @@ for (const testName in fixtures) {
 }
 
 async function testFunc(t) {
-    let map;
+    let map, style, expected, options;
     // This needs to be read from the `t` object because this function runs async in a closure.
     const currentTestName = t.name;
     const writeFileBasePath = `test/integration/${currentTestName}`;
-    const style = fixtures[currentTestName].style;
-    const expected = fixtures[currentTestName].expected || '';
-    const options = style.metadata.test;
-    const skipLayerDelete = style.metadata.skipLayerDelete;
     try {
+        style = fixtures[currentTestName].style;
+        if (style.PARSE_ERROR) {
+            throw new Error(`Error occured while parsing style.json: ${style.message}`);
+        }
+
+        expected = fixtures[currentTestName].expected || '';
+        if (style.PARSE_ERROR) {
+            throw new Error(`Error occured while parsing expected.json: ${style.message}`);
+        }
+
+        options = style.metadata.test;
+        const skipLayerDelete = style.metadata.skipLayerDelete;
 
         window.devicePixelRatio = options.pixelRatio;
 
