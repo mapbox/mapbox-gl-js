@@ -14,6 +14,17 @@ const cachedGlyphMap: {[string]: StyleGlyph} = {};
 let loadingCallbacks: Array<{key: string, callback: (error: ?any, response: ?StyleGlyph) => void}> = [];
 let cacheLoaded: boolean = false;
 
+function onCacheLoaded(error: ?any): void {
+    cacheLoaded = true;
+    loadingCallbacks.forEach(loading => {
+        loading.callback(error, cachedGlyphMap[loading.key]);
+    });
+    loadingCallbacks = [];
+    if (error) {
+        db = undefined; // Prevents further gets/puts
+    }
+}
+
 function loadCache(): void {
     if (!db) return;
 
@@ -35,19 +46,13 @@ function loadCache(): void {
                         }, bitmap.data)};
                 });
             }
-            cacheLoaded = true;
-            loadingCallbacks.forEach(loading => {
-                loading.callback(null, cachedGlyphMap[loading.key]);
-            });
-            loadingCallbacks = [];
+            onCacheLoaded();
         };
         request.onerror = () => {
-            cacheLoaded = true;
-            loadingCallbacks.forEach(loading => {
-                loading.callback(request.error);
-            });
-            loadingCallbacks = [];
+            onCacheLoaded(request.error);
         };
+    }).catch(error => {
+        onCacheLoaded(error);
     });
 }
 
@@ -56,6 +61,11 @@ export function cacheOpen(fontFamily: string): void {
         db = new Promise((resolve, reject) => {
             const IDBOpenDBRequest = window.indexedDB.open(CACHE_NAME);
             IDBOpenDBRequest.onsuccess = () => {
+                IDBOpenDBRequest.result.onversionchange = () => {
+                    warnOnce("Closing glyph cache connection because database is being upgraded in another tab.");
+                    db = undefined; // Prevents further gets/puts
+                    IDBOpenDBRequest.result.close();
+                };
                 const transaction = IDBOpenDBRequest.result.transaction([CACHE_NAME, FONT_FAMILY_NAME], "readwrite");
                 const fontFamilyStore = transaction.objectStore(FONT_FAMILY_NAME);
                 const request = fontFamilyStore.get(FONT_FAMILY_NAME);
@@ -87,11 +97,21 @@ export function cacheOpen(fontFamily: string): void {
                     reject(event);
                 };
 
+                for (const name of db.objectStoreNames) {
+                    db.deleteObjectStore(name);
+                }
                 db.createObjectStore(CACHE_NAME);
                 db.createObjectStore(FONT_FAMILY_NAME);
             };
             IDBOpenDBRequest.onerror = () => {
                 reject(IDBOpenDBRequest.error);
+            };
+
+            IDBOpenDBRequest.onblocked = () => {
+                // The open request _can_ still succeed, but since we don't know when
+                // it might be unblocked, it's safer to try to reject and run
+                // without the cache.
+                reject(new Error("Local glyph cache can't open because an upgrade is required and another tab is keeping an old version open."));
             };
         });
         // Start loading everything in the cache as soon as we start up, this gives us
