@@ -147,9 +147,9 @@ const pages = [
         "inject3d": true
     },
     {
-        "key": "fill-extrusion-querying",
-        "url": "./fill-extrusion-querying.html",
-        "title": "Fill Extrusion Querying"
+        "key": "extrusion-query",
+        "url": "./extrusion-query.html",
+        "title": "Fill extrusion querying with terrain"
     },
     {
         "key": "3d-playground",
