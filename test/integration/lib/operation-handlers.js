@@ -107,25 +107,27 @@ export const operationHandlers = {
     }
 };
 
-export function applyOperations(map, options, doneCb) {
-    const operations = options.operations;
-    // No operations specified, end immediately and invoke doneCb.
-    if (!operations || operations.length === 0) {
-        doneCb();
-        return;
-    }
-
-    // Start recursive chain
-    const scheduleNextOperation = (lastOpIndex) => {
-        if (lastOpIndex === operations.length - 1) {
-            // Stop recusive chain when at the end of the operations
-            doneCb();
+export function applyOperations(map, options) {
+    return new Promise((resolve, reject) => {
+        const operations = options.operations;
+        // No operations specified, end immediately and invoke doneCb.
+        if (!operations || operations.length === 0) {
+            resolve();
             return;
         }
 
-        handleOperation(map, options, ++lastOpIndex, scheduleNextOperation);
-    };
-    scheduleNextOperation(-1);
+        // Start recursive chain
+        const scheduleNextOperation = (lastOpIndex) => {
+            if (lastOpIndex === operations.length - 1) {
+                // Stop recusive chain when at the end of the operations
+                resolve();
+                return;
+            }
+
+            handleOperation(map, options, ++lastOpIndex, scheduleNextOperation);
+        };
+        scheduleNextOperation(-1);
+    });
 }
 
 function updateCanvas(imagePath) {
