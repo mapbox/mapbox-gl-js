@@ -1,4 +1,4 @@
-## 2.1.0-beta.1
+## 2.1.0
 
 ### ✨ Features and improvements
 
@@ -11,7 +11,7 @@
 ### 🐞 Bug fixes
 
 - Fixed querying of `fill-extrusion`s when terrain is enabled. ([#10293](https://github.com/mapbox/mapbox-gl-js/pull/10293))
-- Fixed a bug where close points were sometimes not clustered on higher zoom levels given a small clustering radius. Fixed `clusterMaxZoom` so that it is not capped by the source `maxzoom`. ([#10296](https://github.com/mapbox/mapbox-gl-js/pull/10296))
+- Fixed a bug where close points were sometimes not clustered on higher zoom levels given a small clustering radius. Fixed `clusterMaxZoom` so that it is not capped by the source `maxzoom`. ([#10300](https://github.com/mapbox/mapbox-gl-js/pull/10300))
 - Fixed blurry map-aligned labels on highly pitched maps with terrain. ([#10296](https://github.com/mapbox/mapbox-gl-js/pull/10296))
 - Fixed a race condition when evaluating image expressions by ensuring sprite has loaded before parsing tiles. ([#10294](https://github.com/mapbox/mapbox-gl-js/pull/10294))
 - Fixed a bug with fullscreen `fill-extrusion` querying at low pitch. ([#10315](https://github.com/mapbox/mapbox-gl-js/pull/10315))

@@ -1,4 +1,4 @@
-## 13.19.0-beta.1
+## 13.19.0
 
 ### ✨ Features and improvements
 
