@@ -48,6 +48,7 @@ function ensureTeardown(t) {
     if (map) {
         map.remove();
         delete map.painter.context.gl;
+        map = null;
     }
     t.end();
 }
