@@ -7,7 +7,7 @@ const notifier = require('node-notifier');
 
 // hack to be able to import ES modules inside a CommonJS one
 let generateFixtureJson, getAllFixtureGlobs, createServer, buildTape, rollupDevConfig, rollupTestConfig;
-(async () => {
+async function loadModules() {
     const generateFixture = await import('../lib/generate-fixture-json.js');
     generateFixtureJson = generateFixture.generateFixtureJson;
     getAllFixtureGlobs = generateFixture.getAllFixtureGlobs;
@@ -16,7 +16,7 @@ let generateFixtureJson, getAllFixtureGlobs, createServer, buildTape, rollupDevC
     buildTape = (await import('../../../build/test/build-tape.js')).default;
     rollupDevConfig = (await import('../../../rollup.config.js')).default;
     rollupTestConfig = (await import('../rollup.config.test.js')).default;
-})();
+}
 
 const rootFixturePath = 'test/integration/';
 const outputPath = `${rootFixturePath}dist`;
@@ -81,12 +81,14 @@ const defaultTestemConfig = {
     },
     "before_tests"(config, data, callback) {
         if (!beforeHookInvoked) {
-            server = createServer();
-            const buildPromise = config.appMode === 'ci' ? buildArtifactsCi() : buildArtifactsDev();
-            buildPromise.then(() => {
-                server.listen(callback);
-            }).catch((e) => {
-                callback(e);
+            loadModules().then(() => {
+                server = createServer();
+                const buildPromise = config.appMode === 'ci' ? buildArtifactsCi() : buildArtifactsDev();
+                buildPromise.then(() => {
+                    server.listen(callback);
+                }).catch((e) => {
+                    callback(e);
+                });
             });
 
             beforeHookInvoked = true;
