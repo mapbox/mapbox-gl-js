@@ -1,8 +1,7 @@
 import {test} from '../util/test.js';
 import fs from 'fs';
 import path from 'path';
-import packageInfo from '../../package.json';
-const version = packageInfo.version;
+import {version} from '../../package.json';
 
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));

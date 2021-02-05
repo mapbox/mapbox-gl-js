@@ -1,6 +1,8 @@
 import flowRemoveTypes from '@mapbox/flow-remove-types';
+import {dataToEsm} from '@rollup/pluginutils';
 
 const glslRe = /\.glsl$/;
+const jsonRe = /\.json$/;
 
 export function resolve(specifier, context, defaultResolve) {
     if (glslRe.test(specifier)) {
@@ -11,7 +13,7 @@ export function resolve(specifier, context, defaultResolve) {
 }
 
 export function getFormat(url, context, defaultGetFormat) {
-    if (glslRe.test(url)) {
+    if (glslRe.test(url) || jsonRe.test(url)) {
         return {format: 'module'};
     }
     return defaultGetFormat(url, context, defaultGetFormat);
@@ -24,6 +26,14 @@ export function transformSource(source, context, defaultTransformSource) {
     }
     if (glslRe.test(context.url)) {
         return {source: `export default \`${source}\``};
+    }
+    if (jsonRe.test(context.url)) {
+        source = dataToEsm(JSON.parse(source), {
+            preferConst: true,
+            namedExports: true,
+            indent: '    '
+        });
+        return {source};
     }
     return defaultTransformSource(source, context, defaultTransformSource);
 }

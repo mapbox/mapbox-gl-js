@@ -2,8 +2,7 @@ import {test} from '../util/test.js';
 import fs from 'fs';
 import path from 'path';
 import reference from '../../src/style-spec/reference/latest.js';
-import packageInfo from '../../package.json';
-const {scripts} = packageInfo;
+import {scripts} from '../../package.json';
 import browserify from 'browserify';
 
 import {fileURLToPath} from 'url';
