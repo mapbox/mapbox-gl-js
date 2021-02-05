@@ -54,7 +54,7 @@ for (const testName in fixtures) {
 
 function ensureTeardown(t) {
     const testName = t.name;
-    const options = {timeout: 20000};
+    const options = {timeout: 5000};
     if (testName in ignores) {
         const ignoreType = ignores[testName];
         if (/^skip/.test(ignoreType)) {
