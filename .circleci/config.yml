@@ -116,10 +116,10 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v3-yarn-{{ checksum "yarn.lock" }}
+            - v4-yarn-{{ checksum "yarn.lock" }}
       - run: yarn
       - save_cache:
-          key: v3-yarn-{{ checksum "yarn.lock" }}
+          key: v4-yarn-{{ checksum "yarn.lock" }}
           paths:
             - '~/.yarn'
             - 'node_modules'
