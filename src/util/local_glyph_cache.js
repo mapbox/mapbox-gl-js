@@ -6,9 +6,11 @@ import window from './window';
 import {AlphaImage} from './image';
 
 const CACHE_NAME = 'mapbox-glyphs';
-const FONT_FAMILY_NAME = 'font-family';
+const GLYPHS_OBJECT_STORE = 'glyphs';
+const ACCESS_OBJECT_STORE = 'access-times';
 
 let db: ?Promise<IDBDatabase>;
+let fontFamily: ?string;
 
 const cachedGlyphMap: {[string]: StyleGlyph} = {};
 let loadingCallbacks: Array<{key: string, callback: (error: ?any, response: ?StyleGlyph) => void}> = [];
@@ -25,13 +27,18 @@ function onCacheLoaded(error: ?any): void {
     }
 }
 
+function errorFromEvent(event) {
+    warnOnce(event.target.error);
+}
+
+
 function loadCache(): void {
     if (!db) return;
 
     db.then(db => {
-        const transaction = db.transaction([CACHE_NAME], "readonly");
+        const transaction = db.transaction([GLYPHS_OBJECT_STORE], "readonly");
         // Flow annotation for IDBObjectStore doesn't include getAll()
-        const objectStore: any = transaction.objectStore(CACHE_NAME);
+        const objectStore: any = transaction.objectStore(GLYPHS_OBJECT_STORE);
         const request = objectStore.getAll();
         request.onsuccess = () => {
             if (request.result) {
@@ -56,7 +63,8 @@ function loadCache(): void {
     });
 }
 
-export function cacheOpen(fontFamily: string): void {
+export function cacheOpen(sessionFontFamily: string): void {
+    fontFamily = sessionFontFamily;
     if (window.indexedDB && !db) {
         db = new Promise((resolve, reject) => {
             const IDBOpenDBRequest = window.indexedDB.open(CACHE_NAME);
@@ -66,31 +74,13 @@ export function cacheOpen(fontFamily: string): void {
                     db = undefined; // Prevents further gets/puts
                     IDBOpenDBRequest.result.close();
                 };
-                const transaction = IDBOpenDBRequest.result.transaction([CACHE_NAME, FONT_FAMILY_NAME], "readwrite");
-                const fontFamilyStore = transaction.objectStore(FONT_FAMILY_NAME);
-                const request = fontFamilyStore.get(FONT_FAMILY_NAME);
-                request.onsuccess = () => {
-                    // If font family has changed, we need to clear the cache
-                    if (!request.result || request.result !== fontFamily) {
-                        fontFamilyStore.put(fontFamily, FONT_FAMILY_NAME);
-                        const glyphStore = transaction.objectStore(CACHE_NAME);
-                        const clearRequest = glyphStore.clear();
-                        clearRequest.onsuccess = () => {
-                            resolve(IDBOpenDBRequest.result);
-                        };
-                        clearRequest.onerror = () => {
-                            reject(request.error);
-                        };
-                    } else {
-                        resolve(IDBOpenDBRequest.result);
-                    }
-                };
-
-                request.onerror = () => {
-                    reject(request.error);
-                };
+                resolve(IDBOpenDBRequest.result);
             };
             IDBOpenDBRequest.onupgradeneeded = event =>  {
+                // If a schema change is necessary, consider switching to a new
+                // cache name. All of the maps for a website share the same glyph
+                // cache, but if only one of them upgrades to a GL JS with a new
+                // cache version, all the others will be locked out of the cache.
                 const db = event.target.result;
 
                 db.onerror = event => {
@@ -100,8 +90,9 @@ export function cacheOpen(fontFamily: string): void {
                 for (const name of db.objectStoreNames) {
                     db.deleteObjectStore(name);
                 }
-                db.createObjectStore(CACHE_NAME);
-                db.createObjectStore(FONT_FAMILY_NAME);
+                db.createObjectStore(GLYPHS_OBJECT_STORE);
+                const accessObjectStore = db.createObjectStore(ACCESS_OBJECT_STORE);
+                accessObjectStore.createIndex("accessTime", "accessTime", { unique: false });
             };
             IDBOpenDBRequest.onerror = () => {
                 reject(IDBOpenDBRequest.error);
@@ -127,7 +118,11 @@ export function cacheClose(): void {
 }
 
 function cacheKey(fontname: string, id: number): string {
-    return `${fontname}/${id}`;
+    return `${fontFamily}/${fontname}/${id}`;
+}
+
+function accessTime() {
+    return { accessTime: Math.round(new Date().getTime() / 1000) };
 }
 
 function delayPut(put: () => void) {
@@ -146,15 +141,75 @@ export function cachePut(fontname: string, glyph: StyleGlyph): void {
     delayPut(() => {
         if (!db) return;
         db.then(db => {
-            const transaction = db.transaction([CACHE_NAME], "readwrite");
-            const objectStore = transaction.objectStore(CACHE_NAME);
-            const request = objectStore.put(extend(glyph, {fontname}), cacheKey(fontname, glyph.id));
-            request.onerror = () => {
-                warnOnce(request.error.toString());
-            };
+            const transaction = db.transaction(
+                [GLYPHS_OBJECT_STORE, ACCESS_OBJECT_STORE], "readwrite");
+            transaction.objectStore(GLYPHS_OBJECT_STORE)
+                .put(extend(glyph, {fontname}), cacheKey(fontname, glyph.id))
+                .onerror = errorFromEvent;
+
+            transaction.objectStore(ACCESS_OBJECT_STORE)
+                .put(accessTime(), cacheKey(fontname, glyph.id))
+                .onerror = errorFromEvent;
         });
     });
 }
+
+
+export function cacheMarkUsed(fontname: string, id: number): void {
+    if (!db) return;
+
+    delayPut(() => {
+        if (!db) return;
+        db.then(db => {
+            const transaction = db.transaction([ACCESS_OBJECT_STORE], "readwrite");
+            transaction.objectStore(ACCESS_OBJECT_STORE)
+                .put(accessTime(), cacheKey(fontname, id))
+                .onerror = errorFromEvent;
+        });
+    });
+}
+
+const CACHE_LIMIT = 4000;
+
+export function cleanCache(): void {
+    if (!db) return;
+
+    delayPut(() => {
+        if (!db) return;
+        db.then(db => {
+            // Note we could do the count as a "readonly" transaction and then
+            // escalate to "readwrite", with only downside being potential for two
+            // maps to double-clean. We stick with a single "readwrite" transaction
+            // just because it's simpler and this is a write-heavy database so
+            // it shouldn't make much of a difference for contention.
+            console.log("Queue clean transaction");
+            const transaction = db.transaction(
+                [ACCESS_OBJECT_STORE, GLYPHS_OBJECT_STORE], "readwrite");
+            const accessObjectStore = transaction.objectStore(ACCESS_OBJECT_STORE);
+            const count = accessObjectStore.count();
+            count.onsuccess = () => {
+                if (count.result > CACHE_LIMIT) {
+                    let toRemove = count.result - CACHE_LIMIT;
+                    const glyphsObjectStore = transaction.objectStore(GLYPHS_OBJECT_STORE);
+                    const oldestCursor = accessObjectStore.index("accessTime").openCursor();
+                    oldestCursor.onsuccess = () => {
+                        if (toRemove > 0 && oldestCursor.result) {
+                            toRemove--;
+                            accessObjectStore.delete(oldestCursor.result.primaryKey)
+                                .onerror = errorFromEvent;
+                            glyphsObjectStore.delete(oldestCursor.result.primaryKey)
+                                .onerror = errorFromEvent;
+                            oldestCursor.result.continue();
+                        }
+                    };
+                    oldestCursor.onerror = errorFromEvent;
+                }
+            };
+            count.onerror = errorFromEvent;
+        });
+    });
+}
+
 
 export function cacheGet(fontname: string, id: number, callback: (error: ?any, response: ?StyleGlyph) => void): void {
     if (!db || cacheLoaded) {
