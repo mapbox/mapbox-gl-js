@@ -7,14 +7,14 @@ const notifier = require('node-notifier');
 // hack to be able to import ES modules inside a CommonJS one
 let generateFixtureJson, getAllFixtureGlobs, createServer, buildTape, rollupDevConfig, rollupTestConfig;
 (async () => {
-    const generateFixture = await import('./lib/generate-fixture-json.js');
+    const generateFixture = await import('../lib/generate-fixture-json.js');
     generateFixtureJson = generateFixture.generateFixtureJson;
     getAllFixtureGlobs = generateFixture.getAllFixtureGlobs;
 
-    createServer = (await import('./lib/server.js')).default;
-    buildTape = (await import('../../build/test/build-tape.js')).default;
-    rollupDevConfig = (await import('../../rollup.config.js')).default;
-    rollupTestConfig = (await import('./rollup.config.test.js')).default;
+    createServer = (await import('../lib/server.js')).default;
+    buildTape = (await import('../../../build/test/build-tape.js')).default;
+    rollupDevConfig = (await import('../../../rollup.config.js')).default;
+    rollupTestConfig = (await import('../rollup.config.test.js')).default;
 })();
 
 const rootFixturePath = 'test/integration/';
