@@ -37,9 +37,8 @@ class LocalGlyphCache {
         this.cacheLoaded = false;
         this.pendingMarks = [];
         this.pendingPuts = [];
-        this.markCallback = undefined;
-        this.putCallback = undefined;
         this.lastCacheClean = new Date().getTime();
+        
         if (localFontFamily) {
             this._cacheOpen(localFontFamily);
         }
