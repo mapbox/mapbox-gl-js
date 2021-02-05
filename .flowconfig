@@ -21,7 +21,6 @@
 .*/node_modules/highlight.*/.*
 .*/node_modules/rxjs/.*
 .*/node_modules/@?babel.*/.*
-.*/node_modules/react.*/.*
 .*/node_modules/svgo/.*
 .*/node_modules/moment/.*
 .*/node_modules/regenerate-unicode-properties/.*
