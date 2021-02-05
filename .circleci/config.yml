@@ -299,7 +299,7 @@ jobs:
               echo SDK version in mapbox-gl.js matches ${CIRCLE_TAG:1}
             else
               echo SDK version in mapbox-gl.js does not match ${CIRCLE_TAG:1}
-              circleci-agent step halt
+              exit 1
             fi
       - run:
           name: Deploy release
