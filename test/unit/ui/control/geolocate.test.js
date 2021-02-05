@@ -3,15 +3,21 @@ import window from '../../../../src/util/window.js';
 import {createMap} from '../../../util/index.js';
 import GeolocateControl from '../../../../src/ui/control/geolocate_control.js';
 
-// window and navigator globals need to be set for mock-geolocation
-global.window = {};
-global.navigator = {};
-const geolocation = require('mock-geolocation'); // eslint-disable-line import/no-commonjs
-geolocation.use();
+let geolocation;
 
-// assign the mock geolocation to window
-global.window.navigator = global.navigator;
-window.navigator.geolocation = global.window.navigator.geolocation;
+test('geolocation mock loads properly', async (t) => {
+    // window and navigator globals need to be set for mock-geolocation
+    global.window = {};
+    global.navigator = {};
+    geolocation = await import('mock-geolocation');
+    geolocation.use();
+
+    // assign the mock geolocation to window
+    global.window.navigator = global.navigator;
+    window.navigator.geolocation = global.window.navigator.geolocation;
+
+    t.end();
+});
 
 // convert the coordinates of a LngLat object to a fixed number of digits
 function lngLatAsFixed(lngLat, digits) {

@@ -17,7 +17,8 @@ import config from './config.js';
 import window from './window.js';
 import webpSupported from './webp_supported.js';
 import {createSkuToken, SKU_ID} from './sku_token.js';
-import {version as sdkVersion} from '../../package.json';
+import packageInfo from '../../package.json';
+const sdkVersion = packageInfo.version;
 import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util.js';
 import {postData, ResourceType, getData} from './ajax.js';
 

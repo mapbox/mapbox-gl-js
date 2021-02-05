@@ -1,6 +1,7 @@
 // @flow
 
-import {version} from '../../package.json';
+import packageInfo from '../../package.json';
+const version = packageInfo.version;
 import {extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';

@@ -1,14 +1,14 @@
 
 import flowRemoveTypes from '@mapbox/flow-remove-types';
-import resolve from 'rollup-plugin-node-resolve';
-import commonjs from 'rollup-plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
-import json from 'rollup-plugin-json';
+import json from '@rollup/plugin-json';
 import {terser} from 'rollup-plugin-terser';
-import minifyStyleSpec from './rollup_plugin_minify_style_spec';
-import {createFilter} from 'rollup-pluginutils';
+import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
+import {createFilter} from '@rollup/pluginutils';
 import strip from '@rollup/plugin-strip';
-import replace from 'rollup-plugin-replace';
+import replace from '@rollup/plugin-replace';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)

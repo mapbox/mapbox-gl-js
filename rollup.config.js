@@ -10,14 +10,14 @@ const bench = BUILD === 'bench';
 
 function buildType(build, minified) {
     switch (build) {
-        case 'production': 
+        case 'production':
             if (minified) return 'dist/mapbox-gl.js';
             return 'dist/mapbox-gl-unminified.js';
         case 'bench':
             return 'dist/mapbox-gl-bench.js';
         case 'dev':
             return 'dist/mapbox-gl-dev.js';
-        default: 
+        default:
             return 'dist/mapbox-gl-dev.js';
     }
 }

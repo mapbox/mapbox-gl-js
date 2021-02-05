@@ -5,7 +5,8 @@ import window from '../../../src/util/window.js';
 import webpSupported from '../../../src/util/webp_supported.js';
 import {uuid} from '../../../src/util/util.js';
 import {SKU_ID} from '../../../src/util/sku_token.js';
-import {version} from '../../../package.json';
+import packageInfo from '../../../package.json';
+const version = packageInfo.version;
 import {equalWithPrecision} from '../../util/index.js';
 
 const mapboxTileURLs = [

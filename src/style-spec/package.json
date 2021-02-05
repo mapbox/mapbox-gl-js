@@ -11,6 +11,7 @@
   "license": "ISC",
   "main": "./dist/index.js",
   "module": "./dist/index.es.js",
+  "type": "module",
   "scripts": {
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",

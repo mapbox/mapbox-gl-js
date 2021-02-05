@@ -5,6 +5,9 @@ import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import loadGeometry from '../../../src/data/load_geometry.js';
 
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 // Load a line feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 
