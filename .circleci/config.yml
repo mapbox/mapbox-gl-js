@@ -274,11 +274,11 @@ jobs:
       - run:
           name: Check build file for correct SDK version
           command: |
-            if grep -q "sdkVersion:\"$CIRCLE_TAG\"" mapbox-gl.js; then
-              echo SDK version in mapbox-gl.js matches $CIRCLE_TAG
+            if grep -q "sdkVersion:\"${CIRCLE_TAG:1}\"" ./dist/mapbox-gl.js; then
+              echo SDK version in mapbox-gl.js matches ${CIRCLE_TAG:1}
             else
-              echo SDK version in mapbox-gl.js does not match $CIRCLE_TAG
-              circleci-agent step halt
+              echo SDK version in mapbox-gl.js does not match ${CIRCLE_TAG:1}
+              exit 1
             fi
       - run:
           name: Deploy release
