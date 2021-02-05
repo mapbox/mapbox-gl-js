@@ -60,12 +60,16 @@ async function runTest(t) {
     const writeFileBasePath = `test/integration/${currentTestName}`;
     try {
         style = fixtures[currentTestName].style;
+        if (!style) {
+            throw new Error('style.json is missing');
+        }
+
         if (style.PARSE_ERROR) {
             throw new Error(`Error occured while parsing style.json: ${style.message}`);
         }
 
-        expected = fixtures[currentTestName].expected || '';
-        if (style.PARSE_ERROR) {
+        expected = fixtures[currentTestName].expected;
+        if (expected.PARSE_ERROR) {
             throw new Error(`Error occured while parsing expected.json: ${style.message}`);
         }
 

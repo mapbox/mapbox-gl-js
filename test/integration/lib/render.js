@@ -94,6 +94,10 @@ async function runTest(t) {
     const currentFixture = fixtures[currentTestName];
     try {
         style = currentFixture.style;
+        if (!style) {
+            throw new Error('style.json is missing');
+        }
+
         if (style.PARSE_ERROR) {
             throw new Error(`Error occured while parsing style.json: ${style.message}`);
         }
