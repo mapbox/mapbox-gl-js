@@ -1,7 +1,8 @@
 import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
-import {plugins} from './build/rollup_plugins';
-import banner from './build/banner';
+import {plugins} from './build/rollup_plugins.js';
+import banner from './build/banner.js';
+import {fileURLToPath} from 'url';
 
 const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
@@ -53,7 +54,7 @@ export default [{
         format: 'umd',
         sourcemap: production ? true : 'inline',
         indent: false,
-        intro: fs.readFileSync(require.resolve('./rollup/bundle_prelude.js'), 'utf8'),
+        intro: fs.readFileSync(fileURLToPath(new URL('./rollup/bundle_prelude.js', import.meta.url)), 'utf8'),
         banner
     },
     treeshake: false,
