@@ -47,7 +47,7 @@ export default function localizeURLs(style, port) {
             }
         });
     }
-};
+}
 
 function localizeURL(url, port) {
     return url.replace(/^local:\/\//, `http://localhost:${port}/`);

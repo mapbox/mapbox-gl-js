@@ -57,4 +57,4 @@ export default function () {
             return localizeURLs(style, port);
         }
     };
-};
+}
