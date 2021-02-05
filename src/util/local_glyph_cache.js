@@ -1,6 +1,6 @@
 // @flow
 
-import {warnOnce, extend} from './util';
+import {warnOnce} from './util';
 import type {StyleGlyph} from '../style/style_glyph';
 import window from './window';
 import {AlphaImage} from './image';
@@ -50,14 +50,28 @@ class LocalGlyphCache {
 
         this.db.then(db => {
             const transaction = db.transaction([GLYPHS_OBJECT_STORE], "readonly");
-            // Flow annotation for IDBObjectStore doesn't include getAll()
-            const objectStore: any = transaction.objectStore(GLYPHS_OBJECT_STORE);
+            const cursor = transaction.objectStore(GLYPHS_OBJECT_STORE).openCursor();
+            cursor.onsuccess = () => {
+                if (cursor.result) {
+                    const {metrics, bitmap, id} = cursor.result.value;
+                    this.cachedGlyphMap[cursor.primaryKey] = {
+                        id,
+                        metrics,
+                        bitmap: new AlphaImage({
+                            width: bitmap.width,
+                            height: bitmap.height
+                        }, bitmap.data)};
+                    cursor.result.continue();
+                } else {
+                    this._onCacheLoaded()
+                }
+            };
             const request = objectStore.getAll();
             request.onsuccess = () => {
                 if (request.result) {
                     request.result.forEach(glyph => {
-                        const {metrics, bitmap, fontname, id} = glyph;
-                        this.cachedGlyphMap[this._cacheKey(fontname, id)] = {
+                        const {metrics, bitmap, fontname, id, fontFamily} = glyph;
+                        this.cachedGlyphMap[this._cacheKey(fontname, id, fontFamily)] = {
                             id,
                             metrics,
                             bitmap: new AlphaImage({
@@ -68,8 +82,8 @@ class LocalGlyphCache {
                 }
                 this._onCacheLoaded();
             };
-            request.onerror = () => {
-                this._onCacheLoaded(request.error);
+            cursor.onerror = () => {
+                this._onCacheLoaded(cursor.error);
             };
         }).catch(error => {
             this._onCacheLoaded(error);
@@ -157,7 +171,7 @@ class LocalGlyphCache {
                 const transaction = db.transaction(
                     [GLYPHS_OBJECT_STORE, ACCESS_OBJECT_STORE], "readwrite");
                 transaction.objectStore(GLYPHS_OBJECT_STORE)
-                    .put(extend(glyph, {fontname}), this._cacheKey(fontname, glyph.id))
+                    .put(glyph, this._cacheKey(fontname, glyph.id))
                     .onerror = errorFromEvent;
 
                 transaction.objectStore(ACCESS_OBJECT_STORE)
