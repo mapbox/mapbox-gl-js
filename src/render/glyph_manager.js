@@ -11,7 +11,7 @@ import type {StyleGlyph} from '../style/style_glyph';
 import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 
-import {cacheOpen, cachePut, cacheGet, cleanCache, cacheMarkUsed} from '../util/local_glyph_cache';
+import LocalGlyphCache from '../util/local_glyph_cache';
 
 /*
   SDF_SCALE controls the pixel density of locally generated glyphs relative
@@ -59,6 +59,7 @@ class GlyphManager {
     // into the glyphs based soley on font weight
     localGlyphs: {[_: string]: {[id: number]: StyleGlyph | null}};
     url: ?string;
+    localGlyphCache: LocalGlyphCache;
 
     // exposed as statics to enable stubbing in unit tests
     static loadGlyphRange: typeof loadGlyphRange;
@@ -68,9 +69,7 @@ class GlyphManager {
         this.requestManager = requestManager;
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
-        if (localFontFamily) {
-            cacheOpen(localFontFamily);
-        }
+        this.localGlyphCache = new LocalGlyphCache(localFontFamily);
         this.entries = {};
         this.localGlyphs = {
             // Only these four font weights are supported
@@ -79,8 +78,6 @@ class GlyphManager {
             '500': {},
             '900': {}
         };
-
-        setTimeout(cleanCache, 5000);
     }
 
     setURL(url: ?string) {
@@ -228,12 +225,12 @@ class GlyphManager {
             return;
         }
 
-        cacheGet(tinySDF.fontWeight, id, (error: ?any, glyph: ?StyleGlyph) => {
+        this.localGlyphCache.cacheGet(tinySDF.fontWeight, id, (error: ?any, glyph: ?StyleGlyph) => {
             if (error || !tinySDF) {
                 callback(error);
             } else if (glyph) {
                 callback(null, glyph);
-                cacheMarkUsed(tinySDF.fontWeight, id);
+                this.localGlyphCache.cacheMarkUsed(tinySDF.fontWeight, id);
             } else {
                 const {data, metrics} = tinySDF.drawWithMetrics(String.fromCharCode(id));
                 const {fontAscent, sdfWidth, sdfHeight, width, height, left, top, advance} = metrics;
@@ -265,7 +262,7 @@ class GlyphManager {
                     }
                 };
                 callback(null, glyph);
-                cachePut(tinySDF.fontWeight, glyph);
+                this.localGlyphCache.cachePut(tinySDF.fontWeight, glyph);
             }
         });
     }
