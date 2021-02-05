@@ -38,7 +38,7 @@ class LocalGlyphCache {
         this.pendingMarks = [];
         this.pendingPuts = [];
         this.lastCacheClean = new Date().getTime();
-        
+
         if (localFontFamily) {
             this._cacheOpen(localFontFamily);
         }
@@ -84,7 +84,7 @@ class LocalGlyphCache {
                     }
                     db.createObjectStore(GLYPHS_OBJECT_STORE);
                     const accessObjectStore = db.createObjectStore(ACCESS_OBJECT_STORE);
-                    accessObjectStore.createIndex("accessTime", "accessTime", { unique: false });
+                    accessObjectStore.createIndex("accessTime", "accessTime", {unique: false});
                 };
                 IDBOpenDBRequest.onerror = () => {
                     reject(IDBOpenDBRequest.error);
@@ -121,7 +121,7 @@ class LocalGlyphCache {
                         }, bitmap.data)};
                     cursor.result.continue();
                 } else {
-                    this._onCacheLoaded()
+                    this._onCacheLoaded();
                 }
             };
             cursor.onerror = () => {
@@ -171,7 +171,7 @@ class LocalGlyphCache {
     }
 
     _accessTime() {
-        return { accessTime: Math.round(new Date().getTime() / 1000) };
+        return {accessTime: Math.round(new Date().getTime() / 1000)};
     }
 
     _delay(callback: () => void) {
@@ -223,14 +223,14 @@ class LocalGlyphCache {
     put(fontWeight: string, glyph: StyleGlyph): void {
         if (!this.db) return;
 
-        this.pendingPuts.push({key: this._cacheKey(fontWeight, glyph.id), glyph: glyph});
+        this.pendingPuts.push({key: this._cacheKey(fontWeight, glyph.id), glyph});
         if (!this.putCallback) {
-            this.putCallback = this._delay(() => { this._batchPut() });
+            this.putCallback = this._delay(() => { this._batchPut(); });
         }
 
         if (new Date().getTime() > this.lastCacheClean + 15 * 60 * 1000) {
             this.lastCacheClean = new Date().getTime();
-            this._delay(() => { this._cleanCache() });
+            this._delay(() => { this._cleanCache(); });
         }
     }
 
@@ -239,7 +239,7 @@ class LocalGlyphCache {
 
         this.pendingMarks.push(this._cacheKey(fontWeight, id));
         if (!this.markCallback) {
-            this.markCallback = this._delay(() => { this._batchMark() });
+            this.markCallback = this._delay(() => { this._batchMark(); });
         }
     }
 
