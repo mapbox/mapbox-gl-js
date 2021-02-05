@@ -23,71 +23,37 @@ class LocalGlyphCache {
     loadingCallbacks: Array<{key: string, callback: (error: ?any, response: ?StyleGlyph) => void}>;
     cacheLoaded: boolean;
 
+    pendingMarks: Array<string>;
+    pendingPuts: Array<{key: string, glyph: StyleGlyph}>;
+
+    markCallback: ?TimeoutID;
+    putCallback: ?TimeoutID;
+
+    lastCacheClean: number;
+
     constructor(localFontFamily: ?string) {
         this.cachedGlyphMap = {};
         this.loadingCallbacks = [];
         this.cacheLoaded = false;
+        this.pendingMarks = [];
+        this.pendingPuts = [];
+        this.markCallback = undefined;
+        this.putCallback = undefined;
+        this.lastCacheClean = new Date().getTime();
         if (localFontFamily) {
             this._cacheOpen(localFontFamily);
         }
-
-        setTimeout(this._cleanCache, 5000);
     }
 
     _onCacheLoaded(error: ?any): void {
         this.cacheLoaded = true;
         this.loadingCallbacks.forEach(loading => {
-            loading.callback(error, cachedGlyphMap[loading.key]);
+            loading.callback(error, this.cachedGlyphMap[loading.key]);
         });
         this.loadingCallbacks = [];
         if (error) {
             this.db = undefined; // Prevents further gets/puts
         }
-    }
-
-    _loadCache(): void {
-        if (!this.db) return;
-
-        this.db.then(db => {
-            const transaction = db.transaction([GLYPHS_OBJECT_STORE], "readonly");
-            const cursor = transaction.objectStore(GLYPHS_OBJECT_STORE).openCursor();
-            cursor.onsuccess = () => {
-                if (cursor.result) {
-                    const {metrics, bitmap, id} = cursor.result.value;
-                    this.cachedGlyphMap[cursor.primaryKey] = {
-                        id,
-                        metrics,
-                        bitmap: new AlphaImage({
-                            width: bitmap.width,
-                            height: bitmap.height
-                        }, bitmap.data)};
-                    cursor.result.continue();
-                } else {
-                    this._onCacheLoaded()
-                }
-            };
-            const request = objectStore.getAll();
-            request.onsuccess = () => {
-                if (request.result) {
-                    request.result.forEach(glyph => {
-                        const {metrics, bitmap, fontname, id, fontFamily} = glyph;
-                        this.cachedGlyphMap[this._cacheKey(fontname, id, fontFamily)] = {
-                            id,
-                            metrics,
-                            bitmap: new AlphaImage({
-                                width: bitmap.width,
-                                height: bitmap.height
-                            }, bitmap.data)};
-                    });
-                }
-                this._onCacheLoaded();
-            };
-            cursor.onerror = () => {
-                this._onCacheLoaded(cursor.error);
-            };
-        }).catch(error => {
-            this._onCacheLoaded(error);
-        });
     }
 
     _cacheOpen(sessionFontFamily: string): void {
@@ -138,110 +104,154 @@ class LocalGlyphCache {
         }
     }
 
-    // We're never closing the cache, but our unit tests rely on changing out the global window.caches
-    // object, so we have a function specifically for unit tests that allows resetting the shared cache.
-    cacheClose(): void {
-        this.db = undefined;
+    _loadCache(): void {
+        if (!this.db) return;
+
+        this.db.then(db => {
+            const transaction = db.transaction([GLYPHS_OBJECT_STORE], "readonly");
+            const cursor: any = transaction.objectStore(GLYPHS_OBJECT_STORE).openCursor();
+            cursor.onsuccess = () => {
+                if (cursor.result) {
+                    const {metrics, bitmap, id} = cursor.result.value;
+                    this.cachedGlyphMap[cursor.result.primaryKey] = {
+                        id,
+                        metrics,
+                        bitmap: new AlphaImage({
+                            width: bitmap.width,
+                            height: bitmap.height
+                        }, bitmap.data)};
+                    cursor.result.continue();
+                } else {
+                    this._onCacheLoaded()
+                }
+            };
+            cursor.onerror = () => {
+                this._onCacheLoaded(cursor.error);
+            };
+        }).catch(error => {
+            this._onCacheLoaded(error);
+        });
     }
 
-    _cacheKey(fontname: string, id: number): string {
-        return `${this.fontFamily}/${fontname}/${id}`;
+    _cleanCache(): void {
+        if (!this.db) return;
+        this.db.then(db => {
+            // Note we could do the count as a "readonly" transaction and then
+            // escalate to "readwrite", with only downside being potential for two
+            // maps to double-clean. We stick with a single "readwrite" transaction
+            // just because it's simpler and this is a write-heavy database so
+            // it shouldn't make much of a difference for contention.
+            const transaction = db.transaction(
+                [ACCESS_OBJECT_STORE, GLYPHS_OBJECT_STORE], "readwrite");
+            const accessObjectStore = transaction.objectStore(ACCESS_OBJECT_STORE);
+            const count: any = accessObjectStore.count();
+            count.onsuccess = () => {
+                if (count.result > CACHE_LIMIT) {
+                    let toRemove = count.result - CACHE_LIMIT;
+                    const glyphsObjectStore = transaction.objectStore(GLYPHS_OBJECT_STORE);
+                    const oldestCursor: any = accessObjectStore.index("accessTime").openCursor();
+                    oldestCursor.onsuccess = () => {
+                        if (toRemove > 0 && oldestCursor.result) {
+                            toRemove--;
+                            accessObjectStore.delete(oldestCursor.result.primaryKey)
+                                .onerror = errorFromEvent;
+                            glyphsObjectStore.delete(oldestCursor.result.primaryKey)
+                                .onerror = errorFromEvent;
+                            oldestCursor.result.continue();
+                        }
+                    };
+                    oldestCursor.onerror = errorFromEvent;
+                }
+            };
+            count.onerror = errorFromEvent;
+        });
+    }
+
+    _cacheKey(fontWeight: string, id: number): string {
+        return `${this.fontFamily || "null"}/${fontWeight}/${id}`;
     }
 
     _accessTime() {
         return { accessTime: Math.round(new Date().getTime() / 1000) };
     }
 
-    _delayPut(put: () => void) {
+    _delay(callback: () => void) {
         // Spread out cache writes to avoid blocking foreground
         // Not a big deal if some writes don't get committed before session ends
         if (window.requestIdleCallback) {
-            window.requestIdleCallback(put);
+            return window.requestIdleCallback(callback);
         } else {
-            setTimeout(put, 5000 + Math.round(Math.random() * 10000));
+            return setTimeout(callback, 5000 + Math.round(Math.random() * 10000));
         }
     }
 
-    cachePut(fontname: string, glyph: StyleGlyph): void {
+    _batchPut(): void {
         if (!this.db) return;
-
-        this._delayPut(() => {
-            if (!this.db) return;
-            this.db.then(db => {
-                const transaction = db.transaction(
-                    [GLYPHS_OBJECT_STORE, ACCESS_OBJECT_STORE], "readwrite");
+        this.db.then(db => {
+            const transaction = db.transaction(
+                [GLYPHS_OBJECT_STORE, ACCESS_OBJECT_STORE], "readwrite");
+            const accessTime = this._accessTime();
+            for (const pending of this.pendingPuts) {
                 transaction.objectStore(GLYPHS_OBJECT_STORE)
-                    .put(glyph, this._cacheKey(fontname, glyph.id))
+                    .put(pending.glyph, pending.key)
                     .onerror = errorFromEvent;
 
                 transaction.objectStore(ACCESS_OBJECT_STORE)
-                    .put(this._accessTime(), this._cacheKey(fontname, glyph.id))
+                    .put(accessTime, pending.key)
                     .onerror = errorFromEvent;
-            });
+            }
+            this.pendingPuts = [];
+            this.putCallback = undefined;
         });
     }
 
-    cacheMarkUsed(fontname: string, id: number): void {
+    _batchMark(): void {
         if (!this.db) return;
-
-        this._delayPut(() => {
-            if (!this.db) return;
-            this.db.then(db => {
-                const transaction = db.transaction([ACCESS_OBJECT_STORE], "readwrite");
+        this.db.then(db => {
+            const transaction = db.transaction(
+                [ACCESS_OBJECT_STORE], "readwrite");
+            const accessTime = this._accessTime();
+            for (const key of this.pendingMarks) {
                 transaction.objectStore(ACCESS_OBJECT_STORE)
-                    .put(this._accessTime(), this._cacheKey(fontname, id))
+                    .put(accessTime, key)
                     .onerror = errorFromEvent;
-            });
+            }
+            this.pendingMarks = [];
+            this.markCallback = undefined;
         });
     }
 
-    _cleanCache(): void {
+    put(fontWeight: string, glyph: StyleGlyph): void {
         if (!this.db) return;
 
-        this._delayPut(() => {
-            if (!this.db) return;
-            this.db.then(db => {
-                // Note we could do the count as a "readonly" transaction and then
-                // escalate to "readwrite", with only downside being potential for two
-                // maps to double-clean. We stick with a single "readwrite" transaction
-                // just because it's simpler and this is a write-heavy database so
-                // it shouldn't make much of a difference for contention.
-                const transaction = db.transaction(
-                    [ACCESS_OBJECT_STORE, GLYPHS_OBJECT_STORE], "readwrite");
-                const accessObjectStore = transaction.objectStore(ACCESS_OBJECT_STORE);
-                const count = accessObjectStore.count();
-                count.onsuccess = () => {
-                    if (count.result > CACHE_LIMIT) {
-                        let toRemove = count.result - CACHE_LIMIT;
-                        const glyphsObjectStore = transaction.objectStore(GLYPHS_OBJECT_STORE);
-                        const oldestCursor = accessObjectStore.index("accessTime").openCursor();
-                        oldestCursor.onsuccess = () => {
-                            if (toRemove > 0 && oldestCursor.result) {
-                                toRemove--;
-                                accessObjectStore.delete(oldestCursor.result.primaryKey)
-                                    .onerror = errorFromEvent;
-                                glyphsObjectStore.delete(oldestCursor.result.primaryKey)
-                                    .onerror = errorFromEvent;
-                                oldestCursor.result.continue();
-                            }
-                        };
-                        oldestCursor.onerror = errorFromEvent;
-                    }
-                };
-                count.onerror = errorFromEvent;
-            });
-        });
+        this.pendingPuts.push({key: this._cacheKey(fontWeight, glyph.id), glyph: glyph});
+        if (!this.putCallback) {
+            this.putCallback = this._delay(() => { this._batchPut() });
+        }
+
+        if (new Date().getTime() > this.lastCacheClean + 15 * 60 * 1000) {
+            this.lastCacheClean = new Date().getTime();
+            this._delay(() => { this._cleanCache() });
+        }
     }
 
-    cacheGet(fontname: string, id: number, callback: (error: ?any, response: ?StyleGlyph) => void): void {
+    markUsed(fontWeight: string, id: number): void {
+        if (!this.db) return;
+
+        this.pendingMarks.push(this._cacheKey(fontWeight, id));
+        if (!this.markCallback) {
+            this.markCallback = this._delay(() => { this._batchMark() });
+        }
+    }
+
+    get(fontWeight: string, id: number, callback: (error: ?any, response: ?StyleGlyph) => void): void {
         if (!this.db || this.cacheLoaded) {
-            callback(null, this.cachedGlyphMap[this._cacheKey(fontname, id)]);
+            callback(null, this.cachedGlyphMap[this._cacheKey(fontWeight, id)]);
         } else {
-            this.loadingCallbacks.push({key: this._cacheKey(fontname, id), callback});
+            this.loadingCallbacks.push({key: this._cacheKey(fontWeight, id), callback});
         }
     }
 
 }
-
 
 export default LocalGlyphCache;

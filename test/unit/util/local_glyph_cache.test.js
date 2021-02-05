@@ -1,14 +1,13 @@
 import {test} from '../../util/test';
-import {cacheGet, cachePut, cacheOpen, cacheClose} from '../../../src/util/local_glyph_cache';
+import LocalGlyphCache from '../../../src/util/local_glyph_cache';
 import window from '../../../src/util/window';
 import sinon from 'sinon';
 
 const FONT_FAMILY_NAME = "sans-serif";
-const FONT_NAME = "fontname";
+const FONT_WEIGHT = "500";
 
 test('local_glyph_cache', (t) => {
     t.beforeEach(callback => {
-        cacheClose();
         window.indexedDB = sinon.stub();
         callback();
     });
@@ -18,13 +17,13 @@ test('local_glyph_cache', (t) => {
         callback();
     });
 
-    t.test('cachePut, no window.indexedDB', (t) => {
+    t.test('cache.put, no window.indexedDB', (t) => {
         delete window.indexedDB;
-        cacheOpen(FONT_FAMILY_NAME);
+        const cache = new LocalGlyphCache(FONT_FAMILY_NAME);
 
         let result;
         try {
-            result = cachePut(FONT_NAME, {});
+            result = cache.put(FONT_WEIGHT, {});
             t.pass('should return successfully');
             t.notOk(result, 'should return null');
         } catch (e) {
@@ -33,46 +32,15 @@ test('local_glyph_cache', (t) => {
         t.end();
     });
 
-    t.test('cacheGet, no window.indexedDB', (t) => {
+    t.test('cache.get, no window.indexedDB', (t) => {
         delete window.indexedDB;
-        cacheOpen(FONT_FAMILY_NAME);
+        const cache = new LocalGlyphCache(FONT_FAMILY_NAME);
 
-        cacheGet(FONT_NAME, 0, (result) => {
+        cache.get(FONT_WEIGHT, 0, (result) => {
             t.ifError(result, 'should not result in error');
             t.equals(result, null, 'should return null');
             t.end();
         });
-    });
-
-    t.test('cacheGet, cache not opened', (t) => {
-        cacheGet(FONT_NAME, 0, (result) => {
-            t.ifError(result, 'should not result in error');
-            t.equals(result, null, 'should return null');
-            t.end();
-        });
-    });
-
-    t.test('cacheGet, unknown key', (t) => {
-        delete window.indexedDB;
-        cacheOpen(FONT_FAMILY_NAME);
-
-        cacheGet(FONT_NAME, 0, (result) => {
-            t.ifError(result, 'should not result in error');
-            t.equals(result, null, 'should return null');
-            t.end();
-        });
-    });
-
-    t.test('cachePut, cache not opened', (t) => {
-        let result;
-        try {
-            result = cachePut(FONT_NAME, {});
-            t.pass('should return successfully');
-            t.notOk(result, 'should return null');
-        } catch (e) {
-            t.ifError(e, 'should not result in error');
-        }
-        t.end();
     });
 
     t.end();

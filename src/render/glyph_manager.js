@@ -225,12 +225,12 @@ class GlyphManager {
             return;
         }
 
-        this.localGlyphCache.cacheGet(tinySDF.fontWeight, id, (error: ?any, glyph: ?StyleGlyph) => {
+        this.localGlyphCache.get(tinySDF.fontWeight, id, (error: ?any, glyph: ?StyleGlyph) => {
             if (error || !tinySDF) {
                 callback(error);
             } else if (glyph) {
                 callback(null, glyph);
-                this.localGlyphCache.cacheMarkUsed(tinySDF.fontWeight, id);
+                this.localGlyphCache.markUsed(tinySDF.fontWeight, id);
             } else {
                 const {data, metrics} = tinySDF.drawWithMetrics(String.fromCharCode(id));
                 const {fontAscent, sdfWidth, sdfHeight, width, height, left, top, advance} = metrics;
@@ -262,7 +262,7 @@ class GlyphManager {
                     }
                 };
                 callback(null, glyph);
-                this.localGlyphCache.cachePut(tinySDF.fontWeight, glyph);
+                this.localGlyphCache.put(tinySDF.fontWeight, glyph);
             }
         });
     }
