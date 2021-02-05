@@ -29,10 +29,19 @@ container.style.bottom = '10px';
 container.style.right = '10px';
 document.body.appendChild(container);
 
+// Container used to store all fake canvases added via addFakeCanvas operation
+// All children of this node are cleared at the end of every test run
+const fakeCanvasContainer = document.createElement('div');
+fakeCanvasContainer.style.position = 'fixed';
+fakeCanvasContainer.style.top = '10px';
+fakeCanvasContainer.style.left = '10px';
+document.body.appendChild(fakeCanvasContainer);
+
 setupHTML();
 
 const {canvas: expectedCanvas, ctx: expectedCtx} = createCanvas();
 const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
+let map;
 
 tape.onFinish(() => {
     document.body.removeChild(container);
@@ -40,6 +49,11 @@ tape.onFinish(() => {
 });
 
 for (const testName in fixtures) {
+    tape(testName, {timeout: 20000}, ensureTeardown);
+}
+
+function ensureTeardown(t) {
+    const testName = t.name;
     const options = {timeout: 20000};
     if (testName in ignores) {
         const ignoreType = ignores[testName];
@@ -50,11 +64,29 @@ for (const testName in fixtures) {
         }
     }
 
-    tape(testName, options, testFunc);
+    t.test(testName, options, runTest);
+
+    //Teardown all global resources
+    //Cleanup WebGL context and map
+    if (map) {
+        map.remove();
+        delete map.painter.context.gl;
+    }
+    expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
+    diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
+
+    //Cleanup canvases added if any
+    while (fakeCanvasContainer.firstChild) {
+        fakeCanvasContainer.removeChild(fakeCanvasContainer.firstChild);
+    }
+
+    //Restore timers
+    mapboxgl.restoreNow();
+    t.end();
 }
 
-async function testFunc(t) {
-    let map, style, options;
+async function runTest(t) {
+    let style, options;
     // This needs to be read from the `t` object because this function runs async in a closure.
     const currentTestName = t.name;
     const writeFileBasePath = `test/integration/${currentTestName}`;
@@ -86,7 +118,7 @@ async function testFunc(t) {
             const {canvas, ctx} = createCanvas(options.addFakeCanvas.id);
             const src = options.addFakeCanvas.image.replace('./', '');
             await drawImage(canvas, ctx, src, false);
-            window.document.body.appendChild(canvas);
+            fakeCanvasContainer.appendChild(canvas);
         }
 
         container.style.width = `${options.width}px`;
@@ -265,20 +297,6 @@ async function testFunc(t) {
         updateHTML({name: t.name, status:'failed', jsonDiff: e.message});
     }
 
-    //Cleanup WebGL context
-    if (map) {
-        map.remove();
-        delete map.painter.context.gl;
-    }
-    expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
-    diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
-
-    if (options && options.addFakeCanvas) {
-        const canvas = window.document.getElementById(options.addFakeCanvas.id);
-        canvas.parentNode.removeChild(canvas);
-    }
-
-    mapboxgl.restoreNow();
     t.end();
 }
 

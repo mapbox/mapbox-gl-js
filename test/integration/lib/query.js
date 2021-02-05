@@ -20,12 +20,18 @@ container.style.position = 'fixed';
 container.style.bottom = '10px';
 container.style.right = '10px';
 document.body.appendChild(container);
+let map;
 
 tape.onFinish(() => {
     document.body.removeChild(container);
 });
 
 for (const testName in fixtures) {
+    tape(testName, {timeout: 20000}, ensureTeardown);
+}
+
+function ensureTeardown(t) {
+    const testName = t.name;
     const options = {timeout: 20000};
     if (testName in ignores) {
         const ignoreType = ignores[testName];
@@ -35,12 +41,19 @@ for (const testName in fixtures) {
             options.todo = true;
         }
     }
+    t.test(testName, options, runTest);
 
-    tape(testName, options, testFunc);
+    //Teardown all global resources
+    //Cleanup WebGL context and map
+    if (map) {
+        map.remove();
+        delete map.painter.context.gl;
+    }
+    t.end();
 }
 
-async function testFunc(t) {
-    let map, style, expected, options;
+async function runTest(t) {
+    let style, expected, options;
     // This needs to be read from the `t` object because this function runs async in a closure.
     const currentTestName = t.name;
     const writeFileBasePath = `test/integration/${currentTestName}`;
@@ -136,12 +149,6 @@ async function testFunc(t) {
     } catch (e) {
         t.error(e);
         updateHTML({name: t.name, status:'failed', jsonDiff: e.message});
-    }
-
-    //Cleanup WebGL context
-    if (map) {
-        map.remove();
-        delete map.painter.context.gl;
     }
     t.end();
 }
