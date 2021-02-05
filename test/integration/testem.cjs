@@ -11,10 +11,10 @@ let generateFixtureJson, getAllFixtureGlobs, createServer, buildTape, rollupDevC
     generateFixtureJson = generateFixture.generateFixtureJson;
     getAllFixtureGlobs = generateFixture.getAllFixtureGlobs;
 
-    createServer = await import('./lib/server.js');
-    buildTape = await import('../../build/test/build-tape.js');
-    rollupDevConfig = await import('../../rollup.config.js');
-    rollupTestConfig = await import('./rollup.config.test.js');
+    createServer = (await import('./lib/server.js')).default;
+    buildTape = (await import('../../build/test/build-tape.js')).default;
+    rollupDevConfig = (await import('../../rollup.config.js')).default;
+    rollupTestConfig = (await import('./rollup.config.test.js')).default;
 })();
 
 const rootFixturePath = 'test/integration/';
