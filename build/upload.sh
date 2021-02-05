@@ -7,8 +7,8 @@
 # yarn run build-prod-min && yarn run build-prod && yarn run build-csp && yarn run build-dev && yarn run build-css
 # The tag should be in the form of vx.x.x:
 # ./upload.sh v2.0.0
-# You can test your setup with a staging bucket:
-# .upload.sh v2.0.0 staging
+# You can test your setup with a dry run that prints the s3 command for each file:
+# .upload.sh v2.0.0 dry-run
 
 # exit immediately if any error is encountered
 set -e
@@ -25,15 +25,6 @@ else
 	echo "Error: A tag must be set to upload to s3. If running this script manually, pass the tag as an argument: ./upload.sh vx.x.x"
 	exit 1
 fi
-
-# enable a staging bucket for testing purposes
-# ./upload.sh <tag> staging
-# if [ "$2" = "staging" ]
-# then
-# 	bucket="mapbox-gl-js-staging"
-# else
-# 	bucket="mapbox-gl-js"
-# fi
 
 declare -a files=(
     "mapbox-gl.js"
@@ -56,17 +47,23 @@ then
 	exit 1
 fi
 
+# ensure the desired files all exist
+# do this before uploading any files to avoid partial uploads
 for i in "${files[@]}"
 do
 	file=$i
 
-	# ensure the desired files all exist
 	if [ ! -f "./dist/${file}" ]
 	then
 		echo "Error: File ${file} does not exist in dist folder. Make sure you build the bundle before running this script."
-		echo: "Run: yarn run build-prod-min && yarn run build-prod && yarn run build-csp && yarn run build-dev && yarn run build-css"
+		echo "Run: yarn run build-prod-min && yarn run build-prod && yarn run build-csp && yarn run build-dev && yarn run build-css"
 		exit 1;
 	fi
+done
+
+for i in "${files[@]}"
+do
+	file=$i
 
 	# separate the file name on the "."
 	isjs=$(echo $file | cut -d. -f2)
@@ -84,5 +81,10 @@ do
 		mimetype="text/css"
 	fi
 
-	echo "aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://${bucket}/${tag}/${file}"
+	if [ "$2" = "dry-run" ]
+	then
+		echo "aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file}"
+	else
+		aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file}
+	fi
 done
