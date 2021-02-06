@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import glob from 'glob';
 import shuffleSeed from 'shuffle-seed';
-import d3 from 'd3'; // eslint-disable-line
+import d3 from 'd3-queue'; // eslint-disable-line
 import colors from 'chalk';
 import template from 'lodash.template';
 import createServer from './server.js';
