@@ -1,3 +1,9 @@
+## 13.19.0
+
+### ✨ Features and improvements
+
+* Added array support to minimums and maximums, allowing for validation of multi-dimensional style-spec value constraints. ([#10272](https://github.com/mapbox/mapbox-gl-js/pull/10272))
+
 # 13.18.1
 
 ### 🐞 Bug fixes
