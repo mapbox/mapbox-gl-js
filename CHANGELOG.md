@@ -1,3 +1,9 @@
+## 2.1.1
+
+### 🐞 Bug fixes
+
+- Fixed a font glyphs performance regression on Firefox. ([10363](https://github.com/mapbox/mapbox-gl-js/pull/10363))
+
 ## 2.1.0
 
 ### ✨ Features and improvements
