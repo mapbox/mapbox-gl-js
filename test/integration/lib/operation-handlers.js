@@ -95,7 +95,7 @@ export const operationHandlers = {
 
             map.updateImage(params[0], image);
             doneCb();
-        })
+        });
     }
 };
 
@@ -142,7 +142,7 @@ function updateCanvas(imagePath) {
 
 function waitForRender(map, conditional, doneCb) {
     let frameCt = 0;
-    const wait = function(){
+    const wait = function() {
         if (conditional() && frameCt >= MIN_FRAMES) {
             doneCb();
         } else {
@@ -151,6 +151,6 @@ function waitForRender(map, conditional, doneCb) {
                 wait();
             });
         }
-    }
+    };
     wait();
 }
