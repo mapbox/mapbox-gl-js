@@ -253,7 +253,7 @@ function projectExtrusion2D(geometry: Array<Array<Point>>, zBase: number, zTop: 
     return [projectedBase, projectedTop];
 }
 
-/**
+/*
  * Projects a fill extrusion vertices to screen while accounting for terrain.
  * This and its dependent functions are ported directly from `fill_extrusion.vertex.glsl`
  * with a few co-ordinate space differences.
