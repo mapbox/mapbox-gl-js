@@ -17,33 +17,19 @@ function handleOperation(map, options, opIndex, doneCb) {
     }
 }
 
+const MIN_FRAMES = 1;
+
 export const operationHandlers = {
     wait(map, params, doneCb) {
-        const wait = function() {
-            if (params.length) {
-                window._renderTestNow += params[0];
-                mapboxgl.setNow(window._renderTestNow);
-                map._render();
-                doneCb();
-            } else {
-                if (map.loaded()) {
-                    doneCb();
-                } else {
-                    map.once('render', wait);
-                }
-            }
-        };
-        wait();
+        if (params.length) {
+            window._renderTestNow += params[0];
+            mapboxgl.setNow(window._renderTestNow);
+        }
+
+        waitForRender(map, () => map.loaded(), doneCb);
     },
     idle(map, params, doneCb) {
-        const idle = function() {
-            if (!map.isMoving()) {
-                doneCb();
-            } else {
-                map.once('render', idle);
-            }
-        };
-        idle();
+        waitForRender(map, () => !map.isMoving(), doneCb);
     },
     sleep(map, params, doneCb) {
         setTimeout(doneCb, params[0]);
@@ -62,8 +48,7 @@ export const operationHandlers = {
     },
     addCustomLayer(map, params, doneCb) {
         map.addLayer(new customLayerImplementations[params[0]](), params[1]);
-        map._render();
-        doneCb();
+        waitForRender(map, () => true, doneCb);
     },
     updateFakeCanvas(map, params, doneCb) {
         const updateFakeCanvas = async function() {
@@ -73,8 +58,7 @@ export const operationHandlers = {
             await updateCanvas(params[1]);
             canvasSource.pause();
             await updateCanvas(params[2]);
-            map._render();
-            doneCb();
+            waitForRender(map, () => true, doneCb);
         };
         updateFakeCanvas();
     },
@@ -104,6 +88,14 @@ export const operationHandlers = {
         options.lookAtPoint(new mapboxgl.LngLat(location[0], location[1]), upVector);
         map.setFreeCameraOptions(options);
         doneCb();
+    },
+    updateImage(map, params, doneCb) {
+        map.loadImage(params[1], (error, image) => {
+            if (error) throw error;
+
+            map.updateImage(params[0], image);
+            doneCb();
+        })
     }
 };
 
@@ -146,4 +138,19 @@ function updateCanvas(imagePath) {
             throw new Error(`updateFakeCanvas failed to load image at ${image.src}`);
         };
     });
+}
+
+function waitForRender(map, conditional, doneCb) {
+    let frameCt = 0;
+    const wait = function(){
+        if (conditional() && frameCt >= MIN_FRAMES) {
+            doneCb();
+        } else {
+            map.once('render', () => {
+                frameCt++;
+                wait();
+            });
+        }
+    }
+    wait();
 }
