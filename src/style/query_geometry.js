@@ -72,7 +72,7 @@ export class QueryGeometry {
     /**
      * Returns true if the initial query by the user was a single point
      *
-     * @returns {boolean}
+     * @returns {boolean} True if the initial query geometry was a single point
      */
     isPointQuery(): boolean {
         return this.screenBounds.length === 1;
