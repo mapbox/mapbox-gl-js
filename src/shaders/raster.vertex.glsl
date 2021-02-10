@@ -1,4 +1,5 @@
 uniform mat4 u_matrix;
+uniform mat4 u_pixel_matrix;
 uniform vec2 u_tl_parent;
 uniform float u_scale_parent;
 uniform float u_buffer_scale;
@@ -9,6 +10,8 @@ attribute vec2 a_texture_pos;
 varying vec2 v_pos0;
 varying vec2 v_pos1;
 
+varying vec2 v_pixel_pos;
+
 void main() {
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
     // We are using Int16 for texture position coordinates to give us enough precision for
@@ -18,4 +21,8 @@ void main() {
     // so math for modifying either is consistent.
     v_pos0 = (((a_texture_pos / 8192.0) - 0.5) / u_buffer_scale ) + 0.5;
     v_pos1 = (v_pos0 * u_scale_parent) + u_tl_parent;
+
+    vec4 pixel_pos = u_pixel_matrix * vec4(a_pos, 0 , 1);
+
+    v_pixel_pos = vec2(pixel_pos.x / pixel_pos.w, pixel_pos.y / pixel_pos.w);
 }

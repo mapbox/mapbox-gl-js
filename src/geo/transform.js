@@ -68,6 +68,7 @@ class Transform {
     _edgeInsets: EdgeInsets;
     _constraining: boolean;
     _posMatrixCache: {[_: number]: Float32Array};
+    _tilePixelMatrixCache: {[_: number]: Float32Array};
     _alignedPosMatrixCache: {[_: number]: Float32Array};
     _camera: FreeCamera;
     _centerAltitude: number;
@@ -96,6 +97,7 @@ class Transform {
         this._unmodified = true;
         this._edgeInsets = new EdgeInsets();
         this._posMatrixCache = {};
+        this._tilePixelMatrixCache = {};
         this._alignedPosMatrixCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
@@ -1055,6 +1057,25 @@ class Transform {
         }
     }
 
+    calculateTilePixelMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+        const posMatrixKey = unwrappedTileID.key;
+        const cache = this._tilePixelMatrixCache;
+
+        if (cache[posMatrixKey]) {
+            return cache[posMatrixKey];
+        }
+        const canonical = unwrappedTileID.canonical;
+        const scale = this.worldSize / this.zoomScale(canonical.z);
+        const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
+
+        const posMatrix = mat4.identity(new Float64Array(16));
+        mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
+        mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
+
+        cache[posMatrixKey] = new Float32Array(posMatrix);
+        return cache[posMatrixKey];
+    }
+
     /**
      * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
      * @param {UnwrappedTileID} unwrappedTileID;
@@ -1368,6 +1389,7 @@ class Transform {
         this.pixelMatrixInverse = m;
 
         this._posMatrixCache = {};
+        this._tilePixelMatrixCache = {};
         this._alignedPosMatrixCache = {};
     }
 
@@ -1508,14 +1530,15 @@ class Transform {
 
     // Checks the four corners of the frustum to see if they lie in the map's quad.
     isHorizonVisible(): boolean {
+        return true;
         // we consider the horizon as visible if the angle between
         // a the top plane of the frustum and the map plane is smaller than this threshold.
-        const horizonAngleEpsilon = 2;
-        if (this.pitch + radToDeg(this.fovAboveCenter) > (90 - horizonAngleEpsilon)) {
-            return true;
-        }
+        // const horizonAngleEpsilon = 2;
+        // if (this.pitch + radToDeg(this.fovAboveCenter) > (90 - horizonAngleEpsilon)) {
+        //     return true;
+        // }
 
-        return this.isHorizonVisibleForPoints(new Point(0, 0), new Point(this.width, this.height));
+        // return this.isHorizonVisibleForPoints(new Point(0, 0), new Point(this.width, this.height));
     }
 
     /**

@@ -14,6 +14,8 @@ import type RasterStyleLayer from '../../style/style_layer/raster_style_layer.js
 
 export type RasterUniformsType = {|
     'u_matrix': UniformMatrix4f,
+    'u_pixel_matrix': UniformMatrix4f,
+    'u_center': Uniform2f,
     'u_tl_parent': Uniform2f,
     'u_scale_parent': Uniform1f,
     'u_buffer_scale': Uniform1f,
@@ -30,6 +32,8 @@ export type RasterUniformsType = {|
 
 const rasterUniforms = (context: Context, locations: UniformLocations): RasterUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_pixel_matrix': new UniformMatrix4f(context, locations.u_pixel_matrix),
+    'u_center': new Uniform2f(context, locations.u_center),
     'u_tl_parent': new Uniform2f(context, locations.u_tl_parent),
     'u_scale_parent': new Uniform1f(context, locations.u_scale_parent),
     'u_buffer_scale': new Uniform1f(context, locations.u_buffer_scale),
@@ -46,12 +50,16 @@ const rasterUniforms = (context: Context, locations: UniformLocations): RasterUn
 
 const rasterUniformValues = (
     matrix: Float32Array,
+    pixelMatrix: Float32Array,
+    center: [number, number],
     parentTL: [number, number],
     parentScaleBy: number,
     fade: {mix: number, opacity: number},
     layer: RasterStyleLayer
 ): UniformValues<RasterUniformsType> => ({
     'u_matrix': matrix,
+    'u_pixel_matrix': pixelMatrix,
+    'u_center': center,
     'u_tl_parent': parentTL,
     'u_scale_parent': parentScaleBy,
     'u_buffer_scale': 1,
