@@ -45,6 +45,8 @@ function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
     } else {
         assert(false, `${type} is unsupported sky-type`);
     }
+    // TODO: Fixme, use a sun direction from only one layer
+    painter.sunDirection = layer.getCenter(painter, true);
 }
 
 function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthMode, opacity: number, temporalOffset: number) {
@@ -148,6 +150,7 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
     const sunDirection = layer.getCenter(painter, true);
     const program = painter.useProgram('skyboxCapture');
     const faceRotate = new Float64Array(16);
+    painter.sunDirection = sunDirection;
 
     // +x;
     mat4.identity(faceRotate);

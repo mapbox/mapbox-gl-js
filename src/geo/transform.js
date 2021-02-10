@@ -53,6 +53,8 @@ class Transform {
     labelPlaneMatrix: Float32Array;
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
+    nearZ: number;
+    farZ: number;
     _elevation: ?Elevation;
     _fov: number;
     _pitch: number;
@@ -1080,6 +1082,27 @@ class Transform {
         return cache[posMatrixKey];
     }
 
+    lightingMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+        const canonical = unwrappedTileID.canonical;
+        const scale = this.worldSize / this.zoomScale(canonical.z);
+        const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
+
+        const posMatrix = mat4.identity(new Float64Array(16));
+        mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
+        mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
+
+        const pixelsPerMeter = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
+        const zScaleMatrix = mat4.create();
+        const negCameraPosMatrix = mat4.create();
+        mat4.scale(zScaleMatrix, zScaleMatrix, [1.0, 1.0, pixelsPerMeter]);
+        const cameraPos = vec3.scale([], this._camera.position, this.worldSize);
+        mat4.translate(negCameraPosMatrix, negCameraPosMatrix, [-cameraPos[0], -cameraPos[1], -cameraPos[2]]);
+        mat4.multiply(posMatrix, zScaleMatrix, posMatrix);
+        mat4.multiply(posMatrix, negCameraPosMatrix, posMatrix);
+
+        return posMatrix;
+    }
+
     customLayerMatrix(): Array<number> {
         return this.mercatorMatrix.slice();
     }
@@ -1291,7 +1314,7 @@ class Transform {
 
         const horizonDistance = cameraToSeaLevelDistance * (1 / this._horizonShift);
 
-        const farZ = Math.min(furthestDistance * 1.01, horizonDistance);
+        this.farZ = Math.min(furthestDistance * 1.01, horizonDistance);
 
         // The larger the value of nearZ is
         // - the more depth precision is available for features (good)
@@ -1300,10 +1323,10 @@ class Transform {
         // Smaller values worked well for mapbox-gl-js but deckgl was encountering precision issues
         // when rendering it's layers using custom layers. This value was experimentally chosen and
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
-        const nearZ = this.height / 50;
+        this.nearZ = this.height / 50;
 
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
-        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, nearZ, farZ);
+        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this.nearZ, this.farZ);
 
         // Apply center of perspective offset
         cameraToClip[8] = -offset.x * 2 / this.width;
@@ -1326,7 +1349,7 @@ class Transform {
         mat4.rotateX(view, view, this._pitch);
         mat4.rotateZ(view, view, this.angle);
 
-        const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, nearZ, farZ);
+        const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, this.nearZ, this.farZ);
         // The distance in pixels the skybox needs to be shifted down by to meet the shifted horizon.
         const skyboxHorizonShift = (Math.PI / 2 - this._pitch) * (this.height / this._fov) * this._horizonShift;
         // Apply center of perspective offset to skybox projection
