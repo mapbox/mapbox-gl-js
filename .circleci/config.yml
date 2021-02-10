@@ -167,9 +167,7 @@ jobs:
           name: Trigger memory metrics when merging to main
           command: |
             if [ -n "${WEB_METRICS_TOKEN}" ]; then
-              if [[ $CIRCLE_BRANCH == main ]]; then
-                curl -X POST https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/build?circle-token=${WEB_METRICS_TOKEN}
-              fi
+              node build/benchmark-params.js
             fi
       - store_artifacts:
           path: "dist"
