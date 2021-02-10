@@ -7,7 +7,7 @@ import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
 import {easeCubicInOut} from '../util/util.js';
-
+import {vec3} from 'gl-matrix';
 import type Painter from '../render/painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
@@ -141,6 +141,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     vertexMorphing.update(now);
     const tr = painter.transform;
     const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
+    const sunDirection = painter.sunDirection ? painter.sunDirection : [0.0, 0.0, 0.0];
 
     for (const coord of tileIDs) {
         const tile = sourceCache.getTile(coord);
@@ -164,7 +165,13 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         if (morph) {
             elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
         }
-        const uniformValues = terrainRasterUniformValues(coord.posMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt);
+
+        const uniformValues = terrainRasterUniformValues(coord.posMatrix,
+            painter.transform.lightingMatrix(coord),
+            isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt,
+            painter.transform.nearZ,
+            painter.transform.farZ,
+            sunDirection);
 
         setShaderMode(shaderMode);
         terrain.setupElevationDraw(tile, program, elevationOptions);
@@ -181,10 +188,10 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
     context.clear({depth: 1});
     const program = painter.useProgram('terrainDepth');
     const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
-
+    const sunDirection = painter.sunDirection ? painter.sunDirection : [0.0, 0.0, 0.0];
     for (const coord of tileIDs) {
         const tile = sourceCache.getTile(coord);
-        const uniformValues = terrainRasterUniformValues(coord.posMatrix, 0);
+        const uniformValues = terrainRasterUniformValues(coord.posMatrix, painter.transform.lightingMatrix(coord), 0, painter.transform.nearZ, painter.transform.farZ, sunDirection);
         terrain.setupElevationDraw(tile, program);
         program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
             uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
