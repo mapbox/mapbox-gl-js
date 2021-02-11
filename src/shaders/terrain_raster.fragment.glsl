@@ -4,6 +4,9 @@ varying vec2 v_pos0;
 uniform highp float u_near;
 uniform highp float u_far;
 uniform vec3 u_sun_direction;
+uniform float u_fog_depthrange;
+uniform float u_fog_intensity;
+uniform vec3 u_fog_color;
 
 varying float v_distance;
 varying vec3 v_position;
@@ -21,17 +24,14 @@ void main() {
     float sun_dot_camera_ray = clamp(dot(camera_ray, half_neg_pi_around_x * sun_direction), 0.0, 1.0);
 
     // TODO: Expose these params
-    const float sun_halo_intensity = .2;
-    const float sun_halo_depth_range = 50.0;
-    const vec3  sun_halo_color = vec3(1.0, 0.0, 0.0);
-    const float fog_depth_range = 50.0;
-    const float fog_intensity = .8;
-    const vec3  fog_color = vec3(1.0, 1.0, 1.0);
+    float sun_halo_intensity = .2;
+    float sun_halo_depth_range = 50.0;
+    vec3 sun_halo_color = vec3(1.0, 0.0, 0.0);
 
     // fog
-    const vec3 fog = fog_intensity * fog_color;
-    const vec3 halo = sun_halo_intensity * sun_halo_color;
-    color = mix(color, mix(fog, halo, sun_dot_camera_ray * sun_dot_camera_ray * sun_halo_intensity), 1.0 - exp(-fog_depth_range * depth * depth));
+    vec3 fog = u_fog_intensity * u_fog_color;
+    vec3 halo = sun_halo_intensity * sun_halo_color;
+    color = mix(color, mix(fog, halo, sun_dot_camera_ray * sun_dot_camera_ray * sun_halo_intensity), 1.0 - exp(-u_fog_depthrange * depth * depth));
 
     // sun scattering
     float sun_halo = pow(sun_dot_camera_ray, 16.0);

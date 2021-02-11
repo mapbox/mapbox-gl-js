@@ -47,6 +47,9 @@ function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
     }
     // TODO: Fixme, use a sun direction from only one layer
     painter.sunDirection = layer.getCenter(painter, true);
+    painter.fogIntensity = layer.paint.get('sky-atmosphere-fog-intensity');
+    painter.fogDepthRange = layer.paint.get('sky-atmosphere-fog-depthrange');
+    painter.fogColor = layer.paint.get('sky-atmosphere-fog-color');
 }
 
 function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthMode, opacity: number, temporalOffset: number) {
@@ -84,12 +87,19 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
     const gl = context.gl;
     const transform = painter.transform;
     const program = painter.useProgram('skybox');
+    const fogColor = layer.paint.get('sky-atmosphere-fog-color');
 
     context.activeTexture.set(gl.TEXTURE0);
 
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
 
-    const uniformValues = skyboxUniformValues(transform.skyboxMatrix, layer.getCenter(painter, false), 0, opacity, temporalOffset);
+    const uniformValues = skyboxUniformValues(transform.skyboxMatrix,
+        layer.getCenter(painter, false),
+        0,
+        opacity,
+        temporalOffset,
+        layer.paint.get('sky-atmosphere-fog-intensity'),
+        [fogColor.r, fogColor.g, fogColor.b]);
 
     program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,

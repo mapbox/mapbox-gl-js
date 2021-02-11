@@ -39,10 +39,13 @@ var Demo3D = function() {
     this.sunAzimuth = 90;
     this.sunHaloIntensity = 1.0;
     this.sunAtmosphereIntensity = 1.0;
+    this.fogDepthRange = 50.0;
+    this.fogIntensity = 0.1;
+    this.fogColor = [ 255, 255, 255 ];
     this.animateSky = false;
     this.sunHaloColor = [ 255, 255, 255 ];
     this.skyColor = [ 255, 255, 255 ];
-    this.sunIntensity = 30.0;
+    this.sunIntensity = 5.0;
 };
 
 var demo3d = new Demo3D();
@@ -94,6 +97,19 @@ window.onload = function() {
     var sunIntensity = sky.add(demo3d, 'sunIntensity', 0.0, 100.0);
     sunIntensity.onFinishChange((value) => {
         map.setPaintProperty('sky', 'sky-atmosphere-sun-intensity', value);
+    });
+    var fogIntensity = sky.add(demo3d, 'fogIntensity', 0.0, 1.0);
+    fogIntensity.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-fog-intensity', value);
+    });
+    var fogDepthRange = sky.add(demo3d, 'fogDepthRange', 0.0, 500.0);
+    fogDepthRange.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-fog-depthrange', value);
+    });
+    var fogColor = sky.addColor(demo3d, 'fogColor');
+    fogColor.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-fog-color',
+            'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', 1.0)');
     });
     var sunHaloIntensity = sky.add(demo3d, 'sunHaloIntensity', 0.0, 1.0);
     sunHaloIntensity.onFinishChange((value) => {

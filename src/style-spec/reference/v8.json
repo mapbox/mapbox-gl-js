@@ -6006,6 +6006,61 @@
       },
       "property-type": "data-constant"
     },
+    "sky-atmosphere-fog-intensity": {
+      "type": "number",
+      "requires": [
+        {
+          "sky-type": "atmosphere"
+        }
+      ],
+      "default": 0.1,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": false,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "sky-atmosphere-fog-depthrange": {
+      "type": "number",
+      "requires": [
+        {
+          "sky-type": "atmosphere"
+        }
+      ],
+      "default": 50,
+      "minimum": 0,
+      "maximum": 500,
+      "transition": false,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "sky-atmosphere-fog-color": {
+      "type": "color",
+      "default": "white",
+      "doc": "",
+      "transition": false,
+      "requires": [
+        {
+          "sky-type": "atmosphere"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
     "sky-gradient-center": {
       "type": "array",
       "requires": [

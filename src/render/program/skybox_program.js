@@ -17,7 +17,9 @@ export type SkyboxUniformsType = {|
     'u_sun_direction': Uniform3f,
     'u_cubemap': Uniform1i,
     'u_opacity': Uniform1f,
-    'u_temporal_offset': Uniform1f
+    'u_temporal_offset': Uniform1f,
+    'u_fog_intensity': Uniform1f,
+    'u_fog_color': Uniform3f
 |};
 
 export type SkyboxGradientlUniformsType = {|
@@ -34,8 +36,9 @@ const skyboxUniforms = (context: Context, locations: UniformLocations): SkyboxUn
     'u_sun_direction': new Uniform3f(context, locations.u_sun_direction),
     'u_cubemap': new Uniform1i(context, locations.u_cubemap),
     'u_opacity': new Uniform1f(context, locations.u_opacity),
-    'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset)
-
+    'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset),
+    'u_fog_intensity': new Uniform1f(context, locations.u_fog_intensity),
+    'u_fog_color': new Uniform3f(context, locations.u_fog_color)
 });
 
 const skyboxUniformValues = (
@@ -43,13 +46,17 @@ const skyboxUniformValues = (
     sunDirection: vec3,
     cubemap: number,
     opacity: number,
-    temporalOffset: number
+    temporalOffset: number,
+    fogIntensity: number,
+    fogColor: vec3
 ): UniformValues<SkyboxUniformsType> => ({
     'u_matrix': matrix,
     'u_sun_direction': sunDirection,
     'u_cubemap': cubemap,
     'u_opacity': opacity,
-    'u_temporal_offset': temporalOffset
+    'u_temporal_offset': temporalOffset,
+    'u_fog_intensity': fogIntensity,
+    'u_fog_color': fogColor
 });
 
 const skyboxGradientUniforms = (context: Context, locations: UniformLocations): SkyboxGradientlUniformsType => ({

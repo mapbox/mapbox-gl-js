@@ -6,6 +6,8 @@ uniform lowp samplerCube u_cubemap;
 uniform lowp float u_opacity;
 uniform highp float u_temporal_offset;
 uniform highp vec3 u_sun_direction;
+uniform float u_fog_intensity;
+uniform vec3 u_fog_color;
 
 highp vec3 hash(highp vec2 p) {
     highp vec3 p3 = fract(vec3(p.xyx) * vec3(443.8975, 397.2973, 491.1871));
@@ -63,21 +65,22 @@ void main() {
     const float sun_halo_intensity = .2;
     const float sun_halo_depth_range = 50.0;
     const vec3  sun_halo_color = vec3(1.0, 0.0, 0.0);
-    const float fog_depth_range = 50.0;
-    const float fog_intensity = .8;
-    const vec3  fog_color = vec3(1.0, 1.0, 1.0);
     float sun_dot_camera_ray = clamp(dot(camera_ray, u_sun_direction), 0.0, 1.0);
 
     // fog
-    const vec3 fog = fog_intensity * fog_color;
-    const vec3 halo = sun_halo_intensity * sun_halo_color;
+    vec3 fog = u_fog_intensity * u_fog_color;
+    vec3 halo = sun_halo_intensity * sun_halo_color;
     vec3 color = mix(fog, halo, sun_dot_camera_ray * sun_dot_camera_ray * sun_halo_intensity);
 
     // sun scattering
     float sun_halo = pow(sun_dot_camera_ray, 16.0);
     color += halo * sun_halo;
 
-    gl_FragColor = vec4(mix(color, sky_color, smoothstep(0.0, 0.08, dot(camera_ray, vec3(0.0, 1.0, 0.0)))), 1.0); //vec4(sky_color * u_opacity, u_opacity);
+    float horizon_gradient = smoothstep(0.0, 0.1, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
+    sky_color = mix(color, sky_color, 1.0 - u_fog_intensity);
+    color = mix(color, sky_color, horizon_gradient);
+
+    gl_FragColor = vec4(color, 1.0); //vec4(sky_color * u_opacity, u_opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

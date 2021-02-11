@@ -171,6 +171,9 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt,
             painter.transform.nearZ,
             painter.transform.farZ,
+            painter.fogDepthRange,
+            painter.fogIntensity,
+            [painter.fogColor.r, painter.fogColor.g, painter.fogColor.b],
             sunDirection);
 
         setShaderMode(shaderMode);
@@ -191,7 +194,15 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
     const sunDirection = painter.sunDirection ? painter.sunDirection : [0.0, 0.0, 0.0];
     for (const coord of tileIDs) {
         const tile = sourceCache.getTile(coord);
-        const uniformValues = terrainRasterUniformValues(coord.posMatrix, painter.transform.lightingMatrix(coord), 0, painter.transform.nearZ, painter.transform.farZ, sunDirection);
+        const uniformValues = terrainRasterUniformValues(coord.posMatrix,
+            painter.transform.lightingMatrix(coord),
+            0,
+            painter.transform.nearZ,
+            painter.transform.farZ,
+            painter.fogDepthRange,
+            painter.fogIntensity,
+            painter.fogColor,
+            sunDirection);
         terrain.setupElevationDraw(tile, program);
         program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
             uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
