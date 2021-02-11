@@ -1,5 +1,7 @@
 /rollup/build/
-/dist/
+/dist/mapbox-gl*
+/dist/versions*
+/dist/style-spec
 *.es.js
 *.js.map
 node_modules

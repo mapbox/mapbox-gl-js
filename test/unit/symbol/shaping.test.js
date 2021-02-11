@@ -7,6 +7,9 @@ import ResolvedImage from '../../../src/style-spec/expression/types/resolved_ima
 import {ImagePosition} from '../../../src/render/image_atlas.js';
 const WritingMode = shaping.WritingMode;
 
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 let UPDATE = false;
 if (typeof process !== 'undefined' && process.env !== undefined) {
     UPDATE = !!process.env.UPDATE;
@@ -57,7 +60,7 @@ test('shaping', (t) => {
     // Line break.
     shaped = shaping.shapeText(Formatted.fromString('abcde abcde'), glyphs, glyphPositions, images, fontStack, 4 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, 'point', layoutTextSize, layoutTextSizeThisZoom);
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-linebreak.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, require('../../expected/text-shaping-linebreak.json'));
+    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(__dirname, '../../expected/text-shaping-linebreak.json'))));
 
     const expectedNewLine = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-newline.json')));
 

@@ -4,6 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import validateMapboxApiSupported from '../../../src/style-spec/validate_mapbox_api_supported.js';
 
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 const UPDATE = !!process.env.UPDATE;
 
 glob.sync(`${__dirname}/fixture/*.input.json`).forEach((file) => {

@@ -5,4 +5,4 @@ else
   arg="${@}"
 fi
 
-node_modules/.bin/tap --node-arg -r --node-arg @mapbox/flow-remove-types/register --node-arg -r --node-arg esm $arg --node-arg
+node_modules/.bin/tap --node-arg --no-warnings --node-arg --experimental-loader --node-arg ./build/node-loader.js $arg --node-arg

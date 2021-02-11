@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-node -r @mapbox/flow-remove-types/register -r esm ${@}
+node --no-warnings --experimental-loader ./build/node-loader.js ${@}

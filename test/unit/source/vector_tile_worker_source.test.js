@@ -7,6 +7,9 @@ import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_sourc
 import StyleLayerIndex from '../../../src/style/style_layer_index.js';
 import perf from '../../../src/util/performance.js';
 
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 const actor = {send: () => {}};
 
 test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {

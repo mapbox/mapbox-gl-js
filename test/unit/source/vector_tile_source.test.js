@@ -4,6 +4,7 @@ import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import window from '../../../src/util/window.js';
 import {Evented} from '../../../src/util/evented.js';
 import {RequestManager} from '../../../src/util/mapbox.js';
+import sourceFixture from '../../fixtures/source.json';
 
 const wrapDispatcher = (dispatcher) => {
     return {
@@ -69,7 +70,7 @@ test('VectorTileSource', (t) => {
     });
 
     t.test('can be constructed from a TileJSON URL', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
 
         const source = createSource({url: "/source.json"});
 
@@ -87,7 +88,7 @@ test('VectorTileSource', (t) => {
     });
 
     t.test('transforms the request for TileJSON URL', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
         const transformSpy = t.spy((url) => {
             return {url};
         });
@@ -100,7 +101,7 @@ test('VectorTileSource', (t) => {
     });
 
     t.test('fires event with metadata property', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
         const source = createSource({url: "/source.json"});
         source.on('data', (e) => {
             if (e.sourceDataType === 'content') t.end();
@@ -109,7 +110,7 @@ test('VectorTileSource', (t) => {
     });
 
     t.test('fires "dataloading" event', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
         const evented = new Evented();
         let dataloadingFired = false;
         evented.on('dataloading', () => {
@@ -183,7 +184,7 @@ test('VectorTileSource', (t) => {
     testScheme('tms', 'http://example.com/10/5/1018.png');
 
     t.test('transforms tile urls before requesting', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
 
         const source = createSource({url: "/source.json"});
         const transformSpy = t.spy(source.map._requestManager, 'transformRequest');

@@ -1,5 +1,5 @@
-const packlist = require('npm-packlist')
-const npmContent = require('list-npm-contents');
+import packlist from 'npm-packlist';
+import npmContent from 'list-npm-contents';
 
 npmContent('mapbox-gl').then(function(last_version_files) {
     packlist({ path: '.' }).then(function(new_version_files) {

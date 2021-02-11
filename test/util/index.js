@@ -9,6 +9,8 @@ export function createMap(t, options, callback) {
         interactive: false,
         attributionControl: false,
         trackResize: true,
+        // this token is a fallback for CI and testing. it is domain restricted to localhost
+        accessToken: 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ',
         style: {
             "version": 8,
             "sources": {},

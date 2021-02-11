@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
-/* eslint-disable */
-const { Octokit } = require("@octokit/rest");
-const { createAppAuth } = require("@octokit/auth-app");
-const prettyBytes = require('pretty-bytes');
-const fs = require('fs');
-const {execSync} = require('child_process');
-const zlib = require('zlib');
+import { Octokit } from "@octokit/rest";
+import { createAppAuth } from "@octokit/auth-app";
+import prettyBytes from 'pretty-bytes';
+import fs from 'fs';
+import {execSync} from 'child_process';
+import zlib from 'zlib';
 
 process.on('unhandledRejection', error => {
     // don't log `error` directly, because errors from child_process.execSync
