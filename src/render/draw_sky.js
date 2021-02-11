@@ -32,7 +32,7 @@ function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
     if (type === 'atmosphere') {
         if (painter.renderPass === 'offscreen') {
             if (layer.needsSkyboxCapture(painter)) {
-                captureSkybox(painter, layer, 32, 32);
+                captureSkybox(painter, layer, 64, 64);
                 layer.markSkyboxValid(painter);
             }
         } else if (painter.renderPass === 'sky') {
