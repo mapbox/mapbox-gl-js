@@ -160,22 +160,9 @@ export const PerformanceUtils = {
     }
 };
 
-/**
- * Safe wrapper for the performance resource timing API in web workers with graceful degradation
- *
- * @param {RequestParameters} request
- * @private
- */
-export class RequestPerformance {
-    _url: string;
-
-    constructor (request: RequestParameters) {
-        this._url = request.url.toString();
-    }
-
-    getMeasurement() {
-        return performance.getEntriesByName(this._url);
-    }
+export function getPerformanceMeasurement(request: ?RequestParameters) {
+    const url = request ? request.url.toString() : undefined;
+    return performance.getEntriesByName(url);
 }
 
 export default performance;

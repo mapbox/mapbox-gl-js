@@ -245,9 +245,6 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
         tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
         request: {url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true}
     }, (err, res) => {
-        // simulate a deduped request calling the perf measurement
-        source.deduped._measurePerformance();
-        res.resourceTiming = source.deduped._resourceTiming.resourceTiming;
         t.false(err);
         t.deepEquals(res.resourceTiming[0], exampleResourceTiming, 'resourceTiming resp is expected');
         t.end();
