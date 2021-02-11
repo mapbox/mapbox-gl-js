@@ -124,12 +124,12 @@ void main() {
     vec3 ray_direction = v_position;
 
     // Non-linear UV parameterization to increase horizon events
-    ray_direction.y = pow(ray_direction.y, 5.0);
+    //ray_direction.y = pow(ray_direction.y, 5.0);
 
     // Add a small offset to prevent black bands around areas where
     // the scattering algorithm does not manage to gather lighting
     const float y_bias = 0.015;
-    ray_direction.y += y_bias;
+    //ray_direction.y -= y_bias;
 
     vec3 color = atmosphere(normalize(ray_direction), u_sun_direction, u_sun_intensity);
 

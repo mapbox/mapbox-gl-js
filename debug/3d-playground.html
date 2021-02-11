@@ -123,7 +123,7 @@ var map = window.map = new mapboxgl.Map({
     center: [-122.45814, 37.76159],
     pitch: 85,
     bearing: 60,
-    style: 'mapbox://styles/mapbox/streets-v11',
+    style: 'mapbox://styles/mapbox/satellite-v9',
     hash: true,
 });
 
@@ -161,16 +161,7 @@ map.on('style.load', function() {
         'id': 'sky',
         'type': 'sky',
         'paint': {
-            'sky-type': 'atmosphere',
-            'sky-opacity': [
-                'interpolate',
-                ['exponential', 0.1],
-                ['zoom'],
-                5,
-                0,
-                22,
-                1
-            ]
+            'sky-type': 'atmosphere'
         }
     });
 

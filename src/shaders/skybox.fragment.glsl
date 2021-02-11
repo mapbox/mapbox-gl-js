@@ -41,25 +41,43 @@ void main() {
 
     // Add a small offset to prevent black bands around areas where
     // the scattering algorithm does not manage to gather lighting
-    const float y_bias = 0.015;
-    uv.y += y_bias;
+    //const float y_bias = 0.015;
+    //uv.y += y_bias;
 
     // Inverse of the operation applied for non-linear UV parameterization
-    uv.y = pow(abs(uv.y), 1.0 / 5.0);
+    //uv.y = pow(abs(uv.y), 1.0 / 5.0);
 
     // To make better utilization of the visible range (e.g. over the horizon, UVs
     // from 0.0 to 1.0 on the Y-axis in cubemap space), the UV range is remapped from
     // (0.0,1.0) to (-1.0,1.0) on y. The inverse operation is applied when generating.
-    uv.y = map(uv.y, 0.0, 1.0, -1.0, 1.0);
+    //uv.y = map(uv.y, 0.0, 1.0, -1.0, 1.0);
 
     vec3 sky_color = textureCube(u_cubemap, uv).rgb;
 
     // Dither [1]
     sky_color.rgb = dither(sky_color.rgb, gl_FragCoord.xy + u_temporal_offset);
     // Add sun disk
-    sky_color += 0.1 * sun_disk(v_uv, u_sun_direction);
+    sky_color += sun_disk(v_uv, u_sun_direction);
 
-    gl_FragColor = vec4(sky_color * u_opacity, u_opacity);
+    vec3 camera_ray = normalize(v_uv);
+    const float sun_halo_intensity = .2;
+    const float sun_halo_depth_range = 50.0;
+    const vec3  sun_halo_color = vec3(1.0, 0.0, 0.0);
+    const float fog_depth_range = 50.0;
+    const float fog_intensity = .8;
+    const vec3  fog_color = vec3(1.0, 1.0, 1.0);
+    float sun_dot_camera_ray = clamp(dot(camera_ray, u_sun_direction), 0.0, 1.0);
+
+    // fog
+    const vec3 fog = fog_intensity * fog_color;
+    const vec3 halo = sun_halo_intensity * sun_halo_color;
+    vec3 color = mix(fog, halo, sun_dot_camera_ray * sun_dot_camera_ray * sun_halo_intensity);
+
+    // sun scattering
+    float sun_halo = pow(sun_dot_camera_ray, 16.0);
+    color += halo * sun_halo;
+
+    gl_FragColor = vec4(mix(color, sky_color, smoothstep(0.0, 0.05, dot(camera_ray, vec3(0.0, 1.0, 0.0)))), 1.0); //vec4(sky_color * u_opacity, u_opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
