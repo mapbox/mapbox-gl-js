@@ -62,7 +62,7 @@ class LogoControl {
     }
 
     _logoRequired() {
-        if (!this._map.style) return;
+        if (!this._map.style) return true;
         const sourceCaches = this._map.style._sourceCaches;
         if (Object.entries(sourceCaches).length === 0) return true;
         for (const id in sourceCaches) {
