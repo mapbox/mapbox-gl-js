@@ -77,7 +77,7 @@ void main() {
     float sun_halo = pow(sun_dot_camera_ray, 16.0);
     color += halo * sun_halo;
 
-    gl_FragColor = vec4(mix(color, sky_color, smoothstep(0.0, 0.05, dot(camera_ray, vec3(0.0, 1.0, 0.0)))), 1.0); //vec4(sky_color * u_opacity, u_opacity);
+    gl_FragColor = vec4(mix(color, sky_color, smoothstep(0.0, 0.08, dot(camera_ray, vec3(0.0, 1.0, 0.0)))), 1.0); //vec4(sky_color * u_opacity, u_opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
