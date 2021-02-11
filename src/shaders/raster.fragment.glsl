@@ -49,9 +49,11 @@ void main() {
     gl_FragColor = vec4(mix(u_high_vec, u_low_vec, rgb) * color.a, color.a);
 
     #ifndef RENDER_TO_TEXTURE
-        float center_distance = length(v_pixel_pos - u_center);
+        highp vec2 center_vec = v_pixel_pos - u_center;
+        float center_distance = length(center_vec);
+        highp float blur_distance = 50.0 * length(fwidth(center_vec));
         float horizon_start = 2048.0;
-        float horizon_end = 3000.0;
+        float horizon_end = horizon_start + blur_distance;
         float horizonOpacity = 1.0 - smoothstep(horizon_start, horizon_end, center_distance);
         // gl_FragColor = vec4(horizonOpacity, horizonOpacity, horizonOpacity, horizonOpacity);
         gl_FragColor *= horizonOpacity;

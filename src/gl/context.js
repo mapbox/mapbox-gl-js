@@ -72,6 +72,7 @@ class Context {
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
+        this.extStdDerivatives = this.gl.getExtension('OES_standard_derivatives');
 
         this.clearColor = new ClearColor(this);
         this.clearDepth = new ClearDepth(this);
