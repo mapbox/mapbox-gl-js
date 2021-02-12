@@ -29,7 +29,7 @@ void main() {
 
     // fog
     float fogFactor = 1.0 - clamp(exp(-(depth - fog_depth_start)/(fog_depth_end-fog_depth_start)), 0.0, 1.0);
-    vec4 fog = vec4(fog_color, fog_intensity) * fogFactor;
+    vec4 fog = vec4(fog_color * fog_intensity, fog_intensity) * fogFactor;
     gl_FragColor = mix(vec4(color, 1.0), fog, fog.a);
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
