@@ -62,24 +62,12 @@ void main() {
     sky_color += sun_disk(v_uv, u_sun_direction);
 
     vec3 camera_ray = normalize(v_uv);
-    const float sun_halo_intensity = .2;
-    const float sun_halo_depth_range = 50.0;
-    const vec3  sun_halo_color = vec3(1.0, 0.0, 0.0);
-    float sun_dot_camera_ray = clamp(dot(camera_ray, u_sun_direction), 0.0, 1.0);
 
-    // fog
-    vec3 fog = u_fog_color;
-    vec3 halo = sun_halo_intensity * sun_halo_color;
-    vec3 color = mix(fog, halo, sun_dot_camera_ray * sun_dot_camera_ray * sun_halo_intensity);
-
-    // sun scattering
-    float sun_halo = pow(sun_dot_camera_ray, 16.0);
-    color += halo * sun_halo;
-
+    // Fog
     float horizon_gradient = smoothstep(0.0, 0.05, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
-    color = mix(color, sky_color, clamp(horizon_gradient + (1.0 - u_fog_intensity), 0.0, 1.0));
+    vec3 color = mix(u_fog_color, sky_color, clamp(horizon_gradient + (1.0 - u_fog_intensity), 0.0, 1.0));
 
-    gl_FragColor = vec4(color, 1.0); //vec4(sky_color * u_opacity, u_opacity);
+    gl_FragColor = vec4(color * u_opacity, u_opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
