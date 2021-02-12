@@ -195,11 +195,11 @@ export class RequestManager {
 
         if (!config.REQUIRE_ACCESS_TOKEN) return formatUrl(urlObject);
 
-        accessToken = accessToken || config.ACCESS_TOKEN;
-        if (!accessToken)
-            throw new Error(`An API access token is required to use Mapbox GL. ${help}`);
-        if (accessToken[0] === 's')
-            throw new Error(`Use a public access token (pk.*) with Mapbox GL, not a secret access token (sk.*). ${help}`);
+        accessToken = accessToken || config.ACCESS_TOKEN || '';
+        // if (!accessToken)
+        //     // throw new Error(`An API access token is required to use Mapbox GL. ${help}`);
+        // if (accessToken[0] === 's')
+        //     throw new Error(`Use a public access token (pk.*) with Mapbox GL, not a secret access token (sk.*). ${help}`);
 
         urlObject.params = urlObject.params.filter((d) => d.indexOf('access_token') === -1);
         urlObject.params.push(`access_token=${accessToken}`);
@@ -565,6 +565,19 @@ export const postMapLoadEvent = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent
 
 const mapSessionAPI_ = new MapSessionAPI();
 export const getMapSessionAPI = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);
+
+const authenticatedMaps = {};
+export function storeAuthState(mapId: number, state: boolean) {
+    authenticatedMaps[mapId] = state;
+}
+
+export function isMapAuthenticated(mapId: number): boolean {
+    return !!authenticatedMaps[mapId];
+}
+
+export function removeAuthState(mapId: number) {
+    delete authenticatedMaps[mapId];
+}
 
 /***** END WARNING - REMOVAL OR MODIFICATION OF THE
 PRECEDING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******/

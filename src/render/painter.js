@@ -143,9 +143,11 @@ class Painter {
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
+    _mapId: number;
 
-    constructor(gl: WebGLRenderingContext, transform: Transform) {
+    constructor(gl: WebGLRenderingContext, transform: Transform, mapId: number) {
         this.context = new Context(gl);
+        this._mapId = mapId;
         this.transform = transform;
         this._tileTextures = {};
         this.frameCopies = [];
@@ -274,7 +276,7 @@ class Painter {
         mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
         mat4.scale(matrix, matrix, [gl.drawingBufferWidth, gl.drawingBufferHeight, 0]);
 
-        this.useProgram('clippingMask').draw(context, gl.TRIANGLES,
+        this.useProgram('clippingMask').draw(this._mapId, context, gl.TRIANGLES,
             DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
             clippingMaskUniformValues(matrix),
             '$clipping', this.viewportBuffer,
@@ -304,7 +306,7 @@ class Painter {
         for (const tileID of tileIDs) {
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
 
-            program.draw(context, gl.TRIANGLES, DepthMode.disabled,
+            program.draw(this._mapId, context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
                 ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.posMatrix),

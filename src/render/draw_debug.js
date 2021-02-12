@@ -99,7 +99,7 @@ function drawTileQueryGeometry(painter, sourceCache, coord: OverscaledTileID) {
         const indexBuffer = tile.queryGeometryDebugViz.indexBuffer;
         const segments = tile.queryGeometryDebugViz.segments;
         if (vertexBuffer != null && indexBuffer != null && segments != null) {
-            program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            program.draw(painter._mapId, context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 debugUniformValues(posMatrix, tile.queryGeometryDebugViz.color), id,
                 vertexBuffer, indexBuffer, segments);
         }
@@ -111,7 +111,7 @@ function drawTileQueryGeometry(painter, sourceCache, coord: OverscaledTileID) {
         const indexBuffer = tile.queryBoundsDebugViz.indexBuffer;
         const segments = tile.queryBoundsDebugViz.segments;
         if (vertexBuffer != null && indexBuffer != null && segments != null) {
-            program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            program.draw(painter._mapId, context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 debugUniformValues(posMatrix, tile.queryBoundsDebugViz.color), id,
                 vertexBuffer, indexBuffer, segments);
         }
@@ -136,7 +136,7 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     // Bind the empty texture for drawing outlines
     painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+    program.draw(painter._mapId, context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         debugUniformValues(posMatrix, Color.red), id,
         painter.debugBuffer, painter.tileBorderIndexBuffer, painter.debugSegments);
 
@@ -152,7 +152,7 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     const tileLabel = `${tileIdText} ${tileSizeKb}kb`;
     drawTextToOverlay(painter, tileLabel);
 
-    program.draw(context, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
+    program.draw(painter._mapId, context, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
         debugUniformValues(posMatrix, Color.transparent, scaleRatio), id,
         painter.debugBuffer, painter.quadTriangleIndexBuffer, painter.debugSegments);
 }

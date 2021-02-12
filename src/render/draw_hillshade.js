@@ -61,7 +61,7 @@ function renderHillshade(painter, coord, tile, layer, depthMode, stencilMode, co
 
     const uniformValues = hillshadeUniformValues(painter, tile, layer, painter.terrain ? coord.posMatrix : null);
 
-    program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+    program.draw(painter._mapId, context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, painter.rasterBoundsBuffer,
         painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
 }
@@ -112,7 +112,7 @@ function prepareHillshade(painter, tile, layer, depthMode, stencilMode, colorMod
     context.bindFramebuffer.set(fbo.framebuffer);
     context.viewport.set([0, 0, tileSize, tileSize]);
 
-    painter.useProgram('hillshadePrepare').draw(context, gl.TRIANGLES,
+    painter.useProgram('hillshadePrepare').draw(painter._mapId, context, gl.TRIANGLES,
         depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         hillshadeUniformPrepareValues(tile.tileID, dem),
         layer.id, painter.rasterBoundsBuffer,

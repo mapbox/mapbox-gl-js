@@ -7,7 +7,7 @@ import window from '../util/window.js';
 const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
 import DOM from '../util/dom.js';
 import {getImage, getJSON, ResourceType} from '../util/ajax.js';
-import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG} from '../util/mapbox.js';
+import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
 import Style from '../style/style.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import Painter from '../render/painter.js';
@@ -416,6 +416,7 @@ class Map extends Camera {
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
         this._mapId = uniqueId();
+        storeAuthState(this._mapId, true);
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
 
@@ -2395,7 +2396,7 @@ class Map extends Camera {
             return;
         }
 
-        this.painter = new Painter(gl, this.transform);
+        this.painter = new Painter(gl, this.transform, this._mapId);
         this.on('data', (event: MapDataEvent) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);
@@ -2661,8 +2662,7 @@ class Map extends Camera {
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
                 if (err.message === AUTH_ERR_MSG || err.status === 401) {
-                    console.error('Error: A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/');
-                    browser.setErrorState();
+                    storeAuthState(this._mapId, false);
                     const gl = this.painter.context.gl;
                     if (this._logoControl instanceof LogoControl) {
                         this._logoControl._updateLogo();
@@ -2763,7 +2763,7 @@ class Map extends Camera {
         this._container.classList.remove('mapboxgl-map');
 
         PerformanceUtils.clearMetrics();
-
+        removeAuthState(this._mapId);
         this._removed = true;
         this.fire(new Event('remove'));
     }
