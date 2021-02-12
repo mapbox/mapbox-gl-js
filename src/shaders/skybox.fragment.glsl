@@ -64,21 +64,22 @@ void main() {
     const float sun_halo_depth_range = 50.0;
     const vec3  sun_halo_color = vec3(1.0, 0.0, 0.0);
     const float fog_depth_range = 50.0;
-    const float fog_intensity = .8;
+    const float fog_intensity = 0.5;
     const vec3  fog_color = vec3(1.0, 1.0, 1.0);
     float sun_dot_camera_ray = clamp(dot(camera_ray, u_sun_direction), 0.0, 1.0);
 
     // fog
-    const vec3 fog = fog_intensity * fog_color;
-    const vec3 halo = sun_halo_intensity * sun_halo_color;
-    vec3 color = mix(fog, halo, sun_dot_camera_ray * sun_dot_camera_ray * sun_halo_intensity);
+    float fogFactor = 1.0 - smoothstep(0.0, 0.08, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
+    vec4 fog = vec4(fog_color, fog_intensity) * fogFactor;
+    vec4 halo = vec4(sun_halo_color * sun_halo_intensity, sun_halo_intensity);
+    vec4 fog_combined = mix(fog, halo, sun_dot_camera_ray * sun_dot_camera_ray * sun_halo_intensity);
 
     // sun scattering
     float sun_halo = pow(sun_dot_camera_ray, 16.0);
-    color += halo * sun_halo;
+    fog += halo * sun_halo;
 
-    gl_FragColor = vec4(mix(color, sky_color, smoothstep(0.0, 0.08, dot(camera_ray, vec3(0.0, 1.0, 0.0)))), 1.0); //vec4(sky_color * u_opacity, u_opacity);
-
+    gl_FragColor = mix(vec4(sky_color, 1.0), fog_combined, fog_combined.a); //vec4(sky_color * u_opacity, u_opacity);
+    // gl_FragColor = vec4(fogFactor, fogFactor, fogFactor)
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
 #endif

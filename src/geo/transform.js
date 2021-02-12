@@ -1091,14 +1091,17 @@ class Transform {
         mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 
-        const pixelsPerMeter = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
-        const zScaleMatrix = mat4.create();
-        const negCameraPosMatrix = mat4.create();
-        mat4.scale(zScaleMatrix, zScaleMatrix, [1.0, 1.0, pixelsPerMeter]);
-        const cameraPos = vec3.scale([], this._camera.position, this.worldSize);
-        mat4.translate(negCameraPosMatrix, negCameraPosMatrix, [-cameraPos[0], -cameraPos[1], -cameraPos[2]]);
-        mat4.multiply(posMatrix, zScaleMatrix, posMatrix);
-        mat4.multiply(posMatrix, negCameraPosMatrix, posMatrix);
+        // const cameraPos = this._camera.position;
+        // mat4.translate(posMatrix, posMatrix, [-cameraPos[0] * this.worldSize, -cameraPos[1] * this.worldSize, -cameraPos[2] * this.worldSize]);
+
+        // const pixelsPerMeter = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
+        // const zScaleMatrix = mat4.create();
+        // const negCameraPosMatrix = mat4.create();
+        // mat4.scale(zScaleMatrix, zScaleMatrix, [1.0, 1.0, pixelsPerMeter]);
+        // const cameraPos = vec3.scale([], this._camera.position, this.worldSize);
+        // mat4.translate(negCameraPosMatrix, negCameraPosMatrix, [-cameraPos[0], -cameraPos[1], -cameraPos[2]]);
+        // mat4.multiply(posMatrix, zScaleMatrix, posMatrix);
+        // mat4.multiply(posMatrix, negCameraPosMatrix, posMatrix);
 
         return posMatrix;
     }
@@ -1568,6 +1571,15 @@ class Transform {
         const pitch = this._pitch;
         const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
         return this.centerPoint.add(new Point(0, yOffset));
+    }
+
+    getCameraPixelPos() {
+        const cameraPos = this._camera.position;
+        return [
+            cameraPos[0] * this.worldSize,
+            cameraPos[1] * this.worldSize,
+            cameraPos[2] * this.worldSize
+        ];
     }
 }
 
