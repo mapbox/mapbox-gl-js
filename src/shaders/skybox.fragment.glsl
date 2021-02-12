@@ -70,7 +70,7 @@ void main() {
 
     // fog
     float fogFactor = 1.0 - smoothstep(0.0, 0.08, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
-    vec4 fog = vec4(fog_color, fog_intensity) * fogFactor;
+    vec4 fog = vec4(fog_color * fog_intensity, fog_intensity) * fogFactor;
     vec4 halo = vec4(sun_halo_color * sun_halo_intensity, sun_halo_intensity);
     vec4 fog_combined = mix(fog, halo, sun_dot_camera_ray * sun_dot_camera_ray * sun_halo_intensity);
 
