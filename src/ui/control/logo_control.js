@@ -20,7 +20,6 @@ class LogoControl {
     _container: HTMLElement;
 
     constructor() {
-        bindAll(['_updateLogo'], this);
         bindAll(['_updateCompact'], this);
     }
 
@@ -34,10 +33,7 @@ class LogoControl {
         anchor.setAttribute("aria-label", this._map._getUIString('LogoControl.Title'));
         anchor.setAttribute("rel", "noopener nofollow");
         this._container.appendChild(anchor);
-        this._container.style.display = 'none';
-
-        this._map.on('sourcedata', this._updateLogo);
-        this._updateLogo();
+        this._container.style.display = 'block';
 
         this._map.on('resize', this._updateCompact);
         this._updateCompact();
@@ -47,32 +43,11 @@ class LogoControl {
 
     onRemove() {
         DOM.remove(this._container);
-        this._map.off('sourcedata', this._updateLogo);
         this._map.off('resize', this._updateCompact);
     }
 
     getDefaultPosition() {
         return 'bottom-left';
-    }
-
-    _updateLogo(e: any) {
-        if (!e || e.sourceDataType === 'metadata') {
-            this._container.style.display = this._logoRequired() ? 'block' : 'none';
-        }
-    }
-
-    _logoRequired() {
-        if (!this._map.style) return true;
-        const sourceCaches = this._map.style._sourceCaches;
-        if (Object.entries(sourceCaches).length === 0) return true;
-        for (const id in sourceCaches) {
-            const source = sourceCaches[id].getSource();
-            if (source.hasOwnProperty('mapbox_logo') && !source.mapbox_logo) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     _updateCompact() {

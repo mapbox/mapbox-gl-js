@@ -316,7 +316,6 @@ class Map extends Camera {
     _optimizeForTerrain: boolean;
     _renderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
-    _logoControl: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
     _localFontFamily: string;
@@ -489,8 +488,7 @@ class Map extends Camera {
         if (options.attributionControl)
             this.addControl(new AttributionControl({customAttribution: options.customAttribution}));
 
-        this._logoControl = new LogoControl();
-        this.addControl(this._logoControl, options.logoPosition);
+        this.addControl(new LogoControl(), options.logoPosition);
 
         this.on('style.load', () => {
             if (this.transform.unmodified) {
@@ -2664,9 +2662,6 @@ class Map extends Camera {
                     console.error('Error: A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/');
                     browser.setErrorState();
                     const gl = this.painter.context.gl;
-                    if (this._logoControl instanceof LogoControl) {
-                        this._logoControl._updateLogo();
-                    }
                     if (gl) gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
                 }
             }

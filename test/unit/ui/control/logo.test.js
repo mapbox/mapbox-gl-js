@@ -70,10 +70,10 @@ test('LogoControl is displayed when no style is supplied', (t) => {
     t.end();
 });
 
-test('LogoControl is not displayed when the mapbox_logo property is false', (t) => {
+test('LogoControl is displayed even when the mapbox_logo property is false', (t) => {
     const map = createMap(t, 'top-left', false);
     map.on('load', () => {
-        t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left > .mapboxgl-ctrl')[0].style.display, 'none');
+        t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left > .mapboxgl-ctrl')[0].style.display, 'block');
         t.end();
     });
 });
