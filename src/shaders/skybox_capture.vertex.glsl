@@ -17,7 +17,7 @@ void main() {
     // To make better utilization of the visible range (e.g. over the horizon, UVs
     // from 0.0 to 1.0 on the Y-axis in cubemap space), the UV range is remapped from
     // (-1.0,1.0) to (0.0,1.0) on y. The inverse operation is applied when sampling.
-    //v_position.y = map(v_position.y, -1.0, 1.0, 0.0, 1.0);
+    v_position.y = map(v_position.y, -1.0, 1.0, 0.0, 1.0);
 
     gl_Position = vec4(a_pos_3f.xy, 0.0, 1.0);
 }

@@ -43,16 +43,16 @@ void main() {
 
     // Add a small offset to prevent black bands around areas where
     // the scattering algorithm does not manage to gather lighting
-    //const float y_bias = 0.015;
-    //uv.y += y_bias;
+    const float y_bias = 0.015;
+    uv.y += y_bias;
 
     // Inverse of the operation applied for non-linear UV parameterization
-    //uv.y = pow(abs(uv.y), 1.0 / 5.0);
+    uv.y = pow(abs(uv.y), 1.0 / 5.0);
 
     // To make better utilization of the visible range (e.g. over the horizon, UVs
     // from 0.0 to 1.0 on the Y-axis in cubemap space), the UV range is remapped from
     // (0.0,1.0) to (-1.0,1.0) on y. The inverse operation is applied when generating.
-    //uv.y = map(uv.y, 0.0, 1.0, -1.0, 1.0);
+    uv.y = map(uv.y, 0.0, 1.0, -1.0, 1.0);
 
     vec3 sky_color = textureCube(u_cubemap, uv).rgb;
 
