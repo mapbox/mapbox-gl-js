@@ -100,6 +100,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
         opacity,
         temporalOffset,
         layer.paint.get('sky-atmosphere-fog-intensity'),
+        layer.paint.get('sky-atmosphere-fog-blend'),
         [fogColor.r, fogColor.g, fogColor.b]);
 
     program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,

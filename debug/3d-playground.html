@@ -42,6 +42,7 @@ var Demo3D = function() {
     this.fogStart = 5000.0;
     this.fogEnd = 8000.0;
     this.fogIntensity = 0.1;
+    this.fogBlend = 0.05;
     this.fogColor = [ 255, 255, 255 ];
     this.animateSky = false;
     this.sunHaloColor = [ 255, 255, 255 ];
@@ -110,6 +111,10 @@ window.onload = function() {
     var fogEnd = sky.add(demo3d, 'fogEnd', 0.0, 10000.0);
     fogEnd.onFinishChange((value) => {
         map.setPaintProperty('sky', 'sky-atmosphere-fog-end', value);
+    });
+    var fogBlend = sky.add(demo3d, 'fogBlend', 0.0, 1.0);
+    fogBlend.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-fog-blend', value);
     });
     var fogColor = sky.addColor(demo3d, 'fogColor');
     fogColor.onFinishChange((value) => {

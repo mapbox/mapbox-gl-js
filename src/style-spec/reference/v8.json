@@ -6044,6 +6044,25 @@
       },
       "property-type": "data-constant"
     },
+    "sky-atmosphere-fog-blend": {
+      "type": "number",
+      "requires": [
+        {
+          "sky-type": "atmosphere"
+        }
+      ],
+      "default": 0.05,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": false,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
     "sky-atmosphere-fog-end": {
       "type": "number",
       "requires": [

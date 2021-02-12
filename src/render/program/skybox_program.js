@@ -19,6 +19,7 @@ export type SkyboxUniformsType = {|
     'u_opacity': Uniform1f,
     'u_temporal_offset': Uniform1f,
     'u_fog_intensity': Uniform1f,
+    'u_fog_blend': Uniform1f,
     'u_fog_color': Uniform3f
 |};
 
@@ -38,6 +39,7 @@ const skyboxUniforms = (context: Context, locations: UniformLocations): SkyboxUn
     'u_opacity': new Uniform1f(context, locations.u_opacity),
     'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset),
     'u_fog_intensity': new Uniform1f(context, locations.u_fog_intensity),
+    'u_fog_blend': new Uniform1f(context, locations.u_fog_blend),
     'u_fog_color': new Uniform3f(context, locations.u_fog_color)
 });
 
@@ -48,6 +50,7 @@ const skyboxUniformValues = (
     opacity: number,
     temporalOffset: number,
     fogIntensity: number,
+    fogBlend: number,
     fogColor: vec3
 ): UniformValues<SkyboxUniformsType> => ({
     'u_matrix': matrix,
@@ -56,6 +59,7 @@ const skyboxUniformValues = (
     'u_opacity': opacity,
     'u_temporal_offset': temporalOffset,
     'u_fog_intensity': fogIntensity,
+    'u_fog_blend': fogBlend,
     'u_fog_color': fogColor
 });
 

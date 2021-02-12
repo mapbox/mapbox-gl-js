@@ -7,6 +7,7 @@ uniform lowp float u_opacity;
 uniform highp float u_temporal_offset;
 uniform highp vec3 u_sun_direction;
 uniform float u_fog_intensity;
+uniform float u_fog_blend;
 uniform vec3 u_fog_color;
 
 highp vec3 hash(highp vec2 p) {
@@ -64,7 +65,7 @@ void main() {
     vec3 camera_ray = normalize(v_uv);
 
     // Fog
-    float horizon_gradient = smoothstep(0.0, 0.05, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
+    float horizon_gradient = smoothstep(0.0, u_fog_blend, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
     vec3 color = mix(u_fog_color, sky_color, clamp(horizon_gradient + (1.0 - u_fog_intensity), 0.0, 1.0));
 
     gl_FragColor = vec4(color * u_opacity, u_opacity);
