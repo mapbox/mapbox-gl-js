@@ -22,15 +22,14 @@ void main() {
     const float sun_halo_intensity = .2;
     const float sun_halo_depth_range = 2048.0;
     const vec3  sun_halo_color = vec3(1.0, 0.0, 0.0);
-    const float fog_depth_start = 8000.0;
-    const float fog_depth_end = 8500.0;
+    const float fog_depth_start = 6000.0;
+    const float fog_depth_end = 9000.0;
     const float fog_intensity = 0.5;
     const vec3  fog_color = vec3(1.0, 1.0, 1.0);
 
     // fog
     float fogFactor = 1.0 - clamp(exp(-(depth - fog_depth_start)/(fog_depth_end-fog_depth_start)), 0.0, 1.0);
-    vec4 fog = vec4(fog_color * fog_intensity, fog_intensity) * fogFactor;
-    gl_FragColor = mix(vec4(color, 1.0), fog, fog.a);
+    gl_FragColor = vec4(color * (1.0 - fogFactor), 1.0 - fogFactor);
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
 #endif
