@@ -1,6 +1,6 @@
 // @flow
 
-import {prelude, preludeTerrain} from '../shaders/index.js';
+import {prelude, preludeTerrain} from '../shaders/shaders.js';
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration.js';
 import VertexArrayObject from './vertex_array_object.js';

@@ -9,6 +9,9 @@ import migrate from '../../../src/style-spec/migrate.js';
 /* eslint-disable import/namespace */
 import * as spec from '../../../src/style-spec/style-spec.js';
 
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 const UPDATE = !!process.env.UPDATE;
 
 test('does not migrate from version 5', (t) => {

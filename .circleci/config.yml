@@ -102,11 +102,11 @@ workflows:
               only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
             branches:
               ignore: /.*/
-              
+
 
 defaults: &defaults
   docker:
-    - image: circleci/node:10.16-browsers
+    - image: circleci/node:14.15-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:
@@ -116,10 +116,10 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v3-yarn-{{ checksum "yarn.lock" }}
+            - v4-yarn-{{ checksum "yarn.lock" }}
       - run: yarn
       - save_cache:
-          key: v3-yarn-{{ checksum "yarn.lock" }}
+          key: v4-yarn-{{ checksum "yarn.lock" }}
           paths:
             - '~/.yarn'
             - 'node_modules'
@@ -304,18 +304,4 @@ jobs:
       - run:
           name: Deploy release
           command: |
-            function upload {
-                aws s3 cp --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js/$CIRCLE_TAG/$1
-            }
-
-            upload mapbox-gl.js     application/javascript
-            upload mapbox-gl.js.map application/octet-stream
-            upload mapbox-gl-dev.js application/javascript
-            upload mapbox-gl.css    text/css
-
-            upload mapbox-gl-unminified.js     application/javascript
-            upload mapbox-gl-unminified.js.map application/octet-stream
-            upload mapbox-gl-csp.js            application/javascript
-            upload mapbox-gl-csp.js.map        application/octet-stream
-            upload mapbox-gl-csp-worker.js     application/javascript
-            upload mapbox-gl-csp-worker.js.map application/octet-stream
+            bash ./build/upload.sh

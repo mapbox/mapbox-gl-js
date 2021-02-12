@@ -7,6 +7,10 @@ import window from '../../../src/util/window.js';
 import {RequestManager} from '../../../src/util/mapbox.js';
 import loadGlyphRange from '../../../src/style/load_glyph_range.js';
 
+import {fileURLToPath} from 'url';
+// $FlowFixMe https://github.com/facebook/flow/issues/6913
+const __dirname = fileURLToPath(new URL('.', import/*:: ("")*/.meta.url));
+
 test('loadGlyphRange', (t) => {
     window.useFakeXMLHttpRequest();
 
@@ -46,6 +50,7 @@ test('loadGlyphRange', (t) => {
 
     t.equal(request.url, 'https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf');
     request.setStatus(200);
+    // $FlowFixMe https://github.com/facebook/flow/pull/8465
     request.response = fs.readFileSync(path.join(__dirname, '../../fixtures/0-255.pbf'));
     request.onload();
 

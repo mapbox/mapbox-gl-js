@@ -5,10 +5,9 @@ import {createMap as globalCreateMap} from '../../../util/index.js';
 import simulate from '../../../util/simulate_interaction.js';
 
 function createMap(t) {
-    config.ACCESS_TOKEN = 'pk.123';
-
     return globalCreateMap(t, {
         attributionControl: false,
+        accessToken: 'pk.123',
         style: {
             version: 8,
             sources: {},

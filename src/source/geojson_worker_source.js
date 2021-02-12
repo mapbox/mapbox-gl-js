@@ -2,7 +2,7 @@
 
 import {getJSON} from '../util/ajax.js';
 
-import {RequestPerformance} from '../util/performance.js';
+import {getPerformanceMeasurement} from '../util/performance.js';
 import rewind from '@mapbox/geojson-rewind';
 import GeoJSONWrapper from './geojson_wrapper.js';
 import vtpbf from 'vt-pbf';
@@ -164,8 +164,8 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         delete this._pendingCallback;
         delete this._pendingLoadDataParams;
 
-        const perf = (params && params.request && params.request.collectResourceTiming) ?
-            new RequestPerformance(params.request) : false;
+        const requestParam = params && params.request;
+        const perf = requestParam && requestParam.collectResourceTiming;
 
         this.loadGeoJSON(params, (err: ?Error, data: ?Object) => {
             if (err || !data) {
@@ -196,7 +196,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
 
                 const result = {};
                 if (perf) {
-                    const resourceTimingData = perf.finish();
+                    const resourceTimingData = getPerformanceMeasurement(requestParam);
                     // it's necessary to eval the result of getEntriesByName() here via parse/stringify
                     // late evaluation in the main thread causes TypeError: illegal invocation
                     if (resourceTimingData) {

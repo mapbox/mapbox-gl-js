@@ -11,6 +11,9 @@ import {CollisionBoxArray} from '../../../src/data/array_types.js';
 import {extend} from '../../../src/util/util.js';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer.js';
 
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 test('querySourceFeatures', (t) => {
     const features = [{
         type: 1,

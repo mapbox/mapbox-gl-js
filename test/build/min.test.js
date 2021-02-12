@@ -3,6 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import reference from '../../src/style-spec/reference/latest.js';
 import {scripts} from '../../package.json';
+import browserify from 'browserify';
+
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 
@@ -16,7 +20,10 @@ test('trims package.json assets', (t) => {
     // confirm that the entire package.json isn't present by asserting
     // the absence of each of our script strings
     for (const name in scripts) {
-        t.assert(minBundle.indexOf(scripts[name]) === -1);
+        if (minBundle.indexOf(scripts[name]) >= 0) {
+            t.fail();
+            break;
+        }
     }
     t.end();
 });
@@ -28,7 +35,6 @@ test('trims reference.json fields', (t) => {
 });
 
 test('can be browserified', (t) => {
-    const browserify = require('browserify');
     browserify(path.join(__dirname, 'browserify-test-fixture.js')).bundle((err) => {
         t.ifError(err);
         t.end();
@@ -36,6 +42,8 @@ test('can be browserified', (t) => {
 });
 
 test('evaluates without errors', (t) => {
-    t.doesNotThrow(() => require(path.join(__dirname, '../../dist/mapbox-gl.js')));
+    t.doesNotThrow(async () => {
+        await import(path.join(__dirname, '../../dist/mapbox-gl.js'));
+    });
     t.end();
 });

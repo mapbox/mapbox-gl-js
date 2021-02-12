@@ -14,6 +14,9 @@ import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index.js
 import FeatureIndex from '../../../src/data/feature_index.js';
 import {createSymbolBucket} from '../../util/create_symbol_layer.js';
 
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 const feature = vt.layers.place_label.feature(10);
