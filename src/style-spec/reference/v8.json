@@ -6025,16 +6025,35 @@
       },
       "property-type": "data-constant"
     },
-    "sky-atmosphere-fog-depthrange": {
+    "sky-atmosphere-fog-start": {
       "type": "number",
       "requires": [
         {
           "sky-type": "atmosphere"
         }
       ],
-      "default": 50,
+      "default": 5000,
       "minimum": 0,
-      "maximum": 500,
+      "maximum": 10000,
+      "transition": false,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "sky-atmosphere-fog-end": {
+      "type": "number",
+      "requires": [
+        {
+          "sky-type": "atmosphere"
+        }
+      ],
+      "default": 8500,
+      "minimum": 0,
+      "maximum": 10000,
       "transition": false,
       "doc": "",
       "sdk-support": {

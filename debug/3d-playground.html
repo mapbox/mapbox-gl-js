@@ -39,7 +39,8 @@ var Demo3D = function() {
     this.sunAzimuth = 90;
     this.sunHaloIntensity = 1.0;
     this.sunAtmosphereIntensity = 1.0;
-    this.fogDepthRange = 50.0;
+    this.fogStart = 5000.0;
+    this.fogEnd = 8000.0;
     this.fogIntensity = 0.1;
     this.fogColor = [ 255, 255, 255 ];
     this.animateSky = false;
@@ -102,9 +103,13 @@ window.onload = function() {
     fogIntensity.onFinishChange((value) => {
         map.setPaintProperty('sky', 'sky-atmosphere-fog-intensity', value);
     });
-    var fogDepthRange = sky.add(demo3d, 'fogDepthRange', 0.0, 500.0);
-    fogDepthRange.onFinishChange((value) => {
-        map.setPaintProperty('sky', 'sky-atmosphere-fog-depthrange', value);
+    var fogStart = sky.add(demo3d, 'fogStart', 0.0, 10000.0);
+    fogStart.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-fog-start', value);
+    });
+    var fogEnd = sky.add(demo3d, 'fogEnd', 0.0, 10000.0);
+    fogEnd.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-fog-end', value);
     });
     var fogColor = sky.addColor(demo3d, 'fogColor');
     fogColor.onFinishChange((value) => {

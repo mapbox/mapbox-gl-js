@@ -68,7 +68,7 @@ void main() {
     float sun_dot_camera_ray = clamp(dot(camera_ray, u_sun_direction), 0.0, 1.0);
 
     // fog
-    vec3 fog = u_fog_intensity * u_fog_color;
+    vec3 fog = u_fog_color;
     vec3 halo = sun_halo_intensity * sun_halo_color;
     vec3 color = mix(fog, halo, sun_dot_camera_ray * sun_dot_camera_ray * sun_halo_intensity);
 
@@ -76,8 +76,7 @@ void main() {
     float sun_halo = pow(sun_dot_camera_ray, 16.0);
     color += halo * sun_halo;
 
-    float horizon_gradient = smoothstep(0.0, 0.1, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
-    sky_color = mix(color, sky_color, 1.0 - u_fog_intensity);
+    float horizon_gradient = smoothstep(0.0, 0.05, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
     color = mix(color, sky_color, horizon_gradient);
 
     gl_FragColor = vec4(color, 1.0); //vec4(sky_color * u_opacity, u_opacity);

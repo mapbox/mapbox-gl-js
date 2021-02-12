@@ -17,7 +17,8 @@ export type TerrainRasterUniformsType = {|
     'u_skirt_height': Uniform1f,
     'u_near': Uniform1f,
     'u_far': Uniform1f,
-    'u_fog_depthrange': Uniform1f,
+    'u_fog_start': Uniform1f,
+    'u_fog_end': Uniform1f,
     'u_fog_intensity': Uniform1f,
     'u_fog_color': Uniform3f,
     'u_sun_direction': Uniform3f
@@ -30,7 +31,8 @@ const terrainRasterUniforms = (context: Context, locations: UniformLocations): T
     'u_skirt_height': new Uniform1f(context, locations.u_skirt_height),
     'u_near': new Uniform1f(context, locations.u_near),
     'u_far': new Uniform1f(context, locations.u_far),
-    'u_fog_depthrange': new Uniform1f(context, locations.u_fog_depthrange),
+    'u_fog_start': new Uniform1f(context, locations.u_fog_start),
+    'u_fog_end': new Uniform1f(context, locations.u_fog_end),
     'u_fog_intensity': new Uniform1f(context, locations.u_fog_intensity),
     'u_fog_color': new Uniform3f(context, locations.u_fog_color),
     'u_sun_direction': new Uniform3f(context, locations.u_sun_direction)
@@ -42,7 +44,8 @@ const terrainRasterUniformValues = (
     skirtHeight: number,
     near: number,
     far: number,
-    fogDepthRange,
+    fogStart,
+    fogEnd,
     fogIntensity,
     fogColor: vec3,
     sunDirection: vec3
@@ -53,7 +56,8 @@ const terrainRasterUniformValues = (
     'u_skirt_height': skirtHeight,
     'u_near': near,
     'u_far': far,
-    'u_fog_depthrange': fogDepthRange,
+    'u_fog_start': fogStart,
+    'u_fog_end': fogEnd,
     'u_fog_intensity': fogIntensity,
     'u_fog_color': fogColor,
     'u_sun_direction': sunDirection

@@ -48,7 +48,8 @@ function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
     // TODO: Fixme, use a sun direction from only one layer
     painter.sunDirection = layer.getCenter(painter, true);
     painter.fogIntensity = layer.paint.get('sky-atmosphere-fog-intensity');
-    painter.fogDepthRange = layer.paint.get('sky-atmosphere-fog-depthrange');
+    painter.fogStart = layer.paint.get('sky-atmosphere-fog-start');
+    painter.fogEnd = layer.paint.get('sky-atmosphere-fog-end');
     painter.fogColor = layer.paint.get('sky-atmosphere-fog-color');
 }
 

@@ -171,7 +171,8 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt,
             painter.transform.nearZ,
             painter.transform.farZ,
-            painter.fogDepthRange,
+            painter.fogStart,
+            painter.fogEnd,
             painter.fogIntensity,
             [painter.fogColor.r, painter.fogColor.g, painter.fogColor.b],
             sunDirection);
@@ -199,7 +200,8 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
             0,
             painter.transform.nearZ,
             painter.transform.farZ,
-            painter.fogDepthRange,
+            painter.fogStart,
+            painter.fogEnd,
             painter.fogIntensity,
             painter.fogColor,
             sunDirection);
