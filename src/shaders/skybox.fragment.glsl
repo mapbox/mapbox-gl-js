@@ -77,7 +77,7 @@ void main() {
     color += halo * sun_halo;
 
     float horizon_gradient = smoothstep(0.0, 0.05, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
-    color = mix(color, sky_color, horizon_gradient);
+    color = mix(color, sky_color, clamp(horizon_gradient + (1.0 - u_fog_intensity), 0.0, 1.0));
 
     gl_FragColor = vec4(color, 1.0); //vec4(sky_color * u_opacity, u_opacity);
 
