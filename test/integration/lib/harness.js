@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import glob from 'glob';
 import shuffleSeed from 'shuffle-seed';
-import d3 from 'd3-queue'; // eslint-disable-line
+import {queue} from 'd3-queue';
 import colors from 'chalk';
 import template from 'lodash.template';
 import createServer from './server.js';
@@ -16,7 +16,7 @@ import {createRequire} from 'module';
 const require = createRequire(import.meta.url);
 
 export default function (directory, implementation, options, run) {
-    const q = d3.queue(1);
+    const q = queue(1);
     const server = createServer();
 
     const tests = options.tests || [];
@@ -191,7 +191,7 @@ export default function (directory, implementation, options, run) {
         const p = path.join(directory, options.recycleMap ? 'index-recycle-map.html' : 'index.html');
         const out = fs.createWriteStream(p);
 
-        const q = d3.queue(1);
+        const q = queue(1);
         q.defer(write, out, resultsShell[0]);
         for (const test of tests) {
             q.defer(write, out, itemTemplate({r: test, hasFailedTests: unsuccessful.length > 0}));
