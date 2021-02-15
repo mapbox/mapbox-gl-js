@@ -37,7 +37,6 @@
     "no-confusing-arrow": "off",
     "no-control-regex": "off",
     "no-invalid-this": "off",
-    "no-buffer-constructor": "off",
     "no-prototype-builtins": "off",
     "accessor-pairs": "off",
     "require-atomic-updates": "off",
@@ -57,10 +56,6 @@
     "no-eq-null": "off",
     "no-lonely-if": "off",
     "no-new": "off",
-    "no-restricted-properties": [2, {
-        "object": "Object",
-        "property": "assign"
-    }],
     "no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
     "no-warning-comments": "error",
     "object-curly-spacing": ["error", "never"],
@@ -102,6 +97,7 @@
     {
       "files": ["debug/**", "bench/**", "test/**", "src/style-spec/**"],
       "rules": {
+        "flowtype/require-valid-file-annotation": "off",
         "jsdoc/check-param-names": "off",
         "jsdoc/require-param": "off",
         "jsdoc/require-param-description": "off",
