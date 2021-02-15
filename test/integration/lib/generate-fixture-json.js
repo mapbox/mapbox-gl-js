@@ -23,9 +23,6 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
         allPaths = allPaths.concat(glob.sync(imagePaths));
     }
 
-    //A Set that stores test names that are malformed so they can be removed later
-    const malformedTests = {};
-
     for (const fixturePath of allPaths) {
         const testName = path.dirname(fixturePath);
         const fileName = path.basename(fixturePath);
@@ -47,7 +44,7 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
             }
         } catch (e) {
             console.log(`Error parsing file: ${fixturePath}`);
-            malformedTests[testName] = true;
+            allFiles[fixturePath] = {PARSE_ERROR: true, message: e.message};
         }
     }
 
@@ -55,9 +52,6 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
     const result = {};
     for (const fullPath in allFiles) {
         const testName = path.dirname(fullPath).replace(rootDirectory, '');
-        //Skip if test is malformed
-        if (malformedTests[testName]) { continue; }
-
         //Lazily initialize an object to store each file wihin a particular testName
         if (result[testName] == null) {
             result[testName] = {};

@@ -107,9 +107,9 @@
     "stylelint": "^13.10.0",
     "stylelint-config-standard": "^20.0.0",
     "tap": "~12.4.1",
-    "tape": "^4.13.2",
+    "tape": "^5.1.1",
     "tape-filter": "^1.0.4",
-    "testem": "^3.0.0"
+    "testem": "^3.2.0"
   },
   "browser": {
     "./src/shaders/index.js": "./src/shaders/shaders.js",
