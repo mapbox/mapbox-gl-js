@@ -114,7 +114,6 @@ jobs:
   prepare:
     <<: *defaults
     steps:
-      - browser-tools/install-browser-tools
       - checkout
       - restore_cache:
           keys:
@@ -200,6 +199,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - browser-tools/install-browser-tools
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -211,6 +211,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - browser-tools/install-browser-tools
       - run: yarn run test-query
       - store_test_results:
           path: test/integration/query-tests
@@ -237,6 +238,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - browser-tools/install-browser-tools
       - run:
           name: Collect performance stats
           command: node bench/gl-stats.js
@@ -250,6 +252,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - browser-tools/install-browser-tools
       - run: yarn run build-dev
       - run: yarn run build-token
       - run:
