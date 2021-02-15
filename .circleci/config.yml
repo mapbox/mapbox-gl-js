@@ -252,8 +252,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - browser-tools/install-chromedriver
-      - browser-tools/install-geckodriver
+      - browser-tools/install-browser-tools
       - run: yarn run build-dev
       - run: yarn run build-token
       - run:
