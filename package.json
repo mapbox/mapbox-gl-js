@@ -75,7 +75,7 @@
     "gl": "^4.9.0",
     "glob": "^7.1.6",
     "is-builtin-module": "^3.0.0",
-    "jsdom": "^16.4.0",
+    "jsdom": "^13.2.0",
     "json-stringify-pretty-compact": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
     "list-npm-contents": "^1.0.2",
