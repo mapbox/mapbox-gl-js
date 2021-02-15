@@ -1,7 +1,7 @@
 {
   "name": "@mapbox/mapbox-gl-style-spec",
   "description": "a specification for mapbox gl styles",
-  "version": "13.19.0-dev",
+  "version": "13.20.0-dev",
   "author": "Mapbox",
   "keywords": [
     "mapbox",
@@ -11,6 +11,7 @@
   "license": "ISC",
   "main": "./dist/index.js",
   "module": "./dist/index.es.js",
+  "type": "module",
   "scripts": {
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",

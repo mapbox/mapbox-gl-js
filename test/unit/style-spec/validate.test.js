@@ -4,6 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import validate from '../../../src/style-spec/validate_style.js';
 
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 const UPDATE = !!process.env.UPDATE;
 
 glob.sync(`${__dirname}/fixture/*.input.json`).forEach((file) => {

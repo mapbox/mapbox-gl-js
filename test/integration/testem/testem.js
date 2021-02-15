@@ -1,16 +1,22 @@
-/* eslint-disable no-global-assign */
 /* eslint-disable import/no-commonjs */
 /* eslint-disable flowtype/require-valid-file-annotation */
-require = require("esm")(module);
-const {generateFixtureJson, getAllFixtureGlobs} = require('./lib/generate-fixture-json');
-const createServer = require('./lib/server');
-const buildTape = require('../../build/test/build-tape');
 const runAll = require('npm-run-all');
 const chokidar = require('chokidar');
 const rollup = require('rollup');
 const notifier = require('node-notifier');
-const rollupDevConfig = require('../../rollup.config').default;
-const rollupTestConfig = require('./rollup.config.test').default;
+
+// hack to be able to import ES modules inside a CommonJS one
+let generateFixtureJson, getAllFixtureGlobs, createServer, buildTape, rollupDevConfig, rollupTestConfig;
+async function loadModules() {
+    const generateFixture = await import('../lib/generate-fixture-json.js');
+    generateFixtureJson = generateFixture.generateFixtureJson;
+    getAllFixtureGlobs = generateFixture.getAllFixtureGlobs;
+
+    createServer = (await import('../lib/server.js')).default;
+    buildTape = (await import('../../../build/test/build-tape.js')).default;
+    rollupDevConfig = (await import('../../../rollup.config.js')).default;
+    rollupTestConfig = (await import('../rollup.config.test.js')).default;
+}
 
 const rootFixturePath = 'test/integration/';
 const outputPath = `${rootFixturePath}dist`;
@@ -75,12 +81,14 @@ const defaultTestemConfig = {
     },
     "before_tests"(config, data, callback) {
         if (!beforeHookInvoked) {
-            server = createServer();
-            const buildPromise = config.appMode === 'ci' ? buildArtifactsCi() : buildArtifactsDev();
-            buildPromise.then(() => {
-                server.listen(callback);
-            }).catch((e) => {
-                callback(e);
+            loadModules().then(() => {
+                server = createServer();
+                const buildPromise = config.appMode === 'ci' ? buildArtifactsCi() : buildArtifactsDev();
+                buildPromise.then(() => {
+                    server.listen(callback);
+                }).catch((e) => {
+                    callback(e);
+                });
             });
 
             beforeHookInvoked = true;

@@ -311,8 +311,8 @@ class GeolocateControl extends Evented {
         assert(this._circleElement);
         const y = this._map._container.clientHeight / 2;
         const a = this._map.unproject([0, y]);
-        const b = this._map.unproject([1, y]);
-        const metersPerPixel = a.distanceTo(b);
+        const b = this._map.unproject([100, y]);
+        const metersPerPixel = a.distanceTo(b) / 100;
         const circleDiameter = Math.ceil(2.0 * this._accuracy / metersPerPixel);
         this._circleElement.style.width = `${circleDiameter}px`;
         this._circleElement.style.height = `${circleDiameter}px`;

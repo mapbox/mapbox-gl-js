@@ -7,6 +7,9 @@ import ignores from './ignores.json';
 import {CanonicalTileID} from '../src/source/tile_id.js';
 import MercatorCoordinate from '../src/geo/mercator_coordinate.js';
 
+import {fileURLToPath} from 'url';
+const __filename = fileURLToPath(import.meta.url);
+
 function getPoint(coord, canonical) {
     const p = canonical.getTilePoint(MercatorCoordinate.fromLngLat({lng: coord[0], lat: coord[1]}, 0));
     p.x = Math.round(p.x);

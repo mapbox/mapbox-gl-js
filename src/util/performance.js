@@ -160,42 +160,9 @@ export const PerformanceUtils = {
     }
 };
 
-/**
- * Safe wrapper for the performance resource timing API in web workers with graceful degradation
- *
- * @param {RequestParameters} request
- * @private
- */
-export class RequestPerformance {
-    _marks: {start: string, end: string, measure: string};
-
-    constructor (request: RequestParameters) {
-        this._marks = {
-            start: [request.url, 'start'].join('#'),
-            end: [request.url, 'end'].join('#'),
-            measure: request.url.toString()
-        };
-
-        performance.mark(this._marks.start);
-    }
-
-    finish() {
-        performance.mark(this._marks.end);
-        let resourceTimingData = performance.getEntriesByName(this._marks.measure);
-
-        // fallback if web worker implementation of perf.getEntriesByName returns empty
-        if (resourceTimingData.length === 0) {
-            performance.measure(this._marks.measure, this._marks.start, this._marks.end);
-            resourceTimingData = performance.getEntriesByName(this._marks.measure);
-
-            // cleanup
-            performance.clearMarks(this._marks.start);
-            performance.clearMarks(this._marks.end);
-            performance.clearMeasures(this._marks.measure);
-        }
-
-        return resourceTimingData;
-    }
+export function getPerformanceMeasurement(request: ?RequestParameters) {
+    const url = request ? request.url.toString() : undefined;
+    return performance.getEntriesByName(url);
 }
 
 export default performance;

@@ -2162,7 +2162,7 @@ class Map extends Camera {
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {string | number} feature.id Unique id of the feature.
+     * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
@@ -2194,16 +2194,16 @@ class Map extends Camera {
     // eslint-disable-next-line jsdoc/require-returns
     /**
      * Removes the `state` of a feature, setting it back to the default behavior.
-     * If only a `target.source` is specified, it will remove the state for all features from that source.
-     * If `target.id` is also specified, it will remove all keys for that feature's state.
+     * If only a `feature.source` is specified, it will remove the state for all features from that source.
+     * If `feature.id` is also specified, it will remove all keys for that feature's state.
      * If `key` is also specified, it removes only that key from that feature's state.
      * Features are identified by their `feature.id` attribute, which can be any number or string.
      *
-     * @param {Object} target Identifier of where to remove state. It can be a source, a feature, or a specific key of feature.
+     * @param {Object} feature Identifier of where to remove state. It can be a source, a feature, or a specific key of feature.
      * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {string | number} target.id (optional) Unique id of the feature. Optional if key is not specified.
-     * @param {string} target.source The id of the vector or GeoJSON source for the feature.
-     * @param {string} [target.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
+     * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
+     * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      * @param {string} key (optional) The key in the feature state to reset.
      *
      * @example
@@ -2238,8 +2238,8 @@ class Map extends Camera {
      * });
      *
     */
-    removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
-        this.style.removeFeatureState(target, key);
+    removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
+        this.style.removeFeatureState(feature, key);
         return this._update();
     }
 
@@ -2252,7 +2252,7 @@ class Map extends Camera {
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {string | number} feature.id Unique id of the feature.
+     * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      *
