@@ -200,7 +200,6 @@ jobs:
       - attach_workspace:
           at: .
       - browser-tools/install-chrome
-      - browser-tools/install-chrome
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
