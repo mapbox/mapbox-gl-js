@@ -108,7 +108,7 @@ const ciTestemConfig = {
     "xunit_intermediate_output": true,
     "browser_args": {
         "Chrome": {
-            "ci": [ "--disable-backgrounding-occluded-windows", "--use-gl=swiftshader" ]
+            "ci": [ "--disable-backgrounding-occluded-windows", "--use-gl=egl" ]
         }
     }
 };
