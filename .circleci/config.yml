@@ -200,7 +200,8 @@ jobs:
       - attach_workspace:
           at: .
       - browser-tools/install-chrome
-      - run: yarn run test-render
+      - browser-tools/install-chrome
+      - run: xvfb-run -a yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
