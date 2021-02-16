@@ -107,7 +107,7 @@ export function applyOperations(map, options) {
             resolve();
             return;
         }
-
+        let currentOperation = null;
         // Start recursive chain
         const scheduleNextOperation = (lastOpIndex) => {
             if (lastOpIndex === operations.length - 1) {
@@ -115,11 +115,12 @@ export function applyOperations(map, options) {
                 resolve();
                 return;
             }
-            map.once('error', (e) => {
-                reject(new Error(`Error occured during ${JSON.stringify(options.operations[lastOpIndex + 1])}. ${e.error.stack}`));
-            });
+            currentOperation = options.operations[lastOpIndex + 1];
             handleOperation(map, options, ++lastOpIndex, scheduleNextOperation);
         };
+        map.once('error', (e) => {
+            reject(new Error(`Error occured during ${JSON.stringify(currentOperation)}. ${e.error.stack}`));
+        });
         scheduleNextOperation(-1);
     });
 }
