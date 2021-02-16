@@ -201,7 +201,7 @@ jobs:
           at: .
       - browser-tools/install-chrome
       - browser-tools/install-chrome
-      - run: xvfb-run -a yarn run test-render
+      - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
