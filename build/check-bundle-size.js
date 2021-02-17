@@ -2,7 +2,6 @@
 
 import prettyBytes from 'pretty-bytes';
 import fs from 'fs';
-import {execSync} from 'child_process';
 import zlib from 'zlib';
 import {createOctokit, getMergeBase} from './github_utils.js';
 
@@ -10,7 +9,7 @@ process.on('unhandledRejection', error => {
     // don't log `error` directly, because errors from child_process.execSync
     // contain an (undocumented) `envPairs` with environment variable values
     console.log(error.message || 'Error');
-    process.exit(1)
+    process.exit(1);
 });
 
 const FILES = [
@@ -47,7 +46,7 @@ const repo = 'mapbox-gl-js';
             if (run) {
                 const match = run.output.summary.match(/`[^`]+` is (\d+) bytes \([^\)]+\) uncompressed, (\d+) bytes \([^\)]+\) gzipped\./);
                 if (match) {
-                    const prior = { size: +match[1], gzipSize: +match[2] };
+                    const prior = {size: +match[1], gzipSize: +match[2]};
                     console.log(`Prior size was ${prettyBytes(prior.size)}, gzipped ${prior.gzipSize}.`);
                     return prior;
                 }
@@ -57,10 +56,10 @@ const repo = 'mapbox-gl-js';
         });
     }
 
-    const mergeBase = await getMergeBase();
+    const mergeBase = await getMergeBase(github);
 
     // Generate a github check for each filetype
-    for(let check_idx=0; check_idx<FILES.length; check_idx++){
+    for (let check_idx = 0; check_idx < FILES.length; check_idx++) {
         const [label, file] = FILES[check_idx];
         const name = `Size - ${label}`;
         const size = currentSizes[check_idx][1];
@@ -87,7 +86,7 @@ const repo = 'mapbox-gl-js';
             status: 'completed',
             conclusion: 'success',
             completed_at: new Date().toISOString(),
-            output: { title, summary }
+            output: {title, summary}
         });
     }
 })();

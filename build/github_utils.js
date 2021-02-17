@@ -1,5 +1,6 @@
-import { Octokit } from "@octokit/rest";
-import { createAppAuth } from "@octokit/auth-app";
+import {Octokit} from "@octokit/rest";
+import {createAppAuth} from "@octokit/auth-app";
+import {execSync} from 'child_process';
 
 const SIZE_CHECK_APP_ID = 14028;
 const SIZE_CHECK_APP_INSTALLATION_ID = 229425;
@@ -12,8 +13,6 @@ export function createOctokit() {
     const PK = process.env['SIZE_CHECK_APP_PRIVATE_KEY'];
     if (!PK) {
         return null;
-        console.log('Fork PR; not computing size.');
-        process.exit(0);
     }
 
     // Initialize github client
@@ -29,7 +28,7 @@ export function createOctokit() {
     return github;
 }
 
-export async function getMergeBase() {
+export async function getMergeBase(github) {
     const head = process.env['CIRCLE_SHA1'];
     const pr = process.env['CIRCLE_PULL_REQUEST'];
     if (pr) {

@@ -9,12 +9,12 @@ process.on('unhandledRejection', error => {
     // contain an (undocumented) `envPairs` with environment variable values
     // //
     console.log(error.message || 'Error');
-    process.exit(1)
+    process.exit(1);
 });
 
 (async () => {
 
-    const message = execSync(`git log --pretty="%B" -1`).toString()
+    const message = execSync(`git log --pretty="%B" -1`).toString();
     const matches = message.match(/\[benchmap-js(.*?)\]/);
     const runBenchmarks = matches && matches[0];
     if (!runBenchmarks) return;
@@ -24,7 +24,7 @@ process.on('unhandledRejection', error => {
         console.log('Fork PR; not computing size.');
         process.exit(0);
     }
-    const mergeBase = await getMergeBase();
+    const mergeBase = await getMergeBase(github);
 
     console.log(mergeBase);
     if (!mergeBase) return;
