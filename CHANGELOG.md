@@ -1,3 +1,8 @@
+## 1.13.1
+
+### 🐞 Bug fixes
+- Fix ImageSource not working in some cases in Firefox & Safari. [#10230](https://github.com/mapbox/mapbox-gl-js/pull/10230)
+
 ## 1.13.0
 
 ### ✨ Features and improvements
