@@ -37,7 +37,7 @@ process.on('unhandledRejection', error => {
             "github_check_branch": process.env['CIRCLE_BRANCH'],
             "github_check_sha1": process.env['CIRCLE_SHA1']
         },
-        branch: "status"
+        branch: "main"
     });
     console.log(params);
 
