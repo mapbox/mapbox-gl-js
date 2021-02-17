@@ -984,10 +984,10 @@ class Transform {
     getBounds(): LngLatBounds {
         if (this._terrainEnabled()) return this._getBounds3D();
         return new LngLatBounds()
-            .extend(this.pointLocation(new Point(0, 0)))
-            .extend(this.pointLocation(new Point(this.width, 0)))
-            .extend(this.pointLocation(new Point(this.width, this.height)))
-            .extend(this.pointLocation(new Point(0, this.height)));
+            .extend(this.pointLocation(new Point(this._edgeInsets.left, this._edgeInsets.top)))
+            .extend(this.pointLocation(new Point(this.width - this._edgeInsets.right, this._edgeInsets.top)))
+            .extend(this.pointLocation(new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom)))
+            .extend(this.pointLocation(new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom)));
     }
 
     _getBounds3D(): LngLatBounds {
