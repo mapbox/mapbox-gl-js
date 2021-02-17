@@ -1158,10 +1158,10 @@
   resolved "https://registry.yarnpkg.com/@mapbox/sphericalmercator/-/sphericalmercator-1.1.0.tgz#f3b1af042620716a1289fc41e1e97f610823aefe"
   integrity sha512-pEsfZyG4OMThlfFQbCte4gegvHUjxXCjz0KZ4Xk8NdOYTQBLflj6U8PL05RPAiuRAMAQNUUKJuL6qYZ5Y4kAWA==
 
-"@mapbox/tiny-sdf@^1.2.3":
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/@mapbox/tiny-sdf/-/tiny-sdf-1.2.3.tgz#74807b3eab60ca8f9cd2de8238c27928f8f31677"
-  integrity sha512-UH233on+8Okmj/JJFcxyc+HMSzKQcSFiiT339lFf2BMGs0+iEbobX7+GESeKVkPVtTFoh54LuNa1mC8N2ucM2w==
+"@mapbox/tiny-sdf@^1.2.5":
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/@mapbox/tiny-sdf/-/tiny-sdf-1.2.5.tgz#424c620a96442b20402552be70a7f62a8407cc59"
+  integrity sha512-cD8A/zJlm6fdJOk6DqPUV8mcpyJkRz2x2R+/fYcWDYG3oWbG7/L7Yl/WqQ1VZCjnL9OTIMAn6c+BC5Eru4sQEw==
 
 "@mapbox/unitbezier@^0.0.0":
   version "0.0.0"
