@@ -24,7 +24,7 @@ function waitForConsole(page) {
 (async () => {
     const browser = await puppeteer.launch({
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        executablePath: process.env.CI ? '/usr/local/bin/google-chrome' : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        executablePath: process.env.CI ? '/usr/bin/google-chrome' : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     });
     const page = await browser.newPage();
 
