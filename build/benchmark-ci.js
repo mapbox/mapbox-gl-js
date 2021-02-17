@@ -39,7 +39,6 @@ process.on('unhandledRejection', error => {
         },
         branch: "main"
     });
-    console.log(params);
 
     const post = execSync(`curl -X POST --header "Content-Type: application/json" -H "Circle-Token: ${process.env['WEB_METRICS_TOKEN']}" -d '${params}' https://circleci.com/api/v2/project/github/mapbox/benchmap-js/pipeline`).toString();
     console.log(post);
