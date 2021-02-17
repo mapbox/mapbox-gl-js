@@ -167,7 +167,7 @@ jobs:
           name: Trigger memory metrics when merging to main
           command: |
             if [ -n "${WEB_METRICS_TOKEN}" ]; then
-              node build/benchmark-params.js
+              node build/benchmark-ci.js
             fi
       - store_artifacts:
           path: "dist"
