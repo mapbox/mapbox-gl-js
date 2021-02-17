@@ -16,8 +16,9 @@ process.on('unhandledRejection', error => {
 
     const message = execSync(`git log --pretty="%B" -1`).toString();
     const matches = message.match(/\[benchmap-js(.*?)\]/);
-    const runBenchmarks = matches && matches[0];
+    const runBenchmarks = matches && matches[0] && process.env['CIRCLE_BRANCH'] !== 'main';
     if (!runBenchmarks) return;
+
 
     const github = createOctokit();
     if (!github) {
