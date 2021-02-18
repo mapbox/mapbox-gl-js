@@ -73,7 +73,7 @@ function packColor(color: Color): [number, number] {
  *    uniform allows us to cheaply update the value on every frame.
  *
  *  Note that the shader source varies depending on whether we're using a uniform or
- *  attribute. We dynamically compile shaders at runtime to accomodate this.
+ *  attribute. We dynamically compile shaders at runtime to accommodate this.
  *
  * @private
  */
