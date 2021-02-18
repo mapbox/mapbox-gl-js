@@ -54,7 +54,7 @@ function packColor(color: Color): [number, number] {
  *  `Binder` is the interface definition for the strategies for constructing,
  *  uploading, and binding paint property data as GLSL attributes. Most style-
  *  spec properties have a 1:1 relationship to shader attribute/uniforms, but
- *  some require multliple values per feature to be passed to the GPU, and in
+ *  some require multiple values per feature to be passed to the GPU, and in
  *  those cases we bind multiple attributes/uniforms.
  *
  *  It has three implementations, one for each of the three strategies we use:
