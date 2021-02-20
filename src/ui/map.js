@@ -1190,7 +1190,7 @@ class Map extends Camera {
      * representing visible features that satisfy the query parameters.
      *
      * @param {PointLike|Array<PointLike>} [geometry] - The geometry of the query region:
-     * either a single point or southwest and northeast points describing a bounding box.
+     * either a single point or southwest and northeast points describing a bounding box in screen coordinates as pixels.
      * Omitting this parameter (i.e. calling {@link Map#queryRenderedFeatures} with zero arguments,
      * or with only a `options` argument) is equivalent to passing a bounding box encompassing the entire
      * map viewport.
