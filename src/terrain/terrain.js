@@ -1400,6 +1400,22 @@ function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray, numb
     return [boundsArray, indexArray, skirtIndicesOffset];
 }
 
+/**
+ * Creates a grid of indices corresponding to the grid constructed by createGrid
+ * in order to render that grid as a wireframe rather than a solid  mesh. It does
+ * not create a skirt and so only goes from 1 to count + 1, e.g. for count of 2:
+ *  -------------
+ *  |    /|    /|
+ *  |  /  |  /  |
+ *  |/    |/    |
+ *  -------------
+ *  |    /|    /|
+ *  |  /  |  /  |
+ *  |/    |/    |
+ *  -------------
+ * @param {number} count Count of rows and columns
+ * @private
+ */
 function createLineGrid(count: number): LineIndexArray {
     let i, j, index;
     const wireframeIndexArray = new LineIndexArray();
