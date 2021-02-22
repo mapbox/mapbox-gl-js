@@ -6,4 +6,7 @@ void main() {
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
 #endif
+#ifdef TERRAIN_WIREFRAME
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 0.8);
+#endif
 }

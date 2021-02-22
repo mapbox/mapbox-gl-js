@@ -116,6 +116,7 @@ const vertexMorphing = new VertexMorphing();
 const SHADER_DEFAULT = 0;
 const SHADER_MORPHING = 1;
 const defaultDuration = 250;
+const TERRAIN_WIREFRAME = 'TERRAIN_WIREFRAME';
 
 const shaderDefines = {
     "0": null,
@@ -126,15 +127,16 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     const context = painter.context;
     const gl = context.gl;
 
-    let program = painter.useProgram('terrainRaster');
-    let programMode = SHADER_DEFAULT;
+    let program, programMode;
+    let wireframeMode = painter.options.showTerrainWireframe ? TERRAIN_WIREFRAME : null;
 
-    const setShaderMode = (mode) => {
+    const setShaderMode = (mode, isWireframe) => {
         if (programMode === mode)
             return;
-        program = painter.useProgram('terrainRaster', null, shaderDefines[mode]);
+        program = painter.useProgram('terrainRaster', null, [shaderDefines[mode], isWireframe && wireframeMode]);
         programMode = mode;
     };
+
 
     const colorMode = painter.colorModeForRenderPass();
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
@@ -142,35 +144,47 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     const tr = painter.transform;
     const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
 
-    for (const coord of tileIDs) {
-        const tile = sourceCache.getTile(coord);
-        const stencilMode = StencilMode.disabled;
+    const isWireframe = wireframeMode ? [false, true] : [false];
 
-        const prevDemTile = terrain.prevTerrainTileForTile[coord.key];
-        const nextDemTile = terrain.terrainTileForTile[coord.key];
+    isWireframe.forEach(isWireframe => {
+        programMode = null;
 
-        if (demTileChanged(prevDemTile, nextDemTile)) {
-            vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
+        for (const coord of tileIDs) {
+            const tile = sourceCache.getTile(coord);
+            const stencilMode = StencilMode.disabled;
+
+            const prevDemTile = terrain.prevTerrainTileForTile[coord.key];
+            const nextDemTile = terrain.terrainTileForTile[coord.key];
+
+            if (demTileChanged(prevDemTile, nextDemTile)) {
+                vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
+            }
+
+            // Bind the main draped texture
+            context.activeTexture.set(gl.TEXTURE0);
+            tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+
+            const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
+            const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
+            let elevationOptions;
+
+            if (morph) {
+                elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
+            }
+
+            const uniformValues = terrainRasterUniformValues(coord.posMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt);
+
+            setShaderMode(shaderMode, isWireframe);
+
+            const primitive = isWireframe ? gl.LINES : gl.TRIANGLES;
+            const buffer = isWireframe ? terrain.wireframeIndexBuffer : terrain.gridIndexBuffer;
+            const segments = isWireframe ? terrain.wireframeSegments : terrain.gridSegments;
+
+            terrain.setupElevationDraw(tile, program, elevationOptions);
+            program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+                uniformValues, "terrain_raster", terrain.gridBuffer, buffer, segments);
         }
-
-        // Bind the main draped texture
-        context.activeTexture.set(gl.TEXTURE0);
-        tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
-
-        const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
-        const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
-        let elevationOptions;
-
-        if (morph) {
-            elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
-        }
-        const uniformValues = terrainRasterUniformValues(coord.posMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt);
-
-        setShaderMode(shaderMode);
-        terrain.setupElevationDraw(tile, program, elevationOptions);
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
-            uniformValues, "terrain_raster", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridSegments);
-    }
+    });
 }
 
 function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>) {

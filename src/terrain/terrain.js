@@ -5,7 +5,7 @@ import SourceCache from '../source/source_cache.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import Tile from '../source/tile.js';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
-import {RasterBoundsArray, TriangleIndexArray} from '../data/array_types.js';
+import {RasterBoundsArray, TriangleIndexArray, LineIndexArray} from '../data/array_types.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import Program from '../render/program.js';
@@ -173,6 +173,7 @@ export class Terrain extends Elevation {
     gridIndexBuffer: IndexBuffer;
     gridSegments: SegmentVector;
     gridNoSkirtSegments: SegmentVector;
+    wireframeSegments: SegmentVector;
     proxiedCoords: {[string]: Array<ProxiedTileID>};
     proxyCoords: Array<OverscaledTileID>;
     proxyToSource: {[number]: {[string]: Array<ProxiedTileID>}};
@@ -222,11 +223,14 @@ export class Terrain extends Elevation {
         // by neighboring tile edges. This way we achieve tile stitching as
         // edge vertices from neighboring tiles evaluate to the same 3D point.
         const [triangleGridArray, triangleGridIndices, skirtIndicesOffset] = createGrid(GRID_DIM + 1);
+        const wireframeGridIndices = createLineGrid(GRID_DIM + 1);
         const context = painter.context;
         this.gridBuffer = context.createVertexBuffer(triangleGridArray, rasterBoundsAttributes.members);
         this.gridIndexBuffer = context.createIndexBuffer(triangleGridIndices);
         this.gridSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, triangleGridIndices.length);
         this.gridNoSkirtSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, skirtIndicesOffset);
+        this.wireframeIndexBuffer = context.createIndexBuffer(wireframeGridIndices);
+        this.wireframeSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, wireframeGridIndices.length);
         this.proxyCoords = [];
         this.proxiedCoords = {};
         this._visibleDemTiles = [];
@@ -1394,6 +1398,28 @@ function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray, numb
         }
     });
     return [boundsArray, indexArray, skirtIndicesOffset];
+}
+
+function createLineGrid(count: number): LineIndexArray {
+    let i, j, index;
+    const wireframeIndexArray = new LineIndexArray();
+    const size = count + 2;
+    // Draw two edges of a quad and its diagonal. The very last row and column have
+    // an additional line to close off the grid.
+    for (j = 1; j < count; j++) {
+        for (i = 1; i < count; i++) {
+            index = j * size + i;
+            wireframeIndexArray.emplaceBack(index, index + 1);
+            wireframeIndexArray.emplaceBack(index, index + size);
+            wireframeIndexArray.emplaceBack(index + 1, index + size);
+
+            // Place an extra line at the end of each row
+            if (j === count - 1) wireframeIndexArray.emplaceBack(index + size, index + size + 1);
+        }
+        // Place an extra line at the end of each col
+        wireframeIndexArray.emplaceBack(index + 1, index + 1 + size);
+    }
+    return wireframeIndexArray;
 }
 
 export type TerrainUniformsType = {|
