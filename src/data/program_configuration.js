@@ -555,7 +555,7 @@ export default class ProgramConfiguration {
 
     setUniforms<Properties: Object>(context: Context, binderUniforms: Array<BinderUniform>, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
         // Uniform state bindings are owned by the Program, but we set them
-        // from within the ProgramConfiguraton's binder members.
+        // from within the ProgramConfiguration's binder members.
         for (const {name, property, binding} of binderUniforms) {
             (this.binders[property]: any).setUniform(binding, globals, properties.get(property), name);
         }

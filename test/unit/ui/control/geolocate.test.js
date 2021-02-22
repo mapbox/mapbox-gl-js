@@ -280,7 +280,7 @@ test('GeolocateControl watching map updates recenter on location with dot', (t) 
                 t.ok(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation has stale class');
                 t.end();
             });
-            geolocation.changeError({code: 2, message: 'position unavaliable'});
+            geolocation.changeError({code: 2, message: 'position unavailable'});
         });
         geolocation.change({latitude: 40, longitude: 50, accuracy: 60});
     });
