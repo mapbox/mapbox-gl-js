@@ -1326,7 +1326,7 @@ export class Terrain extends Elevation {
      */
     getWirefameBuffer() : [IndexBuffer, SegmentVector] {
       if (!this.wireframeSegments) {
-        let wireframeGridIndices = createLineGrid(GRID_DIM + 1);
+        let wireframeGridIndices = createWireframeGrid(GRID_DIM + 1);
         this.wireframeIndexBuffer = this.painter.context.createIndexBuffer(wireframeGridIndices);
         this.wireframeSegments = SegmentVector.simpleSegment(0, 0, this.gridBuffer.length, wireframeGridIndices.length);
       }
@@ -1428,26 +1428,26 @@ function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray, numb
  * @param {number} count Count of rows and columns
  * @private
  */
-function createLineGrid(count: number): LineIndexArray {
+function createWireframeGrid(count: number): LineIndexArray {
     let i, j, index;
-    const wireframeIndexArray = new LineIndexArray();
+    const indexArray = new LineIndexArray();
     const size = count + 2;
     // Draw two edges of a quad and its diagonal. The very last row and column have
     // an additional line to close off the grid.
     for (j = 1; j < count; j++) {
         for (i = 1; i < count; i++) {
             index = j * size + i;
-            wireframeIndexArray.emplaceBack(index, index + 1);
-            wireframeIndexArray.emplaceBack(index, index + size);
-            wireframeIndexArray.emplaceBack(index + 1, index + size);
+            indexArray.emplaceBack(index, index + 1);
+            indexArray.emplaceBack(index, index + size);
+            indexArray.emplaceBack(index + 1, index + size);
 
             // Place an extra line at the end of each row
-            if (j === count - 1) wireframeIndexArray.emplaceBack(index + size, index + size + 1);
+            if (j === count - 1) indexArray.emplaceBack(index + size, index + size + 1);
         }
         // Place an extra line at the end of each col
-        wireframeIndexArray.emplaceBack(index + 1, index + 1 + size);
+        indexArray.emplaceBack(index + 1, index + 1 + size);
     }
-    return wireframeIndexArray;
+    return indexArray;
 }
 
 export type TerrainUniformsType = {|
