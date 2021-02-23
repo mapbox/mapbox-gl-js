@@ -1324,13 +1324,13 @@ export class Terrain extends Elevation {
      * Lazily instantiate the wireframe index buffer and segment vector so that we don't
      * allocate the geometry for rendering a debug wireframe until it's needed.
      */
-    getWirefameBuffer() : [IndexBuffer, SegmentVector] {
-      if (!this.wireframeSegments) {
-        let wireframeGridIndices = createWireframeGrid(GRID_DIM + 1);
-        this.wireframeIndexBuffer = this.painter.context.createIndexBuffer(wireframeGridIndices);
-        this.wireframeSegments = SegmentVector.simpleSegment(0, 0, this.gridBuffer.length, wireframeGridIndices.length);
-      }
-      return [this.wireframeIndexBuffer, this.wireframeSegments];
+    getWirefameBuffer(): [IndexBuffer, SegmentVector] {
+        if (!this.wireframeSegments) {
+            const wireframeGridIndices = createWireframeGrid(GRID_DIM + 1);
+            this.wireframeIndexBuffer = this.painter.context.createIndexBuffer(wireframeGridIndices);
+            this.wireframeSegments = SegmentVector.simpleSegment(0, 0, this.gridBuffer.length, wireframeGridIndices.length);
+        }
+        return [this.wireframeIndexBuffer, this.wireframeSegments];
     }
 
 }

@@ -128,7 +128,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     const gl = context.gl;
 
     let program, programMode;
-    let wireframeMode = painter.options.showTerrainWireframe ? TERRAIN_WIREFRAME : null;
+    const wireframeMode = painter.options.showTerrainWireframe ? TERRAIN_WIREFRAME : null;
 
     const setShaderMode = (mode, isWireframe) => {
         if (programMode === mode)
@@ -136,7 +136,6 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         program = painter.useProgram('terrainRaster', null, [shaderDefines[mode], isWireframe && wireframeMode]);
         programMode = mode;
     };
-
 
     const colorMode = painter.colorModeForRenderPass();
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
