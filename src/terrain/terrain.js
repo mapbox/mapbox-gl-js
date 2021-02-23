@@ -175,7 +175,6 @@ export class Terrain extends Elevation {
     gridNoSkirtSegments: SegmentVector;
     wireframeSegments: SegmentVector;
     wireframeIndexBuffer: IndexBuffer;
-    wireframeGridIndices: LineIndexArray;
     proxiedCoords: {[string]: Array<ProxiedTileID>};
     proxyCoords: Array<OverscaledTileID>;
     proxyToSource: {[number]: {[string]: Array<ProxiedTileID>}};
