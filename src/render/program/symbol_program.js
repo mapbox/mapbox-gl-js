@@ -29,7 +29,10 @@ export type SymbolIconUniformsType = {|
     'u_is_text': Uniform1i,
     'u_pitch_with_map': Uniform1i,
     'u_texsize': Uniform2f,
-    'u_texture': Uniform1i
+    'u_texture': Uniform1i,
+    'u_fog_start': Uniform1f,
+    'u_fog_end': Uniform1f,
+    'u_fog_intensity': Uniform1f
 |};
 
 export type SymbolSDFUniformsType = {|
@@ -51,7 +54,10 @@ export type SymbolSDFUniformsType = {|
     'u_texture': Uniform1i,
     'u_gamma_scale': Uniform1f,
     'u_device_pixel_ratio': Uniform1f,
-    'u_is_halo': Uniform1i
+    'u_is_halo': Uniform1i,
+    'u_fog_start': Uniform1f,
+    'u_fog_end': Uniform1f,
+    'u_fog_intensity': Uniform1f
 |};
 
 export type symbolTextAndIconUniformsType = {|
@@ -75,7 +81,10 @@ export type symbolTextAndIconUniformsType = {|
     'u_texture_icon': Uniform1i,
     'u_gamma_scale': Uniform1f,
     'u_device_pixel_ratio': Uniform1f,
-    'u_is_halo': Uniform1i
+    'u_is_halo': Uniform1i,
+    'u_fog_start': Uniform1f,
+    'u_fog_end': Uniform1f,
+    'u_fog_intensity': Uniform1f
 |};
 
 export type SymbolDefinesType = 'PITCH_WITH_MAP_TERRAIN';
@@ -96,7 +105,10 @@ const symbolIconUniforms = (context: Context, locations: UniformLocations): Symb
     'u_is_text': new Uniform1i(context, locations.u_is_text),
     'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_texture': new Uniform1i(context, locations.u_texture)
+    'u_texture': new Uniform1i(context, locations.u_texture),
+    'u_fog_start': new Uniform1f(context, locations.u_fog_start),
+    'u_fog_end': new Uniform1f(context, locations.u_fog_end),
+    'u_fog_intensity': new Uniform1f(context, locations.u_fog_intensity)
 });
 
 const symbolSDFUniforms = (context: Context, locations: UniformLocations): SymbolSDFUniformsType => ({
@@ -118,7 +130,10 @@ const symbolSDFUniforms = (context: Context, locations: UniformLocations): Symbo
     'u_texture': new Uniform1i(context, locations.u_texture),
     'u_gamma_scale': new Uniform1f(context, locations.u_gamma_scale),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_is_halo': new Uniform1i(context, locations.u_is_halo)
+    'u_is_halo': new Uniform1i(context, locations.u_is_halo),
+    'u_fog_start': new Uniform1f(context, locations.u_fog_start),
+    'u_fog_end': new Uniform1f(context, locations.u_fog_end),
+    'u_fog_intensity': new Uniform1f(context, locations.u_fog_intensity)
 });
 
 const symbolTextAndIconUniforms = (context: Context, locations: UniformLocations): symbolTextAndIconUniformsType => ({
@@ -142,7 +157,10 @@ const symbolTextAndIconUniforms = (context: Context, locations: UniformLocations
     'u_texture_icon': new Uniform1i(context, locations.u_texture_icon),
     'u_gamma_scale': new Uniform1f(context, locations.u_gamma_scale),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_is_halo': new Uniform1i(context, locations.u_is_halo)
+    'u_is_halo': new Uniform1i(context, locations.u_is_halo),
+    'u_fog_start': new Uniform1f(context, locations.u_fog_start),
+    'u_fog_end': new Uniform1f(context, locations.u_fog_end),
+    'u_fog_intensity': new Uniform1f(context, locations.u_fog_intensity)
 });
 
 const symbolIconUniformValues = (
@@ -155,10 +173,9 @@ const symbolIconUniformValues = (
     labelPlaneMatrix: Float32Array,
     glCoordMatrix: Float32Array,
     isText: boolean,
-    texSize: [number, number]
+    texSize: [number, number],
 ): UniformValues<SymbolIconUniformsType> => {
     const transform = painter.transform;
-
     return {
         'u_is_size_zoom_constant': +(functionType === 'constant' || functionType === 'source'),
         'u_is_size_feature_constant': +(functionType === 'constant' || functionType === 'camera'),
@@ -175,7 +192,10 @@ const symbolIconUniformValues = (
         'u_is_text': +isText,
         'u_pitch_with_map': +pitchWithMap,
         'u_texsize': texSize,
-        'u_texture': 0
+        'u_texture': 0,
+        'u_fog_start': painter.fogStart,
+        'u_fog_end': painter.fogEnd,
+        'u_fog_intensity': painter.fogIntensity
     };
 };
 

@@ -25,6 +25,7 @@ uniform vec2 u_texsize;
 
 varying vec2 v_tex;
 varying float v_fade_opacity;
+varying float v_distance;
 
 #pragma mapbox: define lowp float opacity
 
@@ -99,4 +100,6 @@ void main() {
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
     v_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
+
+    v_distance = length(projectedPoint.xyz);
 }

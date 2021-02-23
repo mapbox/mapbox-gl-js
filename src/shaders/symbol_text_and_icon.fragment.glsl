@@ -8,9 +8,13 @@ uniform sampler2D u_texture;
 uniform sampler2D u_texture_icon;
 uniform highp float u_gamma_scale;
 uniform lowp float u_device_pixel_ratio;
+uniform float u_fog_start;
+uniform float u_fog_end;
+uniform float u_fog_intensity;
 
 varying vec4 v_data0;
 varying vec4 v_data1;
+varying float v_distance;
 
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
@@ -60,7 +64,8 @@ void main() {
     highp float gamma_scaled = gamma * gamma_scale;
     highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist);
 
-    gl_FragColor = color * (alpha * opacity * fade_opacity);
+    float fog_falloff = clamp(exp(-(v_distance - u_fog_start) / (u_fog_end - u_fog_start)), 0.0, 1.0);
+    gl_FragColor = color * (alpha * opacity * fade_opacity * fog_falloff);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

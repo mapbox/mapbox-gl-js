@@ -18,5 +18,4 @@ void main() {
     vec2 decodedPos = a_pos - vec2(skirt * skirtOffset, 0.0);
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
     v_distance = length(gl_Position.xyz);
-    v_position = (u_lighting_matrix * vec4(decodedPos, elevation, 1.0)).xyz;
 }

@@ -14,7 +14,6 @@ varying vec3 v_position;
 
 void main() {
     vec3 color = texture2D(u_image0, v_pos0).rgb;
-    vec3 camera_ray = normalize(v_position);
     float depth = v_distance;
 
     // Fog

@@ -29,6 +29,7 @@ uniform vec2 u_texsize_icon;
 
 varying vec4 v_data0;
 varying vec4 v_data1;
+varying float v_distance;
 
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
@@ -120,4 +121,5 @@ void main() {
     v_data0.xy = a_tex / u_texsize;
     v_data0.zw = a_tex / u_texsize_icon;
     v_data1 = vec4(gamma_scale, size, interpolated_fade_opacity, is_sdf);
+    v_distance = length(projectedPoint.xyz);
 }
