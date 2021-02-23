@@ -128,17 +128,16 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     const context = painter.context;
     const gl = context.gl;
 
-    let program, programMode, isWireframeMode;
+    let program, programMode;
     const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
 
     const setShaderMode = (mode, isWireframe) => {
-        if (programMode === mode && isWireframeMode === isWireframe)
+        if (programMode === mode)
             return;
         const modes = [shaderDefines[mode]];
         if (isWireframe) modes.push(shaderDefines[showWireframe]);
         program = painter.useProgram('terrainRaster', null, modes);
         programMode = mode;
-        isWireframeMode = isWireframe;
     };
 
     const colorMode = painter.colorModeForRenderPass();
@@ -150,9 +149,10 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     const batches = showWireframe ? [false, true] : [false];
 
     batches.forEach(isWireframe => {
-        // Ensure we make no assumptions about the active program
+        // This code assumes the rendering is batched into mesh terrain and then wireframe
+        // terrain (if applicable) so that this is enough to ensure the correct program is
+        // set when we switch from one to the other.
         programMode = -1;
-        isWireframeMode = undefined;
 
         const primitive = isWireframe ? gl.LINES : gl.TRIANGLES;
         const [buffer, segments] = isWireframe ? terrain.getWirefameBuffer() : [terrain.gridIndexBuffer, terrain.gridSegments];
