@@ -115,26 +115,30 @@ function demTileChanged(prev: ?Tile, next: ?Tile): boolean {
 const vertexMorphing = new VertexMorphing();
 const SHADER_DEFAULT = 0;
 const SHADER_MORPHING = 1;
+const SHADER_TERRAIN_WIREFRAME = 2;
 const defaultDuration = 250;
-const TERRAIN_WIREFRAME = 'TERRAIN_WIREFRAME';
 
 const shaderDefines = {
     "0": null,
-    "1": 'TERRAIN_VERTEX_MORPHING'
+    "1": 'TERRAIN_VERTEX_MORPHING',
+    "2": 'TERRAIN_WIREFRAME'
 };
 
 function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>, now: number) {
     const context = painter.context;
     const gl = context.gl;
 
-    let program, programMode;
-    const wireframeMode = painter.options.showTerrainWireframe ? TERRAIN_WIREFRAME : null;
+    let program, programMode, isWireframeMode;
+    const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
 
     const setShaderMode = (mode, isWireframe) => {
-        if (programMode === mode)
+        if (programMode === mode && isWireframeMode === isWireframe)
             return;
-        program = painter.useProgram('terrainRaster', null, [shaderDefines[mode], isWireframe && wireframeMode]);
+        const modes = [shaderDefines[mode]];
+        if (isWireframe) modes.push(shaderDefines[showWireframe]);
+        program = painter.useProgram('terrainRaster', null, modes);
         programMode = mode;
+        isWireframeMode = isWireframe;
     };
 
     const colorMode = painter.colorModeForRenderPass();
@@ -143,10 +147,12 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     const tr = painter.transform;
     const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
 
-    const isWireframe = wireframeMode ? [false, true] : [false];
+    const batches = showWireframe ? [false, true] : [false];
 
-    isWireframe.forEach(isWireframe => {
-        programMode = null;
+    batches.forEach(isWireframe => {
+        // Ensure we make no assumptions about the active program
+        programMode = -1;
+        isWireframeMode = undefined;
 
         const primitive = isWireframe ? gl.LINES : gl.TRIANGLES;
         const [buffer, segments] = isWireframe ? terrain.getWirefameBuffer() : [terrain.gridIndexBuffer, terrain.gridSegments];
