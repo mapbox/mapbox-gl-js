@@ -49,6 +49,7 @@ void main() {
     highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist);
 
     float fog_falloff = clamp(exp(-(v_distance - u_fog_start) / (u_fog_end - u_fog_start)), 0.0, 1.0);
+    fog_falloff = step(0.5, fog_falloff);
     gl_FragColor = color * (alpha * opacity * fade_opacity * fog_falloff);
 
 #ifdef OVERDRAW_INSPECTOR

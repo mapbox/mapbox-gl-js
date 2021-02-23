@@ -15,6 +15,7 @@ void main() {
     lowp float alpha = opacity * v_fade_opacity;
 
     float fog_falloff = clamp(exp(-(v_distance - u_fog_start) / (u_fog_end - u_fog_start)), 0.0, 1.0);
+    fog_falloff = step(0.5, fog_falloff);
     gl_FragColor = texture2D(u_texture, v_tex) * alpha * fog_falloff;
 
 #ifdef OVERDRAW_INSPECTOR
