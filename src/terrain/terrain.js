@@ -174,6 +174,8 @@ export class Terrain extends Elevation {
     gridSegments: SegmentVector;
     gridNoSkirtSegments: SegmentVector;
     wireframeSegments: SegmentVector;
+    wireframeIndexBuffer: IndexBuffer;
+    wireframeGridIndices: LineIndexArray;
     proxiedCoords: {[string]: Array<ProxiedTileID>};
     proxyCoords: Array<OverscaledTileID>;
     proxyToSource: {[number]: {[string]: Array<ProxiedTileID>}};
@@ -223,14 +225,11 @@ export class Terrain extends Elevation {
         // by neighboring tile edges. This way we achieve tile stitching as
         // edge vertices from neighboring tiles evaluate to the same 3D point.
         const [triangleGridArray, triangleGridIndices, skirtIndicesOffset] = createGrid(GRID_DIM + 1);
-        const wireframeGridIndices = createLineGrid(GRID_DIM + 1);
         const context = painter.context;
         this.gridBuffer = context.createVertexBuffer(triangleGridArray, rasterBoundsAttributes.members);
         this.gridIndexBuffer = context.createIndexBuffer(triangleGridIndices);
         this.gridSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, triangleGridIndices.length);
         this.gridNoSkirtSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, skirtIndicesOffset);
-        this.wireframeIndexBuffer = context.createIndexBuffer(wireframeGridIndices);
-        this.wireframeSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, wireframeGridIndices.length);
         this.proxyCoords = [];
         this.proxiedCoords = {};
         this._visibleDemTiles = [];
@@ -1321,6 +1320,20 @@ export class Terrain extends Elevation {
         if (!sourceTiles) sourceTiles = this._tilesDirty[source] = {};
         sourceTiles[coord.key] = true;
     }
+
+    /*
+     * Lazily instantiate the wireframe index buffer and segment vector so that we don't
+     * allocate the geometry for rendering a debug wireframe until it's needed.
+     */
+    getWirefameBuffer() : [IndexBuffer, SegmentVector] {
+      if (!this.wireframeSegments) {
+        let wireframeGridIndices = createLineGrid(GRID_DIM + 1);
+        this.wireframeIndexBuffer = this.painter.context.createIndexBuffer(wireframeGridIndices);
+        this.wireframeSegments = SegmentVector.simpleSegment(0, 0, this.gridBuffer.length, wireframeGridIndices.length);
+      }
+      return [this.wireframeIndexBuffer, this.wireframeSegments];
+    }
+
 }
 
 function sortByDistanceToCamera(tileIDs, painter) {

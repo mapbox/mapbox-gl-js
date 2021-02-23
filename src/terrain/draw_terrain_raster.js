@@ -149,6 +149,9 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     isWireframe.forEach(isWireframe => {
         programMode = null;
 
+        const primitive = isWireframe ? gl.LINES : gl.TRIANGLES;
+        const [buffer, segments] = isWireframe ? terrain.getWirefameBuffer() : [terrain.gridIndexBuffer, terrain.gridSegments];
+
         for (const coord of tileIDs) {
             const tile = sourceCache.getTile(coord);
             const stencilMode = StencilMode.disabled;
@@ -175,10 +178,6 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             const uniformValues = terrainRasterUniformValues(coord.posMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt);
 
             setShaderMode(shaderMode, isWireframe);
-
-            const primitive = isWireframe ? gl.LINES : gl.TRIANGLES;
-            const buffer = isWireframe ? terrain.wireframeIndexBuffer : terrain.gridIndexBuffer;
-            const segments = isWireframe ? terrain.wireframeSegments : terrain.gridSegments;
 
             terrain.setupElevationDraw(tile, program, elevationOptions);
             program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
