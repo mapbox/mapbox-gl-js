@@ -1092,13 +1092,17 @@ class Transform {
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 
         const pixelsPerMeter = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
-        const zScaleMatrix = mat4.create();
-        const negCameraPosMatrix = mat4.create();
-        mat4.scale(zScaleMatrix, zScaleMatrix, [1.0, 1.0, pixelsPerMeter]);
-        const cameraPos = vec3.scale([], this._camera.position, this.worldSize);
-        mat4.translate(negCameraPosMatrix, negCameraPosMatrix, [-cameraPos[0], -cameraPos[1], -cameraPos[2]]);
-        mat4.multiply(posMatrix, zScaleMatrix, posMatrix);
-        mat4.multiply(posMatrix, negCameraPosMatrix, posMatrix);
+        const cameraPos = vec3.scale([], this._camera.position, -this.worldSize);
+        // mat4.scale(posMatrix, posMatrix, [1, -1, 1]);
+        const cameraMatrix = mat4.identity(new Float64Array(16));
+
+        mat4.translate(cameraMatrix, cameraMatrix, cameraPos);
+        // Post-multiply z (3rd column)
+        cameraMatrix[8] *= pixelsPerMeter;
+        cameraMatrix[9] *= pixelsPerMeter;
+        cameraMatrix[10] *= pixelsPerMeter;
+        cameraMatrix[11] *= pixelsPerMeter;
+        mat4.multiply(posMatrix, cameraMatrix, posMatrix);
 
         return posMatrix;
     }

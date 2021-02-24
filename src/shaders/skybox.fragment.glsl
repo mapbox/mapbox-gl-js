@@ -40,7 +40,7 @@ float map(float value, float start, float end, float new_start, float new_end) {
 }
 
 void main() {
-    vec3 uv = v_uv;
+    vec3 uv = normalize(v_uv);
 
     // Add a small offset to prevent black bands around areas where
     // the scattering algorithm does not manage to gather lighting
@@ -68,7 +68,7 @@ void main() {
     float horizon_gradient = smoothstep(0.0, u_fog_blend, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
     vec3 color = mix(u_fog_color, sky_color, clamp(horizon_gradient + (1.0 - u_fog_intensity), 0.0, 1.0));
 
-    gl_FragColor = vec4(color * u_opacity, u_opacity);
+    gl_FragColor = vec4(uv, u_opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
