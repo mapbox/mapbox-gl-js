@@ -70,7 +70,7 @@ test('Map#on adds a listener not triggered for events not matching any features'
     t.end();
 });
 
-test(`Map#on adds a listener not triggered when the specified layer does not exiist`, (t) => {
+test(`Map#on adds a listener not triggered when the specified layer does not exist`, (t) => {
     const map = createMap(t);
 
     t.stub(map, 'getLayer').returns(null);
@@ -429,7 +429,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
 });
 
 ['mouseleave', 'mouseout'].forEach((event) => {
-    test(`Map#on ${event} does not fire if the specified layer does not exiist`, (t) => {
+    test(`Map#on ${event} does not fire if the specified layer does not exist`, (t) => {
         const map = createMap(t);
 
         t.stub(map, 'getLayer').returns(null);

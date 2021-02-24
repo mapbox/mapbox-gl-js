@@ -3,7 +3,7 @@ import Actor from '../../../src/util/actor.js';
 import WebWorker from '../../../src/util/web_worker.js';
 
 test('Actor', (t) => {
-    t.test('forwards resopnses to correct callback', (t) => {
+    t.test('forwards responses to correct callback', (t) => {
         t.stub(WebWorker, 'Worker').callsFake(function Worker(self) {
             this.self = self;
             this.actor = new Actor(self, this);
