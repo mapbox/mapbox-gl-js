@@ -6,6 +6,7 @@
       "width": 256,
       "description": "In addition to terrain raster, verifies also toggling terrain off / on",
       "showTerrainWireframe": true,
+      "allowed": 0.002,
       "operations": [
         ["wait"],
         ["setTerrain", null],
