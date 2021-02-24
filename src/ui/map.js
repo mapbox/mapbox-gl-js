@@ -2835,7 +2835,7 @@ class Map extends Camera {
      * Gets and sets a Boolean indicating whether the map will render a wireframe
      * on top of the displayed terrain. Useful for debugging.
      *
-     * The wireframe is always displayed with red color.
+     * The wireframe is always red and is drawn only when terrain is active.
      *
      * @name showTerrainWireframe
      * @type {boolean}
