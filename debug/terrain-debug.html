@@ -26,6 +26,7 @@
     <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
     <label><input id='freeze-tile-coverage-checkbox' type='checkbox'> freeze tile coverage </label><br />
     <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
+    <label><input id='show-terrain-wireframe-checkbox' type='checkbox'> terrain wireframe</label><br />
     <label><input id='satellite-checkbox' type='checkbox'> satellite</label><br />
     <label><input id='buildings-checkbox' type='checkbox'> buildings</label><br />
     <label><input id='road-label-checkbox' type='checkbox'> road-label-*</label><br />
@@ -263,6 +264,10 @@ map.on('style.load', function() {
 
 document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
     map.showTileBoundaries = !!this.checked;
+};
+
+document.getElementById('show-terrain-wireframe-checkbox').onclick = function() {
+    map.showTerrainWireframe = !!this.checked;
 };
 
 document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {

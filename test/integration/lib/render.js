@@ -165,6 +165,7 @@ async function runTest(t) {
 
         if (options.debug) map.showTileBoundaries = true;
         if (options.showOverdrawInspector) map.showOverdrawInspector = true;
+        if (options.showTerrainWireframe) map.showTerrainWireframe = true;
         if (options.showPadding) map.showPadding = true;
         if (options.collisionDebug) map.showCollisionBoxes = true;
         if (options.fadeDuration) map._isInitialLoad = false;

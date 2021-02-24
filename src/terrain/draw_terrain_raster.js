@@ -115,24 +115,28 @@ function demTileChanged(prev: ?Tile, next: ?Tile): boolean {
 const vertexMorphing = new VertexMorphing();
 const SHADER_DEFAULT = 0;
 const SHADER_MORPHING = 1;
+const SHADER_TERRAIN_WIREFRAME = 2;
 const defaultDuration = 250;
 
 const shaderDefines = {
     "0": null,
-    "1": 'TERRAIN_VERTEX_MORPHING'
+    "1": 'TERRAIN_VERTEX_MORPHING',
+    "2": 'TERRAIN_WIREFRAME'
 };
 
 function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>, now: number) {
     const context = painter.context;
     const gl = context.gl;
 
-    let program = painter.useProgram('terrainRaster');
-    let programMode = SHADER_DEFAULT;
+    let program, programMode;
+    const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
 
-    const setShaderMode = (mode) => {
+    const setShaderMode = (mode, isWireframe) => {
         if (programMode === mode)
             return;
-        program = painter.useProgram('terrainRaster', null, shaderDefines[mode]);
+        const modes = [shaderDefines[mode]];
+        if (isWireframe) modes.push(shaderDefines[showWireframe]);
+        program = painter.useProgram('terrainRaster', null, modes);
         programMode = mode;
     };
 
@@ -142,35 +146,49 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     const tr = painter.transform;
     const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
 
-    for (const coord of tileIDs) {
-        const tile = sourceCache.getTile(coord);
-        const stencilMode = StencilMode.disabled;
+    const batches = showWireframe ? [false, true] : [false];
 
-        const prevDemTile = terrain.prevTerrainTileForTile[coord.key];
-        const nextDemTile = terrain.terrainTileForTile[coord.key];
+    batches.forEach(isWireframe => {
+        // This code assumes the rendering is batched into mesh terrain and then wireframe
+        // terrain (if applicable) so that this is enough to ensure the correct program is
+        // set when we switch from one to the other.
+        programMode = -1;
 
-        if (demTileChanged(prevDemTile, nextDemTile)) {
-            vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
+        const primitive = isWireframe ? gl.LINES : gl.TRIANGLES;
+        const [buffer, segments] = isWireframe ? terrain.getWirefameBuffer() : [terrain.gridIndexBuffer, terrain.gridSegments];
+
+        for (const coord of tileIDs) {
+            const tile = sourceCache.getTile(coord);
+            const stencilMode = StencilMode.disabled;
+
+            const prevDemTile = terrain.prevTerrainTileForTile[coord.key];
+            const nextDemTile = terrain.terrainTileForTile[coord.key];
+
+            if (demTileChanged(prevDemTile, nextDemTile)) {
+                vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
+            }
+
+            // Bind the main draped texture
+            context.activeTexture.set(gl.TEXTURE0);
+            tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+
+            const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
+            const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
+            let elevationOptions;
+
+            if (morph) {
+                elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
+            }
+
+            const uniformValues = terrainRasterUniformValues(coord.posMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt);
+
+            setShaderMode(shaderMode, isWireframe);
+
+            terrain.setupElevationDraw(tile, program, elevationOptions);
+            program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+                uniformValues, "terrain_raster", terrain.gridBuffer, buffer, segments);
         }
-
-        // Bind the main draped texture
-        context.activeTexture.set(gl.TEXTURE0);
-        tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
-
-        const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
-        const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
-        let elevationOptions;
-
-        if (morph) {
-            elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
-        }
-        const uniformValues = terrainRasterUniformValues(coord.posMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt);
-
-        setShaderMode(shaderMode);
-        terrain.setupElevationDraw(tile, program, elevationOptions);
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
-            uniformValues, "terrain_raster", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridSegments);
-    }
+    });
 }
 
 function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>) {

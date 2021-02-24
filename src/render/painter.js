@@ -80,6 +80,7 @@ export type CanvasCopyInstances = {
 type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
+    showTerrainWireframe: boolean,
     showQueryGeometry: boolean,
     showPadding: boolean,
     rotating: boolean,

@@ -5,7 +5,7 @@ import SourceCache from '../source/source_cache.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import Tile from '../source/tile.js';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
-import {RasterBoundsArray, TriangleIndexArray} from '../data/array_types.js';
+import {RasterBoundsArray, TriangleIndexArray, LineIndexArray} from '../data/array_types.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import Program from '../render/program.js';
@@ -173,6 +173,8 @@ export class Terrain extends Elevation {
     gridIndexBuffer: IndexBuffer;
     gridSegments: SegmentVector;
     gridNoSkirtSegments: SegmentVector;
+    wireframeSegments: SegmentVector;
+    wireframeIndexBuffer: IndexBuffer;
     proxiedCoords: {[string]: Array<ProxiedTileID>};
     proxyCoords: Array<OverscaledTileID>;
     proxyToSource: {[number]: {[string]: Array<ProxiedTileID>}};
@@ -1317,6 +1319,20 @@ export class Terrain extends Elevation {
         if (!sourceTiles) sourceTiles = this._tilesDirty[source] = {};
         sourceTiles[coord.key] = true;
     }
+
+    /*
+     * Lazily instantiate the wireframe index buffer and segment vector so that we don't
+     * allocate the geometry for rendering a debug wireframe until it's needed.
+     */
+    getWirefameBuffer(): [IndexBuffer, SegmentVector] {
+        if (!this.wireframeSegments) {
+            const wireframeGridIndices = createWireframeGrid(GRID_DIM + 1);
+            this.wireframeIndexBuffer = this.painter.context.createIndexBuffer(wireframeGridIndices);
+            this.wireframeSegments = SegmentVector.simpleSegment(0, 0, this.gridBuffer.length, wireframeGridIndices.length);
+        }
+        return [this.wireframeIndexBuffer, this.wireframeSegments];
+    }
+
 }
 
 function sortByDistanceToCamera(tileIDs, painter) {
@@ -1394,6 +1410,44 @@ function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray, numb
         }
     });
     return [boundsArray, indexArray, skirtIndicesOffset];
+}
+
+/**
+ * Creates a grid of indices corresponding to the grid constructed by createGrid
+ * in order to render that grid as a wireframe rather than a solid  mesh. It does
+ * not create a skirt and so only goes from 1 to count + 1, e.g. for count of 2:
+ *  -------------
+ *  |    /|    /|
+ *  |  /  |  /  |
+ *  |/    |/    |
+ *  -------------
+ *  |    /|    /|
+ *  |  /  |  /  |
+ *  |/    |/    |
+ *  -------------
+ * @param {number} count Count of rows and columns
+ * @private
+ */
+function createWireframeGrid(count: number): LineIndexArray {
+    let i, j, index;
+    const indexArray = new LineIndexArray();
+    const size = count + 2;
+    // Draw two edges of a quad and its diagonal. The very last row and column have
+    // an additional line to close off the grid.
+    for (j = 1; j < count; j++) {
+        for (i = 1; i < count; i++) {
+            index = j * size + i;
+            indexArray.emplaceBack(index, index + 1);
+            indexArray.emplaceBack(index, index + size);
+            indexArray.emplaceBack(index + 1, index + size);
+
+            // Place an extra line at the end of each row
+            if (j === count - 1) indexArray.emplaceBack(index + size, index + size + 1);
+        }
+        // Place an extra line at the end of each col
+        indexArray.emplaceBack(index + 1, index + 1 + size);
+    }
+    return indexArray;
 }
 
 export type TerrainUniformsType = {|
