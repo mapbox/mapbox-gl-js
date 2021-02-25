@@ -125,6 +125,7 @@ const shaderDefines = {
 function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>, now: number) {
     const context = painter.context;
     const gl = context.gl;
+    if(!painter._skyUniforms) { return; }
 
     let program = painter.useProgram('terrainRaster');
     let programMode = SHADER_DEFAULT;

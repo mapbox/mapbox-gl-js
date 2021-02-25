@@ -45,15 +45,12 @@ float map(float value, float start, float end, float new_start, float new_end) {
 }
 
 void main() {
-    const mat3 half_neg_pi_around_x = mat3(1.0, 0.0,  0.0,
-                                        0.0, 0.0, -1.0,
-                                        0.0, 1.0,  0.0);
 
-    vec3 ray = half_neg_pi_around_x * normalize(v_position);
-    vec3 v_uv = clamp(ray * SQRT_3, vec3(-1.0, -1.0, -1.0), vec3(1.0, 1.0, 1.0));
+    vec3 ray = normalize(v_position);
+    vec3 v_uv = clamp(ray * SQRT_3, -1.0, 1.0);
     vec3 uv = v_uv;
 
-      // Add a small offset to prevent black bands around areas where
+    // Add a small offset to prevent black bands around areas where
     // the scattering algorithm does not manage to gather lighting
     const float y_bias = 0.015;
     uv.y += y_bias;

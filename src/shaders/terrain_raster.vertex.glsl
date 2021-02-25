@@ -19,6 +19,10 @@ void main() {
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
     v_distance = length(gl_Position.xyz);
     vec4 position = u_lighting_matrix * vec4(decodedPos, elevation, 1.0);
-    v_position = vec3(position.x/position.w, position.y/position.w, position.z/position.w);
+    const mat3 half_neg_pi_around_x = mat3(1.0, 0.0,  0.0,
+                                           0.0, 0.0, -1.0,
+                                           0.0, 1.0,  0.0);
+
+    v_position = half_neg_pi_around_x * vec3(position.x/position.w, position.y/position.w, position.z/position.w);
 }
 //

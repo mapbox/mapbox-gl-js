@@ -18,3 +18,4 @@ precision mediump float;
 
 const float PI = 3.141592653589793;
 const float SQRT_3 = 1.73205080757;
+const float SQRT_2 = 1.41421356237;

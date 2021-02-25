@@ -68,7 +68,7 @@ void main() {
     float horizon_gradient = smoothstep(0.0, u_fog_blend, dot(camera_ray, vec3(0.0, 1.0, 0.0)));
     vec3 color = mix(u_fog_color, sky_color, clamp(horizon_gradient + (1.0 - u_fog_intensity), 0.0, 1.0));
 
-    gl_FragColor = vec4(color, u_opacity);
+    gl_FragColor = vec4(color, 1.0);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
