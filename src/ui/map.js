@@ -2150,6 +2150,15 @@ class Map extends Camera {
     }
 
     /**
+     * Returns the value of the terrain object.
+     *
+     * @returns {Object} terrain Terrain properties of the style.
+     */
+    getTerrain() {
+        return this.style.getTerrain();
+    }
+
+    /**
      * Sets the `state` of a feature.
      * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
      * When using this method, the `state` object is merged with any existing key-value pairs in the feature's state.
