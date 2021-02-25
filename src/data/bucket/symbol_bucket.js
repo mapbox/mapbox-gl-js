@@ -471,7 +471,7 @@ class SymbolBucket implements Bucket {
             }
 
             const zOffset = symbolZOffset.evaluate(feature, {});
-            console.log('zOffset', zOffset);
+            //console.log('zOffset', zOffset);
             const sortKey = this.sortFeaturesByKey ?
                 symbolSortKey.evaluate(feature, {}) :
                 undefined;
