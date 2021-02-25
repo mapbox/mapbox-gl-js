@@ -158,6 +158,9 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         context.activeTexture.set(gl.TEXTURE0);
         tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
 
+        context.activeTexture.set(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, painter._skyTexture);
+
         const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
         const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
         let elevationOptions;
@@ -175,11 +178,12 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             painter.fogEnd,
             painter.fogIntensity,
             [painter.fogColor.r, painter.fogColor.g, painter.fogColor.b],
-            sunDirection);
+            sunDirection,
+            painter._skyUniforms);
 
         setShaderMode(shaderMode);
         terrain.setupElevationDraw(tile, program, elevationOptions);
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, ColorMode.unblended, CullFaceMode.backCCW,
             uniformValues, "terrain_raster", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridSegments);
     }
 }

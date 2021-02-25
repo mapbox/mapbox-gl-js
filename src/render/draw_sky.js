@@ -93,6 +93,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
     context.activeTexture.set(gl.TEXTURE0);
 
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
+    painter._skyTexture = layer.skyboxTexture;
 
     const uniformValues = skyboxUniformValues(transform.skyboxMatrix,
         layer.getCenter(painter, false),
@@ -102,6 +103,9 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
         layer.paint.get('sky-atmosphere-fog-intensity'),
         layer.paint.get('sky-atmosphere-fog-blend'),
         [fogColor.r, fogColor.g, fogColor.b]);
+
+    //HACK: cache sky uniforms in painter
+    painter._skyUniforms = uniformValues;
 
     program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
