@@ -39,7 +39,6 @@ test('reloadTile', (t) => {
 
         function addData(callback) {
             source.loadData({source: 'sourceId', data: JSON.stringify(geoJson)}, (err) => {
-                source.coalesce({source: 'sourceId'});
                 t.equal(err, null);
                 callback();
             });
@@ -146,93 +145,6 @@ test('resourceTiming', (t) => {
             t.equal(result.resourceTiming, undefined, 'no resourceTiming property when loadData is not sent a URL');
             t.end();
         });
-    });
-
-    t.end();
-});
-
-test('loadData', (t) => {
-    const layers = [
-        {
-            id: 'layer1',
-            source: 'source1',
-            type: 'symbol',
-        },
-        {
-            id: 'layer2',
-            source: 'source2',
-            type: 'symbol',
-        }
-    ];
-
-    const geoJson = {
-        "type": "Feature",
-        "geometry": {
-            "type": "Point",
-            "coordinates": [0, 0]
-        }
-    };
-
-    const layerIndex = new StyleLayerIndex(layers);
-    function createWorker() {
-        const worker = new GeoJSONWorkerSource(actor, layerIndex, [], true);
-
-        // Making the call to loadGeoJSON asynchronous
-        // allows these tests to mimic a message queue building up
-        // (regardless of timing)
-        const originalLoadGeoJSON = worker.loadGeoJSON;
-        worker.loadGeoJSON = function(params, callback) {
-            setTimeout(() => {
-                originalLoadGeoJSON(params, callback);
-            }, 0);
-        };
-        return worker;
-    }
-
-    t.test('abandons coalesced callbacks', (t) => {
-        // Expect first call to run, second to be abandoned,
-        // and third to run in response to coalesce
-        const worker = createWorker();
-        worker.loadData({source: 'source1', data: JSON.stringify(geoJson)}, (err, result) => {
-            t.equal(err, null);
-            t.notOk(result && result.abandoned);
-            worker.coalesce({source: 'source1'});
-        });
-
-        worker.loadData({source: 'source1', data: JSON.stringify(geoJson)}, (err, result) => {
-            t.equal(err, null);
-            t.ok(result && result.abandoned);
-        });
-
-        worker.loadData({source: 'source1', data: JSON.stringify(geoJson)}, (err, result) => {
-            t.equal(err, null);
-            t.notOk(result && result.abandoned);
-            t.end();
-        });
-    });
-
-    t.test('removeSource aborts callbacks', (t) => {
-        // Expect:
-        // First loadData starts running before removeSource arrives
-        // Second loadData is pending when removeSource arrives, gets cancelled
-        // removeSource is executed immediately
-        // First loadData finishes running, sends results back to foreground
-        const worker = createWorker();
-        worker.loadData({source: 'source1', data: JSON.stringify(geoJson)}, (err, result) => {
-            t.equal(err, null);
-            t.notOk(result && result.abandoned);
-            t.end();
-        });
-
-        worker.loadData({source: 'source1', data: JSON.stringify(geoJson)}, (err, result) => {
-            t.equal(err, null);
-            t.ok(result && result.abandoned);
-        });
-
-        worker.removeSource({source: 'source1'}, (err) => {
-            t.notOk(err);
-        });
-
     });
 
     t.end();

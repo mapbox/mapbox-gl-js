@@ -77,11 +77,6 @@ function loadGeoJSONTile(params: RequestedTileParameters, callback: LoadVectorDa
     });
 }
 
-export type SourceState =
-    | 'Idle'            // Source empty or data loaded
-    | 'Coalescing'      // Data finished loading, but discard 'loadData' messages until receiving 'coalesced'
-    | 'NeedsLoadData';  // 'loadData' received while coalescing, trigger one more 'loadData' on receiving 'coalesced'
-
 /**
  * The {@link WorkerSource} implementation that supports {@link GeoJSONSource}.
  * This class is designed to be easily reused to support custom source types
@@ -94,11 +89,6 @@ export type SourceState =
  */
 class GeoJSONWorkerSource extends VectorTileWorkerSource {
     loadGeoJSON: LoadGeoJSON;
-    _state: SourceState;
-    _pendingCallback: Callback<{
-        resourceTiming?: {[_: string]: Array<PerformanceResourceTiming>},
-        abandoned?: boolean }>;
-    _pendingLoadDataParams: LoadGeoJSONParameters;
     _geoJSONIndex: GeoJSONIndex
 
     /**
@@ -131,39 +121,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param callback
      * @private
      */
-    loadData(params: LoadGeoJSONParameters, callback: Callback<{
-        resourceTiming?: {[_: string]: Array<PerformanceResourceTiming>},
-        abandoned?: boolean }>) {
-        if (this._pendingCallback) {
-            // Tell the foreground the previous call has been abandoned
-            this._pendingCallback(null, {abandoned: true});
-        }
-        this._pendingCallback = callback;
-        this._pendingLoadDataParams = params;
-
-        if (this._state &&
-            this._state !== 'Idle') {
-            this._state = 'NeedsLoadData';
-        } else {
-            this._state = 'Coalescing';
-            this._loadData();
-        }
-    }
-
-    /**
-     * Internal implementation: called directly by `loadData`
-     * or by `coalesce` using stored parameters.
-     */
-    _loadData() {
-        if (!this._pendingCallback || !this._pendingLoadDataParams) {
-            assert(false);
-            return;
-        }
-        const callback = this._pendingCallback;
-        const params = this._pendingLoadDataParams;
-        delete this._pendingCallback;
-        delete this._pendingLoadDataParams;
-
+    loadData(params: LoadGeoJSONParameters, callback: Callback<{resourceTiming?: {[_: string]: Array<PerformanceResourceTiming>}}>) {
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;
 
@@ -207,35 +165,6 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                 callback(null, result);
             }
         });
-    }
-
-    /**
-     * While processing `loadData`, we coalesce all further
-     * `loadData` messages into a single call to _loadData
-     * that will happen once we've finished processing the
-     * first message. {@link GeoJSONSource#_updateWorkerData}
-     * is responsible for sending us the `coalesce` message
-     * at the time it receives a response from `loadData`
-     *
-     *          State: Idle
-     *          ↑          |
-     *     'coalesce'   'loadData'
-     *          |     (triggers load)
-     *          |          ↓
-     *        State: Coalescing
-     *          ↑          |
-     *   (triggers load)   |
-     *     'coalesce'   'loadData'
-     *          |          ↓
-     *        State: NeedsLoadData
-     */
-    coalesce() {
-        if (this._state === 'Coalescing') {
-            this._state = 'Idle';
-        } else if (this._state === 'NeedsLoadData') {
-            this._state = 'Coalescing';
-            this._loadData();
-        }
     }
 
     /**
@@ -287,14 +216,6 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         } else {
             return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
         }
-    }
-
-    removeSource(params: {source: string}, callback: Callback<mixed>) {
-        if (this._pendingCallback) {
-            // Don't leak callbacks
-            this._pendingCallback(null, {abandoned: true});
-        }
-        callback();
     }
 
     getClusterExpansionZoom(params: {clusterId: number}, callback: Callback<number>) {
