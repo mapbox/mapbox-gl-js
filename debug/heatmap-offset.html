@@ -26,7 +26,6 @@
     <script src='../dist/mapbox-gl-dev.js'></script>
     <script src='../debug/access_token_generated.js'></script>
     <script>
-
         var map = window.map = new mapboxgl.Map({
             container: 'map',
             zoom: 2,
@@ -39,7 +38,6 @@
         map.addControl(new mapboxgl.GeolocateControl());
 
         map.on('load', function () {
-
             map.addSource('heatmap', {
                 "type": "geojson",
                 "data": "../test/integration/data/data.geojson",
@@ -89,9 +87,9 @@
                     ],
                     'heatmap-radius': 10,
                 }
-            })
+            });
 
-                 var layers = map.getStyle().layers;
+            var layers = map.getStyle().layers;
             var labelLayerId;
             for (var i = 0; i < layers.length; i++) {
                 if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
@@ -124,7 +122,7 @@
                     ],
                     'fill-extrusion-opacity': .6
                 }
-            })
+            });
         });
 
     </script>
