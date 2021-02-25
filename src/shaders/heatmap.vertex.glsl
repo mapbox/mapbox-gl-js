@@ -3,6 +3,7 @@ uniform mat4 u_matrix;
 uniform float u_extrude_scale;
 uniform float u_opacity;
 uniform float u_intensity;
+uniform float u_offset;
 
 attribute vec2 a_pos;
 
@@ -48,7 +49,8 @@ void main(void) {
 
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
-    vec4 pos = vec4(floor(a_pos * 0.5) + extrude, elevation(floor(a_pos * 0.5)), 1);
+    //vec4 pos = vec4(floor(a_pos * 0.5) + extrude, elevation(floor(a_pos * 0.5)), 1);
+    vec4 pos = vec4(floor(a_pos * 0.5) + extrude, u_offset, 1);
 
     gl_Position = u_matrix * pos;
 }

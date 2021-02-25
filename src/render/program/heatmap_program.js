@@ -27,7 +27,8 @@ export type HeatmapTextureUniformsType = {|
     'u_world': Uniform2f,
     'u_image': Uniform1i,
     'u_color_ramp': Uniform1i,
-    'u_opacity': Uniform1f
+    'u_opacity': Uniform1f,
+    'u_offset': Uniform1f
 |};
 
 const heatmapUniforms = (context: Context, locations: UniformLocations): HeatmapUniformsType => ({
@@ -41,7 +42,8 @@ const heatmapTextureUniforms = (context: Context, locations: UniformLocations): 
     'u_world': new Uniform2f(context, locations.u_world),
     'u_image': new Uniform1i(context, locations.u_image),
     'u_color_ramp': new Uniform1i(context, locations.u_color_ramp),
-    'u_opacity': new Uniform1f(context, locations.u_opacity)
+    'u_opacity': new Uniform1f(context, locations.u_opacity),
+    'u_offset': new Uniform1f(context, locations.u_offset)
 });
 
 const heatmapUniformValues = (
@@ -71,7 +73,8 @@ const heatmapTextureUniformValues = (
         'u_world': [gl.drawingBufferWidth, gl.drawingBufferHeight],
         'u_image': textureUnit,
         'u_color_ramp': colorRampUnit,
-        'u_opacity': layer.paint.get('heatmap-opacity')
+        'u_opacity': layer.paint.get('heatmap-opacity'),
+        'u_offset': layer.paint.get('heatmap-offset')
     };
 };
 

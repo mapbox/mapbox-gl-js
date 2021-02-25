@@ -26,6 +26,7 @@ export type PaintProps = {|
     "heatmap-intensity": DataConstantProperty<number>,
     "heatmap-color": ColorRampProperty,
     "heatmap-opacity": DataConstantProperty<number>,
+    "heatmap-offset": DataDrivenProperty<number>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -34,6 +35,7 @@ const paint: Properties<PaintProps> = new Properties({
     "heatmap-intensity": new DataConstantProperty(styleSpec["paint_heatmap"]["heatmap-intensity"]),
     "heatmap-color": new ColorRampProperty(styleSpec["paint_heatmap"]["heatmap-color"]),
     "heatmap-opacity": new DataConstantProperty(styleSpec["paint_heatmap"]["heatmap-opacity"]),
+    "heatmap-offset": new DataDrivenProperty(styleSpec["paint_heatmap"]["heatmap-offset"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types
