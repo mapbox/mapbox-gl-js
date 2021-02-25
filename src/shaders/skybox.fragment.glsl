@@ -40,7 +40,7 @@ float map(float value, float start, float end, float new_start, float new_end) {
 }
 
 void main() {
-    vec3 uv = v_uv;
+    vec3 uv = normalize(v_uv);
 
     // Add a small offset to prevent black bands around areas where
     // the scattering algorithm does not manage to gather lighting

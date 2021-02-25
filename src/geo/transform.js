@@ -104,7 +104,7 @@ class Transform {
         this.cameraElevationReference = "ground";
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
-        this._horizonShift = 0.1;
+        this._horizonShift = 0.0;
     }
 
     clone(): Transform {
@@ -1097,6 +1097,13 @@ class Transform {
         const cameraMatrix = mat4.identity(new Float64Array(16));
 
         mat4.translate(cameraMatrix, cameraMatrix, cameraPos);
+
+        // // Pre-multiply y (2nd row)
+        // cameraMatrix[1] *= -1.0;
+        // cameraMatrix[5] *= -1.0;
+        // cameraMatrix[9] *= -1.0;
+        // cameraMatrix[13] *= -1.0;
+
         // Post-multiply z (3rd column)
         cameraMatrix[8] *= pixelsPerMeter;
         cameraMatrix[9] *= pixelsPerMeter;

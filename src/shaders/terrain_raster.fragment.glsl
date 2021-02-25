@@ -47,7 +47,7 @@ float map(float value, float start, float end, float new_start, float new_end) {
 void main() {
 
     vec3 ray = normalize(v_position);
-    vec3 v_uv = clamp(ray * SQRT_3, -1.0, 1.0);
+    vec3 v_uv = ray;
     vec3 uv = v_uv;
 
     // Add a small offset to prevent black bands around areas where
@@ -80,7 +80,7 @@ void main() {
     float depth = v_distance;
 
     // Fog
-    float fog_falloff = 1.0 - clamp(exp(-(depth - u_fog_start) / (u_fog_end - u_fog_start)), 0.0, 1.0);
+    float fog_falloff = clamp((1.0 - exp(-5.5 * (depth - u_fog_start) / (u_fog_end - u_fog_start))) * 1.01, 0.0, 1.0);
     color = mix(color, sky_sample, fog_falloff);
 
     gl_FragColor = vec4(color, 1.0);
