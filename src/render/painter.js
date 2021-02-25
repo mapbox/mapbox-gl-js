@@ -756,6 +756,8 @@ class Painter {
         // The default values for this state is meaningful and often expected.
         // Leaving this state dirty could cause a lot of confusion for users.
         this.context.cullFace.setDefault();
+        this.context.frontFace.setDefault();
+        this.context.cullFaceSide.setDefault();
         this.context.activeTexture.setDefault();
         this.context.pixelStoreUnpack.setDefault();
         this.context.pixelStoreUnpackPremultiplyAlpha.setDefault();
