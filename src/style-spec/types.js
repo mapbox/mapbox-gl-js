@@ -325,7 +325,8 @@ export type HeatmapLayerSpecification = {|
         "heatmap-weight"?: DataDrivenPropertyValueSpecification<number>,
         "heatmap-intensity"?: PropertyValueSpecification<number>,
         "heatmap-color"?: ExpressionSpecification,
-        "heatmap-opacity"?: PropertyValueSpecification<number>
+        "heatmap-opacity"?: PropertyValueSpecification<number>,
+        "heatmap-offset"?: DataDrivenPropertyValueSpecification<number>
     |}
 |}
 

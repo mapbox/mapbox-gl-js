@@ -127,6 +127,7 @@ export class LayerHeatmap extends LayerBenchmark {
                                 "stops": [[0, 0.5], [4, 2]]
                             },
                             "heatmap-intensity": 0.9,
+                            "heatmap-offset": 100,
                             "heatmap-color": [
                                 "interpolate",
                                 ["linear"],

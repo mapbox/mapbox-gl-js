@@ -4900,6 +4900,29 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "heatmap-offset": {
+      "type": "number",
+      "doc": "Sets the offset height of the heatmap layer from the map surface.",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 100000000,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.41.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-driven"
     }
   },
   "paint_symbol": {
