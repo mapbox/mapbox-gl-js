@@ -12,7 +12,7 @@ const generateResultHTML = template(`
     <% } %>
     <label class="tab-label" style="background: <%- r.color %>" for="<%- r.id %>"><p class="status-container"><span class="status"><%- r.status %></span> - <%- r.name %></p></label>
     <div class="tab-content">
-      <% if (r.status !== 'errored') { %>
+      <% if (r.status !== 'errored' && r.actual) { %>
           <img src="<%- r.actual %>">
       <% } %>
       <% if (r.expected) { %>
