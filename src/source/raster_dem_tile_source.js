@@ -29,14 +29,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
     }
 
     serialize() {
-        return {
-            type: 'raster-dem',
-            url: this.url,
-            tileSize: this.tileSize,
-            tiles: this.tiles,
-            bounds: this.bounds,
-            encoding: this.encoding
-        };
+        return extend({}, this._options);
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
