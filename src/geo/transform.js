@@ -104,7 +104,7 @@ class Transform {
         this.cameraElevationReference = "ground";
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
-        this._horizonShift = 0.1;
+        this._horizonShift = 0;
     }
 
     clone(): Transform {
@@ -1339,9 +1339,16 @@ class Transform {
         this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter]);
 
         this.projMatrix = m;
+
+        const cameraToClipFog = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this.nearZ, this.fogEnd * 1.01);
+        cameraToClipFog[8] = -offset.x * 2 / this.width;
+        cameraToClipFog[9] = offset.y * 2 / this.height;
+
+        let fogMatrix = mat4.mul([], cameraToClipFog, worldToCamera);
+
         // For tile cover calculation, use inverted of base (non elevated) matrix
         // as tile elevations are in tile coordinates and relative to center elevation.
-        this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
+        this.invProjMatrix = mat4.invert(new Float64Array(16), m);
 
         const view = new Float32Array(16);
         mat4.identity(view);

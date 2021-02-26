@@ -17,7 +17,7 @@ void main() {
     float depth = v_distance;
 
     // Fog
-    float fog_falloff = 1.0 - clamp(exp(-(depth - u_fog_start) / (u_fog_end - u_fog_start)), 0.0, 1.0);
+    float fog_falloff = 1.0 - clamp(exp(-5.5 * (depth - u_fog_start) / (u_fog_end - u_fog_start)), 0.0, 1.0);
     color = mix(color, u_fog_color, fog_falloff * u_fog_intensity);
 
     gl_FragColor = vec4(color, 1.0);

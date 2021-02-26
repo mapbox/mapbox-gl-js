@@ -51,6 +51,7 @@ function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
     painter.fogStart = layer.paint.get('sky-atmosphere-fog-start');
     painter.fogEnd = layer.paint.get('sky-atmosphere-fog-end');
     painter.fogColor = layer.paint.get('sky-atmosphere-fog-color');
+    painter.transform.fogEnd = painter.fogEnd;
 }
 
 function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthMode, opacity: number, temporalOffset: number) {
