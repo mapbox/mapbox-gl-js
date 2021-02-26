@@ -227,13 +227,13 @@ class VectorTileSource extends Evented implements Source {
                             expires: data.expires,
                             rawData: data.rawData.slice(0)
                         };
-                        if (tile.actor) tile.actor.send('loadTile', params, done.bind(this));
+                        if (tile.actor) tile.actor.send('loadTile', params, done.bind(this), undefined, true);
                     }
                 }, true);
                 tile.request = {cancel};
 
             } else {
-                tile.request = tile.actor.send('loadTile', params, done.bind(this));
+                tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
             }
 
         } else if (tile.state === 'loading') {
@@ -277,14 +277,14 @@ class VectorTileSource extends Evented implements Source {
             delete tile.request;
         }
         if (tile.actor) {
-            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id}, undefined);
+            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id});
         }
     }
 
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
         if (tile.actor) {
-            tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id}, undefined);
+            tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id});
         }
     }
 
