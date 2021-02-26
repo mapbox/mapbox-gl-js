@@ -300,7 +300,7 @@ async function runTest(t) {
 
     } catch (e) {
         t.error(e);
-        updateHTML({name: t.name, status:'failed', jsonDiff: e.message});
+        updateHTML({name: t.name, status:'failed', error: e});
     }
 
     t.end();
