@@ -301,7 +301,7 @@ async function runTest(t) {
     } catch (e) {
         t.error(e);
         const err = {};
-        err.message = JSON.stringify(e);
+        err.message = JSON.stringify(e, ["message", "arguments", "type", "name"]);
         updateHTML({name: t.name, status:'failed', error: err});
     }
 
