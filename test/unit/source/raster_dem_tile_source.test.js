@@ -3,6 +3,7 @@ import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source.js';
 import window from '../../../src/util/window.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import {RequestManager} from '../../../src/util/mapbox.js';
+import {extend} from '../../../src/util/util.js';
 
 function createSource(options, transformCallback) {
     const source = new RasterDEMTileSource('id', options, {send() {}}, options.eventedParent);
@@ -28,6 +29,28 @@ test('RasterTileSource', (t) => {
     t.afterEach((callback) => {
         window.restore();
         callback();
+    });
+
+    t.test('create and serialize source', (t) => {
+        window.server.respondWith('/source.json', JSON.stringify({}));
+        const transformSpy = t.spy((url) => {
+            return {url};
+        });
+        const options = {
+            url: "/source.json",
+            minzoom: 0,
+            maxzoom: 22,
+            attribution: "Mapbox",
+            tiles: ["http://example.com/{z}/{x}/{y}.png"],
+            bounds: [-47, -7, -45, -5],
+            encoding: "terrarium",
+            tileSize: 512,
+            volatile: false
+        };
+        const source = createSource(options, transformSpy);
+        source.load();
+        t.deepEqual(source.serialize(), extend({type: "raster-dem"}, options));
+        t.end();
     });
 
     t.test('transforms request for TileJSON URL', (t) => {
