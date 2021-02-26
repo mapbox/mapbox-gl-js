@@ -6072,7 +6072,7 @@
       ],
       "default": 8500,
       "minimum": 0,
-      "maximum": 10000,
+      "maximum": 30000,
       "transition": false,
       "doc": "",
       "sdk-support": {

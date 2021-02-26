@@ -50,18 +50,18 @@ void main() {
     vec3 v_uv = ray;
     vec3 uv = v_uv;
 
-    // Add a small offset to prevent black bands around areas where
-    // the scattering algorithm does not manage to gather lighting
-    const float y_bias = 0.015;
-    uv.y += y_bias;
+    // // Add a small offset to prevent black bands around areas where
+    // // the scattering algorithm does not manage to gather lighting
+    // const float y_bias = 0.015;
+    // uv.y += y_bias;
 
-    // Inverse of the operation applied for non-linear UV parameterization
-    uv.y = pow(abs(uv.y), 1.0 / 5.0);
+    // // Inverse of the operation applied for non-linear UV parameterization
+    // uv.y = pow(abs(uv.y), 1.0 / 5.0);
 
     // To make better utilization of the visible range (e.g. over the horizon, UVs
     // from 0.0 to 1.0 on the Y-axis in cubemap space), the UV range is remapped from
     // (0.0,1.0) to (-1.0,1.0) on y. The inverse operation is applied when generating.
-    uv.y = map(uv.y, 0.0, 1.0, -1.0, 1.0);
+    // uv.y = map(uv.y, 0.0, 1.0, -1.0, 1.0);
 
     vec3 sky_color = textureCube(u_cubemap, uv).rgb;
 
@@ -80,7 +80,7 @@ void main() {
     float depth = v_distance;
 
     // Fog
-    float fog_falloff = clamp((1.0 - exp(-5.5 * (depth - u_fog_start) / (u_fog_end - u_fog_start))) * 1.01, 0.0, 1.0);
+    float fog_falloff = clamp((1.0 - exp(-3.0 * (depth - u_fog_start) / (u_fog_end - u_fog_start))) * 1.01, 0.0, 1.0);
     color = mix(color, sky_sample, fog_falloff);
 
     gl_FragColor = vec4(color, 1.0);

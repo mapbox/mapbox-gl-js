@@ -108,7 +108,7 @@ window.onload = function() {
     fogStart.onFinishChange((value) => {
         map.setPaintProperty('sky', 'sky-atmosphere-fog-start', value);
     });
-    var fogEnd = sky.add(demo3d, 'fogEnd', 0.0, 10000.0);
+    var fogEnd = sky.add(demo3d, 'fogEnd', 0.0, 20000.0);
     fogEnd.onFinishChange((value) => {
         map.setPaintProperty('sky', 'sky-atmosphere-fog-end', value);
     });
