@@ -28,10 +28,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         this.encoding = options.encoding || "mapbox";
     }
 
-    serialize() {
-        return extend({}, this._options);
-    }
-
     loadTile(tile: Tile, callback: Callback<void>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
