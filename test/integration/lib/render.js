@@ -86,21 +86,36 @@ function ensureTeardown(t) {
     t.end();
 }
 
+function handleErrors(t, e) {
+    t.error(e);
+
+    if (!e.message) {
+        e.message = JSON.stringify(e);
+    }
+
+    updateHTML({name: t.name, status:'failed', error: e});   
+}
+
 async function runTest(t) {
     let style, options;
     // This needs to be read from the `t` object because this function runs async in a closure.
     const currentTestName = t.name;
     const writeFileBasePath = `test/integration/${currentTestName}`;
     const currentFixture = fixtures[currentTestName];
-    try {
+    // try {
+
         style = currentFixture.style;
         if (!style) {
-            throw new Error('style.json is missing');
+            handleErrors(t, new Error('style.json is missing'));
         }
 
         if (style.PARSE_ERROR) {
-            throw new Error(`Error occured while parsing style.json: ${style.message}`);
+            handleErrors(t, new Error(`Error occured while parsing style.json: ${style.message}`));
         }
+
+        map.on('error', (e) => {
+            handleErrors(t, e);
+        });
 
         options = style.metadata.test;
 
@@ -298,12 +313,12 @@ async function runTest(t) {
 
         browserWriteFile.postMessage(fileInfo);
 
-    } catch (e) {
-        t.error(e);
-        const err = {};
-        err.message = JSON.stringify(e);
-        updateHTML({name: t.name, status:'failed', error: err});
-    }
+    // } catch (e) {
+    //     t.error(e);
+    //     const err = {};
+    //     err.message = JSON.stringify(e);
+    //     updateHTML({name: t.name, status:'failed', error: err});
+    // }
 
     t.end();
 }

@@ -118,9 +118,9 @@ export function applyOperations(map, options) {
             currentOperation = options.operations[lastOpIndex + 1];
             handleOperation(map, options, ++lastOpIndex, scheduleNextOperation);
         };
-        map.once('error', (e) => {
-            reject(new Error(`Error occured during ${JSON.stringify(currentOperation)}. ${e.error.stack}`));
-        });
+        // map.once('error', (e) => {
+        //     reject(new Error(`Error occured during ${JSON.stringify(currentOperation)}. ${e.error.stack}`));
+        // });
         scheduleNextOperation(-1);
     });
 }
