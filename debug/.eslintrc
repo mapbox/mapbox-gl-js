@@ -9,11 +9,9 @@
     "sourceType": "module"
   },
   "rules": {
-    "flowtype/require-valid-file-annotation": [0],
     "prefer-arrow-callback": "off",
     "no-var": "off",
     "strict": "off",
-    "no-restricted-properties": "off",
     "no-unused-vars": "off",
     "prefer-template": "off",
     "import/no-unresolved": "off"

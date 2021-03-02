@@ -702,6 +702,24 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('padded bounds', (t) => {
+            const map = createMap(t, {zoom: 1, bearing: 45, skipCSSStub: true, skipAuthenticateStub: true});
+
+            map.setPadding({
+                left: 100,
+                right: 10,
+                top: 10,
+                bottom: 10
+            });
+
+            t.deepEqual(
+                toFixed([[-33.5599507477, -31.7907658998], [33.5599507477, 31.7907658998]]),
+                toFixed(map.getBounds().toArray())
+            );
+
+            t.end();
+        });
+
         t.end();
 
         function toFixed(bounds) {

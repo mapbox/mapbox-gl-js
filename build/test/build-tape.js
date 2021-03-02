@@ -6,7 +6,6 @@ import {fileURLToPath} from 'url';
 export default function() {
     return new Promise((resolve, reject) => {
         browserify(fileURLToPath(new URL('../../test/util/tape_config.js', import.meta.url)), { standalone: 'tape' })
-            .transform("babelify", {presets: ["@babel/preset-env"], global: true, compact: true})
             .bundle((err, buff) => {
                 if (err) { throw err; }
 

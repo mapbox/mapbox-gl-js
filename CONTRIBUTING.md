@@ -194,7 +194,7 @@ We have divided our labels into categories to make them easier to use.
 
 ### Misc
 
-- [drawing antialiased lines](https://www.mapbox.com/blog/drawing-antialiased-lines/)
-- [drawing text with signed distance fields](https://www.mapbox.com/blog/text-signed-distance-fields/)
-- [label placement](https://www.mapbox.com/blog/placing-labels/)
-- [distance fields](http://bytewrangler.blogspot.com/2011/10/signed-distance-fields.html)
+- [Drawing Antialiased Lines with OpenGL](https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc)
+- [Drawing Text with Signed Distance Fields in Mapbox GL](https://blog.mapbox.com/drawing-text-with-signed-distance-fields-in-mapbox-gl-b0933af6f817)
+- [Map Label Placement in Mapbox GL](https://blog.mapbox.com/map-label-placement-in-mapbox-gl-c6f843a7caaa)
+- [Signed Distance Fields](http://bytewrangler.blogspot.com/2011/10/signed-distance-fields.html)

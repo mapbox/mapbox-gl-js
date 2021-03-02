@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
-  aws-cli: circleci/aws-cli@0.1.16
+  aws-cli: circleci/aws-cli@1.4.0
+  browser-tools: circleci/browser-tools@1.1.1
 
 workflows:
   version: 2
@@ -106,7 +107,7 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: circleci/node:14.15-browsers
+    - image: cimg/node:14.15-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:
@@ -198,6 +199,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - browser-tools/install-chrome
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -209,6 +211,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - browser-tools/install-chrome
       - run: yarn run test-query
       - store_test_results:
           path: test/integration/query-tests
@@ -224,7 +227,7 @@ jobs:
           name: Build Webpack
           command: |
             cd ./test/build/transpilation &&
-            npm install &&
+            yarn &&
             npm run build &&
             rm -rf node_modules
       - store_artifacts:
@@ -235,6 +238,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - browser-tools/install-chrome
       - run:
           name: Collect performance stats
           command: node bench/gl-stats.js
@@ -248,6 +252,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - browser-tools/install-browser-tools
       - run: yarn run build-dev
       - run: yarn run build-token
       - run:

@@ -246,7 +246,7 @@ test('AttributionControl hides attributions for sources that are not currently v
     map.on('load', () => {
         map.addSource('1', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Used'});
         map.addSource('2', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Not used'});
-        map.addSource('3', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Vibility none'});
+        map.addSource('3', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Visibility none'});
         map.addLayer({id: '1', type: 'fill', source: '1'});
         map.addLayer({id: '3', type: 'fill', source: '3', layout: {visibility: 'none'}});
     });

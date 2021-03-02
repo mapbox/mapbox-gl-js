@@ -214,18 +214,25 @@ class GlyphManager {
         }
 
         const {data, metrics} = tinySDF.drawWithMetrics(String.fromCharCode(id));
-        const {fontAscent, sdfWidth, sdfHeight, width, height, left, top, advance} = metrics;
-        // TinySDF's "top" is the distance from the top of the canvas to the top of the glyph,
-        // but drawn with `CanvasRenderingContext2D.textBaseline` = "middle", as opposed to
-        // the lower alphabetic baseline.
-        // Although we don't currently know the actual baseline of server supplied fonts
-        // (we might in the future, see: https://github.com/mapbox/node-fontnik/pull/160),
-        // we can guess the approximate difference between server-font baselines and this
-        // baseline using the "top" metric for DIN Office Pro's "A", which is -8.
-        // Modifying the adjustment based on the measured local font ascent ensures
-        // that local glyphs from different fonts will share the same baseline
-        const ascent = fontAscent ? (fontAscent / SDF_SCALE) : 17; // From SHAPING_DEFAULT_OFFSET
-        const baselineAdjustment = ascent - 9;
+        const {sdfWidth, sdfHeight, width, height, left, top, advance} = metrics;
+        /*
+        TinySDF's "top" is the distance from the alphabetic baseline to the
+         top of the glyph.
+
+        Server-generated fonts specify "top" relative to an origin above the
+         em box (the origin comes from FreeType, but I'm unclear on exactly
+         how it's derived)
+          ref: https://github.com/mapbox/sdf-glyph-foundry
+
+        Server fonts don't yet include baseline information, so we can't line
+        up exactly with them (and they don't line up with each other)
+          ref: https://github.com/mapbox/node-fontnik/pull/160
+
+        To approximately align TinySDF glyphs with server-provided glyphs, we
+        use this baseline adjustment factor calibrated to be in between DIN Pro
+        and Arial Unicode (but closer to Arial Unicode)
+        */
+        const baselineAdjustment = 27;
 
         const glyph = this.localGlyphs[tinySDF.fontWeight][id] = {
             id,

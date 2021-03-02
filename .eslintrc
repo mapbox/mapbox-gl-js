@@ -4,9 +4,13 @@
     "plugin:flowtype/recommended",
     "plugin:import/recommended"
   ],
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
-    "sourceType": "module"
+    "sourceType": "module",
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": ["@babel/preset-flow"]
+    }
   },
   "plugins": [
     "flowtype",
@@ -14,9 +18,6 @@
     "jsdoc"
   ],
   "rules": {
-    // temporarily disabled due to https://github.com/babel/babel-eslint/issues/485
-    "no-use-before-define": "off",
-
     // no-duplicate-imports doesn't play well with Flow
     // https://github.com/babel/eslint-plugin-babel/issues/59
     "no-duplicate-imports": "off",
@@ -29,13 +30,16 @@
     }],
 
     // temporarily disabled for easier upgrading of dependencies
+    "no-use-before-define": "off",
     "implicit-arrow-linebreak": "off",
     "arrow-parens": "off",
     "arrow-body-style": "off",
     "no-confusing-arrow": "off",
     "no-control-regex": "off",
     "no-invalid-this": "off",
-    "no-buffer-constructor": "off",
+    "no-prototype-builtins": "off",
+    "accessor-pairs": "off",
+    "require-atomic-updates": "off",
 
     "array-bracket-spacing": "off",
     "consistent-return": "off",
@@ -52,10 +56,6 @@
     "no-eq-null": "off",
     "no-lonely-if": "off",
     "no-new": "off",
-    "no-restricted-properties": [2, {
-        "object": "Object",
-        "property": "assign"
-    }],
     "no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
     "no-warning-comments": "error",
     "object-curly-spacing": ["error", "never"],
@@ -97,6 +97,7 @@
     {
       "files": ["debug/**", "bench/**", "test/**", "src/style-spec/**"],
       "rules": {
+        "flowtype/require-valid-file-annotation": "off",
         "jsdoc/check-param-names": "off",
         "jsdoc/require-param": "off",
         "jsdoc/require-param-description": "off",

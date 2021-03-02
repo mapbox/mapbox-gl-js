@@ -703,6 +703,7 @@ class Camera extends Evented {
     /**
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
      * This function will also reset the map's bearing to 0 if bearing is nonzero.
+     * If a padding is set on the map, the bounds are fit to the inset.
      *
      * @memberof Map#
      * @param bounds Center these bounds in the viewport and use the highest
@@ -1524,7 +1525,7 @@ function addAssertions(camera: Camera) { //eslint-disable-line
         });
 
         // Canary used to test whether this function is stripped in prod build
-        canary = 'canary debug run';
+        canary = 'canary debug run'; //eslint-disable-line
     });
 }
 

@@ -8,7 +8,7 @@ import type Point from '@mapbox/point-geometry';
 
 // These bounds define the minimum and maximum supported coordinate values.
 // While visible coordinates are within [0, EXTENT], tiles may theoretically
-// contain cordinates within [-Infinity, Infinity]. Our range is limited by the
+// contain coordinates within [-Infinity, Infinity]. Our range is limited by the
 // number of bits used to represent the coordinate.
 const BITS = 15;
 const MAX = Math.pow(2, BITS - 1) - 1;
@@ -28,7 +28,7 @@ export default function loadGeometry(feature: VectorTileFeature): Array<Array<Po
         for (let p = 0; p < ring.length; p++) {
             const point = ring[p];
             // round here because mapbox-gl-native uses integers to represent
-            // points and we need to do the same to avoid renering differences.
+            // points and we need to do the same to avoid rendering differences.
             const x = Math.round(point.x * scale);
             const y = Math.round(point.y * scale);
 

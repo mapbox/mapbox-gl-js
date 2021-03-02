@@ -284,6 +284,7 @@ class Map extends Camera {
     _controlPositions: {[_: string]: HTMLElement};
     _interactive: ?boolean;
     _showTileBoundaries: ?boolean;
+    _showTerrainWireframe: ?boolean;
     _showQueryGeometry: ?boolean;
     _showCollisionBoxes: ?boolean;
     _showPadding: ?boolean;
@@ -639,6 +640,7 @@ class Map extends Camera {
     /**
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
+     * If a padding is set on the map, the bounds returned are for the inset.
      * @returns {LngLatBounds} The geographical bounds of the map as {@link LngLatBounds}.
      * @example
      * var bounds = map.getBounds();
@@ -2551,6 +2553,7 @@ class Map extends Camera {
         // Actually draw
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
+            showTerrainWireframe: this.showTerrainWireframe,
             showOverdrawInspector: this._showOverdrawInspector,
             showQueryGeometry: !!this._showQueryGeometry,
             rotating: this.isRotating(),
@@ -2825,6 +2828,26 @@ class Map extends Camera {
     set showTileBoundaries(value: boolean) {
         if (this._showTileBoundaries === value) return;
         this._showTileBoundaries = value;
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will render a wireframe
+     * on top of the displayed terrain. Useful for debugging.
+     *
+     * The wireframe is always red and is drawn only when terrain is active.
+     *
+     * @name showTerrainWireframe
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     * @example
+     * map.showTerrainWireframe = true;
+     */
+    get showTerrainWireframe(): boolean { return !!this._showTerrainWireframe; }
+    set showTerrainWireframe(value: boolean) {
+        if (this._showTerrainWireframe === value) return;
+        this._showTerrainWireframe = value;
         this._update();
     }
 

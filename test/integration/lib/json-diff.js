@@ -1,4 +1,4 @@
-import diff from 'diff';
+import * as diff from 'diff';
 
 export function generateDiffLog(expected, actual) {
     return diff.diffJson(expected, actual).map((hunk) => {

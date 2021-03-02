@@ -54,7 +54,7 @@ function packColor(color: Color): [number, number] {
  *  `Binder` is the interface definition for the strategies for constructing,
  *  uploading, and binding paint property data as GLSL attributes. Most style-
  *  spec properties have a 1:1 relationship to shader attribute/uniforms, but
- *  some require multliple values per feature to be passed to the GPU, and in
+ *  some require multiple values per feature to be passed to the GPU, and in
  *  those cases we bind multiple attributes/uniforms.
  *
  *  It has three implementations, one for each of the three strategies we use:
@@ -73,7 +73,7 @@ function packColor(color: Color): [number, number] {
  *    uniform allows us to cheaply update the value on every frame.
  *
  *  Note that the shader source varies depending on whether we're using a uniform or
- *  attribute. We dynamically compile shaders at runtime to accomodate this.
+ *  attribute. We dynamically compile shaders at runtime to accommodate this.
  *
  * @private
  */
@@ -555,7 +555,7 @@ export default class ProgramConfiguration {
 
     setUniforms<Properties: Object>(context: Context, binderUniforms: Array<BinderUniform>, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
         // Uniform state bindings are owned by the Program, but we set them
-        // from within the ProgramConfiguraton's binder members.
+        // from within the ProgramConfiguration's binder members.
         for (const {name, property, binding} of binderUniforms) {
             (this.binders[property]: any).setUniform(binding, globals, properties.get(property), name);
         }

@@ -88,22 +88,17 @@ DOM.suppressClick = function() {
     }, 0);
 };
 
-DOM.mousePos = function (el: HTMLElement, e: MouseEvent | window.TouchEvent | Touch) {
+DOM.mousePos = function (el: HTMLElement, e: MouseEvent | WheelEvent) {
     const rect = el.getBoundingClientRect();
-    return new Point(
-        e.clientX - rect.left - el.clientLeft,
-        e.clientY - rect.top - el.clientTop
-    );
+    return getScaledPoint(el, rect, e);
 };
 
 DOM.touchPos = function (el: HTMLElement, touches: TouchList) {
     const rect = el.getBoundingClientRect(),
         points = [];
+
     for (let i = 0; i < touches.length; i++) {
-        points.push(new Point(
-            touches[i].clientX - rect.left - el.clientLeft,
-            touches[i].clientY - rect.top - el.clientTop
-        ));
+        points.push(getScaledPoint(el, rect, touches[i]));
     }
     return points;
 };
@@ -125,3 +120,15 @@ DOM.remove = function(node: HTMLElement) {
         node.parentNode.removeChild(node);
     }
 };
+
+function getScaledPoint(el: HTMLElement, rect: ClientRect, e: MouseEvent | WheelEvent | Touch) {
+    // Until we get support for pointer events (https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent)
+    // we use this dirty trick which would not work for the case of rotated transforms, but works well for
+    // the case of simple scaling.
+    // Note: `el.offsetWidth === rect.width` eliminates the `0/0` case.
+    const scaling = el.offsetWidth === rect.width ? 1 : el.offsetWidth / rect.width;
+    return new Point(
+        (e.clientX - rect.left) * scaling,
+        (e.clientY - rect.top) * scaling
+    );
+}

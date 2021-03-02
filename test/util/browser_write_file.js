@@ -1,6 +1,6 @@
 /* eslint-env browser */
 /* eslint-disable import/no-commonjs */
-/* global self, WorkerGlobalScope */
+/* global WorkerGlobalScope */
 
 // Tests running in the browser need to be able to persist files to disk in certain situations.
 // our test server (server.js) actually handles the file-io and listens for POST request to /write-file
