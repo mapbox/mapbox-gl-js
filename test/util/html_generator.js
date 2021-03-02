@@ -21,7 +21,7 @@ const generateResultHTML = template(`
       <% if (r.imgDiff) { %>
           <img src="<%- r.imgDiff %>">
       <% } %>
-      <% if (r.error) { %><p style="color: red"><strong>Error:</strong> <%- r.error.message %></p><% } %>
+      <% if (r.error) { %><p style="color: red"><%- r.error %></p><% } %>
       <% if (r.jsonDiff) { %>
           <pre><%- r.jsonDiff.trim() %></pre>
       <% } %>

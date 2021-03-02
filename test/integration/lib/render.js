@@ -89,11 +89,7 @@ function ensureTeardown(t) {
 function handleErrors(t, e) {
     t.error(e);
 
-    if (!e.message) {
-        e.message = JSON.stringify(e);
-    }
-
-    updateHTML({name: t.name, status:'failed', error: e});
+    updateHTML({name: t.name, status:'failed', error: e.error});
 }
 
 async function runTest(t) {
