@@ -42,10 +42,12 @@ export class RequestManager {
     _skuTokenExpiresAt: number;
     _transformRequestFn: ?RequestTransformFunction;
     _customAccessToken: ?string;
+    _silenceAuthErros: boolean;
 
-    constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string) {
+    constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string, silenceAuthErros: ?boolean) {
         this._transformRequestFn = transformRequestFn;
         this._customAccessToken = customAccessToken;
+        this._silenceAuthErros = !!silenceAuthErros;
         this._createSkuToken();
     }
 
@@ -195,11 +197,13 @@ export class RequestManager {
 
         if (!config.REQUIRE_ACCESS_TOKEN) return formatUrl(urlObject);
 
-        accessToken = accessToken || config.ACCESS_TOKEN || '';
-        // if (!accessToken)
-        //     // throw new Error(`An API access token is required to use Mapbox GL. ${help}`);
-        // if (accessToken[0] === 's')
-        //     throw new Error(`Use a public access token (pk.*) with Mapbox GL, not a secret access token (sk.*). ${help}`);
+        accessToken = accessToken || config.ACCESS_TOKEN;
+        if (!this._silenceAuthErros) {
+            if (!accessToken)
+                throw new Error(`An API access token is required to use Mapbox GL. ${help}`);
+            if (accessToken[0] === 's')
+                throw new Error(`Use a public access token (pk.*) with Mapbox GL, not a secret access token (sk.*). ${help}`);
+        }
 
         urlObject.params = urlObject.params.filter((d) => d.indexOf('access_token') === -1);
         urlObject.params.push(`access_token=${accessToken}`);
