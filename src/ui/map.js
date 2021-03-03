@@ -2632,6 +2632,7 @@ class Map extends Camera {
             if (!this.isMoving() && this.loaded()) {
                 this.fire(new Event('idle'));
                 if (this._isInitialLoad) {
+                    // Following line is billing related code. Do not change. See LICENSE.txt
                     this._authenticate();
                 }
                 this._isInitialLoad = false;

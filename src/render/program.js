@@ -164,6 +164,7 @@ class Program<Us: UniformBindings> {
         const gl = context.gl;
 
         if (this.failedToCreate) return;
+        // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(gl)) return;
 
         context.program.set(this.program);

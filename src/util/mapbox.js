@@ -42,12 +42,12 @@ export class RequestManager {
     _skuTokenExpiresAt: number;
     _transformRequestFn: ?RequestTransformFunction;
     _customAccessToken: ?string;
-    _silenceAuthErros: boolean;
+    _silenceAuthErrors: boolean;
 
-    constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string, silenceAuthErros: ?boolean) {
+    constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string, silenceAuthErrors: ?boolean) {
         this._transformRequestFn = transformRequestFn;
         this._customAccessToken = customAccessToken;
-        this._silenceAuthErros = !!silenceAuthErros;
+        this._silenceAuthErrors = !!silenceAuthErrors;
         this._createSkuToken();
     }
 
@@ -198,7 +198,7 @@ export class RequestManager {
         if (!config.REQUIRE_ACCESS_TOKEN) return formatUrl(urlObject);
 
         accessToken = accessToken || config.ACCESS_TOKEN;
-        if (!this._silenceAuthErros) {
+        if (!this._silenceAuthErrors) {
             if (!accessToken)
                 throw new Error(`An API access token is required to use Mapbox GL. ${help}`);
             if (accessToken[0] === 's')
