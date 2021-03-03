@@ -1317,4 +1317,6 @@ export type MapEvent =
      * });
      */
     | 'speedindexcompleted'
+
+    | 'tokenRefreshed'
 ;

@@ -20,6 +20,7 @@ import {createSkuToken, SKU_ID} from './sku_token.js';
 import {version as sdkVersion} from '../../package.json';
 import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util.js';
 import {postData, ResourceType, getData} from './ajax.js';
+import {Event, Evented} from '../util/evented.js';
 
 import type {RequestParameters} from './ajax.js';
 import type {Cancelable} from '../types/cancelable.js';
@@ -37,16 +38,18 @@ type UrlObject = {|
 
 export const AUTH_ERR_MSG: string = 'NO_ACCESS_TOKEN';
 
-export class RequestManager {
+export class RequestManager extends Evented {
     _skuToken: string;
     _skuTokenExpiresAt: number;
     _transformRequestFn: ?RequestTransformFunction;
     _customAccessToken: ?string;
 
-    constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string) {
+    constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string, eventedParent?: Evented) {
+        super();
         this._transformRequestFn = transformRequestFn;
         this._customAccessToken = customAccessToken;
         this._createSkuToken();
+        this.setEventedParent(eventedParent);
     }
 
     _createSkuToken() {
@@ -104,6 +107,7 @@ export class RequestManager {
     normalizeTileURL(tileURL: string, use2x?: boolean, rasterTileSize?: number): string {
         if (this._isSkuTokenExpired()) {
             this._createSkuToken();
+            this.fire(new Event('tokenRefreshed'));
         }
 
         if (tileURL && !isMapboxURL(tileURL)) return tileURL;

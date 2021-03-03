@@ -420,7 +420,7 @@ class Map extends Camera {
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
 
-        this._requestManager = new RequestManager(options.transformRequest, options.accessToken);
+        this._requestManager = new RequestManager(options.transformRequest, options.accessToken, this);
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
@@ -454,6 +454,7 @@ class Map extends Camera {
         this.on('move', () => this._update(false));
         this.on('moveend', () => this._update(false));
         this.on('zoom', () => this._update(true));
+        this.on('tokenRefreshed', this._authenticate);
 
         if (typeof window !== 'undefined') {
             window.addEventListener('online', this._onWindowOnline, false);
@@ -2625,10 +2626,6 @@ class Map extends Camera {
             this._triggerFrame(false);
             if (!this.isMoving() && this.loaded()) {
                 this.fire(new Event('idle'));
-                if (this._isInitialLoad) {
-                    this._authenticate();
-                }
-                this._isInitialLoad = false;
                 // check the options to see if need to calculate the speed index
                 if (this.speedIndexTiming) {
                     const speedIndexNumber = this._calculateSpeedIndex();
@@ -2640,6 +2637,10 @@ class Map extends Camera {
 
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
+            if (this._isInitialLoad) {
+                this._authenticate();
+            }
+            this._isInitialLoad = false;
             PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
 
