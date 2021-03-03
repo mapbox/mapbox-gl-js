@@ -117,7 +117,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
                 fillOutlineUniformValues(tileMatrix, drawingBufferSize);
         }
 
-        program.draw(painter._mapId, painter.context, drawMode, depthMode,
+        program.draw(painter.context, drawMode, depthMode,
             painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, indexBuffer, segments,
             layer.paint, painter.transform.zoom, programConfiguration);

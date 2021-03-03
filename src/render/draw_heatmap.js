@@ -55,7 +55,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const {zoom} = painter.transform;
             if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 
-            program.draw(painter._mapId, context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
+            program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
                 heatmapUniformValues(coord.posMatrix,
                     tile, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
@@ -126,7 +126,7 @@ function renderTextureToMap(painter, layer) {
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    painter.useProgram('heatmapTexture').draw(painter._mapId, context, gl.TRIANGLES,
+    painter.useProgram('heatmapTexture').draw(context, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
         heatmapTextureUniformValues(painter, layer, 0, 1),
         layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,

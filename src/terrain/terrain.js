@@ -1052,7 +1052,7 @@ export class Terrain extends Elevation {
 
         for (const tileID of proxiedCoords) {
             const id = painter._tileClippingMaskIDs[tileID.key] = --ref;
-            program.draw(painter._mapId, context, gl.TRIANGLES, DepthMode.disabled,
+            program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
                 ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.posMatrix),

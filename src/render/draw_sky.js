@@ -70,7 +70,7 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
         temporalOffset
     );
 
-    program.draw(painter._mapId, context, gl.TRIANGLES, depthMode, StencilMode.disabled,
+    program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
         uniformValues, 'skyboxGradient', layer.skyboxGeometry.vertexBuffer,
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
@@ -88,7 +88,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
 
     const uniformValues = skyboxUniformValues(transform.skyboxMatrix, layer.getCenter(painter, false), 0, opacity, temporalOffset);
 
-    program.draw(painter._mapId, context, gl.TRIANGLES, depthMode, StencilMode.disabled,
+    program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
         uniformValues, 'skybox', layer.skyboxGeometry.vertexBuffer,
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
@@ -112,7 +112,7 @@ function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<*>, 
     const glFace = gl.TEXTURE_CUBE_MAP_POSITIVE_X + i;
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, glFace, layer.skyboxTexture, 0);
 
-    program.draw(painter._mapId, context, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.frontCW,
+    program.draw(context, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.frontCW,
         uniformValues, 'skyboxCapture', layer.skyboxGeometry.vertexBuffer,
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }

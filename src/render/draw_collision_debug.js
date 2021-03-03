@@ -70,7 +70,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
         }
         if (!buffers) continue;
         if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
-        program.draw(painter._mapId, context, gl.LINES,
+        program.draw(context, gl.LINES,
             DepthMode.disabled, StencilMode.disabled,
             painter.colorModeForRenderPass(),
             CullFaceMode.disabled,
@@ -129,7 +129,6 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
         );
 
         circleProgram.draw(
-            painter._mapId,
             context,
             gl.TRIANGLES,
             DepthMode.disabled,

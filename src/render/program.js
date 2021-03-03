@@ -144,7 +144,6 @@ class Program<Us: UniformBindings> {
     }
 
     draw(
-         mapId: number,
          context: Context,
          drawMode: DrawMode,
          depthMode: $ReadOnly<DepthMode>,
@@ -165,7 +164,7 @@ class Program<Us: UniformBindings> {
         const gl = context.gl;
 
         if (this.failedToCreate) return;
-        if (!isMapAuthenticated(mapId)) return;
+        if (!isMapAuthenticated(gl)) return;
 
         context.program.set(this.program);
         context.setDepthMode(depthMode);

@@ -570,17 +570,21 @@ export const postMapLoadEvent = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent
 const mapSessionAPI_ = new MapSessionAPI();
 export const getMapSessionAPI = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);
 
-const authenticatedMaps = {};
-export function storeAuthState(mapId: number, state: boolean) {
-    authenticatedMaps[mapId] = state;
+const authenticatedMaps = new Set();
+export function storeAuthState(gl: WebGLRenderingContext, state: boolean) {
+    if (state) {
+        authenticatedMaps.add(gl);
+    } else {
+        authenticatedMaps.delete(gl);
+    }
 }
 
-export function isMapAuthenticated(mapId: number): boolean {
-    return !!authenticatedMaps[mapId];
+export function isMapAuthenticated(gl: WebGLRenderingContext): boolean {
+    return authenticatedMaps.has(gl);
 }
 
-export function removeAuthState(mapId: number) {
-    delete authenticatedMaps[mapId];
+export function removeAuthState(gl: WebGLRenderingContext) {
+    authenticatedMaps.delete(gl);
 }
 
 /***** END WARNING - REMOVAL OR MODIFICATION OF THE

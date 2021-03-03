@@ -104,7 +104,7 @@ type MapOptions = {
     maxTileCacheSize?: number,
     transformRequest?: RequestTransformFunction,
     accessToken: string,
-    silenceAuthErrors: ?boolean,
+    testMode: ?boolean,
     locale?: Object
 };
 
@@ -254,7 +254,7 @@ const defaultOptions = {
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @param {string} [options.accessToken=null] If specified, map will use this token instead of the one defined in mapboxgl.accessToken.
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language; see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
- * @param {boolean} [options.silenceAuthErrors=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
+ * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -420,12 +420,11 @@ class Map extends Camera {
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
         this._mapId = uniqueId();
-        storeAuthState(this._mapId, true);
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
 
-        this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.silenceAuthErrors);
-        this._silenceAuthErrors = !!options.silenceAuthErrors;
+        this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
+        this._silenceAuthErrors = !!options.testMode;
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
@@ -2402,7 +2401,9 @@ class Map extends Camera {
             return;
         }
 
-        this.painter = new Painter(gl, this.transform, this._mapId);
+        storeAuthState(gl, true);
+
+        this.painter = new Painter(gl, this.transform);
         this.on('data', (event: MapDataEvent) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);
@@ -2669,8 +2670,8 @@ class Map extends Camera {
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
                 if (err.message === AUTH_ERR_MSG || err.status === 401) {
-                    storeAuthState(this._mapId, false);
                     const gl = this.painter.context.gl;
+                    storeAuthState(gl, false);
                     if (this._logoControl instanceof LogoControl) {
                         this._logoControl._updateLogo();
                     }
@@ -2774,7 +2775,7 @@ class Map extends Camera {
         this._container.classList.remove('mapboxgl-map');
 
         PerformanceUtils.clearMetrics();
-        removeAuthState(this._mapId);
+        removeAuthState(this.painter.context.gl);
         this._removed = true;
         this.fire(new Event('remove'));
     }

@@ -185,7 +185,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             setShaderMode(shaderMode, isWireframe);
 
             terrain.setupElevationDraw(tile, program, elevationOptions);
-            program.draw(painter._mapId, context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+            program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                 uniformValues, "terrain_raster", terrain.gridBuffer, buffer, segments);
         }
     });
@@ -204,7 +204,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
         const tile = sourceCache.getTile(coord);
         const uniformValues = terrainRasterUniformValues(coord.posMatrix, 0);
         terrain.setupElevationDraw(tile, program);
-        program.draw(painter._mapId, context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
+        program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
             uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
     }
 }

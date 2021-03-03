@@ -396,7 +396,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 function drawSymbolElements(buffers, segments, layer, painter, program, depthMode, stencilMode, colorMode, uniformValues) {
     const context = painter.context;
     const gl = context.gl;
-    program.draw(painter._mapId, painter._mapId, context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+    program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, buffers.layoutVertexBuffer,
         buffers.indexBuffer, segments, layer.paint,
         painter.transform.zoom, buffers.programConfigurations.get(layer.id),
