@@ -44,7 +44,8 @@ test('Map', (t) => {
         t.ok(map.touchZoomRotate.isEnabled());
         t.throws(() => {
             new Map({
-                container: 'anElementIdWhichDoesNotExistInTheDocument'
+                container: 'anElementIdWhichDoesNotExistInTheDocument',
+                testMode: true
             });
         }, new Error("Container 'anElementIdWhichDoesNotExistInTheDocument' not found"), 'throws on invalid map container id');
         t.end();
@@ -133,7 +134,7 @@ test('Map', (t) => {
     t.test('emits load event after a style is set', (t) => {
         t.stub(Map.prototype, '_detectMissingCSS');
         t.stub(Map.prototype, '_authenticate');
-        const map = new Map({container: window.document.createElement('div')});
+        const map = new Map({container: window.document.createElement('div'), testMode: true});
 
         map.on('load', fail);
 
@@ -150,7 +151,7 @@ test('Map', (t) => {
     t.test('#setStyle', (t) => {
         t.test('returns self', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
-            const map = new Map({container: window.document.createElement('div')});
+            const map = new Map({container: window.document.createElement('div'), testMode: true});
             t.equal(map.setStyle({
                 version: 8,
                 sources: {},
@@ -230,7 +231,7 @@ test('Map', (t) => {
         t.test('style transform overrides unmodified map transform', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
             t.stub(Map.prototype, '_authenticate');
-            const map = new Map({container: window.document.createElement('div')});
+            const map = new Map({container: window.document.createElement('div'), testMode: true});
             map.transform.lngRange = [-120, 140];
             map.transform.latRange = [-60, 80];
             map.transform.resize(600, 400);
@@ -249,7 +250,7 @@ test('Map', (t) => {
         t.test('style transform does not override map transform modified via options', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
             t.stub(Map.prototype, '_authenticate');
-            const map = new Map({container: window.document.createElement('div'), zoom: 10, center: [-77.0186, 38.8888]});
+            const map = new Map({container: window.document.createElement('div'), zoom: 10, center: [-77.0186, 38.8888], testMode: true});
             t.notOk(map.transform.unmodified, 'map transform is modified by options');
             map.setStyle(createStyle());
             map.on('style.load', () => {
@@ -264,7 +265,7 @@ test('Map', (t) => {
         t.test('style transform does not override map transform modified via setters', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
             t.stub(Map.prototype, '_authenticate');
-            const map = new Map({container: window.document.createElement('div')});
+            const map = new Map({container: window.document.createElement('div'), testMode: true});
             t.ok(map.transform.unmodified);
             map.setZoom(10);
             map.setCenter([-77.0186, 38.8888]);
@@ -2171,7 +2172,7 @@ test('Map', (t) => {
         window.document.styleSheets[0] = styleSheet;
         window.document.styleSheets.length = 1;
 
-        new Map({container: window.document.createElement('div')});
+        new Map({container: window.document.createElement('div'), testMode: true});
 
         t.notok(stub.calledOnce);
         t.end();
@@ -2179,7 +2180,7 @@ test('Map', (t) => {
 
     t.test('should warn when CSS is missing', (t) => {
         const stub = t.stub(console, 'warn');
-        new Map({container: window.document.createElement('div')});
+        new Map({container: window.document.createElement('div'), testMode: true});
 
         t.ok(stub.calledOnce);
 
