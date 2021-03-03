@@ -104,6 +104,7 @@ type MapOptions = {
     maxTileCacheSize?: number,
     transformRequest?: RequestTransformFunction,
     accessToken: string,
+    silenceAuthErrors: ?boolean,
     locale?: Object
 };
 
@@ -155,8 +156,7 @@ const defaultOptions = {
     transformRequest: null,
     accessToken: null,
     fadeDuration: 300,
-    crossSourceCollisions: true,
-    silenceAuthErrors: false
+    crossSourceCollisions: true
 };
 
 /**
@@ -328,6 +328,7 @@ class Map extends Camera {
     _removed: boolean;
     _speedIndexTiming: boolean;
     _clickTolerance: number;
+    _silenceAuthErrors: boolean;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -424,6 +425,7 @@ class Map extends Camera {
         this._clickTolerance = options.clickTolerance;
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.silenceAuthErrors);
+        this._silenceAuthErrors = !!options.silenceAuthErrors;
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
@@ -2673,6 +2675,10 @@ class Map extends Camera {
                         this._logoControl._updateLogo();
                     }
                     if (gl) gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+
+                    if (!this._silenceAuthErrors) {
+                        this.fire(new ErrorEvent(new Error('A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/')));
+                    }
                 }
             }
         });

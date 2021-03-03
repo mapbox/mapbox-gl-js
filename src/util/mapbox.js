@@ -206,7 +206,7 @@ export class RequestManager {
         }
 
         urlObject.params = urlObject.params.filter((d) => d.indexOf('access_token') === -1);
-        urlObject.params.push(`access_token=${accessToken}`);
+        urlObject.params.push(`access_token=${accessToken || ''}`);
         return formatUrl(urlObject);
     }
 }
@@ -407,7 +407,7 @@ export class MapLoadEvent extends TelemetryEvent {
             if (customAccessToken || config.ACCESS_TOKEN) {
                 this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
             } else {
-                this.errorCb(new Error('A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/'));
+                this.errorCb(new Error(AUTH_ERR_MSG));
             }
         }
     }
