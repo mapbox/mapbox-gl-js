@@ -232,12 +232,12 @@ function projectExtrusion2D(geometry: Array<Array<Point>>, zBase: number, zTop: 
             const baseX = sX + baseXZ;
             const baseY = sY + baseYZ;
             const baseZ = sZ + baseZZ;
-            const baseW = sW + baseWZ;
+            const baseW = Math.max(sW + baseWZ, 0.00001);
 
             const topX = sX + topXZ;
             const topY = sY + topYZ;
             const topZ = sZ + topZZ;
-            const topW = sW + topWZ;
+            const topW = Math.max(sW + topWZ, 0.00001);
 
             const b = new Point(baseX / baseW, baseY / baseW);
             b.z = baseZ / baseW;
@@ -278,12 +278,12 @@ function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: 
             v[0] = x;
             v[1] = y;
             v[2] = heightOffset.base;
-            const base = toPoint(vec3.transformMat4(v, v, m));
+            const base = toPoint(transformMat4(v, v, m));
 
             v[0] = x;
             v[1] = y;
             v[2] = heightOffset.top;
-            const top = toPoint(vec3.transformMat4(v, v, m));
+            const top = toPoint(transformMat4(v, v, m));
 
             ringBase.push(base);
             ringTop.push(top);
@@ -360,6 +360,18 @@ function fourSample(demSampler: DEMSampler, posX: number, posY: number, offsetX:
         demSampler.getElevationAtPixel(posX, posY + offsetY, true),
         demSampler.getElevationAtPixel(posX + offsetX, posY + offsetY, true)
     ];
+}
+
+// Pretty much identical to gl-matrix's vc.transformMat4, except it assures w is > 0 before division.
+function transformMat4(out, a, m) {
+    const x = a[0],
+        y = a[1],
+        z = a[2];
+    const w = Math.max(m[3] * x + m[7] * y + m[11] * z + m[15], 0.00001);
+    out[0] = (m[0] * x + m[4] * y + m[8] * z + m[12]) / w;
+    out[1] = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
+    out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
+    return out;
 }
 
 export default FillExtrusionStyleLayer;
