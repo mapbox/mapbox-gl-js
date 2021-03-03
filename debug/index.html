@@ -15,65 +15,15 @@
 <div id='map'></div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
-<!-- <script src='../debug/access_token_generated.js'></script> -->
+<script src='../debug/access_token_generated.js'></script>
 <script>
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
-    style: {
-  "version": 8,
-  "metadata": {
-    "test": {
-      "width": 64,
-      "height": 64
-    }
-  },
-  "sources": {
-    "geojson": {
-      "type": "geojson",
-      "data": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -10,
-              -10
-            ],
-            [
-              -10,
-              10
-            ],
-            [
-              10,
-              10
-            ],
-            [
-              10,
-              -10
-            ],
-            [
-              -10,
-              -10
-            ]
-          ]
-        ]
-      }
-    }
-  },
-  "layers": [
-    {
-      "id": "fill",
-      "type": "fill",
-      "source": "geojson",
-      "paint": {
-        "fill-antialias": false
-      }
-    }
-  ]
-},
-    hash: true,
-    testMode: true
+    center: [-122.4194, 37.7749],
+    style: 'mapbox://styles/mapbox/streets-v10',
+    hash: true
 });
 
 </script>
