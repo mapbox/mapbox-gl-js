@@ -8,7 +8,7 @@ import properties from './fill_extrusion_style_layer_properties.js';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
 import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration.js';
-import {vec2, vec3} from 'gl-matrix';
+import {vec2, vec4} from 'gl-matrix';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
 import type {BucketParameters} from '../../data/bucket.js';
@@ -17,7 +17,6 @@ import type Transform from '../../geo/transform.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
-import type {vec4} from 'gl-matrix';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -265,7 +264,7 @@ function projectExtrusion2D(geometry: Array<Array<Point>>, zBase: number, zTop: 
 function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: DEMSampler, centroid: vec2, exaggeration: number, lat: number) {
     const projectedBase = [];
     const projectedTop = [];
-    const v = [0, 0, 0];
+    const v = [0, 0, 0, 1];
 
     for (const r of geometry) {
         const ringBase = [];
@@ -278,12 +277,18 @@ function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: 
             v[0] = x;
             v[1] = y;
             v[2] = heightOffset.base;
-            const base = toPoint(transformMat4(v, v, m));
+            v[3] = 1;
+            vec4.transformMat4(v, v, m);
+            v[3] = Math.max(v[3], 0.00001);
+            const base = toPoint([v[0] / v[3], v[1] / v[3], v[2] / v[3]]);
 
             v[0] = x;
             v[1] = y;
             v[2] = heightOffset.top;
-            const top = toPoint(transformMat4(v, v, m));
+            v[3] = 1;
+            vec4.transformMat4(v, v, m);
+            v[3] = Math.max(v[3], 0.00001);
+            const top = toPoint([v[0] / v[3], v[1] / v[3], v[2] / v[3]]);
 
             ringBase.push(base);
             ringTop.push(top);
@@ -294,7 +299,7 @@ function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: 
     return [projectedBase, projectedTop];
 }
 
-function toPoint(v: vec3): Point {
+function toPoint(v: vec4): Point {
     const p = new Point(v[0], v[1]);
     p.z = v[2];
     return p;
@@ -360,18 +365,6 @@ function fourSample(demSampler: DEMSampler, posX: number, posY: number, offsetX:
         demSampler.getElevationAtPixel(posX, posY + offsetY, true),
         demSampler.getElevationAtPixel(posX + offsetX, posY + offsetY, true)
     ];
-}
-
-// Pretty much identical to gl-matrix's vc.transformMat4, except it assures w is > 0 before division.
-function transformMat4(out, a, m) {
-    const x = a[0],
-        y = a[1],
-        z = a[2];
-    const w = Math.max(m[3] * x + m[7] * y + m[11] * z + m[15], 0.00001);
-    out[0] = (m[0] * x + m[4] * y + m[8] * z + m[12]) / w;
-    out[1] = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
-    out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
-    return out;
 }
 
 export default FillExtrusionStyleLayer;
