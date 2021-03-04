@@ -1283,7 +1283,7 @@ class Transform {
         // Adjust distance to MSL by the minimum possible elevation visible on screen,
         // this way the far plane is pushed further in the case of negative elevation.
         const minElevationInPixels = this.elevation ?
-            Math.abs(this.elevation.getMinElevationBelowMSL()) * pixelsPerMeter :
+            this.elevation.getMinElevationBelowMSL() * pixelsPerMeter :
             0;
         const cameraToSeaLevelDistance = ((this._camera.position[2] * this.worldSize) + minElevationInPixels) / Math.cos(this._pitch);
         const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * cameraToSeaLevelDistance / Math.sin(clamp(Math.PI - groundAngle - fovAboveCenter, 0.01, Math.PI - 0.01));
