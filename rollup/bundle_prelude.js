@@ -9,7 +9,7 @@ if (!shared) {
 } else if (!worker) {
     worker = chunk;
 } else {
-    var workerBundleString = 'var sharedChunk = {}; (' + shared + ')(sharedChunk); (' + worker + ')(sharedChunk);'
+    var workerBundleString = "var __evalFinished = false; self.onerror = function() { if(!__evalFinished) { console.error('Error occured during eval'); } }; var sharedChunk = {}; (" + shared + ")(sharedChunk); (" + worker + ")(sharedChunk); __evalFinished = true;"
 
     var sharedChunk = {};
     shared(sharedChunk);

@@ -7,6 +7,7 @@ import {fileURLToPath} from 'url';
 const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
 const production = BUILD === 'production';
+const legacy = BUILD === 'legacy';
 const bench = BUILD === 'bench';
 
 function buildType(build, minified) {
@@ -14,6 +15,9 @@ function buildType(build, minified) {
         case 'production':
             if (minified) return 'dist/mapbox-gl.js';
             return 'dist/mapbox-gl-unminified.js';
+        case 'legacy':
+            if (minified) return 'dist/mapbox-gl-es5.js';
+            return 'dist/mapbox-gl-unminified-es5.js';
         case 'bench':
             return 'dist/mapbox-gl-bench.js';
         case 'dev':
@@ -42,7 +46,7 @@ export default [{
         chunkFileNames: 'shared.js'
     },
     treeshake: production,
-    plugins: plugins(minified, production, false, bench)
+    plugins: plugins(minified, production, false, bench, legacy)
 }, {
     // Next, bundle together the three "chunks" produced in the previous pass
     // into a single, final bundle. See rollup/bundle_prelude.js and

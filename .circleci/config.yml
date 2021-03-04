@@ -152,6 +152,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: yarn run build-prod-min
+      - run: yarn run build-legacy-min
       - run: yarn run build-prod
       - run: yarn run build-csp
       - run: yarn run build-dev

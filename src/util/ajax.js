@@ -79,6 +79,10 @@ class AJAXError extends Error {
         super(message);
         this.status = status;
         this.url = url;
+
+        // work around for https://github.com/Rich-Harris/buble/issues/40
+        this.name = this.constructor.name;
+        this.message = message;
     }
 
     toString() {

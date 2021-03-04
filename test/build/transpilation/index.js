@@ -1,10 +1,10 @@
 /* eslint-disable */
 
-import mapboxgl from '../../../dist/mapbox-gl-csp.js';
-import MapboxGLWorker from '../../../dist/mapbox-gl-csp-worker.js';
+import mapboxgl from '../../../dist/mapbox-gl-es5.js';
+// import MapboxGLWorker from '../../../dist/mapbox-gl-csp-worker.js';
 
 mapboxgl.accessToken = window.prompt("Enter access token");
-mapboxgl.workerClass = MapboxGLWorker;
+// mapboxgl.workerClass = MapboxGLWorker;
 
 const map = new mapboxgl.Map({
     container: 'map',

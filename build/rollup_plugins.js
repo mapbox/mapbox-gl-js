@@ -9,30 +9,32 @@ import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 import {createFilter} from '@rollup/pluginutils';
 import strip from '@rollup/plugin-strip';
 import replace from '@rollup/plugin-replace';
+import buble from '@rollup/plugin-buble';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
 
-export const plugins = (minified, production, test, bench) => [
+export const plugins = (minified, production, test, bench, legacy) => [
     flow(),
     minifyStyleSpec(),
     json(),
-    production ? strip({
+    production || legacy ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*']
     }) : false,
-    production || bench ? unassert() : false,
+    production || legacy || bench ? unassert() : false,
     test ? replace({
         'process.env.CI': JSON.stringify(process.env.CI),
         'process.env.UPDATE': JSON.stringify(process.env.UPDATE)
     }) : false,
-    glsl('./src/shaders/*.glsl', production),
+    glsl('./src/shaders/*.glsl', production || legacy),
     minified ? terser({
         compress: {
             pure_getters: true,
             passes: 3
         }
     }) : false,
+    legacy ? buble({transforms: {dangerousForOf: true, asyncAwait: !test}, objectAssign: "Object.assign"}) : false,
     resolve({
         browser: true,
         preferBuiltins: false
