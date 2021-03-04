@@ -742,12 +742,14 @@ export class Terrain extends Elevation {
     }
 
     getMinElevationBelowMSL(): number {
-        let min = 0;
-        this._visibleDemTiles.filter(tile => tile.dem).map(tile => {
+        let min = 0.0;
+        // The maximum DEM error in meters to be conservative (SRTM).
+        const maxDEMError = 30.0;
+        this._visibleDemTiles.filter(tile => tile.dem).forEach(tile => {
             const minMaxTree = (tile.dem: any).tree;
             min = Math.min(min, minMaxTree.minimum);
         });
-        return min * this._exaggeration;
+        return min === 0.0 ? min : (min - maxDEMError) * this._exaggeration;
     }
 
     // Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.

@@ -107,7 +107,9 @@ export class Elevation {
     }
 
     /**
-     * Get elevation minimum below MSL for the visible tiles. This function accounts for terrain exaggeration.
+     * Get elevation minimum below MSL for the visible tiles. This function accounts
+     * for terrain exaggeration and is conservative based on the maximum DEM error,
+     * do not expect accurate values from this function.
      * If no negative elevation is visible, this function returns 0.
      * @returns {number} The min elevation below sea level of all visible tiles.
      */
