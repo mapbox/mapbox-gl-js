@@ -7,7 +7,7 @@ import {ease as _ease, bindAll, bezier} from '../../util/util.js';
 import browser from '../../util/browser.js';
 import window from '../../util/window.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import Point from '@mapbox/point-geometry.js';
+import Point from '@mapbox/point-geometry';
 
 import type Map from '../map.js';
 import type HandlerManager from '../handler_manager.js';
@@ -170,7 +170,7 @@ class ScrollZoomHandler {
             this._type = null;
             this._lastValue = value;
 
-            // Start a timeout in case this was a singular event, and dely it by up to 40ms.
+            // Start a timeout in case this was a singular event, and delay it by up to 40ms.
             this._timeout = setTimeout(this._onTimeout, 40, e);
 
         } else if (!this._type) {
@@ -202,7 +202,7 @@ class ScrollZoomHandler {
         e.preventDefault();
     }
 
-    _onTimeout(initialEvent: any) {
+    _onTimeout(initialEvent: WheelEvent) {
         this._type = 'wheel';
         this._delta -= this._lastValue;
         if (!this._active) {
@@ -210,7 +210,7 @@ class ScrollZoomHandler {
         }
     }
 
-    _start(e: any) {
+    _start(e: WheelEvent) {
         if (!this._delta) return;
 
         if (this._frameId) {
