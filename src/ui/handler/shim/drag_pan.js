@@ -1,7 +1,7 @@
 // @flow
 
-import type {MousePanHandler} from '../mouse';
-import type TouchPanHandler from './../touch_pan';
+import type {MousePanHandler} from '../mouse.js';
+import type TouchPanHandler from './../touch_pan.js';
 
 export type DragPanOptions = {
     linearity?: number;

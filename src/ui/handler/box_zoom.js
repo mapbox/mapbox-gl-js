@@ -1,10 +1,10 @@
 // @flow
 
-import DOM from '../../util/dom';
+import DOM from '../../util/dom.js';
 
-import {Event} from '../../util/evented';
+import {Event} from '../../util/evented.js';
 
-import type Map from '../map';
+import type Map from '../map.js';
 
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.

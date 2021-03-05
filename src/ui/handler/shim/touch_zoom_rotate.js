@@ -1,7 +1,7 @@
 // @flow
 
-import type {TouchZoomHandler, TouchRotateHandler} from '../touch_zoom_rotate';
-import type TapDragZoomHandler from '../tap_drag_zoom';
+import type {TouchZoomHandler, TouchRotateHandler} from '../touch_zoom_rotate.js';
+import type TapDragZoomHandler from '../tap_drag_zoom.js';
 
 /**
  * The `TouchZoomRotateHandler` allows the user to zoom and rotate the map by
