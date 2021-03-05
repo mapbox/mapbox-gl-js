@@ -1,7 +1,7 @@
 // @flow
 
-import type {MousePanHandler} from '../mouse.js';
-import type TouchPanHandler from './../touch_pan.js';
+import type {MousePanHandler} from '../mouse';
+import type TouchPanHandler from './../touch_pan';
 
 export type DragPanOptions = {
     linearity?: number;
@@ -13,6 +13,8 @@ export type DragPanOptions = {
 /**
  * The `DragPanHandler` allows the user to pan the map by clicking and dragging
  * the cursor.
+ * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
  */
 export default class DragPanHandler {
 

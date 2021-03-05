@@ -1,10 +1,12 @@
 // @flow
 
-import type {MouseRotateHandler, MousePitchHandler} from '../mouse.js';
+import type {MouseRotateHandler, MousePitchHandler} from '../mouse';
 
 /**
  * The `DragRotateHandler` allows the user to rotate the map by clicking and
  * dragging the cursor while holding the right mouse button or `ctrl` key.
+ * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ * @see [Disable map rotation](https://docs.mapbox.com/mapbox-gl-js/example/disable-rotation/)
  */
 export default class DragRotateHandler {
 

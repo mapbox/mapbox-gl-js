@@ -1,17 +1,17 @@
 // @flow
 
 import assert from 'assert';
-import DOM from '../../util/dom.js';
+import DOM from '../../util/dom';
 
-import {ease as _ease, bindAll, bezier} from '../../util/util.js';
-import browser from '../../util/browser.js';
-import window from '../../util/window.js';
-import {number as interpolate} from '../../style-spec/util/interpolate.js';
+import {ease as _ease, bindAll, bezier} from '../../util/util';
+import browser from '../../util/browser';
+import window from '../../util/window';
+import {number as interpolate} from '../../style-spec/util/interpolate';
 import Point from '@mapbox/point-geometry';
 
-import type Map from '../map.js';
-import type HandlerManager from '../handler_manager.js';
-import MercatorCoordinate from '../../geo/mercator_coordinate.js';
+import type Map from '../map';
+import type HandlerManager from '../handler_manager';
+import MercatorCoordinate from '../../geo/mercator_coordinate';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
@@ -27,6 +27,8 @@ const maxScalePerFrame = 2;
 
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
+ * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ * @see [Disable scroll zoom](https://docs.mapbox.com/mapbox-gl-js/example/disable-scroll-zoom/)
  */
 class ScrollZoomHandler {
     _map: Map;
@@ -168,7 +170,7 @@ class ScrollZoomHandler {
             this._type = null;
             this._lastValue = value;
 
-            // Start a timeout in case this was a singular event, and delay it by up to 40ms.
+            // Start a timeout in case this was a singular event, and dely it by up to 40ms.
             this._timeout = setTimeout(this._onTimeout, 40, e);
 
         } else if (!this._type) {
@@ -200,7 +202,7 @@ class ScrollZoomHandler {
         e.preventDefault();
     }
 
-    _onTimeout(initialEvent: WheelEvent) {
+    _onTimeout(initialEvent: any) {
         this._type = 'wheel';
         this._delta -= this._lastValue;
         if (!this._active) {
@@ -208,7 +210,7 @@ class ScrollZoomHandler {
         }
     }
 
-    _start(e: WheelEvent) {
+    _start(e: any) {
         if (!this._delta) return;
 
         if (this._frameId) {

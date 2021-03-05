@@ -1,14 +1,16 @@
 // @flow
 
-import DOM from '../../util/dom.js';
+import DOM from '../../util/dom';
 
-import {Event} from '../../util/evented.js';
+import {Event} from '../../util/evented';
 
-import type Map from '../map.js';
+import type Map from '../map';
 
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
  * The bounding box is defined by clicking and holding `shift` while dragging the cursor.
+ * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
  */
 class BoxZoomHandler {
     _map: Map;
