@@ -82,7 +82,10 @@ export type CameraOptions = {
  * @property {boolean} animate If `false`, no animation will occur.
  * @property {boolean} essential If `true`, then the animation is considered essential and will not be affected by
  *   [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
- */
+ * @see [Slowly fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto-options/)
+ * @see [Customize camera animations](https://docs.mapbox.com/mapbox-gl-js/example/camera-animation/)
+ * @see [Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
+*/
 export type AnimationOptions = {
     duration?: number,
     easing?: (_: number) => number,
