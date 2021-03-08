@@ -136,7 +136,6 @@ const aabbSkirtPadding = 100;
 // Each tree node stores the minimum and maximum elevation of its children nodes and a flag whether the node is a leaf.
 // Node data is stored in non-interleaved arrays where the root is at index 0.
 export default class DemMinMaxQuadTree {
-    minimum: number;
     maximums: Array<number>;
     minimums: Array<number>;
     leaves: Array<number>;
@@ -151,7 +150,6 @@ export default class DemMinMaxQuadTree {
         this.leaves = [];
         this.childOffsets = [];
         this.nodeCount = 0;
-        this.minimum = Number.POSITIVE_INFINITY;
         this.dem = dem_;
 
         // Precompute the order of 4 sibling nodes in the memory. Top-left, top-right, bottom-left, bottom-right
@@ -310,7 +308,6 @@ export default class DemMinMaxQuadTree {
     }
 
     _addNode(min: number, max: number, leaf: number) {
-        this.minimum = Math.min(this.minimum, min);
         this.minimums.push(min);
         this.maximums.push(max);
         this.leaves.push(leaf);

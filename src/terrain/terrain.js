@@ -747,7 +747,7 @@ export class Terrain extends Elevation {
         const maxDEMError = 30.0;
         this._visibleDemTiles.filter(tile => tile.dem).forEach(tile => {
             const minMaxTree = (tile.dem: any).tree;
-            min = Math.min(min, minMaxTree.minimum);
+            min = Math.min(min, minMaxTree.minimums[0]);
         });
         return min === 0.0 ? min : (min - maxDEMError) * this._exaggeration;
     }
