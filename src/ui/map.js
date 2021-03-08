@@ -38,6 +38,7 @@ import type {StyleOptions, StyleSetterOptions} from '../style/style.js';
 import type {MapEvent, MapDataEvent} from './events.js';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer.js';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image.js';
+import Terrain from '../style/terrain.js';
 
 import type ScrollZoomHandler from './handler/scroll_zoom.js';
 import type BoxZoomHandler from './handler/box_zoom.js';
@@ -2150,11 +2151,11 @@ class Map extends Camera {
     }
 
     /**
-     * Returns the value of the terrain object.
+     * Returns the terrain specification or `null` if terrain isn't set on the map.
      *
-     * @returns {Object} terrain Terrain properties of the style.
+     * @returns {Object} terrain Terrain specification properties of the style.
      */
-    getTerrain() {
+    getTerrain(): Terrain | null {
         return this.style.getTerrain();
     }
 

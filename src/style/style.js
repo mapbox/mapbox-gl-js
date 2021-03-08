@@ -1366,7 +1366,7 @@ class Style extends Evented {
     }
 
     getTerrain() {
-        return this.terrain ? this.terrain.get() : this.stylesheet.terrain;
+        return this.terrain ? this.terrain.get() : null;
     }
 
     // eslint-disable-next-line no-warning-comments
