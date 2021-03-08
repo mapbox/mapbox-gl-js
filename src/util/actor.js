@@ -4,6 +4,7 @@ import {bindAll, isWorker, isSafari} from './util.js';
 import window from './window.js';
 import {serialize, deserialize} from './web_worker_transfer.js';
 import Scheduler from './scheduler.js';
+import {PerformanceUtils} from './performance.js';
 
 import type {Transferable} from '../types/transferable.js';
 import type {Cancelable} from '../types/cancelable.js';
@@ -119,12 +120,14 @@ class Actor {
             } else {
                 // In the main thread, process messages immediately so that other work does not slip in
                 // between getting partial data back from workers.
+                // Do the same for worker tasks that need processing as soon as possible.
                 this.processTask(id, data);
             }
         }
     }
 
     processTask(id: number, task: any) {
+        const m = isWorker() ? PerformanceUtils.beginMeasure('workerTask') : undefined;
         if (task.type === '<response>') {
             // The done() function in the counterpart has been called, and we are now
             // firing the callback in the originating actor, if there is one.
@@ -166,6 +169,7 @@ class Actor {
                 done(new Error(`Could not find function ${task.type}`));
             }
         }
+        if (m) PerformanceUtils.endMeasure(m);
     }
 
     remove() {
