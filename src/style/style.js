@@ -1365,6 +1365,10 @@ class Style extends Evented {
         this.light.updateTransitions(parameters);
     }
 
+    getTerrain() {
+        return this.terrain ? this.terrain.get() : null;
+    }
+
     // eslint-disable-next-line no-warning-comments
     // TODO: generic approach for root level property: light, terrain, skybox.
     // It is not done here to prevent rebasing issues.

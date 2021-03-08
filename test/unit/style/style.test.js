@@ -2323,3 +2323,33 @@ test('Style#setTerrain', (t) => {
     });
     t.end();
 });
+
+test('Style#getTerrain', (t) => {
+    t.test('rolls up inline source into style', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        style.on('style.load', () => {
+            style.setTerrain({
+                "source": {
+                    "type": "raster-dem",
+                    "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                    "tileSize": 256,
+                    "maxzoom": 14
+                }
+            });
+            t.ok(style.getTerrain());
+            t.deepEqual(style.getTerrain(), {"source": "terrain-dem-src"});
+            t.end();
+        });
+    });
+
+    t.end();
+});
