@@ -256,17 +256,17 @@ class GeoJSONSource extends Evented implements Source {
 
             if (err) {
                 this.fire(new ErrorEvent(err));
-                return;
-            }
 
-            // although GeoJSON sources contain no metadata, we fire this event at first
-            // to let the SourceCache know its ok to start requesting tiles.
-            const data: Object = {dataType: 'source', sourceDataType: this._metadataFired ? 'content' : 'metadata'};
-            if (this._collectResourceTiming && result && result.resourceTiming && result.resourceTiming[this.id]) {
-                data.resourceTiming = result.resourceTiming[this.id];
+            } else {
+                // although GeoJSON sources contain no metadata, we fire this event at first
+                // to let the SourceCache know its ok to start requesting tiles.
+                const data: Object = {dataType: 'source', sourceDataType: this._metadataFired ? 'content' : 'metadata'};
+                if (this._collectResourceTiming && result && result.resourceTiming && result.resourceTiming[this.id]) {
+                    data.resourceTiming = result.resourceTiming[this.id];
+                }
+                this.fire(new Event('data', data));
+                this._metadataFired = true;
             }
-            this.fire(new Event('data', data));
-            this._metadataFired = true;
 
             if (this._coalesce) {
                 this._updateWorkerData();
