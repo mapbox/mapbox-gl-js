@@ -6,6 +6,7 @@ import type TapZoomHandler from './../tap_zoom.js';
 /**
  * The `DoubleClickZoomHandler` allows the user to zoom the map at a point by
  * double clicking or double tapping.
+ * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
  */
 export default class DoubleClickZoomHandler {
 

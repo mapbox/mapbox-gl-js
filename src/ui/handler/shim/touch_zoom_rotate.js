@@ -9,6 +9,7 @@ import type TapDragZoomHandler from '../tap_drag_zoom.js';
  *
  * They can zoom with one finger by double tapping and dragging. On the second tap,
  * hold the finger down and drag up or down to zoom in or out.
+ * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
  */
 export default class TouchZoomRotateHandler {
 
