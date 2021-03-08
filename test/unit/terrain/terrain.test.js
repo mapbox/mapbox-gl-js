@@ -56,6 +56,31 @@ const createGradientDEM = () => {
     return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox", false, true);
 };
 
+const createNegativeGradientDEM = () => {
+    const pixels = new Uint8Array((TILE_SIZE + 2) * (TILE_SIZE + 2) * 4);
+    // 1, 134, 160 encodes 0m.
+    const word = [1, 134, 160];
+    for (let j = 1; j < TILE_SIZE + 1; j++) {
+        for (let i = 1; i < TILE_SIZE + 1; i++) {
+            const index = (j * (TILE_SIZE + 2) + i) * 4;
+            pixels[index] = word[0];
+            pixels[index + 1] = word[1];
+            pixels[index + 2] = word[2];
+            // Decrement word for next pixel.
+            word[2] -= 1;
+            if (word[2] === 0) {
+                word[2] = 256;
+                word[1] -= 1;
+            }
+            if (word[1] === 0) {
+                word[1] = 256;
+                word[0] -= 1;
+            }
+        }
+    }
+    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox", false, true);
+};
+
 test('Elevation', (t) => {
     const dem = createGradientDEM();
 
@@ -602,6 +627,91 @@ test('Raycast projection 2D/3D', t => {
                 t.end();
             });
         });
+    });
+});
+
+test('Negative Elevation', (t) => {
+    t.beforeEach((callback) => {
+        window.useFakeXMLHttpRequest();
+        callback();
+    });
+
+    t.afterEach((callback) => {
+        window.restore();
+        callback();
+    });
+
+    const map = createMap(t, {
+        style: createStyle()
+    });
+
+    const assertAlmostEqual = (t, actual, expected, epsilon = 1e-6) => {
+        t.ok(Math.abs(actual - expected) < epsilon);
+    };
+
+    map.on('style.load', () => {
+        map.addSource('mapbox-dem', {
+            "type": "raster-dem",
+            "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+            "tileSize": TILE_SIZE,
+            "maxzoom": 14
+        });
+        const cache = map.style._getSourceCache('mapbox-dem');
+        cache.used = cache._sourceLoaded = true;
+        const mockDem = (dem, cache) => {
+            cache._loadTile = (tile, callback) => {
+                tile.dem = dem;
+                tile.needsHillshadePrepare = true;
+                tile.needsDEMTextureUpload = true;
+                tile.state = 'loaded';
+                callback(null);
+            };
+        };
+        t.test('sampling with negative elevation', t => {
+            mockDem(createNegativeGradientDEM(), cache);
+            map.setTerrain({"source": "mapbox-dem"});
+            map.once('render', () => {
+                map._updateTerrain();
+                t.test('negative elevation', t => {
+                    const minElevation = map.painter.terrain.getMinElevationBelowMSL();
+                    assertAlmostEqual(t, minElevation, -1671.55);
+                    cache.clearTiles();
+                    t.end();
+                });
+                t.end();
+            });
+        });
+
+        t.test('sampling with negative elevation and exaggeration', t => {
+            mockDem(createNegativeGradientDEM(), cache);
+            map.setTerrain({"source": "mapbox-dem", "exaggeration": 1.5});
+            map.once('render', () => {
+                map._updateTerrain();
+                t.test('negative elevation with exaggeration', t => {
+                    const minElevation = map.painter.terrain.getMinElevationBelowMSL();
+                    assertAlmostEqual(t, minElevation, -2507.325);
+                    cache.clearTiles();
+                    t.end();
+                });
+                t.end();
+            });
+        });
+
+        t.test('sampling with no negative elevation', t => {
+            mockDem(createGradientDEM(), cache);
+            map.setTerrain({"source": "mapbox-dem"});
+            map.once('render', () => {
+                map._updateTerrain();
+                t.test('no negative elevation', t => {
+                    const minElevation = map.painter.terrain.getMinElevationBelowMSL();
+                    t.deepEqual(minElevation, 0);
+                    cache.clearTiles();
+                    t.end();
+                });
+                t.end();
+            });
+        });
+        t.end();
     });
 });
 

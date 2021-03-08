@@ -107,6 +107,17 @@ export class Elevation {
     }
 
     /**
+     * Get elevation minimum below MSL for the visible tiles. This function accounts
+     * for terrain exaggeration and is conservative based on the maximum DEM error,
+     * do not expect accurate values from this function.
+     * If no negative elevation is visible, this function returns 0.
+     * @returns {number} The min elevation below sea level of all visible tiles.
+     */
+    getMinElevationBelowMSL(): number {
+        throw new Error('Pure virtual method called.');
+    }
+
+    /**
      * Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
      * x & y components of the position are expected to be in normalized mercator coordinates [0, 1] and z in meters.
      * @param {vec3} position The ray origin.

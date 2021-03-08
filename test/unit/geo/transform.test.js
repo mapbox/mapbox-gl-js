@@ -410,6 +410,7 @@ test('transform', (t) => {
                 }
                 return true;
             },
+            getMinElevationBelowMSL: () => 0
         };
     };
 
@@ -424,6 +425,7 @@ test('transform', (t) => {
                 }
                 return true;
             },
+            getMinElevationBelowMSL: () => 0
         };
     };
 
@@ -438,6 +440,7 @@ test('transform', (t) => {
                 }
                 return true;
             },
+            getMinElevationBelowMSL: () => 0
         };
     };
 
@@ -551,7 +554,8 @@ test('transform', (t) => {
             },
             exaggeration() {
                 return 10; // Low tile zoom used, exaggerate elevation to make impact.
-            }
+            },
+            getMinElevationBelowMSL: () => 0
         };
         transform.elevation = elevation;
         transform.resize(200, 200);
@@ -1157,7 +1161,8 @@ test('transform', (t) => {
             transform._elevation = {
                 getAtPoint: () => groundElevation,
                 exaggeration: () => 1.0,
-                raycast: () => undefined
+                raycast: () => undefined,
+                getMinElevationBelowMSL: () => 0
             };
 
             const expected = new FreeCameraOptions();
