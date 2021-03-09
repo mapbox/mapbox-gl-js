@@ -7,7 +7,6 @@ import VertexArrayObject from './vertex_array_object.js';
 import Context from '../gl/context.js';
 import {terrainUniforms} from '../terrain/terrain.js';
 import type {TerrainUniformsType} from '../terrain/terrain.js';
-import {isMapAuthenticated} from '../util/mapbox.js';
 
 import type SegmentVector from '../data/segment.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
@@ -164,8 +163,6 @@ class Program<Us: UniformBindings> {
         const gl = context.gl;
 
         if (this.failedToCreate) return;
-        // Following line is billing related code. Do not change. See LICENSE.txt
-        if (!isMapAuthenticated(gl)) return;
 
         context.program.set(this.program);
         context.setDepthMode(depthMode);
