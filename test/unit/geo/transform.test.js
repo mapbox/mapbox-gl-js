@@ -694,6 +694,23 @@ test('transform', (t) => {
             t.end();
         });
 
+        t.test('zoom 22 somewhere in Mile High City should load only visible tiles', (t) => {
+            tilesDefaultElevation = null;
+            centerElevation = 1600;
+            tileElevation[new OverscaledTileID(14, 0, 14, 3413, 6218).key] = 1600;
+            transform.resize(768, 768);
+            transform.zoom = options.maxzoom = 22;
+            transform.center = {lng: -104.99813327, lat: 39.72784465999999};
+            options.roundZoom = true;
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(22, 0, 22, 873835, 1592007),
+                new OverscaledTileID(22, 0, 22, 873834, 1592007),
+                new OverscaledTileID(22, 0, 22, 873835, 1592006),
+                new OverscaledTileID(22, 0, 22, 873834, 1592006)
+            ]);
+            t.end();
+        });
+
         t.end();
     });
 
