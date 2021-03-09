@@ -9,8 +9,7 @@ export function createMap(t, options, callback) {
         interactive: false,
         attributionControl: false,
         trackResize: true,
-        // this token is a fallback for CI and testing. it is domain restricted to localhost
-        accessToken: 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ',
+        testMode: true,
         style: {
             "version": 8,
             "sources": {},
@@ -21,7 +20,6 @@ export function createMap(t, options, callback) {
     Object.defineProperty(container, 'clientWidth', {value: 200, configurable: true});
     Object.defineProperty(container, 'clientHeight', {value: 200, configurable: true});
 
-    if (!options || !options.skipAuthenticateStub) t.stub(Map.prototype, '_authenticate');
     if (!options || !options.skipCSSStub) t.stub(Map.prototype, '_detectMissingCSS');
     if (options && options.deleteStyle) delete defaultOptions.style;
 

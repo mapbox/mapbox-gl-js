@@ -15,6 +15,7 @@ function createMap(t) {
     t.stub(Map.prototype, '_authenticate');
     return new Map({
         container: DOM.create('div', '', window.document.body),
+        testMode: true,
         style: {
             "version": 8,
             "sources": {},

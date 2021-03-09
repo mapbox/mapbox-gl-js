@@ -15,7 +15,6 @@
 <div id='map'></div>
 
 <script src='../../../dist/mapbox-gl-dev.js'></script>
-<script src='../../../debug/access_token_generated.js'></script>
 
 <script>
 
@@ -24,6 +23,7 @@ var map = window.map = new mapboxgl.Map({
     zoom: 1,
     fadeDuration: 0,
     center: [0, 0],
+    testMode: true,
     style: {
         version: 8,
         sources: {

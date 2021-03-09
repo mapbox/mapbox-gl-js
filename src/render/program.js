@@ -142,7 +142,8 @@ class Program<Us: UniformBindings> {
         }
     }
 
-    draw(context: Context,
+    draw(
+         context: Context,
          drawMode: DrawMode,
          depthMode: $ReadOnly<DepthMode>,
          stencilMode: $ReadOnly<StencilMode>,

@@ -7,8 +7,6 @@ let linkEl;
 
 let reducedMotionQuery: MediaQueryList;
 
-let errorState = false;
-
 let stubTime;
 
 /**
@@ -25,11 +23,6 @@ const exported = {
         }
         return window.performance.now();
     },
-
-    setErrorState() {
-        errorState = true;
-    },
-
     setNow(time: number) {
         stubTime = time;
     },
@@ -39,7 +32,6 @@ const exported = {
     },
 
     frame(fn: (paintStartTimestamp: number) => void): Cancelable {
-        if (errorState) return {cancel: () => {  }};
         const frame = window.requestAnimationFrame(fn);
         return {cancel: () => window.cancelAnimationFrame(frame)};
     },

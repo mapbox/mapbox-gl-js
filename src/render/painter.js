@@ -10,6 +10,7 @@ import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import SegmentVector from '../data/segment.js';
 import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
 import {values, MAX_SAFE_INTEGER} from '../util/util.js';
+import {isMapAuthenticated} from '../util/mapbox.js';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
 import posAttributes from '../data/pos_attributes.js';
 import ProgramConfiguration from '../data/program_configuration.js';
@@ -441,6 +442,9 @@ class Painter {
             // for depth buffer allocation per tile.
             this.opaquePassCutoff = 0;
         }
+
+        // Following line is billing related code. Do not change. See LICENSE.txt
+        if (!isMapAuthenticated(this.context.gl)) return;
 
         // Offscreen pass ===============================================
         // We first do all rendering that requires rendering to a separate

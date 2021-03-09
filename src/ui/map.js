@@ -7,7 +7,7 @@ import window from '../util/window.js';
 const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
 import DOM from '../util/dom.js';
 import {getImage, getJSON, ResourceType} from '../util/ajax.js';
-import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG} from '../util/mapbox.js';
+import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
 import Style from '../style/style.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import Painter from '../render/painter.js';
@@ -105,6 +105,7 @@ type MapOptions = {
     maxTileCacheSize?: number,
     transformRequest?: RequestTransformFunction,
     accessToken: string,
+    testMode: ?boolean,
     locale?: Object
 };
 
@@ -254,6 +255,7 @@ const defaultOptions = {
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @param {string} [options.accessToken=null] If specified, map will use this token instead of the one defined in mapboxgl.accessToken.
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language; see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
+ * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -327,6 +329,7 @@ class Map extends Camera {
     _removed: boolean;
     _speedIndexTiming: boolean;
     _clickTolerance: number;
+    _silenceAuthErrors: boolean;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -421,7 +424,8 @@ class Map extends Camera {
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
 
-        this._requestManager = new RequestManager(options.transformRequest, options.accessToken);
+        this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
+        this._silenceAuthErrors = !!options.testMode;
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
@@ -2407,6 +2411,8 @@ class Map extends Camera {
             return;
         }
 
+        storeAuthState(gl, true);
+
         this.painter = new Painter(gl, this.transform);
         this.on('data', (event: MapDataEvent) => {
             if (event.dataType === 'source') {
@@ -2636,6 +2642,7 @@ class Map extends Camera {
             if (!this.isMoving() && this.loaded()) {
                 this.fire(new Event('idle'));
                 if (this._isInitialLoad) {
+                    // Following line is billing related code. Do not change. See LICENSE.txt
                     this._authenticate();
                 }
                 this._isInitialLoad = false;
@@ -2674,13 +2681,16 @@ class Map extends Camera {
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
                 if (err.message === AUTH_ERR_MSG || err.status === 401) {
-                    console.error('Error: A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/');
-                    browser.setErrorState();
                     const gl = this.painter.context.gl;
+                    storeAuthState(gl, false);
                     if (this._logoControl instanceof LogoControl) {
                         this._logoControl._updateLogo();
                     }
                     if (gl) gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+
+                    if (!this._silenceAuthErrors) {
+                        this.fire(new ErrorEvent(new Error('A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/')));
+                    }
                 }
             }
         });
@@ -2776,7 +2786,7 @@ class Map extends Camera {
         this._container.classList.remove('mapboxgl-map');
 
         PerformanceUtils.clearMetrics();
-
+        removeAuthState(this.painter.context.gl);
         this._removed = true;
         this.fire(new Event('remove'));
     }
