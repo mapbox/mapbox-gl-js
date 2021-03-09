@@ -4,6 +4,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
+import Context from '../gl/context.js';
 import Texture from './texture.js';
 import Program from './program.js';
 import type SourceCache from '../source/source_cache.js';
@@ -94,8 +95,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
 
-function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<*>, faceRotate: mat4, sunDirection: vec3, i: number) {
-    const context = painter.context;
+function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, faceRotate: mat4, sunDirection: vec3, i: number) {
     const gl = context.gl;
 
     const atmosphereColor = layer.paint.get('sky-atmosphere-color');
@@ -152,26 +152,26 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
     // +x;
     mat4.identity(faceRotate);
     mat4.rotateY(faceRotate, faceRotate, -Math.PI * 0.5);
-    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 0);
+    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 0);
     // -x
     mat4.identity(faceRotate);
     mat4.rotateY(faceRotate, faceRotate, Math.PI * 0.5);
-    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 1);
+    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 1);
     // +y
     mat4.identity(faceRotate);
     mat4.rotateX(faceRotate, faceRotate, -Math.PI * 0.5);
-    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 2);
+    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 2);
     // -y
     mat4.identity(faceRotate);
     mat4.rotateX(faceRotate, faceRotate, Math.PI * 0.5);
-    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 3);
+    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 3);
     // +z
     mat4.identity(faceRotate);
-    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 4);
+    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 4);
     // -z
     mat4.identity(faceRotate);
     mat4.rotateY(faceRotate, faceRotate, Math.PI);
-    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 5);
+    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 5);
 
     context.viewport.set([0, 0, painter.width, painter.height]);
 }
