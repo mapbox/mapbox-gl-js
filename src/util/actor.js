@@ -108,7 +108,7 @@ class Actor {
                 cancel.cancel();
             }
         } else {
-            if (isWorker() && data.mustQueue) {
+            if (data.mustQueue) {
                 // for worker tasks that are often cancelled, such as loadTile, store them before actually
                 // processing them. This is necessary because we want to keep receiving <cancel> messages.
                 // Some tasks may take a while in the worker thread, so before executing the next task
@@ -151,7 +151,6 @@ class Actor {
                     type: '<response>',
                     sourceMapId: this.mapId,
                     error: err ? serialize(err) : null,
-                    mustQueue: task.mustQueue,
                     data: serialize(data, buffers)
                 }, buffers);
             } : (_) => {
