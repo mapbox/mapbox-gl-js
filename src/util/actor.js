@@ -151,6 +151,7 @@ class Actor {
                     type: '<response>',
                     sourceMapId: this.mapId,
                     error: err ? serialize(err) : null,
+                    mustQueue: task.mustQueue,
                     data: serialize(data, buffers)
                 }, buffers);
             } : (_) => {
