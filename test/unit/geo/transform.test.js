@@ -8,7 +8,7 @@ import {FreeCameraOptions} from '../../../src/ui/free_camera.js';
 import MercatorCoordinate, {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate.js';
 import {vec3, quat} from 'gl-matrix';
 import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
-import {extend, degToRad} from '../../../src/util/util.js';
+import {degToRad} from '../../../src/util/util.js';
 
 test('transform', (t) => {
 
@@ -529,15 +529,11 @@ test('transform', (t) => {
     });
 
     test('coveringTiles for terrain', (t) => {
-        const options2D = {
+        const options = {
             minzoom: 1,
             maxzoom: 10,
             tileSize: 512
         };
-
-        const options = extend({
-            useElevationData: true
-        }, options2D);
 
         const transform = new Transform();
         let centerElevation = 0;
@@ -600,7 +596,7 @@ test('transform', (t) => {
         transform.center = new LngLat(56.90, 48.20);
         transform.resize(1024, 768);
         transform.elevation = null;
-        const cover2D = transform.coveringTiles(options2D);
+        const cover2D = transform.coveringTiles(options);
         // No LOD as there is no elevation data.
         t.true(cover2D[0].overscaledZ === cover2D[cover2D.length - 1].overscaledZ);
 
