@@ -2625,6 +2625,7 @@ class Map extends Camera {
             this._triggerFrame(false);
             if (!this.isMoving() && this.loaded()) {
                 this.fire(new Event('idle'));
+                this._isInitialLoad = false;
                 // check the options to see if need to calculate the speed index
                 if (this.speedIndexTiming) {
                     const speedIndexNumber = this._calculateSpeedIndex();
@@ -2636,10 +2637,7 @@ class Map extends Camera {
 
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
-            if (this._isInitialLoad) {
-                this._authenticate();
-            }
-            this._isInitialLoad = false;
+            this._authenticate();
             PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
 
