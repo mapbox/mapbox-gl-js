@@ -9,7 +9,8 @@ if (!shared) {
 } else if (!worker) {
     worker = chunk;
 } else {
-    var workerBundleString = 'var sharedChunk = {}; (' + shared + ')(sharedChunk); (' + worker + ')(sharedChunk);'
+    var workerBundleString = "var __evalFinished = false; self.onerror = function() { if(!__evalFinished) { console.error('An error occurred while parsing the WebWorker bundle. This is most likely due to improper transpilation by Babel please see https://docs.mapbox.com/mapbox-gl-js/api/#transpiling-v2'); } }; var sharedChunk = {}; (" + shared + ")(sharedChunk); (" + worker + ")(sharedChunk); __evalFinished = true;"
+
 
     var sharedChunk = {};
     shared(sharedChunk);
