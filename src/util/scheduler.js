@@ -22,7 +22,22 @@ class Scheduler {
 
     add(fn: () => void, metadata: Object) {
         const id = this.nextId++;
-        this.tasks[id] = {fn, metadata, priority: getPriority(metadata), id};
+        const priority = getPriority(metadata);
+
+        if (priority === 0) {
+            // Process tasks with priority 0 immediately. Do not yield to the event loop.
+            const m = isWorker() ? PerformanceUtils.beginMeasure('workerTask') : undefined;
+            try {
+                fn();
+            } finally {
+                if (m) PerformanceUtils.endMeasure(m);
+            }
+            return {
+                cancel: () => {}
+            };
+        }
+
+        this.tasks[id] = {fn, metadata, priority, id};
         this.taskQueue.push(id);
         this.invoker.trigger();
         return {

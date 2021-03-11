@@ -4,7 +4,6 @@ import {bindAll, isWorker, isSafari} from './util.js';
 import window from './window.js';
 import {serialize, deserialize} from './web_worker_transfer.js';
 import Scheduler from './scheduler.js';
-import {PerformanceUtils} from './performance.js';
 
 import type {Transferable} from '../types/transferable.js';
 import type {Cancelable} from '../types/cancelable.js';
@@ -108,7 +107,7 @@ class Actor {
                 cancel.cancel();
             }
         } else {
-            if (data.mustQueue) {
+            if (data.mustQueue || isWorker()) {
                 // for worker tasks that are often cancelled, such as loadTile, store them before actually
                 // processing them. This is necessary because we want to keep receiving <cancel> messages.
                 // Some tasks may take a while in the worker thread, so before executing the next task
@@ -120,10 +119,7 @@ class Actor {
             } else {
                 // In the main thread, process messages immediately so that other work does not slip in
                 // between getting partial data back from workers.
-                // Do the same for worker tasks that need processing as soon as possible.
-                const m = isWorker() ? PerformanceUtils.beginMeasure('workerTask') : undefined;
                 this.processTask(id, data);
-                if (m) PerformanceUtils.endMeasure(m);
             }
         }
     }
