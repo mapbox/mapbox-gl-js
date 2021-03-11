@@ -10,13 +10,11 @@
 
 'use strict'; // eslint-disable-line strict
 
-const fs = require('fs');
-
-const ejs = require('ejs');
-const util = require('../src/util/util');
-const {createLayout, viewTypes} = require('../src/util/struct_array');
-
-import type {ViewType, StructArrayLayout} from '../src/util/struct_array';
+import fs from 'fs';
+import ejs from 'ejs';
+import {extend} from '../src/util/util.js';
+import {createLayout, viewTypes} from '../src/util/struct_array.js';
+import type {ViewType, StructArrayLayout} from '../src/util/struct_array.js';
 
 const structArrayLayoutJs = ejs.compile(fs.readFileSync('src/util/struct_array_layout.js.ejs', 'utf8'), {strict: true});
 const structArrayJs = ejs.compile(fs.readFileSync('src/util/struct_array.js.ejs', 'utf8'), {strict: true});
@@ -41,7 +39,7 @@ function normalizeMembers(members, usedTypes) {
             usedTypes.add(member.type);
         }
 
-        return util.extend(member, {
+        return extend(member, {
             size: sizeOf(member.type),
             view: member.type.toLowerCase()
         });
@@ -84,7 +82,7 @@ function createStructArrayLayoutType({members, size, alignment}) {
     if (!alignment || alignment === 1) members = members.reduce((memo, member) => {
         if (memo.length > 0 && memo[memo.length - 1].type === member.type) {
             const last = memo[memo.length - 1];
-            return memo.slice(0, -1).concat(util.extend({}, last, {
+            return memo.slice(0, -1).concat(extend({}, last, {
                 components: last.components + member.components,
             }));
         }
@@ -119,19 +117,19 @@ function camelize (str) {
 
 global.camelize = camelize;
 
-const posAttributes = require('../src/data/pos_attributes').default;
-const rasterBoundsAttributes = require('../src/data/raster_bounds_attributes').default;
+import posAttributes from '../src/data/pos_attributes.js';
+import rasterBoundsAttributes from '../src/data/raster_bounds_attributes.js';
 
 createStructArrayType('pos', posAttributes);
 createStructArrayType('raster_bounds', rasterBoundsAttributes);
 
-const circleAttributes = require('../src/data/bucket/circle_attributes').default;
-const fillAttributes = require('../src/data/bucket/fill_attributes').default;
-const lineAttributes = require('../src/data/bucket/line_attributes').default;
-const lineAttributesExt = require('../src/data/bucket/line_attributes_ext').default;
-const patternAttributes = require('../src/data/bucket/pattern_attributes').default;
-const skyboxAttributes = require('../src/render/skybox_attributes').default;
-const {fillExtrusionAttributes, centroidAttributes} = require('../src/data/bucket/fill_extrusion_attributes');
+import circleAttributes from '../src/data/bucket/circle_attributes.js';
+import fillAttributes from '../src/data/bucket/fill_attributes.js';
+import lineAttributes from '../src/data/bucket/line_attributes.js';
+import lineAttributesExt from '../src/data/bucket/line_attributes_ext.js';
+import patternAttributes from '../src/data/bucket/pattern_attributes.js';
+import skyboxAttributes from '../src/render/skybox_attributes.js';
+import {fillExtrusionAttributes, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
 
 // layout vertex arrays
 const layoutAttributes = {
@@ -148,7 +146,7 @@ for (const name in layoutAttributes) {
 }
 
 // symbol layer specific arrays
-const {
+import {
     symbolLayoutAttributes,
     dynamicLayoutAttributes,
     placementOpacityAttributes,
@@ -162,7 +160,7 @@ const {
     symbolInstance,
     glyphOffset,
     lineVertex
-} = require('../src/data/bucket/symbol_attributes');
+} from '../src/data/bucket/symbol_attributes.js';
 
 createStructArrayType(`symbol_layout`, symbolLayoutAttributes);
 createStructArrayType(`symbol_dynamic_layout`, dynamicLayoutAttributes);

@@ -1,10 +1,9 @@
 'use strict';
 
-const fs = require('fs');
-
-const ejs = require('ejs');
-const spec = require('../src/style-spec/reference/v8');
-const Color = require('../src/style-spec/util/color');
+import fs from 'fs';
+import ejs from 'ejs';
+import spec from '../src/style-spec/reference/v8.json';
+import Color from '../src/style-spec/util/color.js';
 
 global.camelize = function (str) {
     return str.replace(/(?:^|-)(.)/g, function (_, x) {
