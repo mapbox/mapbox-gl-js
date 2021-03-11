@@ -2642,10 +2642,6 @@ class Map extends Camera {
             this._triggerFrame(false);
             if (!this.isMoving() && this.loaded()) {
                 this.fire(new Event('idle'));
-                if (this._isInitialLoad) {
-                    // Following line is billing related code. Do not change. See LICENSE.txt
-                    this._authenticate();
-                }
                 this._isInitialLoad = false;
                 // check the options to see if need to calculate the speed index
                 if (this.speedIndexTiming) {
@@ -2658,6 +2654,8 @@ class Map extends Camera {
 
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
+            // Following line is billing related code. Do not change. See LICENSE.txt
+            this._authenticate();
             PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
 
