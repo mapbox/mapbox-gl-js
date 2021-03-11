@@ -86,6 +86,13 @@ export type TerrainSpecification = {|
     "exaggeration"?: PropertyValueSpecification<number>
 |}
 
+export type FogSpecification = {|
+    "position"?: PropertyValueSpecification<[number, number]>,
+    "color"?: PropertyValueSpecification<ColorSpecification>,
+    "opacity"?: PropertyValueSpecification<number>,
+    "sky-blend"?: PropertyValueSpecification<number>
+|}
+
 export type VectorSourceSpecification = {
     "type": "vector",
     "url"?: string,
