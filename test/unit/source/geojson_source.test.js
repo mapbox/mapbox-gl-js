@@ -77,13 +77,13 @@ test('GeoJSONSource#setData', (t) => {
             source.once('data', t.end);
             source.setData({});
         });
-        source.load();
+        source.setData({});
     });
 
     t.test('fires "dataloading" event', (t) => {
         const source = createSource();
         source.on('dataloading', t.end);
-        source.load();
+        source.setData({});
     });
 
     t.test('respects collectResourceTiming parameter on source', (t) => {
@@ -106,25 +106,6 @@ test('GeoJSONSource#setData', (t) => {
     t.end();
 });
 
-test('GeoJSONSource#onRemove', (t) => {
-    t.test('broadcasts "removeSource" event', (t) => {
-        const source = new GeoJSONSource('id', {data: {}}, wrapDispatcher({
-            send(type, data, callback) {
-                t.false(callback);
-                t.equal(type, 'removeSource');
-                t.deepEqual(data, {type: 'geojson', source: 'id'});
-                t.end();
-            },
-            broadcast() {
-                // Ignore
-            }
-        }));
-        source.onRemove();
-    });
-
-    t.end();
-});
-
 test('GeoJSONSource#update', (t) => {
     const transform = new Transform();
     transform.resize(200, 200);
@@ -142,7 +123,7 @@ test('GeoJSONSource#update', (t) => {
         });
 
         /* eslint-disable no-new */
-        new GeoJSONSource('id', {data: {}}, mockDispatcher).load();
+        new GeoJSONSource('id', {data: {}}, mockDispatcher).setData({});
     });
 
     t.test('forwards geojson-vt options with worker request', (t) => {
@@ -167,7 +148,7 @@ test('GeoJSONSource#update', (t) => {
             tolerance: 0.25,
             buffer: 16,
             generateId: true
-        }, mockDispatcher).load();
+        }, mockDispatcher).setData({});
     });
 
     t.test('forwards Supercluster options with worker request', (t) => {
@@ -193,7 +174,7 @@ test('GeoJSONSource#update', (t) => {
             clusterRadius: 100,
             clusterMinPoints: 3,
             generateId: true
-        }, mockDispatcher).load();
+        }, mockDispatcher).setData({});
     });
 
     t.test('transforms url before making request', (t) => {
@@ -224,7 +205,7 @@ test('GeoJSONSource#update', (t) => {
             if (e.sourceDataType === 'metadata') t.end();
         });
 
-        source.load();
+        source.setData({});
     });
 
     t.test('fires "error"', (t) => {
@@ -243,7 +224,7 @@ test('GeoJSONSource#update', (t) => {
             t.end();
         });
 
-        source.load();
+        source.setData({});
     });
 
     t.test('sends loadData request to dispatcher after data update', (t) => {
@@ -271,7 +252,7 @@ test('GeoJSONSource#update', (t) => {
             }
         });
 
-        source.load();
+        source.setData({});
     });
 
     t.end();
@@ -285,8 +266,7 @@ test('GeoJSONSource#serialize', (t) => {
     };
     t.test('serialize source with inline data', (t) => {
         const source = new GeoJSONSource('id', {data: hawkHill}, mockDispatcher);
-        source.map = mapStub;
-        source.load();
+        source.onAdd(mapStub);
         t.deepEqual(source.serialize(), {
             type: 'geojson',
             data: hawkHill
@@ -296,8 +276,7 @@ test('GeoJSONSource#serialize', (t) => {
 
     t.test('serialize source with url', (t) => {
         const source = new GeoJSONSource('id', {data: 'local://data.json'}, mockDispatcher);
-        source.map = mapStub;
-        source.load();
+        source.onAdd(mapStub);
         t.deepEqual(source.serialize(), {
             type: 'geojson',
             data: 'local://data.json'
@@ -307,8 +286,7 @@ test('GeoJSONSource#serialize', (t) => {
 
     t.test('serialize source with updated data', (t) => {
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
-        source.map = mapStub;
-        source.load();
+        source.onAdd(mapStub);
         source.setData(hawkHill);
         t.deepEqual(source.serialize(), {
             type: 'geojson',

@@ -15,6 +15,7 @@ import type Actor from '../util/actor.js';
 import type {Callback} from '../types/callback.js';
 import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
 import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
+import type {Cancelable} from '../types/cancelable.js';
 
 /**
  * A source containing GeoJSON.
@@ -79,9 +80,10 @@ class GeoJSONSource extends Evented implements Source {
     map: Map;
     actor: Actor;
     _loaded: boolean;
+    _coalesce: ?boolean;
+    _metadataFired: ?boolean;
     _collectResourceTiming: boolean;
-    _resourceTiming: Array<PerformanceResourceTiming>;
-    _removed: boolean;
+    _pendingLoad: ?Cancelable;
 
     /**
      * @private
@@ -100,7 +102,6 @@ class GeoJSONSource extends Evented implements Source {
         this.tileSize = 512;
         this.isTileClipped = true;
         this.reparseOverscaled = true;
-        this._removed = false;
         this._loaded = false;
 
         this.actor = dispatcher.getActor();
@@ -110,7 +111,6 @@ class GeoJSONSource extends Evented implements Source {
         this._options = extend({}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
-        this._resourceTiming = [];
 
         if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
         if (options.type) this.type = options.type;
@@ -147,29 +147,9 @@ class GeoJSONSource extends Evented implements Source {
         }, options.workerOptions);
     }
 
-    load() {
-        this.fire(new Event('dataloading', {dataType: 'source'}));
-        this._updateWorkerData((err) => {
-            if (err) {
-                this.fire(new ErrorEvent(err));
-                return;
-            }
-
-            const data: Object = {dataType: 'source', sourceDataType: 'metadata'};
-            if (this._collectResourceTiming && this._resourceTiming && (this._resourceTiming.length > 0)) {
-                data.resourceTiming = this._resourceTiming;
-                this._resourceTiming = [];
-            }
-
-            // although GeoJSON sources contain no metadata, we fire this event to let the SourceCache
-            // know its ok to start requesting tiles.
-            this.fire(new Event('data', data));
-        });
-    }
-
     onAdd(map: Map) {
         this.map = map;
-        this.load();
+        this.setData(this._data);
     }
 
     /**
@@ -180,21 +160,7 @@ class GeoJSONSource extends Evented implements Source {
      */
     setData(data: GeoJSON | string) {
         this._data = data;
-        this.fire(new Event('dataloading', {dataType: 'source'}));
-        this._updateWorkerData((err) => {
-            if (err) {
-                this.fire(new ErrorEvent(err));
-                return;
-            }
-
-            const data: Object = {dataType: 'source', sourceDataType: 'content'};
-            if (this._collectResourceTiming && this._resourceTiming && (this._resourceTiming.length > 0)) {
-                data.resourceTiming = this._resourceTiming;
-                this._resourceTiming = [];
-            }
-            this.fire(new Event('data', data));
-        });
-
+        this._updateWorkerData();
         return this;
     }
 
@@ -262,7 +228,15 @@ class GeoJSONSource extends Evented implements Source {
      * handles loading the geojson data and preparing to serve it up as tiles,
      * using geojson-vt or supercluster as appropriate.
      */
-    _updateWorkerData(callback: Callback<void>) {
+    _updateWorkerData() {
+        // if there's an earlier loadData to finish, wait until it finishes and then do another update
+        if (this._pendingLoad) {
+            this._coalesce = true;
+            return;
+        }
+
+        this.fire(new Event('dataloading', {dataType: 'source'}));
+
         this._loaded = false;
         const options = extend({}, this.workerOptions);
         const data = this._data;
@@ -276,24 +250,28 @@ class GeoJSONSource extends Evented implements Source {
         // target {this.type}.loadData rather than literally geojson.loadData,
         // so that other geojson-like source types can easily reuse this
         // implementation
-        this.actor.send(`${this.type}.loadData`, options, (err, result) => {
-            if (this._removed || (result && result.abandoned)) {
-                return;
+        this._pendingLoad = this.actor.send(`${this.type}.loadData`, options, (err, result) => {
+            this._loaded = true;
+            this._pendingLoad = null;
+
+            if (err) {
+                this.fire(new ErrorEvent(err));
+
+            } else {
+                // although GeoJSON sources contain no metadata, we fire this event at first
+                // to let the SourceCache know its ok to start requesting tiles.
+                const data: Object = {dataType: 'source', sourceDataType: this._metadataFired ? 'content' : 'metadata'};
+                if (this._collectResourceTiming && result && result.resourceTiming && result.resourceTiming[this.id]) {
+                    data.resourceTiming = result.resourceTiming[this.id];
+                }
+                this.fire(new Event('data', data));
+                this._metadataFired = true;
             }
 
-            this._loaded = true;
-
-            if (result && result.resourceTiming && result.resourceTiming[this.id])
-                this._resourceTiming = result.resourceTiming[this.id].slice(0);
-            // Any `loadData` calls that piled up while we were processing
-            // this one will get coalesced into a single call when this
-            // 'coalesce' message is processed.
-            // We would self-send from the worker if we had access to its
-            // message queue. Waiting instead for the 'coalesce' to round-trip
-            // through the foreground just means we're throttling the worker
-            // to run at a little less than full-throttle.
-            this.actor.send(`${this.type}.coalesce`, {source: options.source}, null);
-            callback(err);
+            if (this._coalesce) {
+                this._updateWorkerData();
+                this._coalesce = false;
+            }
         });
     }
 
@@ -333,7 +311,7 @@ class GeoJSONSource extends Evented implements Source {
             tile.loadVectorData(data, this.map.painter, message === 'reloadTile');
 
             return callback(null);
-        });
+        }, undefined, message === 'loadTile');
     }
 
     abortTile(tile: Tile) {
@@ -350,8 +328,9 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     onRemove() {
-        this._removed = true;
-        this.actor.send('removeSource', {type: this.type, source: this.id});
+        if (this._pendingLoad) {
+            this._pendingLoad.cancel();
+        }
     }
 
     serialize() {

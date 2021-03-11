@@ -107,13 +107,12 @@ class Actor {
                 cancel.cancel();
             }
         } else {
-            if (isWorker() || data.mustQueue) {
-                // In workers, store the tasks that we need to process before actually processing them. This
-                // is necessary because we want to keep receiving messages, and in particular,
-                // <cancel> messages. Some tasks may take a while in the worker thread, so before
-                // executing the next task in our queue, postMessage preempts this and <cancel>
-                // messages can be processed. We're using a MessageChannel object to get throttle the
-                // process() flow to one at a time.
+            if (data.mustQueue || isWorker()) {
+                // for worker tasks that are often cancelled, such as loadTile, store them before actually
+                // processing them. This is necessary because we want to keep receiving <cancel> messages.
+                // Some tasks may take a while in the worker thread, so before executing the next task
+                // in our queue, postMessage preempts this and <cancel> messages can be processed.
+                // We're using a MessageChannel object to get throttle the process() flow to one at a time.
                 const callback = this.callbacks[id];
                 const metadata = (callback && callback.metadata) || {type: "message"};
                 this.cancelCallbacks[id] = this.scheduler.add(() => this.processTask(id, data), metadata);
