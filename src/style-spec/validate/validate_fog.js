@@ -5,7 +5,6 @@ import getType from '../util/get_type.js';
 
 export default function validateFog(options) {
     const fog = options.value;
-    const key = options.key;
     const style = options.style;
     const styleSpec = options.styleSpec;
     const fogSpec = styleSpec.fog;
