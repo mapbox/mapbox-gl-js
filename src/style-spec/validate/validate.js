@@ -18,6 +18,7 @@ import validateLayer from './validate_layer.js';
 import validateSource from './validate_source.js';
 import validateLight from './validate_light.js';
 import validateTerrain from './validate_terrain.js';
+import validateFog from './validate_fog.js';
 import validateString from './validate_string.js';
 import validateFormatted from './validate_formatted.js';
 import validateImage from './validate_image.js';
@@ -39,6 +40,7 @@ const VALIDATORS = {
     'source': validateSource,
     'light': validateLight,
     'terrain': validateTerrain,
+    'fog': validateFog,
     'string': validateString,
     'formatted': validateFormatted,
     'resolvedImage': validateImage
