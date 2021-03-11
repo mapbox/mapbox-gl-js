@@ -7,7 +7,7 @@ void main() {
     #pragma mapbox: initialize highp vec4 outline_color
     #pragma mapbox: initialize lowp float opacity
 
-    float dist = length(v_pos - gl_FragCoord.xy);
+    float dist = length(v_pos * gl_FragCoord.w - gl_FragCoord.xy);
     float alpha = 1.0 - smoothstep(0.0, 1.0, dist);
     gl_FragColor = outline_color * (alpha * opacity);
 
