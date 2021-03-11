@@ -3681,6 +3681,128 @@
       }
     }
   },
+  "fog": {
+    "position": {
+      "type": "array",
+      "default": [
+        3000,
+        8000
+      ],
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "doc": "",
+      "example": [
+        3000,
+        8000
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      }
+    },
+    "color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      }
+    },
+    "opacity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      }
+    },
+    "sky-blend": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      }
+    },
+    "sky-blend": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      }
+    }
+  },
   "light": {
     "anchor": {
       "type": "enum",
