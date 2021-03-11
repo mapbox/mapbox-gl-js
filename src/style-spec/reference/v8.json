@@ -3682,7 +3682,7 @@
     }
   },
   "fog": {
-    "position": {
+    "range": {
       "type": "array",
       "default": [
         3000,
@@ -3734,29 +3734,6 @@
       }
     },
     "opacity": {
-      "type": "number",
-      "property-type": "data-constant",
-      "default": 1,
-      "minimum": 0,
-      "maximum": 1,
-      "expression": {
-        "interpolated": true,
-        "parameters": [
-          "zoom"
-        ]
-      },
-      "transition": true,
-      "doc": "",
-      "sdk-support": {
-        "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
-        }
-      }
-    },
-    "sky-blend": {
       "type": "number",
       "property-type": "data-constant",
       "default": 1,
