@@ -1,0 +1,15 @@
+[
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -122.45625324547291,
+        37.75739920836594
+      ]
+    },
+    "properties": {},
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  }
+]
