@@ -1,23 +1,13 @@
 // @flow
 
-import styleSpec from '../style-spec/reference/latest';
-
-import {endsWith, extend} from '../util/util';
-import {Evented} from '../util/evented';
-import {
-    validateStyle,
-    validateFog,
-    emitValidationErrors
-} from './validate_style';
-
-import type EvaluationParameters from './evaluation_parameters';
-import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties';
-
-import type {
-    TransitionParameters
-} from './properties';
-
-import type {FogSpecification} from '../style-spec/types';
+import styleSpec from '../style-spec/reference/latest.js';
+import {endsWith, extend} from '../util/util.js';
+import {Evented} from '../util/evented.js';
+import {validateStyle, validateFog, emitValidationErrors} from './validate_style.js';
+import type EvaluationParameters from './evaluation_parameters.js';
+import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
+import type {TransitionParameters} from './properties.js';
+import type {FogSpecification} from '../style-spec/types.js';
 import Color from '../style-spec/util/color.js';
 
 type Props = {|
