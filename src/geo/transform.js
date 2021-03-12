@@ -541,13 +541,13 @@ class Transform {
             roundZoom?: boolean,
             reparseOverscaled?: boolean,
             renderWorldCopies?: boolean,
-            isTerrainDEM?: boolean
+            useElevationData?: boolean
         }
     ): Array<OverscaledTileID> {
         let z = this.coveringZoomLevel(options);
         const actualZ = z;
 
-        const useElevationData = this.elevation && !options.isTerrainDEM;
+        const useElevationData = !!options.useElevationData;
 
         if (options.minzoom !== undefined && z < options.minzoom) return [];
         if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
@@ -569,14 +569,10 @@ class Transform {
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation ? z : 0;
 
-        // When calculating DEM tile cover, create deep AABB for nodes, to ensure they intersect frustum.  For other sources,
-        // use 2D tile cover: tile assumes center elevation until corresponding DEM cover is loaded to tell if additional
-        // tiles need to be loaded.
-        const maxRange = options.isTerrainDEM && this._elevation ? this._elevation.exaggeration() * 10000 : this._centerAltitude;
-        const minRange = options.isTerrainDEM && this._elevation ? -maxRange : this._centerAltitude;
+        const maxRange = this.elevation ? this.elevation.exaggeration() * 10000 : 0;
         const newRootTile = (wrap: number): any => {
             const max = maxRange;
-            const min = minRange;
+            const min = -maxRange;
             return {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
@@ -698,7 +694,10 @@ class Transform {
 
                 const aabb = it.aabb.quadrant(i);
                 let tileID = null;
-                if (useElevationData) {
+                if (useElevationData && it.zoom > maxZoom - 6) {
+                    // Using elevation data for tiles helps clipping out tiles that are not visible and
+                    // precise distance calculation. it.zoom > maxZoom - 6 is an optimization as those before get subdivided
+                    // or they are so far at horizon that it doesn't matter.
                     tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
                     getAABBFromElevation(aabb, tileID);
                 }

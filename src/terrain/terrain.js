@@ -104,7 +104,8 @@ class ProxySourceCache extends SourceCache {
             minzoom: this._source.minzoom,
             maxzoom: this._source.maxzoom,
             roundZoom: this._source.roundZoom,
-            reparseOverscaled: this._source.reparseOverscaled
+            reparseOverscaled: this._source.reparseOverscaled,
+            useElevationData: true
         });
 
         const incoming: {[string]: string} = idealTileIDs.reduce((acc, tileID) => {
