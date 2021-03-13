@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0 }
+        html, body, #map { height: 100%; }
+
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='checkboxes'>
+    <label><input id='fog-checkbox' type='checkbox'> fog</label><br />
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 13.31,
+    center: [-118.41588, 36.46821],
+    pitch: 75,
+    bearing: -10,
+    style: 'mapbox://styles/mapbox/satellite-streets-v11',
+    hash: true
+});
+
+map.on('style.load', function() {
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
+    map.addLayer({
+        'id': 'sky',
+        'type': 'sky',
+        'paint': {
+            'sky-type': 'atmosphere',
+            'sky-gradient-center': [90, 3],
+            'sky-opacity': [
+                'interpolate',
+                ['exponential', 0.1],
+                ['zoom'],
+                5,
+                0,
+                22,
+                1
+            ]
+        }
+    });
+
+    map.setTerrain({"source": "mapbox-dem"});
+
+    document.getElementById('fog-checkbox').onclick();
+});
+
+document.getElementById('fog-checkbox').onclick = function() {
+    const fogOptions = {
+        "range": [3000, 8000],
+        "color": "white",
+        "opacity": 0.8,
+        "sky-blend": 0.2
+    }
+    map.setFog(this.checked ? fogOptions : null);
+};
+
+</script>
+</body>
+</html>
