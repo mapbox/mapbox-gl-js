@@ -18,6 +18,8 @@ export default function validateFog(options) {
         return errors;
     }
 
+    // NOTE: Make sure to add specific validation for fog range: range[0] must be < range[1]
+
     for (const key in fog) {
         const transitionMatch = key.match(/^(.*)-transition$/);
 
