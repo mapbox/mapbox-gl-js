@@ -2170,6 +2170,17 @@ class Map extends Camera {
         return this.style.getTerrain();
     }
 
+    setFog(fog: FogSpecification) {
+        this._lazyInitEmptyStyle();
+        this.style.setFog(fog);
+        return this._update(true);
+    }
+
+    // NOTE: Make fog non-optional
+    getFog(): Fog | null {
+        return this.style.getFog();
+    }
+
     /**
      * Queries the currently loaded data for elevation at a geographical location. This accounts for the value of `exaggeration` set on `terrain`.
      * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
