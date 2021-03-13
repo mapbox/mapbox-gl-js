@@ -2169,6 +2169,17 @@ class Map extends Camera {
         return this.style.getTerrain();
     }
 
+    setFog(fog: FogSpecification) {
+        this._lazyInitEmptyStyle();
+        this.style.setFog(fog);
+        return this._update(true);
+    }
+
+    // NOTE: Make fog non-optional
+    getFog(): Fog | null {
+        return this.style.getFog();
+    }
+
     /**
      * Sets the `state` of a feature.
      * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
