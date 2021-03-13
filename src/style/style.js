@@ -10,6 +10,7 @@ import ImageManager from '../render/image_manager.js';
 import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
 import Light from './light.js';
 import Terrain from './terrain.js';
+import Fog from './fog.js';
 import LineAtlas from '../render/line_atlas.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
@@ -64,7 +65,8 @@ import type {
     StyleSpecification,
     LightSpecification,
     SourceSpecification,
-    TerrainSpecification
+    TerrainSpecification,
+    FogSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator} from './validate_style.js';
@@ -83,7 +85,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setLight',
     'setTransition',
     'setGeoJSONSourceData',
-    'setTerrain'
+    'setTerrain',
+    'setFog'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -122,6 +125,8 @@ class Style extends Evented {
     lineAtlas: LineAtlas;
     light: Light;
     terrain: ?Terrain;
+    // NOTE: Make fog non-optional
+    fog: ?Fog;
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
@@ -322,6 +327,9 @@ class Style extends Evented {
         if (this.stylesheet.terrain) {
             this._createTerrain(this.stylesheet.terrain);
         }
+        if (this.stylesheet.fog) {
+            this._createFog(this.stylesheet.fog);
+        }
         this._updateDrapeFirstLayers();
 
         this.fire(new Event('data', {dataType: 'style'}));
@@ -468,6 +476,9 @@ class Style extends Evented {
             }
 
             this.light.updateTransitions(parameters);
+            if (this.fog) {
+                this.fog.updateTransitions(parameters);
+            }
 
             this._resetUpdates();
         }
@@ -512,6 +523,9 @@ class Style extends Evented {
         this.light.recalculate(parameters);
         if (this.terrain) {
             this.terrain.recalculate(parameters);
+        }
+        if (this.fog) {
+            this.fog.recalculate(parameters);
         }
         this.z = parameters.zoom;
 
@@ -1146,6 +1160,7 @@ class Style extends Evented {
             metadata: this.stylesheet.metadata,
             light: this.stylesheet.light,
             terrain: this.stylesheet.terrain,
+            fog: this.stylesheet.fog,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
             bearing: this.stylesheet.bearing,
@@ -1417,6 +1432,58 @@ class Style extends Evented {
         }
 
         this._updateDrapeFirstLayers();
+    }
+
+    _createFog(fogOptions: FogSpecification) {
+        const fog = this.fog = new Fog(fogOptions);
+        this.stylesheet.fog = fogOptions;
+        const parameters = {
+            now: browser.now(),
+            transition: extend({
+                duration: 0
+            }, this.stylesheet.transition)
+        };
+
+        fog.updateTransitions(parameters);
+    }
+
+    getFog() {
+        return this.fog ? this.fog.get() : null;
+    }
+
+    setFog(fogOptions: FogSpecification) {
+        this._checkLoaded();
+
+        if (!fogOptions) {
+            // Remove fog
+            delete this.fog;
+            delete this.stylesheet.fog;
+            return;
+        }
+
+        if (!this.fog) {
+            // Initialize Fog
+            this._createFog(fogOptions);
+        } else {
+            // Updating fog
+            const fog = this.fog;
+            const currSpec = fog.get();
+            for (const key in fogOptions) {
+                if (!deepEqual(fogOptions[key], currSpec[key])) {
+                    fog.set(fogOptions);
+                    this.stylesheet.fog = fogOptions;
+                    const parameters = {
+                        now: browser.now(),
+                        transition: extend({
+                            duration: 0
+                        }, this.stylesheet.transition)
+                    };
+
+                    fog.updateTransitions(parameters);
+                    break;
+                }
+            }
+        }
     }
 
     _updateDrapeFirstLayers() {
