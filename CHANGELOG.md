@@ -1,6 +1,6 @@
 ## 2.2.0
 
-## Features and improvements
+### Features and improvements
 * Add `testMode` Map option that silences errors and warnings generated due to an invalid accessToken. It maybe useful when using the library to write unit tests. ([#10445](https://github.com/mapbox/mapbox-gl-js/pull/10445))
 * Improve `geojsonSource.setData(...)` performance in Safari ([#10417](https://github.com/mapbox/mapbox-gl-js/pull/10417))
 * Add `map.getTerrain()` method ([#10413](https://github.com/mapbox/mapbox-gl-js/pull/10413))
@@ -8,7 +8,7 @@
 * Document the default limit and offset of `geojsonSource.getClusterLeaves(...)` ([#10403](https://github.com/mapbox/mapbox-gl-js/pull/10403)) (h/t [henk23](https://github.com/henk23))
 * (Development) Update dev environment to native ES modules to support Node 14+ ([#10367](https://github.com/mapbox/mapbox-gl-js/pull/10367))
 
-## Bug fixes
+### Bug fixes
 * Fix `map.getBounds()` to return the inset bounds when map padding is set ([#10386](https://github.com/mapbox/mapbox-gl-js/pull/10386))
 * Support flat roofs for fill-extrusions when using custom data sources with terrain ([#10347](https://github.com/mapbox/mapbox-gl-js/pull/10347))
 * Fix flickering accuracy circle in `GeolocateControl`. ([#10334](https://github.com/mapbox/mapbox-gl-js/pull/10334)) (h/t [anderswi](https://github.com/anderswi))
