@@ -714,6 +714,63 @@ test('transform', (t) => {
         t.end();
     });
 
+    test('loads only visible on terrain', (t) => {
+        // See https://github.com/mapbox/mapbox-gl-js/pull/10462
+        const demTiles = {};
+        demTiles[new CanonicalTileID(14, 8546, 5850).key] = 2760;
+        demTiles[new CanonicalTileID(14, 8546, 5849).key] = 2760;
+        demTiles[new CanonicalTileID(14, 8546, 5851).key] = 2760;
+        demTiles[new CanonicalTileID(13, 4272, 2925).key] = 2760;
+        demTiles[new CanonicalTileID(13, 4272, 2924).key] = 0;
+        demTiles[new CanonicalTileID(14, 8546, 5848).key] = 0;
+        demTiles[new CanonicalTileID(12, 2136, 1463).key] = 0;
+        demTiles[new CanonicalTileID(11, 1067, 731).key] = 0;
+        demTiles[new CanonicalTileID(11, 1066, 731).key] = 0;
+        demTiles[new CanonicalTileID(11, 1068, 730).key] = 0;
+        demTiles[new CanonicalTileID(11, 1067, 730).key] = 0;
+        demTiles[new CanonicalTileID(11, 1066, 730).key] = 0;
+        demTiles[new CanonicalTileID(9, 266, 183).key] = 0;
+
+        const options = {
+            minzoom: 1,
+            maxzoom: 22,
+            tileSize: 512
+        };
+
+        const transform = new Transform();
+        transform.elevation = {
+            getAtPoint(_) {
+                return 2760;
+            },
+            getMinMaxForTile(tileID) {
+                for (let z = tileID.canonical.z - 1; z >= 9; z--) {
+                    const id = tileID.calculateScaledKey(z);
+                    if (demTiles.hasOwnProperty(id)) {
+                        return {min: 0, max: demTiles[id]};
+                    }
+                }
+                return null;
+            },
+            exaggeration() {
+                return 1;
+            },
+            getMinElevationBelowMSL: () => 0
+        };
+        transform.bearing = -95.8;
+        transform.resize(1335, 934);
+        transform.renderWorldCopies = true;
+        transform.zoom = 16.07;
+        transform.center = new LngLat(7.785269, 45.671);
+        transform.zoom = 16.07;
+        transform.pitch = 62;
+
+        const cover = transform.coveringTiles(options);
+        t.assert(cover.length === 43);
+        t.assert(cover.find(tileID => tileID.canonical.z === 13 && tileID.canonical.x === 4270 && tileID.canonical.y === 2927));
+        t.assert(cover.find(tileID => tileID.canonical.z === 12 && tileID.canonical.x === 2134 && tileID.canonical.y === 1461));
+        t.end();
+    });
+
     test('coveringZoomLevel', (t) => {
         const options = {
             minzoom: 1,
