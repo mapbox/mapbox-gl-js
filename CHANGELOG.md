@@ -1,4 +1,4 @@
-## 2.2.0
+## 2.2.0-beta.1
 
 ### Features and improvements
 * Add `testMode` Map option that silences errors and warnings generated due to an invalid accessToken. It maybe useful when using the library to write unit tests. ([#10445](https://github.com/mapbox/mapbox-gl-js/pull/10445))
