@@ -1,7 +1,7 @@
 ## 2.2.0
 
 ## Features and improvements
-* Add `testMode` Map option that silences errors and warnings generated due to an invalid accessToken. It maybe useful when using the library to write unit tests.([#10445](https://github.com/mapbox/mapbox-gl-js/pull/10445))
+* Add `testMode` Map option that silences errors and warnings generated due to an invalid accessToken. It maybe useful when using the library to write unit tests. ([#10445](https://github.com/mapbox/mapbox-gl-js/pull/10445))
 * Improve `geojsonSource.setData(...)` performance in Safari ([#10417](https://github.com/mapbox/mapbox-gl-js/pull/10417))
 * Add `map.getTerrain()` method ([#10413](https://github.com/mapbox/mapbox-gl-js/pull/10413))
 * Add `showTerrainWireframe` map debug option for displaying terrain wireframe ([#10406](https://github.com/mapbox/mapbox-gl-js/pull/10406))
