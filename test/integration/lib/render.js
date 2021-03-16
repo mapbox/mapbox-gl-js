@@ -46,20 +46,19 @@ tape.onFinish(() => {
 });
 
 mapboxgl.prewarm();
-mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js', () => {
-    for (const testName of Object.keys(fixtures)) {
-        const options = {timeout: 20000};
-        if (testName in ignores) {
-            const ignoreType = ignores[testName];
-            if (/^skip/.test(ignoreType)) {
-                options.skip = true;
-            } else {
-                options.todo = true;
-            }
+
+for (const testName of Object.keys(fixtures)) {
+    const options = {timeout: 20000};
+    if (testName in ignores) {
+        const ignoreType = ignores[testName];
+        if (/^skip/.test(ignoreType)) {
+            options.skip = true;
+        } else {
+            options.todo = true;
         }
-        tape(testName, options, runTest);
     }
-});
+    tape(testName, options, runTest);
+}
 
 async function runTest(t) {
     t.teardown(() => {
