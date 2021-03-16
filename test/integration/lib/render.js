@@ -93,9 +93,6 @@ async function runTest(t) {
     const writeFileBasePath = `test/integration/${currentTestName}`;
     const currentFixture = fixtures[currentTestName];
     try {
-        if (typeof t.name !== 'string') {
-            console.trace('weird t.name!');
-        }
         style = currentFixture.style;
         if (!style) {
             throw new Error('style.json is missing');
@@ -294,7 +291,11 @@ async function runTest(t) {
             };
 
             const pass = minDiff <= options.allowed;
+            if (!pass && !t._todo && t.name == '[object Event]') {
+                console.trace(t);
+            }
             t.ok(pass || t._todo, t.name);
+
             testMetaData.status = t._todo ? 'todo' : pass ? 'passed' : 'failed';
             updateHTML(testMetaData);
         }
@@ -303,7 +304,7 @@ async function runTest(t) {
 
     } catch (e) {
         t.error(e);
-        updateHTML({name: t.name, status:'failed', jsonDiff: e.stack});
+        updateHTML({name: t.name, status:'failed', jsonDiff: e.message});
     }
 
     t.end();

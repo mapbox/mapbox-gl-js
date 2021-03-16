@@ -133,9 +133,7 @@ class Actor {
             if (callback) {
                 // If we get a response, but don't have a callback, the request was canceled.
                 if (task.error) {
-                    const err = new Error(task.error.message);
-                    err.stack = task.error.stack;
-                    callback(err);
+                    callback(deserialize(task.error));
                 } else {
                     callback(null, deserialize(task.data));
                 }
@@ -148,7 +146,7 @@ class Actor {
                     id,
                     type: '<response>',
                     sourceMapId: this.mapId,
-                    error: err ? {message: err.message, stack: err.stack} : null,
+                    error: err ? serialize(err) : null,
                     data: serialize(data, buffers)
                 }, buffers);
             } : (_) => {
