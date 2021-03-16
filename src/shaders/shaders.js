@@ -62,11 +62,17 @@ import terrainRasterVert from './terrain_raster.vertex.glsl';
 import terrainDepthFrag from './terrain_depth.fragment.glsl';
 import terrainDepthVert from './terrain_depth.vertex.glsl';
 import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
+import preludeFogVert from './_prelude_fog.vertex.glsl';
+import preludeFogFrag from './_prelude_fog.fragment.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 
 export let preludeTerrain = {};
+export let preludeFog = {};
+
 preludeTerrain = compile('', preludeTerrainVert, true);
+preludeFog = compile(preludeFogFrag, preludeFogVert, true);
+
 export const prelude = compile(preludeFrag, preludeVert);
 
 export default {
@@ -103,15 +109,21 @@ export default {
 };
 
 // Expand #pragmas to #ifdefs.
-function compile(fragmentSource, vertexSource, isPreludeTerrainShader) {
+function compile(fragmentSource, vertexSource, isGlobalPrelude) {
     const re = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
 
     const staticAttributes = vertexSource.match(/attribute (highp |mediump |lowp )?([\w]+) ([\w]+)/g);
     const fragmentUniforms = fragmentSource.match(/uniform (highp |mediump |lowp )?([\w]+) ([\w]+)([\s]*)([\w]*)/g);
     const vertexUniforms = vertexSource.match(/uniform (highp |mediump |lowp )?([\w]+) ([\w]+)([\s]*)([\w]*)/g);
     let staticUniforms = vertexUniforms ? vertexUniforms.concat(fragmentUniforms) : fragmentUniforms;
-    if (!isPreludeTerrainShader) {
-        staticUniforms = preludeTerrain.staticUniforms.concat(staticUniforms);
+
+    if (!isGlobalPrelude) {
+        if (preludeTerrain.staticUniforms) {
+            staticUniforms = preludeTerrain.staticUniforms.concat(staticUniforms);
+        }
+        if (preludeFog.staticUniforms) {
+            staticUniforms = preludeFog.staticUniforms.concat(staticUniforms);
+        }
     }
 
     const fragmentPragmas = {};
