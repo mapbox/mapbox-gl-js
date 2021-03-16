@@ -133,7 +133,9 @@ class Actor {
             if (callback) {
                 // If we get a response, but don't have a callback, the request was canceled.
                 if (task.error) {
-                    callback(deserialize(task.error));
+                    const err = new Error(task.error.message);
+                    err.stack = task.error.stack;
+                    callback(err);
                 } else {
                     callback(null, deserialize(task.data));
                 }
@@ -142,12 +144,11 @@ class Actor {
             const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
             const done = task.hasCallback ? (err, data) => {
                 delete this.cancelCallbacks[id];
-                if (err) console.log(err.stack);
                 this.target.postMessage({
                     id,
                     type: '<response>',
                     sourceMapId: this.mapId,
-                    error: err ? serialize(err) : null,
+                    error: err ? {message: err.message, stack: err.stack} : null,
                     data: serialize(data, buffers)
                 }, buffers);
             } : (_) => {
