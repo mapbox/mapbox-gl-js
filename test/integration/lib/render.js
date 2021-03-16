@@ -46,19 +46,33 @@ tape.onFinish(() => {
 });
 
 mapboxgl.prewarm();
+mapboxgl.setRTLTextPlugin('/node_modules/@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.js');
 
-for (const testName of Object.keys(fixtures)) {
-    const options = {timeout: 20000};
-    if (testName in ignores) {
-        const ignoreType = ignores[testName];
-        if (/^skip/.test(ignoreType)) {
-            options.skip = true;
-        } else {
-            options.todo = true;
+tape('render', (t) => {
+    const rtlTimer = setInterval(() => {
+        const rtlStatus = mapboxgl.getRTLTextPluginStatus();
+        if (rtlStatus === 'loaded') {
+            clearTimeout(rtlTimer);
+
+            for (const testName of Object.keys(fixtures)) {
+                const options = {timeout: 20000};
+                if (testName in ignores) {
+                    const ignoreType = ignores[testName];
+                    if (/^skip/.test(ignoreType)) {
+                        options.skip = true;
+                    } else {
+                        options.todo = true;
+                    }
+                }
+                t.test(testName, options, runTest);
+            }
+            t.end();
+
+        } else if (rtlStatus !== 'loading') {
+            throw new Error('Error loading RTL plugin');
         }
-    }
-    tape(testName, options, runTest);
-}
+    }, 1000);
+});
 
 async function runTest(t) {
     t.teardown(() => {
