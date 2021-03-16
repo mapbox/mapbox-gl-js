@@ -48,13 +48,8 @@ tape.onFinish(() => {
     mapboxgl.clearPrewarmedResources();
 });
 
-for (const testName in fixtures) {
-    tape(testName, {timeout: 20000}, ensureTeardown);
-}
-
-function ensureTeardown(t) {
-    const testName = t.name;
-    const options = {timeout: 5000};
+for (const testName of Object.keys(fixtures)) {
+    const options = {timeout: 20000};
     if (testName in ignores) {
         const ignoreType = ignores[testName];
         if (/^skip/.test(ignoreType)) {
@@ -63,30 +58,30 @@ function ensureTeardown(t) {
             options.todo = true;
         }
     }
-
-    t.test(testName, options, runTest);
-
-    //Teardown all global resources
-    //Cleanup WebGL context and map
-    if (map) {
-        map.remove();
-        delete map.painter.context.gl;
-        map = null;
-    }
-    expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
-    diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
-
-    //Cleanup canvases added if any
-    while (fakeCanvasContainer.firstChild) {
-        fakeCanvasContainer.removeChild(fakeCanvasContainer.firstChild);
-    }
-
-    //Restore timers
-    mapboxgl.restoreNow();
-    t.end();
+    tape(testName, options, runTest);
 }
 
 async function runTest(t) {
+    t.teardown(() => {
+        //Teardown all global resources
+        //Cleanup WebGL context and map
+        if (map) {
+            map.remove();
+            delete map.painter.context.gl;
+            map = null;
+        }
+        expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
+        diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
+
+        //Cleanup canvases added if any
+        while (fakeCanvasContainer.firstChild) {
+            fakeCanvasContainer.removeChild(fakeCanvasContainer.firstChild);
+        }
+
+        //Restore timers
+        mapboxgl.restoreNow();
+    });
+
     let style, options;
     // This needs to be read from the `t` object because this function runs async in a closure.
     const currentTestName = t.name;
@@ -291,9 +286,6 @@ async function runTest(t) {
             };
 
             const pass = minDiff <= options.allowed;
-            if (!pass && !t._todo && t.name == '[object Event]') {
-                console.trace(t);
-            }
             t.ok(pass || t._todo, t.name);
 
             testMetaData.status = t._todo ? 'todo' : pass ? 'passed' : 'failed';
