@@ -78,21 +78,25 @@ async function runTest(t) {
     t.teardown(() => {
         //Teardown all global resources
         //Cleanup WebGL context and map
-        if (map) {
-            map.remove();
-            delete map.painter.context.gl;
-            map = null;
-        }
-        expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
-        diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
+        try {
+            if (map) {
+                map.remove();
+                delete map.painter.context.gl;
+                map = null;
+            }
+            expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
+            diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
 
-        //Cleanup canvases added if any
-        while (fakeCanvasContainer.firstChild) {
-            fakeCanvasContainer.removeChild(fakeCanvasContainer.firstChild);
-        }
+            //Cleanup canvases added if any
+            while (fakeCanvasContainer.firstChild) {
+                fakeCanvasContainer.removeChild(fakeCanvasContainer.firstChild);
+            }
 
-        //Restore timers
-        mapboxgl.restoreNow();
+            //Restore timers
+            mapboxgl.restoreNow();
+        } catch (e) {
+            // ignore teardown errors
+        }
     });
 
     let style, options;
