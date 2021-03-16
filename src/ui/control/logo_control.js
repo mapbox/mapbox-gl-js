@@ -10,6 +10,7 @@ import type Map from '../map.js';
  * A `LogoControl` is a control that adds the Mapbox watermark
  * to the map as required by the [terms of service](https://www.mapbox.com/tos/) for Mapbox
  * vector tiles and core styles.
+ * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
  * @private
