@@ -725,9 +725,11 @@ class Painter {
     currentGlobalDefines(): string[] {
         const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
+        const fog = this.style && this.style.fog;
 
         const defines = [];
         if (terrain) defines.push('TERRAIN');
+        if (fog) defines.push('FOG');
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
         return defines;
