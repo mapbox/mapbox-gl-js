@@ -19,9 +19,6 @@ const browserWriteFile = new Worker('../util/browser_write_file.js');
 config.REQUIRE_ACCESS_TOKEN = false;
 window._suiteName = 'render-tests';
 
-mapboxgl.prewarm();
-mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js');
-
 //1. Create and position the container, floating at the bottom right
 const container = document.createElement('div');
 container.style.position = 'fixed';
@@ -48,18 +45,21 @@ tape.onFinish(() => {
     mapboxgl.clearPrewarmedResources();
 });
 
-for (const testName of Object.keys(fixtures)) {
-    const options = {timeout: 20000};
-    if (testName in ignores) {
-        const ignoreType = ignores[testName];
-        if (/^skip/.test(ignoreType)) {
-            options.skip = true;
-        } else {
-            options.todo = true;
+mapboxgl.prewarm();
+mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js', () => {
+    for (const testName of Object.keys(fixtures)) {
+        const options = {timeout: 20000};
+        if (testName in ignores) {
+            const ignoreType = ignores[testName];
+            if (/^skip/.test(ignoreType)) {
+                options.skip = true;
+            } else {
+                options.todo = true;
+            }
         }
+        tape(testName, options, runTest);
     }
-    tape(testName, options, runTest);
-}
+});
 
 async function runTest(t) {
     t.teardown(() => {
