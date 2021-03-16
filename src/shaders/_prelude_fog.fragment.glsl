@@ -1,0 +1,3 @@
+#ifdef FOG
+
+#endif

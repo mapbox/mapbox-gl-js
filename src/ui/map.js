@@ -40,6 +40,7 @@ import type {MapEvent, MapDataEvent} from './events.js';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer.js';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image.js';
 import Terrain from '../style/terrain.js';
+import Fog from '../style/fog.js';
 
 import type ScrollZoomHandler from './handler/scroll_zoom.js';
 import type BoxZoomHandler from './handler/box_zoom.js';
@@ -58,6 +59,7 @@ import type {
     StyleSpecification,
     LightSpecification,
     TerrainSpecification,
+    FogSpecification,
     SourceSpecification
 } from '../style-spec/types.js';
 import type {ElevationQueryOptions} from '../terrain/elevation.js';
