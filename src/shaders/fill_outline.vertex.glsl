@@ -13,5 +13,9 @@ void main() {
     #pragma mapbox: initialize lowp float opacity
 
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
-    v_pos = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world;
+
+    // v_pos has to be interpolated linearly in screen space as it's compared with the pixel position
+    // (gl_FragCoord) in the fragment shader. This can be achieved by multiplying the value by
+    // gl_Position.w in the vertex shader and by gl_FragCoord.w (e.g. 1/gl_Position.w) later in the fragment shader.
+    v_pos = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world * gl_Position.w;
 }
