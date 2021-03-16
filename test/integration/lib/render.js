@@ -93,6 +93,9 @@ async function runTest(t) {
     const writeFileBasePath = `test/integration/${currentTestName}`;
     const currentFixture = fixtures[currentTestName];
     try {
+        if (typeof t.name !== 'string') {
+            console.trace('weird t.name!');
+        }
         style = currentFixture.style;
         if (!style) {
             throw new Error('style.json is missing');
