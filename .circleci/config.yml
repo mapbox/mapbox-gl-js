@@ -300,7 +300,7 @@ jobs:
       - run:
           name: Check build file for correct SDK version
           command: |
-            if grep -q "sdkVersion:\"${CIRCLE_TAG:1}\"" ./dist/mapbox-gl.js; then
+            if grep -q "\"${CIRCLE_TAG:1}\"" ./dist/mapbox-gl.js; then
               echo SDK version in mapbox-gl.js matches ${CIRCLE_TAG:1}
             else
               echo SDK version in mapbox-gl.js does not match ${CIRCLE_TAG:1}
