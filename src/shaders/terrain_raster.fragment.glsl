@@ -4,7 +4,7 @@ varying vec2 v_pos0;
 void main() {
     gl_FragColor = texture2D(u_image0, v_pos0);
 #ifdef FOG
-    gl_FragColor = vec4(fogColor(), 1.0);
+    gl_FragColor = vec4(fog_color(), 1.0);
 #endif
 #ifdef TERRAIN_WIREFRAME
     gl_FragColor = vec4(1.0, 0.0, 0.0, 0.8);
