@@ -45,8 +45,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const tile = sourceCache.getTile(coord);
         if (renderingToTexture && !(tile && tile.hasData())) continue;
 
-        const posMatrix = (renderingToTexture) ? coord.posMatrix :
-            painter.transform.calculatePosMatrix(coord.toUnwrapped(), align);
+        const projMatrix = (renderingToTexture) ? coord.projMatrix :
+            painter.transform.calculateProjMatrix(coord.toUnwrapped(), align);
 
         const stencilMode = painter.terrain && renderingToTexture ?
             painter.terrain.stencilModeForRTTOverlap(coord) :
@@ -77,7 +77,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
         }
 
-        const uniformValues = rasterUniformValues(posMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
+        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
 
         painter.prepareDrawProgram(context, program);
 

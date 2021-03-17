@@ -74,7 +74,7 @@ const hillshadeUniformValues = (
     }
     const align = !painter.options.moving;
     return {
-        'u_matrix': matrix ? matrix : painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped(), align),
+        'u_matrix': matrix ? matrix : painter.transform.calculateProjMatrix(tile.tileID.toUnwrapped(), align),
         'u_image': 0,
         'u_latrange': getTileLatRange(painter, tile.tileID),
         'u_light': [layer.paint.get('hillshade-exaggeration'), azimuthal],
