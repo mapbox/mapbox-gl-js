@@ -92,7 +92,8 @@ export default class Marker extends Evented {
             '_onUp',
             '_addDragHandler',
             '_onMapClick',
-            '_onKeyPress'
+            '_onKeyPress',
+            '_clearOcclusionTimer'
         ], this);
 
         this._anchor = options && options.anchor || 'center';
@@ -248,6 +249,7 @@ export default class Marker extends Evented {
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._update);
         map.on('moveend', this._update);
+        map.on('remove', this._clearOcclusionTimer);
         this.setDraggable(this._draggable);
         this._update();
 
@@ -279,10 +281,7 @@ export default class Marker extends Evented {
             this._map.off('touchmove', this._onMove);
             delete this._map;
         }
-        if (this._occlusionTimer) {
-            clearTimeout(this._occlusionTimer);
-            this._occlusionTimer = null;
-        }
+        this._clearOcclusionTimer();
         DOM.remove(this._element);
         if (this._popup) this._popup.remove();
         return this;
@@ -447,6 +446,13 @@ export default class Marker extends Evented {
     _updateOcclusion() {
         if (!this._occlusionTimer) {
             this._occlusionTimer = setTimeout(this._onOcclusionTimer.bind(this), 60);
+        }
+    }
+
+    _clearOcclusionTimer() {
+        if (this._occlusionTimer) {
+            clearTimeout(this._occlusionTimer);
+            this._occlusionTimer = null;
         }
     }
 
