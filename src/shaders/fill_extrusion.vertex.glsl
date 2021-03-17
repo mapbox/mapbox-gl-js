@@ -10,6 +10,10 @@ attribute vec2 a_centroid_pos;
 
 varying vec4 v_color;
 
+#ifdef FOG
+varying float v_depth;
+#endif
+
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 
@@ -82,4 +86,8 @@ void main() {
     v_color.g += clamp(color.g * directional * u_lightcolor.g, mix(0.0, 0.3, 1.0 - u_lightcolor.g), 1.0);
     v_color.b += clamp(color.b * directional * u_lightcolor.b, mix(0.0, 0.3, 1.0 - u_lightcolor.b), 1.0);
     v_color *= u_opacity;
+
+#ifdef FOG
+    v_depth = length(gl_Position.xyz);
+#endif
 }
