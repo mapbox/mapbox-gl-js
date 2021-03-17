@@ -405,7 +405,7 @@ export class Terrain extends Elevation {
         this._invalidateRenderCache = false;
         const coords = this.proxyCoords = psc.getIds().map((id) => {
             const tileID = psc.getTileByID(id).tileID;
-            tileID.posMatrix = tr.calculatePosMatrix(tileID.toUnwrapped());
+            tileID.projMatrix = tr.calculateProjMatrix(tileID.toUnwrapped());
             return tileID;
         });
         sortByDistanceToCamera(coords, this.painter);
