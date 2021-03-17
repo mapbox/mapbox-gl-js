@@ -1,5 +1,8 @@
 // @flow
 
+import Context from '../gl/context.js';
+import type {UniformLocations} from './uniform_binding.js';
+
 import {Uniform1f, Uniform2f, Uniform3f} from './uniform_binding.js';
 
 export type FogUniformsType = {|
