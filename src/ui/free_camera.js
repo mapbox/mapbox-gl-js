@@ -247,6 +247,22 @@ class FreeCamera {
         return cameraToWorld;
     }
 
+    getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number): Float64Array {
+        const invPosition = this.position;
+
+        vec3.scale(invPosition, invPosition, -worldSize);
+        const matrix = new Float64Array(16);
+        mat4.fromTranslation(matrix, invPosition);
+
+        // Post-multiply z (3rd column)
+        matrix[8] *= pixelsPerMeter;
+        matrix[9] *= pixelsPerMeter;
+        matrix[10] *= pixelsPerMeter;
+        matrix[11] *= pixelsPerMeter;
+
+        return matrix;
+    }
+
     getWorldToCamera(worldSize: number, pixelsPerMeter: number): Float64Array {
         // transformation chain from world space to camera space:
         // 1. Height value (z) of renderables is in meters. Scale z coordinate by pixelsPerMeter
