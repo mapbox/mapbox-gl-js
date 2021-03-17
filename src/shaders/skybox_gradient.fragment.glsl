@@ -22,6 +22,10 @@ void main() {
     float progress = acos(dot(normalize(v_uv), u_center_direction)) / u_radius;
     vec4 color = texture2D(u_color_ramp, vec2(progress, 0.5)) * u_opacity;
 
+    // Apply fog contribution if enabled
+    vec3 camera_ray = normalize(v_uv);
+    color = fog_sky_gradient(camera_ray, color);
+
     // Dither
     color.rgb = dither(color.rgb, gl_FragCoord.xy + u_temporal_offset);
 
