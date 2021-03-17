@@ -48,6 +48,7 @@ class Transform {
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
+    cameraMatrix: Float64Array;
     skyboxMatrix: Float32Array;
     glCoordMatrix: Float32Array;
     labelPlaneMatrix: Float32Array;
@@ -67,8 +68,9 @@ class Transform {
     _center: LngLat;
     _edgeInsets: EdgeInsets;
     _constraining: boolean;
-    _posMatrixCache: {[_: number]: Float32Array};
-    _alignedPosMatrixCache: {[_: number]: Float32Array};
+    _projMatrixCache: {[_: number]: Float32Array};
+    _alignedProjMatrixCache: {[_: number]: Float32Array};
+    _cameraMatrixCache: {[_: number]: Float32Array};
     _camera: FreeCamera;
     _centerAltitude: number;
     _horizonShift: number;
@@ -95,8 +97,9 @@ class Transform {
         this._pitch = 0;
         this._unmodified = true;
         this._edgeInsets = new EdgeInsets();
-        this._posMatrixCache = {};
-        this._alignedPosMatrixCache = {};
+        this._projMatrixCache = {};
+        this._alignedProjMatrixCache = {};
+        this._cameraMatrixCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this.cameraElevationReference = "ground";
@@ -193,6 +196,10 @@ class Transform {
 
     get worldSize(): number {
         return this.tileSize * this.scale;
+    }
+
+    get pixelsPerMeter(): number {
+        return mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
     }
 
     get centerOffset(): Point {
@@ -1056,18 +1063,7 @@ class Transform {
         }
     }
 
-    /**
-     * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
-     * @param {UnwrappedTileID} unwrappedTileID;
-     * @private
-     */
-    calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
-        const posMatrixKey = unwrappedTileID.key;
-        const cache = aligned ? this._alignedPosMatrixCache : this._posMatrixCache;
-        if (cache[posMatrixKey]) {
-            return cache[posMatrixKey];
-        }
-
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
         const canonical = unwrappedTileID.canonical;
         const scale = this.worldSize / this.zoomScale(canonical.z);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
@@ -1075,10 +1071,48 @@ class Transform {
         const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
+
+        return posMatrix
+    }
+
+    /**
+     * Calculate the cameraMatrix that, given a tile coordinate,
+     * can be used to calculate its position relative to the camera in pixel co-ordinates.
+     *
+     * @param {UnwrappedTileID} unwrappedTileID;
+     * @private
+     */
+    calculateCameraMatrix(unwrappedTileID: UnwrappedTileID): Float32Array{
+        const camMatrixKey = unwrappedTileID.key;
+        const cache = this._cameraMatrixCache;
+        if (cache[camMatrixKey]) {
+            return cache[camMatrixKey];
+        }
+
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID);
+        mat4.multiply(posMatrix, this.cameraMatrix, posMatrix);
+
+        cache[camMatrixKey] = new Float32Array(posMatrix);
+        return cache[camMatrixKey];
+    }
+
+    /**
+     * Calculate the projMatrix that, given a tile coordinate, would be used to display the tile on the screen.
+     * @param {UnwrappedTileID} unwrappedTileID;
+     * @private
+     */
+    calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
+        const projMatrixKey = unwrappedTileID.key;
+        const cache = aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
+        if (cache[projMatrixKey]) {
+            return cache[projMatrixKey];
+        }
+
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID);
         mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
 
-        cache[posMatrixKey] = new Float32Array(posMatrix);
-        return cache[posMatrixKey];
+        cache[projMatrixKey] = new Float32Array(posMatrix);
+        return cache[projMatrixKey];
     }
 
     customLayerMatrix(): Array<number> {
@@ -1270,7 +1304,7 @@ class Transform {
         const halfFov = this._fov / 2;
         const offset = this.centerOffset;
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height;
-        const pixelsPerMeter = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
+        const pixelsPerMeter = this.pixelsPerMeter;
 
         this._updateCameraState();
 
@@ -1373,8 +1407,12 @@ class Transform {
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
-        this._posMatrixCache = {};
-        this._alignedPosMatrixCache = {};
+        // matrix for convertion from tile coordinates to relative to camera position in pixel coordinates
+        this.cameraMatrix = this._camera.getWorldToCameraPosition(this.worldSize, pixelsPerMeter);
+
+        this._projMatrixCache = {};
+        this._alignedProjMatrixCache = {};
+        this._cameraMatrixCache = {};
     }
 
     _updateCameraState() {
