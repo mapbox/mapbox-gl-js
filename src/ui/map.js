@@ -805,11 +805,11 @@ class Map extends Camera {
      * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2)
      * representing visible features that satisfy the query parameters.
      *
-     * @param {PointLike|Array<PointLike>} [geometry] - The geometry of the query region:
+     * @param {PointLike|Array<PointLike>} [geometry] - The geometry of the query region,
      * either a single point or southwest and northeast points describing a bounding box.
      * Omitting this parameter (i.e. calling {@link Map#queryRenderedFeatures} with zero arguments,
      * or with only a `options` argument) is equivalent to passing a bounding box encompassing the entire
-     * map viewport.
+     * map viewport. If the value of this parameter falls outside the visible map viewport, available features will still be returned.
      * @param {Object} [options]
      * @param {Array<string>} [options.layers] An array of style layer IDs for the query to inspect.
      *   Only features within these layers will be returned. If this parameter is undefined, all layers will be checked.
