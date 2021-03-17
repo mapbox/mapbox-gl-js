@@ -806,6 +806,21 @@ class Painter {
         }
     }
 
+    prepareDrawProgram(context: Context, program: Program) {
+        const fog = this.style && this.style.fog;
+        if (fog) {
+            const fogColor = fog.properties.get('color');
+            let uniforms = {};
+
+            uniforms['u_fog_range'] = fog.properties.get('range');
+            uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b, fogColor.a];
+            uniforms['u_fog_opacity'] = fog.properties.get('opacity');
+            uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
+
+            program.setFogUniformValues(context, uniforms);
+        }
+    }
+
     setTileLoadedFlag(flag: boolean) {
         this.tileLoaded = flag;
     }
