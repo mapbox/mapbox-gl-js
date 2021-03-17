@@ -41,9 +41,9 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
         const tile = sourceCache.getTile(coord);
         const bucket: ?SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        let posMatrix = coord.posMatrix;
+        let posMatrix = coord.projMatrix;
         if (translate[0] !== 0 || translate[1] !== 0) {
-            posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor);
+            posMatrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor);
         }
         const buffers = isText ? bucket.textCollisionBox : bucket.iconCollisionBox;
         // Get collision circle data of this bucket
