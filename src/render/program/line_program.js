@@ -196,7 +196,7 @@ function calculateTileRatio(tile: Tile, transform: Transform) {
 
 function calculateMatrix(painter, tile, layer, matrix) {
     return painter.translatePosMatrix(
-        matrix ? matrix : tile.tileID.posMatrix,
+        matrix ? matrix : tile.tileID.projMatrix,
         tile,
         layer.paint.get('line-translate'),
         layer.paint.get('line-translate-anchor')
