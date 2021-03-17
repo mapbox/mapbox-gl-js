@@ -153,10 +153,10 @@ class ProxySourceCache extends SourceCache {
 class ProxiedTileID extends OverscaledTileID {
     proxyTileKey: number;
 
-    constructor(tileID: OverscaledTileID, proxyTileKey: number, posMatrix: Float32Array) {
+    constructor(tileID: OverscaledTileID, proxyTileKey: number, projMatrix: Float32Array) {
         super(tileID.overscaledZ, tileID.wrap, tileID.canonical.z, tileID.canonical.x, tileID.canonical.y);
         this.proxyTileKey = proxyTileKey;
-        this.posMatrix = posMatrix;
+        this.projMatrix = projMatrix;
     }
 }
 
@@ -379,7 +379,7 @@ export class Terrain extends Elevation {
     // For every renderable coordinate in every source cache, assign one proxy
     // tile (see _setupProxiedCoordsForOrtho). Mapping of source tile to proxy
     // tile is modeled by ProxiedTileID. In general case, source and proxy tile
-    // are of different zoom: ProxiedTileID.posMatrix models ortho, scale and
+    // are of different zoom: ProxiedTileID.projMatrix models ortho, scale and
     // translate from source to proxy. This matrix is used when rendering source
     // tile to proxy tile's texture.
     // One proxy tile can have multiple source tiles, or pieces of source tiles,
@@ -1081,7 +1081,7 @@ export class Terrain extends Elevation {
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
-                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.posMatrix),
+                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
                 '$clipping', painter.tileExtentBuffer,
                 painter.quadTriangleIndexBuffer, painter.tileExtentSegments);
         }
