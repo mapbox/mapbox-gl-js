@@ -25,7 +25,6 @@ import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import Texture from './texture.js';
 import {clippingMaskUniformValues} from './program/clipping_mask_program.js';
-import type {UniformLocations} from './uniform_binding.js';
 import Color from '../style-spec/util/color.js';
 import symbol from './draw_symbol.js';
 import circle from './draw_circle.js';
