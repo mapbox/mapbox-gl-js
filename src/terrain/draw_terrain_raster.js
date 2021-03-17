@@ -185,6 +185,9 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             setShaderMode(shaderMode, isWireframe);
 
             terrain.setupElevationDraw(tile, program, elevationOptions);
+
+            painter.prepareDrawProgram(context, program);
+
             program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                 uniformValues, "terrain_raster", terrain.gridBuffer, buffer, segments);
         }

@@ -115,6 +115,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             gradientTexture.bind(layer.stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);
         }
 
+        painter.prepareDrawProgram(context, program);
+
         program.draw(context, gl.TRIANGLES, depthMode,
             painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,

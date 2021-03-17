@@ -71,6 +71,8 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
         temporalOffset
     );
 
+    painter.prepareDrawProgram(context, program);
+
     program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
         uniformValues, 'skyboxGradient', layer.skyboxGeometry.vertexBuffer,
@@ -88,6 +90,8 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
 
     const uniformValues = skyboxUniformValues(transform.skyboxMatrix, layer.getCenter(painter, false), 0, opacity, temporalOffset);
+
+    painter.prepareDrawProgram(context, program);
 
     program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
