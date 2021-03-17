@@ -1358,6 +1358,9 @@ class Transform {
         const nearZ = this.height / 50;
 
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
+        // matrix for convertion from tile coordinates to relative to camera position in pixel coordinates
+        // console.log(`${this.worldSize}  ${this._worldSizeFromZoom(this._cameraZoom || this._zoom)}`);
+        this.cameraMatrix = this._camera.getWorldToCameraPosition(this.worldSize, pixelsPerMeter);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, nearZ, farZ);
 
         // Apply center of perspective offset
@@ -1421,9 +1424,6 @@ class Transform {
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
-
-        // matrix for convertion from tile coordinates to relative to camera position in pixel coordinates
-        this.cameraMatrix = this._camera.getWorldToCameraPosition(this.worldSize, pixelsPerMeter);
 
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};

@@ -59,7 +59,7 @@ const draw = {
 
 import type Transform from '../geo/transform.js';
 import type Tile from '../source/tile.js';
-import type {OverscaledTileID} from '../source/tile_id.js';
+import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id.js';
 import type Style from '../style/style.js';
 import type StyleLayer from '../style/style_layer.js';
 import type {CrossFaded} from '../style/properties.js';
@@ -139,6 +139,7 @@ class Painter {
     symbolFadeChange: number;
     gpuTimers: {[_: string]: any };
     emptyTexture: Texture;
+    identityMat: mat4;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
@@ -251,6 +252,8 @@ class Painter {
             data: new Uint8Array([0, 0, 0, 0])
         }, context.gl.RGBA);
 
+        this.identityMat = mat4.identity(new Float32Array(16));
+
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
         this.loadTimeStamps.push(window.performance.now());
@@ -309,7 +312,7 @@ class Painter {
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
-                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.posMatrix),
+                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
                 '$clipping', this.tileExtentBuffer,
                 this.quadTriangleIndexBuffer, this.tileExtentSegments);
         }
@@ -806,12 +809,13 @@ class Painter {
         }
     }
 
-    prepareDrawProgram(context: Context, program: Program<*>) {
+    prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
         const fog = this.style && this.style.fog;
         if (fog) {
             const fogColor = fog.properties.get('color');
             const uniforms = {};
 
+            uniforms['u_cam_matrix'] = tileID ? this.transform.calculateCameraMatrix(tileID) : this.identityMat;
             uniforms['u_fog_range'] = fog.properties.get('range');
             uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
             uniforms['u_fog_opacity'] = fog.properties.get('opacity');
