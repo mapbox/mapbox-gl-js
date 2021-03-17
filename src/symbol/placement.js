@@ -232,7 +232,7 @@ export class Placement {
         const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
         const textPixelRatio = tile.tileSize / EXTENT;
 
-        const posMatrix = this.transform.calculatePosMatrix(tile.tileID.toUnwrapped());
+        const posMatrix = this.transform.calculateProjMatrix(tile.tileID.toUnwrapped());
 
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
