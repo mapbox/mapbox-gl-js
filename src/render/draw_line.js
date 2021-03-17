@@ -67,7 +67,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        const matrix = painter.terrain ? coord.posMatrix : null;
+        const matrix = painter.terrain ? coord.projMatrix : null;
         const uniformValues = image ? linePatternUniformValues(painter, tile, layer, crossfade, matrix) :
             dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray, crossfade, matrix) :
             gradient ? lineGradientUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length) :
@@ -115,7 +115,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             gradientTexture.bind(layer.stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);
         }
 
-        painter.prepareDrawProgram(context, program);
+        painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
         program.draw(context, gl.TRIANGLES, depthMode,
             painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,

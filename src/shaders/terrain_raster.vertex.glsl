@@ -7,6 +7,7 @@ attribute vec2 a_texture_pos;
 varying vec2 v_pos0;
 
 #ifdef FOG
+uniform mat4 u_cam_matrix;
 varying float v_depth;
 #endif
 
@@ -24,6 +25,7 @@ void main() {
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
 
 #ifdef FOG
-    v_depth = length(gl_Position.xyz);
+    vec4 depthPos = u_cam_matrix * vec4(decodedPos, 0.0, 1.0);
+    v_depth = length(depthPos.xy/depthPos.w);
 #endif
 }
