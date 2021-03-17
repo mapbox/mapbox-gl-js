@@ -279,6 +279,10 @@ export default class Marker extends Evented {
             this._map.off('touchmove', this._onMove);
             delete this._map;
         }
+        if (this._occlusionTimer) {
+            clearTimeout(this._occlusionTimer);
+            this._occlusionTimer = null;
+        }
         DOM.remove(this._element);
         if (this._popup) this._popup.remove();
         return this;
