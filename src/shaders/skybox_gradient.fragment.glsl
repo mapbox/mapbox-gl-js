@@ -23,7 +23,7 @@ void main() {
     vec4 color = texture2D(u_color_ramp, vec2(progress, 0.5)) * u_opacity;
 
     // Apply fog contribution if enabled
-    color = fog_sky_gradient(v_uv, color);
+    color = fog_apply_sky_gradient(v_uv, color);
 
     // Dither
     color.rgb = dither(color.rgb, gl_FragCoord.xy + u_temporal_offset);
