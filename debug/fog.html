@@ -34,7 +34,8 @@ var map = window.map = new mapboxgl.Map({
     center: [-118.41588, 36.46821],
     pitch: 75,
     bearing: -10,
-    style: 'mapbox://styles/mapbox/satellite-streets-v11',
+    //style: 'mapbox://styles/mapbox/satellite-streets-v11',
+    style: 'mapbox://styles/mapbox/streets-v11',
     hash: true
 });
 
@@ -75,7 +76,7 @@ map.on('style.load', function() {
         }
     });
 
-    map.setTerrain({"source": "mapbox-dem"});
+    //map.setTerrain({"source": "mapbox-dem"});
 
     document.getElementById('fog-checkbox').onclick();
 });
