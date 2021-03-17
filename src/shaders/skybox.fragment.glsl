@@ -55,7 +55,7 @@ void main() {
     vec3 sky_color = textureCube(u_cubemap, uv).rgb;
 
     // Apply fog contribution if enabled
-    sky_color = fog_sky_gradient(v_uv, sky_color);
+    sky_color = fog_apply_sky_gradient(v_uv, sky_color);
 
     // Dither [1]
     sky_color.rgb = dither(sky_color.rgb, gl_FragCoord.xy + u_temporal_offset);
