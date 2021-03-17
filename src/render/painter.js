@@ -25,6 +25,7 @@ import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import Texture from './texture.js';
 import {clippingMaskUniformValues} from './program/clipping_mask_program.js';
+import type {UniformLocations} from './uniform_binding.js';
 import Color from '../style-spec/util/color.js';
 import symbol from './draw_symbol.js';
 import circle from './draw_circle.js';
@@ -803,6 +804,21 @@ class Painter {
     prepareDrawTile(tileID: OverscaledTileID) {
         if (this.terrain) {
             this.terrain.prepareDrawTile(tileID);
+        }
+    }
+
+    prepareDrawProgram(context: Context, program: Program<*>) {
+        const fog = this.style && this.style.fog;
+        if (fog) {
+            const fogColor = fog.properties.get('color');
+            const uniforms = {};
+
+            uniforms['u_fog_range'] = fog.properties.get('range');
+            uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
+            uniforms['u_fog_opacity'] = fog.properties.get('opacity');
+            uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
+
+            program.setFogUniformValues(context, uniforms);
         }
     }
 
