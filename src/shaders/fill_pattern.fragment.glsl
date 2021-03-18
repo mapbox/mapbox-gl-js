@@ -6,6 +6,10 @@ uniform sampler2D u_image;
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 
+#ifdef FOG
+varying float v_depth;
+#endif
+
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
@@ -28,7 +32,13 @@ void main() {
     vec2 pos2 = mix(pattern_tl_b / u_texsize, pattern_br_b / u_texsize, imagecoord_b);
     vec4 color2 = texture2D(u_image, pos2);
 
-    gl_FragColor = mix(color1, color2, u_fade) * opacity;
+    vec4 out_color = mix(color1, color2, u_fade) * opacity;
+
+#ifdef FOG
+    out_color.rgb = fog_apply(out_color.rgb, v_depth);
+#endif
+
+    gl_FragColor = out_color;
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
