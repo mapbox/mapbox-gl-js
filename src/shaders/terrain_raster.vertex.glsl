@@ -25,7 +25,7 @@ void main() {
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
 
 #ifdef FOG
-    vec4 depthPos = u_cam_matrix * vec4(decodedPos, 0.0, 1.0);
-    v_depth = length(depthPos.xy/depthPos.w);
+    vec4 depthPos = u_cam_matrix * vec4(decodedPos, elevation, 1.0);
+    v_depth = length(depthPos.xyz/depthPos.w);
 #endif
 }
