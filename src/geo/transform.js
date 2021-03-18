@@ -198,7 +198,7 @@ class Transform {
         return this.tileSize * this.scale;
     }
 
-    get cameraWorldSize(): number{
+    get cameraWorldSize(): number {
         return this._worldSizeFromZoom(this._zoomFromMercatorZ(this._camera.getDistanceToSeaLevel()));
     }
 
@@ -1095,7 +1095,7 @@ class Transform {
         mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 
-        return posMatrix
+        return posMatrix;
     }
 
     /**
@@ -1105,7 +1105,7 @@ class Transform {
      * @param {UnwrappedTileID} unwrappedTileID;
      * @private
      */
-    calculateCameraMatrix(unwrappedTileID: UnwrappedTileID): Float32Array{
+    calculateCameraMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
         const camMatrixKey = unwrappedTileID.key;
         const cache = this._cameraMatrixCache;
         if (cache[camMatrixKey]) {
