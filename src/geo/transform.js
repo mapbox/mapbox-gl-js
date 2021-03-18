@@ -198,8 +198,16 @@ class Transform {
         return this.tileSize * this.scale;
     }
 
+    get cameraWorldSize(): number {
+        return this._worldSizeFromZoom(this._zoomFromMercatorZ(this._camera.getDistanceToSeaLevel()));
+    }
+
     get pixelsPerMeter(): number {
         return mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
+    }
+
+    get cameraPixelsPerMeter(): number {
+        return mercatorZfromAltitude(1, this.center.lat) * this.cameraWorldSize;
     }
 
     get centerOffset(): Point {
@@ -1080,16 +1088,16 @@ class Transform {
         }
     }
 
-    calculatePosMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
         const canonical = unwrappedTileID.canonical;
-        const scale = this.worldSize / this.zoomScale(canonical.z);
+        const scale = worldSize / this.zoomScale(canonical.z);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
 
         const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 
-        return posMatrix
+        return posMatrix;
     }
 
     /**
@@ -1099,14 +1107,14 @@ class Transform {
      * @param {UnwrappedTileID} unwrappedTileID;
      * @private
      */
-    calculateCameraMatrix(unwrappedTileID: UnwrappedTileID): Float32Array{
+    calculateCameraMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
         const camMatrixKey = unwrappedTileID.key;
         const cache = this._cameraMatrixCache;
         if (cache[camMatrixKey]) {
             return cache[camMatrixKey];
         }
 
-        const posMatrix = this.calculatePosMatrix(unwrappedTileID);
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
         mat4.multiply(posMatrix, this.cameraMatrix, posMatrix);
 
         cache[camMatrixKey] = new Float32Array(posMatrix);
@@ -1125,7 +1133,7 @@ class Transform {
             return cache[projMatrixKey];
         }
 
-        const posMatrix = this.calculatePosMatrix(unwrappedTileID);
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
         mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
@@ -1360,9 +1368,6 @@ class Transform {
         const nearZ = this.height / 50;
 
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
-        // matrix for convertion from tile coordinates to relative to camera position in pixel coordinates
-        // console.log(`${this.worldSize}  ${this._worldSizeFromZoom(this._cameraZoom || this._zoom)}`);
-        this.cameraMatrix = this._camera.getWorldToCameraPosition(this.worldSize, pixelsPerMeter);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, nearZ, farZ);
 
         // Apply center of perspective offset
@@ -1421,6 +1426,9 @@ class Transform {
 
         // matrix for conversion from location to screen coordinates
         this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
+
+        // matrix for convertion from tile coordinates to relative to camera position in pixel coordinates
+        this.cameraMatrix = this._camera.getWorldToCameraPosition(this.cameraWorldSize, this.cameraPixelsPerMeter);
 
         // inverse matrix for conversion from screen coordinates to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
