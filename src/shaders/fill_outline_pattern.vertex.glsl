@@ -10,6 +10,10 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec2 v_pos;
 
+#ifdef FOG
+varying float v_depth;
+#endif
+
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
@@ -41,4 +45,8 @@ void main() {
     v_pos_b = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, toScale * display_size_b, tileRatio, a_pos);
 
     v_pos = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world;
+
+#ifdef FOG
+    v_depth = length(gl_Position.xyz);
+#endif
 }
