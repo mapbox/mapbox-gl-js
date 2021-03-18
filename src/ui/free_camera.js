@@ -304,6 +304,14 @@ class FreeCamera {
         return matrix;
     }
 
+    getDistanceToSeaLevel(): number {
+        const f = this.forward();
+        const pos = this.position;
+        const pitch = Math.atan2(Math.sqrt(f[0] * f[0] + f[1] * f[1]), -f[2]);
+
+        return pos[2] / Math.cos(pitch);
+    }
+
     clone(): FreeCamera {
         return new FreeCamera([...this.position], [...this.orientation]);
     }
