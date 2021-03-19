@@ -175,6 +175,20 @@ export function clamp(n: number, min: number, max: number): number {
 }
 
 /**
+ * Equivalent to GLSL smoothstep.
+ *
+ * @param {number} e0 The lower edge of the sigmoid
+ * @param {number} e1 The upper edge of the sigmoid
+ * @param {number} x the value to be interpolated
+ * @returns {number} in the range [0, 1]
+ * @private
+ */
+export function smoothstep(e0: number, e1: number, x: number): number {
+    x = clamp((x - e0) / (e1 - e0), 0 , 1);
+    return x * x * (3 - 2 * x);
+}
+
+/**
  * constrain n to the given range, excluding the minimum, via modular arithmetic
  *
  * @param n value
