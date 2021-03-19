@@ -60,7 +60,7 @@ class Fog extends Evented {
         }
     }
 
-    getFogPitchFactor(pitch: number) : number {
+    getFogPitchFactor(pitch: number): number {
         return smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
     }
 

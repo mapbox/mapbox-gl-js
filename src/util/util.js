@@ -184,7 +184,7 @@ export function clamp(n: number, min: number, max: number): number {
  * @private
  */
 export function smoothstep(e0: number, e1: number, x: number): number {
-    x = clamp((x - e0) / (e1 - e0), 0 , 1);
+    x = clamp((x - e0) / (e1 - e0), 0, 1);
     return x * x * (3 - 2 * x);
 }
 
