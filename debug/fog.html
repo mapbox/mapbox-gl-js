@@ -20,13 +20,25 @@
 
 <body>
 <div id='map'></div>
-<div id='checkboxes'>
-    <label><input id='fog-checkbox' type='checkbox'> fog</label><br />
-</div>
 
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='access_token_generated.js'></script>
 <script>
+
+var GUIParams = function() {
+    this.enableFog = true;
+    this.enableTerrain = true;
+    this.terrainExaggeration = 1.5;
+    this.style = 'satellite-streets-v11';
+    this.fogRangeStart = 2000;
+    this.fogRangeEnd = 3000;
+    this.fogOpacity = 0.8;
+    this.fogColor = [255, 255, 255];
+    this.fogSkyBlend = 0.1;
+};
+
+var guiParams = new GUIParams();
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
@@ -34,10 +46,85 @@ var map = window.map = new mapboxgl.Map({
     center: [-118.41588, 36.46821],
     pitch: 75,
     bearing: -10,
-    //style: 'mapbox://styles/mapbox/satellite-streets-v11',
-    style: 'mapbox://styles/mapbox/streets-v11',
+    style: 'mapbox://styles/mapbox/satellite-streets-v11',
     hash: true
 });
+
+window.onload = function() {
+    var gui = new dat.GUI(); // eslint-disable-line
+
+    var style = gui.add(guiParams, 'style', [
+        'mapbox/streets-v11',
+        'mapbox/satellite-streets-v11',
+        'mapbox/light-v10',
+        'mapbox/dark-v10',
+        'mapbox/outdoors-v11',
+        'mapbox/satellite-v9',
+    ]);
+
+    style.onFinishChange((value) => {
+        map.setStyle('mapbox://styles/' + value);
+    });
+
+    var terrain = gui.addFolder('Terrain');
+    var enableTerrain = terrain.add(guiParams, 'enableTerrain');
+    enableTerrain.onFinishChange((value) => {
+        map.setTerrain(value ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
+    });
+
+    var terrainExaggeration = terrain.add(guiParams, 'terrainExaggeration', 0.5, 2);
+    terrainExaggeration.onFinishChange((value) => {
+        if (guiParams.enableTerrain) {
+            map.setTerrain({"source": "mapbox-dem", "exaggeration": value});
+        }
+    });
+
+    var fog = gui.addFolder('Fog');
+    var enableFog = fog.add(guiParams, 'enableFog');
+    enableFog.onFinishChange((value) => {
+        map.setFog(value ? {
+            "range": [guiParams.fogRangeStart, guiParams.fogRangeEnd],
+            "color": 'rgba(' + guiParams.fogColor[0] + ', ' + guiParams.fogColor[1] + ', ' + guiParams.fogColor[2] + ', 1.0)',
+            "opacity": guiParams.fogOpacity,
+            "sky-blend": guiParams.fogSkyBlend
+        } : null);
+    });
+
+    var fogColor = fog.addColor(guiParams, 'fogColor');
+    fogColor.onFinishChange((value) => {
+        map.setFog({
+            "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', 1.0)',
+        });
+    });
+
+    var fogRangeStart = fog.add(guiParams, 'fogRangeStart', 0.0, 15000.0);
+    fogRangeStart.onFinishChange((value) => {
+        map.setFog({
+            "range": [value, guiParams.fogRangeEnd],
+        });
+    });
+
+    var fogRangeEnd = fog.add(guiParams, 'fogRangeEnd', 0.0, 15000.0);
+    fogRangeEnd.onFinishChange((value) => {
+        map.setFog({
+            "range": [guiParams.fogRangeStart, value],
+        });
+    });
+
+    var fogOpacity = fog.add(guiParams, 'fogOpacity', 0.0, 1.0);
+    fogOpacity.onFinishChange((value) => {
+        map.setFog({
+            "opacity": value,
+        });
+    });
+
+    var fogSkyBlend = fog.add(guiParams, 'fogSkyBlend', 0.0, 1.0);
+    fogSkyBlend.onFinishChange((value) => {
+        map.setFog({
+            "sky-blend": value,
+        });
+    });
+};
 
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {
@@ -46,6 +133,7 @@ map.on('style.load', function() {
         "tileSize": 512,
         "maxzoom": 14
     });
+
     map.addLayer({
         'id': '3d-buildings',
         'source': 'composite',
@@ -58,6 +146,7 @@ map.on('style.load', function() {
             'fill-extrusion-opacity': 0.7
         }
     });
+
     map.addLayer({
         'id': 'sky',
         'type': 'sky',
@@ -76,20 +165,17 @@ map.on('style.load', function() {
         }
     });
 
-    //map.setTerrain({"source": "mapbox-dem"});
+    map.setFog(guiParams.enableFog ? {
+        "range": [guiParams.fogRangeStart, guiParams.fogRangeEnd],
+        "color": 'rgba(' + guiParams.fogColor[0] + ', ' + guiParams.fogColor[1] + ', ' + guiParams.fogColor[2] + ', 1.0)',
+        "opacity": guiParams.fogOpacity,
+        "sky-blend": guiParams.fogSkyBlend
+    } : null);
 
-    document.getElementById('fog-checkbox').onclick();
+    map.setTerrain(guiParams.enableTerrain ? {
+        "source": "mapbox-dem"
+    } : null);
 });
-
-document.getElementById('fog-checkbox').onclick = function() {
-    const fogOptions = {
-        "range": [3000, 8000],
-        "color": "blue",
-        "opacity": 0.8,
-        "sky-blend": 0.2
-    };
-    map.setFog(this.checked ? fogOptions : null);
-};
 
 </script>
 </body>
