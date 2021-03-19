@@ -1,7 +1,7 @@
 // @flow
 
 import styleSpec from '../style-spec/reference/latest.js';
-import {endsWith, extend} from '../util/util.js';
+import {endsWith, extend, smoothstep} from '../util/util.js';
 import {Evented} from '../util/evented.js';
 import {validateStyle, validateFog, emitValidationErrors} from './validate_style.js';
 import type EvaluationParameters from './evaluation_parameters.js';
@@ -25,6 +25,9 @@ const properties: Properties<Props> = new Properties({
 });
 
 const TRANSITION_SUFFIX = '-transition';
+
+export const FOG_PITCH_START = 55;
+export const FOG_PITCH_END = 65;
 
 class Fog extends Evented {
     _transitionable: Transitionable<Props>;
@@ -55,6 +58,10 @@ class Fog extends Evented {
                 this._transitionable.setValue(name, value);
             }
         }
+    }
+
+    getFogPitchFactor(pitch: number) : number {
+        return smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
     }
 
     updateTransitions(parameters: TransitionParameters) {
