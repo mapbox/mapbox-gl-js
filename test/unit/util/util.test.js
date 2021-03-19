@@ -2,7 +2,7 @@
 
 import {test} from '../../util/test.js';
 
-import {degToRad, radToDeg, easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util.js';
+import {degToRad, radToDeg, easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util.js';
 import Point from '@mapbox/point-geometry';
 
 const EPSILON = 1e-8;
@@ -33,6 +33,10 @@ test('util', (t) => {
     t.equal(degToRad(radToDeg(-Math.PI)), -Math.PI);
     t.equal(radToDeg(degToRad(65)), 65);
     t.equal(radToDeg(degToRad(-34.2)), -34.2);
+
+    t.equal(smoothstep(30, 60, 29), 0);
+    t.equal(smoothstep(30, 60, 45), 0.5);
+    t.equal(smoothstep(30, 60, 61), 1);
 
     t.test('bindAll', (t) => {
         function MyClass() {
