@@ -26,6 +26,6 @@ void main() {
 
 #ifdef FOG
     vec4 depthPos = u_cam_matrix * vec4(decodedPos, elevation, 1.0);
-    v_depth = length(depthPos.xyz/depthPos.w);
+    v_depth = length(depthPos.xyz);
 #endif
 }
