@@ -8,7 +8,7 @@ import {FreeCameraOptions} from '../../../src/ui/free_camera.js';
 import MercatorCoordinate, {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate.js';
 import {vec3, quat} from 'gl-matrix';
 import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
-import {extend, degToRad} from '../../../src/util/util.js';
+import {degToRad} from '../../../src/util/util.js';
 
 test('transform', (t) => {
 
@@ -529,15 +529,11 @@ test('transform', (t) => {
     });
 
     test('coveringTiles for terrain', (t) => {
-        const options2D = {
+        const options = {
             minzoom: 1,
             maxzoom: 10,
             tileSize: 512
         };
-
-        const options = extend({
-            useElevationData: true
-        }, options2D);
 
         const transform = new Transform();
         let centerElevation = 0;
@@ -600,7 +596,7 @@ test('transform', (t) => {
         transform.center = new LngLat(56.90, 48.20);
         transform.resize(1024, 768);
         transform.elevation = null;
-        const cover2D = transform.coveringTiles(options2D);
+        const cover2D = transform.coveringTiles(options);
         // No LOD as there is no elevation data.
         t.true(cover2D[0].overscaledZ === cover2D[cover2D.length - 1].overscaledZ);
 
@@ -698,6 +694,80 @@ test('transform', (t) => {
             t.end();
         });
 
+        t.test('zoom 22 somewhere in Mile High City should load only visible tiles', (t) => {
+            tilesDefaultElevation = null;
+            centerElevation = 1600;
+            tileElevation[new OverscaledTileID(14, 0, 14, 3413, 6218).key] = 1600;
+            transform.resize(768, 768);
+            transform.zoom = options.maxzoom = 22;
+            transform.center = {lng: -104.99813327, lat: 39.72784465999999};
+            options.roundZoom = true;
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(22, 0, 22, 873835, 1592007),
+                new OverscaledTileID(22, 0, 22, 873834, 1592007),
+                new OverscaledTileID(22, 0, 22, 873835, 1592006),
+                new OverscaledTileID(22, 0, 22, 873834, 1592006)
+            ]);
+            t.end();
+        });
+
+        t.end();
+    });
+
+    test('loads only visible on terrain', (t) => {
+        // See https://github.com/mapbox/mapbox-gl-js/pull/10462
+        const demTiles = {};
+        demTiles[new CanonicalTileID(14, 8546, 5850).key] = 2760;
+        demTiles[new CanonicalTileID(14, 8546, 5849).key] = 2760;
+        demTiles[new CanonicalTileID(14, 8546, 5851).key] = 2760;
+        demTiles[new CanonicalTileID(13, 4272, 2925).key] = 2760;
+        demTiles[new CanonicalTileID(13, 4272, 2924).key] = 0;
+        demTiles[new CanonicalTileID(14, 8546, 5848).key] = 0;
+        demTiles[new CanonicalTileID(12, 2136, 1463).key] = 0;
+        demTiles[new CanonicalTileID(11, 1067, 731).key] = 0;
+        demTiles[new CanonicalTileID(11, 1066, 731).key] = 0;
+        demTiles[new CanonicalTileID(11, 1068, 730).key] = 0;
+        demTiles[new CanonicalTileID(11, 1067, 730).key] = 0;
+        demTiles[new CanonicalTileID(11, 1066, 730).key] = 0;
+        demTiles[new CanonicalTileID(9, 266, 183).key] = 0;
+
+        const options = {
+            minzoom: 1,
+            maxzoom: 22,
+            tileSize: 512
+        };
+
+        const transform = new Transform();
+        transform.elevation = {
+            getAtPoint(_) {
+                return 2760;
+            },
+            getMinMaxForTile(tileID) {
+                for (let z = tileID.canonical.z - 1; z >= 9; z--) {
+                    const id = tileID.calculateScaledKey(z);
+                    if (demTiles.hasOwnProperty(id)) {
+                        return {min: 0, max: demTiles[id]};
+                    }
+                }
+                return null;
+            },
+            exaggeration() {
+                return 1;
+            },
+            getMinElevationBelowMSL: () => 0
+        };
+        transform.bearing = -95.8;
+        transform.resize(1335, 934);
+        transform.renderWorldCopies = true;
+        transform.zoom = 16.07;
+        transform.center = new LngLat(7.785269, 45.671);
+        transform.zoom = 16.07;
+        transform.pitch = 62;
+
+        const cover = transform.coveringTiles(options);
+        t.assert(cover.length === 43);
+        t.assert(cover.find(tileID => tileID.canonical.z === 13 && tileID.canonical.x === 4270 && tileID.canonical.y === 2927));
+        t.assert(cover.find(tileID => tileID.canonical.z === 12 && tileID.canonical.x === 2134 && tileID.canonical.y === 1461));
         t.end();
     });
 

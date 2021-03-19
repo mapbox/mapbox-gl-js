@@ -6,8 +6,8 @@
       "height": 512,
       "operations": [
         ["setStyle", "local://styles/sanfrancisco.json"],
-        ["setZoom", 15.1 ],
-        ["setCenter", [-122.448635, 37.7669995] ],
+        ["setZoom", 15.0 ],
+        ["setCenter", [-122.45362, 37.77049] ],
         ["wait"],
         ["addSource", "rgbterrain", {
           "type": "raster-dem",
@@ -18,11 +18,6 @@
           "tileSize": 256
         }],
         ["setTerrain", {"source": "rgbterrain"}],
-        ["wait"],
-        ["setZoom", 15.2],
-        ["wait"],
-        ["setZoom", 15],
-        ["wait"],
         ["wait"]
       ]
     }
