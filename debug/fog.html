@@ -33,9 +33,10 @@ var GUIParams = function() {
     this.style = 'satellite-streets-v11';
     this.fogRangeStart = 2000;
     this.fogRangeEnd = 3000;
-    this.fogOpacity = 0.8;
+    this.fogOpacity = 1.0;
     this.fogColor = [255, 255, 255];
     this.fogSkyBlend = 0.1;
+    this.showTileBoundaries = false;
 };
 
 var guiParams = new GUIParams();
@@ -66,13 +67,18 @@ window.onload = function() {
         map.setStyle('mapbox://styles/' + value);
     });
 
+    var showTileBoundaries = gui.add(guiParams, 'showTileBoundaries');
+    showTileBoundaries.onFinishChange((value) => {
+        map.showTileBoundaries = value;
+    });
+
     var terrain = gui.addFolder('Terrain');
     var enableTerrain = terrain.add(guiParams, 'enableTerrain');
     enableTerrain.onFinishChange((value) => {
-        map.setTerrain(value ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
+        map.setTerrain(value ? {"source": "mapbox-dem", "exaggeration": guiParams.terrainExaggeration} : null);
     });
 
-    var terrainExaggeration = terrain.add(guiParams, 'terrainExaggeration', 0.5, 2);
+    var terrainExaggeration = terrain.add(guiParams, 'terrainExaggeration', 0.0, 4);
     terrainExaggeration.onFinishChange((value) => {
         if (guiParams.enableTerrain) {
             map.setTerrain({"source": "mapbox-dem", "exaggeration": value});
@@ -173,8 +179,11 @@ map.on('style.load', function() {
     } : null);
 
     map.setTerrain(guiParams.enableTerrain ? {
-        "source": "mapbox-dem"
+        "source": "mapbox-dem",
+        "exaggeration": guiParams.terrainExaggeration
     } : null);
+
+    map.showTileBoundaries = guiParams.showTileBoundaries;
 });
 
 </script>
