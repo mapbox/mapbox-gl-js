@@ -7,7 +7,7 @@ import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
-import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
+import {vec4, mat4, mat2, vec2, vec3, quat} from 'gl-matrix';
 import {Aabb, Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
@@ -54,6 +54,8 @@ class Transform {
     labelPlaneMatrix: Float32Array;
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
+    fogCulling: boolean;
+    fogEnd: ?number;
     _elevation: ?Elevation;
     _fov: number;
     _pitch: number;
@@ -103,6 +105,7 @@ class Transform {
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this.cameraElevationReference = "ground";
+        this.fogCulling = false;
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -718,6 +721,30 @@ class Transform {
                 const dy = centerPoint[1] - 0.5 - y;
                 const id = it.tileID ? it.tileID : new OverscaledTileID(tileZoom, it.wrap, it.zoom, x, y);
 
+                if (this.fogCulling && this.fogEnd) {
+                    const v0 = [0, 0, 0, 1];
+                    const v1 = [EXTENT, 0, 0, 1];
+                    const v2 = [0, EXTENT, 0, 1];
+                    const v3 = [EXTENT, EXTENT, 0, 1];
+
+                    const cameraMatrix = this.calculateCameraMatrix(id.toUnwrapped());
+
+                    vec4.transformMat4(v0, v0, cameraMatrix);
+                    vec4.transformMat4(v1, v1, cameraMatrix);
+                    vec4.transformMat4(v2, v2, cameraMatrix);
+                    vec4.transformMat4(v3, v3, cameraMatrix);
+
+                    const d0 = vec3.length(v0);
+                    const d1 = vec3.length(v1);
+                    const d2 = vec3.length(v2);
+                    const d3 = vec3.length(v3);
+
+                    const minDistance = Math.min(Math.min(d0, d1), Math.min(d2, d3));
+                    if (minDistance > this.fogEnd) {
+                        continue;
+                    }
+                }
+
                 result.push({tileID: id, distanceSq: dx * dx + dy * dy});
                 continue;
             }
@@ -1155,7 +1182,7 @@ class Transform {
         const start = this._camera.position;
         const dir = this._camera.forward();
 
-        if (start.z <= 0 || dir[2] >= 0)
+        if (start[2] <= 0 || dir[2] >= 0)
             return;
 
         // The raycast function expects z-component to be in meters
@@ -1381,6 +1408,7 @@ class Transform {
         this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter]);
 
         this.projMatrix = m;
+
         // For tile cover calculation, use inverted of base (non elevated) matrix
         // as tile elevations are in tile coordinates and relative to center elevation.
         this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
@@ -1427,7 +1455,7 @@ class Transform {
         // matrix for conversion from location to screen coordinates
         this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
-        // matrix for convertion from tile coordinates to relative to camera position in pixel coordinates
+        // matrix for conversion from tile coordinates to relative camera position in pixel coordinates
         this.cameraMatrix = this._camera.getWorldToCameraPosition(this.cameraWorldSize, this.cameraPixelsPerMeter);
 
         // inverse matrix for conversion from screen coordinates to location
