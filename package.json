@@ -14,7 +14,6 @@
     "node": ">=6.4.0"
   },
   "dependencies": {
-    "7": "0.0.1",
     "@mapbox/geojson-rewind": "^0.5.0",
     "@mapbox/geojson-types": "^1.0.2",
     "@mapbox/jsonlint-lines-primitives": "^2.0.2",
