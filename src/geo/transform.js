@@ -1342,9 +1342,6 @@ class Transform {
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, this.pixelsPerMeter);
         const fogMatrix = mat4.mul([], cameraToClip, worldToCamera);
         this.invFogMatrix = mat4.invert(new Float64Array(16), fogMatrix);
-
-        // this.projMatrix = fogMatrix;
-        // this.invProjMatrix = this.invFogMatrix;
     }
 
     _nearZ(): number {
