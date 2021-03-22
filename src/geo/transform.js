@@ -45,6 +45,7 @@ class Transform {
     mercatorMatrix: Array<number>;
     projMatrix: Float64Array;
     invProjMatrix: Float64Array;
+    invFogMatrix: Float64Array;
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
@@ -54,6 +55,8 @@ class Transform {
     labelPlaneMatrix: Float32Array;
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
+    fogCulling: boolean;
+    fogEnd: ?number;
     _elevation: ?Elevation;
     _fov: number;
     _pitch: number;
@@ -103,6 +106,7 @@ class Transform {
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this.cameraElevationReference = "ground";
+        this.fogCulling = false;
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -570,7 +574,7 @@ class Transform {
         const centerCoord = MercatorCoordinate.fromLngLat(this.center);
         const numTiles = 1 << z;
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
-        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
+        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.fogCulling ? this.invFogMatrix : this.invProjMatrix, this.worldSize, z);
         const cameraCoord = this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
@@ -1138,7 +1142,7 @@ class Transform {
         const start = this._camera.position;
         const dir = this._camera.forward();
 
-        if (start.z <= 0 || dir[2] >= 0)
+        if (start[2] <= 0 || dir[2] >= 0)
             return;
 
         // The raycast function expects z-component to be in meters
@@ -1306,6 +1310,54 @@ class Transform {
         return this._mercatorZfromZoom(this._minZoomForBounds());
     }
 
+    _calcFogMatrices() {
+        if (!this.fogEnd || !this.fogCulling) {
+            return;
+        }
+
+        const maxVisibleAltitude = this.elevation ? this.elevation.visibleDemTiles.reduce((res, tile) => {
+            if (tile.dem) {
+                const tree = tile.dem.tree;
+                const maxMip = tree.maximums[0];
+                res = Math.max(res, maxMip);
+            }
+            return res;
+        }, 0) * this.elevation.exaggeration() : 0;
+
+        const projMaxVisibleAltitude = (maxVisibleAltitude * this.pixelsPerMeter) / Math.cos(this._pitch);
+        const fogEnd = this.fogEnd + projMaxVisibleAltitude;
+        const camZ = this._camera.position[2] * this.worldSize;
+        const groundAngleAtFogEnd = Math.atan(camZ / fogEnd);
+        const camToFogEnd = Math.hypot(camZ, fogEnd);
+        const fogEndXY = Math.sin(Math.PI - groundAngleAtFogEnd - this._pitch) * camToFogEnd + projMaxVisibleAltitude;
+
+        // Take upper bound between xy distance and fogEnd
+        const farFogZ = Math.max(fogEnd, fogEndXY);
+
+        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ(), farFogZ);
+
+        cameraToClip[8] = -this.centerOffset.x * 2 / this.width;
+        cameraToClip[9] = this.centerOffset.y * 2 / this.height;
+
+        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, this.pixelsPerMeter);
+        const fogMatrix = mat4.mul([], cameraToClip, worldToCamera);
+        this.invFogMatrix = mat4.invert(new Float64Array(16), fogMatrix);
+
+        // this.projMatrix = fogMatrix;
+        // this.invProjMatrix = this.invFogMatrix;
+    }
+
+    _nearZ(): number {
+        // The larger the value of nearZ is
+        // - the more depth precision is available for features (good)
+        // - clipping starts appearing sooner when the camera is close to 3d features (bad)
+        //
+        // Smaller values worked well for mapbox-gl-js but deckgl was encountering precision issues
+        // when rendering it's layers using custom layers. This value was experimentally chosen and
+        // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
+        return this.height / 50;
+    }
+
     _calcMatrices() {
         if (!this.height) return;
 
@@ -1341,14 +1393,7 @@ class Transform {
 
         const farZ = Math.min(furthestDistance * 1.01, horizonDistance);
 
-        // The larger the value of nearZ is
-        // - the more depth precision is available for features (good)
-        // - clipping starts appearing sooner when the camera is close to 3d features (bad)
-        //
-        // Smaller values worked well for mapbox-gl-js but deckgl was encountering precision issues
-        // when rendering it's layers using custom layers. This value was experimentally chosen and
-        // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
-        const nearZ = this.height / 50;
+        const nearZ = this._nearZ();
 
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, nearZ, farZ);
@@ -1364,6 +1409,9 @@ class Transform {
         this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter]);
 
         this.projMatrix = m;
+
+        this._calcFogMatrices();
+
         // For tile cover calculation, use inverted of base (non elevated) matrix
         // as tile elevations are in tile coordinates and relative to center elevation.
         this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
