@@ -19,6 +19,7 @@ import shaders from '../shaders/shaders.js';
 import Program from './program.js';
 import {programUniforms} from './program/program_uniforms.js';
 import Context from '../gl/context.js';
+import {FOG_PITCH_END} from '../style/fog.js';
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
@@ -176,6 +177,12 @@ class Painter {
         const terrain: Terrain = this._terrain;
         this.transform.elevation = enabled ? terrain : null;
         terrain.update(style, this.transform, cameraChanging);
+    }
+
+    _updateFog() {
+        const fog = this.style && this.style.fog;
+        this.transform.fogEnd = fog ? fog.properties.get('range')[1] : null;
+        this.transform.fogCulling = fog ? this.transform.pitch > FOG_PITCH_END && fog.properties.get('opacity') === 1 : false;
     }
 
     get terrain(): ?Terrain {
@@ -429,6 +436,8 @@ class Painter {
             coordsDescending[id] = coordsAscending[id].slice().reverse();
             coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
         }
+
+        this._updateFog();
 
         this.opaquePassCutoff = Infinity;
         for (let i = 0; i < layerIds.length; i++) {
