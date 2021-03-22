@@ -10,7 +10,7 @@
         ["setPaintProperty", "fill", "fill-color", "brown"],
         ["setLayoutProperty", "fill", "visibility", "visible"],
         ["wait", 0],
-        ["wait", 300]
+        ["wait", 350]
       ]
     }
   },
