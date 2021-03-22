@@ -1200,7 +1200,7 @@ class Map extends Camera {
      * either a single point or bottom left and top right points describing a bounding box, where the origin is at the top left.
      * Omitting this parameter (i.e. calling {@link Map#queryRenderedFeatures} with zero arguments,
      * or with only a `options` argument) is equivalent to passing a bounding box encompassing the entire
-     * map viewport.
+     * map viewport. If the value of this parameter falls outside the visible map viewport, available features will still be returned.
      * @param {Object} [options] Options object.
      * @param {Array<string>} [options.layers] An array of [style layer IDs](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-id) for the query to inspect.
      *   Only features within these layers will be returned. If this parameter is undefined, all layers will be checked.
