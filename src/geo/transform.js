@@ -574,7 +574,7 @@ class Transform {
         const centerCoord = MercatorCoordinate.fromLngLat(this.center);
         const numTiles = 1 << z;
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
-        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.fogCulling ? this.invFogMatrix : this.invProjMatrix, this.worldSize, z);
+        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.fogCulling && this.invFogMatrix ? this.invFogMatrix : this.invProjMatrix, this.worldSize, z);
         const cameraCoord = this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
@@ -1331,10 +1331,7 @@ class Transform {
         const camToFogEnd = Math.hypot(camZ, fogEnd);
         const fogEndXY = Math.sin(Math.PI - groundAngleAtFogEnd - this._pitch) * camToFogEnd + projMaxVisibleAltitude;
 
-        // Take upper bound between xy distance and fogEnd
-        const farFogZ = Math.max(fogEnd, fogEndXY);
-
-        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ(), farFogZ);
+        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ(), fogEndXY);
 
         cameraToClip[8] = -this.centerOffset.x * 2 / this.width;
         cameraToClip[9] = this.centerOffset.y * 2 / this.height;
