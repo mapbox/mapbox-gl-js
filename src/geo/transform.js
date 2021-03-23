@@ -1438,7 +1438,7 @@ class Transform {
         // matrix for conversion from location to screen coordinates
         this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
-        // matrix for convertion from tile coordinates to relative to camera position in pixel coordinates
+        // matrix for conversion from tile coordinates to relative camera position in pixel coordinates
         this.cameraMatrix = this._camera.getWorldToCameraPosition(this.cameraWorldSize, this.cameraPixelsPerMeter);
 
         // inverse matrix for conversion from screen coordinates to location
