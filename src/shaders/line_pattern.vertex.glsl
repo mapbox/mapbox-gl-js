@@ -21,6 +21,10 @@ varying float v_linesofar;
 varying float v_gamma_scale;
 varying float v_width;
 
+#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+varying vec3 v_fog_pos;
+#endif
+
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float offset
@@ -96,4 +100,8 @@ void main() {
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
     v_width = floorwidth;
+
+#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+    v_fog_pos = fog_position(pos);
+#endif
 }

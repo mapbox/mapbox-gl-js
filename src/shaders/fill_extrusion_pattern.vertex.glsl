@@ -17,8 +17,8 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec4 v_lighting;
 
-#ifdef FOG
-varying float v_depth;
+#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+varying vec3 v_fog_pos;
 #endif
 
 #pragma mapbox: define lowp float base
@@ -73,9 +73,11 @@ void main() {
     float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
     float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
-    gl_Position = mix(u_matrix * vec4(pos_nx.xy, h, 1), AWAY, hidden);
+    vec3 pos = vec3(pos_nx.xy, h);
+    gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
 #else
-    gl_Position = u_matrix * vec4(pos_nx.xy, z, 1);
+    vec3 pos = vec3(pos_nx.xy, z);
+    gl_Position = u_matrix * vec4(pos, 1);
 #endif
 
     vec2 pos = normal.z == 1.0
@@ -100,7 +102,7 @@ void main() {
     v_lighting.rgb += clamp(directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_lighting *= u_opacity;
 
-#ifdef FOG
-    v_depth = length(gl_Position.xyz);
+#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+    v_fog_pos = fog_position(pos);
 #endif
 }

@@ -9,6 +9,10 @@ attribute vec2 a_texture_pos;
 varying vec2 v_pos0;
 varying vec2 v_pos1;
 
+#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+varying vec3 v_fog_pos;
+#endif
+
 void main() {
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
     // We are using Int16 for texture position coordinates to give us enough precision for
@@ -18,4 +22,8 @@ void main() {
     // so math for modifying either is consistent.
     v_pos0 = (((a_texture_pos / 8192.0) - 0.5) / u_buffer_scale ) + 0.5;
     v_pos1 = (v_pos0 * u_scale_parent) + u_tl_parent;
+
+#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+    v_fog_pos = fog_position(a_pos);
+#endif
 }

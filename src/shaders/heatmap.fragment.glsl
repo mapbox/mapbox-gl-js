@@ -2,6 +2,10 @@ uniform highp float u_intensity;
 
 varying vec2 v_extrude;
 
+#if defined( FOG )
+varying vec3 v_fog_pos;
+#endif
+
 #pragma mapbox: define highp float weight
 
 // Gaussian kernel coefficient: 1 / sqrt(2 * PI)
@@ -15,6 +19,13 @@ void main() {
     float val = weight * u_intensity * GAUSS_COEF * exp(d);
 
     gl_FragColor = vec4(val, 1.0, 1.0, 1.0);
+
+#if defined( FOG )
+    // Heatmaps work differently than other layers, so we operate on the accumulated
+    // density rather than a final color. The power is chosen so that the density
+    // fades into the fog at a reasonable rate.
+    gl_FragColor.r *= pow(1.0 - fog_opacity(v_fog_pos), 2.0);
+#endif
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

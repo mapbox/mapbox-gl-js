@@ -6,9 +6,8 @@ attribute vec2 a_texture_pos;
 
 varying vec2 v_pos0;
 
-#ifdef FOG
-uniform mat4 u_cam_matrix;
-varying float v_depth;
+#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+varying vec3 v_fog_pos;
 #endif
 
 const float skirtOffset = 24575.0;
@@ -24,8 +23,7 @@ void main() {
     vec2 decodedPos = a_pos - vec2(skirt * skirtOffset, 0.0);
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
 
-#ifdef FOG
-    vec4 depthPos = u_cam_matrix * vec4(decodedPos, elevation, 1.0);
-    v_depth = length(depthPos.xyz);
+#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+    v_fog_pos = fog_position(vec3(decodedPos, elevation));
 #endif
 }
