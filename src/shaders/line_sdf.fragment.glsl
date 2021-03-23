@@ -10,6 +10,10 @@ varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying float v_gamma_scale;
 
+#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+varying vec3 v_fog_pos;
+#endif
+
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
@@ -36,6 +40,10 @@ void main() {
     float sdfdist_b = texture2D(u_image, v_tex_b).a;
     float sdfdist = mix(sdfdist_a, sdfdist_b, u_mix);
     alpha *= smoothstep(0.5 - u_sdfgamma / floorwidth, 0.5 + u_sdfgamma / floorwidth, sdfdist);
+
+#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+    color.rgb = fog_apply(color.rgb, v_fog_pos);
+#endif
 
     gl_FragColor = color * (alpha * opacity);
 
