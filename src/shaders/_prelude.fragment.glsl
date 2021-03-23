@@ -18,16 +18,19 @@ precision mediump float;
 
 const float PI = 3.141592653589793;
 
+// Comment to globally disable gamma correction (presently only wrt fog):
 #define GAMMA_CORRECT
 
 vec3 linearToSRGB(vec3 color) {
 // TODO: Make a choice and remove this conditional before production
-// TODO: Just use pow(*, 2.2). It's approximate and completely adequate.
 #ifdef GAMMA_CORRECT
+    return pow(color, vec3(1.0 / 2.2));
+    /*
     vec3 a = 12.92 * color;
     vec3 b = 1.055 * pow(color, vec3(1.0 / 2.4)) - 0.055;
     vec3 c = step(vec3(0.0031308), color);
     return mix(a, b, c);
+    */
 #else
     return color;
 #endif
@@ -35,12 +38,14 @@ vec3 linearToSRGB(vec3 color) {
 
 vec3 srgbToLinear(vec3 color) {
 // TODO: Make a choice and remove this conditional before production
-// TODO: Just use pow(*, 2.2). It's approximate and completely adequate.
 #ifdef GAMMA_CORRECT
+    return pow(color, vec3(2.2));
+    /*
     vec3 a = color / 12.92;
     vec3 b = pow((color + 0.055) / 1.055, vec3(2.4));
     vec3 c = step(vec3(0.04045), color);
     return mix(a, b, c);
+    */
 #else
     return color;
 #endif
