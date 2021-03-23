@@ -42,7 +42,7 @@ void main() {
     alpha *= smoothstep(0.5 - u_sdfgamma / floorwidth, 0.5 + u_sdfgamma / floorwidth, sdfdist);
 
 #if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
-    color.rgb = fog_apply(color.rgb, v_fog_pos);
+    color = fog_apply_premultiplied(color, v_fog_pos);
 #endif
 
     gl_FragColor = color * (alpha * opacity);
