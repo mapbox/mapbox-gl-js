@@ -11,6 +11,8 @@ vec3 fog_apply_sky_gradient(vec3 cubemap_uv, vec3 sky_color) {
     float y_blend = dot(camera_ray, y_up);
     float gradient = smoothstep(0.0, u_fog_sky_blend, y_blend);
     float fog_falloff = clamp(gradient + (1.0 - u_fog_opacity), 0.0, 1.0);
+
+    // We may or may not wish to use gamma-correct blending
     return gammaMix(u_fog_color, sky_color, fog_falloff);
 }
 
@@ -22,17 +24,18 @@ float fog_opacity(vec3 position) {
     // Apply a constant to push the function closer to 1.0 on the far end
     // of the fog range, refer https://www.desmos.com/calculator/x5gopnb91a
     const float exp_constant = 5.5;
-    const float fog_power = 2.0;
     float fog_falloff = exp(-exp_constant * (depth - start) / (end - start));
+
+    // Apply a power remove the C1 discontinuity at the near limit
+    const float fog_power = 2.0;
     float fog_opacity = pow(max((1.0 - fog_falloff) * u_fog_opacity, 0.0), fog_power);
 
     // Clip to actually return 100% opacity at end
-    fog_opacity = min(1.0, fog_opacity * 1.02);
-
-    return fog_opacity;
+    return min(1.0, fog_opacity * 1.02);
 }
 
 vec3 fog_apply(vec3 color, vec3 position) {
+    // We may or may not wish to use gamma-correct blending
     return gammaMix(color, u_fog_color, fog_opacity(position));
 }
 
