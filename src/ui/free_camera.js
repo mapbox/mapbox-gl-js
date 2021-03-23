@@ -254,11 +254,8 @@ class FreeCamera {
         const matrix = new Float64Array(16);
         mat4.fromTranslation(matrix, invPosition);
 
-        // Post-multiply z (3rd column)
-        matrix[8] *= pixelsPerMeter;
-        matrix[9] *= pixelsPerMeter;
-        matrix[10] *= pixelsPerMeter;
-        matrix[11] *= pixelsPerMeter;
+        // Adjust scale on z (3rd column 3rd row)
+        matrix[10] = pixelsPerMeter;
 
         return matrix;
     }
