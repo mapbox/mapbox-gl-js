@@ -1329,7 +1329,7 @@ class Transform {
         const camZ = this._camera.position[2] * this.worldSize;
         const groundAngleAtFogEnd = Math.atan(camZ / fogEnd);
         const camToFogEnd = Math.hypot(camZ, fogEnd);
-        const fogEndXY = Math.sin(Math.PI - groundAngleAtFogEnd - this._pitch) * camToFogEnd + projMaxVisibleAltitude;
+        const fogEndXY = Math.sin(Math.PI - groundAngleAtFogEnd - this._pitch) * camToFogEnd;
 
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ(), fogEndXY);
 
