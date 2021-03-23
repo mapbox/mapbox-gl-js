@@ -7,7 +7,7 @@ varying vec3 v_fog_pos;
 void main() {
     vec4 color = v_color;
 #if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
-    color.rgb = fog_apply(color.rgb, v_fog_pos);
+    color = fog_apply_premultiplied(color, v_fog_pos);
 #endif
     gl_FragColor = color;
 

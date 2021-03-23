@@ -27,7 +27,7 @@ void main() {
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 
 #if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
-    color.rgb = fog_apply(color.rgb, v_fog_pos);
+    color = fog_apply_premultiplied(color, v_fog_pos);
 #endif
 
     gl_FragColor = color * (alpha * opacity);
