@@ -7,6 +7,7 @@ vec3 fog_position(vec3 pos) {
     return p.xyz / p.w;
 }
 
+// Accept either 2D or 3D positions
 vec3 fog_position(vec2 pos) {
     return fog_position(vec3(pos, 0));
 }
