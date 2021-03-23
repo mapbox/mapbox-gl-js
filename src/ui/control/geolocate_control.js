@@ -61,6 +61,7 @@ let noTimeout = false;
 /**
  * A `GeolocateControl` control provides a button that uses the browser's geolocation
  * API to locate the user on the map.
+ * Add this control to a map using {@link Map#addControl}.
  *
  * Not all browsers support geolocation,
  * and some users may disable the feature. Geolocation support for modern
