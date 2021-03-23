@@ -12,7 +12,7 @@ type Options = {
 };
 
 /**
- * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode. `FullScreenControl` is [not currently compatible](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen#browser_compatibility) with the mobile Safari browser.
+ * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode. See the `requestFullScreen` [compatibility table](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen#browser_compatibility) for supported browsers.
  *
  * @implements {IControl}
  * @param {Object} [options]
