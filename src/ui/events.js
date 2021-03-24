@@ -809,8 +809,9 @@ export type MapEvent =
     | 'zoom'
 
     /**
-     * Fired just after the map completes a transition from one zoom level to another,
+     * Fired just after the map completes a transition from one zoom level to another
      * as the result of either user interaction or methods such as {@link Map#flyTo}.
+     * The transition can end before map rendering is complete.
      *
      * @event zoomend
      * @memberof Map
