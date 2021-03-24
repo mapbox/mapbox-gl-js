@@ -721,9 +721,6 @@ class Transform {
                 const dy = centerPoint[1] - 0.5 - y;
                 const id = it.tileID ? it.tileID : new OverscaledTileID(tileZoom, it.wrap, it.zoom, x, y);
 
-                if (this.fogCulling && this.fogEnd) {
-                }
-
                 result.push({tileID: id, distanceSq: dx * dx + dy * dy});
                 continue;
             }
@@ -743,6 +740,8 @@ class Transform {
         }
 
         if (this.fogCulling && this.fogEnd) {
+            const fogEndSq = this.fogEnd * this.fogEnd;
+
             result.splice(0, result.length, ...result.filter(entry => {
                 const min = [0, 0, 0, 1];
                 const max = [EXTENT, EXTENT, 0, 1];
@@ -759,7 +758,7 @@ class Transform {
                     if (max[i] < 0) sqDist += (max[i] * max[i]);
                 }
 
-                return sqDist === 0 || sqDist < this.fogEnd * this.fogEnd;
+                return sqDist === 0 || sqDist < fogEndSq;
             }));
         }
 
