@@ -307,7 +307,8 @@ async function runTest(t) {
 }
 
 function drawImage(canvas, ctx, src, getImageData = true) {
-    return new Promise((resolve, reject) => {
+    let attempts = 0;
+    return new Promise(function loadImage(resolve, reject) {
         const image = new Image();
         image.onload = () => {
             canvas.height = image.height;
@@ -320,7 +321,11 @@ function drawImage(canvas, ctx, src, getImageData = true) {
             result.src = src;
             resolve(result);
         };
-        image.onerror = reject;
+        image.onerror = (e) => {
+            // try loading the image several times on error because it sometimes fails randomly
+            if (++attempts < 3) loadImage(resolve, reject);
+            else reject(e);
+        };
         image.src = src;
     });
 }
