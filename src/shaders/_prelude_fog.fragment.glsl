@@ -28,14 +28,13 @@ float fog_opacity(vec3 position) {
 
     // Apply a power remove the C1 discontinuity at the near limit
     const float fog_power = 2.0;
-    float fog_opacity = pow(max((1.0 - fog_falloff) * u_fog_opacity, 0.0), fog_power);
+    float opacity = pow(max((1.0 - fog_falloff) * u_fog_opacity, 0.0), fog_power);
 
     // Clip to actually return 100% opacity at end
-    return min(1.0, fog_opacity * 1.02);
+    return min(1.0, opacity * 1.02);
 }
 
 vec3 fog_apply(vec3 color, vec3 position) {
-    // We may or may not wish to use gamma-correct blending
     return gamma_mix(color, u_fog_color, fog_opacity(position));
 }
 
