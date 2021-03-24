@@ -32,7 +32,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
-        function imageLoaded(err, img) {
+        function imageLoaded(err, img, cacheControl, expires) {
             delete tile.request;
             if (tile.aborted) {
                 tile.state = 'unloaded';
@@ -41,9 +41,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 tile.state = 'errored';
                 callback(err);
             } else if (img) {
-                if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
-                delete (img: any).cacheControl;
-                delete (img: any).expires;
+                if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
                 const transfer = window.ImageBitmap && img instanceof window.ImageBitmap && offscreenCanvasSupported();
                 // DEMData uses 1px padding. Handle cases with image buffer of 1 and 2 pxs, the rest assume default buffer 0
                 // in order to keep the previous implementation working (no validation against tileSize).

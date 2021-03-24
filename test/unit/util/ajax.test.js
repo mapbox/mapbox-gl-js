@@ -213,5 +213,59 @@ test('ajax', (t) => {
         window.server.respond();
     });
 
+    t.test('getImage retains cache control headers when using arrayBufferToImage', (t) => {
+        resetImageRequestQueue();
+
+        const headers = {
+            'Content-Type': 'image/webp',
+            'Cache-Control': 'max-age=43200,s-maxage=604800',
+            'Expires': 'Wed, 21 Oct 2015 07:28:00 GMT'
+        };
+
+        window.server.respondWith(request => request.respond(200, headers, ''));
+
+        // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
+        window.Image = class {
+            set src(src) {
+                setTimeout(() => {
+                    if (this.onload) this.onload();
+                });
+            }
+        };
+
+        getImage({url: ''}, (err, img, cacheControl, expires) => {
+            if (err) t.fail();
+            t.equals(cacheControl, headers['Cache-Control']);
+            t.equals(expires, headers['Expires']);
+            t.end();
+        });
+
+        window.server.respond();
+    });
+
+    t.test('getImage retains cache control headers when using arrayBufferToImageBitmap', (t) => {
+        resetImageRequestQueue();
+
+        const headers = {
+            'Content-Type': 'image/webp',
+            'Cache-Control': 'max-age=43200,s-maxage=604800',
+            'Expires': 'Wed, 21 Oct 2015 07:28:00 GMT'
+        };
+
+        window.server.respondWith(request => request.respond(200, headers, ''));
+
+        // jsdom doesn't support createImageBitmap; fake it
+        window.createImageBitmap = () => Promise.resolve();
+
+        getImage({url: ''}, (err, img, cacheControl, expires) => {
+            if (err) t.fail();
+            t.equals(cacheControl, headers['Cache-Control']);
+            t.equals(expires, headers['Expires']);
+            t.end();
+        });
+
+        window.server.respond();
+    });
+
     t.end();
 });
