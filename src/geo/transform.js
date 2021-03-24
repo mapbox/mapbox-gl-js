@@ -721,30 +721,6 @@ class Transform {
                 const dy = centerPoint[1] - 0.5 - y;
                 const id = it.tileID ? it.tileID : new OverscaledTileID(tileZoom, it.wrap, it.zoom, x, y);
 
-                if (this.fogCulling && this.fogEnd) {
-                    const v0 = [0, 0, 0, 1];
-                    const v1 = [EXTENT, 0, 0, 1];
-                    const v2 = [0, EXTENT, 0, 1];
-                    const v3 = [EXTENT, EXTENT, 0, 1];
-
-                    const cameraMatrix = this.calculateCameraMatrix(id.toUnwrapped());
-
-                    vec4.transformMat4(v0, v0, cameraMatrix);
-                    vec4.transformMat4(v1, v1, cameraMatrix);
-                    vec4.transformMat4(v2, v2, cameraMatrix);
-                    vec4.transformMat4(v3, v3, cameraMatrix);
-
-                    const d0 = vec3.length(v0);
-                    const d1 = vec3.length(v1);
-                    const d2 = vec3.length(v2);
-                    const d3 = vec3.length(v3);
-
-                    const minDistance = Math.min(Math.min(d0, d1), Math.min(d2, d3));
-                    if (minDistance > this.fogEnd) {
-                        continue;
-                    }
-                }
-
                 result.push({tileID: id, distanceSq: dx * dx + dy * dy});
                 continue;
             }
@@ -762,6 +738,30 @@ class Transform {
                 stack.push(child);
             }
         }
+
+        if (this.fogCulling && this.fogEnd) {
+            const fogEndSq = this.fogEnd * this.fogEnd;
+
+            result.splice(0, result.length, ...result.filter(entry => {
+                const min = [0, 0, 0, 1];
+                const max = [EXTENT, EXTENT, 0, 1];
+
+                const cameraMatrix = this.calculateCameraMatrix(entry.tileID.toUnwrapped());
+
+                vec4.transformMat4(min, min, cameraMatrix);
+                vec4.transformMat4(max, max, cameraMatrix);
+
+                let sqDist = 0;
+
+                for (let i = 0; i < 2; ++i) {
+                    if (min[i] > 0) sqDist += (min[i] * min[i]);
+                    if (max[i] < 0) sqDist += (max[i] * max[i]);
+                }
+
+                return sqDist === 0 || sqDist < fogEndSq;
+            }));
+        }
+
         const cover = result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
         // Relax the assertion on terrain, on high zoom we use distance to center of tile
         // while camera might be closer to selected center of map.
