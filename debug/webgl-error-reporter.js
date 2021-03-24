@@ -48,7 +48,7 @@
                 const {errorLine, errorMessage} = parseError(error);
 
                 const lines = source.split('\n')
-                    .map((line, num) => `${(num + 1).toString().padEnd(5, ' ')} ${line}`);
+                    .map((line, num) => `${(num + 1).toString().padStart(5, ' ')} ${line}`);
 
                 const localLines = lines.slice(Math.max(0, errorLine - 2), errorLine + 1);
                 lines.splice(errorLine, 0, `^^^^^\n     ${errorMessage}\n`);
