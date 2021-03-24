@@ -13,6 +13,7 @@ type Options = {
 
 /**
  * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode. See the `requestFullScreen` [compatibility table](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen#browser_compatibility) for supported browsers.
+ * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
  * @param {Object} [options]

@@ -13,6 +13,7 @@ type Options = {
 
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://docs.mapbox.com/help/how-mapbox-works/attribution/).
+ * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
  * @param {Object} [options]

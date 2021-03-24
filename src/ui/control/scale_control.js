@@ -19,6 +19,7 @@ const defaultOptions: Options = {
 
 /**
  * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
+ * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
  * @param {Object} [options]

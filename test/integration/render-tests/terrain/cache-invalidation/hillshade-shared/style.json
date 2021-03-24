@@ -1,0 +1,42 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "operations": [
+        ["forceRenderCached", true],
+        ["wait"],
+        ["setPaintProperty", "hillshade", "hillshade-exaggeration", 0.1],
+        ["wait", 0],
+        ["wait", 350]
+      ]
+    }
+  },
+  "center": [-113.2935, 35.9529],
+  "zoom": 11.2,
+  "pitch": 30,
+  "terrain": {
+    "source": "terrain"
+  },
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/terrain-buffer-0/{z}-{x}-{y}.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "hillshade",
+      "type": "hillshade",
+      "source": "terrain",
+      "paint": {
+        "hillshade-exaggeration": 1
+      }
+    }
+  ]
+}
