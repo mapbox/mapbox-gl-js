@@ -26,6 +26,10 @@ uniform vec2 u_texsize;
 varying vec2 v_tex;
 varying float v_fade_opacity;
 
+#ifdef FOG
+varying vec3 v_fog_pos;
+#endif
+
 #pragma mapbox: define lowp float opacity
 
 void main() {
@@ -94,6 +98,10 @@ void main() {
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = occlusionFade(projectedPoint);
     gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projectedPoint.w <= 0.0 || occlusion_fade == 0.0));
+
+    #ifdef FOG
+        v_fog_pos = fog_position(vec3(a_pos, h));
+    #endif
 
     v_tex = a_tex / u_texsize;
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);

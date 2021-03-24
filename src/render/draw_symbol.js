@@ -372,6 +372,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const state = segmentState.state;
 
         if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv});
+        painter.prepareDrawProgram(context, state.program, state.tile.tileID.toUnwrapped());
+
         context.activeTexture.set(gl.TEXTURE0);
         state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
         if (state.atlasTextureIcon) {

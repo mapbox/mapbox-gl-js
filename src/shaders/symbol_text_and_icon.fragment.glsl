@@ -12,6 +12,10 @@ uniform lowp float u_device_pixel_ratio;
 varying vec4 v_data0;
 varying vec4 v_data1;
 
+#ifdef FOG
+varying vec3 v_fog_pos;
+#endif
+
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity
@@ -60,7 +64,13 @@ void main() {
     highp float gamma_scaled = gamma * gamma_scale;
     highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist);
 
-    gl_FragColor = color * (alpha * opacity * fade_opacity);
+    vec4 out_color = color;
+    float fog_alpha = 1.0;
+    #ifdef FOG
+        fog_alpha = 1.0 - fog_opacity(v_fog_pos);
+    #endif
+
+    gl_FragColor = out_color * (alpha * opacity * fade_opacity * fog_alpha);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
