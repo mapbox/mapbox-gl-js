@@ -21,7 +21,7 @@ const float PI = 3.141592653589793;
 // Comment to globally disable gamma correction (presently only wrt fog):
 #define GAMMA_CORRECT
 
-vec3 linearToSRGB(vec3 color) {
+vec3 linear_to_srgb(vec3 color) {
 // TODO: Make a choice and remove this conditional before production
 #ifdef GAMMA_CORRECT
     return pow(color, vec3(1.0 / 2.2));
@@ -36,7 +36,7 @@ vec3 linearToSRGB(vec3 color) {
 #endif
 }
 
-vec3 srgbToLinear(vec3 color) {
+vec3 srgb_to_linear(vec3 color) {
 // TODO: Make a choice and remove this conditional before production
 #ifdef GAMMA_CORRECT
     return pow(color, vec3(2.2));
@@ -51,6 +51,6 @@ vec3 srgbToLinear(vec3 color) {
 #endif
 }
 
-vec3 gammaMix(vec3 a, vec3 b, float x) {
-    return linearToSRGB(mix(srgbToLinear(a), srgbToLinear(b), x));
+vec3 gamma_mix(vec3 a, vec3 b, float x) {
+    return linear_to_srgb(mix(srgb_to_linear(a), srgb_to_linear(b), x));
 }

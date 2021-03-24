@@ -6,7 +6,7 @@ attribute vec2 a_texture_pos;
 
 varying vec2 v_pos;
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
 varying vec3 v_fog_pos;
 #endif
 
@@ -17,7 +17,7 @@ void main() {
     float scale = (u_dimension.x - 2.0) / u_dimension.x;
     v_pos = (a_texture_pos / 8192.0) * scale + epsilon;
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
     v_fog_pos = fog_position(a_pos);
 #endif
 }

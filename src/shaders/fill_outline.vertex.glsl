@@ -5,7 +5,7 @@ uniform vec2 u_world;
 
 varying vec2 v_pos;
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
 varying vec3 v_fog_pos;
 #endif
 
@@ -23,7 +23,7 @@ void main() {
     // gl_Position.w in the vertex shader and by gl_FragCoord.w (e.g. 1/gl_Position.w) later in the fragment shader.
     v_pos = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world * gl_Position.w;
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
     v_fog_pos = fog_position(a_pos);
 #endif
 }

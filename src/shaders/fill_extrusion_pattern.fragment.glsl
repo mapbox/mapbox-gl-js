@@ -7,7 +7,7 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec4 v_lighting;
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
 varying vec3 v_fog_pos;
 #endif
 
@@ -43,7 +43,7 @@ void main() {
 
     out_color = out_color * v_lighting;
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
     out_color = fog_apply_premultiplied(out_color, v_fog_pos);
 #endif
 
