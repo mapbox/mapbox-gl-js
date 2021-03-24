@@ -2,7 +2,7 @@ uniform highp float u_intensity;
 
 varying vec2 v_extrude;
 
-#if defined( FOG )
+#ifdef FOG
 varying vec3 v_fog_pos;
 #endif
 
@@ -20,7 +20,7 @@ void main() {
 
     gl_FragColor = vec4(val, 1.0, 1.0, 1.0);
 
-#if defined( FOG )
+#ifdef FOG
     // Heatmaps work differently than other layers, so we operate on the accumulated
     // density rather than a final color. The power is chosen so that the density
     // fades into the fog at a reasonable rate.

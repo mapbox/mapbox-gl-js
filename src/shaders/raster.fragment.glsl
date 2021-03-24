@@ -12,7 +12,7 @@ uniform float u_saturation_factor;
 uniform float u_contrast_factor;
 uniform vec3 u_spin_weights;
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
 varying vec3 v_fog_pos;
 #endif
 
@@ -50,7 +50,7 @@ void main() {
 
     vec3 out_color = mix(u_high_vec, u_low_vec, rgb);
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
     out_color = fog_apply(out_color, v_fog_pos);
 #endif
 

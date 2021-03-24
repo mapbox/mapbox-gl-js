@@ -6,7 +6,7 @@ uniform sampler2D u_image;
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
 varying vec3 v_fog_pos;
 #endif
 
@@ -34,7 +34,7 @@ void main() {
 
     vec4 out_color = mix(color1, color2, u_fade);
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
     out_color = fog_apply_premultiplied(out_color, v_fog_pos);
 #endif
 

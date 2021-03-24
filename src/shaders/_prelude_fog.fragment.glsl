@@ -13,7 +13,7 @@ vec3 fog_apply_sky_gradient(vec3 cubemap_uv, vec3 sky_color) {
     float fog_falloff = clamp(gradient + (1.0 - u_fog_opacity), 0.0, 1.0);
 
     // We may or may not wish to use gamma-correct blending
-    return gammaMix(u_fog_color, sky_color, fog_falloff);
+    return gamma_mix(u_fog_color, sky_color, fog_falloff);
 }
 
 float fog_opacity(vec3 position) {
@@ -36,7 +36,7 @@ float fog_opacity(vec3 position) {
 
 vec3 fog_apply(vec3 color, vec3 position) {
     // We may or may not wish to use gamma-correct blending
-    return gammaMix(color, u_fog_color, fog_opacity(position));
+    return gamma_mix(color, u_fog_color, fog_opacity(position));
 }
 
 // Un-premultiply the alpha, then blend fog, then re-premultiply alpha. For

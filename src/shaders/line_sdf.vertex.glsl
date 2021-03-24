@@ -25,7 +25,7 @@ varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying float v_gamma_scale;
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
 varying vec3 v_fog_pos;
 #endif
 
@@ -100,7 +100,7 @@ void main() {
 
     v_width2 = vec2(outset, inset);
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
     v_fog_pos = fog_position(pos);
 #endif
 }

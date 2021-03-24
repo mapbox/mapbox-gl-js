@@ -11,7 +11,7 @@ varying float v_linesofar;
 varying float v_gamma_scale;
 varying float v_width;
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
 varying vec3 v_fog_pos;
 #endif
 
@@ -70,7 +70,7 @@ void main() {
 
     vec4 color = mix(texture2D(u_image, pos_a), texture2D(u_image, pos_b), u_fade);
 
-#if defined( FOG ) && !defined( RENDER_TO_TEXTURE )
+#ifdef FOG
     color = fog_apply_premultiplied(color, v_fog_pos);
 #endif
 
