@@ -39,10 +39,16 @@ void main() {
     lowp vec4 color = fill_color;
     highp float gamma = EDGE_GAMMA / (fontScale * u_gamma_scale);
     lowp float buff = (256.0 - 64.0) / 256.0;
+
+    float fog_alpha = 1.0;
+    #ifdef FOG
+        fog_alpha = 1.0 - fog_opacity(v_fog_pos);
+    #endif
+
     if (u_is_halo) {
-        color = halo_color;
-        gamma = (halo_blur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
-        buff = (6.0 - halo_width / fontScale) / SDF_PX;
+        color = halo_color * fog_alpha;
+        gamma = (halo_blur * fog_alpha * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
+        buff = (6.0 - (halo_width * fog_alpha) / fontScale) / SDF_PX;
     }
 
     lowp float dist = texture2D(u_texture, tex).a;
@@ -50,10 +56,7 @@ void main() {
     highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist);
 
     vec4 out_color = color;
-    float fog_alpha = 1.0;
-    #ifdef FOG
-        fog_alpha = 1.0 - fog_opacity(v_fog_pos);
-    #endif
+
 
     gl_FragColor = out_color * (alpha * opacity * fade_opacity * fog_alpha);
 
