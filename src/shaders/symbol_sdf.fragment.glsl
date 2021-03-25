@@ -33,6 +33,10 @@ void main() {
     float gamma_scale = v_data1.x;
     float size = v_data1.y;
     float fade_opacity = v_data1[2];
+    float fog_alpha = 1.0;
+    #ifdef FOG
+        fog_alpha = 1.0 - fog_opacity(v_fog_pos);
+    #endif
 
     float fontScale = u_is_text ? size / 24.0 : size;
 
@@ -40,10 +44,6 @@ void main() {
     highp float gamma = EDGE_GAMMA / (fontScale * u_gamma_scale);
     lowp float buff = (256.0 - 64.0) / 256.0;
 
-    float fog_alpha = 1.0;
-    #ifdef FOG
-        fog_alpha = 1.0 - fog_opacity(v_fog_pos);
-    #endif
 
     if (u_is_halo) {
         color = halo_color * fog_alpha;

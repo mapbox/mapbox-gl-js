@@ -198,9 +198,9 @@ export class Placement {
     zoomAtLastRecencyCheck: number;
     collisionCircleArrays: {[any]: CollisionCircleArray};
 
-    constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement) {
+    constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement, fogSampler: ?FogSampler) {
         this.transform = transform.clone();
-        this.collisionIndex = new CollisionIndex(this.transform);
+        this.collisionIndex = new CollisionIndex(this.transform, fogSampler);
         this.placements = {};
         this.opacities = {};
         this.variableOffsets = {};
@@ -432,6 +432,7 @@ export class Placement {
             }
 
             const updateElevation = (box: SingleCollisionBox) => {
+                box.tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
                 if (!this.transform.elevation && !box.elevation) return;
                 box.elevation = this.transform.elevation ? this.transform.elevation.getAtTileOffset(
                     this.retainedQueryData[bucket.bucketInstanceId].tileID,
