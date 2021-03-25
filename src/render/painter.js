@@ -823,6 +823,7 @@ class Painter {
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
         const fog = this.style && this.style.fog;
         if (fog) {
+            const temporalOffset = (this.frameCounter / 1000.0) % 1;
             const fogColor = fog.properties.get('color');
             const uniforms = {};
 
@@ -831,6 +832,7 @@ class Painter {
             uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
             uniforms['u_fog_opacity'] = fog.properties.get('opacity') * fog.getFogPitchFactor(this.transform.pitch);
             uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
+            uniforms['u_temporal_fog_offset'] = temporalOffset;
 
             program.setFogUniformValues(context, uniforms);
         }
