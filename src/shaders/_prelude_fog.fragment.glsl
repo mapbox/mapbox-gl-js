@@ -4,7 +4,7 @@ uniform vec2 u_fog_range;
 uniform vec3 u_fog_color;
 uniform float u_fog_opacity;
 uniform float u_fog_sky_blend;
-uniform float u_temporal_fog_offset;
+uniform float u_fog_temporal_offset;
 
 vec3 fog_apply_sky_gradient(vec3 cubemap_uv, vec3 sky_color) {
     vec3 camera_ray = normalize(cubemap_uv);
@@ -40,7 +40,7 @@ vec3 fog_apply(vec3 color, vec3 position) {
         color,
         u_fog_color,
         fog_opacity(position)
-    ), gl_FragCoord.xy + u_temporal_fog_offset);
+    ), gl_FragCoord.xy + u_fog_temporal_offset);
 }
 
 // Un-premultiply the alpha, then blend fog, then re-premultiply alpha. For

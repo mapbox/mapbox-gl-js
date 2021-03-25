@@ -832,7 +832,7 @@ class Painter {
             uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
             uniforms['u_fog_opacity'] = fog.properties.get('opacity') * fog.getFogPitchFactor(this.transform.pitch);
             uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
-            uniforms['u_temporal_fog_offset'] = temporalOffset;
+            uniforms['u_fog_temporal_offset'] = temporalOffset;
 
             program.setFogUniformValues(context, uniforms);
         }
