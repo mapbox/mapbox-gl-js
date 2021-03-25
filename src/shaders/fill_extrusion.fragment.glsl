@@ -1,13 +1,13 @@
 varying vec4 v_color;
 
 #ifdef FOG
-varying float v_depth;
+varying vec3 v_fog_pos;
 #endif
 
 void main() {
     vec4 color = v_color;
 #ifdef FOG
-    color.rgb = fog_apply(color.rgb, v_depth);
+    color = fog_apply_premultiplied(color, v_fog_pos);
 #endif
     gl_FragColor = color;
 
