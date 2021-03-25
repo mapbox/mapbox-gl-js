@@ -12,6 +12,10 @@ uniform float u_saturation_factor;
 uniform float u_contrast_factor;
 uniform vec3 u_spin_weights;
 
+#ifdef FOG
+varying vec3 v_fog_pos;
+#endif
+
 void main() {
 
     // read and cross-fade colors from the main and parent tiles
@@ -44,7 +48,13 @@ void main() {
     vec3 u_high_vec = vec3(u_brightness_low, u_brightness_low, u_brightness_low);
     vec3 u_low_vec = vec3(u_brightness_high, u_brightness_high, u_brightness_high);
 
-    gl_FragColor = vec4(mix(u_high_vec, u_low_vec, rgb) * color.a, color.a);
+    vec3 out_color = mix(u_high_vec, u_low_vec, rgb);
+
+#ifdef FOG
+    out_color = fog_apply(out_color, v_fog_pos);
+#endif
+
+    gl_FragColor = vec4(out_color * color.a, color.a);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

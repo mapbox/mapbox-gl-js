@@ -11,6 +11,10 @@ varying float v_linesofar;
 varying float v_gamma_scale;
 varying float v_width;
 
+#ifdef FOG
+varying vec3 v_fog_pos;
+#endif
+
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
 #pragma mapbox: define lowp float pixel_ratio_from
@@ -66,7 +70,11 @@ void main() {
 
     vec4 color = mix(texture2D(u_image, pos_a), texture2D(u_image, pos_b), u_fade);
 
-    gl_FragColor = color * alpha * opacity;
+#ifdef FOG
+    color = fog_apply_premultiplied(color, v_fog_pos);
+#endif
+
+    gl_FragColor = color * (alpha * opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

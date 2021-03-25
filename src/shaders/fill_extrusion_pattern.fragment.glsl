@@ -8,7 +8,7 @@ varying vec2 v_pos_b;
 varying vec4 v_lighting;
 
 #ifdef FOG
-varying float v_depth;
+varying vec3 v_fog_pos;
 #endif
 
 #pragma mapbox: define lowp float base
@@ -44,7 +44,7 @@ void main() {
     out_color = out_color * v_lighting;
 
 #ifdef FOG
-    out_color.rgb = fog_apply(out_color.rgb, v_depth);
+    out_color = fog_apply_premultiplied(out_color, v_fog_pos);
 #endif
 
     gl_FragColor = out_color;
