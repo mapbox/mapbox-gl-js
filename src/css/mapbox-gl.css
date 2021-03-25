@@ -673,6 +673,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 }
 
 .mapboxgl-marker-occluded {
+    /* Must match markers.js:TERRAIN_OCCLUDED_OPACITY */
     opacity: 0.2;
 }
 

@@ -132,6 +132,25 @@ window.onload = function() {
     });
 };
 
+['auto'].forEach((rotationAlignment, i) => {
+    ['auto'].forEach((pitchAlignment, j) => {
+        var popup = new mapboxgl.Popup().setHTML(`Pitch Alignment: ${pitchAlignment}<br>Rotation Alignment: ${rotationAlignment}`);
+
+        var marker = new mapboxgl.Marker({
+            color: `rgb(200, 0, 0)`,
+            scale: 1,
+            draggable: true,
+            rotationAlignment,
+            pitchAlignment
+        })
+            .setLngLat(map.getCenter())
+            .setPopup(popup)
+            .addTo(map);
+
+        marker.togglePopup();
+    });
+});
+
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {
         "type": "raster-dem",

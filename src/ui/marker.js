@@ -27,6 +27,9 @@ type Options = {
     pitchAlignment?: string
 };
 
+// Must match mapbox-gl.css:.mapboxgl-marker-occluded:opacity
+const TERRAIN_OCCLUDED_OPACITY = 0.2;
+
 /**
  * Creates a marker component
  * @param {Object} [options]
@@ -77,6 +80,7 @@ export default class Marker extends Evented {
     _rotationAlignment: string;
     _originalTabIndex: ?string; // original tabindex of _element
     _occlusionTimer: ?TimeoutID;
+    _fogFadeTimer: ?TimeoutID;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -93,7 +97,7 @@ export default class Marker extends Evented {
             '_addDragHandler',
             '_onMapClick',
             '_onKeyPress',
-            '_clearOcclusionTimer'
+            '_clearTimers'
         ], this);
 
         this._anchor = options && options.anchor || 'center';
@@ -249,7 +253,7 @@ export default class Marker extends Evented {
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._update);
         map.on('moveend', this._update);
-        map.on('remove', this._clearOcclusionTimer);
+        map.on('remove', this._clearTimers);
         this.setDraggable(this._draggable);
         this._update();
 
@@ -279,10 +283,10 @@ export default class Marker extends Evented {
             this._map.off('touchend', this._onUp);
             this._map.off('mousemove', this._onMove);
             this._map.off('touchmove', this._onMove);
-            this._map.off('remove', this._clearOcclusionTimer);
+            this._map.off('remove', this._clearTimers);
             delete this._map;
         }
-        this._clearOcclusionTimer();
+        this._clearTimers();
         DOM.remove(this._element);
         if (this._popup) this._popup.remove();
         return this;
@@ -444,17 +448,42 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _updateOcclusion() {
-        if (!this._occlusionTimer) {
+    _updateTimers() {
+        if (this._map.transform.elevation && !this._occlusionTimer) {
             this._occlusionTimer = setTimeout(this._onOcclusionTimer.bind(this), 60);
+        }
+        if (this._map.style.fog && !this._fogFadeTimer) {
+            this._fogFadeTimer = setTimeout(this._onFogTimer.bind(this), 60);
         }
     }
 
-    _clearOcclusionTimer() {
+    _clearTimers() {
         if (this._occlusionTimer) {
             clearTimeout(this._occlusionTimer);
             this._occlusionTimer = null;
         }
+        if (this._fogFadeTimer) {
+            clearTimeout(this._fogFadeTimer);
+            this._fogFadeTimer = null;
+        }
+    }
+
+    _onFogTimer() {
+        const pos = this._pos.sub(this._transformedOffset());
+        const lngLat = this._map.unproject(pos);
+        const fogSampler = this._map.style.fog.getSampler();
+        const fogOpacity = fogSampler.getFogOpacityAtLatLng(lngLat, this._map.transform);
+        const withinFog = fogOpacity > 0.0;
+        const computedOpacity = window.getComputedStyle(this._element).getPropertyValue('opacity');
+        const terrainOccluded = this._element.classList.contains('mapboxgl-marker-occluded');
+
+        this._element.style.opacity = (1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0);
+
+        if (this._popup) {
+            this._popup._setOpacity(1.0 - fogOpacity);
+        }
+
+        this._fogFadeTimer = null;
     }
 
     _onOcclusionTimer() {
@@ -484,7 +513,7 @@ export default class Marker extends Evented {
 
         this._pos = this._map.project(this._lngLat)._add(this._transformedOffset());
 
-        if (this._map.transform.elevation) this._updateOcclusion();
+        this._updateTimers();
 
         let rotation = "";
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
