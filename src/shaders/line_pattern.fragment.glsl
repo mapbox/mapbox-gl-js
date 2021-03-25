@@ -74,7 +74,7 @@ void main() {
     color = fog_apply_premultiplied(color, v_fog_pos);
 #endif
 
-    gl_FragColor = color * alpha * opacity;
+    gl_FragColor = color * (alpha * opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
