@@ -741,7 +741,9 @@ class Painter {
 
         const defines = [];
         if (terrain) defines.push('TERRAIN');
-        if (fog) defines.push('FOG');
+        // When terrain is active, fog is rendered as part of draping, not as part of tile
+        // rendering. Removing the fog flag during tile rendering avoids additional defines.
+        if (fog && !rtt) defines.push('FOG');
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
         return defines;
