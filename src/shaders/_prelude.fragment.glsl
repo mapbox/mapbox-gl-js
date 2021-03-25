@@ -29,3 +29,15 @@ vec3 srgb_to_linear(vec3 color) {
 vec3 gamma_mix(vec3 a, vec3 b, float x) {
     return linear_to_srgb(mix(srgb_to_linear(a), srgb_to_linear(b), x));
 }
+
+highp vec3 hash(highp vec2 p) {
+    highp vec3 p3 = fract(vec3(p.xyx) * vec3(443.8975, 397.2973, 491.1871));
+    p3 += dot(p3, p3.yxz + 19.19);
+    return fract(vec3((p3.x + p3.y) * p3.z, (p3.x + p3.z) * p3.y, (p3.y + p3.z) * p3.x));
+}
+
+vec3 dither(vec3 color, highp vec2 seed) {
+    vec3 rnd = hash(seed) + hash(seed + 0.59374) - 0.5;
+    color.rgb += rnd / 255.0;
+    return color;
+}
