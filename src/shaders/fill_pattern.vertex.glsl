@@ -9,7 +9,7 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 
 #ifdef FOG
-varying float v_depth;
+varying vec3 v_fog_pos;
 #endif
 
 #pragma mapbox: define lowp float opacity
@@ -42,6 +42,6 @@ void main() {
     v_pos_b = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, toScale * display_size_b, tileZoomRatio, a_pos);
 
 #ifdef FOG
-    v_depth = length(gl_Position.xyz);
+    v_fog_pos = fog_position(a_pos);
 #endif
 }
