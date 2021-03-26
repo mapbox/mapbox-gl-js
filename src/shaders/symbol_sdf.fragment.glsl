@@ -46,7 +46,7 @@ void main() {
 
 
     if (u_is_halo) {
-        color = halo_color * fog_alpha;
+        color = halo_color;
         gamma = (halo_blur * fog_alpha * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
         buff = (6.0 - (halo_width * fog_alpha) / fontScale) / SDF_PX;
     }
@@ -58,7 +58,7 @@ void main() {
     vec4 out_color = color;
 
 
-    gl_FragColor = out_color * (alpha * opacity * fade_opacity * fog_alpha);
+    gl_FragColor = out_color * (alpha * opacity * fade_opacity * fog_alpha * fog_alpha);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

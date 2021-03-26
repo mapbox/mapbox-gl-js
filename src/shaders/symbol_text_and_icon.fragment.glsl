@@ -38,7 +38,7 @@ void main() {
 
     if (v_data1.w == ICON) {
         vec2 tex_icon = v_data0.zw;
-        lowp float alpha = opacity * fade_opacity * fog_alpha;
+        lowp float alpha = opacity * fade_opacity * fog_alpha * fog_alpha;
         gl_FragColor = texture2D(u_texture_icon, tex_icon) * alpha;
 
 #ifdef OVERDRAW_INSPECTOR
@@ -72,7 +72,7 @@ void main() {
     vec4 out_color = color;
 
 
-    gl_FragColor = out_color * (alpha * opacity * fade_opacity * fog_alpha);
+    gl_FragColor = out_color * (alpha * opacity * fade_opacity * fog_alpha * fog_alpha);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
