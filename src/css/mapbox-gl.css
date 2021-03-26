@@ -672,11 +672,6 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     transition: opacity 0.2s;
 }
 
-.mapboxgl-marker-occluded {
-    /* Must match markers.js:TERRAIN_OCCLUDED_OPACITY */
-    opacity: 0.2;
-}
-
 .mapboxgl-user-location-dot {
     background-color: #1da1f2;
     width: 15px;

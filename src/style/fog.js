@@ -37,19 +37,16 @@ export const FOG_EXP_FACTOR = 5.5;
 export const FOG_POWER_FACTOR = 2;
 
 export class FogSampler {
-    range: [number, number];
-    opacity: number;
-
-    constructor(range: [number, number], opacity: number) {
-        this.range = range;
-        this.opacity = opacity;
-    }
+    properties: ?PossiblyEvaluated<Props>;
 
     // As defined in _prelude_fog.fragment.glsl#fog_opacity
     getFogOpacity(depth: number, pitch: number): number {
-        const maxOpacity = this.opacity * smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-        const start = this.range[0];
-        const end = this.range[1];
+        if (!this.properties) { return 0.0; }
+
+        const props = this.properties;
+        const range = props.get('range');
+        const maxOpacity = props.get('opacity') * smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+        const start = range[0], end = range[1];
         const falloff = Math.exp(-FOG_EXP_FACTOR * (depth - start) / (end - start));
         const fogOpacity = Math.pow(Math.max((1 - falloff) * maxOpacity, 0), FOG_POWER_FACTOR);
 
@@ -86,12 +83,14 @@ class Fog extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
+    sampler: FogSampler;
 
     constructor(fogOptions?: FogSpecification) {
         super();
         this._transitionable = new Transitionable(properties);
         this.set(fogOptions);
         this._transitioning = this._transitionable.untransitioned();
+        this.sampler = new FogSampler();
     }
 
     get() {
@@ -125,14 +124,8 @@ class Fog extends Evented {
         return this._transitioning.hasTransition();
     }
 
-    getSampler(): FogSampler {
-        const range = this.properties.get('range');
-        const opacity = this.properties.get('opacity');
-        return new FogSampler(range, opacity);
-    }
-
     recalculate(parameters: EvaluationParameters) {
-        this.properties = this._transitioning.possiblyEvaluate(parameters);
+        this.properties = this.sampler.properties = this._transitioning.possiblyEvaluate(parameters);
     }
 
     _validate(validate: Function, value: mixed, options?: {validate?: boolean}) {

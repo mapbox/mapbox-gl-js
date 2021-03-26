@@ -529,6 +529,12 @@ class Style extends Evented {
         }
         this.z = parameters.zoom;
 
+        if (this.fog || this.terrain) {
+            for (const marker of this.map._markers) {
+                marker._evaluateOpacity();
+            }
+        }
+
         if (changed) {
             this.fire(new Event('data', {dataType: 'style'}));
         }

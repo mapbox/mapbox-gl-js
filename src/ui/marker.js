@@ -27,8 +27,7 @@ type Options = {
     pitchAlignment?: string
 };
 
-// Must match mapbox-gl.css:.mapboxgl-marker-occluded:opacity
-const TERRAIN_OCCLUDED_OPACITY = 0.2;
+export const TERRAIN_OCCLUDED_OPACITY = 0.2;
 
 /**
  * Creates a marker component
@@ -79,8 +78,7 @@ export default class Marker extends Evented {
     _pitchAlignment: string;
     _rotationAlignment: string;
     _originalTabIndex: ?string; // original tabindex of _element
-    _occlusionTimer: ?TimeoutID;
-    _fogFadeTimer: ?TimeoutID;
+    _fadeTimer: ?TimeoutID;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -97,7 +95,7 @@ export default class Marker extends Evented {
             '_addDragHandler',
             '_onMapClick',
             '_onKeyPress',
-            '_clearTimers'
+            '_clearFadeTimer'
         ], this);
 
         this._anchor = options && options.anchor || 'center';
@@ -253,7 +251,8 @@ export default class Marker extends Evented {
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._update);
         map.on('moveend', this._update);
-        map.on('remove', this._clearTimers);
+        map.on('remove', this._clearFadeTimer);
+        map._addMarker(this);
         this.setDraggable(this._draggable);
         this._update();
 
@@ -283,10 +282,11 @@ export default class Marker extends Evented {
             this._map.off('touchend', this._onUp);
             this._map.off('mousemove', this._onMove);
             this._map.off('touchmove', this._onMove);
-            this._map.off('remove', this._clearTimers);
+            this._map.off('remove', this._clearFadeTimer);
+            this._map._removeMarker(this);
             delete this._map;
         }
-        this._clearTimers();
+        this._clearFadeTimer();
         DOM.remove(this._element);
         if (this._popup) this._popup.remove();
         return this;
@@ -448,23 +448,46 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _updateTimers() {
-        if (this._map.transform.elevation && !this._occlusionTimer) {
-            this._occlusionTimer = setTimeout(this._onOcclusionTimer.bind(this), 60);
+    _evaluateOpacity() {
+        const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
+        if (this._withinScreenBounds(position)) {
+            const lngLat = this._map.unproject(position);
+            const fog = this._map.getFog();
+
+            let terrainOccluded = false;
+            let fogOpacity = 0.0;
+
+            if (fog) {
+                const fogSampler = fog.sampler;
+                fogOpacity = fogSampler.getFogOpacityAtLatLng(lngLat, this._map.transform);
+            }
+
+            if (this._map.getTerrain()) {
+                // calculate if occluded.
+                const raycastLoc = this._map.unproject(position);
+                const camera = this._map.getFreeCameraOptions();
+                if (camera.position) {
+                    const cameraPos = camera.position.toLngLat();
+                    const raycastDistance = cameraPos.distanceTo(raycastLoc);
+                    const posDistance = cameraPos.distanceTo(this._lngLat);
+                    terrainOccluded = raycastDistance < posDistance * 0.9;
+                }
+            }
+
+            this._element.style.opacity = `${(1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0)}`;
+
+            if (this._popup) {
+                this._popup._setOpacity(`${1.0 - fogOpacity}`);
+            }
         }
-        if (this._map.style && this._map.style.fog && !this._fogFadeTimer) {
-            this._fogFadeTimer = setTimeout(this._onFogTimer.bind(this), 60);
-        }
+
+        this._fadeTimer = null;
     }
 
-    _clearTimers() {
-        if (this._occlusionTimer) {
-            clearTimeout(this._occlusionTimer);
-            this._occlusionTimer = null;
-        }
-        if (this._fogFadeTimer) {
-            clearTimeout(this._fogFadeTimer);
-            this._fogFadeTimer = null;
+    _clearFadeTimer() {
+        if (this._fadeTimer) {
+            clearTimeout(this._fadeTimer);
+            this._fadeTimer = null;
         }
     }
 
@@ -473,43 +496,6 @@ export default class Marker extends Evented {
         return !!position &&
             position.x >= 0 && position.x < tr.width &&
             position.y >= 0 && position.y < tr.height;
-    }
-
-    _onFogTimer() {
-        const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
-        if (this._withinScreenBounds(position)) {
-            const lngLat = this._map.unproject(position);
-            if (this._map.style.fog) {
-                const fogSampler = this._map.style.fog.getSampler();
-                const fogOpacity = fogSampler.getFogOpacityAtLatLng(lngLat, this._map.transform);
-                const terrainOccluded = this._element.classList.contains('mapboxgl-marker-occluded');
-
-                this._element.style.opacity = `${(1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0)}`;
-
-                if (this._popup) {
-                    this._popup._setOpacity(`${1.0 - fogOpacity}`);
-                }
-            }
-        }
-
-        this._fogFadeTimer = null;
-    }
-
-    _onOcclusionTimer() {
-        const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
-        if (this._withinScreenBounds(position)) {
-            // calculate if occluded.
-            const raycastLoc = this._map.unproject(position);
-            const camera = this._map.getFreeCameraOptions();
-            if (camera.position) {
-                const cameraPos = camera.position.toLngLat();
-                const raycastDistance = cameraPos.distanceTo(raycastLoc);
-                const posDistance = cameraPos.distanceTo(this._lngLat);
-                const occluded = raycastDistance < posDistance * 0.9;
-                this._element.classList.toggle('mapboxgl-marker-occluded', occluded);
-            }
-        }
-        this._occlusionTimer = null;
     }
 
     _update(e?: {type: 'move' | 'moveend'}) {
@@ -544,7 +530,9 @@ export default class Marker extends Evented {
 
         DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
 
-        this._updateTimers();
+        if (this._map.getTerrain() || this._map.getFog() && !this._fadeTimer) {
+            this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
+        }
     }
 
     /**

@@ -27,6 +27,7 @@ import {MapMouseEvent} from './events.js';
 import TaskQueue from '../util/task_queue.js';
 import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
+import Marker from '../ui/marker.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -323,6 +324,7 @@ class Map extends Camera {
     _optimizeForTerrain: boolean;
     _renderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
+    _markers: Array<Marker>;
     _logoControl: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
@@ -423,6 +425,7 @@ class Map extends Camera {
         this._optimizeForTerrain = options.optimizeForTerrain;
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
+        this._markers = [];
         this._mapId = uniqueId();
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
@@ -2163,7 +2166,7 @@ class Map extends Camera {
      * @returns {Object} terrain Terrain specification properties of the style.
      */
     getTerrain(): Terrain | null {
-        return this.style.getTerrain();
+        return this.style ? this.style.getTerrain() : null;
     }
 
     setFog(fog: FogSpecification) {
@@ -2174,7 +2177,7 @@ class Map extends Camera {
 
     // NOTE: Make fog non-optional
     getFog(): Fog | null {
-        return this.style.getFog();
+        return this.style ? this.style.getFog() : null;
     }
 
     /**
@@ -2408,6 +2411,17 @@ class Map extends Camera {
         // Maintain the same canvas size, potentially downscaling it for HiDPI displays
         this._canvas.style.width = `${width}px`;
         this._canvas.style.height = `${height}px`;
+    }
+
+    _addMarker(marker: Marker) {
+        this._markers.push(marker);
+    }
+
+    _removeMarker(marker: Marker) {
+        const index = this._markers.indexOf(marker);
+        if (index !== -1) {
+            this._markers.splice(index, 1);
+        }
     }
 
     _setupPainter() {
