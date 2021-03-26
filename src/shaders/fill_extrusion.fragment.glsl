@@ -7,7 +7,7 @@ varying vec3 v_fog_pos;
 void main() {
     vec4 color = v_color;
 #ifdef FOG
-    color = fog_apply_premultiplied(color, v_fog_pos);
+    color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
     gl_FragColor = color;
 
