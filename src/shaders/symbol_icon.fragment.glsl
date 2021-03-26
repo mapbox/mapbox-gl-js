@@ -21,7 +21,9 @@ void main() {
         fog_alpha = 1.0 - fog_opacity(v_fog_pos);
     #endif
 
-    gl_FragColor = out_color * alpha * fog_alpha;
+    vec4 fog_color = vec4(1.0 - fog_alpha);
+    vec4 out_color_2 = (fog_color * out_color.a + out_color * (1.0 - fog_color.a));
+    gl_FragColor = out_color_2 * alpha;
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

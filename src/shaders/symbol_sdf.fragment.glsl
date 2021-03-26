@@ -46,9 +46,9 @@ void main() {
 
 
     if (u_is_halo) {
-        color = halo_color * fog_alpha;
-        gamma = (halo_blur * fog_alpha * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
-        buff = (6.0 - (halo_width * fog_alpha) / fontScale) / SDF_PX;
+        color = halo_color;
+        gamma = (halo_blur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
+        buff = (6.0 - (halo_width) / fontScale) / SDF_PX;
     }
 
     lowp float dist = texture2D(u_texture, tex).a;
@@ -57,8 +57,13 @@ void main() {
 
     vec4 out_color = color;
 
+    // hard code premultiplied alpha fog color
+    vec4 fog_color = vec4(1.0 - fog_alpha);
 
-    gl_FragColor = out_color * (alpha * opacity * fade_opacity * fog_alpha);
+    // blend fog on top of symbol
+    vec4 out_color_2 = (fog_color * out_color.a + out_color * (1.0 - fog_color.a));
+
+    gl_FragColor = out_color_2 * (alpha * opacity * fade_opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
