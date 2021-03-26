@@ -51,7 +51,7 @@ void main() {
     vec3 out_color = mix(u_high_vec, u_low_vec, rgb);
 
 #ifdef FOG
-    out_color = fog_apply(out_color, v_fog_pos);
+    out_color = fog_dither(fog_apply(out_color, v_fog_pos));
 #endif
 
     gl_FragColor = vec4(out_color * color.a, color.a);

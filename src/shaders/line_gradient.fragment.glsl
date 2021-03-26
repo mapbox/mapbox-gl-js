@@ -31,7 +31,7 @@ void main() {
     vec4 color = texture2D(u_image, v_uv);
 
 #ifdef FOG
-    color = fog_apply_premultiplied(color, v_fog_pos);
+    color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
 
     gl_FragColor = color * (alpha * opacity);
