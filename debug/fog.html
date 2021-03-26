@@ -31,8 +31,8 @@ var GUIParams = function() {
     this.enableTerrain = true;
     this.terrainExaggeration = 1.5;
     this.style = 'satellite-streets-v11';
-    this.fogRangeStart = 2000;
-    this.fogRangeEnd = 3000;
+    this.fogRangeStart = 1000;
+    this.fogRangeEnd = 10000;
     this.fogOpacity = 1.0;
     this.fogColor = [255, 255, 255];
     this.fogSkyBlend = 0.1;
@@ -132,24 +132,20 @@ window.onload = function() {
     });
 };
 
-['auto'].forEach((rotationAlignment, i) => {
-    ['auto'].forEach((pitchAlignment, j) => {
-        var popup = new mapboxgl.Popup().setHTML(`Pitch Alignment: ${pitchAlignment}<br>Rotation Alignment: ${rotationAlignment}`);
+var popup = new mapboxgl.Popup().setHTML('Pitch Alignment: auto<br>Rotation Alignment: auto');
 
-        var marker = new mapboxgl.Marker({
-            color: `rgb(200, 0, 0)`,
-            scale: 1,
-            draggable: true,
-            rotationAlignment,
-            pitchAlignment
-        })
-            .setLngLat(map.getCenter())
-            .setPopup(popup)
-            .addTo(map);
+var marker = new mapboxgl.Marker({
+    color: `rgb(200, 0, 0)`,
+    scale: 1,
+    draggable: true,
+    pitchAlignment: 'auto',
+    rotationAlignment: 'auto'
+})
+    .setLngLat(map.getCenter())
+    .setPopup(popup)
+    .addTo(map);
 
-        marker.togglePopup();
-    });
-});
+marker.togglePopup();
 
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {

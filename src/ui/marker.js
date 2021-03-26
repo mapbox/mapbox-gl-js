@@ -452,7 +452,7 @@ export default class Marker extends Evented {
         if (this._map.transform.elevation && !this._occlusionTimer) {
             this._occlusionTimer = setTimeout(this._onOcclusionTimer.bind(this), 60);
         }
-        if (this._map.style.fog && !this._fogFadeTimer) {
+        if (this._map.style && this._map.style.fog && !this._fogFadeTimer) {
             this._fogFadeTimer = setTimeout(this._onFogTimer.bind(this), 60);
         }
     }
@@ -468,30 +468,38 @@ export default class Marker extends Evented {
         }
     }
 
+    _withinScreenBounds(position: ?Point): boolean {
+        const tr = this._map.transform;
+        return !!position &&
+            position.x >= 0 && position.x < tr.width &&
+            position.y >= 0 && position.y < tr.height;
+    }
+
     _onFogTimer() {
-        const pos = this._pos.sub(this._transformedOffset());
-        const lngLat = this._map.unproject(pos);
-        const fogSampler = this._map.style.fog.getSampler();
-        const fogOpacity = fogSampler.getFogOpacityAtLatLng(lngLat, this._map.transform);
-        const withinFog = fogOpacity > 0.0;
-        const computedOpacity = window.getComputedStyle(this._element).getPropertyValue('opacity');
-        const terrainOccluded = this._element.classList.contains('mapboxgl-marker-occluded');
+        const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
+        if (this._withinScreenBounds(position)) {
+            const lngLat = this._map.unproject(position);
+            if (this._map.style.fog) {
+                const fogSampler = this._map.style.fog.getSampler();
+                const fogOpacity = fogSampler.getFogOpacityAtLatLng(lngLat, this._map.transform);
+                const terrainOccluded = this._element.classList.contains('mapboxgl-marker-occluded');
 
-        this._element.style.opacity = (1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0);
+                this._element.style.opacity = `${(1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0)}`;
 
-        if (this._popup) {
-            this._popup._setOpacity(1.0 - fogOpacity);
+                if (this._popup) {
+                    this._popup._setOpacity(`${1.0 - fogOpacity}`);
+                }
+            }
         }
 
         this._fogFadeTimer = null;
     }
 
     _onOcclusionTimer() {
-        const tr = this._map.transform;
-        const pos = this._pos ? this._pos.sub(this._transformedOffset()) : null;
-        if (pos && pos.x >= 0 && pos.x < tr.width && pos.y >= 0 && pos.y < tr.height) {
+        const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
+        if (this._withinScreenBounds(position)) {
             // calculate if occluded.
-            const raycastLoc = this._map.unproject(pos);
+            const raycastLoc = this._map.unproject(position);
             const camera = this._map.getFreeCameraOptions();
             if (camera.position) {
                 const cameraPos = camera.position.toLngLat();
@@ -512,8 +520,6 @@ export default class Marker extends Evented {
         }
 
         this._pos = this._map.project(this._lngLat)._add(this._transformedOffset());
-
-        this._updateTimers();
 
         let rotation = "";
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
@@ -537,6 +543,8 @@ export default class Marker extends Evented {
         }
 
         DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
+
+        this._updateTimers();
     }
 
     /**

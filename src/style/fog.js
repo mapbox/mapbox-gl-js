@@ -5,6 +5,8 @@ import {endsWith, extend, smoothstep} from '../util/util.js';
 import {Evented} from '../util/evented.js';
 import LngLat from '../geo/lng_lat.js';
 import {vec3} from 'gl-matrix';
+import {UnwrappedTileID} from '../source/tile_id.js';
+import type Transform from '../geo/transform.js';
 import {validateStyle, validateFog, emitValidationErrors} from './validate_style.js';
 import type EvaluationParameters from './evaluation_parameters.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
@@ -56,7 +58,7 @@ export class FogSampler {
 
     getOpacityAtTileCoord(x: number, y: number, z: number, tileId: UnwrappedTileID, transform: Transform): number {
         const mat = transform.calculateCameraMatrix(tileId);
-        const pos = [x, y ,z];
+        const pos = [x, y, z];
         vec3.transformMat4(pos, pos, mat);
         const depth = vec3.length(pos);
 
@@ -124,7 +126,9 @@ class Fog extends Evented {
     }
 
     getSampler(): FogSampler {
-        return new FogSampler(this._transitionable.getValue('range'), this._transitionable.getValue('opacity'));
+        const range = this.properties.get('range');
+        const opacity = this.properties.get('opacity');
+        return new FogSampler(range, opacity);
     }
 
     recalculate(parameters: EvaluationParameters) {

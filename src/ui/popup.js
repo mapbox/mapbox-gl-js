@@ -588,7 +588,7 @@ export default class Popup extends Evented {
         this.remove();
     }
 
-    _setOpacity(opacity: number) {
+    _setOpacity(opacity: string) {
         if (this._content)
             this._content.style.opacity = opacity;
         if (this._container)
