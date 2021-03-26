@@ -251,12 +251,13 @@ const defaultOptions = {
  *   font-family for locally overriding generation of all glyphs. Font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
  *   If set, this option override the setting in localIdeographFontFamily
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
- *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
+ *   Expected to return a {@link RequestParameters} object with a `url` property and optionally `headers` and `credentials` properties.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
  * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @param {string} [options.accessToken=null] If specified, map will use this token instead of the one defined in mapboxgl.accessToken.
- * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language; see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
+ * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
+ *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
  * @example
  * var map = new mapboxgl.Map({
@@ -2654,10 +2655,6 @@ class Map extends Camera {
             this._triggerFrame(false);
             if (!this.isMoving() && this.loaded()) {
                 this.fire(new Event('idle'));
-                if (this._isInitialLoad) {
-                    // Following line is billing related code. Do not change. See LICENSE.txt
-                    this._authenticate();
-                }
                 this._isInitialLoad = false;
                 // check the options to see if need to calculate the speed index
                 if (this.speedIndexTiming) {
@@ -2670,6 +2667,8 @@ class Map extends Camera {
 
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
+            // Following line is billing related code. Do not change. See LICENSE.txt
+            this._authenticate();
             PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
 

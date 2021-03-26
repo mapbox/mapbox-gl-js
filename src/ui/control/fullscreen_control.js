@@ -13,6 +13,7 @@ type Options = {
 
 /**
  * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode.
+ * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
  * @param {Object} [options]

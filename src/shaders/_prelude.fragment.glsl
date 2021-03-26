@@ -18,39 +18,25 @@ precision mediump float;
 
 const float PI = 3.141592653589793;
 
-// Comment to globally disable gamma correction (presently only wrt fog):
-#define GAMMA_CORRECT
-
 vec3 linear_to_srgb(vec3 color) {
-// TODO: Make a choice and remove this conditional before production
-#ifdef GAMMA_CORRECT
     return pow(color, vec3(1.0 / 2.2));
-    /*
-    vec3 a = 12.92 * color;
-    vec3 b = 1.055 * pow(color, vec3(1.0 / 2.4)) - 0.055;
-    vec3 c = step(vec3(0.0031308), color);
-    return mix(a, b, c);
-    */
-#else
-    return color;
-#endif
 }
 
 vec3 srgb_to_linear(vec3 color) {
-// TODO: Make a choice and remove this conditional before production
-#ifdef GAMMA_CORRECT
     return pow(color, vec3(2.2));
-    /*
-    vec3 a = color / 12.92;
-    vec3 b = pow((color + 0.055) / 1.055, vec3(2.4));
-    vec3 c = step(vec3(0.04045), color);
-    return mix(a, b, c);
-    */
-#else
-    return color;
-#endif
 }
 
 vec3 gamma_mix(vec3 a, vec3 b, float x) {
     return linear_to_srgb(mix(srgb_to_linear(a), srgb_to_linear(b), x));
+}
+
+highp vec3 hash(highp vec2 p) {
+    highp vec3 p3 = fract(p.xyx * vec3(443.8975, 397.2973, 491.1871));
+    p3 += dot(p3, p3.yxz + 19.19);
+    return fract((p3.xxy + p3.yzz) * p3.zyx);
+}
+
+vec3 dither(vec3 color, highp vec2 seed) {
+    vec3 rnd = hash(seed) + hash(seed + 0.59374) - 0.5;
+    return color + rnd / 255.0;
 }

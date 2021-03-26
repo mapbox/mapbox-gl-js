@@ -827,15 +827,30 @@ export class Terrain extends Elevation {
     }
 
     _shouldDisableRenderCache(): boolean {
-        // Disable render caches on dynamic events due to fading.
-        const isCrossFading = id => {
+        if (!this.renderCached) {
+            return true;
+        }
+
+        // Disable render caches on dynamic events due to fading or transitioning.
+        if (this._style.light && this._style.light.hasTransition()) {
+            return true;
+        }
+
+        for (const id in this._style._sourceCaches) {
+            if (this._style._sourceCaches[id].hasTransition()) {
+                return true;
+            }
+        }
+
+        const fadingOrTransitioning = id => {
             const layer = this._style._layers[id];
-            const isHidden = !layer.isHidden(this.painter.transform.zoom);
+            const isHidden = layer.isHidden(this.painter.transform.zoom);
             const crossFade = layer.getCrossfadeParameters();
             const isFading = !!crossFade && crossFade.t !== 1;
-            return layer.type !== 'custom' && !isHidden && isFading;
+            const isTransitioning = layer.hasTransition();
+            return layer.type !== 'custom' && !isHidden && (isFading || isTransitioning);
         };
-        return !this.renderCached || this._style.order.some(isCrossFading);
+        return this._style.order.some(fadingOrTransitioning);
     }
 
     _clearRasterFadeFromRenderCache() {

@@ -21,6 +21,7 @@ const defaultOptions: Options = {
 
 /**
  * A `NavigationControl` control contains zoom buttons and a compass.
+ * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
  * @param {Object} [options]

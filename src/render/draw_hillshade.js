@@ -61,6 +61,8 @@ function renderHillshade(painter, coord, tile, layer, depthMode, stencilMode, co
 
     const uniformValues = hillshadeUniformValues(painter, tile, layer, painter.terrain ? coord.projMatrix : null);
 
+    painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, painter.rasterBoundsBuffer,
         painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
