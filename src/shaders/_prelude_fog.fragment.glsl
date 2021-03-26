@@ -22,25 +22,19 @@ float fog_opacity(vec3 position) {
     float start = u_fog_range.x;
     float end = u_fog_range.y;
 
-    // Apply a constant to push the function closer to 1.0 on the far end
-    // of the fog range, refer https://www.desmos.com/calculator/x5gopnb91a
-    const float exp_constant = 5.5;
-    float fog_falloff = exp(-exp_constant * (depth - start) / (end - start));
+    // Fog falls off exponentially, but it also doesn't start at an arbitrary
+    // distance. So we opt for a sigmoid function that results in a very smooth
+    // onset. See: https://www.desmos.com/calculator/boumcg1dwo
+    // Fog power puts the fog at about 0.6% and 99.4% at near and far, respectively
+    // The multiplier puts the far limit at 1.0 since clipping depends on that
+    const float fog_pow = 10.0;
+    float fog_falloff = min(1.0, 1.00675 / (1.0 + exp(-fog_pow * ((depth - start) / (end - start) - 0.5))));
 
-    // Apply a power remove the C1 discontinuity at the near limit
-    const float fog_power = 2.0;
-    float opacity = pow(max((1.0 - fog_falloff) * u_fog_opacity, 0.0), fog_power);
-
-    // Clip to actually return 100% opacity at end
-    return min(1.0, opacity * 1.02);
+    return fog_falloff * u_fog_opacity;
 }
 
 vec3 fog_apply(vec3 color, vec3 position) {
-    return gamma_mix(
-        color,
-        u_fog_color,
-        fog_opacity(position)
-    );
+    return mix(color, u_fog_color, fog_opacity(position));
 }
 
 vec3 fog_dither(vec3 color) {
