@@ -2180,6 +2180,12 @@ class Map extends Camera {
         return this.style ? this.style.getFog() : null;
     }
 
+    getFogOpacity(lnglat: LngLatLike): number {
+        return this.style && this.style.fog ?
+            this.style.fog.sampler.getFogOpacityAtLatLng(
+                LngLat.convert(lnglat), this.transform) : 0.0;
+    }
+
     /**
      * Sets the `state` of a feature.
      * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.

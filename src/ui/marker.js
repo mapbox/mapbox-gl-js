@@ -450,35 +450,29 @@ export default class Marker extends Evented {
 
     _evaluateOpacity() {
         const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
-        if (this._withinScreenBounds(position)) {
-            const lngLat = this._map.unproject(position);
-            const fog = this._map.getFog();
 
-            let terrainOccluded = false;
-            let fogOpacity = 0.0;
+        if (!this._withinScreenBounds(position)) {
+            this._fadeTimer = null;
+            return;
+        }
 
-            if (fog) {
-                const fogSampler = fog.sampler;
-                fogOpacity = fogSampler.getFogOpacityAtLatLng(lngLat, this._map.transform);
+        const lngLat = this._map.unproject(position);
+
+        let terrainOccluded = false;
+        if (this._map.getTerrain()) {
+            const camera = this._map.getFreeCameraOptions();
+            if (camera.position) {
+                const cameraPos = camera.position.toLngLat();
+                const raycastDistance = cameraPos.distanceTo(lngLat);
+                const posDistance = cameraPos.distanceTo(this._lngLat);
+                terrainOccluded = raycastDistance < posDistance * 0.9;
             }
+        }
 
-            if (this._map.getTerrain()) {
-                // calculate if occluded.
-                const raycastLoc = this._map.unproject(position);
-                const camera = this._map.getFreeCameraOptions();
-                if (camera.position) {
-                    const cameraPos = camera.position.toLngLat();
-                    const raycastDistance = cameraPos.distanceTo(raycastLoc);
-                    const posDistance = cameraPos.distanceTo(this._lngLat);
-                    terrainOccluded = raycastDistance < posDistance * 0.9;
-                }
-            }
-
-            this._element.style.opacity = `${(1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0)}`;
-
-            if (this._popup) {
-                this._popup._setOpacity(`${1.0 - fogOpacity}`);
-            }
+        const fogOpacity = this._map.getFogOpacity(lngLat);
+        this._element.style.opacity = `${(1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0)}`;
+        if (this._popup) {
+            this._popup._setOpacity(`${1.0 - fogOpacity}`);
         }
 
         this._fadeTimer = null;
