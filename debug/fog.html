@@ -141,16 +141,52 @@ map.on('style.load', function() {
         "maxzoom": 14
     });
 
+    map.addSource('ethnicity', {
+        type: 'vector',
+        url: 'mapbox://examples.8fgz4egr',
+        maxzoom: 16
+    });
+
+
+    // map.addLayer({
+    //     'id': '3d-buildings',
+    //     'source': 'composite',
+    //     'source-layer': 'building',
+    //     'filter': ['==', 'extrude', 'true'],
+    //     'type': 'fill-extrusion',
+    //     'paint': {
+    //         'fill-extrusion-color': '#DDD',
+    //         'fill-extrusion-height': ['*', ['get', 'height'], 2],
+    //         'fill-extrusion-opacity': 0.7
+    //     }
+    // });
+
     map.addLayer({
-        'id': '3d-buildings',
-        'source': 'composite',
-        'source-layer': 'building',
-        'filter': ['==', 'extrude', 'true'],
-        'type': 'fill-extrusion',
+        'id': 'population',
+        'type': 'circle',
+        'source': 'ethnicity',
+        'source-layer': 'sf2010',
         'paint': {
-            'fill-extrusion-color': '#DDD',
-            'fill-extrusion-height': ['*', ['get', 'height'], 2],
-            'fill-extrusion-opacity': 0.7
+            // make circles larger as the user zooms from z12 to z22
+            'circle-radius': 10,
+            'circle-pitch-alignment': 'viewport',
+            'circle-pitch-scale': 'viewport',
+            // color circles by ethnicity, using a match expression
+            // https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
+            'circle-color': [
+                'match',
+                ['get', 'ethnicity'],
+                'White',
+                '#fbb03b',
+                'Black',
+                '#223b53',
+                'Hispanic',
+                '#e55e5e',
+                'Asian',
+                '#3bb2d0',
+                /* other */
+                '#ccc'
+            ]
         }
     });
 
