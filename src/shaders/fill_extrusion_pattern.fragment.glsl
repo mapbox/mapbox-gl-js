@@ -44,7 +44,7 @@ void main() {
     out_color = out_color * v_lighting;
 
 #ifdef FOG
-    out_color = fog_apply_premultiplied(out_color, v_fog_pos);
+    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
     gl_FragColor = out_color;
