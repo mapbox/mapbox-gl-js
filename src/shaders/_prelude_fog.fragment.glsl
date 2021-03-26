@@ -36,11 +36,19 @@ float fog_opacity(vec3 position) {
 }
 
 vec3 fog_apply(vec3 color, vec3 position) {
-    return dither(gamma_mix(
+    return gamma_mix(
         color,
         u_fog_color,
         fog_opacity(position)
-    ), gl_FragCoord.xy + u_fog_temporal_offset);
+    );
+}
+
+vec3 fog_dither(vec3 color) {
+    return dither(color, gl_FragCoord.xy + u_fog_temporal_offset);
+}
+
+vec4 fog_dither(vec4 color) {
+    return vec4(fog_dither(color.rgb), color.a);
 }
 
 // Un-premultiply the alpha, then blend fog, then re-premultiply alpha. For

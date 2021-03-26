@@ -41,7 +41,7 @@ void main() {
     vec4 out_color = mix(color1, color2, u_fade);
 
 #ifdef FOG
-    out_color = fog_apply_premultiplied(out_color, v_fog_pos);
+    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
     gl_FragColor = out_color * (alpha * opacity);
