@@ -529,12 +529,6 @@ class Style extends Evented {
         }
         this.z = parameters.zoom;
 
-        if (this.fog || this.terrain) {
-            for (const marker of this.map._markers) {
-                marker._evaluateOpacity();
-            }
-        }
-
         if (changed) {
             this.fire(new Event('data', {dataType: 'style'}));
         }
@@ -1402,6 +1396,7 @@ class Style extends Evented {
             delete this.stylesheet.terrain;
             this.dispatcher.broadcast('enableTerrain', false);
             this._force3DLayerUpdate();
+            this._updateMarkersOpacity();
             return;
         }
 
@@ -1438,6 +1433,7 @@ class Style extends Evented {
         }
 
         this._updateDrapeFirstLayers();
+        this._updateMarkersOpacity();
     }
 
     _createFog(fogOptions: FogSpecification) {
@@ -1453,6 +1449,12 @@ class Style extends Evented {
         fog.updateTransitions(parameters);
     }
 
+    _updateMarkersOpacity() {
+        for (const marker of this.map._markers) {
+            marker._evaluateOpacity();
+        }
+    }
+
     getFog() {
         return this.fog ? this.fog.get() : null;
     }
@@ -1464,6 +1466,7 @@ class Style extends Evented {
             // Remove fog
             delete this.fog;
             delete this.stylesheet.fog;
+            this._updateMarkersOpacity();
             return;
         }
 
@@ -1490,6 +1493,8 @@ class Style extends Evented {
                 }
             }
         }
+
+        this._updateMarkersOpacity();
     }
 
     _updateDrapeFirstLayers() {
