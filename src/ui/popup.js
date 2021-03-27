@@ -589,14 +589,10 @@ export default class Popup extends Evented {
     }
 
     _setOpacity(opacity: string) {
-        if (this._content)
-            this._content.style.opacity = opacity;
-        if (this._container)
-            this._container.style.opacity = opacity;
-        if (this._closeButton)
-            this._closeButton.style.opacity = opacity;
-        if (this._tip)
-            this._tip.style.opacity = opacity;
+        if (this._content) this._content.style.opacity = opacity;
+        if (this._container) this._container.style.opacity = opacity;
+        if (this._closeButton) this._closeButton.style.opacity = opacity;
+        if (this._tip) this._tip.style.opacity = opacity;
     }
 }
 
