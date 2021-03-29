@@ -694,7 +694,8 @@ export type MapEvent =
 
     /**
      * Fired just after the map completes a transition from one
-     * view to another, as the result of either user interaction or methods such as {@link Map#jumpTo}.     *
+     * view to another, as the result of either user interaction or methods such as {@link Map#jumpTo}.
+     *
      * @event moveend
      * @memberof Map
      * @instance
