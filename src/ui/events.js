@@ -811,7 +811,7 @@ export type MapEvent =
     /**
      * Fired just after the map completes a transition from one zoom level to another
      * as the result of either user interaction or methods such as {@link Map#flyTo}.
-     * The zoom transition will usually end before rendering is finished, so if you 
+     * The zoom transition will usually end before rendering is finished, so if you
      * need to wait for rendering to finish, use the {@link Map#idle} event instead.
      *
      * @event zoomend
