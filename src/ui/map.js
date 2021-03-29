@@ -2793,7 +2793,7 @@ class Map extends Camera {
 
     /**
      * Trigger the rendering of a single frame. Use this method with custom layers to
-     * repaint the map when the layer's properties or properties associated with the 
+     * repaint the map when the layer's properties or properties associated with the
      * layer's source change. Calling this multiple times before the
      * next frame is rendered will still result in only a single frame being rendered.
      * @example
