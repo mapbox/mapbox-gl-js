@@ -693,8 +693,10 @@ export type MapEvent =
     | 'move'
 
     /**
-     * Fired just after the map completes a transition from one
-     * view to another, as the result of either user interaction or methods such as {@link Map#jumpTo}.
+     * The `zoomend` event fires as soon as the map completes a transition from one
+     * view to another, as the result of either user interaction or methods such as {@link Map#flyTo}.
+     * The event fires after the zoom transition ends, which will usually be before rendering is finished. 
+     * If you need to wait for rendering to finish, use the {@link Map#idle} event instead.
      *
      * @event moveend
      * @memberof Map
