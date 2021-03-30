@@ -80,14 +80,8 @@ export class FogSampler {
     getFogOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
         const meters = MercatorCoordinate.fromLngLat(lngLat);
         const elevation = transform.elevation ? transform.elevation.getAtPoint(meters) : 0;
-        const cameraPos = transform._camera.position;
-        const pos = [meters.x - cameraPos[0], meters.y - cameraPos[1], elevation - cameraPos[2]];
-
-        // Transform to pixel coordinate
-        pos[0] *= transform.cameraWorldSize;
-        pos[1] *= transform.cameraWorldSize;
-        pos[2] *= transform.cameraPixelsPerMeter;
-
+        const pos = [meters.x, meters.y, elevation];
+        vec3.transformMat4(pos, pos, transform.mercatorFogMatrix);
         const depth = vec3.length(pos);
 
         return this.getFogOpacity(depth, transform.pitch);

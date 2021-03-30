@@ -463,17 +463,21 @@ export default class Marker extends Evented {
             const camera = this._map.getFreeCameraOptions();
             if (camera.position) {
                 const cameraPos = camera.position.toLngLat();
-                const raycastDistance = cameraPos.distanceTo(mapLocation);
-                const posDistance = cameraPos.distanceTo(this._lngLat);
-                terrainOccluded = raycastDistance < posDistance * 0.9;
+                // the distance to the marker lat/lng + marker offset location
+                const offsetDistance = cameraPos.distanceTo(mapLocation);
+                const distance = cameraPos.distanceTo(this._lngLat);
+                terrainOccluded = offsetDistance < distance * 0.9;
             }
         }
 
         const fogOpacity = this._map.getFogOpacity(mapLocation);
-        this._element.style.opacity = `${(1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0)}`;
-        if (this._popup) {
-            this._popup._setOpacity(`${1.0 - fogOpacity}`);
-        }
+
+        window.requestAnimationFrame(() => {
+            this._element.style.opacity = `${(1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0)}`;
+            if (this._popup) {
+                this._popup._setOpacity(`${1.0 - fogOpacity}`);
+            }
+        });
 
         this._fadeTimer = null;
     }
