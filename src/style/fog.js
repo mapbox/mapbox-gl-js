@@ -44,7 +44,7 @@ export class FogSampler {
         const props = this.properties;
         const range = props.get('range');
         const fogOpacity = props.get('opacity') * smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-        const start = range[0], end = range[1];
+        const [start, end] = range;
 
         // The fog is not physically accurate, so we seek an expression which satisfies a
         // couple basic constraints:
