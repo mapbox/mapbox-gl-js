@@ -1,0 +1,6 @@
+[
+  {
+    "line": 10,
+    "message": "fog: fog.range[0] can't be greater than fog.range[1]"
+  }
+]
