@@ -18,18 +18,6 @@ precision mediump float;
 
 const float PI = 3.141592653589793;
 
-vec3 linear_to_srgb(vec3 color) {
-    return pow(color, vec3(1.0 / 2.2));
-}
-
-vec3 srgb_to_linear(vec3 color) {
-    return pow(color, vec3(2.2));
-}
-
-vec3 gamma_mix(vec3 a, vec3 b, float x) {
-    return linear_to_srgb(mix(srgb_to_linear(a), srgb_to_linear(b), x));
-}
-
 highp vec3 hash(highp vec2 p) {
     highp vec3 p3 = fract(p.xyx * vec3(443.8975, 397.2973, 491.1871));
     p3 += dot(p3, p3.yxz + 19.19);
