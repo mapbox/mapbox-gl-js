@@ -18,7 +18,13 @@ export default function validateFog(options) {
         return errors;
     }
 
-    // NOTE: Make sure to add specific validation for fog range: range[0] must be < range[1]
+    if (fog.range && fog.range[0] > fog.range[1]) {
+        errors = errors.concat([new ValidationError('fog', fog, 'fog.range[0] can\'t be greater than fog.range[1]')]);
+    }
+
+    if (fog.range && (fog.range[0] < 0 || fog.range[1] < 0)) {
+        errors = errors.concat([new ValidationError('fog', fog, 'fog.range can\'t be negative')]);
+    }
 
     for (const key in fog) {
         const transitionMatch = key.match(/^(.*)-transition$/);
