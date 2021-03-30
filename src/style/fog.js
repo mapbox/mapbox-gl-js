@@ -33,8 +33,6 @@ const TRANSITION_SUFFIX = '-transition';
 
 export const FOG_PITCH_START = 55;
 export const FOG_PITCH_END = 65;
-export const FOG_EXP_FACTOR = 5.5;
-export const FOG_POWER_FACTOR = 2;
 
 export class FogSampler {
     properties: ?PossiblyEvaluated<Props>;
@@ -45,12 +43,28 @@ export class FogSampler {
 
         const props = this.properties;
         const range = props.get('range');
-        const maxOpacity = props.get('opacity') * smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+        const fogOpacity = props.get('opacity') * smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
         const start = range[0], end = range[1];
-        const falloff = Math.exp(-FOG_EXP_FACTOR * (depth - start) / (end - start));
-        const fogOpacity = Math.pow(Math.max((1 - falloff) * maxOpacity, 0), FOG_POWER_FACTOR);
 
-        return Math.min(1.0, fogOpacity * 1.02);
+        // The fog is not physically accurate, so we seek an expression which satisfies a
+        // couple basic constraints:
+        //   - opacity should be 0 at the near limit
+        //   - opacity should be 1 at the far limit
+        //   - the onset should have smooth derivatives to avoid a sharp band
+        // To this end, we use an (1 - e^x)^n, where n is set to 3 to ensure the
+        // function is C2 continuous at the onset. The fog is about 99% opaque at
+        // the far limit, so we simply scale it and clip to achieve 100% opacity.
+        // https://www.desmos.com/calculator/3taufutxid
+        const decay = 5.5;
+        let falloff = Math.max(0.0, 1.0 - Math.exp(-decay * (depth - start) / (end - start)));
+
+        // Cube without pow()
+        falloff *= falloff * falloff;
+
+        // Scale and clip to 1 at the far limit
+        falloff = Math.min(1.0, 1.00747 * falloff);
+
+        return falloff * fogOpacity;
     }
 
     getOpacityAtTileCoord(x: number, y: number, z: number, tileId: UnwrappedTileID, transform: Transform): number {
