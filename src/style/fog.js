@@ -55,6 +55,7 @@ export class FogSampler {
         // function is C2 continuous at the onset. The fog is about 99% opaque at
         // the far limit, so we simply scale it and clip to achieve 100% opacity.
         // https://www.desmos.com/calculator/3taufutxid
+        // The output of this function must match src/shaders/_prelude_fog.fragment.glsl
         const decay = 5.5;
         let falloff = Math.max(0.0, 1.0 - Math.exp(-decay * (depth - start) / (end - start)));
 
