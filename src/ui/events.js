@@ -108,7 +108,9 @@ export class MapMouseEvent extends Event {
  */
 export class MapTouchEvent extends Event {
     /**
-     * The event type.
+     * The event type (one of {@link Map.event:touchstart},
+     * {@link Map.event:touchend},
+     * {@link Map.event:contextmenu}).
      */
     type: 'touchstart'
         | 'touchend'
@@ -192,8 +194,7 @@ export class MapTouchEvent extends Event {
  */
 export class MapWheelEvent extends Event {
     /**
-     * The event type.
-     */
+     * The event type (one of {@link Map.event:wheel}.     */
     type: 'wheel';
 
     /**
@@ -812,6 +813,7 @@ export type MapEvent =
      * Fired just after the map completes a transition from one zoom level to another
      * as the result of either user interaction or methods such as {@link Map#flyTo}.
      * The zoom transition will usually end before rendering is finished, so if you
+
      * need to wait for rendering to finish, use the {@link Map#idle} event instead.
      *
      * @event zoomend
