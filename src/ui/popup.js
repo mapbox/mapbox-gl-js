@@ -588,11 +588,8 @@ export default class Popup extends Evented {
         this.remove();
     }
 
-    _setOpacity(opacity: string) {
-        if (this._content) this._content.style.opacity = opacity;
-        if (this._container) this._container.style.opacity = opacity;
-        if (this._closeButton) this._closeButton.style.opacity = opacity;
-        if (this._tip) this._tip.style.opacity = opacity;
+    _setOpacity(occluded: boolean) {
+        if (this._content) this._content.classList.toggle('mapboxgl-marker-occluded', occluded);
     }
 }
 

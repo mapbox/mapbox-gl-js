@@ -672,6 +672,22 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     transition: opacity 0.2s;
 }
 
+.mapboxgl-marker-occluded {
+    opacity: 0.0;
+}
+
+.mapboxgl-marker-occluded-low {
+    opacity: 0.25;
+}
+
+.mapboxgl-marker-occluded-mid {
+    opacity: 0.5;
+}
+
+.mapboxgl-marker-occluded-high {
+    opacity: 0.75;
+}
+
 .mapboxgl-user-location-dot {
     background-color: #1da1f2;
     width: 15px;

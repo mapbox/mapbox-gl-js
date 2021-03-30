@@ -1450,6 +1450,9 @@ class Style extends Evented {
     }
 
     _updateMarkersOpacity() {
+        if (this.map._markers.length === 0) {
+            return;
+        }
         for (const marker of this.map._markers) {
             marker._evaluateOpacity();
         }

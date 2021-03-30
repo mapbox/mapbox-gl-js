@@ -448,7 +448,7 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _evaluateOpacity() {
+    _evaluateOpacity(requestAnimationFrame: boolean) {
         const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
 
         if (!this._withinScreenBounds(position)) {
@@ -471,13 +471,30 @@ export default class Marker extends Evented {
         }
 
         const fogOpacity = this._map.getFogOpacity(mapLocation);
+        const opacity = (1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0);
 
-        window.requestAnimationFrame(() => {
-            this._element.style.opacity = `${(1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0)}`;
+        const occluded = opacity === 0;
+        const occludedLow = opacity > 0 && opacity <= 0.25;
+        const occludedMid = opacity > 0.25 && opacity <= 0.5;
+        const occludedHigh = opacity > 0.5 && opacity <= 0.75;
+
+        const updateStyle = () => {
+            this._element.classList.toggle('mapboxgl-marker-occluded', occluded);
+            this._element.classList.toggle('mapboxgl-marker-occluded-low', occludedLow);
+            this._element.classList.toggle('mapboxgl-marker-occluded-mid', occludedMid);
+            this._element.classList.toggle('mapboxgl-marker-occluded-high', occludedHigh);
+
             if (this._popup) {
-                this._popup._setOpacity(`${1.0 - fogOpacity}`);
+                this._popup._setOpacity(occluded);
             }
-        });
+        };
+
+        if (requestAnimationFrame) {
+            window.requestAnimationFrame(updateStyle);
+        } else {
+            updateStyle();
+        }
+
 
         this._fadeTimer = null;
     }
@@ -529,7 +546,7 @@ export default class Marker extends Evented {
         DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
 
         if ((this._map.getTerrain() || this._map.getFog()) && !this._fadeTimer) {
-            this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
+            this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this, true), 60);
         }
     }
 
