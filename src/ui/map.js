@@ -2181,7 +2181,8 @@ class Map extends Camera {
     }
 
     getFogOpacity(lnglat: LngLatLike): number {
-        return this.style && this.style.fog ?
+        if (!this.style || !this.style.fog) return 0.0;
+        return this.style.fog.sampler.getFogOpacityAtLatLng(LngLat.convert(lnglat), this.transform)
             this.style.fog.sampler.getFogOpacityAtLatLng(
                 LngLat.convert(lnglat), this.transform) : 0.0;
     }
