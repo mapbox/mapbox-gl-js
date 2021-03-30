@@ -1,0 +1,10 @@
+[
+  {
+    "line": 10,
+    "message": "fog: fog.range can't be negative"
+  },
+  {
+    "line": 12,
+    "message": "sky-blend: -4 is less than the minimum value 0"
+  }
+]
