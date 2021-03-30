@@ -524,7 +524,7 @@ export default class Marker extends Evented {
 
         DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
 
-        if (this._map.getTerrain() || this._map.getFog() && !this._fadeTimer) {
+        if ((this._map.getTerrain() || this._map.getFog()) && !this._fadeTimer) {
             this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
         }
     }
