@@ -673,7 +673,19 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 }
 
 .mapboxgl-marker-occluded {
-    opacity: 0.2;
+    opacity: 0.0;
+}
+
+.mapboxgl-marker-occluded-low {
+    opacity: 0.25;
+}
+
+.mapboxgl-marker-occluded-mid {
+    opacity: 0.5;
+}
+
+.mapboxgl-marker-occluded-high {
+    opacity: 0.75;
 }
 
 .mapboxgl-user-location-dot {
