@@ -591,6 +591,10 @@ export default class Popup extends Evented {
     _onClose() {
         this.remove();
     }
+
+    _setOpacity(occluded: boolean) {
+        if (this._content) this._content.classList.toggle('mapboxgl-marker-occluded', occluded);
+    }
 }
 
 function normalizeOffset(offset: ?Offset) {
