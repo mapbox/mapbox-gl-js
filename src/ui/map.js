@@ -1756,7 +1756,9 @@ class Map extends Camera {
      * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
     loadImage(url: string, callback: Function) {
-        getImage(this._requestManager.transformRequest(url, ResourceType.Image), callback);
+        getImage(this._requestManager.transformRequest(url, ResourceType.Image), (err, img) => {
+            callback(err, img instanceof HTMLImageElement ? browser.getImageData(img) : img);
+        });
     }
 
     /**
