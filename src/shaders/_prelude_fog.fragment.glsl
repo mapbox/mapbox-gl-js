@@ -15,7 +15,8 @@ float fog_sky_blending(vec3 camera_dir) {
     return u_fog_opacity * exp(-3.0 * t * t);
 }
 
-float fog_opacity(float depth) {
+float fog_opacity(vec3 pos) {
+    float depth = length(pos);
     float start = u_fog_range.x;
     float end = u_fog_range.y;
 
@@ -37,7 +38,7 @@ float fog_opacity(float depth) {
     // Scale and clip to 1 at the far limit
     falloff = min(1.0, 1.00747 * falloff);
 
-    return falloff * u_fog_opacity;
+    return falloff * u_fog_opacity * fog_sky_blending(pos / depth);;
 }
 
 // Assumes z up
@@ -50,10 +51,7 @@ vec3 fog_apply(vec3 color, vec3 pos) {
     // so that dark fog and light fog obscure similarly for otherwise identical
     // parameters. If we blend in linear RGB, then the parameters to control dark
     // and light fog are fundamentally different.
-    float depth = length(pos);
-    float opacity = fog_opacity(depth);
-    float sky_blend = fog_sky_blending(pos / depth);
-    return mix(color, u_fog_color, opacity * sky_blend);
+    return mix(color, u_fog_color, fog_opacity(pos));
 }
 
 // Un-premultiply the alpha, then blend fog, then re-premultiply alpha. For
