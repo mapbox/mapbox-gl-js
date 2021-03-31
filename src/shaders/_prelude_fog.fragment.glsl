@@ -38,7 +38,7 @@ float fog_opacity(vec3 pos) {
     // Scale and clip to 1 at the far limit
     falloff = min(1.0, 1.00747 * falloff);
 
-    return falloff * u_fog_opacity * fog_sky_blending(pos / depth);;
+    return falloff * u_fog_opacity;
 }
 
 // Assumes z up
