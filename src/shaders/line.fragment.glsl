@@ -4,10 +4,6 @@ varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
@@ -27,11 +23,6 @@ void main() {
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 
     vec4 out_color = color;
-
-#ifdef FOG
-    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
-#endif
-
     gl_FragColor = out_color * (alpha * opacity);
 
 #ifdef OVERDRAW_INSPECTOR

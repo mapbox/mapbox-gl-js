@@ -12,10 +12,6 @@ uniform lowp float u_device_pixel_ratio;
 varying vec4 v_data0;
 varying vec4 v_data1;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity
@@ -31,14 +27,9 @@ void main() {
 
     float fade_opacity = v_data1[2];
 
-    float fog_alpha = 1.0;
-    #ifdef FOG
-        fog_alpha = 1.0 - fog_opacity(v_fog_pos);
-    #endif
-
     if (v_data1.w == ICON) {
         vec2 tex_icon = v_data0.zw;
-        lowp float alpha = opacity * fade_opacity * fog_alpha * fog_alpha;
+        lowp float alpha = opacity * fade_opacity;
         gl_FragColor = texture2D(u_texture_icon, tex_icon) * alpha;
 
 #ifdef OVERDRAW_INSPECTOR
@@ -60,9 +51,9 @@ void main() {
     highp float gamma = EDGE_GAMMA / (fontScale * u_gamma_scale);
     lowp float buff = (256.0 - 64.0) / 256.0;
     if (u_is_halo) {
-        color = halo_color * fog_alpha;
-        gamma = (halo_blur * fog_alpha * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
-        buff = (6.0 - (halo_width * * fog_alpha) / fontScale) / SDF_PX;
+        color = halo_color;
+        gamma = (halo_blur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
+        buff = (6.0 - halo_width / fontScale) / SDF_PX;
     }
 
     lowp float dist = texture2D(u_texture, tex).a;
@@ -72,7 +63,7 @@ void main() {
     vec4 out_color = color;
 
 
-    gl_FragColor = out_color * (alpha * opacity * fade_opacity * fog_alpha * fog_alpha);
+    gl_FragColor = out_color * (alpha * opacity * fade_opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

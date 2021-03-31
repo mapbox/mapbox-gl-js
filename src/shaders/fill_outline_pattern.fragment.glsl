@@ -7,10 +7,6 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec2 v_pos;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
@@ -39,10 +35,6 @@ void main() {
     float alpha = 1.0 - smoothstep(0.0, 1.0, dist);
 
     vec4 out_color = mix(color1, color2, u_fade);
-
-#ifdef FOG
-    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
-#endif
 
     gl_FragColor = out_color * (alpha * opacity);
 

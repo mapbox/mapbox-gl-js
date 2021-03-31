@@ -7,10 +7,6 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec4 v_lighting;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height
 #pragma mapbox: define lowp vec4 pattern_from
@@ -42,11 +38,6 @@ void main() {
     vec4 out_color = mix(color1, color2, u_fade);
 
     out_color = out_color * v_lighting;
-
-#ifdef FOG
-    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
-#endif
-
     gl_FragColor = out_color;
 
 #ifdef OVERDRAW_INSPECTOR

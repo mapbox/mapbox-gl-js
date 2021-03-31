@@ -51,7 +51,8 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
     const context = painter.context;
     const gl = context.gl;
     const transform = painter.transform;
-    const program = painter.useProgram('skyboxGradient');
+    const fog = painter.style && painter.style.fog;
+    const program = painter.useProgram('skyboxGradient', null, fog ? ['FOG'] : null);
 
     // Lazily initialize geometry and texture if they havent been created yet.
     if (!layer.skyboxGeometry) {
@@ -83,7 +84,8 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
     const context = painter.context;
     const gl = context.gl;
     const transform = painter.transform;
-    const program = painter.useProgram('skybox');
+    const fog = painter.style && painter.style.fog;
+    const program = painter.useProgram('skybox', null, fog ? ['FOG'] : null);
 
     context.activeTexture.set(gl.TEXTURE0);
 
