@@ -13,7 +13,7 @@ import {VertexMorphing} from '../../../src/terrain/draw_terrain_raster.js';
 import {fixedLngLat, fixedCoord, fixedPoint} from '../../util/fixed.js';
 import Point from '@mapbox/point-geometry';
 import LngLat from '../../../src/geo/lng_lat.js';
-import Marker from '../../../src/ui/marker.js';
+import Marker, {TERRAIN_OCCLUDED_OPACITY} from '../../../src/ui/marker.js';
 import Popup from '../../../src/ui/popup.js';
 import simulate from '../../util/simulate_interaction.js';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock.js';
@@ -1273,18 +1273,17 @@ test('Marker interaction and raycast', (t) => {
             });
 
             t.test('Occluded', (t) => {
-                marker._occlusionTimer = null;
+                marker._fadeTimer = null;
                 marker.setLngLat(terrainTopLngLat);
                 const bottomLngLat = tr.pointLocation3D(new Point(terrainTop.x, tr.height));
                 // Raycast returns distance to closer point evaluates to occluded marker.
                 t.stub(tr, 'pointLocation3D').returns(bottomLngLat);
                 setTimeout(() => {
-                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded'));
+                    t.deepEqual(marker.getElement().style.opacity, TERRAIN_OCCLUDED_OPACITY);
                     t.end();
                 }, 100);
             });
 
-            map.remove();
             t.end();
         });
     });
