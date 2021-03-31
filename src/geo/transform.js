@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, altitudeFromMercatorZ} from './mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -739,7 +739,20 @@ class Transform {
             }
         }
 
-        if (this.fogCulling && this.fogEnd) {
+        let belowMaxElevation = false;
+        if (this.elevation) {
+            const elevation = ((this.elevation: any): Elevation);
+            const maxAltitude = elevation.visibleDemTiles.reduce((acc, t) => {
+                if (t.dem) {
+                    const tree = t.dem.tree;
+                    acc = Math.max(acc, tree.maximums[0]);
+                }
+                return acc;
+            },  0);
+            const cameraAltitude = altitudeFromMercatorZ(this._camera.position[2], this._camera.position[1]);
+            belowMaxElevation = cameraAltitude < maxAltitude;
+        }
+        if (this.fogCulling && this.fogEnd && !belowMaxElevation) {
             const fogEndSq = this.fogEnd * this.fogEnd;
 
             result.splice(0, result.length, ...result.filter(entry => {
