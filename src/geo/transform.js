@@ -43,6 +43,7 @@ class Transform {
     pixelsToGLUnits: [number, number];
     cameraToCenterDistance: number;
     mercatorMatrix: Array<number>;
+    mercatorFogMatrix: Array<number>;
     projMatrix: Float64Array;
     invProjMatrix: Float64Array;
     alignedProjMatrix: Float64Array;
@@ -1455,8 +1456,18 @@ class Transform {
         // matrix for conversion from location to screen coordinates
         this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
+        const cameraWorldSize = this.cameraWorldSize;
+        const cameraPixelsPerMeter = this.cameraPixelsPerMeter;
+        const cameraPos = this._camera.position;
+
+        m = mat4.create();
+        const metersToPixel = [cameraWorldSize, cameraWorldSize, cameraPixelsPerMeter];
+        mat4.translate(m, m, vec3.multiply(cameraPos, vec3.scale(cameraPos, cameraPos, -1), metersToPixel));
+        mat4.scale(m, m, metersToPixel);
+        this.mercatorFogMatrix = m;
+
         // matrix for conversion from tile coordinates to relative camera position in pixel coordinates
-        this.cameraMatrix = this._camera.getWorldToCameraPosition(this.cameraWorldSize, this.cameraPixelsPerMeter);
+        this.cameraMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter);
 
         // inverse matrix for conversion from screen coordinates to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
