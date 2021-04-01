@@ -22,10 +22,6 @@ varying vec2 v_width2;
 varying float v_gamma_scale;
 varying highp vec2 v_uv;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float gapwidth
@@ -92,8 +88,4 @@ void main() {
     v_gamma_scale = 1.0;
 #endif
     v_width2 = vec2(outset, inset);
-
-#ifdef FOG
-    v_fog_pos = fog_position(pos);
-#endif
 }

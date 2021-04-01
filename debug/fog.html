@@ -148,18 +148,18 @@ map.on('style.load', function() {
     });
 
 
-    // map.addLayer({
-    //     'id': '3d-buildings',
-    //     'source': 'composite',
-    //     'source-layer': 'building',
-    //     'filter': ['==', 'extrude', 'true'],
-    //     'type': 'fill-extrusion',
-    //     'paint': {
-    //         'fill-extrusion-color': '#DDD',
-    //         'fill-extrusion-height': ['*', ['get', 'height'], 2],
-    //         'fill-extrusion-opacity': 0.7
-    //     }
-    // });
+    map.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'paint': {
+            'fill-extrusion-color': '#DDD',
+            'fill-extrusion-height': ['*', ['get', 'height'], 2],
+            'fill-extrusion-opacity': 0.7
+        }
+    });
 
     map.addLayer({
         'id': 'population',

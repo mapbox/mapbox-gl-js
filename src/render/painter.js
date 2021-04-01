@@ -73,7 +73,7 @@ import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types.js'
 import type ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
 
-export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky';
+export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'fog';
 export type CanvasCopyInstances = {
     canvasCopies: WebGLTexture[],
     timeStamps: number[]
@@ -147,6 +147,10 @@ class Painter {
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
+
+    _fogDepthFBO: Framebuffer;
+    _fogDepthTexture: Texture;
+    fogDepthPass: boolean;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -484,6 +488,26 @@ class Painter {
             this.terrain.drawDepth();
         }
 
+        if (this.style && this.style.fog) {
+            // Fog depth offscreen render pass =============================
+            // Draw fog effecting depth layers front to back
+            this.initFogBuffers();
+
+            this.renderPass = 'fog';
+            // Fill-extrusions
+            for (const layerId of layerIds) {
+                const layer = this.style._layers[layerId];
+                if(!(layer.type === 'fill-extrusion')) continue;
+                if (layer.isHidden(this.transform.zoom)) continue;
+
+                const sourceCache = style._getLayerSourceCache(layer);
+                const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
+                if (!(coords && coords.length)) continue;
+
+                this.renderLayer(this, sourceCache, layer, coords);
+            }
+        }
+
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
         this.context.bindFramebuffer.set(null);
         this.context.viewport.set([0, 0, this.width, this.height]);
@@ -737,7 +761,8 @@ class Painter {
     currentGlobalDefines(): string[] {
         const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
-         const defines = [];
+
+        const defines = [];
         if (terrain) defines.push('TERRAIN');
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
@@ -797,6 +822,35 @@ class Painter {
             const gl = this.context.gl;
             this.debugOverlayTexture = new Texture(this.context, this.debugOverlayCanvas, gl.RGBA);
         }
+    }
+
+    initFogBuffers() {
+        const context = this.context;
+
+        const width = Math.ceil(this.width / 2), height = Math.ceil(this.height / 2);
+        if (this._fogDepthFBO && (this._fogDepthFBO.width !== width || this._fogDepthFBO.height !== height)) {
+            this._fogDepthFBO.destroy();
+            delete this._fogDepthFBO;
+            delete this._fogDepthTexture;
+        }
+        if (!this._fogDepthFBO) {
+            const gl = context.gl;
+            const fbo = context.createFramebuffer(width, height, true);
+            context.activeTexture.set(gl.TEXTURE0);
+            const texture = new Texture(context, {width, height, data: null}, gl.RGBA);
+            texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            fbo.colorAttachment.set(texture.texture);
+            const renderbuffer = context.createRenderbuffer(context.gl.DEPTH_COMPONENT16, width, height);
+            fbo.depthAttachment.set(renderbuffer);
+            this._fogDepthFBO = fbo;
+            this._fogDepthTexture = texture;
+        }
+        context.bindFramebuffer.set(this._fogDepthFBO.framebuffer);
+        context.viewport.set([0, 0, width, height]);
+    }
+
+    drawFogDepth() {
+
     }
 
     destroy() {

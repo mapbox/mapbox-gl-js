@@ -5,10 +5,6 @@ uniform vec2 u_world;
 
 varying vec2 v_pos;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp vec4 outline_color
 #pragma mapbox: define lowp float opacity
 
@@ -22,8 +18,4 @@ void main() {
     // (gl_FragCoord) in the fragment shader. This can be achieved by multiplying the value by
     // gl_Position.w in the vertex shader and by gl_FragCoord.w (e.g. 1/gl_Position.w) later in the fragment shader.
     v_pos = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world * gl_Position.w;
-
-#ifdef FOG
-    v_fog_pos = fog_position(a_pos);
-#endif
 }

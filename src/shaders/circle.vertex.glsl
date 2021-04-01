@@ -14,10 +14,6 @@ attribute vec2 a_pos;
 varying vec3 v_data;
 varying float v_visibility;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
 #pragma mapbox: define lowp float blur
@@ -141,8 +137,4 @@ void main(void) {
     lowp float antialiasblur = 1.0 / u_device_pixel_ratio / (radius + stroke_width);
 
     v_data = vec3(extrude.x, extrude.y, antialiasblur);
-
-#ifdef FOG
-    v_fog_pos = fog_position(world_center.xyz);
-#endif
 }

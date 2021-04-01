@@ -13,8 +13,8 @@ vec4 pack_depth(float ndc_z) {
     return res;
 }
 
-varying float v_fog_pos;
+varying vec3 v_fog_pos;
 
 void main() {
-    gl_FragColor = pack_depth(fog_opacity(v_depth));
+    gl_FragColor = pack_depth(fog_opacity(v_fog_pos));
 }

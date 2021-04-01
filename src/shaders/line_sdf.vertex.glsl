@@ -25,10 +25,6 @@ varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying float v_gamma_scale;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
@@ -99,8 +95,4 @@ void main() {
     v_tex_b = vec2(a_linesofar * u_patternscale_b.x / floorwidth, normal.y * u_patternscale_b.y + u_tex_y_b);
 
     v_width2 = vec2(outset, inset);
-
-#ifdef FOG
-    v_fog_pos = fog_position(pos);
-#endif
 }

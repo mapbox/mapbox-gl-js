@@ -30,10 +30,6 @@ uniform vec2 u_texsize;
 varying vec2 v_data0;
 varying vec3 v_data1;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity
@@ -117,10 +113,6 @@ void main() {
     float occlusion_fade = occlusionFade(projectedPoint);
     gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projectedPoint.w <= 0.0 || occlusion_fade == 0.0));
     float gamma_scale = gl_Position.w;
-
-    #ifdef FOG
-        v_fog_pos = fog_position(vec3(a_pos, h));
-    #endif
 
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;

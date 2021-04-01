@@ -47,12 +47,20 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                 painter.stencilModeFor3D(),
                 painter.colorModeForRenderPass());
         }
+    } else if (painter.renderPass === 'fog') {
+        const depthMode = new DepthMode(painter.context.gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
+
+        drawExtrusionTiles(painter, source, layer, coords, depthMode,
+                StencilMode.disabled,
+                ColorMode.unblended);
     }
 }
 
 function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
+    const isFogPass = painter.renderPass === 'fog';
+
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
     const image = patternProperty.constantOr((1: any));
     const crossfade = layer.getCrossfadeParameters();
@@ -64,7 +72,15 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         if (!bucket) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
+
+        let shader = 'fillExtrusion';
+        if (isFogPass) {
+            shader = 'fillExtrusionFogDepth';
+        } else if (image) {
+            shader = 'fillExtrusionPattern';
+        }
+        const defines = isFogPass ? ['FOG'] : null;
+        const program = painter.useProgram(shader, programConfiguration, defines);
 
         if (painter.terrain) {
             const terrain = painter.terrain;
@@ -77,13 +93,13 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             }
         }
 
-        if (image) {
+        if (image && !isFogPass) {
             painter.context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             programConfiguration.updatePaintBuffers(crossfade);
         }
         const constantPattern = patternProperty.constantOr(null);
-        if (constantPattern && tile.imageAtlas) {
+        if ((constantPattern && tile.imageAtlas) && !isFogPass) {
             const atlas = tile.imageAtlas;
             const posTo = atlas.patternPositions[constantPattern.to.toString()];
             const posFrom = atlas.patternPositions[constantPattern.from.toString()];
@@ -101,7 +117,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord, crossfade, tile) :
             fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity);
 
-        painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+        if (isFogPass) painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,

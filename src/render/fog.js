@@ -22,3 +22,5 @@ export const fogUniforms = (context: Context, locations: UniformLocations): FogU
     'u_fog_sky_blend': new Uniform1f(context, locations.u_fog_sky_blend),
     'u_fog_temporal_offset': new Uniform1f(context, locations.u_fog_temporal_offset),
 });
+
+export type FogDefinesType = 'FOG';
