@@ -12,7 +12,8 @@ void main() {
 
 #ifdef FOG
     // Apply fog contribution if enabled
-    color.rgb = fog_apply_sky_gradient(v_uv, color.rgb);
+    // Swizzle to put z-up (ignoring x-y mirror since fog does not depend on azimuth)
+    color.rgb = fog_apply_sky_gradient(v_uv.xzy, color.rgb);
 #endif
 
     // Dither
