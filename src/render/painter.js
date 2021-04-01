@@ -38,6 +38,7 @@ import hillshade from './draw_hillshade.js';
 import raster from './draw_raster.js';
 import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
+import {drawTerrainDepth} from '../terrain/draw_terrain_raster';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
 import {Terrain} from '../terrain/terrain.js';
@@ -506,6 +507,10 @@ class Painter {
 
                 this.renderLayer(this, sourceCache, layer, coords);
             }
+
+            if (this.terrain) {
+                drawTerrainDepth(this, this.terrain);
+            }
         }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
@@ -847,6 +852,7 @@ class Painter {
         }
         context.bindFramebuffer.set(this._fogDepthFBO.framebuffer);
         context.viewport.set([0, 0, width, height]);
+        context.clear({color: Color.transparent, depth: 1});
     }
 
     drawFogDepth() {

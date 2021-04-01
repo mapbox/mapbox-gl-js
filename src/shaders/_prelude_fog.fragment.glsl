@@ -43,6 +43,14 @@ vec3 fog_apply(vec3 color, vec3 position) {
     );
 }
 
+vec3 fog_apply(vec3 color, float opacity) {
+    return gamma_mix(
+        color,
+        u_fog_color,
+        opacity
+    );
+}
+
 vec3 fog_dither(vec3 color) {
     return dither(color, gl_FragCoord.xy + u_fog_temporal_offset);
 }

@@ -111,8 +111,6 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const segments = segmentsState.segments;
         if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, {useDepthForOcclusion: true});
 
-        painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
-
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id,
             layoutVertexBuffer, indexBuffer, segments,

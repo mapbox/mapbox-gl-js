@@ -80,8 +80,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
 
-        painter.prepareDrawProgram(context, program, unwrappedTileID);
-
         if (source instanceof ImageSource) {
             program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, source.boundsBuffer,

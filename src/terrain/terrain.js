@@ -1120,7 +1120,6 @@ export class Terrain extends Elevation {
     drawDepth() {
         const painter = this.painter;
         const context = painter.context;
-        const psc = this.proxySourceCache;
 
         const width = Math.ceil(painter.width), height = Math.ceil(painter.height);
         if (this._depthFBO && (this._depthFBO.width !== width || this._depthFBO.height !== height)) {
@@ -1142,8 +1141,9 @@ export class Terrain extends Elevation {
         }
         context.bindFramebuffer.set(this._depthFBO.framebuffer);
         context.viewport.set([0, 0, width, height]);
+        context.clear({depth: 1});
 
-        drawTerrainDepth(painter, this, psc, this.proxyCoords);
+        drawTerrainDepth(painter, this);
     }
 
     _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {

@@ -185,28 +185,30 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             setShaderMode(shaderMode, isWireframe);
 
             terrain.setupElevationDraw(tile, program, elevationOptions);
-
-            painter.prepareDrawProgram(context, program, coord.toUnwrapped());
-
             program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                 uniformValues, "terrain_raster", terrain.gridBuffer, buffer, segments);
         }
     });
 }
 
-function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>) {
-    assert(painter.renderPass === 'offscreen');
+function drawTerrainDepth(painter: Painter, terrain: Terrain) {
+    assert(painter.renderPass === 'offscreen' || painter.renderPass === 'fog');
 
     const context = painter.context;
     const gl = context.gl;
-    context.clear({depth: 1});
-    const program = painter.useProgram('terrainDepth');
+    const isFogPass = painter.renderPass === 'fog';
+    const program = painter.useProgram(isFogPass ? 'terrainFogDepth' : 'terrainDepth', null, isFogPass ? ['FOG'] : null);
     const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
+    const sourceCache = terrain.proxySourceCache;
+    const tileIDs = terrain.proxyCoords;
 
     for (const coord of tileIDs) {
         const tile = sourceCache.getTile(coord);
         const uniformValues = terrainRasterUniformValues(coord.projMatrix, 0);
         terrain.setupElevationDraw(tile, program);
+
+        if (isFogPass) painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+
         program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
             uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
     }
