@@ -6,18 +6,17 @@ uniform float u_fog_opacity;
 uniform float u_fog_sky_blend;
 uniform float u_fog_temporal_offset;
 
-vec3 fog_apply_sky_gradient(vec3 cubemap_uv, vec3 sky_color) {
-    vec3 camera_ray = normalize(cubemap_uv);
-    vec3 y_up = vec3(0.0, 1.0, 0.0);
-    float y_blend = dot(camera_ray, y_up);
-    float gradient = smoothstep(0.0, u_fog_sky_blend, y_blend);
-    float fog_falloff = clamp(gradient + (1.0 - u_fog_opacity), 0.0, 1.0);
-
-    // We may or may not wish to use gamma-correct blending
-    return mix(u_fog_color, sky_color, fog_falloff);
+// Assumes z up and camera_dir *normalized* (to avoid computing its length multiple
+// times for different functions).
+float fog_sky_blending(vec3 camera_dir) {
+    float t = max(0.0, camera_dir.z / u_fog_sky_blend);
+    // Factor of 3 chosen to roughly match smoothstep.
+    // See: https://www.desmos.com/calculator/pub31lvshf
+    return u_fog_opacity * exp(-3.0 * t * t);
 }
 
-float fog_opacity(float depth) {
+float fog_opacity(vec3 pos) {
+    float depth = length(pos);
     float start = u_fog_range.x;
     float end = u_fog_range.y;
 
@@ -39,16 +38,27 @@ float fog_opacity(float depth) {
     // Scale and clip to 1 at the far limit
     falloff = min(1.0, 1.00747 * falloff);
 
-
     return falloff * u_fog_opacity;
+}
+
+// Assumes z up
+vec3 fog_apply_sky_gradient(vec3 camera_ray, vec3 sky_color) {
+    return mix(sky_color, u_fog_color, fog_sky_blending(normalize(camera_ray)));
 }
 
 vec3 fog_apply(vec3 color, vec3 pos) {
     // We mix in sRGB color space. sRGB roughly corrects for perceived brightness
     // so that dark fog and light fog obscure similarly for otherwise identical
-    // parameters. If we gamma-correct, then the parameters to control dark and
-    // light fog are fundamentally different.
-    return mix(color, u_fog_color, fog_opacity(length(pos)));
+    // parameters. If we blend in linear RGB, then the parameters to control dark
+    // and light fog are fundamentally different.
+    return mix(color, u_fog_color, fog_opacity(pos));
+}
+
+// Un-premultiply the alpha, then blend fog, then re-premultiply alpha. For
+// use with colors using premultiplied alpha
+vec4 fog_apply_premultiplied(vec4 color, vec3 pos) {
+    float a = 1e-4 + color.a;
+    return vec4(fog_apply(min(color.rgb / a, vec3(1)), pos) * a, color.a);
 }
 
 vec3 fog_dither(vec3 color) {
@@ -57,13 +67,6 @@ vec3 fog_dither(vec3 color) {
 
 vec4 fog_dither(vec4 color) {
     return vec4(fog_dither(color.rgb), color.a);
-}
-
-// Un-premultiply the alpha, then blend fog, then re-premultiply alpha. For
-// use with colors using premultiplied alpha
-vec4 fog_apply_premultiplied(vec4 color, vec3 pos) {
-    float a = 1e-4 + color.a;
-    return vec4(fog_apply(min(color.rgb / a, vec3(1)), pos) * a, color.a);
 }
 
 #endif
