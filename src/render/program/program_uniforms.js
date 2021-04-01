@@ -18,6 +18,7 @@ import {backgroundUniforms, backgroundPatternUniforms} from './background_progra
 import {terrainRasterUniforms} from '../../terrain/terrain_raster_program.js';
 import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program.js';
 import {skyboxCaptureUniforms} from './skybox_capture_program.js';
+import {fogTextureUniforms} from '../fog';
 
 export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | FogDefinesType;
 
@@ -54,5 +55,6 @@ export const programUniforms = {
     skyboxCapture: skyboxCaptureUniforms,
     terrainFogDepth: terrainRasterUniforms,
     backgroundFogDepth: backgroundUniforms,
-    fillExtrusionFogDepth: fillExtrusionUniforms
+    fillExtrusionFogDepth: fillExtrusionUniforms,
+    fogTexture: fogTextureUniforms
 };

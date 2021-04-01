@@ -68,6 +68,7 @@ import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 import terrainFogDepthVert from './terrain_fog_depth.vertex.glsl';
 import fogDepthFrag from './fog_depth.fragment.glsl';
+import fogTextureFrag from './fog_texture.fragment.glsl';
 
 export let preludeTerrain = {};
 export let preludeFog = {};
@@ -110,7 +111,8 @@ export default {
     skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert),
     terrainFogDepth: compile(fogDepthFrag, terrainDepthVert),
     backgroundFogDepth: compile(fogDepthFrag, backgroundVert),
-    fillExtrusionFogDepth: compile(fogDepthFrag, fillExtrusionVert)
+    fillExtrusionFogDepth: compile(fogDepthFrag, fillExtrusionVert),
+    fogTexture: compile(fogTextureFrag, heatmapTextureVert)
 };
 
 // Expand #pragmas to #ifdefs.
