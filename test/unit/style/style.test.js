@@ -49,6 +49,7 @@ class StubMap extends Evented {
         super();
         this.transform = new Transform();
         this._requestManager = new RequestManager();
+        this._markers = [];
     }
 
     _getMapId() {
