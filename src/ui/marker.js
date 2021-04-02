@@ -448,7 +448,7 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _evaluateOpacity(requestAnimationFrame: boolean) {
+    _evaluateOpacity(requestAnimationFrame: boolean = false) {
         const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
 
         if (!this._withinScreenBounds(position)) {
