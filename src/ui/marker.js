@@ -495,7 +495,6 @@ export default class Marker extends Evented {
             updateStyle();
         }
 
-
         this._fadeTimer = null;
     }
 
