@@ -91,9 +91,10 @@ class NavigationControl {
             `scale(${1 / Math.pow(Math.cos(this._map.transform.pitch * (Math.PI / 180)), 0.5)}) rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)` :
             `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
 
-        const icon = this._compassIcon;
         this._map._domRenderTaskQueue.add(() => {
-            icon.style.transform = rotate;
+            if (this._compassIcon) {
+                this._compassIcon.style.transform = rotate;
+            }
         });
     }
 
