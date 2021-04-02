@@ -22,12 +22,14 @@ export type FogUniformsType = {|
 export type FogTextureUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_world': Uniform2f,
+    'u_texel_size': Uniform2f,
     'u_image': Uniform1i
 |};
 
 export const fogTextureUniforms = (context: Context, locations: UniformLocations): FogTextureUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_world': new Uniform2f(context, locations.u_world),
+    'u_texel_size': new Uniform2f(context, locations.u_texel_size),
     'u_image': new Uniform1i(context, locations.u_image)
 });
 
@@ -43,6 +45,7 @@ export const fogTextureUniformValues = (
     return {
         'u_matrix': matrix,
         'u_world': [gl.drawingBufferWidth, gl.drawingBufferHeight],
+        'u_texel_size': [1/gl.drawingBufferWidth, 1/gl.drawingBufferHeight],
         'u_image': textureUnit
     };
 };
