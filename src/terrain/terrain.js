@@ -1121,7 +1121,7 @@ export class Terrain extends Elevation {
         const painter = this.painter;
         const context = painter.context;
 
-        const width = Math.ceil(painter.width), height = Math.ceil(painter.height);
+        const width = Math.ceil(painter.width / 4), height = Math.ceil(painter.height / 4);
         if (this._depthFBO && (this._depthFBO.width !== width || this._depthFBO.height !== height)) {
             this._depthFBO.destroy();
             delete this._depthFBO;

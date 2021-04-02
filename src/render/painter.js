@@ -854,7 +854,7 @@ class Painter {
             const fbo = context.createFramebuffer(width, height, true);
             context.activeTexture.set(gl.TEXTURE0);
             const texture = new Texture(context, {width, height, data: null}, gl.RGBA);
-            texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             fbo.colorAttachment.set(texture.texture);
             const renderbuffer = context.createRenderbuffer(context.gl.DEPTH_COMPONENT16, width, height);
             fbo.depthAttachment.set(renderbuffer);

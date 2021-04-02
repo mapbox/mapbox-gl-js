@@ -66,6 +66,7 @@ export function drawFogTexture(painter: Painter) {
 
     const fbo = painter._fogDepthFBO;
     context.activeTexture.set(gl.TEXTURE0);
+    painter._fogDepthTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
 
     const program = painter.useProgram('fogTexture', null, ['FOG']);
