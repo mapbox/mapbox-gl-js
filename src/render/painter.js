@@ -489,7 +489,8 @@ class Painter {
         this.context.viewport.set([0, 0, this.width, this.height]);
 
         // Clear buffers in preparation for drawing to the main framebuffer
-        this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
+        const fog = this.style && this.style.fog;
+        this.context.clear({color: options.showOverdrawInspector ? Color.black : fog ? fog.properties.get('color') : Color.transparent, depth: 1});
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
