@@ -4,7 +4,7 @@ import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, radToDeg, degToRad} from '../util/util.js';
+import {wrap, clamp, radToDeg, degToRad, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
@@ -753,13 +753,47 @@ class Transform {
                 vec4.transformMat4(max, max, cameraMatrix);
 
                 let sqDist = 0;
-
                 for (let i = 0; i < 2; ++i) {
                     if (min[i] > 0) sqDist += (min[i] * min[i]);
                     if (max[i] < 0) sqDist += (max[i] * max[i]);
                 }
 
-                return sqDist === 0 || sqDist < fogEndSq;
+                if (sqDist === 0) { return true; }
+
+                let overHorizonLine = false;
+                const horizonLineFromTop = this.horizonLineFromTop();
+                if (sqDist > fogEndSq && horizonLineFromTop !== 0) {
+                    const projMatrix = this.calculateProjMatrix(entry.tileID.toUnwrapped());
+
+                    let minmax;
+                    if (useElevationData && this._elevation) {
+                        minmax = this._elevation.getMinMaxForTile(entry.tileID);
+                    }
+
+                    if (!minmax) { minmax = {min: minRange, max: maxRange}; }
+
+                    const cornerFar = furthestTileCorner(this.bearing);
+
+                    const farX = cornerFar[0] * EXTENT;
+                    const farY = cornerFar[1] * EXTENT;
+
+                    const worldFar = [farX, farY, minmax.max, 1];
+
+                    // World to Clip
+                    vec4.transformMat4(worldFar, worldFar, projMatrix);
+
+                    // Clip to NDC
+                    vec3.scale(worldFar, worldFar, 1.0 / worldFar[3]);
+
+                    // NDC to Screen
+                    const screenCoordY = (1 - worldFar[1]) * this.height * 0.5;
+
+                    // Prevent cutting tiles crossing over the horizon lines to
+                    // prevent pop-in and out within the fog culling range
+                    overHorizonLine = screenCoordY < horizonLineFromTop;
+                }
+
+                return sqDist < fogEndSq || overHorizonLine;
             }));
         }
 
