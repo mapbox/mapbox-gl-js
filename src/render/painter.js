@@ -501,17 +501,17 @@ class Painter {
 
             this.renderPass = 'fog';
             // Fill-extrusions
-            for (const layerId of layerIds) {
-                const layer = this.style._layers[layerId];
-                if(!(layer.type === 'fill-extrusion')) continue;
-                if (layer.isHidden(this.transform.zoom)) continue;
+            // for (const layerId of layerIds) {
+            //     const layer = this.style._layers[layerId];
+            //     if(!(layer.type === 'fill-extrusion')) continue;
+            //     if (layer.isHidden(this.transform.zoom)) continue;
 
-                const sourceCache = style._getLayerSourceCache(layer);
-                const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
-                if (!(coords && coords.length)) continue;
+            //     const sourceCache = style._getLayerSourceCache(layer);
+            //     const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
+            //     if (!(coords && coords.length)) continue;
 
-                this.renderLayer(this, sourceCache, layer, coords);
-            }
+            //     this.renderLayer(this, sourceCache, layer, coords);
+            // }
 
             if (this.terrain) {
                 drawTerrainDepth(this, this.terrain);
