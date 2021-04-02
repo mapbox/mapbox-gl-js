@@ -1133,14 +1133,15 @@ class Transform {
      * @param {UnwrappedTileID} unwrappedTileID;
      * @private
      */
-    calculateCameraMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+    calculateCameraMatrix(unwrappedTileID: UnwrappedTileID, verticalScaleFactor: number = 1): Float32Array {
         const camMatrixKey = unwrappedTileID.key;
         const cache = this._cameraMatrixCache;
         if (cache[camMatrixKey]) {
-            return cache[camMatrixKey];
+            //return cache[camMatrixKey];
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
+        //mat4.scale(posMatrix, posMatrix, [1, 1, verticalScaleFactor]);
         mat4.multiply(posMatrix, this.cameraMatrix, posMatrix);
 
         cache[camMatrixKey] = new Float32Array(posMatrix);

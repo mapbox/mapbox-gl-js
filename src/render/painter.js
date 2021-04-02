@@ -9,6 +9,7 @@ import EXTENT from '../data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import SegmentVector from '../data/segment.js';
 import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
+import {altitudeFromMercatorZ} from '../geo/mercator_coordinate.js';
 import {values, MAX_SAFE_INTEGER} from '../util/util.js';
 import {isMapAuthenticated} from '../util/mapbox.js';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
@@ -827,8 +828,20 @@ class Painter {
             const fogColor = fog.properties.get('color');
             const uniforms = {};
 
+            const camera = this.transform._camera;
+            const referenceElevation = 4000;
+            const cameraElevation = altitudeFromMercatorZ(camera.position[2], camera.position[1]);
+            const verticalScale = Math.sqrt(1.0 + Math.pow(Math.max(1, cameraElevation / referenceElevation), 2));
+
+            //if (Math.random() < 0.001) console.log({cameraElevation, verticalScale});
+            const localMinElevation = this.terrain.getLocalMinElevation(this.transform);
+            const distToSeaLevel = this.transform._camera.getDistanceToSeaLevel();
+            const distToLocalMin = this.transform._camera.getDistanceToElevation(localMinElevation);
+            const scaleFactor = distToLocalMin / distToSeaLevel;
+            //if (Math.random() < 0.001) console.log({scaleFactor, localMinElevation});
+
             uniforms['u_cam_matrix'] = tileID ? this.transform.calculateCameraMatrix(tileID) : this.identityMat;
-            uniforms['u_fog_range'] = fog.properties.get('range');
+            uniforms['u_fog_range'] = fog.properties.get('range').map(x => x * scaleFactor);
             uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
             uniforms['u_fog_opacity'] = fog.properties.get('opacity') * fog.getFogPitchFactor(this.transform.pitch);
             uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');

@@ -14,7 +14,7 @@ import {prepareDEMTexture} from '../render/draw_hillshade.js';
 import EXTENT from '../data/extent.js';
 import {clamp, warnOnce} from '../util/util.js';
 import assert from 'assert';
-import {vec3, mat4, vec4} from 'gl-matrix';
+import {vec2, vec3, mat4, vec4} from 'gl-matrix';
 import getWorkerPool from '../util/global_worker_pool.js';
 import Dispatcher from '../util/dispatcher.js';
 import GeoJSONSource from '../source/geojson_source.js';
@@ -738,6 +738,40 @@ export class Terrain extends Elevation {
         }
 
         return {efficiency: (1.0 - uncacheableLayerCount / drapedLayerCount) * 100.0, firstUndrapedLayer};
+    }
+
+    getLocalMinElevation(transform: Transform): number {
+        const tileCenterPosition = [0, 0, 0];
+        const tileCenter = [EXTENT / 2, EXTENT / 2, 0];
+        const falloffScale2 = transform.height * transform.height;
+        let weightSum = 0.0;
+        let weightedMinHeight = 0.0;
+
+        this._visibleDemTiles.filter(tile => tile.dem).forEach(tile => {
+            const unwrappedTileID = tile.tileID.toUnwrapped();
+
+            // TODO: Clean up!
+            const posMatrix = transform.calculatePosMatrix(unwrappedTileID, transform.cameraWorldSize);
+            mat4.multiply(posMatrix, transform.cameraMatrix, posMatrix);
+            vec3.transformMat4(tileCenterPosition, tileCenter, posMatrix);
+
+            // Compute the falloff relative to the screen size
+            const r2 = vec2.sqrLen([tileCenterPosition[0], tileCenterPosition[1]]);
+            const weight = Math.exp(-0.5 * r2 / falloffScale2) / (2 << tile.tileZoom);
+
+            weightSum += weight;
+
+            const minMaxTree = (tile.dem: any).tree;
+            weightedMinHeight += weight * minMaxTree.minimums[0];
+        });
+
+        if (weightSum === 0.0) {
+            // The maximum DEM error in meters to be conservative (SRTM).
+            const maxDEMError = 30.0;
+            return -maxDEMError * this._exaggeration;
+        }
+
+        return weightedMinHeight / weightSum;
     }
 
     getMinElevationBelowMSL(): number {
