@@ -16,7 +16,7 @@ import {rasterUniforms} from './raster_program.js';
 import {symbolIconUniforms, symbolSDFUniforms, symbolTextAndIconUniforms} from './symbol_program.js';
 import {backgroundUniforms, backgroundPatternUniforms} from './background_program.js';
 import {terrainRasterUniforms} from '../../terrain/terrain_raster_program.js';
-import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program.js';
+import {skyboxUniforms, skyboxGradientUniforms, skyboxFogDepthUniforms} from './skybox_program.js';
 import {skyboxCaptureUniforms} from './skybox_capture_program.js';
 import {fogTextureUniforms} from '../fog';
 
@@ -56,5 +56,6 @@ export const programUniforms = {
     terrainFogDepth: terrainRasterUniforms,
     backgroundFogDepth: backgroundUniforms,
     fillExtrusionFogDepth: fillExtrusionUniforms,
-    fogTexture: fogTextureUniforms
+    fogTexture: fogTextureUniforms,
+    skyboxFogDepth: skyboxFogDepthUniforms
 };

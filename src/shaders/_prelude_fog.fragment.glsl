@@ -17,6 +17,16 @@ vec3 fog_apply_sky_gradient(vec3 cubemap_uv, vec3 sky_color) {
     return gamma_mix(u_fog_color, sky_color, fog_falloff);
 }
 
+float fog_sky_opacity(vec3 cubemap_uv) {
+    vec3 camera_ray = normalize(cubemap_uv);
+    vec3 y_up = vec3(0.0, 1.0, 0.0);
+    float y_blend = dot(camera_ray, y_up);
+    float gradient = smoothstep(0.0, u_fog_sky_blend, y_blend);
+    float fog_falloff = clamp(gradient + (1.0 - u_fog_opacity), 0.0, 1.0);
+
+    return 1.0 - fog_falloff;
+}
+
 float fog_opacity(vec3 position) {
     float depth = length(position);
     float start = u_fog_range.x;

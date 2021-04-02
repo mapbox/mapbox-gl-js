@@ -29,6 +29,10 @@ export type SkyboxGradientlUniformsType = {|
     'u_temporal_offset': Uniform1f,
 |};
 
+export type SkyboxFogDepthUniformsType = {|
+    'u_matrix': UniformMatrix4f,
+|};
+
 const skyboxUniforms = (context: Context, locations: UniformLocations): SkyboxUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_sun_direction': new Uniform3f(context, locations.u_sun_direction),
@@ -62,6 +66,10 @@ const skyboxGradientUniforms = (context: Context, locations: UniformLocations): 
     'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset)
 });
 
+const skyboxFogDepthUniforms = (context: Context, locations: UniformLocations): SkyboxFogDepthUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix)
+});
+
 const skyboxGradientUniformValues = (
     matrix: Float32Array,
     centerDirection: vec3,
@@ -79,9 +87,19 @@ const skyboxGradientUniformValues = (
     };
 };
 
+const skyboxFogDepthUniformValues = (
+    matrix: Float32Array,
+): UniformValues<SkyboxFogDepthUniformsType> => {
+    return {
+        'u_matrix': matrix,
+    };
+};
+
 export {
     skyboxUniforms,
     skyboxUniformValues,
     skyboxGradientUniforms,
-    skyboxGradientUniformValues
+    skyboxGradientUniformValues,
+    skyboxFogDepthUniforms,
+    skyboxFogDepthUniformValues
 };

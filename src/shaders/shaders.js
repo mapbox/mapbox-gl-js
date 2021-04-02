@@ -66,6 +66,7 @@ import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
+import skyboxFogDepthFrag from './skybox_fog.fragment.glsl';
 import terrainFogDepthVert from './terrain_fog_depth.vertex.glsl';
 import fogDepthFrag from './fog_depth.fragment.glsl';
 import fogTextureFrag from './fog_texture.fragment.glsl';
@@ -112,6 +113,7 @@ export default {
     terrainFogDepth: compile(fogDepthFrag, terrainDepthVert),
     backgroundFogDepth: compile(fogDepthFrag, backgroundVert),
     fillExtrusionFogDepth: compile(fogDepthFrag, fillExtrusionVert),
+    skyboxFogDepth: compile(skyboxFogDepthFrag, skyboxVert),
     fogTexture: compile(fogTextureFrag, heatmapTextureVert)
 };
 

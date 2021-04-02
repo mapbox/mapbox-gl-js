@@ -41,7 +41,8 @@ import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import {drawTerrainDepth} from '../terrain/draw_terrain_raster';
 import {drawFogTexture} from './fog';
 import custom from './draw_custom.js';
-import sky from './draw_sky.js';
+import sky, {drawSkyFog} from './draw_sky.js';
+import SkyboxGeometry from './skybox_geometry';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 
@@ -149,6 +150,7 @@ class Painter {
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
+    skyboxGeometry: SkyboxGeometry;
 
     _fogDepthFBO: Framebuffer;
     _fogDepthTexture: Texture;
@@ -266,6 +268,8 @@ class Painter {
         }, context.gl.RGBA);
 
         this.identityMat = mat4.identity(new Float32Array(16));
+
+        this.skyboxGeometry = new SkyboxGeometry(this.context);
 
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
@@ -512,6 +516,8 @@ class Painter {
             if (this.terrain) {
                 drawTerrainDepth(this, this.terrain);
             }
+
+            drawSkyFog(this);
         }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
