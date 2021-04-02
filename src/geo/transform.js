@@ -56,7 +56,7 @@ class Transform {
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
     fogCulling: boolean;
-    fogEnd: ?number;
+    fogCullDistSq: ?number;
     _elevation: ?Elevation;
     _fov: number;
     _pitch: number;
@@ -740,9 +740,8 @@ class Transform {
             }
         }
 
-        if (this.fogCulling && this.fogEnd) {
-            const fogEndSq = this.fogEnd * this.fogEnd;
-
+        if (this.fogCulling && this.fogCullDistSq) {
+            const fogCullDistSq = this.fogCullDistSq;
             result.splice(0, result.length, ...result.filter(entry => {
                 const min = [0, 0, 0, 1];
                 const max = [EXTENT, EXTENT, 0, 1];
@@ -762,7 +761,7 @@ class Transform {
 
                 let overHorizonLine = false;
                 const horizonLineFromTop = this.horizonLineFromTop();
-                if (sqDist > fogEndSq && horizonLineFromTop !== 0) {
+                if (sqDist > fogCullDistSq && horizonLineFromTop !== 0) {
                     const projMatrix = this.calculateProjMatrix(entry.tileID.toUnwrapped());
 
                     let minmax;
@@ -793,7 +792,7 @@ class Transform {
                     overHorizonLine = screenCoordY < horizonLineFromTop;
                 }
 
-                return sqDist < fogEndSq || overHorizonLine;
+                return sqDist < fogCullDistSq || overHorizonLine;
             }));
         }
 
