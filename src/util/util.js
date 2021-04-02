@@ -42,6 +42,22 @@ export function radToDeg(a: number): number {
     return a * RAD_TO_DEG;
 }
 
+const TILE_CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]];
+
+/**
+ * Given a particular bearing, returns the corner of the tile thats farthest
+ * along the bearing.
+ *
+ * @param {number} bearing angle in degrees (-180, 180]
+ * @returns {QuadCorner}
+ * @private
+ */
+export function furthestTileCorner(bearing: number): [number, number] {
+    const alignedBearing = ((bearing + 45) + 360) % 360;
+    const cornerIdx = Math.round(alignedBearing / 90) % 4;
+    return TILE_CORNERS[cornerIdx];
+}
+
 /**
  * @module util
  * @private
