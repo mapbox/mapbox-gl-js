@@ -29,6 +29,7 @@
 var GUIParams = function() {
     this.enableFog = true;
     this.enableTerrain = true;
+    this.freezeTileCoverage = false;
     this.terrainExaggeration = 1.5;
     this.style = 'satellite-streets-v11';
     this.fogRangeStart = 1000;
@@ -70,6 +71,10 @@ window.onload = function() {
     var showTileBoundaries = gui.add(guiParams, 'showTileBoundaries');
     showTileBoundaries.onFinishChange((value) => {
         map.showTileBoundaries = value;
+    });
+    var freezeTileCoverage = gui.add(guiParams, 'freezeTileCoverage');
+    freezeTileCoverage.onFinishChange((value) => {
+        map.transform.freezeTileCoverage = value;
     });
 
     var terrain = gui.addFolder('Terrain');
