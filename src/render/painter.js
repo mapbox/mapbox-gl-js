@@ -181,8 +181,19 @@ class Painter {
 
     _updateFog() {
         const fog = this.style && this.style.fog;
-        this.transform.fogEnd = fog ? fog.properties.get('range')[1] : null;
-        this.transform.fogCulling = fog ? this.transform.pitch > FOG_PITCH_END && fog.properties.get('opacity') === 1 : false;
+        if (fog) {
+            const fogStart = fog.properties.get('range')[0];
+            const fogEnd = fog.properties.get('range')[1];
+            // We start culling at 80% between the fog start and end,
+            // leaving a non-noticeable 2% fog opacity change threshold.
+            const fogCullDist = fogStart + (fogEnd - fogStart) * 0.8;
+            const fogOpacity = fog.properties.get('opacity');
+
+            this.transform.fogCullDistSq = fogCullDist *  fogCullDist;
+            this.transform.fogCulling = this.transform.pitch > FOG_PITCH_END && fogOpacity === 1;
+        } else {
+            this.transform.fogCullDistSq = null;
+        }
     }
 
     get terrain(): ?Terrain {
