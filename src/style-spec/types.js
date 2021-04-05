@@ -90,7 +90,6 @@ export type TerrainSpecification = {|
 export type FogSpecification = {|
     "range"?: PropertyValueSpecification<[number, number]>,
     "color"?: PropertyValueSpecification<ColorSpecification>,
-    "opacity"?: PropertyValueSpecification<number>,
     "sky-blend"?: PropertyValueSpecification<number>
 |}
 
