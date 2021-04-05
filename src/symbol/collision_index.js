@@ -8,6 +8,7 @@ import * as intersectionTests from '../util/intersection_tests.js';
 import Grid from './grid_index.js';
 import {mat4, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em.js';
+import FOG_SYMBOL_CLIPPING_THRESHOLD from '../style/fog'
 import assert from 'assert';
 
 import * as projection from '../symbol/projection.js';
@@ -368,7 +369,7 @@ class CollisionIndex {
             let behindFog = false
             if (this.fogSampler && tileID) {
                 const fogOpacity = this.fogSampler.getOpacityAtTileCoord(x, y, elevation || 0, tileID.toUnwrapped(), this.transform);
-                behindFog = fogOpacity > 0.9;
+                behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
             }
 
             aboveHorizon = p[2] > p[3] || behindFog;
