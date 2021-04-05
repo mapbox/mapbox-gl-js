@@ -35,7 +35,6 @@ var GUIParams = function() {
     this.style = 'satellite-streets-v11';
     this.fogRangeStart = 1000;
     this.fogRangeEnd = 10000;
-    this.fogOpacity = 1.0;
     this.fogColor = [255, 255, 255];
     this.fogSkyBlend = 0.1;
     this.showTileBoundaries = false;
@@ -101,7 +100,6 @@ window.onload = function() {
         map.setFog(value ? {
             "range": [guiParams.fogRangeStart, guiParams.fogRangeEnd],
             "color": 'rgba(' + guiParams.fogColor[0] + ', ' + guiParams.fogColor[1] + ', ' + guiParams.fogColor[2] + ', 1.0)',
-            "opacity": guiParams.fogOpacity,
             "sky-blend": guiParams.fogSkyBlend
         } : null);
     });
@@ -124,13 +122,6 @@ window.onload = function() {
     fogRangeEnd.onFinishChange((value) => {
         map.setFog({
             "range": [guiParams.fogRangeStart, value],
-        });
-    });
-
-    var fogOpacity = fog.add(guiParams, 'fogOpacity', 0.0, 1.0);
-    fogOpacity.onFinishChange((value) => {
-        map.setFog({
-            "opacity": value,
         });
     });
 
@@ -199,7 +190,6 @@ map.on('style.load', function() {
     map.setFog(guiParams.enableFog ? {
         "range": [guiParams.fogRangeStart, guiParams.fogRangeEnd],
         "color": 'rgba(' + guiParams.fogColor[0] + ', ' + guiParams.fogColor[1] + ', ' + guiParams.fogColor[2] + ', 1.0)',
-        "opacity": guiParams.fogOpacity,
         "sky-blend": guiParams.fogSkyBlend
     } : null);
 
