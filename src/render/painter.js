@@ -187,10 +187,9 @@ class Painter {
             // We start culling at 80% between the fog start and end,
             // leaving a non-noticeable 2% fog opacity change threshold.
             const fogCullDist = fogStart + (fogEnd - fogStart) * 0.8;
-            const fogOpacity = fog.properties.get('opacity');
 
             this.transform.fogCullDistSq = fogCullDist *  fogCullDist;
-            this.transform.fogCulling = this.transform.pitch > FOG_PITCH_END && fogOpacity === 1;
+            this.transform.fogCulling = this.transform.pitch > FOG_PITCH_END;
         } else {
             this.transform.fogCullDistSq = null;
         }
@@ -842,7 +841,7 @@ class Painter {
             uniforms['u_cam_matrix'] = tileID ? this.transform.calculateCameraMatrix(tileID) : this.identityMat;
             uniforms['u_fog_range'] = fog.properties.get('range');
             uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
-            uniforms['u_fog_opacity'] = fog.properties.get('opacity') * fog.getFogPitchFactor(this.transform.pitch);
+            uniforms['u_fog_opacity'] = fog.getFogPitchFactor(this.transform.pitch);
             uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
             uniforms['u_fog_temporal_offset'] = temporalOffset;
 
