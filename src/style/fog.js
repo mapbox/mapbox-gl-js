@@ -18,14 +18,12 @@ import Color from '../style-spec/util/color.js';
 type Props = {|
     "range": DataConstantProperty<[number, number]>,
     "color": DataConstantProperty<Color>,
-    "opacity": DataConstantProperty<number>,
     "sky-blend": DataConstantProperty<number>,
 |};
 
 const properties: Properties<Props> = new Properties({
     "range": new DataConstantProperty(styleSpec.fog.range),
     "color": new DataConstantProperty(styleSpec.fog.color),
-    "opacity": new DataConstantProperty(styleSpec.fog.opacity),
     "sky-blend": new DataConstantProperty(styleSpec.fog["sky-blend"]),
 });
 
@@ -43,7 +41,7 @@ export class FogSampler {
 
         const props = this.properties;
         const range = props.get('range');
-        const fogOpacity = props.get('opacity') * smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+        const fogOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
         const [start, end] = range;
 
         // The fog is not physically accurate, so we seek an expression which satisfies a
