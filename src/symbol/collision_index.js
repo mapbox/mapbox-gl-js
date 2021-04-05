@@ -8,7 +8,7 @@ import * as intersectionTests from '../util/intersection_tests.js';
 import Grid from './grid_index.js';
 import {mat4, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em.js';
-import FOG_SYMBOL_CLIPPING_THRESHOLD from '../style/fog'
+import {FOG_SYMBOL_CLIPPING_THRESHOLD} from '../style/fog';
 import assert from 'assert';
 
 import * as projection from '../symbol/projection.js';
