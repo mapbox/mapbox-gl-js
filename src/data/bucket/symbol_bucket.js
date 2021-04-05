@@ -61,7 +61,7 @@ import type {SymbolQuad} from '../../symbol/quads.js';
 import type {SizeData} from '../../symbol/symbol_size.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
-
+import type {OverscaledTileID} from '../../source/tile_id';
 export type SingleCollisionBox = {
     x1: number;
     y1: number;
@@ -71,6 +71,7 @@ export type SingleCollisionBox = {
     anchorPointX: number;
     anchorPointY: number;
     elevation?: number;
+    tileID?: OverscaledTileID;
 };
 
 export type CollisionArrays = {

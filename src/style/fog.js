@@ -3,17 +3,17 @@
 import styleSpec from '../style-spec/reference/latest.js';
 import {endsWith, extend, smoothstep} from '../util/util.js';
 import {Evented} from '../util/evented.js';
-import LngLat from '../geo/lng_lat.js';
 import {vec3} from 'gl-matrix';
-import {UnwrappedTileID} from '../source/tile_id.js';
-import type Transform from '../geo/transform.js';
 import {validateStyle, validateFog, emitValidationErrors} from './validate_style.js';
-import type EvaluationParameters from './evaluation_parameters.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
-import type {TransitionParameters} from './properties.js';
-import type {FogSpecification} from '../style-spec/types.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import Color from '../style-spec/util/color.js';
+import type {FogSpecification} from '../style-spec/types.js';
+import type EvaluationParameters from './evaluation_parameters.js';
+import type {TransitionParameters} from './properties.js';
+import type LngLat from '../geo/lng_lat.js';
+import type {UnwrappedTileID} from '../source/tile_id';
+import type Transform from '../geo/transform';
 
 type Props = {|
     "range": DataConstantProperty<[number, number]>,
@@ -35,16 +35,18 @@ export const FOG_PITCH_START = 55;
 export const FOG_PITCH_END = 65;
 
 export class FogSampler {
-    properties: ?PossiblyEvaluated<Props>;
+    range: [number, number];
+    opacity: number;
+
+    constructor(range: [number, number], opacity: number) {
+        this.range = range;
+        this.opacity = opacity;
+    }
 
     // As defined in _prelude_fog.fragment.glsl#fog_opacity
     getFogOpacity(depth: number, pitch: number): number {
-        if (!this.properties) { return 0.0; }
-
-        const props = this.properties;
-        const range = props.get('range');
-        const fogOpacity = props.get('opacity') * smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-        const [start, end] = range;
+        const fogOpacity = this.opacity * smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+        const [start, end] = this.range;
 
         // The fog is not physically accurate, so we seek an expression which satisfies a
         // couple basic constraints:
@@ -92,14 +94,16 @@ class Fog extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
-    sampler: FogSampler;
 
     constructor(fogOptions?: FogSpecification) {
         super();
         this._transitionable = new Transitionable(properties);
         this.set(fogOptions);
         this._transitioning = this._transitionable.untransitioned();
-        this.sampler = new FogSampler();
+    }
+
+    get sampler(): FogSampler {
+        return new FogSampler(this.properties.get('range'), this.properties.get('opacity'));
     }
 
     get() {
@@ -134,7 +138,7 @@ class Fog extends Evented {
     }
 
     recalculate(parameters: EvaluationParameters) {
-        this.properties = this.sampler.properties = this._transitioning.possiblyEvaluate(parameters);
+        this.properties = this._transitioning.possiblyEvaluate(parameters);
     }
 
     _validate(validate: Function, value: mixed, options?: {validate?: boolean}) {

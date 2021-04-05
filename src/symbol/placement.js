@@ -18,6 +18,7 @@ import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../d
 import type FeatureIndex from '../data/feature_index.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type {TextAnchor} from './symbol_layout.js';
+import type {FogSampler} from '../style/fog';
 
 class OpacityState {
     opacity: number;
@@ -198,9 +199,9 @@ export class Placement {
     zoomAtLastRecencyCheck: number;
     collisionCircleArrays: {[any]: CollisionCircleArray};
 
-    constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement) {
+    constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement, fogSampler: ?FogSampler) {
         this.transform = transform.clone();
-        this.collisionIndex = new CollisionIndex(this.transform);
+        this.collisionIndex = new CollisionIndex(this.transform, fogSampler);
         this.placements = {};
         this.opacities = {};
         this.variableOffsets = {};
@@ -431,7 +432,8 @@ export class Placement {
                 verticalTextFeatureIndex = collisionArrays.verticalTextFeatureIndex;
             }
 
-            const updateElevation = (box: SingleCollisionBox) => {
+            const updateBoxData = (box: SingleCollisionBox) => {
+                box.tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
                 if (!this.transform.elevation && !box.elevation) return;
                 box.elevation = this.transform.elevation ? this.transform.elevation.getAtTileOffset(
                     this.retainedQueryData[bucket.bucketInstanceId].tileID,
@@ -440,7 +442,7 @@ export class Placement {
 
             const textBox = collisionArrays.textBox;
             if (textBox) {
-                updateElevation(textBox);
+                updateBoxData(textBox);
                 const updatePreviousOrientationIfNotPlaced = (isPlaced) => {
                     let previousOrientation = WritingMode.horizontal;
                     if (bucket.allowVerticalPlacement && !isPlaced && this.prevPlacement) {
@@ -489,7 +491,7 @@ export class Placement {
                     const placeVertical = () => {
                         const verticalTextBox = collisionArrays.verticalTextBox;
                         if (bucket.allowVerticalPlacement && symbolInstance.numVerticalGlyphVertices > 0 && verticalTextBox) {
-                            updateElevation(verticalTextBox);
+                            updateBoxData(verticalTextBox);
                             return placeBox(verticalTextBox, WritingMode.vertical);
                         }
                         return {box: null, offscreen: null};
@@ -518,7 +520,7 @@ export class Placement {
                         const height = (collisionTextBox.y2 - collisionTextBox.y1) * textBoxScale + 2.0 * collisionTextBox.padding;
 
                         const variableIconBox = hasIconTextFit && !iconAllowOverlap ? collisionIconBox : null;
-                        if (variableIconBox) updateElevation(variableIconBox);
+                        if (variableIconBox) updateBoxData(variableIconBox);
 
                         let placedBox: ?{ box: Array<number>, offscreen: boolean }  = {box: [], offscreen: false};
                         const placementAttempts = textAllowOverlap ? anchors.length * 2 : anchors.length;
@@ -550,7 +552,7 @@ export class Placement {
 
                     const placeVertical = () => {
                         const verticalTextBox = collisionArrays.verticalTextBox;
-                        if (verticalTextBox) updateElevation(verticalTextBox);
+                        if (verticalTextBox) updateBoxData(verticalTextBox);
                         const wasPlaced = placed && placed.box && placed.box.length;
                         if (bucket.allowVerticalPlacement && !wasPlaced && symbolInstance.numVerticalGlyphVertices > 0 && verticalTextBox) {
                             return placeBoxForVariableAnchors(verticalTextBox, collisionArrays.verticalIconBox, WritingMode.vertical);
@@ -623,7 +625,7 @@ export class Placement {
             if (collisionArrays.iconBox) {
 
                 const placeIconFeature = iconBox => {
-                    updateElevation(iconBox);
+                    updateBoxData(iconBox);
                     const shiftPoint: Point = hasIconTextFit && shift ?
                         offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle) :
                         new Point(0, 0);

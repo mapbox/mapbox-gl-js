@@ -72,6 +72,7 @@ import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator} from './validate_style.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type {PointLike} from '@mapbox/point-geometry';
+import type {FogSampler} from './fog.js';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -1641,7 +1642,7 @@ class Style extends Evented {
         }
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, this.fog ? this.fog.sampler : null);
             this._layerOrderChanged = false;
         }
 
