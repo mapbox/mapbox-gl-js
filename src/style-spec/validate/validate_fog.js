@@ -18,12 +18,8 @@ export default function validateFog(options) {
         return errors;
     }
 
-    if (fog.range && fog.range[0] > fog.range[1]) {
-        errors = errors.concat([new ValidationError('fog', fog, 'fog.range[0] can\'t be greater than fog.range[1]')]);
-    }
-
-    if (fog.range && (fog.range[0] < 0 || fog.range[1] < 0)) {
-        errors = errors.concat([new ValidationError('fog', fog, 'fog.range can\'t be negative')]);
+    if (fog.range && fog.range[0] >= fog.range[1]) {
+        errors = errors.concat([new ValidationError('fog', fog, 'fog.range[0] can\'t be greater than or equal to fog.range[1]')]);
     }
 
     for (const key in fog) {

@@ -3689,9 +3689,11 @@
     "range": {
       "type": "array",
       "default": [
-        3000,
-        8000
+        5,
+        10
       ],
+      "minimum": 0,
+      "maximum": 20,
       "length": 2,
       "value": "number",
       "property-type": "data-constant",
@@ -3704,8 +3706,8 @@
       },
       "doc": "",
       "example": [
-        3000,
-        8000
+        5,
+        10
       ],
       "sdk-support": {
         "basic functionality": {
