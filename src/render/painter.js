@@ -19,7 +19,7 @@ import shaders from '../shaders/shaders.js';
 import Program from './program.js';
 import {programUniforms} from './program/program_uniforms.js';
 import Context from '../gl/context.js';
-import {FOG_PITCH_END} from '../style/fog.js';
+import {FOG_PITCH_END} from '../style/fog_helpers.js';
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
