@@ -28,3 +28,12 @@ vec3 dither(vec3 color, highp vec2 seed) {
     vec3 rnd = hash(seed) + hash(seed + 0.59374) - 0.5;
     return color + rnd / 255.0;
 }
+
+vec3 linear_to_srgb(vec3 color) {
+    return pow(color, vec3(1.0 / 2.2));
+}
+
+vec3 srgb_to_linear(vec3 color) {
+    return pow(color, vec3(2.2));
+}
+
