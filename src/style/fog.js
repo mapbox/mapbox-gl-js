@@ -18,12 +18,18 @@ import Color from '../style-spec/util/color.js';
 type Props = {|
     "range": DataConstantProperty<[number, number]>,
     "color": DataConstantProperty<Color>,
+    "haze-color": DataConstantProperty<Color>,
+    "haze-energy": DataConstantProperty<number>,
+    "strength": DataConstantProperty<number>,
     "sky-blend": DataConstantProperty<number>,
 |};
 
 const properties: Properties<Props> = new Properties({
     "range": new DataConstantProperty(styleSpec.fog.range),
     "color": new DataConstantProperty(styleSpec.fog.color),
+    "haze-color": new DataConstantProperty(styleSpec.fog["haze-color"]),
+    "haze-energy": new DataConstantProperty(styleSpec.fog["strength"]),
+    "strength": new DataConstantProperty(styleSpec.fog["haze-energy"]),
     "sky-blend": new DataConstantProperty(styleSpec.fog["sky-blend"]),
 });
 
@@ -42,6 +48,7 @@ export class FogSampler {
         const props = this.properties;
         const range = props.get('range');
         const fogOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+        const fogStrength = props.get('strength');
         const [start, end] = range;
 
         // The fog is not physically accurate, so we seek an expression which satisfies a
@@ -53,15 +60,24 @@ export class FogSampler {
         // function is C2 continuous at the onset. The fog is about 99% opaque at
         // the far limit, so we simply scale it and clip to achieve 100% opacity.
         // https://www.desmos.com/calculator/3taufutxid
-        // The output of this function must match src/shaders/_prelude_fog.fragment.glsl
-        const decay = 5.5;
-        let falloff = Math.max(0.0, 1.0 - Math.exp(-decay * (depth - start) / (end - start)));
+        // The output of this function should match src/shaders/_prelude_fog.fragment.glsl
+        const decay = 6;
+        const t = (depth - start) / (end - start);
+        let falloff = 1.0 - Math.min(1, Math.exp(-decay * t));
 
         // Cube without pow()
         falloff *= falloff * falloff;
 
         // Scale and clip to 1 at the far limit
         falloff = Math.min(1.0, 1.00747 * falloff);
+
+        // From src/render/painter.js via fog uniforms:
+        const fogExponent = 12 * Math.pow(1 - fogStrength, 2);
+
+        // Account for fog strength
+        falloff *= Math.pow(smoothstep(0, 1, t), fogExponent);
+
+        // We may wish to account for haze's effect on obscuring symbols
 
         return falloff * fogOpacity;
     }

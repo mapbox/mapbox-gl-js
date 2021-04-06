@@ -184,11 +184,14 @@ class Painter {
         if (fog) {
             const fogStart = fog.properties.get('range')[0];
             const fogEnd = fog.properties.get('range')[1];
-            // We start culling at 80% between the fog start and end,
-            // leaving a non-noticeable 2% fog opacity change threshold.
-            const fogCullDist = fogStart + (fogEnd - fogStart) * 0.8;
+            const fogStrength = fog.properties.get('strength');
+            // We start culling where the fog opacity function hits 98%, leaving
+            // a non-noticeable opacity change threshold. We use an arbitrary function
+            // which bounds the true answer. See: https://www.desmos.com/calculator/lw03ldsuhy
+            const fogBoundFraction = 1 - 0.22 * Math.exp(4 * (fogStrength - 1));
+            const fogCullDist = fogStart + (fogEnd - fogStart) * fogBoundFraction;
 
-            this.transform.fogCullDistSq = fogCullDist *  fogCullDist;
+            this.transform.fogCullDistSq = fogCullDist * fogCullDist;
             this.transform.fogCulling = this.transform.pitch > FOG_PITCH_END;
         } else {
             this.transform.fogCullDistSq = null;
@@ -749,12 +752,16 @@ class Painter {
         const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const fog = this.style && this.style.fog;
+        const haze = fog && fog.properties && fog.properties.get('haze-energy') > 0;
 
         const defines = [];
         if (terrain) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && !rtt) defines.push('FOG');
+        if (fog && !rtt) {
+            defines.push('FOG');
+            if (haze) defines.push('HAZE');
+        }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
         return defines;
@@ -836,14 +843,18 @@ class Painter {
         if (fog) {
             const temporalOffset = (this.frameCounter / 1000.0) % 1;
             const fogColor = fog.properties.get('color');
+            const hazeColor = fog.properties.get('haze-color');
             const uniforms = {};
 
             uniforms['u_cam_matrix'] = tileID ? this.transform.calculateCameraMatrix(tileID) : this.identityMat;
             uniforms['u_fog_range'] = fog.properties.get('range');
             uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
+            uniforms['u_fog_exponent'] = Math.max(1e-3, 12 * Math.pow(1 - fog.properties.get('strength'), 2));
             uniforms['u_fog_opacity'] = fog.getFogPitchFactor(this.transform.pitch);
             uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
             uniforms['u_fog_temporal_offset'] = temporalOffset;
+            uniforms['u_haze_color_linear'] = [hazeColor.r, hazeColor.g, hazeColor.b].map(c => Math.pow(c, 2.2));
+            uniforms['u_haze_energy'] = fog.properties.get('haze-energy');
 
             program.setFogUniformValues(context, uniforms);
         }

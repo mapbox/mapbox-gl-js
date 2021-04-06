@@ -2,9 +2,19 @@
 
 uniform vec2 u_fog_range;
 uniform vec3 u_fog_color;
+uniform vec3 u_haze_color_linear;
+uniform float u_haze_energy;
 uniform float u_fog_opacity;
 uniform float u_fog_sky_blend;
 uniform float u_fog_temporal_offset;
+uniform float u_fog_exponent;
+
+vec3 tonemap(vec3 color) {
+    // Use an exponential smoothmin between y=x and y=1 for tone-mapping
+    // See: https://www.desmos.com/calculator/h8odggcnd0
+    const float k = 8.0;
+    return max(vec3(0), log2(exp2(-k * color) + exp2(-k)) * (-1.0 / k));
+}
 
 // Assumes z up and camera_dir *normalized* (to avoid computing its length multiple
 // times for different functions).
@@ -15,43 +25,50 @@ float fog_sky_blending(vec3 camera_dir) {
     return u_fog_opacity * exp(-3.0 * t * t);
 }
 
-float fog_opacity(vec3 pos) {
-    float depth = length(pos);
-    float start = u_fog_range.x;
-    float end = u_fog_range.y;
-
-    // The fog is not physically accurate, so we seek an expression which satisfies a
-    // couple basic constraints:
-    //   - opacity should be 0 at the near limit
-    //   - opacity should be 1 at the far limit
-    //   - the onset should have smooth derivatives to avoid a sharp band
-    // To this end, we use an (1 - e^x)^n, where n is set to 3 to ensure the
-    // function is C2 continuous at the onset. The fog is about 99% opaque at
-    // the far limit, so we simply scale it and clip to achieve 100% opacity.
-    // https://www.desmos.com/calculator/3taufutxid
-    const float decay = 5.5;
-    float falloff = max(0.0, 1.0 - exp(-decay * (depth - start) / (end - start)));
+// This function gives the fog opacity when strength is 1. Otherwise it's multiplied
+// by a smoothstep to a power to decrease the amount of fog relative to haze.
+// This function much match src/style/fog.js
+// See: https://www.desmos.com/calculator/3taufutxid
+float fog_opacity(float t) {
+    const float decay = 6.0;
+    float falloff = 1.0 - min(1.0, exp(-decay * t));
 
     // Cube without pow()
     falloff *= falloff * falloff;
 
     // Scale and clip to 1 at the far limit
-    falloff = min(1.0, 1.00747 * falloff);
+    return u_fog_opacity * min(1.0, 1.00747 * falloff);
+}
 
-    return falloff * u_fog_opacity;
+float fog_opacity (vec3 pos) {
+    return fog_opacity((length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x));
+}
+
+vec3 fog_apply(vec3 color, vec3 pos) {
+    // Map [near, far] to [0, 1]
+    float t = (length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x);
+
+    float haze_opac = fog_opacity(pos);
+    float fog_opac = haze_opac * pow(smoothstep(0.0, 1.0, t), u_fog_exponent);
+
+#ifdef HAZE
+    vec3 haze = (haze_opac * u_haze_energy) * u_haze_color_linear;
+
+    // The smoothstep fades in tonemapping slightly before the fog layer. This causes
+    // the principle that fog should not have an effect outside the fog layer, but the
+    // effect is hardly noticeable except on pure white glaciers..
+    float tonemap_strength = u_fog_opacity * min(1.0, u_haze_energy) * smoothstep(-0.5, 0.25, t);
+    color = srgb_to_linear(color);
+    color = mix(color, tonemap(color + haze), tonemap_strength);
+    color = linear_to_srgb(color);
+#endif
+
+    return mix(color, u_fog_color, fog_opac);
 }
 
 // Assumes z up
 vec3 fog_apply_sky_gradient(vec3 camera_ray, vec3 sky_color) {
     return mix(sky_color, u_fog_color, fog_sky_blending(normalize(camera_ray)));
-}
-
-vec3 fog_apply(vec3 color, vec3 pos) {
-    // We mix in sRGB color space. sRGB roughly corrects for perceived brightness
-    // so that dark fog and light fog obscure similarly for otherwise identical
-    // parameters. If we blend in linear RGB, then the parameters to control dark
-    // and light fog are fundamentally different.
-    return mix(color, u_fog_color, fog_opacity(pos));
 }
 
 // Un-premultiply the alpha, then blend fog, then re-premultiply alpha. For
