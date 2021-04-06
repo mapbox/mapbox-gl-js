@@ -3731,6 +3731,71 @@
         }
       }
     },
+    "haze-color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#7287d5",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      }
+    },
+    "strength": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1.0,
+      "minimum": 0.0,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      }
+    },
+    "haze-energy": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1.0,
+      "minimum": 0.0,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      }
+    },
     "sky-blend": {
       "type": "number",
       "property-type": "data-constant",
