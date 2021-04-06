@@ -673,7 +673,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 }
 
 .mapboxgl-marker-occluded {
-    opacity: 0.0;
+    opacity: 0;
 }
 
 .mapboxgl-marker-occluded-low {

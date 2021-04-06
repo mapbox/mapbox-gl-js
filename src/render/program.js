@@ -158,7 +158,9 @@ class Program<Us: UniformBindings> {
         context.program.set(this.program);
 
         for (const name in fogUniformsValues) {
-            uniforms[name].set(fogUniformsValues[name]);
+            if (uniforms[name].location) {
+                uniforms[name].set(fogUniformsValues[name]);
+            }
         }
     }
 
