@@ -844,6 +844,7 @@ class Painter {
             const temporalOffset = (this.frameCounter / 1000.0) % 1;
             const fogColor = fog.properties.get('color');
             const hazeColor = fog.properties.get('haze-color');
+            const hazeColorLinear = [Math.pow(hazeColor.r, 2.2), Math.pow(hazeColor.g, 2.2), Math.pow(hazeColor.b, 2.2)];
             const uniforms = {};
 
             uniforms['u_cam_matrix'] = tileID ? this.transform.calculateCameraMatrix(tileID) : this.identityMat;
@@ -853,7 +854,7 @@ class Painter {
             uniforms['u_fog_opacity'] = fog.getFogPitchFactor(this.transform.pitch);
             uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
             uniforms['u_fog_temporal_offset'] = temporalOffset;
-            uniforms['u_haze_color_linear'] = [hazeColor.r, hazeColor.g, hazeColor.b].map(c => Math.pow(c, 2.2));
+            uniforms['u_haze_color_linear'] = hazeColorLinear;
             uniforms['u_haze_energy'] = fog.properties.get('haze-energy');
 
             program.setFogUniformValues(context, uniforms);

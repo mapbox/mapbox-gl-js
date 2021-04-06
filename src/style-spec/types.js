@@ -91,7 +91,8 @@ export type FogSpecification = {|
     "range"?: PropertyValueSpecification<[number, number]>,
     "color"?: PropertyValueSpecification<ColorSpecification>,
     "haze-color"?: PropertyValueSpecification<ColorSpecification>,
-    "haziness"?: PropertyValueSpecification<number>,
+    "strength"?: PropertyValueSpecification<number>,
+    "haze-energy"?: PropertyValueSpecification<number>,
     "sky-blend"?: PropertyValueSpecification<number>
 |}
 
