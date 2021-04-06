@@ -55,7 +55,6 @@ class Transform {
     labelPlaneMatrix: Float32Array;
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
-    fogCulling: boolean;
     fogCullDistSq: ?number;
     _elevation: ?Elevation;
     _fov: number;
@@ -106,7 +105,6 @@ class Transform {
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this.cameraElevationReference = "ground";
-        this.fogCulling = false;
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -740,7 +738,7 @@ class Transform {
             }
         }
 
-        if (this.fogCulling && this.fogCullDistSq) {
+        if (this.fogCullDistSq) {
             const fogCullDistSq = this.fogCullDistSq;
             result.splice(0, result.length, ...result.filter(entry => {
                 const min = [0, 0, 0, 1];
