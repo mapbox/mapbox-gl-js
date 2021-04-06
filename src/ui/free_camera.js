@@ -247,15 +247,16 @@ class FreeCamera {
         return cameraToWorld;
     }
 
-    getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number): Float64Array {
+    getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number, uniformScale: number): Float64Array {
         const invPosition = this.position;
 
         vec3.scale(invPosition, invPosition, -worldSize);
         const matrix = new Float64Array(16);
-        mat4.fromTranslation(matrix, invPosition);
+        mat4.fromScaling(matrix, [uniformScale, uniformScale, uniformScale]);
+        mat4.translate(matrix, matrix, invPosition);
 
         // Adjust scale on z (3rd column 3rd row)
-        matrix[10] = pixelsPerMeter;
+        matrix[10] *= pixelsPerMeter;
 
         return matrix;
     }
