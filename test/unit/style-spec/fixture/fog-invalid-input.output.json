@@ -1,7 +1,11 @@
 [
   {
-    "line": 10,
-    "message": "fog: fog.range can't be negative"
+    "line": 11,
+    "message": "range[0]: -2 is less than the minimum value 0"
+  },
+  {
+    "line": 11,
+    "message": "range[1]: -1 is less than the minimum value 0"
   },
   {
     "line": 12,
