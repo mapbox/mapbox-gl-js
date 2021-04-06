@@ -3685,7 +3685,7 @@
         10
       ],
       "minimum": 0,
-      "maximum": 100,
+      "maximum": 20,
       "length": 2,
       "value": "number",
       "property-type": "data-constant",
