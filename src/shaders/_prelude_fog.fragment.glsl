@@ -25,10 +25,11 @@ float fog_sky_blending(vec3 camera_dir) {
     return u_fog_opacity * exp(-3.0 * t * t);
 }
 
-// This function gives the fog opacity when strength is 1. Otherwise it's multiplied
+// Computes the fog opacity when fog strength = 1. Otherwise it's multiplied
 // by a smoothstep to a power to decrease the amount of fog relative to haze.
-// This function much match src/style/fog.js
+//   - t: depth, rescaled to 0 at fogStart and 1 at fogEnd
 // See: https://www.desmos.com/calculator/3taufutxid
+// This function much match src/style/fog.js
 float fog_opacity(float t) {
     const float decay = 6.0;
     float falloff = 1.0 - min(1.0, exp(-decay * t));
@@ -40,6 +41,8 @@ float fog_opacity(float t) {
     return u_fog_opacity * min(1.0, 1.00747 * falloff);
 }
 
+// This function is only used in rare places like heatmap where opacity is used
+// directly, outside the normal fog_apply method.
 float fog_opacity (vec3 pos) {
     return fog_opacity((length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x));
 }
@@ -51,7 +54,7 @@ vec3 fog_apply(vec3 color, vec3 pos) {
     float haze_opac = fog_opacity(pos);
     float fog_opac = haze_opac * pow(smoothstep(0.0, 1.0, t), u_fog_exponent);
 
-#ifdef HAZE
+#ifdef FOG_HAZE
     vec3 haze = (haze_opac * u_haze_energy) * u_haze_color_linear;
 
     // The smoothstep fades in tonemapping slightly before the fog layer. This causes

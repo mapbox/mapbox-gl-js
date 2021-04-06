@@ -760,7 +760,7 @@ class Painter {
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
         if (fog && !rtt) {
             defines.push('FOG');
-            if (haze) defines.push('HAZE');
+            if (haze) defines.push('FOG_HAZE');
         }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');

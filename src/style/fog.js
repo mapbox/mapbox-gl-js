@@ -77,8 +77,6 @@ export class FogSampler {
         // Account for fog strength
         falloff *= Math.pow(smoothstep(0, 1, t), fogExponent);
 
-        // We may wish to account for haze's effect on obscuring symbols
-
         return falloff * fogOpacity;
     }
 
