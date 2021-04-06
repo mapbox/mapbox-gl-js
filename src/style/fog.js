@@ -42,7 +42,7 @@ export class FogSampler {
     properties: ?PossiblyEvaluated<Props>;
 
     // As defined in _prelude_fog.fragment.glsl#fog_opacity
-    getFogOpacity(depth: number, pitch: number, height: number): number {
+    getFogOpacity(depthPx: number, pitch: number, heightPx: number): number {
         if (!this.properties) { return 0.0; }
 
         const props = this.properties;
@@ -62,7 +62,7 @@ export class FogSampler {
         // https://www.desmos.com/calculator/3taufutxid
         // The output of this function should match src/shaders/_prelude_fog.fragment.glsl
         const decay = 6;
-        const t = (depth / height - start) / (end - start);
+        const t = (depthPx / heightPx - start) / (end - start);
         let falloff = 1.0 - Math.min(1, Math.exp(-decay * t));
 
         // Cube without pow()
