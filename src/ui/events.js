@@ -194,7 +194,7 @@ export class MapTouchEvent extends Event {
  */
 export class MapWheelEvent extends Event {
     /**
-     * The event type (one of {@link Map.event:wheel}).
+     * The event type ({@link Map.event:wheel}).
      */
     type: 'wheel';
 
