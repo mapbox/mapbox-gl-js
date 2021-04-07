@@ -320,6 +320,7 @@ class Map extends Camera {
     _collectResourceTiming: boolean;
     _optimizeForTerrain: boolean;
     _renderTaskQueue: TaskQueue;
+    _domRenderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
     _logoControl: IControl;
     _mapId: number;
@@ -420,6 +421,7 @@ class Map extends Camera {
         this._collectResourceTiming = options.collectResourceTiming;
         this._optimizeForTerrain = options.optimizeForTerrain;
         this._renderTaskQueue = new TaskQueue();
+        this._domRenderTaskQueue = new TaskQueue();
         this._controls = [];
         this._mapId = uniqueId();
         this._locale = extend({}, defaultLocale, options.locale);
@@ -2526,6 +2528,7 @@ class Map extends Camera {
         this.painter.setBaseState();
 
         this._renderTaskQueue.run(paintStartTimeStamp);
+        this._domRenderTaskQueue.run(paintStartTimeStamp);
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
 
@@ -2770,6 +2773,7 @@ class Map extends Camera {
             this._frame = null;
         }
         this._renderTaskQueue.clear();
+        this._domRenderTaskQueue.clear();
         this.painter.destroy();
         this.handlers.destroy();
         delete this.handlers;

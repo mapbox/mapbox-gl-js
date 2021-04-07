@@ -393,6 +393,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
         .setLngLat([0, 0])
         .setText('Test')
         .addTo(map);
+    map._domRenderTaskQueue.run();
 
     t.ok(popup.getElement().classList.contains('mapboxgl-popup-anchor-top-left'));
     t.end();
@@ -419,6 +420,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
             .setLngLat([0, 0])
             .setText('Test')
             .addTo(map);
+        map._domRenderTaskQueue.run();
 
         Object.defineProperty(popup.getElement(), 'offsetWidth', {value: 100});
         Object.defineProperty(popup.getElement(), 'offsetHeight', {value: 100});
@@ -426,6 +428,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
         t.stub(map, 'project').returns(point);
         t.stub(map.transform, 'locationPoint3D').returns(point);
         popup.setLngLat([0, 0]);
+        map._domRenderTaskQueue.run();
 
         t.ok(popup.getElement().classList.contains(`mapboxgl-popup-anchor-${anchor}`));
         t.end();
@@ -440,6 +443,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
             .setLngLat([0, 0])
             .setText('Test')
             .addTo(map);
+        map._domRenderTaskQueue.run();
 
         t.equal(popup.getElement().style.transform, transform);
         t.end();
@@ -457,12 +461,14 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
         .setLngLat([0, 0])
         .setText('Test')
         .addTo(map);
+    map._domRenderTaskQueue.run();
 
     Object.defineProperty(popup.getElement(), 'offsetWidth', {value: containerWidth / 2});
     Object.defineProperty(popup.getElement(), 'offsetHeight', {value: containerHeight / 2});
 
     t.stub(map, 'project').returns(point);
     popup.setLngLat([0, 0]);
+    map._domRenderTaskQueue.run();
 
     t.ok(popup.getElement().classList.contains('mapboxgl-popup-anchor-top'));
     t.end();
@@ -477,6 +483,7 @@ test('Popup is offset via a PointLike offset option', (t) => {
         .setLngLat([0, 0])
         .setText('Test')
         .addTo(map);
+    map._domRenderTaskQueue.run();
 
     t.equal(popup.getElement().style.transform, 'translate(0,0) translate(5px,10px)');
     t.end();
@@ -491,6 +498,7 @@ test('Popup is offset via an object offset option', (t) => {
         .setLngLat([0, 0])
         .setText('Test')
         .addTo(map);
+    map._domRenderTaskQueue.run();
 
     t.equal(popup.getElement().style.transform, 'translate(0,0) translate(5px,10px)');
     t.end();
@@ -505,6 +513,7 @@ test('Popup is offset via an incomplete object offset option', (t) => {
         .setLngLat([0, 0])
         .setText('Test')
         .addTo(map);
+    map._domRenderTaskQueue.run();
 
     t.equal(popup.getElement().style.transform, 'translate(-100%,0) translate(0px,0px)');
     t.end();
