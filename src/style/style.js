@@ -151,6 +151,7 @@ class Style extends Evented {
     _updatedPaintProps: {[layer: string]: true};
     _layerOrderChanged: boolean;
     _availableImages: Array<string>;
+    _markersNeedUpdate: boolean;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -190,6 +191,7 @@ class Style extends Evented {
         this._availableImages = [];
         this._order  = [];
         this._drapedFirstOrder = [];
+        this._markersNeedUpdate = false;
 
         this._resetUpdates();
 
@@ -528,6 +530,11 @@ class Style extends Evented {
             this.fog.recalculate(parameters);
         }
         this.z = parameters.zoom;
+
+        if (this._markersNeedUpdate) {
+            this._updateMarkersOpacity();
+            this._markersNeedUpdate = false;
+        }
 
         if (changed) {
             this.fire(new Event('data', {dataType: 'style'}));
@@ -1396,7 +1403,7 @@ class Style extends Evented {
             delete this.stylesheet.terrain;
             this.dispatcher.broadcast('enableTerrain', false);
             this._force3DLayerUpdate();
-            this._updateMarkersOpacity();
+            this._markersNeedUpdate = true;
             return;
         }
 
@@ -1433,7 +1440,7 @@ class Style extends Evented {
         }
 
         this._updateDrapeFirstLayers();
-        this._updateMarkersOpacity();
+        this._markersNeedUpdate = true;
     }
 
     _createFog(fogOptions: FogSpecification) {
@@ -1469,7 +1476,7 @@ class Style extends Evented {
             // Remove fog
             delete this.fog;
             delete this.stylesheet.fog;
-            this._updateMarkersOpacity();
+            this._markersNeedUpdate = true;
             return;
         }
 
@@ -1497,7 +1504,7 @@ class Style extends Evented {
             }
         }
 
-        this._updateMarkersOpacity();
+        this._markersNeedUpdate = true;
     }
 
     _updateDrapeFirstLayers() {
@@ -1641,7 +1648,7 @@ class Style extends Evented {
         }
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, this.fog ? this.fog.state : null);
             this._layerOrderChanged = false;
         }
 
