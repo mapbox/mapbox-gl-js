@@ -16,7 +16,7 @@ export type FogState = {
 };
 
 // As defined in _prelude_fog.fragment.glsl#fog_opacity
-export function getFogOpacity(state: FogState, depthPx: number, pitch: number, heightPx: number): number {
+export function getFogOpacity(state: FogState, depthPx: number, pitch: number): number {
     const fogOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
     const [start, end] = state.range;
     const fogStrength = state.strength;
@@ -32,7 +32,7 @@ export function getFogOpacity(state: FogState, depthPx: number, pitch: number, h
     // https://www.desmos.com/calculator/3taufutxid
     // The output of this function should match src/shaders/_prelude_fog.fragment.glsl
     const decay = 6;
-    const t = (depthPx / heightPx - start) / (end - start);
+    const t = (depthPx - start) / (end - start);
     let falloff = 1.0 - Math.min(1, Math.exp(-decay * t));
 
     // Cube without pow()
@@ -56,7 +56,7 @@ export function getOpacityAtTileCoord(state: FogState, x: number, y: number, z: 
     vec3.transformMat4(pos, pos, mat);
     const depth = vec3.length(pos);
 
-    return getFogOpacity(state, depth, transform.pitch, transform.height);
+    return getFogOpacity(state, depth, transform.pitch);
 }
 
 export function getFogOpacityAtLatLng(state: FogState, lngLat: LngLat, transform: Transform): number {
@@ -66,5 +66,5 @@ export function getFogOpacityAtLatLng(state: FogState, lngLat: LngLat, transform
     vec3.transformMat4(pos, pos, transform.mercatorFogMatrix);
     const depth = vec3.length(pos);
 
-    return getFogOpacity(state, depth, transform.pitch, transform.height);
+    return getFogOpacity(state, depth, transform.pitch);
 }

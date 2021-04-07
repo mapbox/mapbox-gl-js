@@ -1489,14 +1489,15 @@ class Transform {
         const cameraPixelsPerMeter = this.cameraPixelsPerMeter;
         const cameraPos = this._camera.position;
 
+        const windowScaleFactor = 1.0 / this.height;
         m = mat4.create();
+        mat4.fromScaling(m, [windowScaleFactor, windowScaleFactor, windowScaleFactor]);
         const metersToPixel = [cameraWorldSize, cameraWorldSize, cameraPixelsPerMeter];
         mat4.translate(m, m, vec3.multiply(cameraPos, vec3.scale(cameraPos, cameraPos, -1), metersToPixel));
         mat4.scale(m, m, metersToPixel);
         this.mercatorFogMatrix = m;
 
         // matrix for conversion from tile coordinates to relative camera position in units of fractions of the map height
-        const windowScaleFactor = 1.0 / this.height;
         this.cameraMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
 
         // inverse matrix for conversion from screen coordinates to location
