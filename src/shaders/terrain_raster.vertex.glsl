@@ -7,7 +7,8 @@ attribute vec2 a_texture_pos;
 varying vec2 v_pos0;
 
 #ifdef FOG
-varying vec3 v_fog_pos;
+varying float v_fog_opacity;
+varying float v_fog_pos_depth;
 #endif
 
 const float skirtOffset = 24575.0;
@@ -24,6 +25,10 @@ void main() {
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
 
 #ifdef FOG
-    v_fog_pos = fog_position(vec3(decodedPos, elevation));
+    vec3 fog_pos = fog_position(vec3(decodedPos, elevation));
+    float depth = fog_pos_depth(fog_pos);
+
+    v_fog_opacity = fog_opacity(depth);
+    v_fog_pos_depth = depth;
 #endif
 }

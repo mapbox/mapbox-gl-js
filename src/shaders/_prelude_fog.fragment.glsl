@@ -41,32 +41,32 @@ float fog_opacity(float t) {
     return u_fog_opacity * min(1.0, 1.00747 * falloff);
 }
 
-// This function is only used in rare places like heatmap where opacity is used
-// directly, outside the normal fog_apply method.
-float fog_opacity (vec3 pos) {
-    return fog_opacity((length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x));
+float fog_pos_depth(vec3 pos) {
+    // Map [near, far] to [0, 1]
+    return (length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x);
 }
 
-vec3 fog_apply(vec3 color, vec3 pos) {
-    // Map [near, far] to [0, 1]
-    float t = (length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x);
-
-    float haze_opac = fog_opacity(pos);
-    float fog_opac = haze_opac * pow(smoothstep(0.0, 1.0, t), u_fog_exponent);
+vec3 fog_apply(vec3 color, float opacity, float depth) {
+    float fog_opac = opacity * pow(smoothstep(0.0, 1.0, depth), u_fog_exponent);
 
 #ifdef FOG_HAZE
-    vec3 haze = (haze_opac * u_haze_energy) * u_haze_color_linear;
+    vec3 haze = (opacity * u_haze_energy) * u_haze_color_linear;
 
     // The smoothstep fades in tonemapping slightly before the fog layer. This causes
     // the principle that fog should not have an effect outside the fog layer, but the
     // effect is hardly noticeable except on pure white glaciers..
-    float tonemap_strength = u_fog_opacity * min(1.0, u_haze_energy) * smoothstep(-0.5, 0.25, t);
+    float tonemap_strength = u_fog_opacity * min(1.0, u_haze_energy) * smoothstep(-0.5, 0.25, depth);
     color = srgb_to_linear(color);
     color = mix(color, tonemap(color + haze), tonemap_strength);
     color = linear_to_srgb(color);
 #endif
 
     return mix(color, u_fog_color, fog_opac);
+}
+
+vec3 fog_apply(vec3 color, vec3 pos) {
+    float depth = fog_pos_depth(pos);
+    return fog_apply(color, fog_opacity(depth), depth);
 }
 
 // Assumes z up
