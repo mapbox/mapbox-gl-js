@@ -51,7 +51,7 @@ export function getFogOpacity(state: FogState, depth: number, pitch: number): nu
 }
 
 export function getOpacityAtTileCoord(state: FogState, x: number, y: number, z: number, tileId: UnwrappedTileID, transform: Transform): number {
-    const mat = transform.calculateCameraMatrix(tileId);
+    const mat = transform.calculateFogTileMatrix(tileId);
     const pos = [x, y, z];
     vec3.transformMat4(pos, pos, mat);
     const depth = vec3.length(pos);
