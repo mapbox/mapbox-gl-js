@@ -847,7 +847,7 @@ class Painter {
             const hazeColorLinear = [Math.pow(hazeColor.r, 2.2), Math.pow(hazeColor.g, 2.2), Math.pow(hazeColor.b, 2.2)];
             const uniforms = {};
 
-            uniforms['u_cam_matrix'] = tileID ? this.transform.calculateCameraMatrix(tileID) : this.identityMat;
+            uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
             uniforms['u_fog_range'] = fog.properties.get('range');
             uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
             uniforms['u_fog_exponent'] = Math.max(1e-3, 12 * Math.pow(1 - fog.properties.get('strength'), 2));
