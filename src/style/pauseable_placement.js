@@ -9,6 +9,7 @@ import type StyleLayer from './style_layer.js';
 import type SymbolStyleLayer from './style_layer/symbol_style_layer.js';
 import type Tile from '../source/tile.js';
 import type {BucketPart} from '../symbol/placement.js';
+import type {FogState} from './fog_helpers.js';
 
 class LayerPlacement {
     _sortAcrossTiles: boolean;
@@ -72,9 +73,10 @@ class PauseablePlacement {
                 showCollisionBoxes: boolean,
                 fadeDuration: number,
                 crossSourceCollisions: boolean,
-                prevPlacement?: Placement) {
+                prevPlacement?: Placement,
+                fogState: ?FogState) {
 
-        this.placement = new Placement(transform, fadeDuration, crossSourceCollisions, prevPlacement);
+        this.placement = new Placement(transform, fadeDuration, crossSourceCollisions, prevPlacement, fogState);
         this._currentPlacementIndex = order.length - 1;
         this._forceFullPlacement = forceFullPlacement;
         this._showCollisionBoxes = showCollisionBoxes;
