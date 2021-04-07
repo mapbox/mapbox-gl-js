@@ -1490,9 +1490,9 @@ class Transform {
         const cameraPos = this._camera.position;
 
         const windowScaleFactor = 1.0 / this.height;
-        m = mat4.create();
-        mat4.fromScaling(m, [windowScaleFactor, windowScaleFactor, windowScaleFactor]);
         const metersToPixel = [cameraWorldSize, cameraWorldSize, cameraPixelsPerMeter];
+        vec3.scale(metersToPixel, metersToPixel, windowScaleFactor);
+        m = mat4.create();
         mat4.translate(m, m, vec3.multiply(cameraPos, vec3.scale(cameraPos, cameraPos, -1), metersToPixel));
         mat4.scale(m, m, metersToPixel);
         this.mercatorFogMatrix = m;
