@@ -49,7 +49,7 @@ class Transform {
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
-    cameraMatrix: Float64Array;
+    worldToFogMatrix: Float64Array;
     skyboxMatrix: Float32Array;
     glCoordMatrix: Float32Array;
     labelPlaneMatrix: Float32Array;
@@ -72,7 +72,7 @@ class Transform {
     _constraining: boolean;
     _projMatrixCache: {[_: number]: Float32Array};
     _alignedProjMatrixCache: {[_: number]: Float32Array};
-    _cameraMatrixCache: {[_: number]: Float32Array};
+    _fogTileMatrixCache: {[_: number]: Float32Array};
     _camera: FreeCamera;
     _centerAltitude: number;
     _horizonShift: number;
@@ -101,7 +101,7 @@ class Transform {
         this._edgeInsets = new EdgeInsets();
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
-        this._cameraMatrixCache = {};
+        this._fogTileMatrixCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this.cameraElevationReference = "ground";
@@ -744,10 +744,10 @@ class Transform {
                 const min = [0, 0, 0, 1];
                 const max = [EXTENT, EXTENT, 0, 1];
 
-                const cameraMatrix = this.calculateCameraMatrix(entry.tileID.toUnwrapped());
+                const fogTileMatrix = this.calculateFogTileMatrix(entry.tileID.toUnwrapped());
 
-                vec4.transformMat4(min, min, cameraMatrix);
-                vec4.transformMat4(max, max, cameraMatrix);
+                vec4.transformMat4(min, min, fogTileMatrix);
+                vec4.transformMat4(max, max, fogTileMatrix);
 
                 let sqDist = 0;
                 for (let i = 0; i < 2; ++i) {
@@ -1158,24 +1158,26 @@ class Transform {
     }
 
     /**
-     * Calculate the cameraMatrix that, given a tile coordinate,
-     * can be used to calculate its position relative to the camera in pixel co-ordinates.
+     * Calculate the fogTileMatrix that, given a tile coordinate, can be used to
+     * calculate its position relative to the camera in units of pixels divided
+     * by the map height. Used with fog for consistent computation of distance
+     * from camera.
      *
      * @param {UnwrappedTileID} unwrappedTileID;
      * @private
      */
-    calculateCameraMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
-        const camMatrixKey = unwrappedTileID.key;
-        const cache = this._cameraMatrixCache;
-        if (cache[camMatrixKey]) {
-            return cache[camMatrixKey];
+    calculateFogTileMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+        const fogTileMatrixKey = unwrappedTileID.key;
+        const cache = this._fogTileMatrixCache;
+        if (cache[fogTileMatrixKey]) {
+            return cache[fogTileMatrixKey];
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
-        mat4.multiply(posMatrix, this.cameraMatrix, posMatrix);
+        mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
-        cache[camMatrixKey] = new Float32Array(posMatrix);
-        return cache[camMatrixKey];
+        cache[fogTileMatrixKey] = new Float32Array(posMatrix);
+        return cache[fogTileMatrixKey];
     }
 
     /**
@@ -1497,8 +1499,10 @@ class Transform {
         mat4.scale(m, m, metersToPixel);
         this.mercatorFogMatrix = m;
 
-        // matrix for conversion from tile coordinates to relative camera position in units of fractions of the map height
-        this.cameraMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
+        // matrix for conversion from world coordinates to relative camera position in units
+        // of fractions of the map height. Later composed with tile position to construct the
+        // fog tile matrix.
+        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
 
         // inverse matrix for conversion from screen coordinates to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
@@ -1507,7 +1511,7 @@ class Transform {
 
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
-        this._cameraMatrixCache = {};
+        this._fogTileMatrixCache = {};
     }
 
     _updateCameraState() {
