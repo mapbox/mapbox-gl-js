@@ -197,7 +197,7 @@ export type LineLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "line-cap"?: PropertyValueSpecification<"butt" | "round" | "square">,
+        "line-cap"?: DataDrivenPropertyValueSpecification<"butt" | "round" | "square">,
         "line-join"?: DataDrivenPropertyValueSpecification<"bevel" | "round" | "miter">,
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,

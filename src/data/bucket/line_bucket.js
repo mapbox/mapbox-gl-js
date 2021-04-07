@@ -169,6 +169,8 @@ class LineBucket implements Bucket {
             });
         }
 
+        const hasDataDrivenDashes = this.hasDataDrivenDashes();
+
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
 
@@ -177,6 +179,11 @@ class LineBucket implements Bucket {
                 // pattern features are added only once the pattern is loaded into the image atlas
                 // so are stored during populate until later updated with positions by tile worker in addFeatures
                 this.patternFeatures.push(patternBucketFeature);
+
+            } else if (hasDataDrivenDashes) {
+                this.addFeatureDashes(bucketFeature, options);
+                this.addFeature(bucketFeature, geometry, index, canonical, options.lineAtlas.positions);
+
             } else {
                 this.addFeature(bucketFeature, geometry, index, canonical, {});
             }
@@ -184,6 +191,58 @@ class LineBucket implements Bucket {
             const feature = features[index].feature;
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
+    }
+
+    addFeatureDashes(feature: BucketFeature, {lineAtlas}: PopulateParameters) {
+
+        const zoom = this.zoom;
+
+        for (const layer of this.layers) {
+            const dashPropertyValue = layer.paint.get('line-dasharray').value;
+            const capPropertyValue = layer.layout.get('line-cap').value;
+
+            if (dashPropertyValue.kind !== 'constant' || capPropertyValue.kind !== 'constant') {
+                const minDashArray = dashPropertyValue.evaluate({zoom: zoom - 1}, feature);
+                const midDashArray = dashPropertyValue.evaluate({zoom}, feature);
+                const maxDashArray = dashPropertyValue.evaluate({zoom: zoom + 1}, feature);
+
+                let minRound, midRound, maxRound;
+                if (capPropertyValue.kind === 'constant') {
+                    minRound = midRound = maxRound = capPropertyValue.value === 'round';
+                } else {
+                    minRound = capPropertyValue.evaluate({zoom: zoom - 1}, feature) === 'round';
+                    midRound = capPropertyValue.evaluate({zoom}, feature) === 'round';
+                    maxRound = capPropertyValue.evaluate({zoom: zoom + 1}, feature) === 'round';
+                }
+
+                // add to line atlas
+                lineAtlas.getDash(minDashArray, minRound);
+                lineAtlas.getDash(midDashArray, midRound);
+                lineAtlas.getDash(maxDashArray, maxRound);
+
+                const min = lineAtlas.getKey(minDashArray, minRound);
+                const mid = lineAtlas.getKey(midDashArray, midRound);
+                const max = lineAtlas.getKey(maxDashArray, maxRound);
+
+                // save positions for paint array
+                feature.patterns[layer.id] = {min, mid, max};
+            }
+        }
+
+    }
+
+    hasDataDrivenDashes() {
+        for (const layer of this.layers) {
+            const dashProperty = layer.paint.get('line-dasharray');
+            const capProperty = layer.layout.get('line-cap');
+            if (!dashProperty || typeof (dashProperty.isConstant) !== 'function') continue; // temporary
+
+            if (!dashProperty.isConstant() || !capProperty.isConstant()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}) {
@@ -236,7 +295,7 @@ class LineBucket implements Bucket {
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
         const layout = this.layers[0].layout;
         const join = layout.get('line-join').evaluate(feature, {});
-        const cap = layout.get('line-cap');
+        const cap = layout.get('line-cap').evaluate(feature, {});
         const miterLimit = layout.get('line-miter-limit');
         const roundLimit = layout.get('line-round-limit');
         this.lineClips = this.lineFeatureClips(feature);

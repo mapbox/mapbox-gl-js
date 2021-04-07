@@ -11,6 +11,7 @@ import FillBucket from '../data/bucket/fill_bucket.js';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
 import {warnOnce, mapObject, values} from '../util/util.js';
 import assert from 'assert';
+import LineAtlas from '../render/line_atlas.js';
 import ImageAtlas from '../render/image_atlas.js';
 import GlyphAtlas from '../render/glyph_atlas.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
@@ -83,11 +84,14 @@ class WorkerTile {
 
         const buckets: {[_: string]: Bucket} = {};
 
+        const lineAtlas = new LineAtlas(256, 256);
+
         const options = {
             featureIndex,
             iconDependencies: {},
             patternDependencies: {},
             glyphDependencies: {},
+            lineAtlas,
             availableImages
         };
 

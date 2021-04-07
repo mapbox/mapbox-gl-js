@@ -664,6 +664,7 @@ function paintAttributeNames(property, type) {
         'line-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
         'fill-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
         'fill-extrusion-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
+        'line-dasharray': ['pattern_to', 'pattern_from']
     };
 
     return attributeNameExceptions[property] || [property.replace(`${type}-`, '').replace(/-/g, '_')];
@@ -671,7 +672,7 @@ function paintAttributeNames(property, type) {
 
 function getLayoutException(property) {
     const propertyExceptions = {
-        'line-pattern':{
+        'line-pattern': {
             'source': PatternLayoutArray,
             'composite': PatternLayoutArray
         },
@@ -680,6 +681,10 @@ function getLayoutException(property) {
             'composite': PatternLayoutArray
         },
         'fill-extrusion-pattern':{
+            'source': PatternLayoutArray,
+            'composite': PatternLayoutArray
+        },
+        'line-dasharray': { // temporary layout
             'source': PatternLayoutArray,
             'composite': PatternLayoutArray
         }

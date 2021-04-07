@@ -889,10 +889,11 @@
       "expression": {
         "interpolated": false,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature"
         ]
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "line-join": {
       "type": "enum",
@@ -4528,10 +4529,11 @@
       "expression": {
         "interpolated": false,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature"
         ]
       },
-      "property-type": "cross-faded"
+      "property-type": "cross-faded-data-driven"
     },
     "line-pattern": {
       "type": "resolvedImage",

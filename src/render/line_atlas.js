@@ -19,7 +19,7 @@ class LineAtlas {
     nextRow: number;
     bytes: number;
     data: Uint8Array;
-    dashEntry: {[_: string]: any};
+    dashes: {[_: string]: any};
     dirty: boolean;
     texture: WebGLTexture;
 
@@ -30,7 +30,8 @@ class LineAtlas {
 
         this.data = new Uint8Array(this.width * this.height);
 
-        this.dashEntry = {};
+        this.dashes = {};
+        this.positions = {};
     }
 
     /**
@@ -42,12 +43,22 @@ class LineAtlas {
      * @private
      */
     getDash(dasharray: Array<number>, round: boolean) {
-        const key = dasharray.join(",") + String(round);
+        const key = this.getKey(dasharray, round);
 
-        if (!this.dashEntry[key]) {
-            this.dashEntry[key] = this.addDash(dasharray, round);
+        if (!this.dashes[key]) {
+            const dash = this.dashes[key] = this.addDash(dasharray, round);
+
+            this.positions[key] = {
+                tl: [dash.y, dash.y + dash.height],
+                br: [dash.width, 0],
+                pixelRatio: 1
+            };
         }
-        return this.dashEntry[key];
+        return this.dashes[key];
+    }
+
+    getKey(dasharray, round) {
+        return dasharray.join(',') + String(round);
     }
 
     getDashRanges(dasharray: Array<number>, lineAtlasWidth: number, stretch: number) {

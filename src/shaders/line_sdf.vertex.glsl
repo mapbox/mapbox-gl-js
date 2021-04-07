@@ -13,17 +13,17 @@ attribute float a_linesofar;
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
 uniform lowp float u_device_pixel_ratio;
-uniform vec2 u_patternscale_a;
-uniform float u_tex_y_a;
-uniform vec2 u_patternscale_b;
-uniform float u_tex_y_b;
 uniform vec2 u_units_to_pixels;
+
+uniform mediump vec3 u_scale;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
+varying float v_linesofar;
 varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying float v_gamma_scale;
+varying float v_width;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float blur
@@ -32,6 +32,8 @@ varying float v_gamma_scale;
 #pragma mapbox: define lowp float offset
 #pragma mapbox: define mediump float width
 #pragma mapbox: define lowp float floorwidth
+#pragma mapbox: define lowp vec4 pattern_from
+#pragma mapbox: define lowp vec4 pattern_to
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -41,6 +43,8 @@ void main() {
     #pragma mapbox: initialize lowp float offset
     #pragma mapbox: initialize mediump float width
     #pragma mapbox: initialize lowp float floorwidth
+    #pragma mapbox: initialize mediump vec4 pattern_from
+    #pragma mapbox: initialize mediump vec4 pattern_to
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
@@ -91,8 +95,19 @@ void main() {
     v_gamma_scale = 1.0;
 #endif
 
-    v_tex_a = vec2(a_linesofar * u_patternscale_a.x / floorwidth, normal.y * u_patternscale_a.y + u_tex_y_a);
-    v_tex_b = vec2(a_linesofar * u_patternscale_b.x / floorwidth, normal.y * u_patternscale_b.y + u_tex_y_b);
+    float tileZoomRatio = u_scale.x;
+    float fromScale = u_scale.y;
+    float toScale = u_scale.z;
 
+    float widthA = pattern_from.z * fromScale; // temp layout
+    float widthB = pattern_to.z * toScale;
+    float heightA = pattern_from.y - pattern_from.x;
+    float heightB = pattern_to.y - pattern_to.x;
+
+    v_tex_a = vec2(a_linesofar * (tileZoomRatio / widthA) / floorwidth, -normal.y * heightA / 2.0 + pattern_from.x);
+    v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, -normal.y * heightB / 2.0 + pattern_to.x);
+
+    v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
+    v_width = floorwidth;
 }
