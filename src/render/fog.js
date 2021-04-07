@@ -6,7 +6,7 @@ import type {UniformLocations} from './uniform_binding.js';
 import {Uniform1f, Uniform2f, Uniform3f, UniformMatrix4f} from './uniform_binding.js';
 
 export type FogUniformsType = {|
-    'u_cam_matrix': UniformMatrix4f,
+    'u_fog_matrix': UniformMatrix4f,
     'u_fog_range': Uniform2f,
     'u_fog_color': Uniform3f,
     'u_fog_exponent': Uniform1f,
@@ -18,7 +18,7 @@ export type FogUniformsType = {|
 |};
 
 export const fogUniforms = (context: Context, locations: UniformLocations): FogUniformsType => ({
-    'u_cam_matrix': new UniformMatrix4f(context, locations.u_cam_matrix),
+    'u_fog_matrix': new UniformMatrix4f(context, locations.u_fog_matrix),
     'u_fog_range': new Uniform2f(context, locations.u_fog_range),
     'u_fog_color': new Uniform3f(context, locations.u_fog_color),
     'u_fog_exponent': new Uniform1f(context, locations.u_fog_exponent),
