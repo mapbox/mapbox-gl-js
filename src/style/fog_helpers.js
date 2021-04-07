@@ -16,7 +16,7 @@ export type FogState = {
 };
 
 // As defined in _prelude_fog.fragment.glsl#fog_opacity
-export function getFogOpacity(state: FogState, depthPx: number, pitch: number): number {
+export function getFogOpacity(state: FogState, depth: number, pitch: number): number {
     const fogOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
     const [start, end] = state.range;
     const fogStrength = state.strength;
@@ -32,7 +32,7 @@ export function getFogOpacity(state: FogState, depthPx: number, pitch: number): 
     // https://www.desmos.com/calculator/3taufutxid
     // The output of this function should match src/shaders/_prelude_fog.fragment.glsl
     const decay = 6;
-    const t = (depthPx - start) / (end - start);
+    const t = (depth - start) / (end - start);
     let falloff = 1.0 - Math.min(1, Math.exp(-decay * t));
 
     // Cube without pow()
