@@ -3765,7 +3765,7 @@
     "haze-energy": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1.0,
+      "default": 0.0,
       "minimum": 0.0,
       "expression": {
         "interpolated": true,
