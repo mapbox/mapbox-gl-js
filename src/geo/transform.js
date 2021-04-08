@@ -770,13 +770,10 @@ class Transform {
                     const farX = cornerFar[0] * EXTENT;
                     const farY = cornerFar[1] * EXTENT;
 
-                    const worldFar = [farX, farY, minmax.max, 1];
+                    const worldFar = [farX, farY, minmax.max];
 
-                    // World to Clip
-                    vec4.transformMat4(worldFar, worldFar, projMatrix);
-
-                    // Clip to NDC
-                    vec3.scale(worldFar, worldFar, 1.0 / worldFar[3]);
+                    // World to NDC
+                    vec3.transformMat4(worldFar, worldFar, projMatrix);
 
                     // NDC to Screen
                     const screenCoordY = (1 - worldFar[1]) * this.height * 0.5;
