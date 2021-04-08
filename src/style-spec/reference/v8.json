@@ -3755,7 +3755,7 @@
         ]
       },
       "transition": true,
-      "doc": "The fog strength controls the strength of the fog effect. Reducing the fog strength will have the effect of pushing the fog further at the distance, leaving more visible space for haze if enabled.",
+      "doc": "Controls the strength of the fog effect. Reducing the fog strength pushes the fog farther toward the horizon, leaving more visible space for haze, if enabled. When haze energy is zero, this will usually be 1.0.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
