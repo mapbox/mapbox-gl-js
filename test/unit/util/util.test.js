@@ -2,7 +2,7 @@
 
 import {test} from '../../util/test.js';
 
-import {degToRad, radToDeg, easeCubicInOut, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util.js';
+import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util.js';
 import Point from '@mapbox/point-geometry';
 
 const EPSILON = 1e-8;
@@ -49,6 +49,16 @@ test('util', (t) => {
     t.deepEqual(furthestTileCorner(275), [0, 0]);
     t.deepEqual(furthestTileCorner(360), [1, 0]);
     t.deepEqual(furthestTileCorner(390), [1, 0]);
+
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [1, 1]), 2);
+    t.deepEqual(getAABBPointSquareDist([0, 0], [3, 2], [1, 1]), 0);
+    t.deepEqual(getAABBPointSquareDist([-3, -2], [-2, -1], [1, 1]), 13);
+    t.deepEqual(getAABBPointSquareDist([-3, -2], [-2, -1], [-1, -1]), 1);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3]), 8);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [10, 3]), 8);
+    t.deepEqual(getAABBPointSquareDist([-2, -2], [2, 2]), 0);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [2.5, 0]), 4);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [2.5, -2]), 16);
 
     t.test('bindAll', (t) => {
         function MyClass() {
