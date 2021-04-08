@@ -841,8 +841,6 @@ class Painter {
 
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
         const fog = this.style && this.style.fog;
-        const haze = fog && fog.properties && fog.properties.get('haze-energy') > 0;
-        const terrain = this.terrain && !this.terrain.renderingToTexture;
         const fogOpacity = (fog && fog.getFogPitchFactor(this.transform.pitch)) || 0.0;
         if (fog && fogOpacity !== 0.0) {
             const temporalOffset = (this.frameCounter / 1000.0) % 1;
@@ -857,7 +855,7 @@ class Painter {
             uniforms['u_fog_temporal_offset'] = temporalOffset;
             uniforms['u_fog_opacity'] = fogOpacity;
 
-            if (haze) {
+            if (fog.properties.get('haze-energy') > 0) {
                 const hazeColor = fog.properties.get('haze-color');
                 const hazeColorLinear = [
                     Math.pow(hazeColor.r, 2.2),
