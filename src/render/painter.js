@@ -851,10 +851,11 @@ class Painter {
 
             uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
             uniforms['u_fog_range'] = fog.properties.get('range');
-            uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b, fogOpacity];
+            uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
             uniforms['u_fog_exponent'] = Math.max(1e-3, 12 * Math.pow(1 - fog.properties.get('strength'), 2));
             uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
             uniforms['u_fog_temporal_offset'] = temporalOffset;
+            uniforms['u_fog_opacity'] = fogOpacity;
 
             if (haze) {
                 const hazeColor = fog.properties.get('haze-color');
@@ -866,14 +867,6 @@ class Painter {
                 ];
 
                 uniforms['u_haze_color_linear'] = hazeColorLinear;
-            }
-
-            if (terrain) {
-                // Vertex shader fog uniforms
-                uniforms['u_vert_fog_range'] = uniforms['u_fog_range'];
-                uniforms['u_vert_fog_exponent'] = uniforms['u_fog_exponent'];
-                uniforms['u_vert_fog_opacity'] = fogOpacity;
-                if (haze) uniforms['u_vert_haze_color_linear'] = uniforms['u_haze_color_linear'];
             }
 
             program.setFogUniformValues(context, uniforms);
