@@ -2,13 +2,14 @@ uniform sampler2D u_image0;
 varying vec2 v_pos0;
 
 #ifdef FOG
-varying vec3 v_fog_pos;
+varying float v_fog_opacity;
+varying vec4 v_haze_color;
 #endif
 
 void main() {
     vec4 color = texture2D(u_image0, v_pos0);
 #ifdef FOG
-    color.rgb = fog_dither(fog_apply(color.rgb, v_fog_pos));
+    color.rgb = fog_dither(fog_apply(color.rgb, v_fog_opacity, v_haze_color));
 #endif
     gl_FragColor = color;
 #ifdef TERRAIN_WIREFRAME
