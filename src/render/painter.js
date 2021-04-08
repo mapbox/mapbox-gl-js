@@ -752,13 +752,14 @@ class Painter {
         const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const fog = this.style && this.style.fog;
+        const fogOpacity = fog && fog.getFogPitchFactor(this.transform.pitch);
         const haze = fog && fog.properties && fog.properties.get('haze-energy') > 0;
 
         const defines = [];
         if (terrain) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && !rtt) {
+        if (fog && fogOpacity !== 0.0 && !rtt) {
             defines.push('FOG');
             if (haze) defines.push('FOG_HAZE');
         }
@@ -840,22 +841,31 @@ class Painter {
 
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
         const fog = this.style && this.style.fog;
-        if (fog) {
+        const fogOpacity = (fog && fog.getFogPitchFactor(this.transform.pitch)) || 0.0;
+        if (fog && fogOpacity !== 0.0) {
             const temporalOffset = (this.frameCounter / 1000.0) % 1;
             const fogColor = fog.properties.get('color');
-            const hazeColor = fog.properties.get('haze-color');
-            const hazeColorLinear = [Math.pow(hazeColor.r, 2.2), Math.pow(hazeColor.g, 2.2), Math.pow(hazeColor.b, 2.2)];
             const uniforms = {};
 
             uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
             uniforms['u_fog_range'] = fog.properties.get('range');
             uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
             uniforms['u_fog_exponent'] = Math.max(1e-3, 12 * Math.pow(1 - fog.properties.get('strength'), 2));
-            uniforms['u_fog_opacity'] = fog.getFogPitchFactor(this.transform.pitch);
             uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
             uniforms['u_fog_temporal_offset'] = temporalOffset;
-            uniforms['u_haze_color_linear'] = hazeColorLinear;
-            uniforms['u_haze_energy'] = fog.properties.get('haze-energy');
+            uniforms['u_fog_opacity'] = fogOpacity;
+
+            if (fog.properties.get('haze-energy') > 0) {
+                const hazeColor = fog.properties.get('haze-color');
+                const hazeColorLinear = [
+                    Math.pow(hazeColor.r, 2.2),
+                    Math.pow(hazeColor.g, 2.2),
+                    Math.pow(hazeColor.b, 2.2),
+                    fog.properties.get('haze-energy')
+                ];
+
+                uniforms['u_haze_color_linear'] = hazeColorLinear;
+            }
 
             program.setFogUniformValues(context, uniforms);
         }
