@@ -25,7 +25,12 @@ vec3 fog_position(vec2 pos) {
     return fog_position(vec3(pos, 0));
 }
 
-void fog_haze(vec3 pos, out float fog_opac, out vec4 haze) {
+void fog_haze(
+    vec3 pos, out float fog_opac
+#ifdef FOG_HAZE
+    , out vec4 haze
+#endif
+) {
     // Map [near, far] to [0, 1]
     float t = (length(pos) - u_vert_fog_range.x) / (u_vert_fog_range.y - u_vert_fog_range.x);
 
