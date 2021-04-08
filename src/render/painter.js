@@ -752,13 +752,14 @@ class Painter {
         const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const fog = this.style && this.style.fog;
+        const fogOpacity = fog && fog.getFogPitchFactor(this.transform.pitch);
         const haze = fog && fog.properties && fog.properties.get('haze-energy') > 0;
 
         const defines = [];
         if (terrain) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && !rtt) {
+        if (fog && fogOpacity !== 0.0 && !rtt) {
             defines.push('FOG');
             if (haze) defines.push('FOG_HAZE');
         }
@@ -842,10 +843,10 @@ class Painter {
         const fog = this.style && this.style.fog;
         const haze = fog && fog.properties && fog.properties.get('haze-energy') > 0;
         const terrain = this.terrain && !this.terrain.renderingToTexture;
-        if (fog) {
+        const fogOpacity = (fog && fog.getFogPitchFactor(this.transform.pitch)) || 0.0;
+        if (fog && fogOpacity !== 0.0) {
             const temporalOffset = (this.frameCounter / 1000.0) % 1;
             const fogColor = fog.properties.get('color');
-            const fogOpacity = fog.getFogPitchFactor(this.transform.pitch);
             const uniforms = {};
 
             uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
