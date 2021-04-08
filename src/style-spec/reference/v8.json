@@ -63,7 +63,7 @@
     },
     "fog": {
       "type": "fog",
-      "doc": ""
+      "doc": "A global effect that fades layers and markers based on their distance to the camera. The fog can be used to approximate the effect of atmosphere on distant objects and enhance the depth perception of the map when used with terrain or 3D features."
     },
     "sources": {
       "required": true,
@@ -3681,8 +3681,8 @@
     "range": {
       "type": "array",
       "default": [
-        5,
-        10
+        2,
+        12
       ],
       "minimum": 0,
       "maximum": 20,
@@ -3696,17 +3696,14 @@
           "zoom"
         ]
       },
-      "doc": "",
+      "doc": "The near and far limits of the fog layer. Units are relative to the map height, so that 2.0 corresponds to twice the map height, in pixels.",
       "example": [
-        5,
-        10
+        2,
+        12
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "2.3.0"
         }
       }
     },
@@ -3721,13 +3718,10 @@
         ]
       },
       "transition": true,
-      "doc": "",
+      "doc": "The color of the fog. If provided as an `rgba` color, the alpha component is unused.",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "2.3.0"
         }
       }
     },
@@ -3742,13 +3736,10 @@
         ]
       },
       "transition": true,
-      "doc": "",
+      "doc": "The color of the haze component of the fog, used only when haze energy is nonzero. If provided as an `rgba` color, the alpha component is unused.",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "2.3.0"
         }
       }
     },
@@ -3764,20 +3755,17 @@
         ]
       },
       "transition": true,
-      "doc": "",
+      "doc": "Controls the strength of the fog effect. Reducing the fog strength pushes the fog farther toward the horizon, leaving more visible space for haze, if enabled. When haze energy is zero, this will usually be 1.0.",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "2.3.0"
         }
       }
     },
     "haze-energy": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1.0,
+      "default": 0.0,
       "minimum": 0.0,
       "expression": {
         "interpolated": true,
@@ -3786,20 +3774,17 @@
         ]
       },
       "transition": true,
-      "doc": "",
+      "doc": "Controls the strength of haze in the fog layer. Haze is an additive effect which approximates the look of an atmosphere. Increasing this strengthens the haze. Reducing the fog strength pushes fog toward the horizon, making haze visible.",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "2.3.0"
         }
       }
     },
     "sky-blend": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.1,
       "minimum": 0,
       "maximum": 1,
       "expression": {
@@ -3809,13 +3794,10 @@
         ]
       },
       "transition": true,
-      "doc": "",
+      "doc": "The sky blend allows to blend the effect of the fog above the horizon line. A value of 1 will entirely blend the fog onto the sky, while a value of 0 will leave the sky unaffected by fog.",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "2.3.0"
         }
       }
     }
