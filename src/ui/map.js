@@ -2208,7 +2208,7 @@ class Map extends Camera {
      * Returns the fog opacity for a given geolocation.
      *
      * An opacity of 0 means that there is no fog contribution for the given geolocation
-     * while a fog opacity of 1.means the geolocation is fully obscured by the fog effect.
+     * while a fog opacity of 1.0 means the geolocation is fully obscured by the fog effect.
      *
      * If there is no fog set on the map, this function will simply return 0.
      *
