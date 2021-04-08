@@ -3798,6 +3798,7 @@
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
+        }
       }
     }
   },
