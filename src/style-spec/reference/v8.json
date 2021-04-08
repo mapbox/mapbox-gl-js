@@ -3774,7 +3774,7 @@
         ]
       },
       "transition": true,
-      "doc": "The haze energy controls how much of the haze effect is visible on fog, it is an additive effect and can be used to approximate the atmosphere contribution. Reducing this value removes the effect of haze on the fog, while increasing it adds more of it.",
+      "doc": "Controls the strength of haze in the fog layer. Haze is an additive effect which approximates the look of an atmosphere. Increasing this strengthens the haze. Reducing the fog strength pushes fog toward the horizon, making haze visible.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
