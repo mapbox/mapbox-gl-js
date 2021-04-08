@@ -3718,7 +3718,7 @@
         ]
       },
       "transition": true,
-      "doc": "The color given to the fog. If provided as an `rgba` color, the alpha component of that color will be left unused.",
+      "doc": "The color of the fog. If provided as an `rgba` color, the alpha component is unused.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
