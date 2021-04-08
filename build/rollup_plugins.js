@@ -8,6 +8,7 @@ import {terser} from 'rollup-plugin-terser';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 import {createFilter} from '@rollup/pluginutils';
 import strip from '@rollup/plugin-strip';
+import buble from '@rollup/plugin-buble';
 import replace from '@rollup/plugin-replace';
 
 // Common set of plugins/transformations shared across different rollup
@@ -27,6 +28,7 @@ export const plugins = (minified, production, test, bench) => [
         'process.env.UPDATE': JSON.stringify(process.env.UPDATE)
     }) : false,
     glsl('./src/shaders/*.glsl', production),
+    buble({transforms: {dangerousForOf: true, asyncAwait: !test}, objectAssign: "Object.assign"}),
     minified ? terser({
         compress: {
             pure_getters: true,
