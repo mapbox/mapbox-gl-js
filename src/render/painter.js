@@ -840,18 +840,12 @@ class Painter {
 
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
         const fog = this.style && this.style.fog;
+        const haze = fog && fog.properties && fog.properties.get('haze-energy') > 0;
         const terrain = this.terrain && !this.terrain.renderingToTexture;
         if (fog) {
             const temporalOffset = (this.frameCounter / 1000.0) % 1;
             const fogColor = fog.properties.get('color');
-            const hazeColor = fog.properties.get('haze-color');
             const fogOpacity = fog.getFogPitchFactor(this.transform.pitch);
-            const hazeColorLinear = [
-                Math.pow(hazeColor.r, 2.2),
-                Math.pow(hazeColor.g, 2.2),
-                Math.pow(hazeColor.b, 2.2),
-                fog.properties.get('haze-energy')
-            ];
             const uniforms = {};
 
             uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
@@ -860,14 +854,25 @@ class Painter {
             uniforms['u_fog_exponent'] = Math.max(1e-3, 12 * Math.pow(1 - fog.properties.get('strength'), 2));
             uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
             uniforms['u_fog_temporal_offset'] = temporalOffset;
-            uniforms['u_haze_color_linear'] = hazeColorLinear;
+
+            if (haze) {
+                const hazeColor = fog.properties.get('haze-color');
+                const hazeColorLinear = [
+                    Math.pow(hazeColor.r, 2.2),
+                    Math.pow(hazeColor.g, 2.2),
+                    Math.pow(hazeColor.b, 2.2),
+                    fog.properties.get('haze-energy')
+                ];
+
+                uniforms['u_haze_color_linear'] = hazeColorLinear;
+            }
 
             if (terrain) {
                 // Vertex shader fog uniforms
                 uniforms['u_vert_fog_range'] = uniforms['u_fog_range'];
                 uniforms['u_vert_fog_exponent'] = uniforms['u_fog_exponent'];
                 uniforms['u_vert_fog_opacity'] = fogOpacity;
-                uniforms['u_vert_haze_color_linear'] = uniforms['u_haze_color_linear'];
+                if (haze) uniforms['u_vert_haze_color_linear'] = uniforms['u_haze_color_linear'];
             }
 
             program.setFogUniformValues(context, uniforms);
