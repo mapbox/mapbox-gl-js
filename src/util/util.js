@@ -522,7 +522,7 @@ export function isClosedPolygon(points: Array<Point>): boolean {
 
 /* global self, WorkerGlobalScope */
 /**
- *  Retuns true if the when run in the web-worker context.
+ *  Returns true if run in the web-worker context.
  *
  * @private
  * @returns {boolean}
