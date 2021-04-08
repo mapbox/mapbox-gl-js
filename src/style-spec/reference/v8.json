@@ -3736,7 +3736,7 @@
         ]
       },
       "transition": true,
-      "doc": "The color given to the haze component of the fog when it is enabled with a high enough haze energy. If provided as an `rgba` color, the alpha component of that color will be left unused.",
+      "doc": "The color of the haze component of the fog, used only when haze energy is nonzero. If provided as an `rgba` color, the alpha component is unused.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
