@@ -2174,17 +2174,47 @@ class Map extends Camera {
         return this.style ? this.style.getTerrain() : null;
     }
 
+    /**
+     * Sets the fog property of the style.
+     * @param fog The fog properties to set. Must conform the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#fog).
+     * If `null` or `undefined` is provided, this function call removes the fog from the map.
+     * @returns {Map} `this`
+     * @example
+     * map.setFog({
+     *  "range": [1.0, 12.0],
+     *  "color": 'white',
+     *  "haze-color": 'rgba(109, 123, 180, 1.0)',
+     *  "strength": 1.0,
+     *  "haze-energy": 1.0,
+     *  "sky-blend": 0.1
+     * });
+     */
     setFog(fog: FogSpecification) {
         this._lazyInitEmptyStyle();
         this.style.setFog(fog);
         return this._update(true);
     }
 
-    // NOTE: Make fog non-optional
+    /**
+     * Returns the fog specification or `null` if fog is not set on the map.
+     *
+     * @returns {Object} fog Fog specification properties of the style.
+     */
     getFog(): Fog | null {
         return this.style ? this.style.getFog() : null;
     }
 
+    /**
+     * Returns the fog opacity for a given geolocation.
+     *
+     * An opacity of 0 means that there is no fog contribution for the given geolocation
+     * while a fog opacity of 1.means the geolocation is fully obscured by the fog effect.
+     *
+     * If there is no fog set on the map, this function will simply return 0.
+     *
+     * @param {LngLatLike} lnglat The geographical location to evaluate the fog on.
+     * @returns {number} A value between 0 and 1 representing the fog opacity, where 1 means fully within, and 0 means not affected by the fog effect.
+     */
     getFogOpacity(lnglat: LngLatLike): number {
         if (!this.style || !this.style.fog) return 0.0;
         return this.style.fog.getOpacityAtLatLng(LngLat.convert(lnglat), this.transform);
