@@ -4,7 +4,7 @@ import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, radToDeg, degToRad, furthestTileCorner} from '../util/util.js';
+import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
@@ -749,11 +749,7 @@ class Transform {
                 vec4.transformMat4(min, min, fogTileMatrix);
                 vec4.transformMat4(max, max, fogTileMatrix);
 
-                let sqDist = 0;
-                for (let i = 0; i < 2; ++i) {
-                    if (min[i] > 0) sqDist += (min[i] * min[i]);
-                    if (max[i] < 0) sqDist += (max[i] * max[i]);
-                }
+                const sqDist = getAABBPointSquareDist(min, max);
 
                 if (sqDist === 0) { return true; }
 
