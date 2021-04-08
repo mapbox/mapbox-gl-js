@@ -3696,7 +3696,7 @@
           "zoom"
         ]
       },
-      "doc": "",
+      "doc": "The near and far limits of the fog layer. Units are relative to the map height, so that 2.0 corresponds to twice the map height, in pixels.",
       "example": [
         2,
         12
