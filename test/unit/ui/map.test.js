@@ -347,6 +347,52 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('updating fog triggers style diffing using setFog operation', (t) => {
+            t.test('removing fog', (t) => {
+                const style = createStyle();
+                style['fog'] = {
+                    "range": [2, 5],
+                    "color": "white"
+                };
+                const map = createMap(t, {style});
+                const initStyleObj = map.style;
+                t.spy(initStyleObj, 'setFog');
+                t.spy(initStyleObj, 'setState');
+                map.on('style.load', () => {
+                    map.setStyle(createStyle());
+                    t.equal(initStyleObj, map.style);
+                    t.equal(initStyleObj.setState.callCount, 1);
+                    t.equal(initStyleObj.setFog.callCount, 1);
+                    t.ok(map.style.fog == null);
+                    t.end();
+                });
+            });
+
+            t.test('adding fog', (t) => {
+                const style = createStyle();
+                const map = createMap(t, {style});
+                const initStyleObj = map.style;
+                t.spy(initStyleObj, 'setFog');
+                t.spy(initStyleObj, 'setState');
+                map.on('style.load', () => {
+                    const styleWithFog = JSON.parse(JSON.stringify(style));
+
+                    styleWithFog['fog'] = {
+                        "range": [2, 5],
+                        "color": "white"
+                    };
+                    map.setStyle(styleWithFog);
+                    t.equal(initStyleObj, map.style);
+                    t.equal(initStyleObj.setState.callCount, 1);
+                    t.equal(initStyleObj.setFog.callCount, 1);
+                    t.ok(map.style.fog);
+                    t.end();
+                });
+            });
+
+            t.end();
+        });
+
         t.end();
     });
 
@@ -436,6 +482,40 @@ test('Map', (t) => {
                 t.deepEqual(map.getStyle(), extend(createStyle(), {
                     terrain, 'sources': map.getStyle().sources
                 }));
+                t.end();
+            });
+        });
+
+        t.test('returns the style with added fog', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+
+            map.on('load', () => {
+                const fog = {
+                    "range": [2, 5],
+                    "color": "blue"
+                };
+                map.setFog(fog);
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                    fog
+                }));
+                t.ok(map.getFog());
+                t.end();
+            });
+        });
+
+        t.test('returns the style with removed fog', (t) => {
+            const style = createStyle();
+            style['fog'] = {
+                "range": [2, 5],
+                "color": "white"
+            };
+            const map = createMap(t, {style});
+
+            map.on('load', () => {
+                map.setFog(null);
+                t.deepEqual(map.getStyle(), createStyle());
+                t.equal(map.getFog(), null);
                 t.end();
             });
         });
