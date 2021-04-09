@@ -215,6 +215,9 @@ class Tile {
         if (data.glyphAtlasImage) {
             this.glyphAtlasImage = data.glyphAtlasImage;
         }
+        if (data.lineAtlasImage) {
+            this.lineAtlasImage = data.lineAtlasImage;
+        }
     }
 
     /**
@@ -274,6 +277,11 @@ class Tile {
         if (this.glyphAtlasImage) {
             this.glyphAtlasTexture = new Texture(context, this.glyphAtlasImage, gl.ALPHA);
             this.glyphAtlasImage = null;
+        }
+
+        if (this.lineAtlasImage) {
+            this.lineAtlasTexture = new Texture(context, this.lineAtlasImage, gl.ALPHA);
+            this.lineAtlasImage = null;
         }
     }
 

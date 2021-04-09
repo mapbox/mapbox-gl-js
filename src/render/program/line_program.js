@@ -16,7 +16,6 @@ import type Context from '../../gl/context.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type Transform from '../../geo/transform.js';
 import type Tile from '../../source/tile.js';
-import type {CrossFaded} from '../../style/properties.js';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer.js';
 import type Painter from '../painter.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
@@ -158,7 +157,6 @@ const lineSDFUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: LineStyleLayer,
-    dasharray: CrossFaded<Array<number>>,
     crossfade: CrossfadeParameters,
     matrix: ?Float32Array
 ): UniformValues<LineSDFUniformsType> => {

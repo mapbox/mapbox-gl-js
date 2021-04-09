@@ -243,6 +243,7 @@ class WorkerTile {
                     featureIndex,
                     collisionBoxArray: this.collisionBoxArray,
                     glyphAtlasImage: glyphAtlas.image,
+                    lineAtlasImage: lineAtlas.image,
                     imageAtlas,
                     // Only used for benchmarking:
                     glyphMap: this.returnDependencies ? glyphMap : null,

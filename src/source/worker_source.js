@@ -52,6 +52,7 @@ export type WorkerTileResult = {
     buckets: Array<Bucket>,
     imageAtlas: ImageAtlas,
     glyphAtlasImage: AlphaImage,
+    lineAtlasImage: AlphaImage,
     featureIndex: FeatureIndex,
     collisionBoxArray: CollisionBoxArray,
     rawTileData?: ArrayBuffer,

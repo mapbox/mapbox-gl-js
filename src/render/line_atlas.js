@@ -1,6 +1,7 @@
 // @flow
 
 import {warnOnce} from '../util/util.js';
+import {AlphaImage} from '../util/image.js';
 
 import type Context from '../gl/context.js';
 
@@ -19,6 +20,7 @@ class LineAtlas {
     nextRow: number;
     bytes: number;
     data: Uint8Array;
+    image: AlphaImage;
     dashes: {[_: string]: any};
     dirty: boolean;
     texture: WebGLTexture;
@@ -28,7 +30,8 @@ class LineAtlas {
         this.height = height;
         this.nextRow = 0;
 
-        this.data = new Uint8Array(this.width * this.height);
+        this.data = new Uint8Array(width * height);
+        this.image = new AlphaImage({width, height}, this.data);
 
         this.dashes = {};
         this.positions = {};

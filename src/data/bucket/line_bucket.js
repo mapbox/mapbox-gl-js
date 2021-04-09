@@ -207,8 +207,10 @@ class LineBucket implements Bucket {
                 const maxDashArray = dashPropertyValue.evaluate({zoom: zoom + 1}, feature);
 
                 let minRound, midRound, maxRound;
+
                 if (capPropertyValue.kind === 'constant') {
                     minRound = midRound = maxRound = capPropertyValue.value === 'round';
+
                 } else {
                     minRound = capPropertyValue.evaluate({zoom: zoom - 1}, feature) === 'round';
                     midRound = capPropertyValue.evaluate({zoom}, feature) === 'round';
