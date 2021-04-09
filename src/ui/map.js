@@ -2528,6 +2528,10 @@ class Map extends Camera {
         this.painter.setBaseState();
 
         this._renderTaskQueue.run(paintStartTimeStamp);
+        // The queue below may have tasks that need to be run but the queue won't always be ran: to
+        // avoid this, tasks need to be called directly instead of being added to the queue. See
+        // ui/popup.js or ui/marker.js for example. This won't be a performance issue as very few
+        // elements will be concerned by the rendering.
         this._domRenderTaskQueue.run(paintStartTimeStamp);
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
