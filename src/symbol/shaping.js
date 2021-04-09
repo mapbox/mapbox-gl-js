@@ -629,9 +629,9 @@ function shapeLines(shaping: Shaping,
                 baselineOffset = (lineMaxScale - section.scale) * ONE_EM;
             } else {
                 const imagePosition = imagePositions[section.imageName];
-                shaping.iconsInText = shaping.iconsInText || true;
                 if (!imagePosition) continue;
                 imageName = section.imageName;
+                shaping.iconsInText = shaping.iconsInText || true;
                 rect = imagePosition.paddedRect;
                 const size = imagePosition.displaySize;
                 // If needed, allow to set scale factor for an image using

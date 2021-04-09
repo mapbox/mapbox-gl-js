@@ -315,7 +315,9 @@ export function performSymbolLayout(bucket: SymbolBucket,
         }
 
         const shapedText = getDefaultHorizontalShaping(shapedTextOrientations.horizontal) || shapedTextOrientations.vertical;
-        bucket.iconsInText = shapedText ? shapedText.iconsInText : false;
+        if (!bucket.iconsInText) {
+            bucket.iconsInText = shapedText ? shapedText.iconsInText : false;
+        }
         if (shapedText || shapedIcon) {
             addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, canonical);
         }
