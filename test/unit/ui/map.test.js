@@ -1242,6 +1242,47 @@ test('Map', (t) => {
         });
     });
 
+    t.test('#getFogOpacity', (t) => {
+        const style = createStyle();
+        const map = createMap(t, {style});
+        map.on('load', () => {
+            map.setFog({
+                "range": [2, 12]
+            });
+
+            t.ok(map.getFog());
+
+            map.once('render', () => {
+                map.setZoom(10);
+                map.setCenter([0, 0]);
+
+                t.deepEqual(map.getFogOpacity([0, 0]), 0.0);
+
+                t.deepEqual(map.getFogOpacity([50, 0]), 0.0);
+                t.deepEqual(map.getFogOpacity([0, 50]), 0.0);
+                t.deepEqual(map.getFogOpacity([-50, 0]), 0.0);
+                t.deepEqual(map.getFogOpacity([-50, -50]), 0.0);
+
+                map.setBearing(90);
+                map.setPitch(70);
+
+                t.deepEqual(map.getFogOpacity([0, 0]), 0.0);
+
+                t.deepEqual(map.getFogOpacity([0.5, 0]), 0.5963390859543484);
+                t.deepEqual(map.getFogOpacity([0, 0.5]), 0.31817612773293763);
+                t.deepEqual(map.getFogOpacity([-0.5, 0]), 0.0021931905967484703);
+                t.deepEqual(map.getFogOpacity([-0.5, -0.5]), 0.4147318524978687);
+
+                t.deepEqual(map.getFogOpacity([2, 0]), 1.0);
+                t.deepEqual(map.getFogOpacity([0, 2]), 1.0);
+                t.deepEqual(map.getFogOpacity([-2, 0]), 1.0);
+                t.deepEqual(map.getFogOpacity([-2, -2]), 1.0);
+
+                t.end();
+            });
+        });
+    });
+
     t.test('#listImages throws an error if called before "load"', (t) => {
         const map = createMap(t);
         t.throws(() => {
