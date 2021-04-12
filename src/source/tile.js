@@ -242,6 +242,11 @@ class Tile {
         if (this.glyphAtlasTexture) {
             this.glyphAtlasTexture.destroy();
         }
+
+        if (this.lineAtlasTexture) {
+            this.lineAtlasTexture.destroy();
+        }
+
         Debug.run(() => {
             if (this.queryGeometryDebugViz) {
                 this.queryGeometryDebugViz.unload();

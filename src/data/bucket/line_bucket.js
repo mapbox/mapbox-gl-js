@@ -180,12 +180,11 @@ class LineBucket implements Bucket {
                 // so are stored during populate until later updated with positions by tile worker in addFeatures
                 this.patternFeatures.push(patternBucketFeature);
 
-            } else if (hasDataDrivenDashes) {
-                this.addFeatureDashes(bucketFeature, options);
-                this.addFeature(bucketFeature, geometry, index, canonical, options.lineAtlas.positions);
-
             } else {
-                this.addFeature(bucketFeature, geometry, index, canonical, {});
+                if (hasDataDrivenDashes) {
+                    this.addFeatureDashes(bucketFeature, options);
+                }
+                this.addFeature(bucketFeature, geometry, index, canonical, options.lineAtlas.dashes);
             }
 
             const feature = features[index].feature;

@@ -2,7 +2,7 @@
 uniform lowp float u_device_pixel_ratio;
 uniform sampler2D u_image;
 uniform float u_mix;
-uniform vec3 u_scale;
+uniform vec4 u_scale;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
@@ -43,7 +43,7 @@ void main() {
     float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / sdfwidth;
     alpha *= smoothstep(0.5 - sdfgamma / floorwidth, 0.5 + sdfgamma / floorwidth, sdfdist);
 
-    gl_FragColor = color * (alpha * opacity);
+    gl_FragColor = vec4(v_tex_a.y, v_tex_b.y, 0.0, 1.0); //color * (alpha * opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

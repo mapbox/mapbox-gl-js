@@ -34,7 +34,6 @@ class LineAtlas {
         this.image = new AlphaImage({width, height}, this.data);
 
         this.dashes = {};
-        this.positions = {};
     }
 
     /**
@@ -49,13 +48,7 @@ class LineAtlas {
         const key = this.getKey(dasharray, round);
 
         if (!this.dashes[key]) {
-            const dash = this.dashes[key] = this.addDash(dasharray, round);
-
-            this.positions[key] = {
-                tl: [dash.y, dash.y + dash.height],
-                br: [dash.width, 0],
-                pixelRatio: 1
-            };
+            this.dashes[key] = this.addDash(dasharray, round);
         }
         return this.dashes[key];
     }
@@ -199,10 +192,10 @@ class LineAtlas {
             }
         }
 
-        const dashEntry = {
-            y: (this.nextRow + n + 0.5) / this.height,
-            height: 2 * n / this.height,
-            width: length
+        const dashEntry = { // temp layout
+            tl: [this.nextRow, this.nextRow + height],
+            br: [length, 0],
+            pixelRatio: 1
         };
 
         this.nextRow += height;
