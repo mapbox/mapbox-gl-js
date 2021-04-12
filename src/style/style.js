@@ -125,7 +125,6 @@ class Style extends Evented {
     lineAtlas: LineAtlas;
     light: Light;
     terrain: ?Terrain;
-    // NOTE: Make fog non-optional
     fog: ?Fog;
 
     _request: ?Cancelable;
