@@ -843,3 +843,82 @@ test('Drag below / behind camera', (t) => {
     map.remove();
     t.end();
 });
+
+test('Marker and fog', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map)
+        .setPopup(new Popup().setHTML(`a popup content`))
+        .togglePopup();
+
+    map.on('load', () => {
+        map.setFog({
+            "range": [2, 12]
+        });
+
+        t.ok(map.getFog());
+        map.once('render', () => {
+            map.setZoom(10);
+            map.setCenter([0, 0]);
+
+            t.test('not occluded', (t) => {
+                marker.setLngLat([0, 0]);
+
+                setTimeout(() => {
+                    t.notOk(marker.getElement().classList.contains('mapboxgl-marker-occluded-low'));
+                    t.notOk(marker.getElement().classList.contains('mapboxgl-marker-occluded-mid'));
+                    t.notOk(marker.getElement().classList.contains('mapboxgl-marker-occluded-high'));
+                    t.notOk(marker.getElement().classList.contains('mapboxgl-marker-occluded'));
+                    t.end();
+                }, 100);
+            });
+
+            t.test('occluded high', (t) => {
+                map.setBearing(90);
+                map.setPitch(70);
+                marker.setLngLat([1.0, 0]);
+
+                setTimeout(() => {
+                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded-high'));
+                    t.end();
+                }, 100);
+            });
+
+            t.test('occluded mid', (t) => {
+                map.setBearing(90);
+                map.setPitch(70);
+                marker.setLngLat([1.2, 0]);
+
+                setTimeout(() => {
+                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded-mid'));
+                    t.end();
+                }, 100);
+            });
+
+            t.test('occluded low', (t) => {
+                map.setBearing(90);
+                map.setPitch(70);
+                marker.setLngLat([2.5, 0]);
+
+                setTimeout(() => {
+                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded-low'));
+                    t.end();
+                }, 100);
+            });
+
+            t.test('occluded', (t) => {
+                map.setBearing(90);
+                map.setPitch(70);
+                marker.setLngLat([4, 0]);
+
+                setTimeout(() => {
+                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded'));
+                    t.end();
+                }, 100);
+            });
+
+            t.end();
+        });
+    });
+});
