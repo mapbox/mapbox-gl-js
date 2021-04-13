@@ -660,6 +660,8 @@ function paintAttributeNames(property, type) {
         'icon-halo-blur': ['halo_blur'],
         'text-halo-width': ['halo_width'],
         'icon-halo-width': ['halo_width'],
+        'text-fog-fade-intensity': ['fog_fade'],
+        'icon-fog-fade-intensity': ['fog_fade'],
         'line-gap-width': ['gapwidth'],
         'line-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
         'fill-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],

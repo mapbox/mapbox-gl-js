@@ -26,6 +26,10 @@ uniform vec2 u_texsize;
 varying vec2 v_tex;
 varying float v_fade_opacity;
 
+#ifdef FOG
+varying vec3 v_fog_pos;
+#endif
+
 #pragma mapbox: define lowp float opacity
 
 void main() {
@@ -99,4 +103,8 @@ void main() {
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
     v_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
+
+#ifdef FOG
+    v_fog_pos = fog_position(vec3(a_pos, h));
+#endif
 }

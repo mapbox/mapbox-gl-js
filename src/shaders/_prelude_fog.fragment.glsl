@@ -40,7 +40,7 @@ float fog_opacity(float t) {
     return u_fog_opacity * min(1.0, 1.00747 * falloff);
 }
 
-// This function is only used in rare places like heatmap where opacity is used
+// This function is only used in rare places like heatmap and symbols where opacity is used
 // directly, outside the normal fog_apply method.
 float fog_opacity(vec3 pos) {
     return fog_opacity((length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x));
