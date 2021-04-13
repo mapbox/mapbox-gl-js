@@ -1129,6 +1129,7 @@ export {
     StructArrayLayout2i4ub1f12 as LineLayoutArray,
     StructArrayLayout2f8 as LineExtLayoutArray,
     StructArrayLayout10ui20 as PatternLayoutArray,
+    StructArrayLayout10ui20 as DashLayoutArray,
     StructArrayLayout4i4ui4i24 as SymbolLayoutArray,
     StructArrayLayout3f12 as SymbolDynamicLayoutArray,
     StructArrayLayout1ul4 as SymbolOpacityArray,

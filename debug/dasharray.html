@@ -22,7 +22,7 @@ var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 4,
     center: [0, 0],
-    style: 'mapbox://styles/mapbox/streets-v11'
+    style: { sources: {}, version: 8, layers: [] }
 });
 
 map.on('load', () => {

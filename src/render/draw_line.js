@@ -77,7 +77,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             programConfiguration.updatePaintBuffers(crossfade);
         } else if (dasharray) {
             context.activeTexture.set(gl.TEXTURE0);
-            tile.lineAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
             programConfiguration.updatePaintBuffers(crossfade);
         } else if (gradient) {
             const layerGradient = bucket.gradients[layer.id];

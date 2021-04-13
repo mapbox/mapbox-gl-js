@@ -5,9 +5,10 @@ import Color from '../style-spec/util/color.js';
 import {supportsPropertyExpression} from '../style-spec/util/properties.js';
 import {register} from '../util/web_worker_transfer.js';
 import {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
-import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray} from './array_types.js';
+import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray, DashLayoutArray} from './array_types.js';
 import {clamp} from '../util/util.js';
 import patternAttributes from './bucket/pattern_attributes.js';
+import dashAttributes from './bucket/dash_attributes.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import FeaturePositionMap from './feature_position_map.js';
 import {
@@ -320,8 +321,11 @@ class CrossFadedCompositeBinder implements AttributeBinder {
         this.zoom = zoom;
         this.layerId = layerId;
 
+        this.patternAttributes = type === 'array' ?
+            dashAttributes :
+            patternAttributes;
         for (let i = 0; i < names.length; ++i) {
-            assert(`a_${names[i]}` === patternAttributes.members[i].name);
+            assert(`a_${names[i]}` === this.patternAttributes.members[i].name);
         }
 
         this.zoomInPaintVertexArray = new PaintVertexArray();
@@ -369,8 +373,8 @@ class CrossFadedCompositeBinder implements AttributeBinder {
 
     upload(context: Context) {
         if (this.zoomInPaintVertexArray && this.zoomInPaintVertexArray.arrayBuffer && this.zoomOutPaintVertexArray && this.zoomOutPaintVertexArray.arrayBuffer) {
-            this.zoomInPaintVertexBuffer = context.createVertexBuffer(this.zoomInPaintVertexArray, patternAttributes.members, this.expression.isStateDependent);
-            this.zoomOutPaintVertexBuffer = context.createVertexBuffer(this.zoomOutPaintVertexArray, patternAttributes.members, this.expression.isStateDependent);
+            this.zoomInPaintVertexBuffer = context.createVertexBuffer(this.zoomInPaintVertexArray, this.patternAttributes.members, this.expression.isStateDependent);
+            this.zoomOutPaintVertexBuffer = context.createVertexBuffer(this.zoomOutPaintVertexArray, this.patternAttributes.members, this.expression.isStateDependent);
         }
     }
 
@@ -512,8 +516,8 @@ export default class ProgramConfiguration {
                     result.push(binder.paintVertexAttributes[i].name);
                 }
             } else if (binder instanceof CrossFadedCompositeBinder) {
-                for (let i = 0; i < patternAttributes.members.length; i++) {
-                    result.push(patternAttributes.members[i].name);
+                for (let i = 0; i < binder.patternAttributes.members.length; i++) {
+                    result.push(binder.patternAttributes.members[i].name);
                 }
             }
         }
@@ -664,7 +668,7 @@ function paintAttributeNames(property, type) {
         'line-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
         'fill-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
         'fill-extrusion-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
-        'line-dasharray': ['pattern_to', 'pattern_from']
+        'line-dasharray': ['dash_to', 'dash_from']
     };
 
     return attributeNameExceptions[property] || [property.replace(`${type}-`, '').replace(/-/g, '_')];
@@ -685,8 +689,8 @@ function getLayoutException(property) {
             'composite': PatternLayoutArray
         },
         'line-dasharray': { // temporary layout
-            'source': PatternLayoutArray,
-            'composite': PatternLayoutArray
+            'source': DashLayoutArray,
+            'composite': DashLayoutArray 
         }
     };
 

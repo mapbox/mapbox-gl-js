@@ -32,8 +32,8 @@ varying float v_width;
 #pragma mapbox: define lowp float offset
 #pragma mapbox: define mediump float width
 #pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define lowp vec4 pattern_from
-#pragma mapbox: define lowp vec4 pattern_to
+#pragma mapbox: define lowp vec4 dash_from
+#pragma mapbox: define lowp vec4 dash_to
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -43,8 +43,8 @@ void main() {
     #pragma mapbox: initialize lowp float offset
     #pragma mapbox: initialize mediump float width
     #pragma mapbox: initialize lowp float floorwidth
-    #pragma mapbox: initialize mediump vec4 pattern_from
-    #pragma mapbox: initialize mediump vec4 pattern_to
+    #pragma mapbox: initialize mediump vec4 dash_from
+    #pragma mapbox: initialize mediump vec4 dash_to
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
@@ -100,13 +100,13 @@ void main() {
     float toScale = u_scale.z;
     float texHeight = u_scale.w;
 
-    float widthA = pattern_from.z * fromScale; // temp layout
-    float widthB = pattern_to.z * toScale;
-    float heightA = (pattern_from.y - pattern_from.x) / texHeight;
-    float heightB = (pattern_to.y - pattern_to.x) / texHeight;
+    float widthA = dash_from.z * fromScale; // temp layout
+    float widthB = dash_to.z * toScale;
+    float heightA = (dash_from.y - dash_from.x) / texHeight;
+    float heightB = (dash_to.y - dash_to.x) / texHeight;
 
-    v_tex_a = vec2(a_linesofar * (tileZoomRatio / widthA) / floorwidth, -normal.y * heightA / 2.0 + (pattern_from.x + 0.5) / texHeight);
-    v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, -normal.y * heightB / 2.0 + (pattern_to.x + 0.5) / texHeight);
+    v_tex_a = vec2(a_linesofar * (tileZoomRatio / widthA) / floorwidth, -normal.y * heightA / 2.0 + (dash_from.x + 0.5) / texHeight);
+    v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, -normal.y * heightB / 2.0 + (dash_to.x + 0.5) / texHeight);
 
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
