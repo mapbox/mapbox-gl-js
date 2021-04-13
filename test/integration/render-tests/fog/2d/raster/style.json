@@ -6,8 +6,8 @@
     }
   },
   "center": [
-    13.418056,
-    52.499167
+    52.499167,
+    13.418056
   ],
   "zoom": 16,
   "pitch": 70,
@@ -16,10 +16,10 @@
     "color": "white"
   },
   "sources": {
-    "satellite": {
+    "source": {
       "type": "raster",
       "tiles": [
-        "local://tiles/{z}-{x}-{y}.satellite.png"
+        "local://tiles/alpha.png"
       ],
       "maxzoom": 17,
       "tileSize": 256
@@ -27,9 +27,16 @@
   },
   "layers": [
     {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "orange"
+      }
+    },
+    {
       "id": "raster",
       "type": "raster",
-      "source": "satellite",
+      "source": "source",
       "paint": {
         "raster-fade-duration": 0
       }
