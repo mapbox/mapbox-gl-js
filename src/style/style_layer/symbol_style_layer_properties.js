@@ -117,6 +117,7 @@ export type PaintProps = {|
     "icon-halo-color": DataDrivenProperty<Color>,
     "icon-halo-width": DataDrivenProperty<number>,
     "icon-halo-blur": DataDrivenProperty<number>,
+    "icon-fog-fade-intensity": DataDrivenProperty<number>,
     "icon-translate": DataConstantProperty<[number, number]>,
     "icon-translate-anchor": DataConstantProperty<"map" | "viewport">,
     "text-opacity": DataDrivenProperty<number>,
@@ -124,6 +125,7 @@ export type PaintProps = {|
     "text-halo-color": DataDrivenProperty<Color>,
     "text-halo-width": DataDrivenProperty<number>,
     "text-halo-blur": DataDrivenProperty<number>,
+    "text-fog-fade-intensity": DataDrivenProperty<number>,
     "text-translate": DataConstantProperty<[number, number]>,
     "text-translate-anchor": DataConstantProperty<"map" | "viewport">,
 |};
@@ -134,6 +136,7 @@ const paint: Properties<PaintProps> = new Properties({
     "icon-halo-color": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-halo-color"]),
     "icon-halo-width": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-halo-width"]),
     "icon-halo-blur": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-halo-blur"]),
+    "icon-fog-fade-intensity": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-fog-fade-intensity"]),
     "icon-translate": new DataConstantProperty(styleSpec["paint_symbol"]["icon-translate"]),
     "icon-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["icon-translate-anchor"]),
     "text-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["text-opacity"]),
@@ -141,6 +144,7 @@ const paint: Properties<PaintProps> = new Properties({
     "text-halo-color": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-color"]),
     "text-halo-width": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-width"]),
     "text-halo-blur": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-blur"]),
+    "text-fog-fade-intensity": new DataDrivenProperty(styleSpec["paint_symbol"]["text-fog-fade-intensity"]),
     "text-translate": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate"]),
     "text-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate-anchor"]),
 });

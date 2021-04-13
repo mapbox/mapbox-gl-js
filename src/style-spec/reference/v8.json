@@ -5318,6 +5318,33 @@
       },
       "property-type": "data-driven"
     },
+    "icon-fog-fade-intensity": {
+      "type": "number",
+      "doc": "The rate at which the icon fades as it gets pushed into the fog",
+      "default": 1,
+      "minimum": 0,
+      "transition": true,
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0"
+        },
+        "data-driven styling": {
+          "js": "2.3.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "icon-translate": {
       "type": "array",
       "value": "number",
@@ -5535,6 +5562,33 @@
           "android": "5.0.0",
           "ios": "3.5.0",
           "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "text-fog-fade-intensity": {
+      "type": "number",
+      "doc": "The rate at which the test fades as it gets pushed into the fog",
+      "default": 1,
+      "minimum": 0,
+      "transition": true,
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0"
+        },
+        "data-driven styling": {
+          "js": "2.3.0"
         }
       },
       "expression": {

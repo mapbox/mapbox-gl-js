@@ -30,6 +30,10 @@ uniform vec2 u_texsize_icon;
 varying vec4 v_data0;
 varying vec4 v_data1;
 
+#ifdef FOG
+varying vec3 v_fog_pos;
+#endif
+
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity
@@ -120,4 +124,8 @@ void main() {
     v_data0.xy = a_tex / u_texsize;
     v_data0.zw = a_tex / u_texsize_icon;
     v_data1 = vec4(gamma_scale, size, interpolated_fade_opacity, is_sdf);
+
+#ifdef FOG
+    v_fog_pos = fog_position(vec3(a_pos, h));
+#endif
 }

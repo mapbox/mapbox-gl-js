@@ -2,7 +2,7 @@
 
 uniform float u_fog_temporal_offset;
 
-// This function is only used in rare places like heatmap where opacity is used
+// This function is only used in rare places like heatmap and symbols where opacity is used
 // directly, outside the normal fog_apply method.
 float fog_opacity(vec3 pos) {
     float depth = length(pos);
