@@ -23,16 +23,7 @@ import type LngLat from '../geo/lng_lat.js';
  */
 export class MapMouseEvent extends Event {
     /**
-     * The event type (one of {@link Map.event:mousedown},
-     * {@link Map.event:mouseup},
-     * {@link Map.event:click},
-     * {@link Map.event:dblclick},
-     * {@link Map.event:mousemove},
-     * {@link Map.event:mouseover},
-     * {@link Map.event:mouseenter},
-     * {@link Map.event:mouseleave},
-     * {@link Map.event:mouseout},
-     * {@link Map.event:contextmenu}).
+     * The type of originating event.
      */
     type: 'mousedown'
         | 'mouseup'
@@ -108,9 +99,7 @@ export class MapMouseEvent extends Event {
  */
 export class MapTouchEvent extends Event {
     /**
-     * The event type (one of {@link Map.event:touchstart},
-     * {@link Map.event:touchend},
-     * {@link Map.event:contextmenu}).
+     * The type of originating event.
      */
     type: 'touchstart'
         | 'touchend'
@@ -194,7 +183,7 @@ export class MapTouchEvent extends Event {
  */
 export class MapWheelEvent extends Event {
     /**
-     * The event type ({@link Map.event:wheel}).
+     * The type of originating event.
      */
     type: 'wheel';
 
