@@ -53,6 +53,28 @@ const sinusoidal = {
         return new LngLat(lng, lat);
     }
 };
+
+
+function sinc(x) {
+    return Math.sin(x) / x;
+}
+
+function winkelTripel(lng, lat) {
+    lat = lat / 180 * Math.PI;
+    lng = lng / 180 * Math.PI;
+    const phi1 = Math.acos(2 / Math.PI);
+    const alpha = Math.acos(Math.cos(lat) * Math.cos(lng / 2));
+    const x = 0.5 * (lng * Math.cos(phi1) + (2 * Math.cos(lat) * Math.sin(lng/2)) / sinc(alpha)) || 0;
+    const y = 0.5 * (lat + Math.sin(lat) / sinc(alpha)) || 0;
+    function s(n) {
+        return (n / (Math.PI) + 0.5) * 0.5;
+    }
+    return { x: s(x), y: 1 - s(y) };
+}
+const winkel = {
+    projectX: (lng, lat) => winkelTripel(lng, lat).x,
+    projectY: (lng, lat) => winkelTripel(lng, lat).y,
+};
     
 function makeTileTransform(projection) {
     return (id) => {
@@ -186,6 +208,7 @@ class Transform {
         this.cameraElevationReference = "ground";
         this.projection = mercatorProjection;
         this.projection = sinusoidal;
+        this.projection = winkel;
         this.projection = albers;
 
         this.projection.tileTransform = makeTileTransform(this.projection);
@@ -659,10 +682,13 @@ class Transform {
             const ty = tt.y / tt.scale;
             const tx2 = tt.x2 / tt.scale;
             const ty2 = tt.y2 / tt.scale;
-            assert(!isNaN(tx));
-            assert(!isNaN(tx2));
-            assert(!isNaN(ty));
-            assert(!isNaN(ty2));
+            if (isNaN(tx) || isNaN(tx2) || isNaN(ty) || isNaN(ty2)) {
+                assert(false);
+            }
+            //assert(!isNaN(tx));
+            //assert(!isNaN(tx2));
+            //assert(!isNaN(ty));
+            //assert(!isNaN(ty2));
             const ret = new Aabb(
                 [(wrap + tx) * numTiles, numTiles * ty, min],
                 [(wrap  + tx2) * numTiles, numTiles * ty2, max]);
@@ -1164,6 +1190,7 @@ class Transform {
      * @private
      */
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
+        return this.calculateRasterMatrix(unwrappedTileID);
         const posMatrixKey = unwrappedTileID.key;
         const cache = aligned ? this._alignedPosMatrixCache : this._posMatrixCache;
         if (cache[posMatrixKey]) {
@@ -1647,7 +1674,7 @@ class Transform {
         const cs = this.projection.tileTransform(id.canonical);
         mat4.scale(posMatrix, posMatrix, [1 /  cs.scale, 1 /  cs.scale, 1]);
         mat4.translate(posMatrix, posMatrix, [cs.x, cs.y, 0]);
-        mat4.scale(posMatrix, posMatrix, [1 / s, 1 / s, 1]);
+        mat4.scale(posMatrix, posMatrix, [1 / EXTENT, 1 / EXTENT, 1]);
         mat4.multiply(posMatrix, this.mercatorMatrix, posMatrix);
         return new Float32Array(posMatrix);
     }

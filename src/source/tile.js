@@ -505,15 +505,14 @@ class Tile {
         const x2 = (this.tileID.canonical.x + 1) * s;
         const y1 = (this.tileID.canonical.y) * s;
         const y2 = (this.tileID.canonical.y + 1) * s;
-        const m = Math.pow(2, 14);
  
         const rasterBoundsArray = new RasterBoundsArray();
         const quadTriangleIndices = new TriangleIndexArray();
         const cs = transform.projection.tileTransform(this.tileID.canonical);
         const emplace = (x, y, a, b) => {
             const l = new MercatorCoordinate(x, y).toLngLat();
-            const x_ = ((transform.projection.projectX(l.lng, l.lat)) * cs.scale - cs.x) * m;
-            const y_ = ((transform.projection.projectY(l.lng, l.lat)) * cs.scale - cs.y) * m;
+            const x_ = ((transform.projection.projectX(l.lng, l.lat)) * cs.scale - cs.x) * EXTENT;
+            const y_ = ((transform.projection.projectY(l.lng, l.lat)) * cs.scale - cs.y) * EXTENT;
             rasterBoundsArray.emplaceBack(x_, y_, a, b);
         };
         const n = 32;

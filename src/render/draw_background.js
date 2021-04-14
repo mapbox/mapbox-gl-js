@@ -3,6 +3,7 @@
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
+import Tile from '../source/tile';
 import {
     backgroundUniformValues,
     backgroundPatternUniformValues
@@ -49,12 +50,15 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         const matrix = coords ? tileID.posMatrix : painter.transform.calculatePosMatrix(tileID.toUnwrapped());
         painter.prepareDrawTile(tileID);
 
+        const tile = new Tile(tileID);
+        tile.makeRasterBoundsArray(context, painter.transform);
+
         const uniformValues = image ?
             backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}, crossfade) :
             backgroundUniformValues(matrix, opacity, color);
 
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-            uniformValues, layer.id, painter.tileExtentBuffer,
-            painter.quadTriangleIndexBuffer, painter.tileExtentSegments);
+            uniformValues, layer.id, tile.rasterBoundsBuffer,
+                tile.rasterBoundsIndexBuffer, tile.rasterBoundsSegments);
     }
 }
