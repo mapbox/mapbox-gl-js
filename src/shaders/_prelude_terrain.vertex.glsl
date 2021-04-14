@@ -1,6 +1,6 @@
 // Also declared in data/bucket/fill_extrusion_bucket.js
-#define ELEVATION_SCALE 6.9
-#define ELEVATION_OFFSET 500.0
+#define ELEVATION_SCALE 7.0
+#define ELEVATION_OFFSET 450.0
 
 #ifdef TERRAIN
 
