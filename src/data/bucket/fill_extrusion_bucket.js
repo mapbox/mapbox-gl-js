@@ -41,8 +41,10 @@ const FACTOR = Math.pow(2, 13);
 
 // Also declared in _prelude_terrain.vertex.glsl
 // Used to scale most likely elevation values to fit well in an uint16
-// Height of mt everest * 7.3 is roughly 64k
-export const ELEVATION_SCALE = 7.3;
+// (Elevation of Dead Sea + ELEVATION_OFFSET) * ELEVATION_SCALE is roughly 0
+// (Height of mt everest + ELEVATION_OFFSET) * ELEVATION_SCALE is roughly 64k
+export const ELEVATION_SCALE = 7.0;
+export const ELEVATION_OFFSET = 450;
 
 function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
     vertexArray.emplaceBack(
@@ -458,7 +460,7 @@ class FillExtrusionBucket implements Bucket {
                 x = (Math.max(c.x, 1) << 3) + Math.min(7, Math.round(span.x / 10));
                 y = (Math.max(c.y, 1) << 3) + Math.min(7, Math.round(span.y / 10));
             } else { // encode height:
-                x = Math.ceil(c.x * ELEVATION_SCALE);
+                x = Math.ceil((c.x + ELEVATION_OFFSET) * ELEVATION_SCALE);
                 y = 0;
             }
         } else {
