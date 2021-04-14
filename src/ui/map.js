@@ -2501,6 +2501,21 @@ class Map extends Camera {
     }
 
     /**
+     * Request that the given callback be executed during the next render frame if the map is not
+     * idle. Otherwise it is executed immediately, to avoid triggering a new render.
+     * @private
+     */
+    _requestDomTask(callback: () => void) {
+        // This condition means that the map is idle: the callback needs to be called right now as
+        // there won't be a triggered render to run the queue.
+        if (!this.isMoving() && this.loaded()) {
+            callback();
+        } else {
+            this._domRenderTaskQueue.add(callback);
+        }
+    }
+
+    /**
      * Call when a (re-)render of the map is required:
      * - The style has changed (`setPaintProperty()`, etc.)
      * - Source data has changed (e.g. tiles have finished loading)
@@ -2528,10 +2543,6 @@ class Map extends Camera {
         this.painter.setBaseState();
 
         this._renderTaskQueue.run(paintStartTimeStamp);
-        // The queue below may have tasks that need to be run but the queue won't always be ran: to
-        // avoid this, tasks need to be called directly instead of being added to the queue. See
-        // ui/popup.js or ui/marker.js for example. This won't be a performance issue as very few
-        // elements will be concerned by the rendering.
         this._domRenderTaskQueue.run(paintStartTimeStamp);
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;

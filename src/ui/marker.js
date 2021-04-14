@@ -507,20 +507,11 @@ export default class Marker extends Evented {
             this._pos = this._pos.round();
         }
 
-        const transformFn = () => {
+        this._map._requestDomTask(() => {
             if (this._element && this._pos && this._anchor) {
                 DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
             }
-        };
-
-        // This condition means that the map is idle: the transformation needs to be manually
-        // applied as there won't be a triggered render. This shouldn't impact performance as the
-        // move shoud be limited to very few elements.
-        if (!this._map.isMoving() && this._map.loaded()) {
-            transformFn();
-        } else {
-            this._map._domRenderTaskQueue.add(transformFn);
-        }
+        });
     }
 
     /**
