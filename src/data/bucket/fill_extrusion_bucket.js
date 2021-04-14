@@ -41,6 +41,7 @@ const FACTOR = Math.pow(2, 13);
 
 // Also declared in _prelude_terrain.vertex.glsl
 // Used to scale most likely elevation values to fit well in an uint16
+// (Elevation of Dead Sea + ELEVATION_OFFSET) * ELEVATION_SCALE is roughly 0
 // (Height of mt everest + ELEVATION_OFFSET) * ELEVATION_SCALE is roughly 64k
 export const ELEVATION_SCALE = 7.0;
 export const ELEVATION_OFFSET = 450;
