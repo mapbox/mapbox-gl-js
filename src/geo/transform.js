@@ -1678,25 +1678,6 @@ class Transform {
         mat4.multiply(posMatrix, this.mercatorMatrix, posMatrix);
         return new Float32Array(posMatrix);
     }
-
-    tileTransform(id) {
-        let scale = Math.pow(2, id.z);
-        const tl = mercatorProjection.unproject(id.x / scale, id.y / scale);
-        const bl = mercatorProjection.unproject(id.x / scale, (id.y + 1) / scale);
-        const tr = mercatorProjection.unproject((id.x + 1) / scale, (id.y + 0) / scale);
-        const br = mercatorProjection.unproject((id.x + 1) / scale, (id.y + 1) / scale);
-        const pX = this.projection.projectX;
-        const pY = this.projection.projectY;
-        const minX = Math.min(pX(tl.lng, tl.lat), pX(bl.lng, bl.lat), pX(tr.lng, tr.lat), pX(br.lng, br.lat));
-        const maxX = Math.max(pX(tl.lng, tl.lat), pX(bl.lng, bl.lat), pX(tr.lng, tr.lat), pX(br.lng, br.lat));
-        const minY = Math.min(pY(tl.lng, tl.lat), pY(bl.lng, bl.lat), pY(tr.lng, tr.lat), pY(br.lng, br.lat));
-        const maxY = Math.max(pY(tl.lng, tl.lat), pY(bl.lng, bl.lat), pY(tr.lng, tr.lat), pY(br.lng, br.lat));
-        const size = Math.max(maxX - minX, maxY - minY);
-        const realScale = 1 / Math.pow(2, Math.ceil(Math.log(size) / Math.LN2));
-        const x = Math.floor(minX * realScale);
-        const y = Math.floor(minY * realScale);
-        return { scale: realScale, x, y };
-    }
 }
 
 
