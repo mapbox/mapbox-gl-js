@@ -1,7 +1,7 @@
 // @flow
 
 import StyleLayer from '../style_layer.js';
-import FillExtrusionBucket, {ELEVATION_SCALE} from '../../data/bucket/fill_extrusion_bucket.js';
+import FillExtrusionBucket, {ELEVATION_SCALE, ELEVATION_OFFSET} from '../../data/bucket/fill_extrusion_bucket.js';
 import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests.js';
 import {translateDistance, tilespaceTranslate} from '../query_utils.js';
 import properties from './fill_extrusion_style_layer_properties.js';
@@ -317,7 +317,7 @@ function getTerrainHeightOffset(x: number, y: number, zBase: number, zTop: numbe
 
 // Elevation is encoded into unit16 in fill_extrusion_bucket.js FillExtrusionBucket#encodeCentroid
 function elevationFromUint16(n: number): number {
-    return n / ELEVATION_SCALE;
+    return n / ELEVATION_SCALE - ELEVATION_OFFSET;
 }
 
 // Equivalent GPU side function is in _prelude_terrain.vertex.glsl
