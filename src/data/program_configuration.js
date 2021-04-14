@@ -17,6 +17,7 @@ import {
     Uniform4f,
     type UniformLocations
 } from '../render/uniform_binding.js';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
 
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type Context from '../gl/context.js';
@@ -199,6 +200,12 @@ class SourceExpressionBinder implements AttributeBinder {
         }
     }
 
+    getPaintValue(start: number, end: number): number {
+        assert(this.type !== 'color', 'Cannot read out paint values for packed colors');
+        assert(this.paintVertexArray.float32);
+        return this.paintVertexArray.float32[start];
+    }
+
     upload(context: Context) {
         if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
             if (this.paintVertexBuffer && this.paintVertexBuffer.buffer) {
@@ -223,6 +230,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     useIntegerZoom: boolean;
     zoom: number;
     maxValue: number;
+    currInterpolationFactor: number
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -235,6 +243,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
         this.maxValue = 0;
+        this.currInterpolationFactor = 0;
         this.paintVertexAttributes = names.map((name) => ({
             name: `a_${name}`,
             type: 'Float32',
@@ -273,6 +282,15 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         }
     }
 
+    getPaintValue(start: number, end: number, currentZoom: number): number {
+        assert(this.type !== 'color', 'Cannot read out paint values for packed colors');
+        assert(this.paintVertexArray.float32);
+        const min = this.paintVertexArray.float32[start * 2 + 0];
+        const max = this.paintVertexArray.float32[start * 2 + 1];
+
+        return interpolate(min, max, this.getInterpolationFactor(currentZoom));
+    }
+
     upload(context: Context) {
         if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
             if (this.paintVertexBuffer && this.paintVertexBuffer.buffer) {
@@ -289,9 +307,15 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         }
     }
 
-    setUniform(uniform: Uniform<*>, globals: GlobalProperties): void {
-        const currentZoom = this.useIntegerZoom ? Math.floor(globals.zoom) : globals.zoom;
+    getInterpolationFactor(zoom: number): number {
+        const currentZoom = this.useIntegerZoom ? Math.floor(zoom) : zoom;
+        // TODO: cache the expression evaluation to prevent evaluating multiple times per frame?
         const factor = clamp(this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1), 0, 1);
+        return factor;
+    }
+
+    setUniform(uniform: Uniform<*>, globals: GlobalProperties): void {
+        const factor = this.getInterpolationFactor(globals.zoom);
         uniform.set(factor);
     }
 
@@ -452,6 +476,8 @@ export default class ProgramConfiguration {
         const binder = this.binders[property];
         return binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ? binder.maxValue : 0;
     }
+
+    getPaintValue(property: 'text-fog-fade-intensity' | 'icon-fog-fade-intensity')
 
     populatePaintArrays(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
         for (const property in this.binders) {
