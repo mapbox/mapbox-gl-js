@@ -193,7 +193,7 @@ class LineAtlas {
         }
 
         const dashEntry = { // temp layout
-            tl: [this.nextRow, this.nextRow + height],
+            tl: [this.nextRow + n, n],
             br: [length, 0],
             pixelRatio: 1
         };

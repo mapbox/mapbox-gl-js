@@ -102,11 +102,11 @@ void main() {
 
     float widthA = dash_from.z * fromScale; // temp layout
     float widthB = dash_to.z * toScale;
-    float heightA = (dash_from.y - dash_from.x) / texHeight;
-    float heightB = (dash_to.y - dash_to.x) / texHeight;
+    float heightA = dash_from.y / texHeight;
+    float heightB = dash_to.y / texHeight;
 
-    v_tex_a = vec2(a_linesofar * (tileZoomRatio / widthA) / floorwidth, -normal.y * heightA / 2.0 + (dash_from.x + 0.5) / texHeight);
-    v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, -normal.y * heightB / 2.0 + (dash_to.x + 0.5) / texHeight);
+    v_tex_a = vec2(a_linesofar * (tileZoomRatio / widthA) / floorwidth, -normal.y * heightA + (dash_from.x + 0.5) / texHeight);
+    v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, -normal.y * heightB + (dash_to.x + 0.5) / texHeight);
 
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
