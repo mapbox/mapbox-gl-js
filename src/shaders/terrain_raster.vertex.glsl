@@ -30,7 +30,8 @@ void main() {
 #ifdef FOG_HAZE
     fog_haze(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, v_haze_color);
 #else
-    fog_haze(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, vec4(0.0));
+    vec4 unused;
+    fog_haze(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, unused);
 #endif
 #endif
 }

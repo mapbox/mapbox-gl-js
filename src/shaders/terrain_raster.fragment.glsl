@@ -14,7 +14,8 @@ void main() {
 #ifdef FOG_HAZE
     color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, v_haze_color));
 #else
-    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, vec4(0.0));
+    vec4 unused;
+    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, unused));
 #endif
 #endif
     gl_FragColor = color;
