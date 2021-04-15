@@ -27,10 +27,11 @@ void main() {
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
 
 #ifdef FOG
-    fog_haze(fog_position(vec3(decodedPos, elevation)), v_fog_opacity
 #ifdef FOG_HAZE
-        , v_haze_color
+    fog_haze(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, v_haze_color);
+#else
+    vec4 unused;
+    fog_haze(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, unused);
 #endif
-    );
 #endif
 }
