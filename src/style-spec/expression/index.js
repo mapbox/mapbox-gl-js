@@ -384,6 +384,7 @@ function getDefaultValue(spec: StylePropertySpecification): Value {
         // back to in case of runtime errors
         return new Color(0, 0, 0, 0);
     } else if (spec.type === 'color') {
+        const premultiplyAlpha = spec.premultiplyAlpha === undefined ? true : spec.premultiplyAlpha;
         return Color.parse(spec.default) || null;
     } else if (spec.default === undefined) {
         return null;

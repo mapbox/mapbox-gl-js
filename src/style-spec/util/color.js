@@ -18,12 +18,14 @@ class Color {
     g: number;
     b: number;
     a: number;
+    premultiplyAlpha: boolean;
 
-    constructor(r: number, g: number, b: number, a: number = 1) {
+    constructor(r: number, g: number, b: number, a: number = 1, premultiplyAlpha: boolean = true) {
         this.r = r;
         this.g = g;
         this.b = b;
         this.a = a;
+        this.premultiplyAlpha = premultiplyAlpha;
     }
 
     static black: Color;
@@ -36,7 +38,7 @@ class Color {
      * Parses valid CSS color strings and returns a `Color` instance.
      * @returns A `Color` instance, or `undefined` if the input is not a valid color string.
      */
-    static parse(input?: string | Color | null): Color | void {
+    static parse(input?: string | Color | null, premultiplyAlpha?: boolean = true): Color | void {
         if (!input) {
             return undefined;
         }
@@ -54,11 +56,14 @@ class Color {
             return undefined;
         }
 
+        const factor = premultiplyAlpha ? rgba[3] : 1;
+
         return new Color(
-            rgba[0] / 255 * rgba[3],
-            rgba[1] / 255 * rgba[3],
-            rgba[2] / 255 * rgba[3],
-            rgba[3]
+            rgba[0] / 255 * factor,
+            rgba[1] / 255 * factor,
+            rgba[2] / 255 * factor,
+            rgba[3],
+            premultiplyAlpha
         );
     }
 
@@ -78,11 +83,13 @@ class Color {
     }
 
     toArray(): [number, number, number, number] {
-        const {r, g, b, a} = this;
-        return a === 0 ? [0, 0, 0, 0] : [
-            r * 255 / a,
-            g * 255 / a,
-            b * 255 / a,
+        const {r, g, b, a, premultiplyAlpha} = this;
+        if (premultiplyAlpha && a === 0) return [0, 0, 0, 0];
+        const factor = premultiplyAlpha ? 1 / a : 1;
+        return [
+            r * 255 * factor,
+            g * 255 * factor,
+            b * 255 * factor,
             a
         ];
     }

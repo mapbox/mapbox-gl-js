@@ -27,17 +27,18 @@ export function createFunction(parameters, propertySpec) {
 
     if (isColor) {
         parameters = extend({}, parameters);
+        const premultiplyAlpha = propertySpec.premultiplyAlpha === undefined ? true : propertySpec.premultiplyAlpha;
 
         if (parameters.stops) {
             parameters.stops = parameters.stops.map((stop) => {
-                return [stop[0], Color.parse(stop[1])];
+                return [stop[0], Color.parse(stop[1], premultiplyAlpha)];
             });
         }
 
         if (parameters.default) {
-            parameters.default = Color.parse(parameters.default);
+            parameters.default = Color.parse(parameters.default, premultiplyAlpha);
         } else {
-            parameters.default = Color.parse(propertySpec.default);
+            parameters.default = Color.parse(propertySpec.default, premultiplyAlpha);
         }
     }
 
@@ -199,7 +200,8 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 
 function evaluateIdentityFunction(parameters, propertySpec, input) {
     if (propertySpec.type === 'color') {
-        input = Color.parse(input);
+        const premultiplyAlpha = propertySpec.premultiplyAlpha === undefined ? true : propertySpec.premultiplyAlpha;
+        input = Color.parse(input, premultiplyAlpha);
     } else if (propertySpec.type === 'formatted') {
         input = Formatted.fromString(input.toString());
     } else if (propertySpec.type === 'resolvedImage') {

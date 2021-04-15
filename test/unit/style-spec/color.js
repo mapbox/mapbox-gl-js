@@ -9,6 +9,7 @@ test('Color.parse', (t) => {
     t.deepEqual(Color.parse('invalid'), undefined);
     t.deepEqual(Color.parse(null), undefined);
     t.deepEqual(Color.parse(undefined), undefined);
+    t.deepEqual(Color.parse('rgba(255,0,255,0)', false), new Color(1, 0, 1, 0, false));
     t.end();
 });
 
@@ -17,5 +18,7 @@ test('Color#toString', (t) => {
     t.equal(purple && purple.toString(), 'rgba(128,0,128,1)');
     const translucentGreen = Color.parse('rgba(26, 207, 26, .73)');
     t.equal(translucentGreen && translucentGreen.toString(), 'rgba(26,207,26,0.73)');
+    const unpremultiplied = Color.parse('rgba(26, 207, 26, 0)', false);
+    t.equal(unpremultiplied && unpremultiplied.toString(), 'rgba(26,207,26,0)');
     t.end();
 });
