@@ -10,7 +10,7 @@ import type Map from './map.js';
 import type LngLat from '../geo/lng_lat.js';
 
 /**
- * `MapMouseEvent` is the event type for mouse-related map events.
+ * `MapMouseEvent` is the event type for mouse-related map events. The {@link Map} class implements this event type.
  * @extends {Object}
  * @example
  * // The `click` event is an example of a `MapMouseEvent`.
@@ -94,7 +94,7 @@ export class MapMouseEvent extends Event {
 }
 
 /**
- * `MapTouchEvent` is the event type for touch-related map events.
+ * `MapTouchEvent` is the event type for touch-related map events. The {@link Map} class implements this event type.
  * @extends {Object}
  */
 export class MapTouchEvent extends Event {
@@ -178,7 +178,7 @@ export class MapTouchEvent extends Event {
 }
 
 /**
- * `MapWheelEvent` is the event type for the `wheel` map event.
+ * `MapWheelEvent` is the event type for the `wheel` map event. The {@link Map} class implements this event type.
  * @extends {Object}
  */
 export class MapWheelEvent extends Event {
