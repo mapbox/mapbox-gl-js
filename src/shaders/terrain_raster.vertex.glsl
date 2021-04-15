@@ -32,6 +32,5 @@ void main() {
 #else
     fog_haze(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, vec4(0.0));
 #endif
-    );
 #endif
 }

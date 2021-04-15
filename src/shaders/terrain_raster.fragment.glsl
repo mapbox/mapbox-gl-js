@@ -12,11 +12,10 @@ void main() {
     vec4 color = texture2D(u_image0, v_pos0);
 #ifdef FOG
 #ifdef FOG_HAZE
-    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, v_haze_color);
+    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, v_haze_color));
 #else
     color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, vec4(0.0));
 #endif
-    ));
 #endif
     gl_FragColor = color;
 #ifdef TERRAIN_WIREFRAME
