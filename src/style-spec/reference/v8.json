@@ -3785,7 +3785,12 @@
     "source": {
       "type": "string",
       "doc": "Name of a source of `raster_dem` type to be used for terrain elevation.",
-      "required": true
+      "required": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      }
     },
     "exaggeration": {
       "type": "number",
