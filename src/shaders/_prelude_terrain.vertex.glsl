@@ -37,6 +37,9 @@ float currentElevation(vec2 apos) {
     vec2 f = r.zw;
 
     float tl = decodeElevation(texture2D(u_dem, pos));
+#ifdef TERRAIN_DEM_NEAREST_FILTER
+    return u_exaggeration * tl;
+#endif
     float tr = decodeElevation(texture2D(u_dem, pos + vec2(dd, 0.0)));
     float bl = decodeElevation(texture2D(u_dem, pos + vec2(0.0, dd)));
     float br = decodeElevation(texture2D(u_dem, pos + vec2(dd, dd)));
