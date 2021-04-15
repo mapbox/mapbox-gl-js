@@ -11,9 +11,10 @@ varying vec4 v_haze_color;
 void main() {
     vec4 color = texture2D(u_image0, v_pos0);
 #ifdef FOG
-    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity
 #ifdef FOG_HAZE
-        , v_haze_color
+    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, v_haze_color);
+#else
+    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, vec4(0.0));
 #endif
     ));
 #endif
