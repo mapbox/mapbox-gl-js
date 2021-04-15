@@ -64,7 +64,7 @@
             "image": null,
             "scale": null,
             "fontStack": null,
-            "textColor": {"r":0,"g":1,"b":0,"a":1}
+            "textColor": {"r":0,"g":1,"b":0,"a":1,"premultiplyAlpha":true}
           }
         ]
       }
