@@ -69,11 +69,7 @@ vec3 fog_apply(vec3 color, vec3 pos) {
 }
 
 // Apply fog and haze which were computed in the vertex shader
-vec3 fog_apply_from_vert(vec3 color, float fog_opac
-#ifdef FOG_HAZE
-    , vec4 haze
-#endif
-) {
+vec3 fog_apply_from_vert(vec3 color, float fog_opac, vec4 haze) {
 #ifdef FOG_HAZE
     color = srgb_to_linear(color);
     color = mix(color, tonemap(color + haze.rgb), haze.a);
