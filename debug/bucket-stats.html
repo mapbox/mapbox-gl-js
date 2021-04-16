@@ -70,7 +70,7 @@ map.on('data', (e) => {
         const bucketName = bucket.layerIds.slice().sort((a, b) => a.length - b.length)[0];
 
         if (bucket.layoutVertexArray) {
-            const bucketKey = `${bucketName} vertices`;
+            const bucketKey = `${bucketName} ${bucket.layers[0].type} vertices`;
             stats[bucketKey] = (stats[bucketKey] || 0) + bucket.layoutVertexArray.arrayBuffer.byteLength;
             propStats(bucket);
 
