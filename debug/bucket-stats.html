@@ -87,10 +87,18 @@ map.on('data', (e) => {
     }
 
     if (!stats) return;
-    const ids = Object.keys(stats).sort((a, b) => stats[b] - stats[a]);
     let html = '<table>';
+    const ids = Object.keys(stats).sort((a, b) => stats[b] - stats[a]);
+    let total = 0;
     for (const id of ids) {
-        html += `<tr><td>${stats[id].toLocaleString()}</td><td>${id}</td></tr>`;
+        total += stats[id];
+    }
+    for (const id of ids) {
+        html += `<tr>
+            <td>${stats[id].toLocaleString()}</td>
+            <td>${(100 * stats[id] / total).toLocaleString(undefined, {maximumFractionDigits: 1})}%</td>
+            <td>${id}</td>
+        </tr>`;
     }
     html += '</table>';
     statsEl.innerHTML = html;
