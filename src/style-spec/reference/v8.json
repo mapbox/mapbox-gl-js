@@ -3726,32 +3726,14 @@
         ]
       },
       "transition": true,
-      "doc": "The color of the fog. If provided as an `rgba` color, the alpha component is unused.",
+      "doc": "The color of the fog. If provided as an `rgba` color, the alpha component must be nonzero, but is otherwise unused.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
         }
       }
     },
-    "haze-color": {
-      "type": "color",
-      "property-type": "data-constant",
-      "default": "#7287d5",
-      "expression": {
-        "interpolated": true,
-        "parameters": [
-          "zoom"
-        ]
-      },
-      "transition": true,
-      "doc": "The color of the haze component of the fog, used only when haze energy is nonzero. If provided as an `rgba` color, the alpha component is unused.",
-      "sdk-support": {
-        "basic functionality": {
-          "js": "2.3.0"
-        }
-      }
-    },
-    "strength": {
+    "density": {
       "type": "number",
       "property-type": "data-constant",
       "default": 1.0,
@@ -3763,18 +3745,17 @@
         ]
       },
       "transition": true,
-      "doc": "Controls the strength of the fog effect. Reducing the fog strength pushes the fog farther toward the horizon, leaving more visible space for haze, if enabled. When haze energy is zero, this will usually be 1.0.",
+      "doc": "Controls the strength of fog within the fog range. Reducing the density pushes the fog farther toward the horizon, leaving more visible space for haze, if enabled. When haze opacity is zero, density will usually be 1.0.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
         }
       }
     },
-    "haze-energy": {
-      "type": "number",
+    "haze-color": {
+      "type": "color",
       "property-type": "data-constant",
-      "default": 0.0,
-      "minimum": 0.0,
+      "default": "rgba(114,135,213,0)",
       "expression": {
         "interpolated": true,
         "parameters": [
@@ -3782,7 +3763,7 @@
         ]
       },
       "transition": true,
-      "doc": "Controls the strength of haze in the fog layer. Haze is an additive effect which approximates the look of an atmosphere. Increasing this strengthens the haze. Reducing the fog strength pushes fog toward the horizon, making haze visible.",
+      "doc": "The color of the haze component of fog. Alpha adjusts the amount of haze. Note that haze is disabled by default (zero alpha); increase this value to enable the effect.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
