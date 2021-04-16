@@ -169,8 +169,6 @@ class LineBucket implements Bucket {
             });
         }
 
-        const hasDataDrivenDashes = this.hasDataDrivenDashes();
-
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
 
@@ -181,9 +179,7 @@ class LineBucket implements Bucket {
                 this.patternFeatures.push(patternBucketFeature);
 
             } else {
-                if (hasDataDrivenDashes) {
-                    this.addFeatureDashes(bucketFeature, options);
-                }
+                this.addFeatureDashes(bucketFeature, options);
                 this.addFeature(bucketFeature, geometry, index, canonical, options.lineAtlas.positions);
             }
 
@@ -227,23 +223,13 @@ class LineBucket implements Bucket {
 
                 // save positions for paint array
                 feature.patterns[layer.id] = {min, mid, max};
+
+            } else if (dashPropertyValue.value) {
+                lineAtlas.getDash(dashPropertyValue.value.from, capPropertyValue.value);
+                lineAtlas.getDash(dashPropertyValue.value.to, capPropertyValue.value);
             }
         }
 
-    }
-
-    hasDataDrivenDashes() {
-        for (const layer of this.layers) {
-            const dashProperty = layer.paint.get('line-dasharray');
-            const capProperty = layer.layout.get('line-cap');
-            if (!dashProperty || typeof (dashProperty.isConstant) !== 'function') continue; // temporary
-
-            if (!dashProperty.isConstant() || !capProperty.isConstant()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}) {

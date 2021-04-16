@@ -289,7 +289,6 @@ class Tile {
         }
 
         if (this.lineAtlas && !this.lineAtlas.uploaded) {
-            console.log(this.lineAtlas);
             this.lineAtlasTexture = new Texture(context, this.lineAtlas.image, gl.ALPHA);
             this.lineAtlas.uploaded = true;
         }
