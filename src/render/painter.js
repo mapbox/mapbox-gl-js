@@ -188,11 +188,11 @@ class Painter {
         const fog = this.style.fog;
         const fogStart = fog.properties.get('range')[0];
         const fogEnd = fog.properties.get('range')[1];
-        const fogStrength = fog.properties.get('strength');
+        const fogDensity = fog.properties.get('density');
         // We start culling where the fog opacity function hits 98%, leaving
         // a non-noticeable opacity change threshold. We use an arbitrary function
         // which bounds the true answer. See: https://www.desmos.com/calculator/lw03ldsuhy
-        const fogBoundFraction = 1 - 0.22 * Math.exp(4 * (fogStrength - 1));
+        const fogBoundFraction = 1 - 0.22 * Math.exp(4 * (fogDensity - 1));
         const fogCullDist = fogStart + (fogEnd - fogStart) * fogBoundFraction;
 
         this.transform.fogCullDistSq = fogCullDist * fogCullDist;
@@ -757,7 +757,7 @@ class Painter {
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const fog = this.style && this.style.fog;
         const fogOpacity = fog && fog.getFogPitchFactor(this.transform.pitch);
-        const haze = fog && fog.properties && fog.properties.get('haze-energy') > 0;
+        const haze = fog && fog.properties && fog.properties.get('haze-color').a > 0;
 
         const defines = [];
         if (terrain) defines.push('TERRAIN');
@@ -849,23 +849,31 @@ class Painter {
         if (fog && fogOpacity !== 0.0) {
             const temporalOffset = (this.frameCounter / 1000.0) % 1;
             const fogColor = fog.properties.get('color');
+            const fogColorUnpremultiplied = fogColor.a === 0 ? [0, 0, 0] : [
+                fogColor.r / fogColor.a,
+                fogColor.g / fogColor.a,
+                fogColor.b / fogColor.a
+            ];
             const uniforms = {};
 
             uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
             uniforms['u_fog_range'] = fog.properties.get('range');
-            uniforms['u_fog_color'] = [fogColor.r, fogColor.g, fogColor.b];
-            uniforms['u_fog_exponent'] = Math.max(1e-3, 12 * Math.pow(1 - fog.properties.get('strength'), 2));
+            uniforms['u_fog_color'] = fogColorUnpremultiplied;
+            uniforms['u_fog_exponent'] = Math.max(1e-3, 12 * Math.pow(1 - fog.properties.get('density'), 2));
             uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
             uniforms['u_fog_temporal_offset'] = temporalOffset;
             uniforms['u_fog_opacity'] = fogOpacity;
 
-            if (fog.properties.get('haze-energy') > 0) {
+            if (fog.properties.get('haze-color').a > 0) {
                 const hazeColor = fog.properties.get('haze-color');
+                const hazeBaseAmpl = 5;
                 const hazeColorLinear = [
-                    Math.pow(hazeColor.r, 2.2),
-                    Math.pow(hazeColor.g, 2.2),
-                    Math.pow(hazeColor.b, 2.2),
-                    fog.properties.get('haze-energy')
+                    hazeBaseAmpl * Math.pow(hazeColor.r, 2.2),
+                    hazeBaseAmpl * Math.pow(hazeColor.g, 2.2),
+                    hazeBaseAmpl * Math.pow(hazeColor.b, 2.2),
+                    // Alpha is already premultiplied into the color, so we use haze color alpha to
+                    // specify how much tone mapping to apply, reaching full strength after opacity=0.5.
+                    Math.min(1, 2.0 * hazeColor.a)
                 ];
 
                 uniforms['u_haze_color_linear'] = hazeColorLinear;
