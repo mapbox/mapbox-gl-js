@@ -33,13 +33,13 @@ var GUIParams = function() {
     this.enableSky = true;
     this.terrainExaggeration = 1.5;
     this.style = 'satellite-streets-v11';
-    this.fogRangeStart = 2;
-    this.fogRangeEnd = 12.0;
-    this.fogColor = [255, 255, 255];
-    this.fogHazeColor = [109, 123, 180];
-    this.fogHazeEnergy = 0.8;
-    this.fogStrength = 1.0;
-    this.fogSkyBlend = 0.1;
+    this.start = 2;
+    this.end = 12.0;
+    this.color = [255, 255, 255];
+    this.hazeColor = [109, 123, 180];
+    this.hazeOpacity = 0.5;
+    this.density = 1.0;
+    this.skyBlend = 0.1;
     this.showTileBoundaries = false;
 };
 
@@ -101,61 +101,60 @@ window.onload = function() {
     var enableFog = fog.add(guiParams, 'enableFog');
     enableFog.onFinishChange((value) => {
         map.setFog(value ? {
-            "range": [guiParams.fogRangeStart, guiParams.fogRangeEnd],
-            "color": 'rgba(' + guiParams.fogColor[0] + ', ' + guiParams.fogColor[1] + ', ' + guiParams.fogColor[2] + ', 1.0)',
-            "haze-color": 'rgba(' + guiParams.fogHazeColor[0] + ', ' + guiParams.fogHazeColor[1] + ', ' + guiParams.fogHazeColor[2] + ', 1.0)',
-            "haze-energy": guiParams.fogHazeEnergy,
-            "strength": guiParams.fogStrength,
-            "sky-blend": guiParams.fogSkyBlend
+            "range": [guiParams.start, guiParams.end],
+            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', 1.0)',
+            "haze-color": 'rgba(' + guiParams.hazeColor[0] + ', ' + guiParams.hazeColor[1] + ', ' + guiParams.hazeColor[2] + ', ' + guiParams.hazeOpacity + ')',
+            "density": guiParams.density,
+            "sky-blend": guiParams.skyBlend
         } : null);
     });
 
-    var fogRangeStart = fog.add(guiParams, 'fogRangeStart', 0.0, 15.0);
-    fogRangeStart.onChange((value) => {
+    var start = fog.add(guiParams, 'start', 0.0, 15.0);
+    start.onChange((value) => {
         map.setFog({
-            "range": [value, guiParams.fogRangeEnd],
+            "range": [value, guiParams.end],
         });
     });
 
-    var fogRangeEnd = fog.add(guiParams, 'fogRangeEnd', 0.0, 15.0);
-    fogRangeEnd.onChange((value) => {
+    var end = fog.add(guiParams, 'end', 0.0, 15.0);
+    end.onChange((value) => {
         map.setFog({
-            "range": [guiParams.fogRangeStart, value],
+            "range": [guiParams.start, value],
         });
     });
 
-    var fogStrength = fog.add(guiParams, 'fogStrength', 0, 1);
-    fogStrength.onChange((value) => {
+    var density = fog.add(guiParams, 'density', 0, 1);
+    density.onChange((value) => {
         map.setFog({
-            "strength": value,
+            "density": value,
         });
     });
 
-    var fogHazeEnergy = fog.add(guiParams, 'fogHazeEnergy', 0, 2);
-    fogHazeEnergy.onChange((value) => {
-        map.setFog({
-            "haze-energy": value,
-        });
-    });
-
-    var fogSkyBlend = fog.add(guiParams, 'fogSkyBlend', 0.0, 1.0);
-    fogSkyBlend.onChange((value) => {
+    var skyBlend = fog.add(guiParams, 'skyBlend', 0.0, 1.0);
+    skyBlend.onChange((value) => {
         map.setFog({
             "sky-blend": value,
         });
     });
 
-    var fogColor = fog.addColor(guiParams, 'fogColor');
-    fogColor.onChange((value) => {
+    var color = fog.addColor(guiParams, 'color');
+    color.onChange((value) => {
         map.setFog({
             "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', 1.0)',
         });
     });
 
-    var fogHazeColor = fog.addColor(guiParams, 'fogHazeColor');
-    fogHazeColor.onChange((value) => {
+    var hazeColor = fog.addColor(guiParams, 'hazeColor');
+    hazeColor.onChange((value) => {
         map.setFog({
-            "haze-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', 1.0)',
+            "haze-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.hazeOpacity + ')',
+        });
+    });
+
+    var hazeOpacity = fog.add(guiParams, 'hazeOpacity', 0, 1);
+    hazeOpacity.onChange((value) => {
+        map.setFog({
+            "haze-color": 'rgba(' + guiParams.hazeColor[0] + ', ' + guiParams.hazeColor[1] + ', ' + guiParams.hazeColor[2] + ', ' + guiParams.hazeOpacity + ')',
         });
     });
 };
@@ -215,12 +214,11 @@ map.on('style.load', function() {
     });
 
     map.setFog(guiParams.enableFog ? {
-        "range": [guiParams.fogRangeStart, guiParams.fogRangeEnd],
-        "color": 'rgba(' + guiParams.fogColor[0] + ', ' + guiParams.fogColor[1] + ', ' + guiParams.fogColor[2] + ', 1.0)',
-        "haze-color": 'rgba(' + guiParams.fogHazeColor[0] + ', ' + guiParams.fogHazeColor[1] + ', ' + guiParams.fogHazeColor[2] + ', 1.0)',
-        "strength": guiParams.fogStrength,
-        "haze-energy": guiParams.fogHazeEnergy,
-        "sky-blend": guiParams.fogSkyBlend
+        "range": [guiParams.start, guiParams.end],
+        "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', 1.0)',
+        "haze-color": 'rgba(' + guiParams.hazeColor[0] + ', ' + guiParams.hazeColor[1] + ', ' + guiParams.hazeColor[2] + ', ' + guiParams.hazeOpacity + ')',
+        "density": guiParams.density,
+        "sky-blend": guiParams.skyBlend
     } : null);
 
     map.setTerrain(guiParams.enableTerrain ? {

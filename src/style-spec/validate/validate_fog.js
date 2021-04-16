@@ -18,6 +18,10 @@ export default function validateFog(options) {
         return errors;
     }
 
+    if (fog.color && fog.color.a === 0) {
+        errors = errors.concat([new ValidationError('fog', fog, 'fog.color alpha must be nonzero.')]);
+    }
+
     if (fog.range && fog.range[0] >= fog.range[1]) {
         errors = errors.concat([new ValidationError('fog', fog, 'fog.range[0] can\'t be greater than or equal to fog.range[1]')]);
     }
