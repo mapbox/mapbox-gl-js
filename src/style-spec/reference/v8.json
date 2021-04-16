@@ -3755,7 +3755,7 @@
         ]
       },
       "transition": true,
-      "doc": "The color of the haze component of fog. Alpha adjusts amount of haze.",
+      "doc": "The color of the haze component of fog. Alpha adjusts the amount of haze. Note that haze is disabled by default (zero alpha); increase this value to enable the effect.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
