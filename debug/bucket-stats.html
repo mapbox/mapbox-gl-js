@@ -8,32 +8,58 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; left: 0; bottom: 0; right: 500px; }
-        #stats {
+        #panel {
             position: absolute; top: 0; bottom: 0; right: 0; width: 500px; overflow-x: hidden; overflow-y: auto;
             box-sizing: border-box; padding: 10px; font: 14px/1.2 sans-serif;}
         #stats table { width: 100%; }
+        #stats thead td { border-bottom: 1px solid black;}
+        #style { width: 300px; }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
+<div id='panel'>
+<input type="text" id="style" placeholder="Style URL" value="mapbox://styles/mapbox/streets-v11">
+<button type="button" onclick="resetStats()">Reset stats</button>
 <div id='stats'></div>
+</div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
+const style = document.getElementById('style');
+let curStyle = style.value;
+
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12,
     center: [-122.4194, 37.7749],
-    style: 'mapbox://styles/mapbox/streets-v11',
+    style: curStyle,
     hash: true
+});
+
+function resetStats () {
+    stats = {};
+    statsEl.innerHTML = '';
+}
+function loadStyle () {
+    const newStyle = this.value.trim();
+    if (curStyle === newStyle) return;
+    curStyle = newStyle;
+    map.setStyle(curStyle);
+    stats = {};
+}
+style.addEventListener('blur', loadStyle);
+style.addEventListener('keyup', function (event) {
+    // Load when enter is pressed
+    if (event.keyCode === 13) loadStyle.call(this, event);
 });
 
 map.showTileBoundaries = true;
 
-const stats = {};
+let stats = {};
 
 function propStats(bucket) {
     for (const layerId in bucket.programConfigurations.programConfigurations) {
@@ -87,7 +113,7 @@ map.on('data', (e) => {
     }
 
     if (!stats) return;
-    let html = '<table>';
+    let html = '<table><thead><td>Bytes</td><td>Usage</td><td>Bucket</td></thead>';
     const ids = Object.keys(stats).sort((a, b) => stats[b] - stats[a]);
     let total = 0;
     for (const id of ids) {
