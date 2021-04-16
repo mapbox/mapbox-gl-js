@@ -2,8 +2,7 @@
 
 import {warnOnce} from '../util/util.js';
 import {AlphaImage} from '../util/image.js';
-
-import type Context from '../gl/context.js';
+import {register} from '../util/web_worker_transfer.js';
 
 /**
  * A LineAtlas lets us reuse rendered dashed lines
@@ -18,22 +17,15 @@ class LineAtlas {
     width: number;
     height: number;
     nextRow: number;
-    bytes: number;
-    data: Uint8Array;
     image: AlphaImage;
-    dashes: {[_: string]: any};
-    dirty: boolean;
-    texture: WebGLTexture;
+    positions: {[_: string]: any};
 
     constructor(width: number, height: number) {
         this.width = width;
         this.height = height;
         this.nextRow = 0;
-
-        this.data = new Uint8Array(width * height);
-        this.image = new AlphaImage({width, height}, this.data);
-
-        this.dashes = {};
+        this.image = new AlphaImage({width, height});
+        this.positions = {};
     }
 
     /**
@@ -47,10 +39,10 @@ class LineAtlas {
     getDash(dasharray: Array<number>, round: boolean) {
         const key = this.getKey(dasharray, round);
 
-        if (!this.dashes[key]) {
-            this.dashes[key] = this.addDash(dasharray, round);
+        if (!this.positions[key]) {
+            this.positions[key] = this.addDash(dasharray, round);
         }
-        return this.dashes[key];
+        return this.positions[key];
     }
 
     getKey(dasharray, round) {
@@ -110,7 +102,7 @@ class LineAtlas {
                     signedDistance = halfStretch - Math.sqrt(minDist * minDist + distMiddle * distMiddle);
                 }
 
-                this.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
+                this.image.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
             }
         }
     }
@@ -153,7 +145,7 @@ class LineAtlas {
             const minDist = Math.min(distLeft, distRight);
             const signedDistance = range.isDash ? minDist : -minDist;
 
-            this.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
+            this.image.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
         }
     }
 
@@ -199,31 +191,11 @@ class LineAtlas {
         };
 
         this.nextRow += height;
-        this.dirty = true;
 
         return dashEntry;
     }
-
-    bind(context: Context) {
-        const gl = context.gl;
-        if (!this.texture) {
-            this.texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, this.width, this.height, 0, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
-
-        } else {
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-
-            if (this.dirty) {
-                this.dirty = false;
-                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
-            }
-        }
-    }
 }
+
+register('LineAtlas', LineAtlas);
 
 export default LineAtlas;

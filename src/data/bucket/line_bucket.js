@@ -184,7 +184,7 @@ class LineBucket implements Bucket {
                 if (hasDataDrivenDashes) {
                     this.addFeatureDashes(bucketFeature, options);
                 }
-                this.addFeature(bucketFeature, geometry, index, canonical, options.lineAtlas.dashes);
+                this.addFeature(bucketFeature, geometry, index, canonical, options.lineAtlas.positions);
             }
 
             const feature = features[index].feature;

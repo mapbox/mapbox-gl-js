@@ -31,6 +31,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     const dasharrayProperty = layer.paint.get('line-dasharray');
     const dasharray = dasharrayProperty.constantOr((1: any));
+    const capProperty = layer.layout.get('line-cap');
     const patternProperty = layer.paint.get('line-pattern');
     const image = patternProperty.constantOr((1: any));
 
@@ -54,7 +55,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.prepareDrawTile(coord);
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const prevProgram = painter.context.program.get();
         const program = painter.useProgram(programId, programConfiguration);
 
         const constantPattern = patternProperty.constantOr(null);
@@ -62,6 +62,15 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const atlas = tile.imageAtlas;
             const posTo = atlas.patternPositions[constantPattern.to.toString()];
             const posFrom = atlas.patternPositions[constantPattern.from.toString()];
+            if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
+        }
+
+        const constantDash = dasharrayProperty.constantOr(null);
+        const constantCap = capProperty.constantOr(null);
+
+        if (constantDash && constantCap && tile.lineAtlas) {
+            const posTo = tile.lineAtlas.getDash(constantDash.to, constantCap);
+            const posFrom = tile.lineAtlas.getDash(constantDash.from, constantCap);
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 

@@ -132,23 +132,23 @@ class CrossFadedConstantBinder implements UniformBinder {
     setConstantPatternPositions(posTo: ImagePosition, posFrom: ImagePosition) {
         this.pixelRatioFrom = posFrom.pixelRatio;
         this.pixelRatioTo = posTo.pixelRatio;
-        this.patternFrom = posFrom.tlbr;
-        this.patternTo = posTo.tlbr;
+        this.patternFrom = posFrom.tl.concat(posFrom.br);
+        this.patternTo = posTo.tl.concat(posTo.br);
     }
 
     setUniform(uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string) {
         const pos =
-            uniformName === 'u_pattern_to' ? this.patternTo :
-            uniformName === 'u_pattern_from' ? this.patternFrom :
+            uniformName === 'u_pattern_to' || uniformName === 'u_dash_to' ? this.patternTo :
+            uniformName === 'u_pattern_from' || uniformName === 'u_dash_from' ? this.patternFrom :
             uniformName === 'u_pixel_ratio_to' ? this.pixelRatioTo :
             uniformName === 'u_pixel_ratio_from' ? this.pixelRatioFrom : null;
         if (pos) uniform.set(pos);
     }
 
     getBinding(context: Context, location: WebGLUniformLocation, name: string): $Shape<Uniform<any>> {
-        return name.substr(0, 9) === 'u_pattern' ?
-            new Uniform4f(context, location) :
-            new Uniform1f(context, location);
+        if (name === 'u_pattern_from' || name === 'u_pattern_to') return new Uniform4f(context, location);
+        if (name === 'u_dash_from' || name === 'u_dash_to') return new Uniform4f(context, location);
+        return new Uniform1f(context, location);
     }
 }
 
@@ -690,7 +690,7 @@ function getLayoutException(property) {
         },
         'line-dasharray': { // temporary layout
             'source': DashLayoutArray,
-            'composite': DashLayoutArray 
+            'composite': DashLayoutArray
         }
     };
 

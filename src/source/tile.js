@@ -215,8 +215,8 @@ class Tile {
         if (data.glyphAtlasImage) {
             this.glyphAtlasImage = data.glyphAtlasImage;
         }
-        if (data.lineAtlasImage) {
-            this.lineAtlasImage = data.lineAtlasImage;
+        if (data.lineAtlas) {
+            this.lineAtlas = data.lineAtlas;
         }
     }
 
@@ -231,12 +231,16 @@ class Tile {
         }
         this.buckets = {};
 
-        if (this.imageAtlasTexture) {
-            this.imageAtlasTexture.destroy();
-        }
-
         if (this.imageAtlas) {
             this.imageAtlas = null;
+        }
+
+        if (this.lineAtlas) {
+            this.lineAtlas = null;
+        }
+
+        if (this.imageAtlasTexture) {
+            this.imageAtlasTexture.destroy();
         }
 
         if (this.glyphAtlasTexture) {
@@ -284,9 +288,10 @@ class Tile {
             this.glyphAtlasImage = null;
         }
 
-        if (this.lineAtlasImage) {
-            this.lineAtlasTexture = new Texture(context, this.lineAtlasImage, gl.ALPHA);
-            this.lineAtlasImage = null;
+        if (this.lineAtlas && !this.lineAtlas.uploaded) {
+            console.log(this.lineAtlas);
+            this.lineAtlasTexture = new Texture(context, this.lineAtlas.image, gl.ALPHA);
+            this.lineAtlas.uploaded = true;
         }
     }
 
