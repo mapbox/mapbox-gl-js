@@ -2,6 +2,7 @@
 import ValidationError from '../error/validation_error.js';
 import validate from './validate.js';
 import getType from '../util/get_type.js';
+import {parseCSSColor} from 'csscolorparser';
 
 export default function validateFog(options) {
     const fog = options.value;
@@ -18,8 +19,11 @@ export default function validateFog(options) {
         return errors;
     }
 
-    if (fog.color && fog.color.a === 0) {
-        errors = errors.concat([new ValidationError('fog', fog, 'fog.color alpha must be nonzero.')]);
+    if (fog.color) {
+        const fogColor = parseCSSColor(fog.color);
+        if (fogColor && fogColor[3] === 0) {
+            errors = errors.concat([new ValidationError('fog', fog, 'fog.color alpha must be nonzero.')]);
+        }
     }
 
     if (fog.range && fog.range[0] >= fog.range[1]) {
