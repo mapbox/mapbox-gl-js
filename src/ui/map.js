@@ -2184,9 +2184,8 @@ class Map extends Camera {
      * map.setFog({
      *  "range": [1.0, 12.0],
      *  "color": 'white',
-     *  "haze-color": 'rgba(109, 123, 180, 1.0)',
-     *  "strength": 1.0,
-     *  "haze-energy": 1.0,
+     *  "density": 1.0,
+     *  "haze-color": 'rgba(109, 123, 180, 0.5)',
      *  "sky-blend": 0.1
      * });
      */

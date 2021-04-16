@@ -54,12 +54,12 @@ vec3 fog_apply(vec3 color, vec3 pos) {
     float fog_opac = haze_opac * pow(smoothstep(0.0, 1.0, t), u_fog_exponent);
 
 #ifdef FOG_HAZE
-    vec3 haze = (haze_opac * u_haze_color_linear.a) * u_haze_color_linear.rgb;
+    vec3 haze = haze_opac * u_haze_color_linear.rgb;
 
     // The smoothstep fades in tonemapping slightly before the fog layer. This violates
     // the principle that fog should not have an effect outside the fog layer, but the
     // effect is hardly noticeable except on pure white glaciers.
-    float tonemap_strength = u_fog_opacity * min(1.0, u_haze_color_linear.a) * smoothstep(-0.5, 0.25, t);
+    float tonemap_strength = u_fog_opacity * u_haze_color_linear.a * smoothstep(-0.5, 0.25, t);
     color = srgb_to_linear(color);
     color = mix(color, tonemap(color + haze), tonemap_strength);
     color = linear_to_srgb(color);
