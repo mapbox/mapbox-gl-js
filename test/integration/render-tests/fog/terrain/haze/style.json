@@ -16,8 +16,7 @@
   "fog": {
     "range": [1, 2],
     "color": "white",
-    "haze-color": "rgba(0, 0, 255, 1)",
-    "haze-energy": 1.0
+    "haze-color": "rgba(0, 0, 255, 0.5)"
   },
   "sources": {
     "rgbterrain": {
