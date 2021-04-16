@@ -12,14 +12,14 @@ export const FOG_SYMBOL_CLIPPING_THRESHOLD = 0.9;
 
 export type FogState = {
     range: [number, number],
-    strength: number
+    density: number
 };
 
 // As defined in _prelude_fog.fragment.glsl#fog_opacity
 export function getFogOpacity(state: FogState, depth: number, pitch: number): number {
     const fogOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
     const [start, end] = state.range;
-    const fogStrength = state.strength;
+    const fogDensity = state.density;
 
     // The fog is not physically accurate, so we seek an expression which satisfies a
     // couple basic constraints:
@@ -42,9 +42,9 @@ export function getFogOpacity(state: FogState, depth: number, pitch: number): nu
     falloff = Math.min(1.0, 1.00747 * falloff);
 
     // From src/render/painter.js via fog uniforms:
-    const fogExponent = 12 * Math.pow(1 - fogStrength, 2);
+    const fogExponent = 12 * Math.pow(1 - fogDensity, 2);
 
-    // Account for fog strength
+    // Account for fog density
     falloff *= Math.pow(smoothstep(0, 1, t), fogExponent);
 
     return falloff * fogOpacity;
