@@ -225,8 +225,9 @@ class LineBucket implements Bucket {
                 feature.patterns[layer.id] = {min, mid, max};
 
             } else if (dashPropertyValue.value) {
-                lineAtlas.getDash(dashPropertyValue.value.from, capPropertyValue.value);
-                lineAtlas.getDash(dashPropertyValue.value.to, capPropertyValue.value);
+                const round = capPropertyValue.value === 'round';
+                lineAtlas.getDash(dashPropertyValue.value.from, round);
+                lineAtlas.getDash(dashPropertyValue.value.to, round);
             }
         }
 

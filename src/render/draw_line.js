@@ -69,8 +69,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         const constantCap = capProperty.constantOr(null);
 
         if (constantDash && constantCap && tile.lineAtlas) {
-            const posTo = tile.lineAtlas.getDash(constantDash.to, constantCap);
-            const posFrom = tile.lineAtlas.getDash(constantDash.from, constantCap);
+            const round = constantCap === 'round';
+            const posTo = tile.lineAtlas.getDash(constantDash.to, round);
+            const posFrom = tile.lineAtlas.getDash(constantDash.from, round);
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 

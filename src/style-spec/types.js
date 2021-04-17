@@ -213,7 +213,7 @@ export type LineLayerSpecification = {|
         "line-gap-width"?: DataDrivenPropertyValueSpecification<number>,
         "line-offset"?: DataDrivenPropertyValueSpecification<number>,
         "line-blur"?: DataDrivenPropertyValueSpecification<number>,
-        "line-dasharray"?: PropertyValueSpecification<Array<number>>,
+        "line-dasharray"?: DataDrivenPropertyValueSpecification<Array<number>>,
         "line-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "line-gradient"?: ExpressionSpecification
     |}
