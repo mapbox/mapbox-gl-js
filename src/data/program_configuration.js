@@ -321,11 +321,9 @@ class CrossFadedCompositeBinder implements AttributeBinder {
         this.zoom = zoom;
         this.layerId = layerId;
 
-        this.patternAttributes = type === 'array' ?
-            dashAttributes :
-            patternAttributes;
+        this.paintVertexAttributes = (type === 'array' ? dashAttributes : patternAttributes).members;
         for (let i = 0; i < names.length; ++i) {
-            assert(`a_${names[i]}` === this.patternAttributes.members[i].name);
+            assert(`a_${names[i]}` === this.paintVertexAttributes[i].name);
         }
 
         this.zoomInPaintVertexArray = new PaintVertexArray();
@@ -373,8 +371,8 @@ class CrossFadedCompositeBinder implements AttributeBinder {
 
     upload(context: Context) {
         if (this.zoomInPaintVertexArray && this.zoomInPaintVertexArray.arrayBuffer && this.zoomOutPaintVertexArray && this.zoomOutPaintVertexArray.arrayBuffer) {
-            this.zoomInPaintVertexBuffer = context.createVertexBuffer(this.zoomInPaintVertexArray, this.patternAttributes.members, this.expression.isStateDependent);
-            this.zoomOutPaintVertexBuffer = context.createVertexBuffer(this.zoomOutPaintVertexArray, this.patternAttributes.members, this.expression.isStateDependent);
+            this.zoomInPaintVertexBuffer = context.createVertexBuffer(this.zoomInPaintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+            this.zoomOutPaintVertexBuffer = context.createVertexBuffer(this.zoomOutPaintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
         }
     }
 
@@ -511,13 +509,9 @@ export default class ProgramConfiguration {
         const result = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder) {
+            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof CrossFadedCompositeBinder) {
                 for (let i = 0; i < binder.paintVertexAttributes.length; i++) {
                     result.push(binder.paintVertexAttributes[i].name);
-                }
-            } else if (binder instanceof CrossFadedCompositeBinder) {
-                for (let i = 0; i < binder.patternAttributes.members.length; i++) {
-                    result.push(binder.patternAttributes.members[i].name);
                 }
             }
         }

@@ -172,6 +172,8 @@ class LineBucket implements Bucket {
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
 
+            this.addFeatureDashes(bucketFeature, options);
+
             if (this.hasPattern) {
                 const patternBucketFeature = addPatternDependencies('line', this.layers, bucketFeature, this.zoom, options);
                 // pattern features are added only once the pattern is loaded into the image atlas
@@ -179,7 +181,6 @@ class LineBucket implements Bucket {
                 this.patternFeatures.push(patternBucketFeature);
 
             } else {
-                this.addFeatureDashes(bucketFeature, options);
                 this.addFeature(bucketFeature, geometry, index, canonical, options.lineAtlas.positions);
             }
 
@@ -197,11 +198,19 @@ class LineBucket implements Bucket {
             const capPropertyValue = layer.layout.get('line-cap').value;
 
             if (dashPropertyValue.kind !== 'constant' || capPropertyValue.kind !== 'constant') {
-                const minDashArray = dashPropertyValue.evaluate({zoom: zoom - 1}, feature);
-                const midDashArray = dashPropertyValue.evaluate({zoom}, feature);
-                const maxDashArray = dashPropertyValue.evaluate({zoom: zoom + 1}, feature);
+                let minDashArray, midDashArray, maxDashArray, minRound, midRound, maxRound;
 
-                let minRound, midRound, maxRound;
+                if (dashPropertyValue.kind === 'constant') {
+                    const constDash = dashPropertyValue.value;
+                    if (!constDash) continue;
+                    minDashArray = midDashArray = constDash.from;
+                    maxDashArray = constDash.to;
+
+                } else {
+                    minDashArray = dashPropertyValue.evaluate({zoom: zoom - 1}, feature);
+                    midDashArray = dashPropertyValue.evaluate({zoom}, feature);
+                    maxDashArray = dashPropertyValue.evaluate({zoom: zoom + 1}, feature);
+                }
 
                 if (capPropertyValue.kind === 'constant') {
                     minRound = midRound = maxRound = capPropertyValue.value === 'round';
@@ -224,10 +233,12 @@ class LineBucket implements Bucket {
                 // save positions for paint array
                 feature.patterns[layer.id] = {min, mid, max};
 
-            } else if (dashPropertyValue.value) {
+            } else {
                 const round = capPropertyValue.value === 'round';
-                lineAtlas.getDash(dashPropertyValue.value.from, round);
-                lineAtlas.getDash(dashPropertyValue.value.to, round);
+                const constDash = dashPropertyValue.value;
+                if (!constDash) continue;
+                lineAtlas.getDash(constDash.from, round);
+                lineAtlas.getDash(constDash.to, round);
             }
         }
 

@@ -19,6 +19,7 @@ class LineAtlas {
     nextRow: number;
     image: AlphaImage;
     positions: {[_: string]: any};
+    uploaded: boolean;
 
     constructor(width: number, height: number) {
         this.width = width;
@@ -26,6 +27,7 @@ class LineAtlas {
         this.nextRow = 0;
         this.image = new AlphaImage({width, height});
         this.positions = {};
+        this.uploaded = false;
     }
 
     /**
@@ -45,7 +47,7 @@ class LineAtlas {
         return this.positions[key];
     }
 
-    getKey(dasharray, round) {
+    getKey(dasharray: Array<number>, round: boolean): string {
         return dasharray.join(',') + String(round);
     }
 

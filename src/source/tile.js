@@ -26,6 +26,7 @@ import type Actor from '../util/actor.js';
 import type DEMData from '../data/dem_data.js';
 import type {AlphaImage} from '../util/image.js';
 import type ImageAtlas from '../render/image_atlas.js';
+import type LineAtlas from '../render/line_atlas.js';
 import type ImageManager from '../render/image_manager.js';
 import type Context from '../gl/context.js';
 import type {OverscaledTileID} from './tile_id.js';
@@ -62,6 +63,8 @@ class Tile {
     latestRawTileData: ?ArrayBuffer;
     imageAtlas: ?ImageAtlas;
     imageAtlasTexture: Texture;
+    lineAtlas: ?LineAtlas;
+    lineAtlasTexture: Texture;
     glyphAtlasImage: ?AlphaImage;
     glyphAtlasTexture: Texture;
     expirationTime: any;
