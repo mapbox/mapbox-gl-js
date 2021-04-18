@@ -1,8 +1,8 @@
 #ifdef FOG
 
 uniform vec3 u_fog_color;
-uniform float u_fog_sky_blend;
 uniform float u_fog_temporal_offset;
+uniform mediump float u_fog_sky_blend;
 uniform mediump vec2 u_fog_range;
 uniform mediump float u_fog_opacity;
 uniform mediump vec4 u_haze_color_linear;
@@ -48,10 +48,12 @@ float fog_opacity(vec3 pos) {
 
 vec3 fog_apply(vec3 color, vec3 pos) {
     // Map [near, far] to [0, 1]
-    float t = (length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x);
+    float depth = length(pos);
+    float t = (depth - u_fog_range.x) / (u_fog_range.y - u_fog_range.x);
 
     float haze_opac = fog_opacity(t);
     float fog_opac = haze_opac * pow(smoothstep(0.0, 1.0, t), u_fog_exponent);
+    fog_opac *= fog_sky_blending(pos / depth);
 
 #ifdef FOG_HAZE
     vec3 haze = haze_opac * u_haze_color_linear.rgb;
