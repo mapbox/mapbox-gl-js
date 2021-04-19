@@ -507,7 +507,7 @@ export default class Marker extends Evented {
             this._pos = this._pos.round();
         }
 
-        this._map._domRenderTaskQueue.add(() => {
+        this._map._requestDomTask(() => {
             if (this._element && this._pos && this._anchor) {
                 DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
             }
