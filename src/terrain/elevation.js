@@ -27,7 +27,7 @@ export class Elevation {
      */
     getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: ?number): number | null {
         // Force a cast to null for both null and undefined
-        if(defaultIfNotLoaded == null) defaultIfNotLoaded = null;
+        if (defaultIfNotLoaded == null) defaultIfNotLoaded = null;
 
         const src = this._source();
         if (!src) return defaultIfNotLoaded;

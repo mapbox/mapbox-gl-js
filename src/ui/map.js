@@ -16,7 +16,7 @@ import Hash from './hash.js';
 import HandlerManager from './handler_manager.js';
 import Camera from './camera.js';
 import LngLat from '../geo/lng_lat.js';
-import MercatorCoordinate from '../geo/mercator_coordinate';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import LngLatBounds from '../geo/lng_lat_bounds.js';
 import Point from '@mapbox/point-geometry';
 import AttributionControl from './control/attribution_control.js';
