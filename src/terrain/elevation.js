@@ -62,7 +62,7 @@ export class Elevation {
         const tilesAtTileZoom = 1 << tileID.canonical.z;
         return this.getAtPoint(new MercatorCoordinate(
             tileID.wrap + (tileID.canonical.x + x / EXTENT) / tilesAtTileZoom,
-            (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom), 0);
+            (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom), 0) || 0;
     }
 
     /*
