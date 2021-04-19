@@ -399,7 +399,7 @@ test('transform', (t) => {
 
     const createCollisionElevation = (elevation) => {
         return {
-            getAtPoint(p) {
+            getAtPointOrZero(p) {
                 if (p.x === 0.5 && p.y === 0.5)
                     return 0;
                 return elevation;
@@ -416,7 +416,7 @@ test('transform', (t) => {
 
     const createConstantElevation = (elevation) => {
         return {
-            getAtPoint(_) {
+            getAtPointOrZero(_) {
                 return elevation;
             },
             getForTilePoints(tileID, points) {
@@ -431,7 +431,7 @@ test('transform', (t) => {
 
     const createRampElevation = (scale) => {
         return {
-            getAtPoint(p) {
+            getAtPointOrZero(p) {
                 return scale * (p.x + p.y - 1.0);
             },
             getForTilePoints(tileID, points) {
@@ -476,7 +476,7 @@ test('transform', (t) => {
         transform.center = {lng: 0, lat: 0};
         transform.zoom = 16;
         transform.elevation = createRampElevation(500);
-        t.equal(transform.elevation.getAtPoint(new MercatorCoordinate(1.0, 0.5)), 250);
+        t.equal(transform.elevation.getAtPointOrZero(new MercatorCoordinate(1.0, 0.5)), 250);
 
         t.equal(transform.zoom, 16);
         t.equal(transform._cameraZoom, 16);
@@ -540,7 +540,7 @@ test('transform', (t) => {
         let tilesDefaultElevation = 0;
         const tileElevation = {};
         const elevation = {
-            getAtPoint(_) {
+            getAtPointOrZero(_) {
                 return this.exaggeration() * centerElevation;
             },
             getMinMaxForTile(tileID) {
@@ -739,7 +739,7 @@ test('transform', (t) => {
 
         const transform = new Transform();
         transform.elevation = {
-            getAtPoint(_) {
+            getAtPointOrZero(_) {
                 return 2760;
             },
             getMinMaxForTile(tileID) {
@@ -1229,7 +1229,7 @@ test('transform', (t) => {
             const transform = new Transform(0, 22, 0, 85);
             transform.resize(100, 100);
             transform._elevation = {
-                getAtPoint: () => groundElevation,
+                getAtPointOrZero: () => groundElevation,
                 exaggeration: () => 1.0,
                 raycast: () => undefined,
                 getMinElevationBelowMSL: () => 0
