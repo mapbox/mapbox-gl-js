@@ -2171,10 +2171,10 @@ class Map extends Camera {
     }
 
     /**
-     * Queries the currently loaded data for elevation at a geographical location.
+     * Queries the currently loaded data for elevation at a geographical location. This accounts for the value of `exaggeration` set on `terrain`.
      * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
      *
-     * In order to gurantee that the terrain data is loaded ensure that the geographical location is visble and wait for the `idle` event to occur.
+     * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
      * @param {LngLatLike} lnglat The geographical location to project.
      * @returns {number | null} The elevation in meters, accounting for `terrain.exaggeration`.
      * @example
