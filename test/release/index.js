@@ -130,8 +130,9 @@ const pages = [
         "title": "Free Camera Point"
     },
     {
-        "key": "add-3d-model",
-        "title": "Add a 3d model"
+        "key": "threejs-antenna",
+        "title": "Add a 3d model on terrain with ThreeJS",
+        "url": "./threejs-antenna.html"
     },
     {
         "key": "free-camera-path",
