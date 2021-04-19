@@ -315,7 +315,7 @@ class Transform {
 
         // Compute zoom level from the height of the camera relative to the terrain
         const cameraZoom: number = this._cameraZoom;
-        const elevationAtCenter = this._elevation.getAtPoint(MercatorCoordinate.fromLngLat(this.center));
+        const elevationAtCenter = this._elevation.getAtPoint(MercatorCoordinate.fromLngLat(this.center), 0);
         const mercatorElevation = mercatorZfromAltitude(elevationAtCenter, this.center.lat);
         const altitude  = this._mercatorZfromZoom(cameraZoom);
         const minHeight = this._mercatorZfromZoom(this._maxZoom);
@@ -984,7 +984,7 @@ class Transform {
      * @private
      */
     _coordinatePoint(coord: MercatorCoordinate, sampleTerrainIn3D: boolean) {
-        const elevation = sampleTerrainIn3D && this.elevation ? this.elevation.getAtPoint(coord, this._centerAltitude) : this._centerAltitude;
+        const elevation = sampleTerrainIn3D && this.elevation ? this.elevation.getAtPoint(coord, this._centerAltitude | 0) : this._centerAltitude;
         const p = [coord.x * this.worldSize, coord.y * this.worldSize, elevation + coord.toAltitude(), 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
         return p[3] > 0 ?
@@ -1146,7 +1146,7 @@ class Transform {
 
         const elevation: Elevation = this._elevation;
         this._updateCameraState();
-        const elevationAtCamera = elevation.getAtPoint(this._camera.mercatorPosition);
+        const elevationAtCamera = elevation.getAtPoint(this._camera.mercatorPosition, 0);
 
         const minHeight = this._minimumHeightOverTerrain() *  Math.cos(degToRad(this._maxPitch));
         const terrainElevation = mercatorZfromAltitude(elevationAtCamera, this._center.lat);

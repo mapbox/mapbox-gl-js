@@ -133,7 +133,7 @@ class FreeCameraOptions {
             return;
         }
 
-        const altitude = this._elevation ? this._elevation.getAtPoint(MercatorCoordinate.fromLngLat(location)) : 0;
+        const altitude = this._elevation ? this._elevation.getAtPoint(MercatorCoordinate.fromLngLat(location), 0) : 0;
         const pos: MercatorCoordinate = this.position;
         const target = MercatorCoordinate.fromLngLat(location, altitude);
         const forward = [target.x - pos.x, target.y - pos.y, target.z - pos.z];

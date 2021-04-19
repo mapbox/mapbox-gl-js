@@ -25,7 +25,10 @@ export class Elevation {
      * point elevation, returns `defaultIfNotLoaded`.
      * Doesn't invoke network request to fetch the data.
      */
-    getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: number = 0): number {
+    getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: ?number): number | null {
+        // Force a cast to null for both null and undefined
+        if(defaultIfNotLoaded == null) defaultIfNotLoaded = null;
+
         const src = this._source();
         if (!src) return defaultIfNotLoaded;
         if (point.y < 0.0 || point.y > 1.0) {
@@ -59,7 +62,7 @@ export class Elevation {
         const tilesAtTileZoom = 1 << tileID.canonical.z;
         return this.getAtPoint(new MercatorCoordinate(
             tileID.wrap + (tileID.canonical.x + x / EXTENT) / tilesAtTileZoom,
-            (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom));
+            (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom), 0);
     }
 
     /*

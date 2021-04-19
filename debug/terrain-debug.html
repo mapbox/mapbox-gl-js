@@ -351,6 +351,11 @@ document.onkeypress = function(e) {
     }
 };
 
+map.on('idle', function() {
+    var elevation = map.queryTerrainElevationAt(map.getCenter());
+    console.log("Elevation at center: " + elevation);
+});
+
 </script>
 </body>
 </html>
