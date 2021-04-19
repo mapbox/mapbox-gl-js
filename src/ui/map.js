@@ -2214,7 +2214,7 @@ class Map extends Camera {
      * @param {LngLatLike} lnglat The geographical location to evaluate the fog on.
      * @returns {number} A value between 0 and 1 representing the fog opacity, where 1 means fully within, and 0 means not affected by the fog effect.
      */
-    getFogOpacity(lnglat: LngLatLike): number {
+    queryFogOpacity(lnglat: LngLatLike): number {
         if (!this.style || !this.style.fog) return 0.0;
         return this.style.fog.getOpacityAtLatLng(LngLat.convert(lnglat), this.transform);
     }
