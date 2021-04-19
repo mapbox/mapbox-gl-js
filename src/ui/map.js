@@ -2181,10 +2181,10 @@ class Map extends Camera {
      * var coordinate = [-122.420679, 37.772537];
      * var elevation = map.queryTerrainElevationAt(coordinate);
      */
-    queryTerrainElevationAt(lngLat: LngLatLike): number | null {
+    queryTerrainElevationAt(lnglat: LngLatLike): number | null {
         if (!this.transform.elevation) return null;
 
-        return this.transform.elevation.getAtPoint(MercatorCoordinate.fromLngLat(lngLat));
+        return this.transform.elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat));
     }
 
     /**
