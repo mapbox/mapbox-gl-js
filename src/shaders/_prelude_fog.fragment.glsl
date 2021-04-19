@@ -17,6 +17,9 @@ vec3 tonemap(vec3 color) {
 
 // Assumes z up and camera_dir *normalized* (to avoid computing its length multiple
 // times for different functions).
+// Must match definitions in:
+// src/shaders/_prelude_fog.vertex.glsl#fog_sky_blending
+// src/style/fog_helpers.js#getFogSkyBlending
 float fog_sky_blending(vec3 camera_dir) {
     float t = max(0.0, camera_dir.z / u_fog_sky_blend);
     // Factor of 3 chosen to roughly match smoothstep.
