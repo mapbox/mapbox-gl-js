@@ -395,7 +395,7 @@ export class Terrain extends Elevation {
         const tr = this.painter.transform;
         if (this._initializing) {
             // Don't activate terrain until center tile gets loaded.
-            this._initializing = tr._centerAltitude === 0 && this.getAtPoint(MercatorCoordinate.fromLngLat(tr.center), -1) || 0 === -1;
+            this._initializing = tr._centerAltitude === 0 && (this.getAtPoint(MercatorCoordinate.fromLngLat(tr.center), -1) || 0) === -1;
             this._emptyDEMTextureDirty = !this._initializing;
         }
 
