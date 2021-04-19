@@ -15,6 +15,12 @@ import type Tile from '../source/tile.js';
  * Provides access to elevation data from raster-dem source cache.
  */
 export class Elevation {
+    /**
+     * Helper around `getAtPoint` that guarantees that a numeric value is returned.
+     */
+    getAtPointOrZero(point: MercatorCoordinate, defaultIfNotLoaded: number = 0): number {
+        return this.getAtPoint(point, defaultIfNotLoaded) || 0;
+    }
 
     /**
      * Altitude above sea level in meters at specified point.
@@ -25,7 +31,10 @@ export class Elevation {
      * point elevation, returns `defaultIfNotLoaded`.
      * Doesn't invoke network request to fetch the data.
      */
-    getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: number = 0): number {
+    getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: ?number): number | null {
+        // Force a cast to null for both null and undefined
+        if (defaultIfNotLoaded == null) defaultIfNotLoaded = null;
+
         const src = this._source();
         if (!src) return defaultIfNotLoaded;
         if (point.y < 0.0 || point.y > 1.0) {
@@ -57,7 +66,7 @@ export class Elevation {
      */
     getAtTileOffset(tileID: OverscaledTileID, x: number, y: number): number {
         const tilesAtTileZoom = 1 << tileID.canonical.z;
-        return this.getAtPoint(new MercatorCoordinate(
+        return this.getAtPointOrZero(new MercatorCoordinate(
             tileID.wrap + (tileID.canonical.x + x / EXTENT) / tilesAtTileZoom,
             (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom));
     }

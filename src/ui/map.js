@@ -16,6 +16,7 @@ import Hash from './hash.js';
 import HandlerManager from './handler_manager.js';
 import Camera from './camera.js';
 import LngLat from '../geo/lng_lat.js';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import LngLatBounds from '../geo/lng_lat_bounds.js';
 import Point from '@mapbox/point-geometry';
 import AttributionControl from './control/attribution_control.js';
@@ -2167,6 +2168,23 @@ class Map extends Camera {
      */
     getTerrain(): Terrain | null {
         return this.style.getTerrain();
+    }
+
+    /**
+     * Queries the currently loaded data for elevation at a geographical location. This accounts for the value of `exaggeration` set on `terrain`.
+     * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
+     *
+     * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
+     * @param {LngLatLike} lnglat The geographical location to project.
+     * @returns {number | null} The elevation in meters, accounting for `terrain.exaggeration`.
+     * @example
+     * var coordinate = [-122.420679, 37.772537];
+     * var elevation = map.queryTerrainElevationAt(coordinate);
+     */
+    queryTerrainElevationAt(lnglat: LngLatLike): number | null {
+        if (!this.transform.elevation) return null;
+
+        return this.transform.elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat));
     }
 
     /**
