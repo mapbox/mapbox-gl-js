@@ -16,7 +16,7 @@ export type FogState = {
 };
 
 // As defined in _prelude_fog.fragment.glsl#fog_opacity
-export function getFogOpacity(state: FogState, depth: number, pitch: number): number {
+export function queryFogOpacity(state: FogState, depth: number, pitch: number): number {
     const fogOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
     const [start, end] = state.range;
     const fogDensity = state.density;
@@ -56,15 +56,15 @@ export function getOpacityAtTileCoord(state: FogState, x: number, y: number, z: 
     vec3.transformMat4(pos, pos, mat);
     const depth = vec3.length(pos);
 
-    return getFogOpacity(state, depth, transform.pitch);
+    return queryFogOpacity(state, depth, transform.pitch);
 }
 
-export function getFogOpacityAtLatLng(state: FogState, lngLat: LngLat, transform: Transform): number {
+export function queryFogOpacityAtLatLng(state: FogState, lngLat: LngLat, transform: Transform): number {
     const meters = MercatorCoordinate.fromLngLat(lngLat);
     const elevation = transform.elevation ? transform.elevation.getAtPoint(meters) : 0;
     const pos = [meters.x, meters.y, elevation];
     vec3.transformMat4(pos, pos, transform.mercatorFogMatrix);
     const depth = vec3.length(pos);
 
-    return getFogOpacity(state, depth, transform.pitch);
+    return queryFogOpacity(state, depth, transform.pitch);
 }

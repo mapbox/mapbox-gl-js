@@ -470,7 +470,7 @@ export default class Marker extends Evented {
             }
         }
 
-        const fogOpacity = this._map.getFogOpacity(mapLocation);
+        const fogOpacity = this._map.queryFogOpacity(mapLocation);
         const opacity = (1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0);
 
         const occluded = opacity === 0;
