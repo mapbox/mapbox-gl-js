@@ -24,6 +24,8 @@ const suiteName = process.env.SUITE_NAME;
 const suitePath = `${suiteName}-tests`;
 const ciOutputFile = `${rootFixturePath}${suitePath}/test-results.xml`;
 const fixtureBuildInterval = 2000;
+const testPage = process.env.BUILD === "production" ? "test/integration/testem_page_prod.html" : "test/integration/testem_page_dev.html";
+const buildJob = process.env.BUILD === "production" ? "build-prod-min" : "build-dev";
 
 let beforeHookInvoked = false;
 let server;
@@ -45,7 +47,7 @@ function getQueryParams() {
 }
 
 const defaultTestemConfig = {
-    "test_page": "test/integration/testem_page.html",
+    "test_page": testPage,
     "query_params": getQueryParams(),
     "proxies": {
         "/image":{
@@ -125,7 +127,7 @@ function buildArtifactsCi() {
     //2. Build tape
     const tapePromise = buildTape();
     //3. Build test artifacts in parallel
-    const rollupPromise = runAll([`build-test-suite`, 'build-dev'], {parallel: true});
+    const rollupPromise = runAll([`build-test-suite`, buildJob], {parallel: true});
 
     return Promise.all([tapePromise, rollupPromise]);
 }
