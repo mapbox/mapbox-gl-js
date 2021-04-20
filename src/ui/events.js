@@ -502,7 +502,7 @@ export type MapEvent =
      *
      * **Note:** To detect when the mouse leaves the canvas, independent of layer, use {@link Map.event:mouseout} instead.
      *
-     * **Important:** This event can only be listened for when {@link Map#on} includes three arguements,
+     * **Important:** This event can only be listened for when {@link Map#on} includes three arguments,
      * where the second argument specifies the desired layer.
      *
      * @event mouseleave
