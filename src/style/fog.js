@@ -47,7 +47,8 @@ class Fog extends Evented {
     get state(): FogState {
         return {
             range: this.properties.get('range'),
-            density: this.properties.get('density')
+            density: this.properties.get('density'),
+            skyBlend: this.properties.get('sky-blend')
         };
     }
 
