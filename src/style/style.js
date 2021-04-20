@@ -1459,9 +1459,11 @@ class Style extends Evented {
         if (this.map._markers.length === 0) {
             return;
         }
-        for (const marker of this.map._markers) {
-            marker._evaluateOpacity();
-        }
+        this.map._requestDomTask(() => {
+            for (const marker of this.map._markers) {
+                marker._evaluateOpacity();
+            }
+        });
     }
 
     getFog() {
