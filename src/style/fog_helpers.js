@@ -12,11 +12,18 @@ export const FOG_SYMBOL_CLIPPING_THRESHOLD = 0.9;
 
 export type FogState = {
     range: [number, number],
-    density: number
+    density: number,
+    skyBlend: number
 };
 
+// As defined in _prelude_fog.fragment.glsl#fog_sky_blending
+export function queryFogSkyBlending(state: FogState, cameraDirection: Array<number>): number {
+    const t = Math.max(0.0, cameraDirection[2] / state.skyBlend);
+    return Math.exp(-3 * t * t);
+}
+
 // As defined in _prelude_fog.fragment.glsl#fog_opacity
-export function queryFogOpacity(state: FogState, depth: number, pitch: number): number {
+export function queryFogOpacity(state: FogState, pos: Array<number>, pitch: number): number {
     const fogOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
     const [start, end] = state.range;
     const fogDensity = state.density;
@@ -32,6 +39,7 @@ export function queryFogOpacity(state: FogState, depth: number, pitch: number): 
     // https://www.desmos.com/calculator/3taufutxid
     // The output of this function should match src/shaders/_prelude_fog.fragment.glsl
     const decay = 6;
+    const depth = vec3.length(pos);
     const t = (depth - start) / (end - start);
     let falloff = 1.0 - Math.min(1, Math.exp(-decay * t));
 
@@ -47,6 +55,9 @@ export function queryFogOpacity(state: FogState, depth: number, pitch: number): 
     // Account for fog density
     falloff *= Math.pow(smoothstep(0, 1, t), fogExponent);
 
+    const cameraDirection = vec3.scale(vec3.create(), pos, 1.0 / depth);
+    falloff *= queryFogSkyBlending(state, cameraDirection);
+
     return falloff * fogOpacity;
 }
 
@@ -54,9 +65,8 @@ export function getOpacityAtTileCoord(state: FogState, x: number, y: number, z: 
     const mat = transform.calculateFogTileMatrix(tileId);
     const pos = [x, y, z];
     vec3.transformMat4(pos, pos, mat);
-    const depth = vec3.length(pos);
 
-    return queryFogOpacity(state, depth, transform.pitch);
+    return queryFogOpacity(state, pos, transform.pitch);
 }
 
 export function queryFogOpacityAtLatLng(state: FogState, lngLat: LngLat, transform: Transform): number {
@@ -64,7 +74,6 @@ export function queryFogOpacityAtLatLng(state: FogState, lngLat: LngLat, transfo
     const elevation = transform.elevation ? transform.elevation.getAtPoint(meters) : 0;
     const pos = [meters.x, meters.y, elevation];
     vec3.transformMat4(pos, pos, transform.mercatorFogMatrix);
-    const depth = vec3.length(pos);
 
-    return queryFogOpacity(state, depth, transform.pitch);
+    return queryFogOpacity(state, pos, transform.pitch);
 }
