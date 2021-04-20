@@ -1,6 +1,7 @@
 #ifdef FOG
 
 uniform mat4 u_fog_matrix;
+uniform mediump float u_fog_sky_blend;
 uniform mediump float u_fog_opacity;
 uniform mediump float u_fog_exponent;
 uniform mediump vec2 u_fog_range;
@@ -12,6 +13,12 @@ float fog_opacity(float t) {
     float falloff = 1.0 - min(1.0, exp(-decay * t));
     falloff *= falloff * falloff;
     return u_fog_opacity * min(1.0, 1.00747 * falloff);
+}
+
+// This function much match fog_sky_blending defined in _prelude_fog.fragment.glsl
+float fog_sky_blending(vec3 camera_dir) {
+    float t = max(0.0, camera_dir.z / u_fog_sky_blend);
+    return u_fog_opacity * exp(-3.0 * t * t);
 }
 
 vec3 fog_position(vec3 pos) {
@@ -27,10 +34,12 @@ vec3 fog_position(vec2 pos) {
 
 void fog_haze(vec3 pos, out float fog_opac, out vec4 haze) {
     // Map [near, far] to [0, 1]
-    float t = (length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x);
+    float depth = length(pos);
+    float t = (depth - u_fog_range.x) / (u_fog_range.y - u_fog_range.x);
 
     float haze_opac = fog_opacity(t);
     fog_opac = haze_opac * pow(smoothstep(0.0, 1.0, t), u_fog_exponent);
+    fog_opac *= fog_sky_blending(pos / depth);
 
 #ifdef FOG_HAZE
     haze.rgb = haze_opac * u_haze_color_linear.rgb;
