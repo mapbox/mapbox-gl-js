@@ -71,7 +71,7 @@ export function getOpacityAtTileCoord(state: FogState, x: number, y: number, z: 
 
 export function queryFogOpacityAtLatLng(state: FogState, lngLat: LngLat, transform: Transform): number {
     const meters = MercatorCoordinate.fromLngLat(lngLat);
-    const elevation = transform.elevation ? transform.elevation.getAtPoint(meters) : 0;
+    const elevation = transform.elevation ? transform.elevation.getAtPointOrZero(meters) : 0;
     const pos = [meters.x, meters.y, elevation];
     vec3.transformMat4(pos, pos, transform.mercatorFogMatrix);
 
