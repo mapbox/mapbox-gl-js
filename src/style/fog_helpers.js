@@ -23,7 +23,7 @@ export function queryFogSkyBlending(state: FogState, cameraDirection: Array<numb
 }
 
 // As defined in _prelude_fog.fragment.glsl#fog_opacity
-export function queryFogOpacity(state: FogState, pos: Array<number>, pitch: number): number {
+export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number): number {
     const fogOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
     const [start, end] = state.range;
     const fogDensity = state.density;
@@ -61,19 +61,19 @@ export function queryFogOpacity(state: FogState, pos: Array<number>, pitch: numb
     return falloff * fogOpacity;
 }
 
-export function getOpacityAtTileCoord(state: FogState, x: number, y: number, z: number, tileId: UnwrappedTileID, transform: Transform): number {
+export function getFogOpacityAtTileCoord(state: FogState, x: number, y: number, z: number, tileId: UnwrappedTileID, transform: Transform): number {
     const mat = transform.calculateFogTileMatrix(tileId);
     const pos = [x, y, z];
     vec3.transformMat4(pos, pos, mat);
 
-    return queryFogOpacity(state, pos, transform.pitch);
+    return getFogOpacity(state, pos, transform.pitch);
 }
 
-export function queryFogOpacityAtLatLng(state: FogState, lngLat: LngLat, transform: Transform): number {
+export function getFogOpacityAtLatLng(state: FogState, lngLat: LngLat, transform: Transform): number {
     const meters = MercatorCoordinate.fromLngLat(lngLat);
     const elevation = transform.elevation ? transform.elevation.getAtPointOrZero(meters) : 0;
     const pos = [meters.x, meters.y, elevation];
     vec3.transformMat4(pos, pos, transform.mercatorFogMatrix);
 
-    return queryFogOpacity(state, pos, transform.pitch);
+    return getFogOpacity(state, pos, transform.pitch);
 }
