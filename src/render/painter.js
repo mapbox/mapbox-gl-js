@@ -450,8 +450,6 @@ class Painter {
             coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
         }
 
-        this._updateFog();
-
         this.opaquePassCutoff = Infinity;
         for (let i = 0; i < layerIds.length; i++) {
             const layerId = layerIds[i];
