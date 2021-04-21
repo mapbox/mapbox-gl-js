@@ -39,7 +39,7 @@ var GUIParams = function() {
     this.hazeColor = [109, 123, 180];
     this.hazeOpacity = 0.5;
     this.density = 1.0;
-    this.skyBlend = 0.1;
+    this.horizonBlend = 0.1;
     this.showTileBoundaries = false;
 };
 
@@ -105,7 +105,7 @@ window.onload = function() {
             "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', 1.0)',
             "haze-color": 'rgba(' + guiParams.hazeColor[0] + ', ' + guiParams.hazeColor[1] + ', ' + guiParams.hazeColor[2] + ', ' + guiParams.hazeOpacity + ')',
             "density": guiParams.density,
-            "sky-blend": guiParams.skyBlend
+            "horizon-blend": guiParams.horizonBlend
         } : null);
     });
 
@@ -130,10 +130,10 @@ window.onload = function() {
         });
     });
 
-    var skyBlend = fog.add(guiParams, 'skyBlend', 0.0, 1.0);
-    skyBlend.onChange((value) => {
+    var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 1.0);
+    horizonBlend.onChange((value) => {
         map.setFog({
-            "sky-blend": value,
+            "horizon-blend": value,
         });
     });
 
@@ -218,7 +218,7 @@ map.on('style.load', function() {
         "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', 1.0)',
         "haze-color": 'rgba(' + guiParams.hazeColor[0] + ', ' + guiParams.hazeColor[1] + ', ' + guiParams.hazeColor[2] + ', ' + guiParams.hazeOpacity + ')',
         "density": guiParams.density,
-        "sky-blend": guiParams.skyBlend
+        "horizon-blend": guiParams.horizonBlend
     } : null);
 
     map.setTerrain(guiParams.enableTerrain ? {

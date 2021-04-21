@@ -415,13 +415,13 @@ test('diff', (t) => {
         'fog': {
             'range': [1000, 2000],
             'color': 'white',
-            'sky-blend': 0.05
+            'horizon-blend': 0.05
         }
     }, {
         'fog': {
             'range': [1000, 2000],
             'color': 'white',
-            'sky-blend': 0.05
+            'horizon-blend': 0.05
         }
     }), [
     ], 'fog no change');
@@ -430,20 +430,20 @@ test('diff', (t) => {
         'fog': {
             'range': [1000, 2000],
             'color': 'white',
-            'sky-blend': 0.05
+            'horizon-blend': 0.05
         }
     }, {
         'fog': {
             'range': [0, 2000],
             'color': 'blue',
-            'sky-blend': 0.5
+            'horizon-blend': 0.5
         }
     }), [{
         command: 'setFog',
         args: [{
             'range': [0, 2000],
             'color': 'blue',
-            'sky-blend': 0.5
+            'horizon-blend': 0.5
         }]
     }], 'changing fog');
 
