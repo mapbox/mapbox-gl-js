@@ -911,7 +911,7 @@ test('transform', (t) => {
             transform.zoom = 10;
             transform.center = {lng: 0, lat: 0};
             transform.pitch = 85;
-            let p0, p1;
+            let p0;
 
             t.true(transform.isHorizonVisible());
 
