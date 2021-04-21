@@ -19,7 +19,7 @@ type Props = {|
     "color": DataConstantProperty<Color>,
     "density": DataConstantProperty<number>,
     "haze-color": DataConstantProperty<Color>,
-    "sky-blend": DataConstantProperty<number>,
+    "horizon-blend": DataConstantProperty<number>,
 |};
 
 const fogProperties: Properties<Props> = new Properties({
@@ -27,7 +27,7 @@ const fogProperties: Properties<Props> = new Properties({
     "color": new DataConstantProperty(styleSpec.fog.color),
     "density": new DataConstantProperty(styleSpec.fog["density"]),
     "haze-color": new DataConstantProperty(styleSpec.fog["haze-color"]),
-    "sky-blend": new DataConstantProperty(styleSpec.fog["sky-blend"]),
+    "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
 });
 
 const TRANSITION_SUFFIX = '-transition';
@@ -48,7 +48,7 @@ class Fog extends Evented {
         return {
             range: this.properties.get('range'),
             density: this.properties.get('density'),
-            skyBlend: this.properties.get('sky-blend')
+            horizonBlend: this.properties.get('horizon-blend')
         };
     }
 

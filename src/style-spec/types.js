@@ -92,7 +92,7 @@ export type FogSpecification = {|
     "color"?: PropertyValueSpecification<ColorSpecification>,
     "density"?: PropertyValueSpecification<number>,
     "haze-color"?: PropertyValueSpecification<ColorSpecification>,
-    "sky-blend"?: PropertyValueSpecification<number>
+    "horizon-blend"?: PropertyValueSpecification<number>
 |}
 
 export type VectorSourceSpecification = {

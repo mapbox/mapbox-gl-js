@@ -3770,7 +3770,7 @@
         }
       }
     },
-    "sky-blend": {
+    "horizon-blend": {
       "type": "number",
       "property-type": "data-constant",
       "default": 0.1,
@@ -3783,7 +3783,7 @@
         ]
       },
       "transition": true,
-      "doc": "The sky blend allows to blend the effect of the fog above the horizon line. A value of 1 will entirely blend the fog onto the sky, while a value of 0 will leave the sky unaffected by fog.",
+      "doc": "Horizon blend applies a smooth fade from the color of the fog to the color of the sky. A value of zero leaves a sharp transition from fog to sky. Increasing the value blends the color of fog into increasingly high angles of the sky.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"

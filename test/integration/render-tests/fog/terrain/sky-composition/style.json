@@ -16,7 +16,7 @@
   "fog": {
     "range": [1, 2],
     "color": "white",
-    "sky-blend": 0.15
+    "horizon-blend": 0.15
   },
   "sources": {
     "rgbterrain": {
