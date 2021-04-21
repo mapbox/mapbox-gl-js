@@ -2,7 +2,7 @@
 
 uniform vec3 u_fog_color;
 uniform float u_fog_temporal_offset;
-uniform mediump float u_fog_sky_blend;
+uniform mediump float u_fog_horizon_blend;
 uniform mediump vec2 u_fog_range;
 uniform mediump float u_fog_opacity;
 uniform mediump vec4 u_haze_color_linear;
@@ -18,10 +18,10 @@ vec3 tonemap(vec3 color) {
 // Assumes z up and camera_dir *normalized* (to avoid computing its length multiple
 // times for different functions).
 // Must match definitions in:
-// src/shaders/_prelude_fog.vertex.glsl#fog_sky_blending
+// src/shaders/_prelude_fog.vertex.glsl#fog_horizon_blending
 // src/style/fog_helpers.js#getFogSkyBlending
-float fog_sky_blending(vec3 camera_dir) {
-    float t = max(0.0, camera_dir.z / u_fog_sky_blend);
+float fog_horizon_blending(vec3 camera_dir) {
+    float t = max(0.0, camera_dir.z / u_fog_horizon_blend);
     // Factor of 3 chosen to roughly match smoothstep.
     // See: https://www.desmos.com/calculator/pub31lvshf
     return u_fog_opacity * exp(-3.0 * t * t);
@@ -56,7 +56,7 @@ vec3 fog_apply(vec3 color, vec3 pos) {
 
     float haze_opac = fog_opacity(t);
     float fog_opac = haze_opac * pow(smoothstep(0.0, 1.0, t), u_fog_exponent);
-    fog_opac *= fog_sky_blending(pos / depth);
+    fog_opac *= fog_horizon_blending(pos / depth);
 
 #ifdef FOG_HAZE
     vec3 haze = haze_opac * u_haze_color_linear.rgb;
@@ -86,7 +86,7 @@ vec3 fog_apply_from_vert(vec3 color, float fog_opac, vec4 haze) {
 
 // Assumes z up
 vec3 fog_apply_sky_gradient(vec3 camera_ray, vec3 sky_color) {
-    return mix(sky_color, u_fog_color, fog_sky_blending(normalize(camera_ray)));
+    return mix(sky_color, u_fog_color, fog_horizon_blending(normalize(camera_ray)));
 }
 
 // Un-premultiply the alpha, then blend fog, then re-premultiply alpha. For

@@ -13,12 +13,12 @@ export const FOG_SYMBOL_CLIPPING_THRESHOLD = 0.9;
 export type FogState = {
     range: [number, number],
     density: number,
-    skyBlend: number
+    horizonBlend: number
 };
 
-// As defined in _prelude_fog.fragment.glsl#fog_sky_blending
-export function queryFogSkyBlending(state: FogState, cameraDirection: Array<number>): number {
-    const t = Math.max(0.0, cameraDirection[2] / state.skyBlend);
+// As defined in _prelude_fog.fragment.glsl#fog_horizon_blending
+export function getFogHorizonBlending(state: FogState, cameraDirection: Array<number>): number {
+    const t = Math.max(0.0, cameraDirection[2] / state.horizonBlend);
     return Math.exp(-3 * t * t);
 }
 
@@ -56,7 +56,7 @@ export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number
     falloff *= Math.pow(smoothstep(0, 1, t), fogExponent);
 
     const cameraDirection = vec3.scale(vec3.create(), pos, 1.0 / depth);
-    falloff *= queryFogSkyBlending(state, cameraDirection);
+    falloff *= getFogHorizonBlending(state, cameraDirection);
 
     return falloff * fogOpacity;
 }

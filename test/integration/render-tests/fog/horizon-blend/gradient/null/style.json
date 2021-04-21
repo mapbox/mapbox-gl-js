@@ -12,7 +12,7 @@
   "fog": {
     "range": [2, 12],
     "color": "white",
-    "sky-blend": 0.0
+    "horizon-blend": 0.0
   },
   "layers": [
     {

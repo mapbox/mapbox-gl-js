@@ -858,7 +858,7 @@ class Painter {
             uniforms['u_fog_range'] = fog.properties.get('range');
             uniforms['u_fog_color'] = fogColorUnpremultiplied;
             uniforms['u_fog_exponent'] = Math.max(1e-3, 12 * Math.pow(1 - fog.properties.get('density'), 2));
-            uniforms['u_fog_sky_blend'] = fog.properties.get('sky-blend');
+            uniforms['u_fog_horizon_blend'] = fog.properties.get('horizon-blend');
             uniforms['u_fog_temporal_offset'] = temporalOffset;
             uniforms['u_fog_opacity'] = fogOpacity;
 
