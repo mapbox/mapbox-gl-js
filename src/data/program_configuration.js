@@ -425,7 +425,9 @@ export default class ProgramConfiguration {
             const propType = value.property.specification['property-type'];
             const isCrossFaded = propType === 'cross-faded' || propType === 'cross-faded-data-driven';
 
-            if (expression.kind === 'constant') {
+            const sourceException = property === 'line-dasharray' && layer.layout._values['line-cap'].value.kind === 'source';
+
+            if (expression.kind === 'constant' && !sourceException) {
                 this.binders[property] = isCrossFaded ?
                     new CrossFadedConstantBinder(expression.value, names) :
                     new ConstantBinder(expression.value, names, type);
