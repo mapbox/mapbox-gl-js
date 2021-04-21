@@ -9,6 +9,6 @@
   "layers": [],
   "fog": {
     "range": [-2, -1],
-    "sky-blend": -4
+    "horizon-blend": -4
   }
 }
