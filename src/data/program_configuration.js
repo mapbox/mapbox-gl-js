@@ -362,7 +362,8 @@ class CrossFadedCompositeBinder implements AttributeBinder {
     _setPaintValue(array, i, posA, posB) {
         array.emplace(i,
             posA.tl[0], posA.tl[1], posA.br[0], posA.br[1],
-            posB.tl[0], posB.tl[1], posB.br[0], posB.br[1]
+            posB.tl[0], posB.tl[1], posB.br[0], posB.br[1],
+            posA.pixelRatio, posB.pixelRatio
         );
     }
 
