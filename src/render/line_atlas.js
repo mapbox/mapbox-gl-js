@@ -186,15 +186,14 @@ class LineAtlas {
             }
         }
 
-        const dashEntry = { // temp layout
-            tl: [this.nextRow + n, n],
-            br: [length, 0],
-            pixelRatio: 1
-        };
+        const y = this.nextRow + n;
 
         this.nextRow += height;
 
-        return dashEntry;
+        return {
+            tl: [y, n],
+            br: [length, 0]
+        };
     }
 }
 

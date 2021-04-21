@@ -146,9 +146,9 @@ class CrossFadedConstantBinder implements UniformBinder {
     }
 
     getBinding(context: Context, location: WebGLUniformLocation, name: string): $Shape<Uniform<any>> {
-        if (name === 'u_pattern_from' || name === 'u_pattern_to') return new Uniform4f(context, location);
-        if (name === 'u_dash_from' || name === 'u_dash_to') return new Uniform4f(context, location);
-        return new Uniform1f(context, location);
+        return name === 'u_pattern_from' || name === 'u_pattern_to' || name === 'u_dash_from' || name === 'u_dash_to' ?
+            new Uniform4f(context, location) :
+            new Uniform1f(context, location);
     }
 }
 
@@ -354,19 +354,16 @@ class CrossFadedCompositeBinder implements AttributeBinder {
         // we're cross-fading to at layout time. In order to keep vertex attributes to a minimum and not pass
         // unnecessary vertex data to the shaders, we determine which to upload at draw time.
         for (let i = start; i < end; i++) {
-            this.zoomInPaintVertexArray.emplace(i,
-                imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
-                imageMin.tl[0], imageMin.tl[1], imageMin.br[0], imageMin.br[1],
-                imageMid.pixelRatio,
-                imageMin.pixelRatio,
-            );
-            this.zoomOutPaintVertexArray.emplace(i,
-                imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
-                imageMax.tl[0], imageMax.tl[1], imageMax.br[0], imageMax.br[1],
-                imageMid.pixelRatio,
-                imageMax.pixelRatio,
-            );
+            this._setPaintValue(this.zoomInPaintVertexArray, i, imageMid, imageMin);
+            this._setPaintValue(this.zoomOutPaintVertexArray, i, imageMid, imageMax);
         }
+    }
+
+    _setPaintValue(array, i, posA, posB) {
+        array.emplace(i,
+            posA.tl[0], posA.tl[1], posA.br[0], posA.br[1],
+            posB.tl[0], posB.tl[1], posB.br[0], posB.br[1]
+        );
     }
 
     upload(context: Context) {
