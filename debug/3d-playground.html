@@ -59,8 +59,6 @@ var demo3d = new Demo3D();
 window.onload = function() {
     var gui = new dat.GUI(); // eslint-disable-line
 
-    var elevationDebug = document.getElementById('elevationDebug');
-
     var style = gui.add(demo3d, 'style', [
         'mapbox/streets-v11',
         'mapbox/satellite-streets-v11',
@@ -184,7 +182,7 @@ map.on('style.load', function() {
             ]
         }
     });
-
+    var elevationDebug = document.getElementById('elevationDebug');
     map.on('mousemove', (e) => {
         const elevation = map.queryTerrainElevation(e.point);
         elevationDebug.innerHTML = (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + ' map.isUnderneath: ' + map.isUnderneath(e.point);
