@@ -19,11 +19,20 @@
         .dg.a {
             float: left !important;
         }
+
+        #elevationDebug {
+            background-color: azure;
+            position: absolute;
+            top:30px;
+            right:30px;
+            padding:5px;
+            z-index: 99;
+        }
     </style>
 </head>
 
 <body>
-<div id='map'></div>
+<div id='map'><div id='elevationDebug'></div></div>
 
 <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -49,6 +58,8 @@ var demo3d = new Demo3D();
 
 window.onload = function() {
     var gui = new dat.GUI(); // eslint-disable-line
+
+    var elevationDebug = document.getElementById('elevationDebug');
 
     var style = gui.add(demo3d, 'style', [
         'mapbox/streets-v11',
@@ -172,6 +183,11 @@ map.on('style.load', function() {
                 1
             ]
         }
+    });
+
+    map.on('mousemove', (e) => {
+        const elevation = map.queryTerrainElevation(e.point);
+        elevationDebug.innerHTML = (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + ' map.isUnderneath: ' + map.isUnderneath(e.point);
     });
 
     const lerp = (a, b, t) => {

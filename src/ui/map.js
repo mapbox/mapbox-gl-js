@@ -2171,20 +2171,56 @@ class Map extends Camera {
     }
 
     /**
-     * Queries the currently loaded data for elevation at a geographical location. This accounts for the value of `exaggeration` set on `terrain`.
+     * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` and accounts for the value of `exaggeration` set on `terrain`.
      * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
      *
      * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
-     * @param {LngLatLike} lnglat The geographical location to project.
+     * @param {LngLatLike} lnglat The geographical location at which to query.
      * @returns {number | null} The elevation in meters, accounting for `terrain.exaggeration`.
      * @example
      * var coordinate = [-122.420679, 37.772537];
-     * var elevation = map.queryTerrainElevationAt(coordinate);
+     * var elevation = map.queryTerrainElevationAtLocation(coordinate);
      */
-    queryTerrainElevationAt(lnglat: LngLatLike): number | null {
+    queryTerrainElevationAtLocation(lnglat: LngLatLike): number | null {
         if (!this.transform.elevation) return null;
 
         return this.transform.elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat));
+    }
+
+    /**
+     * Queries the visible data for elevation at a geographical point that corresponds to the specified pixel coordinates. The elevation is returned in `meters` and accounts for the value of `exaggeration` set on `terrain`.
+     * Returns `null` if `terrain` is disabled, if terrain data for the location hasn't been loaded yet, or when the specified point is above the horizon.
+     *
+     * In order to guarantee that terrain data is loaded wait for the `idle` event to occur.
+     * @param {PointLike} point The pixel coordinates at which to query.
+     * @returns {number | null} The elevation in meters, accounting for `terrain.exaggeration`.
+     * @example
+     * map.on('mousemove', function(e) {
+     *   // Get the elevation underneath the mouse pointer
+     *   var elevation = map.queryTerrainElevation(e.point);
+     * });
+     */
+    queryTerrainElevation(point: PointLike): number | null {
+        if (!this.transform.elevation) return null;
+
+        const result = this.transform.elevation.pointCoordinate(Point.convert(point));
+        return result ? result[3] : null;
+    }
+
+    /**
+     * Returns `true` when the pixel underneath `point` is a part of the Map
+     * and `false` when the pixel underneath is part of the surrounding whitespace or a `sky` layer.
+     *
+     * @param {PointLike} point The pixel coordinates for a point in the container.
+     * @returns {boolean} `true` when `point` is over the Map.
+     * @example
+     * map.on('mousemove', function(e) {
+     *   // Check if the mouse is over the Map
+     *   var onMap = map.isUnderneath(e.point);
+     * });
+     */
+    isUnderneath(point: PointLike): boolean {
+        return this.transform.isPointOnMap(Point.convert(point));
     }
 
     /**

@@ -1527,6 +1527,36 @@ class Transform {
         return false;
     }
 
+    /**
+     * Returns true if a screenspace Point p, is on the quad of the Map.
+     *
+     * @param {Point} p
+     * @returns {boolean}
+     * @private
+     */
+    isPointOnMap(p: Point): boolean {
+        if (!this.elevation) {
+            const minWX = (this._renderWorldCopies) ? -NUM_WORLD_COPIES : 0;
+            const maxWX = (this._renderWorldCopies) ? 1 + NUM_WORLD_COPIES : 1;
+            const minWY = 0;
+            const maxWY = 1;
+
+            const rayIntersection = this.pointRayIntersection(p);
+            if (rayIntersection.t < 0) {
+                return false;
+            }
+            const coordinate = this.rayIntersectionCoordinate(rayIntersection);
+            if (coordinate.x < minWX || coordinate.y < minWY ||
+                coordinate.x > maxWX || coordinate.y > maxWY) {
+                return false;
+            }
+
+            return true;
+        } else {
+            return !!this.elevation.pointCoordinate(p);
+        }
+    }
+
     // Checks the four corners of the frustum to see if they lie in the map's quad.
     isHorizonVisible(): boolean {
         // we consider the horizon as visible if the angle between
