@@ -9,6 +9,6 @@
   },
   {
     "line": 12,
-    "message": "sky-blend: -4 is less than the minimum value 0"
+    "message": "horizon-blend: -4 is less than the minimum value 0"
   }
 ]

@@ -2186,7 +2186,7 @@ class Map extends Camera {
      *  "color": 'white',
      *  "density": 1.0,
      *  "haze-color": 'rgba(109, 123, 180, 0.5)',
-     *  "sky-blend": 0.1
+     *  "horizon-blend": 0.1
      * });
      */
     setFog(fog: FogSpecification) {

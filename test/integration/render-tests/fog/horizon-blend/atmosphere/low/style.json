@@ -12,25 +12,16 @@
   "fog": {
     "range": [2, 12],
     "color": "white",
-    "sky-blend": 0.2
+    "horizon-blend": 0.05
   },
   "layers": [
     {
       "id": "sky",
       "type": "sky",
       "paint": {
-        "sky-type": "gradient",
-        "sky-gradient-center": [0, 0],
-        "sky-gradient-radius": 90,
-        "sky-gradient": [
-          "interpolate",
-          ["linear"],
-          ["sky-radial-progress"],
-          0.0,
-          "#87ceeb",
-          1.0,
-          "#87ceeb"
-      ]
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [0, 0],
+        "sky-atmosphere-sun-intensity": 15
       }
     },
     {
