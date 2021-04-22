@@ -203,8 +203,9 @@ class LineBucket implements Bucket {
                 if (dashPropertyValue.kind === 'constant') {
                     const constDash = dashPropertyValue.value;
                     if (!constDash) continue;
-                    minDashArray = midDashArray = constDash.from;
-                    maxDashArray = constDash.to;
+                    minDashArray = constDash.other || constDash.to;
+                    midDashArray = constDash.to;
+                    maxDashArray = constDash.from;
 
                 } else {
                     minDashArray = dashPropertyValue.evaluate({zoom: zoom - 1}, feature);
@@ -239,6 +240,7 @@ class LineBucket implements Bucket {
                 if (!constDash) continue;
                 lineAtlas.getDash(constDash.from, round);
                 lineAtlas.getDash(constDash.to, round);
+                if (constDash.other) lineAtlas.getDash(constDash.other, round);
             }
         }
 

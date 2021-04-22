@@ -27,7 +27,8 @@ type TimePoint = number;
 
 export type CrossFaded<T> = {
     to: T,
-    from: T
+    from: T,
+    other?: T
 };
 
 /**
@@ -634,7 +635,12 @@ export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFa
 
     _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): CrossFaded<T> {
         const z = parameters.zoom;
-        return z > parameters.zoomHistory.lastIntegerZoom ? {from: min, to: mid} : {from: max, to: mid};
+        // ugly hack alert: when evaluating non-constant dashes on the worker side,
+        // we need all three values to pack into the atlas; the if condition is always false there;
+        // will be removed after removing cross-fading
+        return z > parameters.zoomHistory.lastIntegerZoom ?
+            {from: min, to: mid, other: max} :
+            {from: max, to: mid, other: min};
     }
 
     interpolate(a: PossiblyEvaluatedPropertyValue<?CrossFaded<T>>): PossiblyEvaluatedPropertyValue<?CrossFaded<T>> {
