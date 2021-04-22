@@ -4,7 +4,7 @@ varying vec2 v_pos0;
 #ifdef FOG
 varying float v_fog_opacity;
 #ifdef FOG_HAZE
-varying vec4 v_haze_color;
+varying vec3 v_haze_color;
 #endif
 #endif
 
@@ -14,7 +14,7 @@ void main() {
 #ifdef FOG_HAZE
     color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, v_haze_color));
 #else
-    vec4 unused;
+    vec3 unused;
     color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, unused));
 #endif
 #endif
