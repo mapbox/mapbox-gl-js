@@ -865,16 +865,14 @@ class Painter {
             if (fog.properties.get('haze-color').a > 0) {
                 const hazeColor = fog.properties.get('haze-color');
                 const hazeBaseAmpl = 5;
-                const hazeColorLinear = [
-                    hazeBaseAmpl * Math.pow(hazeColor.r, 2.2),
-                    hazeBaseAmpl * Math.pow(hazeColor.g, 2.2),
-                    hazeBaseAmpl * Math.pow(hazeColor.b, 2.2),
-                    // Alpha is already premultiplied into the color, so we use haze color alpha to
-                    // specify how much tone mapping to apply, reaching full strength after opacity=0.5.
-                    Math.min(1, 2.0 * hazeColor.a)
+                // Since there's no significant difference in visual effect, we use approximate
+                // sRGB -> linear RGB conversion with a power of 2 instead of 2.2 in order to
+                // avoid pow() functions in the shader.
+                uniforms['u_haze_color_linear'] = [
+                    hazeBaseAmpl * Math.pow(hazeColor.r, 2),
+                    hazeBaseAmpl * Math.pow(hazeColor.g, 2),
+                    hazeBaseAmpl * Math.pow(hazeColor.b, 2),
                 ];
-
-                uniforms['u_haze_color_linear'] = hazeColorLinear;
             }
 
             program.setFogUniformValues(context, uniforms);
