@@ -43,7 +43,7 @@ float fog_opacity(vec3 pos) {
 }
 
 // This function applies haze to an input color using an approximation of the following algorithm:
-//   1. convert `color` from sRGB to linear RGB
+//   1. convert color from sRGB to linear RGB
 //   2. add haze (presuming haze is in linear RGB)
 //   3. tone-map the output
 //   4. convert the result back to sRGB
