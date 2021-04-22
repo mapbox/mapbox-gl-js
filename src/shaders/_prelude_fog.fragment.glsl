@@ -5,15 +5,8 @@ uniform float u_fog_temporal_offset;
 uniform mediump float u_fog_horizon_blend;
 uniform mediump vec2 u_fog_range;
 uniform mediump float u_fog_opacity;
-uniform mediump vec4 u_haze_color_linear;
+uniform mediump vec3 u_haze_color_linear;
 uniform mediump float u_fog_exponent;
-
-vec3 tonemap(vec3 color) {
-    // Use an exponential smoothmin between y=x and y=1 for tone-mapping
-    // See: https://www.desmos.com/calculator/h8odggcnd0
-    const float k = 8.0;
-    return max(vec3(0), log2(exp2(-k * color) + exp2(-k)) * (-1.0 / k));
-}
 
 // Assumes z up and camera_dir *normalized* (to avoid computing its length multiple
 // times for different functions).
@@ -59,26 +52,19 @@ vec3 fog_apply(vec3 color, vec3 pos) {
     fog_opac *= fog_horizon_blending(pos / depth);
 
 #ifdef FOG_HAZE
-    vec3 haze = haze_opac * u_haze_color_linear.rgb;
-
-    // The smoothstep fades in tonemapping slightly before the fog layer. This violates
-    // the principle that fog should not have an effect outside the fog layer, but the
-    // effect is hardly noticeable except on pure white glaciers.
-    float tonemap_strength = u_fog_opacity * u_haze_color_linear.a * smoothstep(-0.5, 0.25, t);
-    color = srgb_to_linear(color);
-    color = mix(color, tonemap(color + haze), tonemap_strength);
-    color = linear_to_srgb(color);
+    vec3 haze = haze_opac * u_haze_color_linear;
+    vec3 color2 = color * color;
+    color = sqrt((color2 + haze) / (1.0 + color2 * color2 * haze));
 #endif
 
     return mix(color, u_fog_color, fog_opac);
 }
 
 // Apply fog and haze which were computed in the vertex shader
-vec3 fog_apply_from_vert(vec3 color, float fog_opac, vec4 haze) {
+vec3 fog_apply_from_vert(vec3 color, float fog_opac, vec3 haze) {
 #ifdef FOG_HAZE
-    color = srgb_to_linear(color);
-    color = mix(color, tonemap(color + haze.rgb), haze.a);
-    color = linear_to_srgb(color);
+    vec3 color2 = color * color;
+    color = sqrt((color2 + haze) / (1.0 + color2 * color2 * haze));
 #endif
 
     return mix(color, u_fog_color, fog_opac);
