@@ -42,6 +42,11 @@ float fog_opacity(vec3 pos) {
     return fog_opacity((length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x));
 }
 
+vec3 haze_apply(vec3 color, vec3 haze) {
+    vec3 color2 = color * color;
+    return sqrt((color2 + haze) / (1.0 + color2 * color2 * haze));
+}
+
 vec3 fog_apply(vec3 color, vec3 pos) {
     // Map [near, far] to [0, 1]
     float depth = length(pos);
@@ -52,9 +57,7 @@ vec3 fog_apply(vec3 color, vec3 pos) {
     fog_opac *= fog_horizon_blending(pos / depth);
 
 #ifdef FOG_HAZE
-    vec3 haze = haze_opac * u_haze_color_linear;
-    vec3 color2 = color * color;
-    color = sqrt((color2 + haze) / (1.0 + color2 * color2 * haze));
+    color = haze_apply(color, haze_opac * u_haze_color_linear);
 #endif
 
     return mix(color, u_fog_color, fog_opac);
@@ -63,8 +66,7 @@ vec3 fog_apply(vec3 color, vec3 pos) {
 // Apply fog and haze which were computed in the vertex shader
 vec3 fog_apply_from_vert(vec3 color, float fog_opac, vec3 haze) {
 #ifdef FOG_HAZE
-    vec3 color2 = color * color;
-    color = sqrt((color2 + haze) / (1.0 + color2 * color2 * haze));
+    color = haze_apply(color, haze);
 #endif
 
     return mix(color, u_fog_color, fog_opac);
