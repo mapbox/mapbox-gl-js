@@ -184,7 +184,7 @@ map.on('style.load', function() {
     });
     var elevationDebug = document.getElementById('elevationDebug');
     map.on('mousemove', (e) => {
-        let start = performance.now();
+        const start = performance.now();
         const elevation = map.queryTerrainElevation(map.unproject(e.point));
         console.log(`${performance.now() - start}`);
         elevationDebug.innerHTML = (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + ' map.isUnderneath: ' + map.isUnderneath(e.point);
