@@ -52,7 +52,7 @@ float fog_opacity(vec3 pos) {
 // which don't affect the visual quality.
 vec3 haze_apply(vec3 color, vec3 haze) {
     vec3 color2 = color * color;
-    return sqrt((color2 + haze) / (1.0 + color2 * color2 * haze));
+    return sqrt((color2 + haze) / (1.0 + color2 * color * haze));
 }
 
 vec3 fog_apply(vec3 color, vec3 pos) {
