@@ -2181,30 +2181,10 @@ class Map extends Camera {
      * var coordinate = [-122.420679, 37.772537];
      * var elevation = map.queryTerrainElevationAtLocation(coordinate);
      */
-    queryTerrainElevationAtLocation(lnglat: LngLatLike): number | null {
+    queryTerrainElevation(lnglat: LngLatLike): number | null {
         if (!this.transform.elevation) return null;
 
         return this.transform.elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat));
-    }
-
-    /**
-     * Queries the visible data for elevation at a geographical point that corresponds to the specified pixel coordinates. The elevation is returned in `meters` and accounts for the value of `exaggeration` set on `terrain`.
-     * Returns `null` if `terrain` is disabled, if terrain data for the location hasn't been loaded yet, or when the specified point is above the horizon.
-     *
-     * In order to guarantee that terrain data is loaded wait for the `idle` event to occur.
-     * @param {PointLike} point The pixel coordinates at which to query.
-     * @returns {number | null} The elevation in meters, accounting for `terrain.exaggeration`.
-     * @example
-     * map.on('mousemove', function(e) {
-     *   // Get the elevation underneath the mouse pointer
-     *   var elevation = map.queryTerrainElevation(e.point);
-     * });
-     */
-    queryTerrainElevation(point: PointLike): number | null {
-        if (!this.transform.elevation) return null;
-
-        const result = this.transform.elevation.pointCoordinate(Point.convert(point));
-        return result ? result[3] : null;
     }
 
     /**
