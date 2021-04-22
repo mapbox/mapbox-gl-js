@@ -42,6 +42,14 @@ float fog_opacity(vec3 pos) {
     return fog_opacity((length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x));
 }
 
+// This function applies haze to an input color using an approximation of the following algorithm:
+//   1. convert `color` from sRGB to linear RGB
+//   2. add haze (presuming haze is in linear RGB)
+//   3. tone-map the output
+//   4. convert the result back to sRGB
+// The equation below is based on a curve fit of the above algorithm, with the additional approximation
+// during linear-srgb conversion that gamma=2, in order to avoid transcendental function evaluations
+// which don't affect the visual quality.
 vec3 haze_apply(vec3 color, vec3 haze) {
     vec3 color2 = color * color;
     return sqrt((color2 + haze) / (1.0 + color2 * color2 * haze));
