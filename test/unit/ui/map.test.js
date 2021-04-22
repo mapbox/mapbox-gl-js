@@ -1255,6 +1255,7 @@ test('Map', (t) => {
             map.once('render', () => {
                 map.setZoom(10);
                 map.setCenter([0, 0]);
+                map.setPitch(0);
 
                 t.deepEqual(map.queryFogOpacity([0, 0]), 0.0);
 
