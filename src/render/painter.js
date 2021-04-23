@@ -194,7 +194,7 @@ class Painter {
         const fogBoundFraction = 0.78;
         const fogCullDist = fogStart + (fogEnd - fogStart) * fogBoundFraction;
 
-        this.transform.fogCullDistSq = fogEnd * fogEnd;
+        this.transform.fogCullDistSq = fogCullDist * fogCullDist;
     }
 
     get terrain(): ?Terrain {
