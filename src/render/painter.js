@@ -755,16 +755,12 @@ class Painter {
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const fog = this.style && this.style.fog;
         const fogOpacity = fog && fog.getFogPitchFactor(this.transform.pitch);
-        const haze = fog && fog.properties && fog.properties.get('haze-color').a > 0;
 
         const defines = [];
         if (terrain) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && fogOpacity !== 0.0 && !rtt) {
-            defines.push('FOG');
-            if (haze) defines.push('FOG_HAZE');
-        }
+        if (fog && fogOpacity !== 0.0 && !rtt) defines.push('FOG');
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
         return defines;
@@ -857,23 +853,9 @@ class Painter {
             uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
             uniforms['u_fog_range'] = fog.properties.get('range');
             uniforms['u_fog_color'] = fogColorUnpremultiplied;
-            uniforms['u_fog_exponent'] = Math.max(1e-3, 12 * Math.pow(1 - fog.properties.get('density'), 2));
             uniforms['u_fog_horizon_blend'] = fog.properties.get('horizon-blend');
             uniforms['u_fog_temporal_offset'] = temporalOffset;
             uniforms['u_fog_opacity'] = fogOpacity;
-
-            if (fog.properties.get('haze-color').a > 0) {
-                const hazeColor = fog.properties.get('haze-color');
-                const hazeBaseAmpl = 5;
-                // Since there's no significant difference in visual effect, we use approximate
-                // sRGB -> linear RGB conversion with a power of 2 instead of 2.2 in order to
-                // avoid pow() functions in the shader.
-                uniforms['u_haze_color_linear'] = [
-                    hazeBaseAmpl * Math.pow(hazeColor.r, 2),
-                    hazeBaseAmpl * Math.pow(hazeColor.g, 2),
-                    hazeBaseAmpl * Math.pow(hazeColor.b, 2),
-                ];
-            }
 
             program.setFogUniformValues(context, uniforms);
         }

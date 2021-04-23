@@ -3,20 +3,12 @@ varying vec2 v_pos0;
 
 #ifdef FOG
 varying float v_fog_opacity;
-#ifdef FOG_HAZE
-varying vec3 v_haze_color;
-#endif
 #endif
 
 void main() {
     vec4 color = texture2D(u_image0, v_pos0);
 #ifdef FOG
-#ifdef FOG_HAZE
-    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, v_haze_color));
-#else
-    vec3 unused;
-    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity, unused));
-#endif
+    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity));
 #endif
     gl_FragColor = color;
 #ifdef TERRAIN_WIREFRAME

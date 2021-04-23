@@ -9,7 +9,7 @@ uniform mediump vec2 u_fog_range;
 uniform mediump float u_fog_horizon_blend;
 
 float fog_range(float depth) {
-    // Map [near, far] to [0, 1]
+    // Map [near, far] to [0, 1] without clamping
     return (depth - u_fog_range[0]) / (u_fog_range[1] - u_fog_range[0]);
 }
 
@@ -25,8 +25,7 @@ float fog_horizon_blending(vec3 camera_dir) {
     return u_fog_opacity * exp(-3.0 * t * t);
 }
 
-// Computes the fog opacity when fog strength = 1. Otherwise it's multiplied
-// by a smoothstep to a power to decrease the amount of fog relative to haze.
+// Compute a ramp for fog opacity
 //   - t: depth, rescaled to 0 at fogStart and 1 at fogEnd
 // See: https://www.desmos.com/calculator/3taufutxid
 // This function much match src/style/fog.js and _prelude_fog.vertex.glsl
@@ -34,7 +33,7 @@ float fog_opacity(float t) {
     const float decay = 6.0;
     float falloff = 1.0 - min(1.0, exp(-decay * t));
 
-    // Cube without pow()
+    // Cube without pow() to smooth the onset
     falloff *= falloff * falloff;
 
     // Scale and clip to 1 at the far limit
