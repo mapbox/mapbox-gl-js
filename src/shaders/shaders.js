@@ -2,6 +2,7 @@
 // Disable Flow annotations here because Flow doesn't support importing GLSL files
 /* eslint-disable flowtype/require-valid-file-annotation */
 
+import preludeCommon from './_prelude.glsl';
 import preludeFrag from './_prelude.fragment.glsl';
 import preludeVert from './_prelude.vertex.glsl';
 import backgroundFrag from './background.fragment.glsl';
@@ -74,6 +75,7 @@ preludeTerrain = compile('', preludeTerrainVert, true);
 preludeFog = compile(preludeFogFrag, preludeFogVert, true);
 
 export const prelude = compile(preludeFrag, preludeVert);
+export const preludeCommonSource = preludeCommon;
 
 export default {
     background: compile(backgroundFrag, backgroundVert),
@@ -110,11 +112,15 @@ export default {
 
 // Expand #pragmas to #ifdefs.
 function compile(fragmentSource, vertexSource, isGlobalPrelude) {
-    const re = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
+    const pragmaRegex = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
+    const uniformRegex = /uniform (highp |mediump |lowp )?([\w]+) ([\w]+)([\s]*)([\w]*)/g;
+    const attributeRegex = /attribute (highp |mediump |lowp )?([\w]+) ([\w]+)/g;
 
-    const staticAttributes = vertexSource.match(/attribute (highp |mediump |lowp )?([\w]+) ([\w]+)/g);
-    const fragmentUniforms = fragmentSource.match(/uniform (highp |mediump |lowp )?([\w]+) ([\w]+)([\s]*)([\w]*)/g);
-    const vertexUniforms = vertexSource.match(/uniform (highp |mediump |lowp )?([\w]+) ([\w]+)([\s]*)([\w]*)/g);
+    const staticAttributes = vertexSource.match(attributeRegex);
+    const fragmentUniforms = fragmentSource.match(uniformRegex);
+    const vertexUniforms = vertexSource.match(uniformRegex);
+    const commonUniforms = preludeCommon.match(uniformRegex);
+
     let staticUniforms = vertexUniforms ? vertexUniforms.concat(fragmentUniforms) : fragmentUniforms;
 
     if (!isGlobalPrelude) {
@@ -126,9 +132,13 @@ function compile(fragmentSource, vertexSource, isGlobalPrelude) {
         }
     }
 
+    if (staticUniforms) {
+        staticUniforms = staticUniforms.concat(commonUniforms);
+    }
+
     const fragmentPragmas = {};
 
-    fragmentSource = fragmentSource.replace(re, (match, operation, precision, type, name) => {
+    fragmentSource = fragmentSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
         fragmentPragmas[name] = true;
         if (operation === 'define') {
             return `
@@ -147,7 +157,7 @@ uniform ${precision} ${type} u_${name};
         }
     });
 
-    vertexSource = vertexSource.replace(re, (match, operation, precision, type, name) => {
+    vertexSource = vertexSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
         const attrType = type === 'float' ? 'vec2' : 'vec4';
         const unpackType = name.match(/color/) ? 'color' : attrType;
 
