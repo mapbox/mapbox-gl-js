@@ -133,19 +133,22 @@ class ScrollZoomHandler {
     /**
      * Enables the "scroll to zoom" interaction.
      *
-     * @param {Object} [options] Options object.
-     * @param {string} [options.around] If "center" is passed, map will zoom around center of map
+     * @param {Object}  [options] Options object.
+     * @param {string}  [options.around] If "center" is passed, map will zoom around center of map
+     * @param {boolean} [options.requireCtrl] If `true` is passed, map will only zoom when Ctrl key is pressed
      *
      * @example
      *   map.scrollZoom.enable();
      * @example
      *  map.scrollZoom.enable({ around: 'center' })
+     * @example
+     *  map.scrollZoom.enable({ requireCtrl: true })
      */
-    enable(options: any) {
+    enable(options: ?{around?: 'center', requireCtrl?: false}) {
         if (this.isEnabled()) return;
         this._enabled = true;
-        this._aroundCenter = options && options.around === 'center';
-        this._requireCtrl = options && options.requireCtrl === true;
+        this._aroundCenter = !!options && options.around === 'center';
+        this._requireCtrl = !!options && options.requireCtrl === true;
     }
 
     /**
