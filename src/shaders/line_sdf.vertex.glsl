@@ -19,11 +19,9 @@ uniform mediump vec4 u_scale;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
-varying float v_linesofar;
 varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying float v_gamma_scale;
-varying float v_width;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float blur
@@ -100,15 +98,13 @@ void main() {
     float toScale = u_scale.z;
     float texHeight = u_scale.w;
 
-    float widthA = dash_from.z * fromScale; // temp layout
+    float widthA = dash_from.z * fromScale;
     float widthB = dash_to.z * toScale;
-    float heightA = dash_from.y / texHeight;
-    float heightB = dash_to.y / texHeight;
+    float heightA = dash_from.y;
+    float heightB = dash_to.y;
 
-    v_tex_a = vec2(a_linesofar * (tileZoomRatio / widthA) / floorwidth, -normal.y * heightA + (dash_from.x + 0.5) / texHeight);
-    v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, -normal.y * heightB + (dash_to.x + 0.5) / texHeight);
+    v_tex_a = vec2(a_linesofar * (tileZoomRatio / widthA) / floorwidth, (-normal.y * heightA + dash_from.x + 0.5) / texHeight);
+    v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, (-normal.y * heightB + dash_to.x + 0.5) / texHeight);
 
-    v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
-    v_width = floorwidth;
 }

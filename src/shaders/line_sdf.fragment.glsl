@@ -39,7 +39,7 @@ void main() {
     float sdfdist_a = texture2D(u_image, v_tex_a).a;
     float sdfdist_b = texture2D(u_image, v_tex_b).a;
     float sdfdist = mix(sdfdist_a, sdfdist_b, u_mix);
-    float sdfwidth = min(dash_from.z * u_scale.y, dash_to.z * u_scale.z); // temp layout
+    float sdfwidth = min(dash_from.z * u_scale.y, dash_to.z * u_scale.z);
     float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / sdfwidth;
     alpha *= smoothstep(0.5 - sdfgamma / floorwidth, 0.5 + sdfgamma / floorwidth, sdfdist);
 
