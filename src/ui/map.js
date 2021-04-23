@@ -2188,18 +2188,18 @@ class Map extends Camera {
     }
 
     /**
-     * Returns `true` when the pixel underneath `point` is a part of the Map
-     * and `false` when the pixel underneath is part of the surrounding whitespace or a `sky` layer.
+     * Returns `true` when the `point` is overlapping a pixel belonging to the Map,
+     * and `false` when the pixel is a part of the surrounding whitespace or a `sky` layer.
      *
      * @param {PointLike} point The pixel coordinates for a point in the container.
-     * @returns {boolean} `true` when `point` is over the Map.
+     * @returns {boolean} `true` when `point` is overlapping the Map.
      * @example
      * map.on('mousemove', function(e) {
      *   // Check if the mouse is over the Map
-     *   var onMap = map.isUnderneath(e.point);
+     *   var onMap = map.overlaps(e.point);
      * });
      */
-    isUnderneath(point: PointLike): boolean {
+    overlaps(point: PointLike): boolean {
         return this.transform.isPointOnMap(Point.convert(point));
     }
 
