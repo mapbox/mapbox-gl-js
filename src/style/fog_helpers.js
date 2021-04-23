@@ -15,12 +15,6 @@ export type FogState = {
     horizonBlend: number
 };
 
-// As defined in _prelude_fog.fragment.glsl#fog_horizon_blending
-export function getFogHorizonBlending(state: FogState, cameraDirection: Array<number>): number {
-    const t = Math.max(0.0, cameraDirection[2] / state.horizonBlend);
-    return Math.exp(-3 * t * t);
-}
-
 // As defined in _prelude_fog.fragment.glsl#fog_opacity
 export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number): number {
     const fogOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
@@ -46,9 +40,6 @@ export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number
 
     // Scale and clip to 1 at the far limit
     falloff = Math.min(1.0, 1.00747 * falloff);
-
-    const cameraDirection = vec3.scale(vec3.create(), pos, 1.0 / depth);
-    falloff *= getFogHorizonBlending(state, cameraDirection);
 
     return falloff * fogOpacity;
 }
