@@ -39,6 +39,7 @@ class ScrollZoomHandler {
     _aroundCenter: boolean;
     _aroundPoint: Point;
     _aroundCoord: MercatorCoordinate;
+    _requireCtrl: boolean;
     _type: 'wheel' | 'trackpad' | null;
     _lastValue: number;
     _timeout: ?TimeoutID; // used for delayed-handling of a single wheel movement
@@ -106,6 +107,16 @@ class ScrollZoomHandler {
         return !!this._enabled;
     }
 
+    /**
+     * Returns a Boolean indicating whether to require the CTRL key for zoom events. Modern browsers treat
+     * pinch gestures as WheelEvents with the CTRL key pressed.
+     *
+     * @returns {boolean} `true` if the "require CTRL" option is enabled.
+     */
+    requiresCtrl() {
+        return !!this._requireCtrl;
+    }
+
     /*
     * Active state is turned on and off with every scroll wheel event and is set back to false before the map
     * render is called, so _active is not a good candidate for determining if a scroll zoom animation is in
@@ -134,6 +145,7 @@ class ScrollZoomHandler {
         if (this.isEnabled()) return;
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
+        this._requireCtrl = options && options.requireCtrl === true;
     }
 
     /**
@@ -149,6 +161,7 @@ class ScrollZoomHandler {
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
+        if (this.requiresCtrl() && !e.ctrlKey) return;
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
         let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
