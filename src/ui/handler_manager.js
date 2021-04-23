@@ -564,7 +564,9 @@ class HandlerManager {
         tr._translateCameraConstrained(translation);
 
         if (zoomDelta && Math.abs(tr.zoom - originalZoom) > 0.0001) {
-            tr.recenterOnTerrain();
+            this._map.once('zoomend', () => {
+                tr.recenterOnTerrain();
+            });
         }
 
         tr.cameraElevationReference = "ground";
