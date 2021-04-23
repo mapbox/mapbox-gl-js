@@ -28,10 +28,10 @@ void main() {
 
 #ifdef FOG
 #ifdef FOG_HAZE
-    fog_haze(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, v_haze_color);
+    fog(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, v_haze_color);
 #else
     vec3 unused;
-    fog_haze(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, unused);
+    fog(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, unused);
 #endif
 #endif
 }
