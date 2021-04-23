@@ -2,44 +2,13 @@
 
 uniform vec3 u_fog_color;
 uniform float u_fog_temporal_offset;
-uniform mediump float u_fog_horizon_blend;
-uniform mediump vec2 u_fog_range;
-uniform mediump float u_fog_opacity;
 uniform mediump vec3 u_haze_color_linear;
 uniform mediump float u_fog_exponent;
-
-// Assumes z up and camera_dir *normalized* (to avoid computing its length multiple
-// times for different functions).
-// Must match definitions in:
-// src/shaders/_prelude_fog.vertex.glsl#fog_horizon_blending
-// src/style/fog_helpers.js#getFogSkyBlending
-float fog_horizon_blending(vec3 camera_dir) {
-    float t = max(0.0, camera_dir.z / u_fog_horizon_blend);
-    // Factor of 3 chosen to roughly match smoothstep.
-    // See: https://www.desmos.com/calculator/pub31lvshf
-    return u_fog_opacity * exp(-3.0 * t * t);
-}
-
-// Computes the fog opacity when fog strength = 1. Otherwise it's multiplied
-// by a smoothstep to a power to decrease the amount of fog relative to haze.
-//   - t: depth, rescaled to 0 at fogStart and 1 at fogEnd
-// See: https://www.desmos.com/calculator/3taufutxid
-// This function much match src/style/fog.js and _prelude_fog.vertex.glsl
-float fog_opacity(float t) {
-    const float decay = 6.0;
-    float falloff = 1.0 - min(1.0, exp(-decay * t));
-
-    // Cube without pow()
-    falloff *= falloff * falloff;
-
-    // Scale and clip to 1 at the far limit
-    return u_fog_opacity * min(1.0, 1.00747 * falloff);
-}
 
 // This function is only used in rare places like heatmap where opacity is used
 // directly, outside the normal fog_apply method.
 float fog_opacity(vec3 pos) {
-    return fog_opacity((length(pos) - u_fog_range.x) / (u_fog_range.y - u_fog_range.x));
+    return fog_opacity(fog_range(length(pos)));
 }
 
 // This function applies haze to an input color using an approximation of the following algorithm:
@@ -56,9 +25,8 @@ vec3 haze_apply(vec3 color, vec3 haze) {
 }
 
 vec3 fog_apply(vec3 color, vec3 pos) {
-    // Map [near, far] to [0, 1]
     float depth = length(pos);
-    float t = (depth - u_fog_range.x) / (u_fog_range.y - u_fog_range.x);
+    float t = fog_range(depth);
 
     float haze_opac = fog_opacity(t);
     float fog_opac = haze_opac * pow(smoothstep(0.0, 1.0, t), u_fog_exponent);
