@@ -3,7 +3,7 @@
 import assert from 'assert';
 import DOM from '../../util/dom.js';
 
-import {ease as _ease, bindAll, bezier} from '../../util/util.js';
+import {ease as _ease, bindAll, bezier, isSafari} from '../../util/util.js';
 import browser from '../../util/browser.js';
 import window from '../../util/window.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
@@ -111,10 +111,12 @@ class ScrollZoomHandler {
      * Returns a Boolean indicating whether to require the CTRL key for zoom events. Modern browsers treat
      * pinch gestures as WheelEvents with the CTRL key pressed.
      *
+     * Return false if we're currently in Safari as Safari uses pinch gestures for the tab switcher.
+     *
      * @returns {boolean} `true` if the "require CTRL" option is enabled.
      */
     requiresCtrl() {
-        return !!this._requireCtrl;
+        return this._requireCtrl && !isSafari();
     }
 
     /*
