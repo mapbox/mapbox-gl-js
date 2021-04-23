@@ -17,16 +17,12 @@ import type {FogState} from './fog_helpers.js';
 type Props = {|
     "range": DataConstantProperty<[number, number]>,
     "color": DataConstantProperty<Color>,
-    "density": DataConstantProperty<number>,
-    "haze-color": DataConstantProperty<Color>,
     "horizon-blend": DataConstantProperty<number>,
 |};
 
 const fogProperties: Properties<Props> = new Properties({
     "range": new DataConstantProperty(styleSpec.fog.range),
     "color": new DataConstantProperty(styleSpec.fog.color),
-    "density": new DataConstantProperty(styleSpec.fog["density"]),
-    "haze-color": new DataConstantProperty(styleSpec.fog["haze-color"]),
     "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
 });
 
@@ -47,7 +43,6 @@ class Fog extends Evented {
     get state(): FogState {
         return {
             range: this.properties.get('range'),
-            density: this.properties.get('density'),
             horizonBlend: this.properties.get('horizon-blend')
         };
     }

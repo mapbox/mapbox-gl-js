@@ -8,9 +8,6 @@ varying vec2 v_pos0;
 
 #ifdef FOG
 varying float v_fog_opacity;
-#ifdef FOG_HAZE
-varying vec3 v_haze_color;
-#endif
 #endif
 
 const float skirtOffset = 24575.0;
@@ -27,11 +24,6 @@ void main() {
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
 
 #ifdef FOG
-#ifdef FOG_HAZE
-    fog(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, v_haze_color);
-#else
-    vec3 unused;
-    fog(fog_position(vec3(decodedPos, elevation)), v_fog_opacity, unused);
-#endif
+    v_fog_opacity = fog(fog_position(vec3(decodedPos, elevation)));
 #endif
 }
