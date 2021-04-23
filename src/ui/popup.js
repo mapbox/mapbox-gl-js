@@ -572,7 +572,7 @@ export default class Popup extends Evented {
         }
 
         const offsetedPos = pos.add(offset[anchor]).round();
-        this._map._domRenderTaskQueue.add(() => {
+        this._map._requestDomTask(() => {
             if (this._container && anchor) {
                 DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
                 applyAnchorClass(this._container, anchor, 'popup');

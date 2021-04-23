@@ -16,6 +16,7 @@ import Hash from './hash.js';
 import HandlerManager from './handler_manager.js';
 import Camera from './camera.js';
 import LngLat from '../geo/lng_lat.js';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import LngLatBounds from '../geo/lng_lat_bounds.js';
 import Point from '@mapbox/point-geometry';
 import AttributionControl from './control/attribution_control.js';
@@ -2170,6 +2171,23 @@ class Map extends Camera {
     }
 
     /**
+     * Queries the currently loaded data for elevation at a geographical location. This accounts for the value of `exaggeration` set on `terrain`.
+     * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
+     *
+     * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
+     * @param {LngLatLike} lnglat The geographical location to project.
+     * @returns {number | null} The elevation in meters, accounting for `terrain.exaggeration`.
+     * @example
+     * var coordinate = [-122.420679, 37.772537];
+     * var elevation = map.queryTerrainElevationAt(coordinate);
+     */
+    queryTerrainElevationAt(lnglat: LngLatLike): number | null {
+        if (!this.transform.elevation) return null;
+
+        return this.transform.elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat));
+    }
+
+    /**
      * Sets the `state` of a feature.
      * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
      * When using this method, the `state` object is merged with any existing key-value pairs in the feature's state.
@@ -2498,6 +2516,21 @@ class Map extends Camera {
 
     _cancelRenderFrame(id: TaskID) {
         this._renderTaskQueue.remove(id);
+    }
+
+    /**
+     * Request that the given callback be executed during the next render frame if the map is not
+     * idle. Otherwise it is executed immediately, to avoid triggering a new render.
+     * @private
+     */
+    _requestDomTask(callback: () => void) {
+        // This condition means that the map is idle: the callback needs to be called right now as
+        // there won't be a triggered render to run the queue.
+        if (!this.isMoving() && this.loaded()) {
+            callback();
+        } else {
+            this._domRenderTaskQueue.add(callback);
+        }
     }
 
     /**

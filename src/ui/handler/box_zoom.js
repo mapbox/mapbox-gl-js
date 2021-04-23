@@ -107,7 +107,7 @@ class BoxZoomHandler {
             minY = Math.min(p0.y, pos.y),
             maxY = Math.max(p0.y, pos.y);
 
-        this._map._domRenderTaskQueue.add(() => {
+        this._map._requestDomTask(() => {
             if (this._box) {
                 DOM.setTransform(this._box, `translate(${minX}px,${minY}px)`);
 

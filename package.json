@@ -145,6 +145,7 @@
     "watch-render": "SUITE_NAME=render testem -f test/integration/testem/testem.js",
     "watch-query": "SUITE_NAME=query testem -f test/integration/testem/testem.js",
     "test-render": "SUITE_NAME=render CI=true testem ci -f test/integration/testem/testem.js",
+    "test-render-prod": "BUILD=production SUITE_NAME=render CI=true testem ci -f test/integration/testem/testem.js",
     "test-query": "SUITE_NAME=query CI=true testem ci -f test/integration/testem/testem.js",
     "test-expressions": "build/run-node test/expression.test.js",
     "test-flow": "build/run-node build/generate-flow-typed-style-spec && flow .",

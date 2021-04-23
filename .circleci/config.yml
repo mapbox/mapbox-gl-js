@@ -41,6 +41,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-render-prod:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
       - test-query:
           requires:
             - prepare
@@ -80,6 +86,7 @@ workflows:
             - test-flow
             - test-unit
             - test-render
+            - test-render-prod
             - test-query
             - test-expressions
           filters:
@@ -96,6 +103,7 @@ workflows:
             - test-flow
             - test-unit
             - test-render
+            - test-render-prod
             - test-query
             - test-expressions
           filters:
@@ -201,6 +209,18 @@ jobs:
           at: .
       - browser-tools/install-chrome
       - run: yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-prod:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - browser-tools/install-chrome
+      - run: yarn run test-render-prod
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:

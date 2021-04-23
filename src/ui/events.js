@@ -488,10 +488,12 @@ export type MapEvent =
     | 'mouseenter'
 
     /**
-     * Fired when a pointing device (usually a mouse) leaves a visible portion of a specified layer, or leaves
-     * the map canvas.
+     * Fired when a pointing device (usually a mouse) leaves a visible portion of a specified layer or moves
+     * from the specified layer to outside the map canvas.
      *
-     * **Important:** This event can only be listened for when {@link Map#on} includes three arguements,
+     * **Note:** To detect when the mouse leaves the canvas, independent of layer, use {@link Map.event:mouseout} instead.
+     *
+     * **Important:** This event can only be listened for when {@link Map#on} includes three arguments,
      * where the second argument specifies the desired layer.
      *
      * @event mouseleave
