@@ -1,6 +1,6 @@
 // @flow
 
-import {warnOnce} from '../util/util.js';
+import {warnOnce, nextPowerOfTwo} from '../util/util.js';
 import {AlphaImage} from '../util/image.js';
 import {register} from '../util/web_worker_transfer.js';
 
@@ -45,6 +45,12 @@ class LineAtlas {
             this.positions[key] = this.addDash(dasharray, round);
         }
         return this.positions[key];
+    }
+
+    trim() {
+        const width = this.width;
+        const height = this.height = nextPowerOfTwo(this.nextRow);
+        this.image.resize({width, height});
     }
 
     getKey(dasharray: Array<number>, round: boolean): string {

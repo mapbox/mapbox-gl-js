@@ -84,6 +84,7 @@ class WorkerTile {
 
         const buckets: {[_: string]: Bucket} = {};
 
+        // we initially reserve space for a 256x256 atlas, but trim it after processing all line features
         const lineAtlas = new LineAtlas(256, 256);
 
         const options = {
@@ -158,6 +159,8 @@ class WorkerTile {
                 featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
             }
         }
+
+        lineAtlas.trim();
 
         let error: ?Error;
         let glyphMap: ?{[_: string]: {[_: number]: ?StyleGlyph}};
