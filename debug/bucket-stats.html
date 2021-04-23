@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; left: 0; bottom: 0; right: 500px; }
+        #panel {
+            position: absolute; top: 0; bottom: 0; right: 0; width: 500px; overflow-x: hidden; overflow-y: auto;
+            box-sizing: border-box; padding: 10px; font: 14px/1.2 sans-serif;}
+        #stats table { width: 100%; }
+        #stats thead td { border-bottom: 1px solid black;}
+        #style { width: 300px; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='panel'>
+<input type="text" id="style" placeholder="Style URL" value="mapbox://styles/mapbox/streets-v11">
+<button type="button" onclick="resetStats()">Reset stats</button>
+<div id='stats'></div>
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+const style = document.getElementById('style');
+let curStyle = style.value;
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12,
+    center: [-122.4194, 37.7749],
+    style: curStyle,
+    hash: true
+});
+
+function resetStats () {
+    stats = {};
+    statsEl.innerHTML = '';
+}
+function loadStyle () {
+    const newStyle = this.value.trim();
+    if (curStyle === newStyle) return;
+    curStyle = newStyle;
+    map.setStyle(curStyle);
+    stats = {};
+}
+style.addEventListener('blur', loadStyle);
+style.addEventListener('keyup', function (event) {
+    // Load when enter is pressed
+    if (event.keyCode === 13) loadStyle.call(this, event);
+});
+
+map.showTileBoundaries = true;
+
+let stats = {};
+
+function propStats(bucket) {
+    for (const layerId in bucket.programConfigurations.programConfigurations) {
+        const binders = bucket.programConfigurations.programConfigurations[layerId].binders;
+        for (const prop in binders) {
+            const config = binders[prop];
+            const propKey = `${layerId} ${prop}`;
+            const paintArray = config.paintVertexArray || config.zoomInPaintVertexArray;
+            if (paintArray) stats[propKey] = (stats[propKey] || 0) + paintArray.arrayBuffer.byteLength;
+        }
+    }
+}
+
+function symbolStats(bucketKey, bucket) {
+    propStats(bucket);
+
+    stats[bucketKey] = (stats[bucketKey] || 0) +
+        bucket.dynamicLayoutVertexArray.arrayBuffer.byteLength +
+        bucket.layoutVertexArray.arrayBuffer.byteLength +
+        bucket.opacityVertexArray.arrayBuffer.byteLength +
+        bucket.placedSymbolArray.arrayBuffer.byteLength;
+}
+
+const statsEl = document.getElementById('stats');
+const counted = new WeakSet();
+
+map.on('data', (e) => {
+    if (!e.tile) return;
+
+    for (const bucket of Object.values(e.tile.buckets)) {
+        if (counted.has(bucket)) continue;
+        counted.add(bucket);
+
+        const bucketName = bucket.layerIds.slice().sort((a, b) => a.length - b.length)[0];
+
+        if (bucket.layoutVertexArray) {
+            const bucketKey = `${bucketName} ${bucket.layers[0].type} vertices`;
+            stats[bucketKey] = (stats[bucketKey] || 0) + bucket.layoutVertexArray.arrayBuffer.byteLength;
+            propStats(bucket);
+
+        } else {
+            symbolStats(`${bucketName} icon vertices`, bucket.icon);
+            symbolStats(`${bucketName} text vertices`, bucket.text);
+
+            const bucketKey = `${bucketName} symbol vertices`;
+            stats[bucketKey] = (stats[bucketKey] || 0) +
+                bucket.symbolInstances.arrayBuffer.byteLength +
+                bucket.lineVertexArray.arrayBuffer.byteLength +
+                bucket.glyphOffsetArray.arrayBuffer.byteLength;
+        }
+    }
+
+    if (!stats) return;
+    let html = '<table><thead><td>Bytes</td><td>Usage</td><td>Bucket</td></thead>';
+    const ids = Object.keys(stats).sort((a, b) => stats[b] - stats[a]);
+    let total = 0;
+    for (const id of ids) {
+        total += stats[id];
+    }
+    for (const id of ids) {
+        html += `<tr>
+            <td>${stats[id].toLocaleString()}</td>
+            <td>${(100 * stats[id] / total).toLocaleString(undefined, {maximumFractionDigits: 1})}%</td>
+            <td>${id}</td>
+        </tr>`;
+    }
+    html += '</table>';
+    statsEl.innerHTML = html;
+});
+
+</script>
+</body>
+</html>

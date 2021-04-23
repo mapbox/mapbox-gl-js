@@ -34,7 +34,7 @@ const repo = 'mapbox-gl-js';
     const github = new Octokit({
         authStrategy: createAppAuth,
         auth: {
-            id: SIZE_CHECK_APP_ID,
+            appId: SIZE_CHECK_APP_ID,
             privateKey: Buffer.from(PK, 'base64').toString('binary'),
             installationId: SIZE_CHECK_APP_INSTALLATION_ID
         }
