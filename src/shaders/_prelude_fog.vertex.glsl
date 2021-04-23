@@ -15,8 +15,8 @@ vec3 fog_position(vec2 pos) {
 
 float fog(vec3 pos) {
     float depth = length(pos);
-    float t = fog_range(depth);
-    return fog_opac * fog_horizon_blending(pos / depth);
+    float opacity = fog_opacity(fog_range(depth));
+    return opacity * fog_horizon_blending(pos / depth);
 }
 
 #endif
