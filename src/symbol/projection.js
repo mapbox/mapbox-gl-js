@@ -248,6 +248,19 @@ function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffset
     return {first: firstPlacedGlyph, last: lastPlacedGlyph};
 }
 
+// Check in the glCoordinate space, the rough estimation of angle between the text line and the Y axis.
+    // If the angle if less or equal to 5 degree, then keep the text glyphs unflipped even if it is required.
+function isInUnflippedRetainRange(firstPoint, lastPoint) {
+    const maxTangent = Math.tan(Math.PI / 180 * 85);
+    let deltaY = lastPoint.y - firstPoint.y;
+    let deltaX = lastPoint.x - firstPoint.x;
+    if (deltaX === 0.0) {
+        return true;
+    }
+    let absTangent = Math.abs(deltaY / deltaX);
+    return (absTangent > maxTangent);
+}
+
 function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRatio) {
     if (writingMode === WritingMode.horizontal) {
         // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
@@ -260,13 +273,20 @@ function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRat
             return {useVertical: true};
         }
     }
-
-    if (writingMode === WritingMode.vertical ? firstPoint.y < lastPoint.y : firstPoint.x > lastPoint.x) {
-        // Includes "horizontalOnly" case for labels without vertical glyphs
-        return {needsFlipping: true};
+    // Check if flipping is required for "verticalOnly" case
+    if (writingModes === WritingMode.vertical) {
+        return (firstPoint.y < lastPoint.y) ? {needsFlipping: true} : null;
+    }
+    // Check if flipping is required for "horizontalOnly" case for labels without vertical glyphs.
+    const flipRequired = (firstPoint.x > lastPoint.x);
+    // If flipping is required and animation is ongoing, but the glyphs are lying roughly within the unFlip retain
+    // range, still keep the glyphs unflipped to avoid the flickering. Otherwise, following the original flipping
+    // decision.
+    if (flipRequired && isInUnflippedRetainRange(firstPoint, lastPoint)) {
+        return null;
     }
 
-    return null;
+    return flipRequired ? {needsFlipping: true} : null;
 }
 
 function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation) {
