@@ -498,14 +498,7 @@ class Painter {
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
         this.context.bindFramebuffer.set(null);
         this.context.viewport.set([0, 0, this.width, this.height]);
-
-        // Clear buffers in preparation for drawing to the main framebuffer
-        // If fog is enabled, use the fog color as default clear color.
-        let clearColor = Color.transparent;
-        if (this.style.fog) {
-            clearColor = this.style.fog.properties.get('color');
-        }
-        this.context.clear({color: options.showOverdrawInspector ? Color.black : clearColor, depth: 1});
+        this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
