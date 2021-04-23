@@ -36,9 +36,6 @@ var GUIParams = function() {
     this.start = 2;
     this.end = 12.0;
     this.color = [255, 255, 255];
-    this.hazeColor = [109, 123, 180];
-    this.hazeOpacity = 0.5;
-    this.density = 1.0;
     this.horizonBlend = 0.1;
     this.showTileBoundaries = false;
 };
@@ -103,8 +100,6 @@ window.onload = function() {
         map.setFog(value ? {
             "range": [guiParams.start, guiParams.end],
             "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', 1.0)',
-            "haze-color": 'rgba(' + guiParams.hazeColor[0] + ', ' + guiParams.hazeColor[1] + ', ' + guiParams.hazeColor[2] + ', ' + guiParams.hazeOpacity + ')',
-            "density": guiParams.density,
             "horizon-blend": guiParams.horizonBlend
         } : null);
     });
@@ -123,13 +118,6 @@ window.onload = function() {
         });
     });
 
-    var density = fog.add(guiParams, 'density', 0, 1);
-    density.onChange((value) => {
-        map.setFog({
-            "density": value,
-        });
-    });
-
     var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 1.0);
     horizonBlend.onChange((value) => {
         map.setFog({
@@ -141,20 +129,6 @@ window.onload = function() {
     color.onChange((value) => {
         map.setFog({
             "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', 1.0)',
-        });
-    });
-
-    var hazeColor = fog.addColor(guiParams, 'hazeColor');
-    hazeColor.onChange((value) => {
-        map.setFog({
-            "haze-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.hazeOpacity + ')',
-        });
-    });
-
-    var hazeOpacity = fog.add(guiParams, 'hazeOpacity', 0, 1);
-    hazeOpacity.onChange((value) => {
-        map.setFog({
-            "haze-color": 'rgba(' + guiParams.hazeColor[0] + ', ' + guiParams.hazeColor[1] + ', ' + guiParams.hazeColor[2] + ', ' + guiParams.hazeOpacity + ')',
         });
     });
 };
@@ -216,8 +190,6 @@ map.on('style.load', function() {
     map.setFog(guiParams.enableFog ? {
         "range": [guiParams.start, guiParams.end],
         "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', 1.0)',
-        "haze-color": 'rgba(' + guiParams.hazeColor[0] + ', ' + guiParams.hazeColor[1] + ', ' + guiParams.hazeColor[2] + ', ' + guiParams.hazeOpacity + ')',
-        "density": guiParams.density,
         "horizon-blend": guiParams.horizonBlend
     } : null);
 
