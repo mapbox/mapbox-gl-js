@@ -187,7 +187,7 @@ map.on('style.load', function() {
         const start = performance.now();
         const elevation = map.queryTerrainElevation(map.unproject(e.point));
         console.log(`${performance.now() - start}`);
-        elevationDebug.innerHTML = (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + ' map.isUnderneath: ' + map.isUnderneath(e.point);
+        elevationDebug.innerHTML = (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + ' map.isUnderneath: ' + map.overlaps(e.point);
     });
 
     const lerp = (a, b, t) => {
