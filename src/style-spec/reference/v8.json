@@ -3733,43 +3733,6 @@
         }
       }
     },
-    "density": {
-      "type": "number",
-      "property-type": "data-constant",
-      "default": 1.0,
-      "minimum": 0.0,
-      "expression": {
-        "interpolated": true,
-        "parameters": [
-          "zoom"
-        ]
-      },
-      "transition": true,
-      "doc": "Controls the strength of fog within the fog range. Reducing the density pushes the fog farther toward the horizon, leaving more visible space for haze, if enabled. When haze opacity is zero, density will usually be 1.0.",
-      "sdk-support": {
-        "basic functionality": {
-          "js": "2.3.0"
-        }
-      }
-    },
-    "haze-color": {
-      "type": "color",
-      "property-type": "data-constant",
-      "default": "rgba(114,135,213,0)",
-      "expression": {
-        "interpolated": true,
-        "parameters": [
-          "zoom"
-        ]
-      },
-      "transition": true,
-      "doc": "The color of the haze component of fog. Alpha adjusts the amount of haze. Note that haze is disabled by default (zero alpha); increase this value to enable the effect.",
-      "sdk-support": {
-        "basic functionality": {
-          "js": "2.3.0"
-        }
-      }
-    },
     "horizon-blend": {
       "type": "number",
       "property-type": "data-constant",

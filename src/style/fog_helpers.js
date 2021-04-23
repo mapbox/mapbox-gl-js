@@ -12,7 +12,6 @@ export const FOG_SYMBOL_CLIPPING_THRESHOLD = 0.9;
 
 export type FogState = {
     range: [number, number],
-    density: number,
     horizonBlend: number
 };
 
@@ -26,7 +25,6 @@ export function getFogHorizonBlending(state: FogState, cameraDirection: Array<nu
 export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number): number {
     const fogOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
     const [start, end] = state.range;
-    const fogDensity = state.density;
 
     // The fog is not physically accurate, so we seek an expression which satisfies a
     // couple basic constraints:
@@ -48,12 +46,6 @@ export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number
 
     // Scale and clip to 1 at the far limit
     falloff = Math.min(1.0, 1.00747 * falloff);
-
-    // From src/render/painter.js via fog uniforms:
-    const fogExponent = 12 * Math.pow(1 - fogDensity, 2);
-
-    // Account for fog density
-    falloff *= Math.pow(smoothstep(0, 1, t), fogExponent);
 
     const cameraDirection = vec3.scale(vec3.create(), pos, 1.0 / depth);
     falloff *= getFogHorizonBlending(state, cameraDirection);
