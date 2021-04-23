@@ -2,7 +2,6 @@
 
 uniform vec3 u_fog_color;
 uniform float u_fog_temporal_offset;
-uniform mediump float u_fog_exponent;
 
 // This function is only used in rare places like heatmap where opacity is used
 // directly, outside the normal fog_apply method.

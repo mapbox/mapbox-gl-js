@@ -186,16 +186,8 @@ class Painter {
         }
 
         const fog = this.style.fog;
-        const fogStart = fog.properties.get('range')[0];
         const fogEnd = fog.properties.get('range')[1];
-        const fogDensity = fog.properties.get('density');
-        // We start culling where the fog opacity function hits 98%, leaving
-        // a non-noticeable opacity change threshold. We use an arbitrary function
-        // which bounds the true answer. See: https://www.desmos.com/calculator/lw03ldsuhy
-        const fogBoundFraction = 1 - 0.22 * Math.exp(4 * (fogDensity - 1));
-        const fogCullDist = fogStart + (fogEnd - fogStart) * fogBoundFraction;
-
-        this.transform.fogCullDistSq = fogCullDist * fogCullDist;
+        this.transform.fogCullDistSq = fogEnd * fogEnd;
     }
 
     get terrain(): ?Terrain {

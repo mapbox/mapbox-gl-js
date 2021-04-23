@@ -24,6 +24,6 @@ void main() {
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
 
 #ifdef FOG
-    fog(fog_position(vec3(decodedPos, elevation)), v_fog_opacity);
+    v_fog_opacity = fog(fog_position(vec3(decodedPos, elevation)));
 #endif
 }
