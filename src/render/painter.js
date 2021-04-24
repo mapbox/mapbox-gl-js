@@ -197,6 +197,9 @@ class Painter {
         this.transform.fogCullDistSq = fogCullDist * fogCullDist;
     }
 
+    _updateHaze() {
+    }
+
     get terrain(): ?Terrain {
         return this._terrain && this._terrain.enabled ? this._terrain : null;
     }
@@ -755,11 +758,18 @@ class Painter {
         const fog = this.style && this.style.fog;
         const fogOpacity = fog && fog.getFogPitchFactor(this.transform.pitch);
 
+        const haze = this.style && this.style.haze;
+        const hazeOpacity = haze && haze.properties && haze.properties.get('color').a;
+
         const defines = [];
         if (terrain) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && fogOpacity !== 0.0 && !rtt) defines.push('FOG');
+        const hasFog = fog && fogOpacity !== 0.0 && !rtt;
+        const hasHaze = haze && hazeOpacity && !rtt;
+        if (hasFog) defines.push('FOG');
+        if (hasHaze) defines.push('HAZE');
+        if (hasFog || hasHaze) defines.push('FOG_OR_HAZE');
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
         return defines;
@@ -839,24 +849,49 @@ class Painter {
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
         const fog = this.style && this.style.fog;
         const fogOpacity = (fog && fog.getFogPitchFactor(this.transform.pitch)) || 0.0;
-        if (fog && fogOpacity !== 0.0) {
+        const haze = this.style && this.style.haze;
+
+        const hasFog = fog && fogOpacity !== 0;
+        const hasHaze = haze && haze.properties && haze.properties.get('color').a;
+
+        if (hasFog || hasHaze) {
+            const fogUniforms = {};
+
             const temporalOffset = (this.frameCounter / 1000.0) % 1;
-            const fogColor = fog.properties.get('color');
-            const fogColorUnpremultiplied = fogColor.a === 0 ? [0, 0, 0] : [
-                fogColor.r / fogColor.a,
-                fogColor.g / fogColor.a,
-                fogColor.b / fogColor.a
-            ];
-            const uniforms = {};
+            fogUniforms['u_fog_temporal_offset'] = temporalOffset;
 
-            uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
-            uniforms['u_fog_range'] = fog.properties.get('range');
-            uniforms['u_fog_color'] = fogColorUnpremultiplied;
-            uniforms['u_fog_horizon_blend'] = fog.properties.get('horizon-blend');
-            uniforms['u_fog_temporal_offset'] = temporalOffset;
-            uniforms['u_fog_opacity'] = fogOpacity;
+            fogUniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
 
-            program.setFogUniformValues(context, uniforms);
+            if (hasFog) {
+                const fogColor = fog.properties.get('color');
+                const fogColorUnpremultiplied = fogColor.a === 0 ? [0, 0, 0] : [
+                    fogColor.r / fogColor.a,
+                    fogColor.g / fogColor.a,
+                    fogColor.b / fogColor.a
+                ];
+                fogUniforms['u_fog_color'] = fogColorUnpremultiplied;
+                fogUniforms['u_fog_range'] = fog.properties.get('range');
+                fogUniforms['u_fog_horizon_blend'] = fog.properties.get('horizon-blend');
+                fogUniforms['u_fog_opacity'] = fogOpacity;
+            }
+
+            if (hasHaze) {
+                const hazeUniforms = {};
+                const hazeColor = haze.properties.get('color');
+                const alpha = hazeColor.a;
+                const hazeColorLinear = alpha === 0 ? [0, 0, 0] : [
+                    3 * Math.pow(hazeColor.r / alpha, 2.2) * alpha,
+                    3 * Math.pow(hazeColor.g / alpha, 2.2) * alpha,
+                    3 * Math.pow(hazeColor.b / alpha, 2.2) * alpha
+                ];
+
+                hazeUniforms['u_haze_range'] = haze.properties.get('range');
+                hazeUniforms['u_haze_color_linear'] = hazeColorLinear;
+
+                program.setHazeUniformValues(context, hazeUniforms);
+            }
+
+            program.setFogUniformValues(context, fogUniforms);
         }
     }
 

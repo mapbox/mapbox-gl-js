@@ -11,6 +11,7 @@ import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
 import Light from './light.js';
 import Terrain from './terrain.js';
 import Fog from './fog.js';
+import Haze from './haze.js';
 import LineAtlas from '../render/line_atlas.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
@@ -86,7 +87,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setTransition',
     'setGeoJSONSourceData',
     'setTerrain',
-    'setFog'
+    'setFog',
+    'setHaze'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -126,6 +128,7 @@ class Style extends Evented {
     light: Light;
     terrain: ?Terrain;
     fog: ?Fog;
+    haze: ?Haze;
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
@@ -331,6 +334,9 @@ class Style extends Evented {
         if (this.stylesheet.fog) {
             this._createFog(this.stylesheet.fog);
         }
+        if (this.stylesheet.haze) {
+            this._createHaze(this.stylesheet.haze);
+        }
         this._updateDrapeFirstLayers();
 
         this.fire(new Event('data', {dataType: 'style'}));
@@ -480,6 +486,9 @@ class Style extends Evented {
             if (this.fog) {
                 this.fog.updateTransitions(parameters);
             }
+            if (this.haze) {
+                this.haze.updateTransitions(parameters);
+            }
 
             this._resetUpdates();
         }
@@ -527,6 +536,9 @@ class Style extends Evented {
         }
         if (this.fog) {
             this.fog.recalculate(parameters);
+        }
+        if (this.haze) {
+            this.haze.recalculate(parameters);
         }
         this.z = parameters.zoom;
 
@@ -1167,6 +1179,7 @@ class Style extends Evented {
             light: this.stylesheet.light,
             terrain: this.stylesheet.terrain,
             fog: this.stylesheet.fog,
+            haze: this.stylesheet.haze,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
             bearing: this.stylesheet.bearing,
@@ -1455,6 +1468,19 @@ class Style extends Evented {
         fog.updateTransitions(parameters);
     }
 
+    _createHaze(hazeOptions: HazeSpecification) {
+        const haze = this.haze = new Haze(hazeOptions);
+        this.stylesheet.haze = hazeOptions;
+        const parameters = {
+            now: browser.now(),
+            transition: extend({
+                duration: 0
+            }, this.stylesheet.transition)
+        };
+
+        haze.updateTransitions(parameters);
+    }
+
     _updateMarkersOpacity() {
         if (this.map._markers.length === 0) {
             return;
@@ -1506,6 +1532,45 @@ class Style extends Evented {
         }
 
         this._markersNeedUpdate = true;
+    }
+
+    getHaze() {
+        return this.haze ? this.haze.get() : null;
+    }
+
+    setHaze(hazeOptions: HazeSpecification) {
+        this._checkLoaded();
+
+        if (!hazeOptions) {
+            // Remove haze
+            delete this.haze;
+            delete this.stylesheet.haze;
+            return;
+        }
+
+        if (!this.haze) {
+            // Initialize Haze
+            this._createHaze(hazeOptions);
+        } else {
+            // Updating haze
+            const haze = this.haze;
+            const currSpec = haze.get();
+            for (const key in hazeOptions) {
+                if (!deepEqual(hazeOptions[key], currSpec[key])) {
+                    haze.set(hazeOptions);
+                    this.stylesheet.haze = hazeOptions;
+                    const parameters = {
+                        now: browser.now(),
+                        transition: extend({
+                            duration: 0
+                        }, this.stylesheet.transition)
+                    };
+
+                    haze.updateTransitions(parameters);
+                    break;
+                }
+            }
+        }
     }
 
     _updateDrapeFirstLayers() {

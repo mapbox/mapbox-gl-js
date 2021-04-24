@@ -106,7 +106,12 @@ const operations = {
     /*
      *  { command: 'setFog', args: [fogProperties] }
      */
-    setFog: 'setFog'
+    setFog: 'setFog',
+
+    /*
+     *  { command: 'setHaze', args: [hazeProperties] }
+     */
+    setHaze: 'setHaze'
 
 };
 
@@ -362,6 +367,9 @@ function diffStyles(before, after) {
         }
         if (!isEqual(before.fog, after.fog)) {
             commands.push({command: operations.setFog, args: [after.fog]});
+        }
+        if (!isEqual(before.haze, after.haze)) {
+            commands.push({command: operations.setHaze, args: [after.haze]});
         }
 
         // Handle changes to `sources`

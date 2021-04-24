@@ -41,3 +41,29 @@ float fog_opacity(float t) {
 }
 
 #endif
+
+#ifdef HAZE
+
+uniform mediump vec2 u_haze_range;
+
+// Compute a ramp for fog opacity
+//   - t: depth, rescaled to 0 at fogStart and 1 at fogEnd
+// See: https://www.desmos.com/calculator/3taufutxid
+// This function much match src/style/fog.js and _prelude_fog.vertex.glsl
+float haze_opacity(float t) {
+    const float decay = 6.0;
+    float falloff = 1.0 - min(1.0, exp(-decay * t));
+
+    // Cube without pow() to smooth the onset
+    falloff *= falloff * falloff;
+
+    // Scale and clip to 1 at the far limit
+    return min(1.0, 1.00747 * falloff);
+}
+
+
+float haze_range(float depth) {
+    // Map [near, far] to [0, 1] without clamping
+    return (depth - u_haze_range[0]) / (u_haze_range[1] - u_haze_range[0]);
+}
+#endif

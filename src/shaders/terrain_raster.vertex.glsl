@@ -10,6 +10,10 @@ varying vec2 v_pos0;
 varying float v_fog_opacity;
 #endif
 
+#ifdef HAZE
+varying float v_haze_opacity;
+#endif
+
 const float skirtOffset = 24575.0;
 const float wireframeOffset = 0.00015;
 
@@ -25,5 +29,9 @@ void main() {
 
 #ifdef FOG
     v_fog_opacity = fog(fog_position(vec3(decodedPos, elevation)));
+#endif
+
+#ifdef HAZE
+    v_haze_opacity = haze(fog_position(vec3(decodedPos, elevation)));
 #endif
 }

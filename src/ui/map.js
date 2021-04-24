@@ -42,6 +42,7 @@ import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image.js';
 import Terrain from '../style/terrain.js';
 import Fog from '../style/fog.js';
+import Haze from '../style/haze.js';
 
 import type ScrollZoomHandler from './handler/scroll_zoom.js';
 import type BoxZoomHandler from './handler/box_zoom.js';
@@ -61,6 +62,7 @@ import type {
     LightSpecification,
     TerrainSpecification,
     FogSpecification,
+    HazeSpecification,
     SourceSpecification
 } from '../style-spec/types.js';
 
@@ -2219,6 +2221,32 @@ class Map extends Camera {
     }
 
     /**
+     * Returns the fog specification or `null` if haze is not set on the map.
+     *
+     * @returns {Object} fog Haze specification properties of the style.
+     */
+    getHaze(): Haze | null {
+        return this.style ? this.style.getHaze() : null;
+    }
+
+    /**
+     * Sets the haze property of the style.
+     * @param haze The haze properties to set. Must conform the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#haze).
+     * If `null` or `undefined` is provided, this function call removes the haze from the map.
+     * @returns {Map} `this`
+     * @example
+     * map.setHaze({
+     *  "range": [1.0, 12.0],
+     *  "color": 'white'
+     * });
+     */
+    setHaze(haze: FogSpecification) {
+        this._lazyInitEmptyStyle();
+        this.style.setHaze(haze);
+        return this._update(true);
+    }
+
+    /**
      * Queries the currently loaded data for elevation at a geographical location. This accounts for the value of `exaggeration` set on `terrain`.
      * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
      *
@@ -2659,6 +2687,7 @@ class Map extends Camera {
         if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
             this.painter._updateFog();
+            this.painter._updateHaze();
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             this.style._updateSources(this.transform);
         }

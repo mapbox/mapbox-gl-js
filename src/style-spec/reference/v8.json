@@ -65,6 +65,10 @@
       "type": "fog",
       "doc": "A global effect that fades layers and markers based on their distance to the camera. The fog can be used to approximate the effect of atmosphere on distant objects and enhance the depth perception of the map when used with terrain or 3D features."
     },
+    "haze": {
+      "type": "haze",
+      "doc": "A global effect that simulates the effect of atmospheric scattering of sunlight toward the camera."
+    },
     "sources": {
       "required": true,
       "type": "sources",
@@ -3739,6 +3743,55 @@
       },
       "transition": true,
       "doc": "Horizon blend applies a smooth fade from the color of the fog to the color of the sky. A value of zero leaves a sharp transition from fog to sky. Increasing the value blends the color of fog into increasingly high angles of the sky.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0"
+        }
+      }
+    }
+  },
+  "haze": {
+    "range": {
+      "type": "array",
+      "default": [
+        2,
+        12
+      ],
+      "minimum": 0,
+      "maximum": 20,
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "doc": "The near and far limits of the haze layer. Units are relative to the map height, so that 2.0 corresponds to twice the map height, in pixels.",
+      "example": [
+        2,
+        12
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0"
+        }
+      }
+    },
+    "color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#4c5380",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "The color of the haze.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"

@@ -8,7 +8,9 @@ import Context from '../gl/context.js';
 import {terrainUniforms} from '../terrain/terrain.js';
 import type {TerrainUniformsType} from '../terrain/terrain.js';
 import {fogUniforms} from './fog.js';
+import {hazeUniforms} from './haze.js';
 import type {FogUniformsType} from './fog.js';
+import type {HazeUniformsType} from './haze.js';
 
 import type SegmentVector from '../data/segment.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
@@ -44,6 +46,7 @@ class Program<Us: UniformBindings> {
     failedToCreate: boolean;
     terrainUniforms: ?TerrainUniformsType;
     fogUniforms: ?FogUniformsType;
+    hazeUniforms: ?HazeUniformsType;
 
     static cacheKey(name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
@@ -133,8 +136,11 @@ class Program<Us: UniformBindings> {
         if (fixedDefines.indexOf('TERRAIN') !== -1) {
             this.terrainUniforms = terrainUniforms(context, uniformLocations);
         }
-        if (fixedDefines.indexOf('FOG') !== -1) {
+        if (fixedDefines.indexOf('FOG_OR_HAZE') !== -1) {
             this.fogUniforms = fogUniforms(context, uniformLocations);
+        }
+        if (fixedDefines.indexOf('HAZE') !== -1) {
+            this.hazeUniforms = hazeUniforms(context, uniformLocations);
         }
     }
 
@@ -160,6 +166,20 @@ class Program<Us: UniformBindings> {
         for (const name in fogUniformsValues) {
             if (uniforms[name].location) {
                 uniforms[name].set(fogUniformsValues[name]);
+            }
+        }
+    }
+
+    setHazeUniformValues(context: Context, hazeUniformsValues: UniformValues<HazeUniformsType>) {
+        if (!this.hazeUniforms) return;
+        const uniforms: HazeUniformsType = this.hazeUniforms;
+
+        if (this.failedToCreate) return;
+        context.program.set(this.program);
+
+        for (const name in hazeUniformsValues) {
+            if (uniforms[name].location) {
+                uniforms[name].set(hazeUniformsValues[name]);
             }
         }
     }

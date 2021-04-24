@@ -28,6 +28,7 @@
 
 var GUIParams = function() {
     this.enableFog = true;
+    this.enableHaze = true;
     this.enableTerrain = true;
     this.freezeTileCoverage = false;
     this.enableSky = true;
@@ -38,6 +39,10 @@ var GUIParams = function() {
     this.color = [255, 255, 255];
     this.horizonBlend = 0.1;
     this.showTileBoundaries = false;
+
+    this.hazeColor = [76, 83, 128];
+    this.hazeStart = 2;
+    this.hazeEnd = 12.0;
 };
 
 var guiParams = new GUIParams();
@@ -131,6 +136,37 @@ window.onload = function() {
             "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', 1.0)',
         });
     });
+
+    var haze = gui.addFolder('Haze');
+    var enableHaze = haze.add(guiParams, 'enableHaze');
+    enableHaze.onFinishChange((value) => {
+        map.setHaze(value ? {
+            "range": [guiParams.hazeStart, guiParams.hazeEnd],
+            "color": 'rgba(' + guiParams.hazeColor[0] + ', ' + guiParams.hazeColor[1] + ', ' + guiParams.hazeColor[2] + ', 1.0)',
+        } : null);
+    });
+
+    var hazeStart = haze.add(guiParams, 'hazeStart', 0.0, 15.0);
+    hazeStart.onChange((value) => {
+        map.setHaze({
+            "range": [value, guiParams.hazeEnd],
+        });
+    });
+
+    var hazeEnd = haze.add(guiParams, 'hazeEnd', 0.0, 15.0);
+    hazeEnd.onChange((value) => {
+        map.setHaze({
+            "range": [guiParams.hazeStart, value],
+        });
+    });
+
+    var hazeColor = haze.addColor(guiParams, 'hazeColor');
+    hazeColor.onChange((value) => {
+        map.setHaze({
+            "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', 1.0)',
+        });
+    });
+
 };
 
 var popup = new mapboxgl.Popup().setHTML('Pitch Alignment: auto<br>Rotation Alignment: auto');
@@ -191,6 +227,11 @@ map.on('style.load', function() {
         "range": [guiParams.start, guiParams.end],
         "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', 1.0)',
         "horizon-blend": guiParams.horizonBlend
+    } : null);
+
+    map.setHaze(guiParams.enableHaze ? {
+        "range": [guiParams.hazeStart, guiParams.hazeEnd],
+        "color": 'rgba(' + guiParams.hazeColor[0] + ', ' + guiParams.hazeColor[1] + ', ' + guiParams.hazeColor[2] + ', 1.0)'
     } : null);
 
     map.setTerrain(guiParams.enableTerrain ? {
