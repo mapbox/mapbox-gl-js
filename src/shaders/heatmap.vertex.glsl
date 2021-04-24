@@ -8,7 +8,7 @@ attribute vec2 a_pos;
 
 varying vec2 v_extrude;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
@@ -56,7 +56,7 @@ void main(void) {
 
     gl_Position = u_matrix * vec4(pos, 1);
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
     v_fog_pos = fog_position(pos);
 #endif
 }

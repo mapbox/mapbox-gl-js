@@ -12,7 +12,7 @@ uniform float u_saturation_factor;
 uniform float u_contrast_factor;
 uniform vec3 u_spin_weights;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
@@ -50,8 +50,8 @@ void main() {
 
     vec3 out_color = mix(u_high_vec, u_low_vec, rgb);
 
-#ifdef FOG
-    out_color = fog_dither(fog_apply(out_color, v_fog_pos));
+#ifdef FOG_OR_HAZE
+    out_color = fog_dither(fog_haze_apply(out_color, v_fog_pos));
 #endif
 
     gl_FragColor = vec4(out_color * color.a, color.a);

@@ -14,7 +14,7 @@ attribute vec2 a_pos;
 varying vec3 v_data;
 varying float v_visibility;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
@@ -142,7 +142,7 @@ void main(void) {
 
     v_data = vec3(extrude.x, extrude.y, antialiasblur);
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
     v_fog_pos = fog_position(world_center.xyz);
 #endif
 }

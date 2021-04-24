@@ -4,7 +4,7 @@ varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
@@ -28,8 +28,8 @@ void main() {
 
     vec4 out_color = color;
 
-#ifdef FOG
-    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
+#ifdef FOG_OR_HAZE
+    out_color = fog_dither(fog_haze_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
     gl_FragColor = out_color * (alpha * opacity);

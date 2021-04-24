@@ -10,7 +10,7 @@ attribute vec2 a_centroid_pos;
 
 varying vec4 v_color;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
@@ -87,7 +87,7 @@ void main() {
     v_color.rgb += clamp(color.rgb * directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_color *= u_opacity;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
     v_fog_pos = fog_position(pos);
 #endif
 }

@@ -12,7 +12,7 @@ attribute vec2 a_pos;
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
@@ -22,7 +22,7 @@ void main() {
     v_pos_a = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, u_scale_a * u_pattern_size_a, u_tile_units_to_pixels, a_pos);
     v_pos_b = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, u_scale_b * u_pattern_size_b, u_tile_units_to_pixels, a_pos);
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
     v_fog_pos = fog_position(a_pos);
 #endif
 }

@@ -12,10 +12,10 @@ varying float v_haze_opacity;
 void main() {
     vec4 color = texture2D(u_image0, v_pos0);
 #ifdef FOG
-    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity));
+    color.rgb = fog_apply_from_computed(color.rgb, v_fog_opacity);
 #endif
 #ifdef HAZE
-    color.rgb = haze_apply_from_vert(color.rgb, v_haze_opacity);
+    color.rgb = haze_apply_from_computed(color.rgb, v_haze_opacity);
 #endif
 #ifdef FOG_OR_HAZE
     color.rgb = fog_dither(color.rgb);

@@ -9,7 +9,7 @@ attribute vec2 a_texture_pos;
 varying vec2 v_pos0;
 varying vec2 v_pos1;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
@@ -23,7 +23,7 @@ void main() {
     v_pos0 = (((a_texture_pos / 8192.0) - 0.5) / u_buffer_scale ) + 0.5;
     v_pos1 = (v_pos0 * u_scale_parent) + u_tl_parent;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
     v_fog_pos = fog_position(a_pos);
 #endif
 }

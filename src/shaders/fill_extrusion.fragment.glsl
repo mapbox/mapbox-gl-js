@@ -1,13 +1,13 @@
 varying vec4 v_color;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
 void main() {
     vec4 color = v_color;
-#ifdef FOG
-    color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
+#ifdef FOG_OR_HAZE
+    color = fog_dither(fog_haze_apply_premultiplied(color, v_fog_pos));
 #endif
     gl_FragColor = color;
 

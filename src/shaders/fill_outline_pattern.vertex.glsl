@@ -10,7 +10,7 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec2 v_pos;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
@@ -46,7 +46,7 @@ void main() {
 
     v_pos = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
     v_fog_pos = fog_position(a_pos);
 #endif
 }

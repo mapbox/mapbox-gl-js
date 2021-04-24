@@ -1,7 +1,7 @@
 varying vec3 v_data;
 varying float v_visibility;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
@@ -38,8 +38,8 @@ void main() {
 
     vec4 out_color = mix(color * opacity, stroke_color * stroke_opacity, color_t);
 
-#ifdef FOG
-    out_color = fog_apply_premultiplied(out_color, v_fog_pos);
+#ifdef FOG_OR_HAZE
+    out_color = fog_haze_apply_premultiplied(out_color, v_fog_pos);
 #endif
 
     gl_FragColor = out_color * (v_visibility * opacity_t);

@@ -22,7 +22,7 @@ varying vec2 v_width2;
 varying float v_gamma_scale;
 varying highp vec2 v_uv;
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
 varying vec3 v_fog_pos;
 #endif
 
@@ -93,7 +93,7 @@ void main() {
 #endif
     v_width2 = vec2(outset, inset);
 
-#ifdef FOG
+#ifdef FOG_OR_HAZE
     v_fog_pos = fog_position(pos);
 #endif
 }

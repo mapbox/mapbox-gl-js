@@ -22,29 +22,14 @@ float fog_opacity(vec3 pos) {
     return fog_opacity(fog_range(length(pos)));
 }
 
-vec3 fog_apply(vec3 color, vec3 pos) {
-    float depth = length(pos);
-    float t = fog_range(depth);
-    float fog_opac = fog_opacity(t) * fog_horizon_blending(pos / depth);
-
-    return mix(color, u_fog_color, fog_opac);
-}
-
-// Apply fog computed in the vertex shader
-vec3 fog_apply_from_vert(vec3 color, float fog_opac) {
-    return mix(color, u_fog_color, fog_opac);
-}
-
 // Assumes z up
 vec3 fog_apply_sky_gradient(vec3 camera_ray, vec3 sky_color) {
     return mix(sky_color, u_fog_color, fog_horizon_blending(normalize(camera_ray)));
 }
 
-// Un-premultiply the alpha, then blend fog, then re-premultiply alpha. For
-// use with colors using premultiplied alpha
-vec4 fog_apply_premultiplied(vec4 color, vec3 pos) {
-    float a = 1e-4 + color.a;
-    return vec4(fog_apply(min(color.rgb / a, vec3(1)), pos) * a, color.a);
+// Apply fog computed in the vertex shader
+vec3 fog_apply_from_computed(vec3 color, float opac) {
+    return mix(color, u_fog_color, opac);
 }
 
 #endif
@@ -60,10 +45,10 @@ vec3 tonemap (vec3 color) {
 }
 
 // Apply fog computed in the vertex shader
-vec3 haze_apply_from_vert(vec3 color, float haze_opac) {
+vec3 haze_apply_from_computed(vec3 color, float opac) {
     color = pow(color, vec3(gamma));
 
-    color += haze_opac * u_haze_color_linear;
+    color += opac * u_haze_color_linear;
 
     color = tonemap(color);
 
@@ -72,4 +57,26 @@ vec3 haze_apply_from_vert(vec3 color, float haze_opac) {
 
 #endif
 
+#ifdef FOG_OR_HAZE
+vec3 fog_haze_apply(vec3 color, vec3 pos) {
+    float depth = length(pos);
 
+#ifdef FOG
+    float opac = fog_opacity(fog_range(depth)) * fog_horizon_blending(pos / depth);
+    color = fog_apply_from_computed(color, opac);
+#endif
+
+#ifdef HAZE
+    color = haze_apply_from_computed(color, haze_opacity(haze_range(depth)));
+#endif
+
+    return color;
+}
+
+// Un-premultiply the alpha, then blend fog, then re-premultiply alpha. For
+// use with colors using premultiplied alpha
+vec4 fog_haze_apply_premultiplied(vec4 color, vec3 pos) {
+    float a = 1e-4 + color.a;
+    return vec4(fog_haze_apply(min(color.rgb / a, vec3(1)), pos) * a, color.a);
+}
+#endif
