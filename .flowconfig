@@ -13,6 +13,7 @@
 .*/node_modules/@mapbox/batfish/.*
 .*/node_modules/browserify/.*
 .*/node_modules/browser-sync.*/.*
+.*/node_modules/cheap-ruler/.*
 .*/node_modules/nyc/.*
 .*/node_modules/fbjs/.*
 .*/node_modules/es5-ext/.*
