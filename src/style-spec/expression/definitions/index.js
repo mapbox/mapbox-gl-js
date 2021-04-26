@@ -45,6 +45,7 @@ import FormatExpression from './format.js';
 import ImageExpression from './image.js';
 import Length from './length.js';
 import Within from './within.js';
+import Distance from './distance';
 
 import type {Varargs} from '../compound_expression.js';
 import type {ExpressionRegistry} from '../expression.js';
@@ -85,7 +86,8 @@ const expressions: ExpressionRegistry = {
     'to-number': Coercion,
     'to-string': Coercion,
     'var': Var,
-    'within': Within
+    'within': Within,
+    'distance': Distance
 };
 
 function rgba(ctx, [r, g, b, a]) {
