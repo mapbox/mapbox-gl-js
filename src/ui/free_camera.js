@@ -1,6 +1,6 @@
 // @flow
 
-import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {degToRad, wrap} from '../util/util.js';
 import {vec3, vec4, quat, mat4} from 'gl-matrix';
 import type {Elevation} from '../terrain/elevation.js';
@@ -302,10 +302,10 @@ class FreeCamera {
         return matrix;
     }
 
-    getDistanceToSeaLevel(): number {
+    getDistanceToElevation(elevationMeters: number): number {
+        const z0 = elevationMeters === 0 ? 0 : mercatorZfromAltitude(elevationMeters, this.position[1]);
         const f = this.forward();
-        const pos = this.position;
-        return -pos[2] / f[2];
+        return (z0 - this.position[2]) / f[2];
     }
 
     clone(): FreeCamera {

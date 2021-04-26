@@ -16,6 +16,7 @@ import assert from 'assert';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
+import type Map from '../ui/map.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -56,6 +57,7 @@ class Transform {
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
+    _averageElevation: number;
     _elevation: ?Elevation;
     _fov: number;
     _pitch: number;
@@ -108,6 +110,7 @@ class Transform {
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
+        this._averageElevation = 0;
     }
 
     clone(): Transform {
@@ -130,6 +133,7 @@ class Transform {
         clone._camera = this._camera.clone();
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
+        clone._averageElevation = this._averageElevation;
         return clone;
     }
 
@@ -201,7 +205,8 @@ class Transform {
     }
 
     get cameraWorldSize(): number {
-        return this._worldSizeFromZoom(this._zoomFromMercatorZ(this._camera.getDistanceToSeaLevel()));
+        const distance = Math.max(this._camera.getDistanceToElevation(this._averageElevation), 1e-20);
+        return this._worldSizeFromZoom(this._zoomFromMercatorZ(distance));
     }
 
     get pixelsPerMeter(): number {
@@ -257,6 +262,14 @@ class Transform {
         this._calcMatrices();
     }
 
+    get averageElevation(): number {
+        return this._averageElevation;
+    }
+    set averageElevation(averageElevation: number) {
+        this._averageElevation = averageElevation;
+        this._calcMatrices();
+    }
+
     get zoom(): number { return this._zoom; }
     set zoom(zoom: number) {
         const z = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
@@ -303,6 +316,101 @@ class Transform {
         const terrainElevation = mercatorZfromAltitude(this._centerAltitude, this.center.lat);
 
         this._cameraZoom = this._zoomFromMercatorZ(terrainElevation + height);
+    }
+
+    sampleAverageElevation(map: Map): number {
+        if (!this._elevation) return 0;
+
+        const xCenter = this.width * 0.5;
+        const yCenter = this.height * 0.66;
+        const xRadius = this.width * 0.33;
+        const yRadius = this.height * 0.33;
+
+        // Phyllotaxis: https://www.desmos.com/calculator/duq27u6vof
+        const n = 5;
+        const points = [];
+        const thetaScale = Math.PI * (3 - Math.sqrt(5));
+        for (let i = 1; i <= n; ++i) {
+            // Drop the usual square root to bias toward the center
+            const r = i / n;
+            const theta = i * thetaScale;
+            points.push([
+                xCenter + r * xRadius * Math.sin(theta),
+                yCenter - r * yRadius * Math.cos(theta)
+            ]);
+        }
+
+        // BEGIN DEBUG
+        /*const DEBUG = true;
+        let debugEl;
+        if (DEBUG) {
+            debugEl = document.getElementById('pts');
+            if (!debugEl) {
+                debugEl = document.createElement('div');
+                debugEl.id = 'pts';
+                debugEl.style.position = 'absolute';
+                debugEl.style.top = 0;
+                debugEl.style.bottom = 0;
+                debugEl.style.left = 0;
+                debugEl.style.right = 0;
+                debugEl.style.zIndex = 10;
+                debugEl.style.pointerEvents = 'none';
+                document.body.appendChild(debugEl);
+
+                for (let i = 0; i < points.length; i++) {
+                    const pt = document.createElement('span');
+                    pt.style.position = 'absolute';
+                    pt.style.width = '10px'
+                    pt.style.height = '10px'
+                    pt.style.borderRadius = '10px';
+                    pt.style.backgroundColor = 'red';
+                    pt.style.transform = 'translate(-5px,-5px)';
+                    pt.style.textIndent = '1em';
+                    pt.style.textShadow = '0 0 2px #ffffff, 0 0 2px #ffffff, 0 0 2px #ffffff, 0 0 2px #ffffff, 0 0 2px #ffffff';
+                    debugEl.appendChild(pt);
+                }
+            }
+
+            for (let i = 0; i < points.length; i++) {
+                const el = debugEl.children.item(i);
+                el.style.left = `${points[i][0]}px`;
+                el.style.top = `${points[i][1]}px`;
+            }
+        }
+        */
+        // END DEBUG
+
+        let elevationSum = 0.0;
+        let weightSum = 0.0;
+        for (let i = 0; i < points.length; i++) {
+            const p = points[i];
+            if (this._elevation) {
+                const hit = this._elevation.pointCoordinate(new Point(p[0], p[1]));
+                if (!hit) {
+                    /*
+                    // BEGIN DEBUG
+                    debugEl.children.item(i).textContent = 'null'
+                    debugEl.children.item(i).style.backgroundColor = 'gray';
+                    // END DEBUG
+                    */
+                    continue;
+                }
+                // BEGIN DEBUG
+                /*
+                if (DEBUG) {
+                    debugEl.children.item(i).textContent = hit[3].toFixed(0);
+                    debugEl.children.item(i).style.backgroundColor = 'blue';
+                }
+                */
+                // END DEBUG
+
+                const weight = 1 / Math.hypot(hit[0] - this._camera.position[0], hit[1] - this._camera.position[1]);
+                elevationSum += hit[3] * weight;
+                weightSum += weight;
+            }
+        }
+
+        return elevationSum / Math.max(weightSum, 1e-8);
     }
 
     get center(): LngLat { return this._center; }
