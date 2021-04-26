@@ -2179,7 +2179,7 @@ class Map extends Camera {
      * @returns {number | null} The elevation in meters, accounting for `terrain.exaggeration`.
      * @example
      * var coordinate = [-122.420679, 37.772537];
-     * var elevation = map.queryTerrainElevationAtLocation(coordinate);
+     * var elevation = map.queryTerrainElevation(coordinate);
      */
     queryTerrainElevation(lnglat: LngLatLike): number | null {
         if (!this.transform.elevation) return null;

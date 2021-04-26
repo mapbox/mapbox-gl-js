@@ -139,10 +139,8 @@ export class Elevation {
 
     /**
      * Given a point on screen, returns 3D MercatorCoordinate on terrain.
-     * Reconstructs a picked world position by casting a ray from screen coordinates
-     * and sampling depth from the custom depth buffer. This function (currently) introduces
-     * a potential stall (few frames) due to it reading pixel information from the gpu.
-     * Depth buffer will also be generated if it doesn't already exist.
+     * Helper function that wraps `raycast`.
+     *
      * @param {Point} screenPoint Screen point in pixels in top-left origin coordinate system.
      * @returns {vec3} If there is intersection with terrain, returns 3D MercatorCoordinate's of
      * intersection, as vec3(x, y, z), otherwise null.

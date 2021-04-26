@@ -109,7 +109,7 @@
                 .makeTranslation(
                     modelTransform.translateX,
                     modelTransform.translateY,
-                    map.queryTerrainElevationAtLocation(modelOrigin) * modelTransform.scale
+                    map.queryTerrainElevation(modelOrigin) * modelTransform.scale
                 )
                 .scale(
                     new THREE.Vector3(
