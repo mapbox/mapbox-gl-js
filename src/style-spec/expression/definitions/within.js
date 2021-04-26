@@ -8,7 +8,7 @@ import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {GeoJSON, GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson-types';
 import type {CanonicalTileID} from '../../../source/tile_id.js';
-import {updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util';
+import {updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util.js';
 
 type GeoJSONPolygons =| GeoJSONPolygon | GeoJSONMultiPolygon;
 

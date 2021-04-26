@@ -45,7 +45,7 @@ import FormatExpression from './format.js';
 import ImageExpression from './image.js';
 import Length from './length.js';
 import Within from './within.js';
-import Distance from './distance';
+import Distance from './distance.js';
 
 import type {Varargs} from '../compound_expression.js';
 import type {ExpressionRegistry} from '../expression.js';
