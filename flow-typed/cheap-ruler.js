@@ -10,6 +10,7 @@ declare module "cheap-ruler" {
         lineDistance(points: Array<Array<number>>): number;
         area(polygon: Array<Array<Array<number>>>): number;
         along(line: Array<Array<number>>, dist: number): Array<number>;
+        pointToSegmentDistance(p: GeometryPoint, a: GeometryPoint, b: GeometryPoint) : number;
         pointOnLine(line: Array<Array<number>>, p: Array<number>): Object;
         lineSlice(start: Array<number>, stop: Array<number>, line: Array<Array<number>>): Array<Array<number>>;
         lineSliceAlong(start: Array<number>, stop: Array<number>, line: Array<Array<number>>): Array<Array<number>>;
