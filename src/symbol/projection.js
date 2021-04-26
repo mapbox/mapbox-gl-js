@@ -249,15 +249,15 @@ function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffset
 }
 
 // Check in the glCoordinate space, the rough estimation of angle between the text line and the Y axis.
-    // If the angle if less or equal to 5 degree, then keep the text glyphs unflipped even if it is required.
+// If the angle if less or equal to 5 degree, then keep the text glyphs unflipped even if it is required.
 function isInUnflippedRetainRange(firstPoint, lastPoint) {
     const maxTangent = Math.tan(Math.PI / 180 * 85);
-    let deltaY = lastPoint.y - firstPoint.y;
-    let deltaX = lastPoint.x - firstPoint.x;
+    const deltaY = lastPoint.y - firstPoint.y;
+    const deltaX = lastPoint.x - firstPoint.x;
     if (deltaX === 0.0) {
         return true;
     }
-    let absTangent = Math.abs(deltaY / deltaX);
+    const absTangent = Math.abs(deltaY / deltaX);
     return (absTangent > maxTangent);
 }
 
@@ -274,7 +274,7 @@ function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRat
         }
     }
     // Check if flipping is required for "verticalOnly" case
-    if (writingModes === WritingMode.vertical) {
+    if (writingMode === WritingMode.vertical) {
         return (firstPoint.y < lastPoint.y) ? {needsFlipping: true} : null;
     }
     // Check if flipping is required for "horizontalOnly" case for labels without vertical glyphs.
