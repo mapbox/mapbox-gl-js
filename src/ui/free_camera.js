@@ -241,14 +241,23 @@ class FreeCamera {
         return [col[0], col[1], col[2]];
     }
 
+    getFrustumBottom(fovBelowCenter: number): vec3 {
+        const forward = this.forward();
+        const rotation = quat.setAxisAngle([], this.right(), fovBelowCenter);
+        const rotated = vec3.transformQuat(forward, forward, rotation);
+        return rotated;
+    }
+
     getCameraToWorld(worldSize: number, pixelsPerMeter: number): Float64Array {
         const cameraToWorld = new Float64Array(16);
         mat4.invert(cameraToWorld, this.getWorldToCamera(worldSize, pixelsPerMeter));
         return cameraToWorld;
     }
 
-    getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number, uniformScale: number): Float64Array {
+    getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number, uniformScale: number, fovBelowCenter: number): Float64Array {
         const invPosition = this.position;
+        const shift = this.getForwardShiftDistance(fovBelowCenter);
+        vec3.scaleAndAdd(invPosition, invPosition, this.forward(), shift);
 
         vec3.scale(invPosition, invPosition, -worldSize);
         const matrix = new Float64Array(16);
@@ -300,6 +309,22 @@ class FreeCamera {
         const matrix = new Float64Array(16);
         mat4.perspective(matrix, fovy, aspectRatio, nearZ, farZ);
         return matrix;
+    }
+
+    getForwardShiftDistance(fovBelowCenter: number): number {
+        const frustumBtmSeaLevelDist = this.getFrustumBtmDistanceToSeaLevel(fovBelowCenter);
+        const pitch = this.getPitchBearing().pitch;
+        if (pitch < 1e-8) return 0;
+
+        const fwdShiftXY = frustumBtmSeaLevelDist * Math.sin(pitch);
+        const fwdShift = fwdShiftXY / Math.cos( Math.PI / 2 - pitch - fovBelowCenter);
+        return fwdShift;
+    }
+
+    getFrustumBtmDistanceToSeaLevel(fovBelowCenter: number): number {
+        const f = this.getFrustumBottom(fovBelowCenter);
+        const pos = this.position;
+        return -pos[2] / f[2];
     }
 
     getDistanceToSeaLevel(): number {

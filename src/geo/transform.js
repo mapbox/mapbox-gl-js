@@ -468,6 +468,10 @@ class Transform {
         return this._fov * (0.5 + this.centerOffset.y / this.height);
     }
 
+    get fovBelowCenter(): number {
+        return this._fov * (0.5 - this.centerOffset.y / this.height);
+    }
+
     /**
      * Returns true if the padding options are equal.
      *
@@ -1495,7 +1499,7 @@ class Transform {
         // matrix for conversion from world coordinates to relative camera position in units
         // of fractions of the map height. Later composed with tile position to construct the
         // fog tile matrix.
-        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
+        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor, this.fovBelowCenter);
 
         // inverse matrix for conversion from screen coordinates to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
