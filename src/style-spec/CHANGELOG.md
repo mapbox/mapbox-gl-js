@@ -1,3 +1,7 @@
+## 13.9.1
+
+* Added compatibility table for the `terrain` root level property in the style specification. ([#10619](https://github.com/mapbox/mapbox-gl-js/pull/10619))
+
 ## 13.19.0
 
 ### ✨ Features and improvements
