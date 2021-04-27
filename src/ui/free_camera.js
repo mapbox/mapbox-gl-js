@@ -254,10 +254,15 @@ class FreeCamera {
         return cameraToWorld;
     }
 
-    getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number, uniformScale: number, fovBelowCenter: number): Float64Array {
+    getFogAdjustedPosition(fovBelowCenter: number): vec3 {
         const invPosition = this.position;
         const shift = this.getForwardShiftDistance(fovBelowCenter);
         vec3.scaleAndAdd(invPosition, invPosition, this.forward(), shift);
+        return invPosition;
+    }
+
+    getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number, uniformScale: number, fovBelowCenter: number): Float64Array {
+        const invPosition = this.getFogAdjustedPosition(fovBelowCenter);
 
         vec3.scale(invPosition, invPosition, -worldSize);
         const matrix = new Float64Array(16);
@@ -327,7 +332,7 @@ class FreeCamera {
         return -pos[2] / f[2];
     }
 
-    getDistanceToSeaLevel(): number {
+    getDistanceToSeaLevel(fovBelowCenter): number {
         const f = this.forward();
         const pos = this.position;
         return -pos[2] / f[2];

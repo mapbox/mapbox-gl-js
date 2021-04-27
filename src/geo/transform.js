@@ -201,7 +201,7 @@ class Transform {
     }
 
     get cameraWorldSize(): number {
-        return this._worldSizeFromZoom(this._zoomFromMercatorZ(this._camera.getDistanceToSeaLevel()));
+        return this._worldSizeFromZoom(this._zoomFromMercatorZ(this._camera.getDistanceToSeaLevel(this.fovBelowCenter)));
     }
 
     get pixelsPerMeter(): number {
