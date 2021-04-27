@@ -279,9 +279,9 @@ function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRat
     }
     // Check if flipping is required for "horizontalOnly" case for labels without vertical glyphs.
     const flipRequired = (firstPoint.x > lastPoint.x);
-    // If flipping is required and animation is ongoing, but the glyphs are lying roughly within the unFlip retain
-    // range, still keep the glyphs unflipped to avoid the flickering. Otherwise, following the original flipping
-    // decision.
+    // If flipping is required, but the glyphs are lying roughly within the unFlip retain
+    // range, still keep the glyphs unflipped to avoid the flickering. Otherwise, following
+    // the original flipping decision.
     if (flipRequired && isInUnflippedRetainRange(firstPoint, lastPoint)) {
         return null;
     }
