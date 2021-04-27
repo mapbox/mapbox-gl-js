@@ -12,10 +12,6 @@ attribute vec2 a_pos;
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 void main() {
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
 

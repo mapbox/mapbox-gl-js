@@ -8,10 +8,6 @@ attribute vec2 a_pos;
 
 varying vec2 v_extrude;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp float weight
 #pragma mapbox: define mediump float radius
 

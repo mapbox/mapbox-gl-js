@@ -1,10 +1,6 @@
 uniform sampler2D u_image;
 varying vec2 v_pos;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 uniform vec2 u_latrange;
 uniform vec2 u_light;
 uniform vec4 u_shadow;

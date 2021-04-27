@@ -2,10 +2,6 @@ uniform highp float u_intensity;
 
 varying vec2 v_extrude;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp float weight
 
 // Gaussian kernel coefficient: 1 / sqrt(2 * PI)

@@ -8,10 +8,6 @@ attribute vec2 a_pos;
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to

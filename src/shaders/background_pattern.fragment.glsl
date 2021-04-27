@@ -11,10 +11,6 @@ uniform sampler2D u_image;
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 void main() {
     vec2 imagecoord = mod(v_pos_a, 1.0);
     vec2 pos = mix(u_pattern_tl_a / u_texsize, u_pattern_br_a / u_texsize, imagecoord);

@@ -4,10 +4,6 @@ varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity

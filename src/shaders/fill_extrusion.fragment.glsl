@@ -1,9 +1,5 @@
 varying vec4 v_color;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 void main() {
     vec4 color = v_color;
 #ifdef FOG
