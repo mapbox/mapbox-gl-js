@@ -14,10 +14,6 @@ attribute vec2 a_pos;
 varying vec3 v_data;
 varying float v_visibility;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
 #pragma mapbox: define lowp float blur

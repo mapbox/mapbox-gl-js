@@ -12,10 +12,6 @@ uniform float u_saturation_factor;
 uniform float u_contrast_factor;
 uniform vec3 u_spin_weights;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 void main() {
 
     // read and cross-fade colors from the main and parent tiles

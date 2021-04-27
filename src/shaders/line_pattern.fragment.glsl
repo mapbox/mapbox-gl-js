@@ -11,10 +11,6 @@ varying float v_linesofar;
 varying float v_gamma_scale;
 varying float v_width;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
 #pragma mapbox: define lowp float pixel_ratio_from
