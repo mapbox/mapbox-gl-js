@@ -2,6 +2,9 @@
 // This prelude is injected in both vertex and fragment shader be wary
 // of precision qualifiers as vertex and fragment precision may differ
 
+#define EPSILON 0.0000001
+#define PI 3.141592653589793
+
 #ifdef FOG
 
 uniform mediump float u_fog_opacity;
@@ -13,11 +16,8 @@ float fog_range(float depth) {
     return (depth - u_fog_range[0]) / (u_fog_range[1] - u_fog_range[0]);
 }
 
-// Assumes z up and camera_dir *normalized* (to avoid computing its length multiple
-// times for different functions).
-// Must match definitions in:
-// src/shaders/_prelude_fog.vertex.glsl#fog_horizon_blending
-// src/style/fog_helpers.js#getFogSkyBlending
+// Assumes z up and camera_dir *normalized* (to avoid computing
+// its length multiple times for different functions).
 float fog_horizon_blending(vec3 camera_dir) {
     float t = max(0.0, camera_dir.z / u_fog_horizon_blend);
     // Factor of 3 chosen to roughly match smoothstep.
@@ -28,7 +28,6 @@ float fog_horizon_blending(vec3 camera_dir) {
 // Compute a ramp for fog opacity
 //   - t: depth, rescaled to 0 at fogStart and 1 at fogEnd
 // See: https://www.desmos.com/calculator/3taufutxid
-// This function much match src/style/fog.js and _prelude_fog.vertex.glsl
 float fog_opacity(float t) {
     const float decay = 6.0;
     float falloff = 1.0 - min(1.0, exp(-decay * t));

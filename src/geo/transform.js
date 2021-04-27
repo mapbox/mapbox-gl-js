@@ -1484,6 +1484,12 @@ class Transform {
         const cameraPixelsPerMeter = this.cameraPixelsPerMeter;
         const cameraPos = this._camera.position;
 
+        // The mercator fog matrix encodes transformation necessary to transform a position to camera fog space (in meters):
+        // translates p to camera origin and transforms it from pixels to meters. The windowScaleFactor is used to have a
+        // consistent transformation across different window sizes.
+        // - p = p - cameraOrigin
+        // - p.xy = p.xy * cameraWorldSize * windowScaleFactor
+        // - p.z  = p.z  * cameraPixelsPerMeter * windowScaleFactor
         const windowScaleFactor = 1.0 / this.height;
         const metersToPixel = [cameraWorldSize, cameraWorldSize, cameraPixelsPerMeter];
         vec3.scale(metersToPixel, metersToPixel, windowScaleFactor);
@@ -1492,9 +1498,8 @@ class Transform {
         mat4.scale(m, m, metersToPixel);
         this.mercatorFogMatrix = m;
 
-        // matrix for conversion from world coordinates to relative camera position in units
-        // of fractions of the map height. Later composed with tile position to construct the
-        // fog tile matrix.
+        // The worldToFogMatrix can be used for conversion from world coordinates to relative camera position in
+        // units of fractions of the map height. Later composed with tile position to construct the fog tile matrix.
         this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
 
         // inverse matrix for conversion from screen coordinates to location
