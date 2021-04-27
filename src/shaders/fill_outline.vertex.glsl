@@ -5,10 +5,6 @@ uniform vec2 u_world;
 
 varying vec2 v_pos;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp vec4 outline_color
 #pragma mapbox: define lowp float opacity
 

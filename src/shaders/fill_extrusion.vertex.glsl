@@ -10,10 +10,6 @@ attribute vec2 a_centroid_pos;
 
 varying vec4 v_color;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 

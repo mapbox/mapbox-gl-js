@@ -11,6 +11,8 @@ uniform mediump float u_fog_opacity;
 uniform mediump vec2 u_fog_range;
 uniform mediump float u_fog_horizon_blend;
 
+varying vec3 v_fog_pos;
+
 float fog_range(float depth) {
     // Map [near, far] to [0, 1] without clamping
     return (depth - u_fog_range[0]) / (u_fog_range[1] - u_fog_range[0]);

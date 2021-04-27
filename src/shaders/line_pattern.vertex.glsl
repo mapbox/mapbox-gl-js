@@ -21,10 +21,6 @@ varying float v_linesofar;
 varying float v_gamma_scale;
 varying float v_width;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float offset

@@ -1,10 +1,6 @@
 uniform vec4 u_color;
 uniform float u_opacity;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 void main() {
     vec4 out_color = u_color;
 
