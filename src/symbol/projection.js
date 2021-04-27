@@ -145,6 +145,7 @@ function updateLineLabels(bucket: SymbolBucket,
                           glCoordMatrix: mat4,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
+                          unflipRange: number,
                           getElevation: ?((p: Point) => number)) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
@@ -206,7 +207,7 @@ function updateLineLabels(bucket: SymbolBucket,
         let projectionCache = {};
 
         const getElevationForPlacement = pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
-        const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
+        const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, unflipRange, posMatrix, labelPlaneMatrix, glCoordMatrix,
             bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement);
 
         useVertical = placeUnflipped.useVertical;
@@ -214,7 +215,7 @@ function updateLineLabels(bucket: SymbolBucket,
         if (getElevationForPlacement && placeUnflipped.needsFlipping) projectionCache = {}; // Truncated points should be recalculated.
         if (placeUnflipped.notEnoughRoom || useVertical ||
             (placeUnflipped.needsFlipping &&
-             placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
+             placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, unflipRange, posMatrix, labelPlaneMatrix, glCoordMatrix,
                  bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement).notEnoughRoom)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
         }
@@ -248,20 +249,20 @@ function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffset
     return {first: firstPlacedGlyph, last: lastPlacedGlyph};
 }
 
-// Check in the glCoordinate space, the rough estimation of angle between the text line and the Y axis.
-// If the angle if less or equal to 5 degree, then keep the text glyphs unflipped even if it is required.
-function isInUnflippedRetainRange(firstPoint, lastPoint) {
-    const maxTangent = Math.tan(Math.PI / 180 * 85);
+// Check the rough estimation of the rotating angle between the text's current and vertical directions.
+// If the angle if less or equal to the unflip degree, then keep the text glyphs unflipped even if it is required.
+function isInUnflipRetainRange(firstPoint, lastPoint, unflipRange) {
+    if (unflipRange === 0.0) return false;
+    if (unflipRange === 90.0) return true;
+    const maxTangent = Math.tan(Math.PI / 180.0 * (90.0 - unflipRange));
     const deltaY = lastPoint.y - firstPoint.y;
     const deltaX = lastPoint.x - firstPoint.x;
-    if (deltaX === 0.0) {
-        return true;
-    }
+    if (deltaX === 0.0) return true;
     const absTangent = Math.abs(deltaY / deltaX);
     return (absTangent > maxTangent);
 }
 
-function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRatio) {
+function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRatio, unflipRange) {
     if (writingMode === WritingMode.horizontal) {
         // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
         // vertical glyphs. We can't just filter out vertical glyphs in the horizontal range because the horizontal
@@ -273,7 +274,7 @@ function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRat
             return {useVertical: true};
         }
     }
-    // Check if flipping is required for "verticalOnly" case
+    // Check if flipping is required for "vertical" case
     if (writingMode === WritingMode.vertical) {
         return (firstPoint.y < lastPoint.y) ? {needsFlipping: true} : null;
     }
@@ -282,14 +283,14 @@ function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRat
     // If flipping is required, but the glyphs are lying roughly within the unFlip retain
     // range, still keep the glyphs unflipped to avoid the flickering. Otherwise, following
     // the original flipping decision.
-    if (flipRequired && isInUnflippedRetainRange(firstPoint, lastPoint)) {
+    if (flipRequired && isInUnflipRetainRange(firstPoint, lastPoint, unflipRange)) {
         return null;
     }
 
     return flipRequired ? {needsFlipping: true} : null;
 }
 
-function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation) {
+function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, unflipRange, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation) {
     const fontScale = fontSize / 24;
     const lineOffsetX = symbol.lineOffsetX * fontScale;
     const lineOffsetY = symbol.lineOffsetY * fontScale;
@@ -310,7 +311,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         const lastPoint = project(firstAndLastGlyph.last.point, glCoordMatrix).point;
 
         if (keepUpright && !flip) {
-            const orientationChange = requiresOrientationChange(symbol.writingMode, firstPoint, lastPoint, aspectRatio);
+            const orientationChange = requiresOrientationChange(symbol.writingMode, firstPoint, lastPoint, aspectRatio, unflipRange);
             if (orientationChange) {
                 return orientationChange;
             }
@@ -340,7 +341,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
                 projectedVertex.point :
                 projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix);
 
-            const orientationChange = requiresOrientationChange(symbol.writingMode, a, b, aspectRatio);
+            const orientationChange = requiresOrientationChange(symbol.writingMode, a, b, aspectRatio, unflipRange);
             if (orientationChange) {
                 return orientationChange;
             }
