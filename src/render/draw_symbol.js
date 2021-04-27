@@ -90,6 +90,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
             layer.layout.get('text-rotation-alignment'),
             layer.layout.get('text-pitch-alignment'),
             layer.layout.get('text-keep-upright'),
+            layer.layout.get('text-unflip-range'),
             stencilMode, colorMode
         );
     }
@@ -227,7 +228,7 @@ function getSymbolProgramName(isSDF: boolean, isText: boolean, bucket: SymbolBuc
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-                          rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode) {
+                          rotationAlignment, pitchAlignment, keepUpright, unflipRange, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -305,7 +306,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (alongLine) {
             const elevation = tr.elevation;
             const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : null;
-            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, getElevation);
+            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, unflipRange, getElevation);
         }
 
         const matrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),
