@@ -35,7 +35,6 @@ export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number
     const t = (depth - start) / (end - start);
     let falloff = 1.0 - Math.min(1, Math.exp(-decay * t));
 
-    // Cube without pow()
     falloff *= falloff * falloff;
 
     // Scale and clip to 1 at the far limit
