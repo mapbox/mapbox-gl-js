@@ -646,64 +646,60 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     }
 }
 
-function paintAttributeNames(property, type) {
-    const attributeNameExceptions = {
-        'text-opacity': ['opacity'],
-        'icon-opacity': ['opacity'],
-        'text-color': ['fill_color'],
-        'icon-color': ['fill_color'],
-        'text-halo-color': ['halo_color'],
-        'icon-halo-color': ['halo_color'],
-        'text-halo-blur': ['halo_blur'],
-        'icon-halo-blur': ['halo_blur'],
-        'text-halo-width': ['halo_width'],
-        'icon-halo-width': ['halo_width'],
-        'line-gap-width': ['gapwidth'],
-        'line-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
-        'fill-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
-        'fill-extrusion-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
-        'line-dasharray': ['dash_to', 'dash_from']
-    };
+const attributeNameExceptions = {
+    'text-opacity': ['opacity'],
+    'icon-opacity': ['opacity'],
+    'text-color': ['fill_color'],
+    'icon-color': ['fill_color'],
+    'text-halo-color': ['halo_color'],
+    'icon-halo-color': ['halo_color'],
+    'text-halo-blur': ['halo_blur'],
+    'icon-halo-blur': ['halo_blur'],
+    'text-halo-width': ['halo_width'],
+    'icon-halo-width': ['halo_width'],
+    'line-gap-width': ['gapwidth'],
+    'line-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
+    'fill-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
+    'fill-extrusion-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
+    'line-dasharray': ['dash_to', 'dash_from']
+};
 
+function paintAttributeNames(property, type) {
     return attributeNameExceptions[property] || [property.replace(`${type}-`, '').replace(/-/g, '_')];
 }
 
-function getLayoutException(property) {
-    const propertyExceptions = {
-        'line-pattern': {
-            'source': PatternLayoutArray,
-            'composite': PatternLayoutArray
-        },
-        'fill-pattern': {
-            'source': PatternLayoutArray,
-            'composite': PatternLayoutArray
-        },
-        'fill-extrusion-pattern':{
-            'source': PatternLayoutArray,
-            'composite': PatternLayoutArray
-        },
-        'line-dasharray': { // temporary layout
-            'source': DashLayoutArray,
-            'composite': DashLayoutArray
-        }
-    };
+const propertyExceptions = {
+    'line-pattern': {
+        'source': PatternLayoutArray,
+        'composite': PatternLayoutArray
+    },
+    'fill-pattern': {
+        'source': PatternLayoutArray,
+        'composite': PatternLayoutArray
+    },
+    'fill-extrusion-pattern':{
+        'source': PatternLayoutArray,
+        'composite': PatternLayoutArray
+    },
+    'line-dasharray': { // temporary layout
+        'source': DashLayoutArray,
+        'composite': DashLayoutArray
+    }
+};
 
-    return propertyExceptions[property];
-}
+const defaultLayouts = {
+    'color': {
+        'source': StructArrayLayout2f8,
+        'composite': StructArrayLayout4f16
+    },
+    'number': {
+        'source': StructArrayLayout1f4,
+        'composite': StructArrayLayout2f8
+    }
+};
 
 function layoutType(property, type, binderType) {
-    const defaultLayouts = {
-        'color': {
-            'source': StructArrayLayout2f8,
-            'composite': StructArrayLayout4f16
-        },
-        'number': {
-            'source': StructArrayLayout1f4,
-            'composite': StructArrayLayout2f8
-        }
-    };
-
-    const layoutException = getLayoutException(property);
+    const layoutException = propertyExceptions[property];
     return  layoutException && layoutException[binderType] || defaultLayouts[type][binderType];
 }
 
