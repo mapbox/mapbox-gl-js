@@ -45,7 +45,10 @@
     "json-stringify-pretty-compact": "^2.0.0",
     "minimist": "^1.2.5",
     "rw": "^1.3.3",
-    "sort-object": "^0.3.2"
+    "sort-object": "^0.3.2",
+    "cheap-ruler": "^3.0.1",
+    "quickselect": "^2.0.0",
+    "tinyqueue": "^2.0.3"
   },
   "sideEffects": false
 }
