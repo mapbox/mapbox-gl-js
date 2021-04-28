@@ -10,7 +10,7 @@ import type Map from './map.js';
 import type LngLat from '../geo/lng_lat.js';
 
 /**
- * `MapMouseEvent` is the event type emitted by mouse-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
+ * `MapMouseEvent` is the type for objects emitted by mouse-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
  * @example
  * // The `click` event is an example of a `MapMouseEvent`.
@@ -94,7 +94,7 @@ export class MapMouseEvent extends Event {
 }
 
 /**
- * `MapTouchEvent` is the event type emitted by touch-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
+ * `MapTouchEvent` is the type for objects emitted by touch-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
  */
 export class MapTouchEvent extends Event {
@@ -178,7 +178,7 @@ export class MapTouchEvent extends Event {
 }
 
 /**
- * `MapWheelEvent` is the event type emitted by wheel-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
+ * `MapWheelEvent` is the type for objects emitted by wheel-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
  */
 export class MapWheelEvent extends Event {
@@ -226,7 +226,7 @@ export class MapWheelEvent extends Event {
 }
 
 /**
- * `MapBoxZoomEvent` is the event type emitted by boxzoom-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
+ * `MapBoxZoomEvent` is the type for objects emitted by boxzoom-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  *
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`
@@ -242,7 +242,7 @@ export type MapBoxZoomEvent = {
 };
 
 /**
- * `MapDataEvent` is the event type emitted by data-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
+ * `MapDataEvent` is the type for objects emitted by data-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  *
  * @typedef {Object} MapDataEvent
  * @property {string} type The type of originating event.
