@@ -19,7 +19,7 @@ export default function validateFog(options) {
         return errors;
     }
 
-    if (fog.color) {
+    if (fog.color && !Array.isArray(fog.color)) {
         const fogColor = parseCSSColor(fog.color);
         if (fogColor && fogColor[3] === 0) {
             errors = errors.concat([new ValidationError('fog', fog, 'fog.color alpha must be nonzero.')]);
