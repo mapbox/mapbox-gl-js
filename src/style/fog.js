@@ -6,7 +6,7 @@ import {Evented} from '../util/evented.js';
 import {validateStyle, validateFog, emitValidationErrors} from './validate_style.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
 import Color from '../style-spec/util/color.js';
-import {FOG_PITCH_START, FOG_PITCH_END, getFogOpacityAtLngLat} from './fog_helpers.js';
+import {FOG_PITCH_START, FOG_PITCH_END, getFogOpacityAtLngLat, getFovAdjustedFogRange} from './fog_helpers.js';
 import type {FogSpecification} from '../style-spec/types.js';
 import type EvaluationParameters from './evaluation_parameters.js';
 import type {TransitionParameters} from './properties.js';
@@ -78,6 +78,10 @@ class Fog extends Evented {
 
     getOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
         return getFogOpacityAtLngLat(this.state, lngLat, transform);
+    }
+
+    getFovAdjustedRange(fov: number): Array<number> {
+        return getFovAdjustedFogRange(this.state, fov);
     }
 
     updateTransitions(parameters: TransitionParameters) {

@@ -17,6 +17,8 @@ import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
 
+export const DEFAULT_FOV = 0.6435011087932844;
+
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
 
@@ -96,7 +98,7 @@ class Transform {
         this._center = new LngLat(0, 0);
         this.zoom = 0;
         this.angle = 0;
-        this._fov = 0.6435011087932844;
+        this._fov = DEFAULT_FOV;
         this._pitch = 0;
         this._unmodified = true;
         this._edgeInsets = new EdgeInsets();

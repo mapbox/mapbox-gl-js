@@ -39,8 +39,8 @@ export const fogUniformValues = (
         fogOpacity
     ];
     return {
-        'u_fog_matrix': tileID ? painter.transform.calculateFogTileMatrix(tileID) : painter.identityMat,
-        'u_fog_range': fog.properties.get('range'),
+        'u_fog_aatrix': tileID ? painter.transform.calculateFogTileMatrix(tileID) : painter.identityMat,
+        'u_fog_range': fog.getFovAdjustedRange(this.transform._fov),
         'u_fog_color': fogColorUnpremultiplied,
         'u_fog_horizon_blend': fog.properties.get('horizon-blend'),
         'u_fog_temporal_offset': temporalOffset

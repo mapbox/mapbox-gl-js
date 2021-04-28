@@ -40,6 +40,7 @@ var GUIParams = function() {
     this.horizonBlend = 0.1;
     this.showTileBoundaries = false;
     this.showCollisionBoxes = false;
+    this.fov = 36.86989764584402;
 };
 
 var guiParams = new GUIParams();
@@ -85,6 +86,11 @@ window.onload = function() {
     var enableSky = gui.add(guiParams, 'enableSky');
     enableSky.onFinishChange((value) => {
         map.setLayoutProperty('sky', 'visibility', value ? 'visible' : 'none');
+    });
+    var fov = gui.add(guiParams, 'fov', 1, 60);
+    fov.onChange((value) => {
+        map.transform.fov = value;
+        map.resize();
     });
 
     var terrain = gui.addFolder('Terrain');
