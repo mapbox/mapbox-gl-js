@@ -62,9 +62,7 @@ function getGeometry(feature, geometry, canonical) {
         } else if (type === 'MultiPolygon') {
             feature.type = 'Polygon';
             for (let i = 0; i < coords.length; i++) {
-                const polygon = [];
-                convertLines(coords[i], canonical, polygon);
-                feature.geometry.push(polygon);
+                convertLines(coords[i], canonical, feature.geometry);
             }
         }
     }
