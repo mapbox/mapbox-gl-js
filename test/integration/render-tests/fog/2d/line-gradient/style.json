@@ -9,7 +9,7 @@
   "zoom": 2,
   "pitch": 70,
   "fog": {
-    "range": [1, 2],
+    "range": [100, 200],
     "color": "white"
   },
   "sources": {
