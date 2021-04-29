@@ -43,7 +43,8 @@ class Fog extends Evented {
     get state(): FogState {
         return {
             range: this.properties.get('range'),
-            horizonBlend: this.properties.get('horizon-blend')
+            horizonBlend: this.properties.get('horizon-blend'),
+            opacity: this.properties.get('color').a
         };
     }
 

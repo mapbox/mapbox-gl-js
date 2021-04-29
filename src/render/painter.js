@@ -180,12 +180,13 @@ class Painter {
     }
 
     _updateFog() {
-        if (this.transform.pitch <= FOG_PITCH_END || !(this.style && this.style.fog)) {
+        const fog = this.style && this.style.fog;
+        const fogOpacity = (fog && fog.properties.get('color').a) || 0.0;
+        if (this.transform.pitch <= FOG_PITCH_END || !fog || fogOpacity < 1.0) {
             this.transform.fogCullDistSq = null;
             return;
         }
 
-        const fog = this.style.fog;
         const fogStart = fog.properties.get('range')[0];
         const fogEnd = fog.properties.get('range')[1];
 
@@ -753,7 +754,8 @@ class Painter {
         const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const fog = this.style && this.style.fog;
-        const fogOpacity = fog && fog.getFogPitchFactor(this.transform.pitch);
+        const fogAlpha = (fog && fog.properties && fog.properties.get('color').a) || 1.0;
+        const fogOpacity = fog && (fog.getFogPitchFactor(this.transform.pitch) * fogAlpha) || 0.0;
 
         const defines = [];
         if (terrain) defines.push('TERRAIN');
@@ -838,25 +840,28 @@ class Painter {
 
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
         const fog = this.style && this.style.fog;
-        const fogOpacity = (fog && fog.getFogPitchFactor(this.transform.pitch)) || 0.0;
-        if (fog && fogOpacity !== 0.0) {
-            const temporalOffset = (this.frameCounter / 1000.0) % 1;
+        if (fog) {
             const fogColor = fog.properties.get('color');
-            const fogColorUnpremultiplied = fogColor.a === 0 ? [0, 0, 0] : [
-                fogColor.r / fogColor.a,
-                fogColor.g / fogColor.a,
-                fogColor.b / fogColor.a
-            ];
-            const uniforms = {};
+            const fogOpacity = fog.getFogPitchFactor(this.transform.pitch) * fogColor.a;
 
-            uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
-            uniforms['u_fog_range'] = fog.properties.get('range');
-            uniforms['u_fog_color'] = fogColorUnpremultiplied;
-            uniforms['u_fog_horizon_blend'] = fog.properties.get('horizon-blend');
-            uniforms['u_fog_temporal_offset'] = temporalOffset;
-            uniforms['u_fog_opacity'] = fogOpacity;
+            if (fogOpacity !== 0.0) {
+                const temporalOffset = (this.frameCounter / 1000.0) % 1;
+                const fogColorUnpremultiplied = fogColor.a === 0 ? [0, 0, 0] : [
+                    fogColor.r / fogColor.a,
+                    fogColor.g / fogColor.a,
+                    fogColor.b / fogColor.a
+                ];
+                const uniforms = {};
 
-            program.setFogUniformValues(context, uniforms);
+                uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
+                uniforms['u_fog_range'] = fog.properties.get('range');
+                uniforms['u_fog_color'] = fogColorUnpremultiplied;
+                uniforms['u_fog_horizon_blend'] = fog.properties.get('horizon-blend');
+                uniforms['u_fog_temporal_offset'] = temporalOffset;
+                uniforms['u_fog_opacity'] = fogOpacity;
+
+                program.setFogUniformValues(context, uniforms);
+            }
         }
     }
 
