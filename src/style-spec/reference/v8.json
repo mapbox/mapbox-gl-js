@@ -3693,7 +3693,8 @@
         12
       ],
       "minimum": 0,
-      "maximum": 20,
+      "maximum": 2000,
+      "units": "vh",
       "length": 2,
       "value": "number",
       "property-type": "data-constant",
@@ -3704,10 +3705,10 @@
           "zoom"
         ]
       },
-      "doc": "The near and far limits of the fog layer. Units are relative to the map height, so that 2.0 corresponds to twice the map height, in pixels.",
+      "doc": "The start and end distance range in which fog fades from fully transparent to fully opaque. Units are relative to the map window height in CSS `vh` units, so that 200 corresponds to 200% the map window height.",
       "example": [
-        2,
-        12
+        200,
+        1200
       ],
       "sdk-support": {
         "basic functionality": {

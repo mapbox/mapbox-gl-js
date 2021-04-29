@@ -1247,7 +1247,7 @@ test('Map', (t) => {
         const map = createMap(t, {style});
         map.on('load', () => {
             map.setFog({
-                "range": [2, 12]
+                "range": [200, 1200]
             });
 
             t.ok(map.getFog());
@@ -1269,10 +1269,10 @@ test('Map', (t) => {
 
                 t.deepEqual(map.queryFogOpacity([0, 0]), 0.0);
 
-                t.deepEqual(map.queryFogOpacity([0.5, 0]), 0.5963390859543484);
-                t.deepEqual(map.queryFogOpacity([0, 0.5]), 0.31817612773293763);
-                t.deepEqual(map.queryFogOpacity([-0.5, 0]), 0.0021931905967484703);
-                t.deepEqual(map.queryFogOpacity([-0.5, -0.5]), 0.4147318524978687);
+                t.deepEqual(map.queryFogOpacity([0.5, 0]), 0.5963360993372026);
+                t.deepEqual(map.queryFogOpacity([0, 0.5]), 0.3181747292975157);
+                t.deepEqual(map.queryFogOpacity([-0.5, 0]), 0.0021935811432850054);
+                t.deepEqual(map.queryFogOpacity([-0.5, -0.5]), 0.4147338484563584);
 
                 t.deepEqual(map.queryFogOpacity([2, 0]), 1.0);
                 t.deepEqual(map.queryFogOpacity([0, 2]), 1.0);
