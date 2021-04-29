@@ -2258,41 +2258,6 @@
       },
       "property-type": "data-constant"
     },
-    "text-unflip-range": {
-      "type": "number",
-      "default": 0,
-      "minimum": 0,
-      "maximum": 90,
-      "units": "degrees",
-      "doc": "When 'text-keep-upright' is true, text flip may happen when rotating the text around its vertical direction. 'text-unflip-range' specifies the absolute rotating angle range, within which the text is forced to keep unflipped.",
-      "requires": [
-        "text-field",
-        {
-          "symbol-placement": [
-            "line",
-            "line-center"
-          ]
-        },
-        {
-          "text-rotation-alignment": "map"
-        },
-        {
-          "text-keep-upright": true
-        }
-      ],
-      "sdk-support": {
-        "basic functionality": {
-          "js": "2.3.0"
-        }
-      },
-      "expression": {
-        "interpolated": false,
-        "parameters": [
-          "zoom"
-        ]
-      },
-      "property-type": "data-constant"
-    },
     "text-transform": {
       "type": "enum",
       "values": {
