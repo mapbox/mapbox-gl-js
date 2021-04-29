@@ -80,7 +80,7 @@ class Fog extends Evented {
         return getFogOpacityAtLngLat(this.state, lngLat, transform);
     }
 
-    getFovAdjustedRange(fov: number): Array<number> {
+    getFovAdjustedRange(fov: number): [number, number] {
         return getFovAdjustedFogRange(this.state, fov);
     }
 

@@ -36,7 +36,7 @@ export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number
     return falloff * fogPitchOpacity * state.alpha;
 }
 
-export function getFovAdjustedFogRange(state: fogState, fov: number) {
+export function getFovAdjustedFogRange(state: FogState, fov: number): [number, number] {
     // This function computes a shifted fog range so that the appearance is unchanged
     // when the fov changes. We define range=0 starting at the camera position given
     // the default fov. We avoid starting the fog range at the camera center so that
