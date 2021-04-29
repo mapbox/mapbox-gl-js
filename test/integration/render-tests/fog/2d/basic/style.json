@@ -11,7 +11,7 @@
   "pitch": 80,
   "bearing": 64.5,
   "fog": {
-    "range": [1, 2],
+    "range": [100, 200],
     "color": "white"
   },
   "sources": {

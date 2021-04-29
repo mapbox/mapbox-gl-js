@@ -52,7 +52,7 @@
     }
   ],
   "fog": {
-    "range": [1, 2],
+    "range": [100, 200],
     "color": "black"
   }
 }
