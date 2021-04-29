@@ -13,13 +13,21 @@ import type LngLat from '../geo/lng_lat.js';
  * `MapMouseEvent` is the type for objects emitted by mouse-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
  * @example
- * // The `click` event is an example of a `MapMouseEvent`.
- * // Set up an event listener on the map.
- * map.on('click', function(e) {
- *   // The event object (e) contains information like the
- *   // coordinates of the point on the map that was clicked.
- *   console.log('A click event has occurred at ' + e.lngLat);
- * });
+ * // Example of a MapMouseEvent of type "click"
+ * {
+ *     lngLat: {
+ *         lng: 40.203,
+ *         lat: -74.451
+ *     },
+ *     originalEvent: {...},
+ *     point: {
+ *         x: 266,
+ *         y: 464
+ *     },
+ *      preventDefault(),
+ *      target: {...},
+ *      type: "click"
+ * }
  */
 export class MapMouseEvent extends Event {
     /**
@@ -96,6 +104,34 @@ export class MapMouseEvent extends Event {
 /**
  * `MapTouchEvent` is the type for objects emitted by touch-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
+ * @example
+ * // Example of a MapTouchEvent of type "touch"
+ * {
+ *     lngLat: {
+ *         lng: 40.203,
+ *         lat: -74.451
+ *     },
+ *     lngLats: [
+ *         {
+ *             lng: 40.203,
+ *             lat: -74.451
+ *         }
+ *     ],
+ *     originalEvent: {...},
+ *     point: {
+ *         x: 266,
+ *         y: 464
+ *     },
+ *     points: [
+ *         {
+ *             x: 266,
+ *             y: 464
+ *         }
+ *     ]
+ *     preventDefault(),
+ *     target: {...},
+ *     type: "touchstart"
+ * }
  */
 export class MapTouchEvent extends Event {
     /**
@@ -180,6 +216,13 @@ export class MapTouchEvent extends Event {
 /**
  * `MapWheelEvent` is the type for objects emitted by wheel-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
+ * // Example of a MapWheelEvent of type "wheel"
+ * {
+ *     originalEvent: {...},
+ *     preventDefault(),
+ *     target: {...},
+ *     type: "wheel"
+ * }
  */
 export class MapWheelEvent extends Event {
     /**
@@ -232,6 +275,13 @@ export class MapWheelEvent extends Event {
  * @property {MouseEvent} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`
  * @property {string} type The type of originating event.
  * @property {Map} target The `Map` instance that triggerred the event
+ * @example
+ * // Example of a BoxZoomEvent of type "boxzoomstart"
+ * {
+ *     originalEvent: {...},
+ *     type: "boxzoomstart",
+ *     target: {...}
+ * }
  */
 export type MapBoxZoomEvent = {
     type: 'boxzoomstart'
@@ -256,13 +306,19 @@ export type MapBoxZoomEvent = {
  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `source` and
  * the event is related to loading of a tile.
  * @example
- * // The sourcedata event is an example of MapDataEvent.
- * // Set up an event listener on the map.
- * map.on('sourcedata', function(e) {
- *    if (e.isSourceLoaded) {
- *        // Do something when the source has finished loading
- *    }
- * });
+ * // Example of a MapDataEvent of type "sourcedata":
+ *
+ * {
+ *   type: "sourcedata",
+ *   dataType: "source",
+ *   isSourceLoaded, false,
+ *   source: {...},
+ *   style: {...}
+ *   sourceDataType: "",
+ *   sourceId: "composite",
+ *   tile: {...},
+ *   coord: {...}
+ * }
  */
 export type MapDataEvent = {
     type: string,
