@@ -20,8 +20,8 @@ export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, pro
 
 const FlipDecision = {
     undefined: 0,
-    needsFlipping: 1,
-    noNeedsFlipping: 2
+    flipRequired: 1,
+    flipNotRequired: 2
 };
 /*
  * # Overview of coordinate spaces
@@ -291,9 +291,9 @@ function requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio, )
     // entering, take the original flip decision and update placeSymbol's flip stage in this range.
     if (isInUnflippedRetainRange(firstPoint, lastPoint)) {
         if (symbol.needsFlipping !== FlipDecision.undefined) {
-            return symbol.needsFlipping ? {needsFlipping: true} : null;
+            return (symbol.needsFlipping === FlipDecision.flipRequired) ? {needsFlipping: true} : null;
         }
-        symbol.needsFlipping = flipRequired ? FlipDecision.needsFlipping : FlipDecision.noNeedsFlipping;
+        symbol.needsFlipping = flipRequired ? FlipDecision.flipRequired : FlipDecision.flipNotRequired;
     }
 
     return flipRequired ? {needsFlipping: true} : null;
