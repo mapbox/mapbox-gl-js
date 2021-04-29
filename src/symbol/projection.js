@@ -18,6 +18,11 @@ import {WritingMode} from '../symbol/shaping.js';
 
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
+const FlipDecision = {
+    undefined: 0,
+    needsFlipping: 1,
+    noNeedsFlipping: 2
+};
 /*
  * # Overview of coordinate spaces
  *
@@ -261,8 +266,8 @@ function isInUnflippedRetainRange(firstPoint, lastPoint) {
     return (absTangent > maxTangent);
 }
 
-function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRatio) {
-    if (writingMode === WritingMode.horizontal) {
+function requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio, ) {
+    if (symbol.writingMode === WritingMode.horizontal) {
         // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
         // vertical glyphs. We can't just filter out vertical glyphs in the horizontal range because the horizontal
         // and vertical versions can have slightly different projections which could lead to angles where both or
@@ -273,17 +278,22 @@ function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRat
             return {useVertical: true};
         }
     }
-    // Check if flipping is required for "verticalOnly" case
-    if (writingMode === WritingMode.vertical) {
+    // Check if flipping is required for "verticalOnly" case.
+    if (symbol.writingMode === WritingMode.vertical) {
         return (firstPoint.y < lastPoint.y) ? {needsFlipping: true} : null;
     }
-    // Check if flipping is required for "horizontalOnly" case for labels without vertical glyphs.
+    // Check if flipping is required for "horizontal" case.
     const flipRequired = (firstPoint.x > lastPoint.x);
-    // If flipping is required, but the glyphs are lying roughly within the unFlip retain
-    // range, still keep the glyphs unflipped to avoid the flickering. Otherwise, following
-    // the original flipping decision.
-    if (flipRequired && isInUnflippedRetainRange(firstPoint, lastPoint)) {
-        return null;
+    // If flipping is required, but the glyphs are lying roughly within the flip stage retain range,
+    // then first check if the placedSymbol has entered into this retain range before or not. if it
+    // has entered before, it should have a valid flip stage indicating the flip decision made by the
+    // the first time entering, take the flip stage directly. Otherwise, it should be the first time
+    // entering, take the original flip decision and update placeSymbol's flip stage in this range.
+    if (isInUnflippedRetainRange(firstPoint, lastPoint)) {
+        if (symbol.needsFlipping !== FlipDecision.undefined) {
+            return symbol.needsFlipping ? {needsFlipping: true} : null;
+        }
+        symbol.needsFlipping = flipRequired ? FlipDecision.needsFlipping : FlipDecision.noNeedsFlipping;
     }
 
     return flipRequired ? {needsFlipping: true} : null;
@@ -310,7 +320,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         const lastPoint = project(firstAndLastGlyph.last.point, glCoordMatrix).point;
 
         if (keepUpright && !flip) {
-            const orientationChange = requiresOrientationChange(symbol.writingMode, firstPoint, lastPoint, aspectRatio);
+            const orientationChange = requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio);
             if (orientationChange) {
                 return orientationChange;
             }
@@ -340,7 +350,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
                 projectedVertex.point :
                 projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix);
 
-            const orientationChange = requiresOrientationChange(symbol.writingMode, a, b, aspectRatio);
+            const orientationChange = requiresOrientationChange(symbol, a, b, aspectRatio);
             if (orientationChange) {
                 return orientationChange;
             }

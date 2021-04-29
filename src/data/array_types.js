@@ -506,10 +506,11 @@ register('StructArrayLayout3ui6', StructArrayLayout3ui6);
  * [36]: Uint8[3]
  * [40]: Uint32[1]
  * [44]: Int16[1]
+ * [46]: Uint8[1]
  *
  * @private
  */
-class StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48 extends StructArray {
+class StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint16: Uint16Array;
@@ -524,13 +525,13 @@ class StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48 extends StructArray {
         this.float32 = new Float32Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number) {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number, v17: number) {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number) {
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number, v17: number) {
         const o2 = i * 24;
         const o4 = i * 12;
         const o1 = i * 48;
@@ -551,12 +552,13 @@ class StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48 extends StructArray {
         this.uint8[o1 + 38] = v14;
         this.uint32[o4 + 10] = v15;
         this.int16[o2 + 22] = v16;
+        this.uint8[o1 + 46] = v17;
         return i;
     }
 }
 
-StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48.prototype.bytesPerElement = 48;
-register('StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48', StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48);
+StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48.prototype.bytesPerElement = 48;
+register('StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48', StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48);
 
 /**
  * Implementation of the StructArray layout:
@@ -891,6 +893,7 @@ class PlacedSymbolStruct extends Struct {
     hidden: number;
     crossTileID: number;
     associatedIconIndex: number;
+    needsFlipping: number;
     get anchorX() { return this._structArray.int16[this._pos2 + 0]; }
     get anchorY() { return this._structArray.int16[this._pos2 + 1]; }
     get glyphStartIndex() { return this._structArray.uint16[this._pos2 + 2]; }
@@ -911,6 +914,8 @@ class PlacedSymbolStruct extends Struct {
     get crossTileID() { return this._structArray.uint32[this._pos4 + 10]; }
     set crossTileID(x: number) { this._structArray.uint32[this._pos4 + 10] = x; }
     get associatedIconIndex() { return this._structArray.int16[this._pos2 + 22]; }
+    get needsFlipping() { return this._structArray.uint8[this._pos1 + 46]; }
+    set needsFlipping(x: number) { this._structArray.uint8[this._pos1 + 46] = x; }
 }
 
 PlacedSymbolStruct.prototype.size = 48;
@@ -920,7 +925,7 @@ export type PlacedSymbol = PlacedSymbolStruct;
 /**
  * @private
  */
-export class PlacedSymbolArray extends StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48 {
+export class PlacedSymbolArray extends StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48 {
     /**
      * Return the PlacedSymbolStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -1112,7 +1117,7 @@ export {
     StructArrayLayout2f1f2i16,
     StructArrayLayout2ub2f12,
     StructArrayLayout3ui6,
-    StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48,
+    StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48,
     StructArrayLayout8i15ui1ul4f68,
     StructArrayLayout1f4,
     StructArrayLayout3i6,
