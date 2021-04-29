@@ -1,4 +1,8 @@
-## 13.9.1
+## 13.9.2
+
+* Fixes critical missing file (`dist\index.js`) in 13.9.1 ([#10627](https://github.com/mapbox/mapbox-gl-js/pull/10627))
+
+## 13.9.1 (Deprecated)
 
 * Added compatibility table for the `terrain` root level property in the style specification. ([#10619](https://github.com/mapbox/mapbox-gl-js/pull/10619))
 
