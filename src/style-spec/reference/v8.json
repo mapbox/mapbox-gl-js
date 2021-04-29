@@ -3697,7 +3697,7 @@
           "zoom"
         ]
       },
-      "doc": "The near and far limits of the fog layer. Units are relative to the map height in CSS `vh` units, so that 200 corresponds to 200% the map height.",
+      "doc": "The start and end distance range in which fog fades from fully transparent to fully opaque. Units are relative to the map window height in CSS `vh` units, so that 200 corresponds to 200% the map window height.",
       "example": [
         200,
         1200
