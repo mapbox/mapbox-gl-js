@@ -202,6 +202,7 @@ export class Terrain extends Elevation {
     currentFBO: FBO;
     renderedToTile: boolean;
     _drapedRenderBatches: Array<RenderBatch>;
+    _sharedDepthStencil: WebGLRenderbuffer;
 
     _findCoveringTileCache: {[string]: {[number]: ?number}};
 
@@ -334,6 +335,7 @@ export class Terrain extends Elevation {
     _disable() {
         if (!this.enabled) return;
         this.enabled = false;
+        this._sharedDepthStencil = undefined;
         this.proxySourceCache.deallocRenderCache();
         if (this._style) {
             for (const id in this._style._sourceCaches) {
@@ -801,7 +803,7 @@ export class Terrain extends Elevation {
         return null;
     }
 
-    _createFBO(depthAttachment?: WebGLRenderbuffer): FBO {
+    _createFBO(): FBO {
         const painter = this.painter;
         const context = painter.context;
         const gl = context.gl;
@@ -811,13 +813,15 @@ export class Terrain extends Elevation {
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         const fb = context.createFramebuffer(bufferSize[0], bufferSize[1], false);
         fb.colorAttachment.set(tex.texture);
-
-        const renderbuffer = depthAttachment ? depthAttachment : context.createRenderbuffer(context.gl.DEPTH_STENCIL, fb.width, fb.height);
         fb.depthAttachment = new DepthStencilAttachment(context, fb.framebuffer);
-        fb.depthAttachment.set(renderbuffer);
-        if (!depthAttachment) {
-            context.clear({stencil: 0});
+
+        if (this._sharedDepthStencil === undefined) {
+            this._sharedDepthStencil = context.createRenderbuffer(context.gl.DEPTH_STENCIL, bufferSize[0], bufferSize[1]);
             this._stencilRef = 0;
+            fb.depthAttachment.set(this._sharedDepthStencil);
+            context.clear({stencil: 0});
+        } else {
+            fb.depthAttachment.set(this._sharedDepthStencil);
         }
 
         if (context.extTextureFilterAnisotropic && !context.extTextureFilterAnisotropicForceOff) {
@@ -831,7 +835,7 @@ export class Terrain extends Elevation {
 
     _initFBOPool() {
         while (this.pool.length < Math.min(FBO_POOL_SIZE, this.proxyCoords.length)) {
-            this.pool.push(this._createFBO(this.pool.length > 0 ? this.pool[0].fb.depthAttachment.current : null));
+            this.pool.push(this._createFBO());
         }
     }
 
@@ -998,8 +1002,7 @@ export class Terrain extends Elevation {
                     let index = psc.renderCachePool.pop();
                     if (index === undefined && psc.renderCache.length < RENDER_CACHE_MAX_SIZE) {
                         index = psc.renderCache.length;
-                        const depthAttachment = this.pool[index % FBO_POOL_SIZE].fb.depthAttachment.current;
-                        psc.renderCache.push(this._createFBO(depthAttachment));
+                        psc.renderCache.push(this._createFBO());
                         // assert(psc.renderCache.length <= coords.length);
                     }
                     if (index !== undefined) {
