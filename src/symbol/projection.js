@@ -266,7 +266,7 @@ function isInUnflippedRetainRange(firstPoint, lastPoint) {
     return (absTangent > maxTangent);
 }
 
-function requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio, ) {
+function requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio) {
     if (symbol.writingMode === WritingMode.horizontal) {
         // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
         // vertical glyphs. We can't just filter out vertical glyphs in the horizontal range because the horizontal
