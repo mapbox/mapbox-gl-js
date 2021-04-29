@@ -408,7 +408,7 @@ test('transform', (t) => {
         transform.resize(200, 200);
         transform.center = {lng: -0.01, lat: 0.01};
         transform.zoom = 0;
-        transform.fogCullDistSq = 1.5;
+        transform.fogCullDistSq = 15000;
         transform.pitch = 85.0;
         t.deepEqual(transform.coveringTiles(options), []);
 

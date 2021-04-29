@@ -13,7 +13,7 @@
   "pitch": 70,
   "zoom": 14,
   "fog": {
-    "range": [1.25, 1.75],
+    "range": [125, 175],
     "color": "white"
   },
   "sources": {
