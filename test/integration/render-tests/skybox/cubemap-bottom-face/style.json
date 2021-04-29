@@ -1,0 +1,33 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512
+    }
+  },
+  "sources": {},
+  "zoom": 0,
+  "pitch": 62.50,
+  "bearing": 335,
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [0, 90],
+        "sky-atmosphere-sun-intensity": 10,
+        "sky-atmosphere-color": "rgba(255,147,147,1.0)",
+        "sky-atmosphere-halo-color": "rgba(255,0,0,1.0)"
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    }
+  ]
+}
