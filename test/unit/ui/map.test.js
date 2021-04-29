@@ -1279,6 +1279,13 @@ test('Map', (t) => {
                 t.deepEqual(map.queryFogOpacity([-2, 0]), 1.0);
                 t.deepEqual(map.queryFogOpacity([-2, -2]), 1.0);
 
+                map.transform.fov = 30;
+
+                t.deepEqual(map.queryFogOpacity([0.5, 0]), 0.5917784571074153);
+                t.deepEqual(map.queryFogOpacity([0, 0.5]), 0.2567224170602245);
+                t.deepEqual(map.queryFogOpacity([-0.5, 0]), 0);
+                t.deepEqual(map.queryFogOpacity([-0.5, -0.5]), 0.2727527139608868);
+
                 t.end();
             });
         });

@@ -10,7 +10,7 @@ import type Transform from '../geo/transform.js';
 export const FOG_PITCH_START = 45;
 export const FOG_PITCH_END = 65;
 export const FOG_SYMBOL_CLIPPING_THRESHOLD = 0.9;
-export const FOG_REFERENCE_FOV_SHIFT = 0.5 / Math.tan(DEFAULT_FOV);
+export const FOG_REFERENCE_FOV_SHIFT = 0.5 / Math.tan(DEFAULT_FOV * 0.5);
 
 export type FogState = {
     range: [number, number],
