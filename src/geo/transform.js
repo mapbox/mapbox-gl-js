@@ -213,7 +213,7 @@ class Transform {
     }
 
     get cameraWorldSize(): number {
-        const distance = Math.max(this._camera.getDistanceToElevation(this._averageElevation), 1e-20);
+        const distance = Math.max(this._camera.getDistanceToElevation(this._averageElevation), Number.EPSILON);
         return this._worldSizeFromZoom(this._zoomFromMercatorZ(distance));
     }
 
