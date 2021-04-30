@@ -868,6 +868,18 @@ class Painter {
             timeStamps: this.loadTimeStamps
         };
     }
+
+    averageElevationNeedsEasing() {
+        if (!this.transform._elevation) return false;
+
+        const fog = this.style && this.style.fog;
+        if (!fog) return false;
+
+        const fogOpacity = fog.getFogPitchFactor(this.transform.pitch);
+        if (fogOpacity === 0) return false;
+
+        return true;
+    }
 }
 
 export default Painter;
