@@ -1,6 +1,6 @@
 // @flow
 
-import {vec3, vec4} from 'gl-matrix';
+import {vec2, vec3, vec4} from 'gl-matrix';
 
 class Ray {
     pos: vec3;
@@ -33,16 +33,21 @@ class Frustum {
         this.planes = planes_;
     }
 
-    static fromInvProjectionMatrix(invProj: Float64Array, worldSize: number, zoom: number): Frustum {
+    static fromInvProjectionMatrix(invProj: Float64Array, worldSize: number, zoom: number, bounds: { min: vec2, max: vec2 } = { min: [-1, -1], max: [1, 1] }): Frustum {
+        const minX = bounds.min[0];
+        const minY = bounds.min[1];
+        const maxX = bounds.max[0];
+        const maxY = bounds.max[1];
+
         const clipSpaceCorners = [
-            [-1, 1, -1, 1],
-            [ 1, 1, -1, 1],
-            [ 1, -1, -1, 1],
-            [-1, -1, -1, 1],
-            [-1, 1, 1, 1],
-            [ 1, 1, 1, 1],
-            [ 1, -1, 1, 1],
-            [-1, -1, 1, 1]
+            [minX, maxY, -1, 1],
+            [maxX, maxY, -1, 1],
+            [maxX, minY, -1, 1],
+            [minX, minY, -1, 1],
+            [minX, maxY, 1, 1],
+            [maxX, maxY, 1, 1],
+            [maxX, minY, 1, 1],
+            [minX, minY, 1, 1]
         ];
 
         const scale = Math.pow(2, zoom);
