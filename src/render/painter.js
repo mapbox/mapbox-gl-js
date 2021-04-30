@@ -181,18 +181,16 @@ class Painter {
 
     _updateFog(style: Style) {
         const fog = style.fog;
-        if (!fog || (fog && fog.getFogOpacity(this.transform.pitch) !== 1.0)) {
+        if (!fog || (fog && fog.getOpacity(this.transform.pitch) !== 1.0)) {
             this.transform.fogCullDistSq = null;
             return;
         }
 
-        const fogStart = fog.properties.get('range')[0];
-        const fogEnd = fog.properties.get('range')[1];
-
         // We start culling where the fog opacity function hits
         // 98% which leaves a non-noticeable change threshold.
+        const [start, end] = fog.properties.get('range');
         const fogBoundFraction = 0.78;
-        const fogCullDist = fogStart + (fogEnd - fogStart) * fogBoundFraction;
+        const fogCullDist = start + (end - start) * fogBoundFraction;
 
         this.transform.fogCullDistSq = fogCullDist * fogCullDist;
     }
@@ -758,7 +756,7 @@ class Painter {
         if (terrain) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && !rtt && fog.getFogOpacity(this.transform.pitch) !== 0.0) {
+        if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {
             defines.push('FOG');
         }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
@@ -840,7 +838,7 @@ class Painter {
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
         const fog = this.style.fog;
         if (fog) {
-            const fogOpacity = fog.getFogOpacity(this.transform.pitch);
+            const fogOpacity = fog.getOpacity(this.transform.pitch);
             if (fogOpacity !== 0.0) {
                 program.setFogUniformValues(context, fogUniformValues(this, fog, tileID, fogOpacity));
             }
