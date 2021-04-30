@@ -393,9 +393,9 @@ class Transform {
 
         let elevationSum = 0.0;
         let weightSum = 0.0;
-        for (let i = 0; i < elevationSamplePoints.length; i++) {
-            const p = elevationSamplePoints[i];
-            if (this._elevation) {
+        if (this._elevation) {
+            for (let i = 0; i < elevationSamplePoints.length; i++) {
+                const p = elevationSamplePoints[i];
                 const hit = this._elevation.pointCoordinate(new Point(p[0] * this.width, p[1] * this.height));
                 if (!hit) {
                     /*
