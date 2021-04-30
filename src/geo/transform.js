@@ -20,14 +20,6 @@ import type {PaddingOptions} from './edge_insets.js';
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
 
-const elevationSamplePoints = [
-    [0.5, 0.2],
-    [0.3, 0.5],
-    [0.5, 0.5],
-    [0.7, 0.5],
-    [0.5, 0.8]
-];
-
 type RayIntersectionResult = { p0: vec4, p1: vec4, t: number};
 type ElevationReference = "sea" | "ground";
 
@@ -327,6 +319,14 @@ class Transform {
 
     sampleAverageElevation(): number {
         if (!this._elevation) return 0;
+
+        const elevationSamplePoints = [
+            [0.5, 0.2],
+            [0.3, 0.5],
+            [0.5, 0.5],
+            [0.7, 0.5],
+            [0.5, 0.8]
+        ];
 
         const horizon = this.horizonLineFromTop();
 
