@@ -318,7 +318,7 @@ class Transform {
         this._cameraZoom = this._zoomFromMercatorZ(terrainElevation + height);
     }
 
-    sampleAverageElevation(map: Map): number {
+    sampleAverageElevation(): number {
         if (!this._elevation) return 0;
 
         const xCenter = this.width * 0.5;

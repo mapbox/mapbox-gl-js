@@ -1,7 +1,7 @@
 // @flow
 
 import {version} from '../../package.json';
-import {extend, bindAll, warnOnce, uniqueId, easeCubicInOut} from '../util/util.js';
+import {extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
@@ -2804,11 +2804,11 @@ class Map extends Camera {
             this._averageElevationLastSampledAt = timeStamp;
 
             const currentElevation = this.transform.averageElevation;
-            const newElevation = this.transform.sampleAverageElevation(this);
+            const newElevation = this.transform.sampleAverageElevation();
             const elevationChange = Math.abs(currentElevation - newElevation);
 
             if (elevationChange > AVERAGE_ELEVATION_CHANGE_THRESHOLD) {
-                this._averageElevation.easeTo(newElevation, timeStamp, 300);
+                this._averageElevation.easeTo(newElevation, timeStamp, AVERAGE_ELEVATION_EASE_TIME);
                 return true;
             } else if (elevationChange > 1e-8) {
                 this._averageElevation.jumpTo(newElevation);
