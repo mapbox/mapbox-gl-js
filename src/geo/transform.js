@@ -319,6 +319,7 @@ class Transform {
 
     sampleAverageElevation(): number {
         if (!this._elevation) return 0;
+        const elevation: Elevation = this._elevation;
 
         const elevationSamplePoints = [
             [0.5, 0.2],
@@ -332,19 +333,17 @@ class Transform {
 
         let elevationSum = 0.0;
         let weightSum = 0.0;
-        if (this._elevation) {
-            for (let i = 0; i < elevationSamplePoints.length; i++) {
-                const pt = new Point(
-                    elevationSamplePoints[i][0] * this.width,
-                    horizon + elevationSamplePoints[i][1] * (this.height - horizon)
-                );
-                const hit = this._elevation.pointCoordinate(pt);
-                if (!hit) continue;
+        for (let i = 0; i < elevationSamplePoints.length; i++) {
+            const pt = new Point(
+                elevationSamplePoints[i][0] * this.width,
+                horizon + elevationSamplePoints[i][1] * (this.height - horizon)
+            );
+            const hit = elevation.pointCoordinate(pt);
+            if (!hit) continue;
 
-                const weight = 1 / Math.hypot(hit[0] - this._camera.position[0], hit[1] - this._camera.position[1]);
-                elevationSum += hit[3] * weight;
-                weightSum += weight;
-            }
+            const weight = 1 / Math.hypot(hit[0] - this._camera.position[0], hit[1] - this._camera.position[1]);
+            elevationSum += hit[3] * weight;
+            weightSum += weight;
         }
 
         if (weightSum === 0) return 0;
