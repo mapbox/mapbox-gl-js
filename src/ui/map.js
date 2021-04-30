@@ -77,7 +77,8 @@ type IControl = {
 
 const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
 const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
-const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 0.1; // meters
+const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
+const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
 
 type MapOptions = {
     hash?: boolean | string,
@@ -2807,10 +2808,10 @@ class Map extends Camera {
             const newElevation = this.transform.sampleAverageElevation();
             const elevationChange = Math.abs(currentElevation - newElevation);
 
-            if (elevationChange > AVERAGE_ELEVATION_CHANGE_THRESHOLD) {
+            if (elevationChange > AVERAGE_ELEVATION_EASE_THRESHOLD) {
                 this._averageElevation.easeTo(newElevation, timeStamp, AVERAGE_ELEVATION_EASE_TIME);
                 return true;
-            } else if (elevationChange > 1e-8) {
+            } else if (elevationChange > AVERAGE_ELEVATION_CHANGE_THRESHOLD) {
                 this._averageElevation.jumpTo(newElevation);
                 this.transform.averageElevation = newElevation;
                 return true;
