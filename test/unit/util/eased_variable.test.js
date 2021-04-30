@@ -31,11 +31,16 @@ test('EasedVariable', (t) => {
 
     // Start another ease in the middle of the previous
     v.easeTo(20, 2, 2);
+
     t.equal(v.getValue(1), 15);
     t.equal(v.getValue(2), 15);
     t.equal(v.getValue(3), 17.5);
     t.equal(v.getValue(4), 20);
     t.equal(v.getValue(5), 20);
+
+    // Verify cubic easing
+    t.equal(v.getValue(2.5), 15.3125);
+    t.equal(v.getValue(3.5), 19.6875);
 
     t.end();
 });
