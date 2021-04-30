@@ -341,7 +341,8 @@ class Transform {
             const hit = elevation.pointCoordinate(pt);
             if (!hit) continue;
 
-            const weight = 1 / Math.hypot(hit[0] - this._camera.position[0], hit[1] - this._camera.position[1]);
+            const distanceToHit = Math.hypot(hit[0] - this._camera.position[0], hit[1] - this._camera.position[1]);
+            const weight = 1 / distanceToHit;
             elevationSum += hit[3] * weight;
             weightSum += weight;
         }
