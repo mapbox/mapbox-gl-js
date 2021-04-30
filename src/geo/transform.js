@@ -266,7 +266,7 @@ class Transform {
     }
     set averageElevation(averageElevation: number) {
         this._averageElevation = averageElevation;
-        this._calcMatrices();
+        this._calcFogMatrices();
     }
 
     get zoom(): number { return this._zoom; }
