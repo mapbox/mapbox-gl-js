@@ -425,7 +425,8 @@ class Transform {
             }
         }
 
-        return elevationSum / Math.max(weightSum, 1e-8);
+        if (weightSum === 0) return 0;
+        return elevationSum / weightSum;
     }
 
     get center(): LngLat { return this._center; }
