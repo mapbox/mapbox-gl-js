@@ -39,6 +39,7 @@ var GUIParams = function() {
     this.opacity = 1.0;
     this.horizonBlend = 0.1;
     this.showTileBoundaries = false;
+    this.showCollisionBoxes = false;
 };
 
 var guiParams = new GUIParams();
@@ -72,6 +73,10 @@ window.onload = function() {
     var showTileBoundaries = gui.add(guiParams, 'showTileBoundaries');
     showTileBoundaries.onFinishChange((value) => {
         map.showTileBoundaries = value;
+    });
+    var showCollisionBoxes = gui.add(guiParams, 'showCollisionBoxes');
+    showCollisionBoxes.onFinishChange((value) => {
+        map.showCollisionBoxes = value;
     });
     var freezeTileCoverage = gui.add(guiParams, 'freezeTileCoverage');
     freezeTileCoverage.onFinishChange((value) => {
