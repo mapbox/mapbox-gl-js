@@ -71,7 +71,7 @@ class Fog extends Evented {
         return smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
     }
 
-    getFogOpacity(pitch: number): number {
+    getOpacity(pitch: number): number {
         const fogColor = (this.properties && this.properties.get('color')) || 1.0;
         return this.getFogPitchFactor(pitch) * fogColor.a;
     }
