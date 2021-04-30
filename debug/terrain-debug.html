@@ -265,19 +265,29 @@ map.on('style.load', function() {
 let samplePoints = [];
 map.on('click', (e) => { samplePoints.push(e.point) });
 
-map.on('render', () => {
+function sampleElevation() {
     console.log(`Num samples: ${samplePoints.length}`);
     if(!map.transform.elevation) return;
 
-    const results = [];
-    for(const point of samplePoints) {
-        results.push(map.transform.elevation.pointCoordinate(point.clone()));
+    const t1 = performance.now();
+    for(let i =0 ; i < 100; i++) {
+        const results = [];
+        for(const point of samplePoints) {
+            results.push(map.transform.elevation.pointCoordinate(point.clone()));
+        }
     }
+    const unbatched = performance.now() - t1;
 
-    const batchResults = map.transform.elevation.raycastBatch(samplePoints);
-    console.log(results);
-    console.log(batchResults);
-});
+    const t2 = performance.now();
+    for(let i =0 ; i < 100; i++) {
+        const batchResults = map.transform.elevation.raycastBatch(samplePoints);
+    }
+    const batched = performance.now() - t2;
+
+    console.log(`${unbatched/batched}`);
+}
+
+map.on('render', sampleElevation);
 
 document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
     map.showTileBoundaries = !!this.checked;
