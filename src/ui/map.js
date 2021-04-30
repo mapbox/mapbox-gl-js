@@ -2791,12 +2791,12 @@ class Map extends Camera {
      *
      * @returns {boolean} true if elevation has changed from the last sampling
      */
-    _updateAverageElevation(timeStamp: number, ignoreTimeout: boolean=false): boolean {
+    _updateAverageElevation(timeStamp: number, ignoreTimeout: boolean = false): boolean {
         const applyUpdate = value => {
             this.transform.averageElevation = value;
             this._update(false);
             return true;
-        }
+        };
 
         if (!this.painter.averageElevationNeedsEasing()) {
             if (this.transform.averageElevation !== 0) return applyUpdate(0);
