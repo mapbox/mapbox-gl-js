@@ -1,7 +1,7 @@
 // @flow
 
 import Context from '../gl/context.js';
-import type {UniformLocations} from './uniform_binding.js';
+import type {UniformLocations, UniformValues} from './uniform_binding.js';
 import type {UnwrappedTileID} from '../source/tile_id.js';
 import Painter from './painter.js';
 import Fog from '../style/fog.js';
