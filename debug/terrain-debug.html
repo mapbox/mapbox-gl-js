@@ -40,6 +40,7 @@
 <script src='access_token_generated.js'></script>
 <script>
 
+const samplePoints = [];
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 13.5,
@@ -260,31 +261,49 @@ map.on('style.load', function() {
     document.getElementById('buildings-checkbox').onclick();
     document.getElementById('circles-checkbox').onclick();
     document.getElementById('custom-checkbox').onclick();
-});
 
-let samplePoints = [];
-map.on('click', (e) => { samplePoints.push(e.point) });
+    const xCenter = map.transform.width * 0.5;
+    const yCenter = map.transform.height * 0.66;
+    const xRadius = map.transform.width * 0.33;
+    const yRadius = map.transform.height * 0.33;
+
+    // Phyllotaxis: https://www.desmos.com/calculator/duq27u6vof
+    const n = 5;
+    const thetaScale = Math.PI * (3 - Math.sqrt(5));
+    for (let i = 1; i <= n; ++i) {
+        // Drop the usual square root to bias toward the center
+        const r = i / n;
+        const theta = i * thetaScale;
+        samplePoints.push(new mapboxgl.Point(
+            xCenter + r * xRadius * Math.sin(theta),
+            yCenter - r * yRadius * Math.cos(theta)
+        ));
+    }
+});
 
 function sampleElevation() {
     console.log(`Num samples: ${samplePoints.length}`);
-    if(!map.transform.elevation) return;
+    if (!map.transform.elevation) return;
 
     const t1 = performance.now();
-    for(let i =0 ; i < 100; i++) {
-        const results = [];
-        for(const point of samplePoints) {
+    const results = [];
+    for (let i = 0; i < 1; i++) {
+        for (const point of samplePoints) {
             results.push(map.transform.elevation.pointCoordinate(point.clone()));
         }
     }
     const unbatched = performance.now() - t1;
 
     const t2 = performance.now();
-    for(let i =0 ; i < 100; i++) {
-        const batchResults = map.transform.elevation.raycastBatch(samplePoints);
+    let batchedResults = [];
+    for (let i = 0; i < 1; i++) {
+        batchedResults = map.transform.elevation.raycastBatch(samplePoints);
     }
     const batched = performance.now() - t2;
 
-    console.log(`${unbatched/batched}`);
+    console.log(`${unbatched / batched}`);
+    console.log(results);
+    console.log(batchedResults);
 }
 
 map.on('render', sampleElevation);
@@ -377,8 +396,6 @@ document.onkeypress = function(e) {
         return false;
     }
 };
-
-
 
 </script>
 </body>

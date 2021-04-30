@@ -177,7 +177,7 @@ export default class DemMinMaxQuadTree {
         this._construct(mips, 0, 0, maxLvl, 0);
     }
 
-    get rootBounds(): [number, number] { return [- aabbSkirtPadding, this.maximums[0]]; }
+    get rootBounds(): [number, number] { return [-aabbSkirtPadding, this.maximums[0]]; }
 
     // Performs raycast against the tree root only. Min and max coordinates defines the size of the root node
     raycastRoot(minx: number, miny: number, maxx: number, maxy: number, p: vec3Like, d: vec3Like, exaggeration: number = 1): ?number {

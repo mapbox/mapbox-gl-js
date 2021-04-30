@@ -12,7 +12,7 @@ import Program from '../render/program.js';
 import {Uniform1i, Uniform1f, Uniform2f, Uniform4f, UniformMatrix4f} from '../render/uniform_binding.js';
 import {prepareDEMTexture} from '../render/draw_hillshade.js';
 import EXTENT from '../data/extent.js';
-import {clamp, warnOnce, getBounds} from '../util/util.js';
+import {clamp, warnOnce, getBounds, furthestTileCorner} from '../util/util.js';
 import assert from 'assert';
 import {vec3, mat4, vec4} from 'gl-matrix';
 import getWorkerPool from '../util/global_worker_pool.js';
@@ -804,6 +804,7 @@ export class Terrain extends Elevation {
     raycastBatch(points: Point[]): vec4[] {
         const screenBounds = getBounds(points);
         const transform = this.painter.transform;
+        const mercatorZScale = mercatorZfromAltitude(1, transform.center.lat);
         // Scale to clip space
         const clipSpaceBounds = {
             min: [(screenBounds.min.x / transform.width) * 2 - 1, (screenBounds.min.y / transform.height) * 2 - 1],
@@ -811,10 +812,13 @@ export class Terrain extends Elevation {
         };
 
         const batchFrustum = Frustum.fromInvProjectionMatrix(transform.invProjMatrix, transform.worldSize, 0, clipSpaceBounds);
+        const cameraPos = transform._camera.position;
+        cameraPos[2] /= mercatorZScale;
+        const furthestCorner = furthestTileCorner(transform.bearing);
 
         // Perform initial frustum intersection against root nodes of the available dem tiles
         const preparedTiles = [];
-        for(const tile of this._visibleDemTiles) {
+        for (const tile of this._visibleDemTiles) {
             if (tile.dem) {
                 const id = tile.tileID;
                 const tiles = Math.pow(2.0, id.overscaledZ);
@@ -825,6 +829,10 @@ export class Terrain extends Elevation {
                 const maxx = (x + 1) / tiles;
                 const miny = y / tiles;
                 const maxy = (y + 1) / tiles;
+
+                const farx = (x + furthestCorner[0]) / tiles;
+                const fary = (y + furthestCorner[1]) / tiles;
+
                 const tree = (tile.dem: any).tree;
                 const treeBounds = tree.rootBounds;
 
@@ -832,40 +840,38 @@ export class Terrain extends Elevation {
                 const minz = treeBounds[0];
                 const maxz = treeBounds[1] * this._exaggeration;
                 const tileAabb = new Aabb([minx, miny, minz], [maxx, maxy, maxz]);
+                const dist = vec3.dist(cameraPos, [farx, fary, minz]);
 
                 if (tileAabb.intersects(batchFrustum)) {
                     preparedTiles.push({
                         minx, miny, maxx, maxy,
+                        dist,
                         tile
                     });
                 }
             }
         }
+        preparedTiles.sort((a, b) => a.dist - b.dist);
 
         const intersections = [];
-        for(const point of points) {
+        for (const point of points) {
             const ray = this._screenPointToRay(point);
-            const pos = ray.origin;
-            const dir = ray.dir;
-            let minT = NaN;
+            let t;
+            let pos, dir;
             if (ray) {
+                pos = ray.origin;
+                dir = ray.dir;
                 for (const preparedTile of preparedTiles) {
                     const tree = (preparedTile.tile.dem: any).tree;
-                    const t = tree.raycast(preparedTile.minx, preparedTile.miny, preparedTile.maxx, preparedTile.maxy, pos, dir, this._exaggeration);
-                    if (t != null) {
-                        if (isNaN(minT)) {
-                            minT = t;
-                        } else {
-                            minT = Math.min(t, minT);
-                        }
-                    }
+                    t = tree.raycast(preparedTile.minx, preparedTile.miny, preparedTile.maxx, preparedTile.maxy, pos, dir, this._exaggeration);
+                    if (t != null) break;
                 }
             }
 
-            if (!isNaN(minT)) {
-                const res = vec3.scaleAndAdd([], pos, dir, minT);
+            if (t && pos && dir) {
+                const res = vec3.scaleAndAdd([], pos, dir, t);
                 res[3] = res[2];
-                res[2] *= mercatorZfromAltitude(1, transform.center.lat);
+                res[2] *= mercatorZScale;
 
                 intersections.push(res);
             }

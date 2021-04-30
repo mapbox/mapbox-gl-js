@@ -33,7 +33,7 @@ class Frustum {
         this.planes = planes_;
     }
 
-    static fromInvProjectionMatrix(invProj: Float64Array, worldSize: number, zoom: number, bounds: { min: vec2, max: vec2 } = { min: [-1, -1], max: [1, 1] }): Frustum {
+    static fromInvProjectionMatrix(invProj: Float64Array, worldSize: number, zoom: number, bounds: { min: vec2, max: vec2 } = {min: [-1, -1], max: [1, 1]}): Frustum {
         const minX = bounds.min[0];
         const minY = bounds.min[1];
         const maxX = bounds.max[0];
