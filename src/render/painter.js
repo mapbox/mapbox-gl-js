@@ -19,7 +19,7 @@ import shaders from '../shaders/shaders.js';
 import Program from './program.js';
 import {programUniforms} from './program/program_uniforms.js';
 import Context from '../gl/context.js';
-import {FOG_PITCH_END} from '../style/fog_helpers.js';
+import {fogUniformValues} from '../render/fog.js';
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
@@ -179,13 +179,13 @@ class Painter {
         terrain.update(style, this.transform, cameraChanging);
     }
 
-    _updateFog() {
-        if (this.transform.pitch <= FOG_PITCH_END || !(this.style && this.style.fog)) {
+    _updateFog(style: Style) {
+        const fog = style.fog;
+        if (!fog || (fog && fog.getFogOpacity(this.transform.pitch) !== 1.0)) {
             this.transform.fogCullDistSq = null;
             return;
         }
 
-        const fog = this.style.fog;
         const fogStart = fog.properties.get('range')[0];
         const fogEnd = fog.properties.get('range')[1];
 
@@ -753,13 +753,14 @@ class Painter {
         const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const fog = this.style && this.style.fog;
-        const fogOpacity = fog && fog.getFogPitchFactor(this.transform.pitch);
-
         const defines = [];
+
         if (terrain) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && fogOpacity !== 0.0 && !rtt) defines.push('FOG');
+        if (fog && !rtt && fog.getFogOpacity(this.transform.pitch) !== 0.0) {
+            defines.push('FOG');
+        }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
         return defines;
@@ -837,26 +838,12 @@ class Painter {
     }
 
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
-        const fog = this.style && this.style.fog;
-        const fogOpacity = (fog && fog.getFogPitchFactor(this.transform.pitch)) || 0.0;
-        if (fog && fogOpacity !== 0.0) {
-            const temporalOffset = (this.frameCounter / 1000.0) % 1;
-            const fogColor = fog.properties.get('color');
-            const fogColorUnpremultiplied = fogColor.a === 0 ? [0, 0, 0] : [
-                fogColor.r / fogColor.a,
-                fogColor.g / fogColor.a,
-                fogColor.b / fogColor.a
-            ];
-            const uniforms = {};
-
-            uniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : this.identityMat;
-            uniforms['u_fog_range'] = fog.properties.get('range');
-            uniforms['u_fog_color'] = fogColorUnpremultiplied;
-            uniforms['u_fog_horizon_blend'] = fog.properties.get('horizon-blend');
-            uniforms['u_fog_temporal_offset'] = temporalOffset;
-            uniforms['u_fog_opacity'] = fogOpacity;
-
-            program.setFogUniformValues(context, uniforms);
+        const fog = this.style.fog;
+        if (fog) {
+            const fogOpacity = fog.getFogOpacity(this.transform.pitch);
+            if (fogOpacity !== 0.0) {
+                program.setFogUniformValues(context, fogUniformValues(this, fog, tileID, fogOpacity));
+            }
         }
     }
 

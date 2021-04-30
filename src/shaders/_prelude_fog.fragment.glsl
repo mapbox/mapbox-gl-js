@@ -1,6 +1,5 @@
 #ifdef FOG
 
-uniform vec3 u_fog_color;
 uniform float u_fog_temporal_offset;
 
 // This function is only used in rare places like heatmap where opacity is used
@@ -14,18 +13,18 @@ vec3 fog_apply(vec3 color, vec3 pos) {
     float depth = length(pos);
     float opacity = fog_opacity(fog_range(depth));
     opacity *= fog_horizon_blending(pos / depth);
-    return mix(color, u_fog_color, opacity);
+    return mix(color, u_fog_color.rgb, opacity);
 }
 
 // Apply fog computed in the vertex shader
 vec3 fog_apply_from_vert(vec3 color, float fog_opac) {
-    return mix(color, u_fog_color, fog_opac);
+    return mix(color, u_fog_color.rgb, fog_opac);
 }
 
 // Assumes z up
 vec3 fog_apply_sky_gradient(vec3 camera_ray, vec3 sky_color) {
     float horizon_blend = fog_horizon_blending(normalize(camera_ray));
-    return mix(sky_color, u_fog_color, horizon_blend);
+    return mix(sky_color, u_fog_color.rgb, horizon_blend);
 }
 
 // Un-premultiply the alpha, then blend fog, then re-premultiply alpha.

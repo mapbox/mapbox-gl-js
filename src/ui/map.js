@@ -2658,7 +2658,7 @@ class Map extends Camera {
         // need for the current transform
         if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
-            this.painter._updateFog();
+            this.painter._updateFog(this.style);
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             this.style._updateSources(this.transform);
         }
