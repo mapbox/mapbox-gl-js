@@ -2174,6 +2174,7 @@ class Map extends Camera {
     setTerrain(terrain: TerrainSpecification) {
         this._lazyInitEmptyStyle();
         this.style.setTerrain(terrain);
+        this._averageElevationLastSampledAt = -Infinity;
         return this._update(true);
     }
 
@@ -2791,11 +2792,14 @@ class Map extends Camera {
      * @returns {boolean} true if elevation has changed from the last sampling
      */
     _updateAverageElevation(timeStamp: number, ignoreTimeout: boolean=false): boolean {
+        const applyUpdate = value => {
+            this.transform.averageElevation = value;
+            this._update(false);
+            return true;
+        }
+
         if (!this.painter.averageElevationNeedsEasing()) {
-            if (this.transform.averageElevation !== 0) {
-                this.transform.averageElevation = 0;
-                return true;
-            }
+            if (this.transform.averageElevation !== 0) return applyUpdate(0);
             return false;
         }
 
@@ -2810,17 +2814,14 @@ class Map extends Camera {
 
             if (elevationChange > AVERAGE_ELEVATION_EASE_THRESHOLD) {
                 this._averageElevation.easeTo(newElevation, timeStamp, AVERAGE_ELEVATION_EASE_TIME);
-                return true;
             } else if (elevationChange > AVERAGE_ELEVATION_CHANGE_THRESHOLD) {
                 this._averageElevation.jumpTo(newElevation);
-                this.transform.averageElevation = newElevation;
-                return true;
+                return applyUpdate(newElevation);
             }
         }
 
         if (this._averageElevation.isEasing(timeStamp)) {
-            this.transform.averageElevation = this._averageElevation.getValue(timeStamp);
-            return true;
+            return applyUpdate(this._averageElevation.getValue(timeStamp));
         }
 
         return false;
