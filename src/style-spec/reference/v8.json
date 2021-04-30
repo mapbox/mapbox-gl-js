@@ -3718,7 +3718,7 @@
         ]
       },
       "transition": true,
-      "doc": "The color of the fog. If provided as an `rgba` color, the alpha component must be nonzero, but is otherwise unused.",
+      "doc": "The color of the fog. Using opacity is recommended only for smoothly transitioning fog on/off as anything less than 100% opacity results in more tiles loaded and drawn.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
