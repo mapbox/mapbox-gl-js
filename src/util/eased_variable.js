@@ -57,20 +57,6 @@ class EasedVariable {
     }
 
     /**
-     * Cancel any in progress ease.
-     *
-     * @param timeStamp {number} current time stamp
-     */
-    cancel(timeStamp: number=Infinity) {
-        const currentValue = this.getValue(timeStamp);
-        this._start = currentValue;
-        this._end = currentValue;
-
-        this._startTime = -Infinity;
-        this._endTime = -Infinity;
-    }
-
-    /**
      * Cancel any in-progress ease and begin a new ease.
      *
      * @param value {number} new value to which to ease
