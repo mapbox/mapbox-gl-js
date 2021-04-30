@@ -21,6 +21,14 @@ import type Map from '../ui/map.js';
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
 
+const elevationSamplePoints = [
+    [0.5, 0.4],
+    [0.3, 0.6],
+    [0.5, 0.6],
+    [0.7, 0.6],
+    [0.5, 0.8]
+];
+
 type RayIntersectionResult = { p0: vec4, p1: vec4, t: number};
 type ElevationReference = "sea" | "ground";
 
@@ -321,13 +329,15 @@ class Transform {
     sampleAverageElevation(): number {
         if (!this._elevation) return 0;
 
+        /*
+        // Phyllotaxis: https://www.desmos.com/calculator/duq27u6vof
+        const points = elevationSamplePoints.map(p => [p[0] * this.width, p[1] * this.height]);
+
+        const n = 5;
         const xCenter = this.width * 0.5;
         const yCenter = this.height * 0.66;
         const xRadius = this.width * 0.33;
         const yRadius = this.height * 0.33;
-
-        // Phyllotaxis: https://www.desmos.com/calculator/duq27u6vof
-        const n = 5;
         const points = [];
         const thetaScale = Math.PI * (3 - Math.sqrt(5));
         for (let i = 1; i <= n; ++i) {
@@ -338,10 +348,11 @@ class Transform {
                 xCenter + r * xRadius * Math.sin(theta),
                 yCenter - r * yRadius * Math.cos(theta)
             ]);
-        }
+        }*/
 
         // BEGIN DEBUG
-        /*const DEBUG = true;
+        /*
+        const DEBUG = true;
         let debugEl;
         if (DEBUG) {
             debugEl = document.getElementById('pts');
@@ -357,7 +368,7 @@ class Transform {
                 debugEl.style.pointerEvents = 'none';
                 document.body.appendChild(debugEl);
 
-                for (let i = 0; i < points.length; i++) {
+                for (let i = 0; i < elevationSamplePoints.length; i++) {
                     const pt = document.createElement('span');
                     pt.style.position = 'absolute';
                     pt.style.width = '10px'
@@ -371,10 +382,10 @@ class Transform {
                 }
             }
 
-            for (let i = 0; i < points.length; i++) {
+            for (let i = 0; i < elevationSamplePoints.length; i++) {
                 const el = debugEl.children.item(i);
-                el.style.left = `${points[i][0]}px`;
-                el.style.top = `${points[i][1]}px`;
+                el.style.left = `${elevationSamplePoints[i][0] * this.width}px`;
+                el.style.top = `${elevationSamplePoints[i][1] * this.height}px`;
             }
         }
         */
@@ -382,10 +393,10 @@ class Transform {
 
         let elevationSum = 0.0;
         let weightSum = 0.0;
-        for (let i = 0; i < points.length; i++) {
-            const p = points[i];
+        for (let i = 0; i < elevationSamplePoints.length; i++) {
+            const p = elevationSamplePoints[i];
             if (this._elevation) {
-                const hit = this._elevation.pointCoordinate(new Point(p[0], p[1]));
+                const hit = this._elevation.pointCoordinate(new Point(p[0] * this.width, p[1] * this.height));
                 if (!hit) {
                     /*
                     // BEGIN DEBUG
@@ -395,14 +406,14 @@ class Transform {
                     */
                     continue;
                 }
-                // BEGIN DEBUG
                 /*
+                // BEGIN DEBUG
                 if (DEBUG) {
                     debugEl.children.item(i).textContent = hit[3].toFixed(0);
                     debugEl.children.item(i).style.backgroundColor = 'blue';
                 }
-                */
                 // END DEBUG
+                */
 
                 const weight = 1 / Math.hypot(hit[0] - this._camera.position[0], hit[1] - this._camera.position[1]);
                 elevationSum += hit[3] * weight;
