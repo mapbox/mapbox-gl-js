@@ -87,7 +87,7 @@ window.onload = function() {
     enableSky.onFinishChange((value) => {
         map.setLayoutProperty('sky', 'visibility', value ? 'visible' : 'none');
     });
-    var fov = gui.add(guiParams, 'fov', 1, 60);
+    var fov = gui.add(guiParams, 'fov', 5, 60);
     fov.onChange((value) => {
         map.transform.fov = value;
         map.resize();
