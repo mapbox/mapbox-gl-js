@@ -22,10 +22,10 @@ const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
 
 const elevationSamplePoints = [
-    [0.5, 0.4],
-    [0.3, 0.6],
-    [0.5, 0.6],
-    [0.7, 0.6],
+    [0.5, 0.2],
+    [0.3, 0.5],
+    [0.5, 0.5],
+    [0.7, 0.5],
     [0.5, 0.8]
 ];
 
@@ -329,9 +329,14 @@ class Transform {
     sampleAverageElevation(): number {
         if (!this._elevation) return 0;
 
+        const horizon = this.horizonLineFromTop();
+        const points = elevationSamplePoints.map(p => [
+            p[0] * this.width,
+            horizon + p[1] * (this.height - horizon)
+        ]);
+
         /*
         // Phyllotaxis: https://www.desmos.com/calculator/duq27u6vof
-        const points = elevationSamplePoints.map(p => [p[0] * this.width, p[1] * this.height]);
 
         const n = 5;
         const xCenter = this.width * 0.5;
@@ -350,8 +355,8 @@ class Transform {
             ]);
         }*/
 
-        // BEGIN DEBUG
         /*
+        // BEGIN DEBUG
         const DEBUG = true;
         let debugEl;
         if (DEBUG) {
@@ -368,7 +373,7 @@ class Transform {
                 debugEl.style.pointerEvents = 'none';
                 document.body.appendChild(debugEl);
 
-                for (let i = 0; i < elevationSamplePoints.length; i++) {
+                for (let i = 0; i < points.length; i++) {
                     const pt = document.createElement('span');
                     pt.style.position = 'absolute';
                     pt.style.width = '10px'
@@ -382,21 +387,21 @@ class Transform {
                 }
             }
 
-            for (let i = 0; i < elevationSamplePoints.length; i++) {
+            for (let i = 0; i < points.length; i++) {
                 const el = debugEl.children.item(i);
-                el.style.left = `${elevationSamplePoints[i][0] * this.width}px`;
-                el.style.top = `${elevationSamplePoints[i][1] * this.height}px`;
+                el.style.left = `${points[i][0]}px`;
+                el.style.top = `${points[i][1]}px`;
             }
         }
-        */
         // END DEBUG
+        */
 
         let elevationSum = 0.0;
         let weightSum = 0.0;
         if (this._elevation) {
-            for (let i = 0; i < elevationSamplePoints.length; i++) {
-                const p = elevationSamplePoints[i];
-                const hit = this._elevation.pointCoordinate(new Point(p[0] * this.width, p[1] * this.height));
+            for (let i = 0; i < points.length; i++) {
+                const p = points[i];
+                const hit = this._elevation.pointCoordinate(new Point(p[0], p[1]));
                 if (!hit) {
                     /*
                     // BEGIN DEBUG
