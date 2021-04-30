@@ -29,6 +29,7 @@ import TaskQueue from '../util/task_queue.js';
 import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
+import EasedVariable from '../util/eased_variable.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -74,6 +75,11 @@ type IControl = {
     +getDefaultPosition?: () => ControlPosition;
 }
 /* eslint-enable no-use-before-define */
+
+const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
+const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
+const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
+const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
 
 type MapOptions = {
     hash?: boolean | string,
@@ -337,6 +343,8 @@ class Map extends Camera {
     _speedIndexTiming: boolean;
     _clickTolerance: number;
     _silenceAuthErrors: boolean;
+    _averageElevationLastSampledAt: number;
+    _averageElevation: EasedVariable;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -432,6 +440,9 @@ class Map extends Camera {
         this._mapId = uniqueId();
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
+
+        this._averageElevationLastSampledAt = -Infinity;
+        this._averageElevation = new EasedVariable(0);
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
@@ -2163,6 +2174,7 @@ class Map extends Camera {
     setTerrain(terrain: TerrainSpecification) {
         this._lazyInitEmptyStyle();
         this.style.setTerrain(terrain);
+        this._averageElevationLastSampledAt = -Infinity;
         return this._update(true);
     }
 
@@ -2621,6 +2633,8 @@ class Map extends Camera {
 
         const m = PerformanceUtils.beginMeasure('render');
 
+        let averageElevationChanged = this._updateAverageElevation(paintStartTimeStamp);
+
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
         this.painter.context.setDirty();
         this.painter.setBaseState();
@@ -2740,19 +2754,30 @@ class Map extends Camera {
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
-        const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty;
+        const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty || averageElevationChanged;
         if (somethingDirty || this._repaint) {
             this.triggerRepaint();
         } else {
-            this._triggerFrame(false);
-            if (!this.isMoving() && this.loaded()) {
-                this.fire(new Event('idle'));
-                this._isInitialLoad = false;
-                // check the options to see if need to calculate the speed index
-                if (this.speedIndexTiming) {
-                    const speedIndexNumber = this._calculateSpeedIndex();
-                    this.fire(new Event('speedindexcompleted', {speedIndex: speedIndexNumber}));
-                    this.speedIndexTiming = false;
+            const willIdle = !this.isMoving() && this.loaded();
+            if (willIdle) {
+                // Before idling, we perform one last sample so that if the average elevation
+                // does not exactly match the terrain, we skip idle and ease it to its final state.
+                averageElevationChanged = this._updateAverageElevation(paintStartTimeStamp, true);
+            }
+
+            if (averageElevationChanged) {
+                this.triggerRepaint();
+            } else {
+                this._triggerFrame(false);
+                if (willIdle) {
+                    this.fire(new Event('idle'));
+                    this._isInitialLoad = false;
+                    // check the options to see if need to calculate the speed index
+                    if (this.speedIndexTiming) {
+                        const speedIndexNumber = this._calculateSpeedIndex();
+                        this.fire(new Event('speedindexcompleted', {speedIndex: speedIndexNumber}));
+                        this.speedIndexTiming = false;
+                    }
                 }
             }
         }
@@ -2765,6 +2790,47 @@ class Map extends Camera {
         }
 
         return this;
+    }
+
+    /**
+     * Update the average visible elevation by sampling terrain
+     *
+     * @returns {boolean} true if elevation has changed from the last sampling
+     */
+    _updateAverageElevation(timeStamp: number, ignoreTimeout: boolean = false): boolean {
+        const applyUpdate = value => {
+            this.transform.averageElevation = value;
+            this._update(false);
+            return true;
+        };
+
+        if (!this.painter.averageElevationNeedsEasing()) {
+            if (this.transform.averageElevation !== 0) return applyUpdate(0);
+            return false;
+        }
+
+        const timeoutElapsed = ignoreTimeout || timeStamp - this._averageElevationLastSampledAt > AVERAGE_ELEVATION_SAMPLING_INTERVAL;
+
+        if (timeoutElapsed && !this._averageElevation.isEasing(timeStamp)) {
+            this._averageElevationLastSampledAt = timeStamp;
+
+            const currentElevation = this.transform.averageElevation;
+            const newElevation = this.transform.sampleAverageElevation();
+            const elevationChange = Math.abs(currentElevation - newElevation);
+
+            if (elevationChange > AVERAGE_ELEVATION_EASE_THRESHOLD) {
+                this._averageElevation.easeTo(newElevation, timeStamp, AVERAGE_ELEVATION_EASE_TIME);
+            } else if (elevationChange > AVERAGE_ELEVATION_CHANGE_THRESHOLD) {
+                this._averageElevation.jumpTo(newElevation);
+                return applyUpdate(newElevation);
+            }
+        }
+
+        if (this._averageElevation.isEasing(timeStamp)) {
+            return applyUpdate(this._averageElevation.getValue(timeStamp));
+        }
+
+        return false;
     }
 
     /***** START WARNING - REMOVAL OR MODIFICATION OF THE
