@@ -8,7 +8,7 @@
         ["wait", 500],
         ["setFog", null],
         ["setFog", {
-          "range": [1, 2],
+          "range": [100, 200],
           "color": "blue",
           "horizon-blend": 0.15
         }],
@@ -24,7 +24,7 @@
     "source": "rgbterrain"
   },
   "fog": {
-    "range": [1, 2],
+    "range": [100, 200],
     "color": "white",
     "horizon-blend": 0.15
   },
