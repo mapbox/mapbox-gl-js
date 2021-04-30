@@ -113,11 +113,11 @@ class Transform {
         this._fogTileMatrixCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
+        this._averageElevation = 0;
         this.cameraElevationReference = "ground";
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
-        this._averageElevation = 0;
     }
 
     clone(): Transform {
@@ -135,12 +135,12 @@ class Transform {
         clone.angle = this.angle;
         clone._fov = this._fov;
         clone._pitch = this._pitch;
+        clone._averageElevation = this._averageElevation;
         clone._unmodified = this._unmodified;
         clone._edgeInsets = this._edgeInsets.clone();
         clone._camera = this._camera.clone();
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
-        clone._averageElevation = this._averageElevation;
         return clone;
     }
 
