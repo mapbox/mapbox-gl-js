@@ -1604,6 +1604,20 @@ class Transform {
         // matrix for conversion from location to screen coordinates
         this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
+        this._calcFogMatrices();
+
+        // inverse matrix for conversion from screen coordinates to location
+        m = mat4.invert(new Float64Array(16), this.pixelMatrix);
+        if (!m) throw new Error("failed to invert matrix");
+        this.pixelMatrixInverse = m;
+
+        this._projMatrixCache = {};
+        this._alignedProjMatrixCache = {};
+    }
+
+    _calcFogMatrices() {
+        this._fogTileMatrixCache = {};
+
         const cameraWorldSize = this.cameraWorldSize;
         const cameraPixelsPerMeter = this.cameraPixelsPerMeter;
         const cameraPos = this._camera.position;
@@ -1620,7 +1634,7 @@ class Transform {
         vec3.scale(cameraPos, cameraPos, -1);
         vec3.multiply(cameraPos, cameraPos, metersToPixel);
 
-        m = mat4.create();
+        const m = mat4.create();
         mat4.translate(m, m, cameraPos);
         mat4.scale(m, m, metersToPixel);
         this.mercatorFogMatrix = m;
@@ -1628,15 +1642,6 @@ class Transform {
         // The worldToFogMatrix can be used for conversion from world coordinates to relative camera position in
         // units of fractions of the map height. Later composed with tile position to construct the fog tile matrix.
         this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
-
-        // inverse matrix for conversion from screen coordinates to location
-        m = mat4.invert(new Float64Array(16), this.pixelMatrix);
-        if (!m) throw new Error("failed to invert matrix");
-        this.pixelMatrixInverse = m;
-
-        this._projMatrixCache = {};
-        this._alignedProjMatrixCache = {};
-        this._fogTileMatrixCache = {};
     }
 
     _updateCameraState() {
