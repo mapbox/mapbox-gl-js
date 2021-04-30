@@ -10,7 +10,7 @@ import type Map from './map.js';
 import type LngLat from '../geo/lng_lat.js';
 
 /**
- * `MapMouseEvent` is the type for objects emitted by mouse-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
+ * `MapMouseEvent` is the type for objects emitted by mouse-related `Map` events.
  * @extends {Object}
  * @example
  * // Example of a MapMouseEvent of type "click"
@@ -28,6 +28,9 @@ import type LngLat from '../geo/lng_lat.js';
  *      target: {...},
  *      type: "click"
  * }
+ * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+ * @see [Display popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
  */
 export class MapMouseEvent extends Event {
     /**
@@ -102,37 +105,39 @@ export class MapMouseEvent extends Event {
 }
 
 /**
- * `MapTouchEvent` is the type for objects emitted by touch-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
+ * `MapTouchEvent` is the type for objects emitted by touch-related `Map` events.
  * @extends {Object}
  * @example
  * // Example of a MapTouchEvent of type "touch"
- * {
- *     lngLat: {
+  * {
+ *   lngLat: {
+ *      lng: 40.203,
+ *      lat: -74.451
+ *   },
+ *   lngLats: [
+ *      {
  *         lng: 40.203,
  *         lat: -74.451
- *     },
- *     lngLats: [
- *         {
- *             lng: 40.203,
- *             lat: -74.451
- *         }
- *     ],
- *     originalEvent: {...},
- *     point: {
+ *      }
+ *   ],
+ *   originalEvent: {...},
+ *   point: {
+ *      x: 266,
+ *      y: 464
+ *   },
+ *   points: [
+ *      {
  *         x: 266,
  *         y: 464
- *     },
- *     points: [
- *         {
- *             x: 266,
- *             y: 464
- *         }
- *     ]
- *     preventDefault(),
- *     target: {...},
- *     type: "touchstart"
+ *      }
+ *   ]
+ *   preventDefault(),
+ *   target: {...},
+ *   type: "touchstart"
  * }
- */
+ * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+*/
 export class MapTouchEvent extends Event {
     /**
      * The type of originating event.
@@ -214,15 +219,17 @@ export class MapTouchEvent extends Event {
 }
 
 /**
- * `MapWheelEvent` is the type for objects emitted by wheel-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
+ * `MapWheelEvent` is the type for objects emitted by wheel-related `Map` events.
  * @extends {Object}
+ * @example
  * // Example of a MapWheelEvent of type "wheel"
  * {
- *     originalEvent: {...},
- *     preventDefault(),
- *     target: {...},
- *     type: "wheel"
+ *   originalEvent: WheelEvent {...},
+ * 	 target: Map {...},
+ * 	 type: "wheel",
+ * 	 _defaultPrevented: false
  * }
+* @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  */
 export class MapWheelEvent extends Event {
     /**
@@ -269,7 +276,7 @@ export class MapWheelEvent extends Event {
 }
 
 /**
- * `MapBoxZoomEvent` is the type for objects emitted by boxzoom-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
+ * `MapBoxZoomEvent` is the type for objects emitted by boxzoom-related `Map` events.
  *
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`
@@ -278,10 +285,12 @@ export class MapWheelEvent extends Event {
  * @example
  * // Example of a BoxZoomEvent of type "boxzoomstart"
  * {
- *     originalEvent: {...},
- *     type: "boxzoomstart",
- *     target: {...}
+ *   originalEvent: {...},
+ *   type: "boxzoomstart",
+ *   target: {...}
  * }
+ * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
  */
 export type MapBoxZoomEvent = {
     type: 'boxzoomstart'
@@ -292,7 +301,7 @@ export type MapBoxZoomEvent = {
 };
 
 /**
- * `MapDataEvent` is the type for objects emitted by data-related [`Map` events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
+ * `MapDataEvent` is the type for objects emitted by data-related `Map` events.
  *
  * @typedef {Object} MapDataEvent
  * @property {string} type The type of originating event.
@@ -306,8 +315,7 @@ export type MapBoxZoomEvent = {
  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `source` and
  * the event is related to loading of a tile.
  * @example
- * // Example of a MapDataEvent of type "sourcedata":
- *
+ * // Example of a MapDataEvent of type "sourcedata"
  * {
  *   type: "sourcedata",
  *   dataType: "source",
@@ -319,6 +327,9 @@ export type MapBoxZoomEvent = {
  *   tile: {...},
  *   coord: {...}
  * }
+ * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [Change a map's style](https://docs.mapbox.com/mapbox-gl-js/example/setstyle/)
+ * @see [Add a GeoJSON line](https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/)
  */
 export type MapDataEvent = {
     type: string,
@@ -611,13 +622,18 @@ export type MapEvent =
      * @instance
      * @property {MapWheelEvent} data
      * @example
-     * // Initialize the map
-     * var map = new mapboxgl.Map({ // map options });
-     * // Set an event listener that fires
-     * // when a wheel event occurs within the map.
-     * map.on('wheel', function() {
-     *   console.log('A wheel event occurred.');
-     * });
+     * // Example of a MapDataEvent of type "sourcedata"
+     * {
+     *   type: "sourcedata",
+     *   dataType: "source",
+     *   isSourceLoaded, false,
+     *   source: {...},
+     *   style: {...}
+     *   sourceDataType: "",
+     *   sourceId: "composite",
+     *   tile: {...},
+     *   coord: {...}
+     * }
      */
     | 'wheel'
 

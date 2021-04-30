@@ -47,7 +47,17 @@ export class ErrorEvent extends Event {
  * Methods mixed in to other classes for event capabilities.
  *
  * @mixin Evented
- */
+ * @example
+ * // Example of an Evented of type "trackuserlocationstart"
+ * {
+ *    type: "trackuserlocationstart",
+ *    target: GeolocateControl {...}
+ * }
+ * @see See [`Map`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Marker`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Popup`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), and [`GeolocationControl`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+ * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+ * @see [Locate the user](https://docs.mapbox.com/mapbox-gl-js/example/locate-user/)
+*/
 export class Evented {
     _listeners: Listeners;
     _oneTimeListeners: Listeners;
