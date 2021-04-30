@@ -7,7 +7,7 @@
 
 #ifdef FOG
 
-uniform mediump float u_fog_opacity;
+uniform mediump vec4 u_fog_color;
 uniform mediump vec2 u_fog_range;
 uniform mediump float u_fog_horizon_blend;
 
@@ -24,7 +24,7 @@ float fog_horizon_blending(vec3 camera_dir) {
     float t = max(0.0, camera_dir.z / u_fog_horizon_blend);
     // Factor of 3 chosen to roughly match smoothstep.
     // See: https://www.desmos.com/calculator/pub31lvshf
-    return u_fog_opacity * exp(-3.0 * t * t);
+    return u_fog_color.a * exp(-3.0 * t * t);
 }
 
 // Compute a ramp for fog opacity
@@ -38,7 +38,7 @@ float fog_opacity(float t) {
     falloff *= falloff * falloff;
 
     // Scale and clip to 1 at the far limit
-    return u_fog_opacity * min(1.0, 1.00747 * falloff);
+    return u_fog_color.a * min(1.0, 1.00747 * falloff);
 }
 
 #endif
