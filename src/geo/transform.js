@@ -329,95 +329,17 @@ class Transform {
         if (!this._elevation) return 0;
 
         const horizon = this.horizonLineFromTop();
-        const points = elevationSamplePoints.map(p => [
-            p[0] * this.width,
-            horizon + p[1] * (this.height - horizon)
-        ]);
-
-        /*
-        // Phyllotaxis: https://www.desmos.com/calculator/duq27u6vof
-
-        const n = 5;
-        const xCenter = this.width * 0.5;
-        const yCenter = this.height * 0.66;
-        const xRadius = this.width * 0.33;
-        const yRadius = this.height * 0.33;
-        const points = [];
-        const thetaScale = Math.PI * (3 - Math.sqrt(5));
-        for (let i = 1; i <= n; ++i) {
-            // Drop the usual square root to bias toward the center
-            const r = i / n;
-            const theta = i * thetaScale;
-            points.push([
-                xCenter + r * xRadius * Math.sin(theta),
-                yCenter - r * yRadius * Math.cos(theta)
-            ]);
-        }*/
-
-        /*
-        // BEGIN DEBUG
-        const DEBUG = true;
-        let debugEl;
-        if (DEBUG) {
-            debugEl = document.getElementById('pts');
-            if (!debugEl) {
-                debugEl = document.createElement('div');
-                debugEl.id = 'pts';
-                debugEl.style.position = 'absolute';
-                debugEl.style.top = 0;
-                debugEl.style.bottom = 0;
-                debugEl.style.left = 0;
-                debugEl.style.right = 0;
-                debugEl.style.zIndex = 10;
-                debugEl.style.pointerEvents = 'none';
-                document.body.appendChild(debugEl);
-
-                for (let i = 0; i < points.length; i++) {
-                    const pt = document.createElement('span');
-                    pt.style.position = 'absolute';
-                    pt.style.width = '10px'
-                    pt.style.height = '10px'
-                    pt.style.borderRadius = '10px';
-                    pt.style.backgroundColor = 'red';
-                    pt.style.transform = 'translate(-5px,-5px)';
-                    pt.style.textIndent = '1em';
-                    pt.style.textShadow = '0 0 2px #ffffff, 0 0 2px #ffffff, 0 0 2px #ffffff, 0 0 2px #ffffff, 0 0 2px #ffffff';
-                    debugEl.appendChild(pt);
-                }
-            }
-
-            for (let i = 0; i < points.length; i++) {
-                const el = debugEl.children.item(i);
-                el.style.left = `${points[i][0]}px`;
-                el.style.top = `${points[i][1]}px`;
-            }
-        }
-        // END DEBUG
-        */
 
         let elevationSum = 0.0;
         let weightSum = 0.0;
         if (this._elevation) {
-            for (let i = 0; i < points.length; i++) {
-                const p = points[i];
-                const hit = this._elevation.pointCoordinate(new Point(p[0], p[1]));
-                if (!hit) {
-                    /*
-                    // BEGIN DEBUG
-                    debugEl.children.item(i).textContent = 'null'
-                    debugEl.children.item(i).style.backgroundColor = 'gray';
-                    // END DEBUG
-                    */
-                    continue;
-                }
-                /*
-                // BEGIN DEBUG
-                if (DEBUG) {
-                    debugEl.children.item(i).textContent = hit[3].toFixed(0);
-                    debugEl.children.item(i).style.backgroundColor = 'blue';
-                }
-                // END DEBUG
-                */
+            for (let i = 0; i < elevationSamplePoints.length; i++) {
+                const pt = new Point(
+                    elevationSamplePoints[i][0] * this.width,
+                    horizon + elevationSamplePoints[i][1] * (this.height - horizon)
+                );
+                const hit = this._elevation.pointCoordinate(pt);
+                if (!hit) continue;
 
                 const weight = 1 / Math.hypot(hit[0] - this._camera.position[0], hit[1] - this._camera.position[1]);
                 elevationSum += hit[3] * weight;
