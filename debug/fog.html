@@ -36,6 +36,7 @@ var GUIParams = function() {
     this.start = 200;
     this.end = 1200;
     this.color = [255, 255, 255];
+    this.opacity = 1.0;
     this.horizonBlend = 0.1;
     this.showTileBoundaries = false;
 };
@@ -99,7 +100,7 @@ window.onload = function() {
     enableFog.onFinishChange((value) => {
         map.setFog(value ? {
             "range": [guiParams.start, guiParams.end],
-            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', 1.0)',
+            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
             "horizon-blend": guiParams.horizonBlend
         } : null);
     });
@@ -125,10 +126,17 @@ window.onload = function() {
         });
     });
 
+    var opacity = fog.add(guiParams, 'opacity', 0.0, 1.0);
+    opacity.onChange((value) => {
+        map.setFog({
+            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + value + ')'
+        });
+    });
+
     var color = fog.addColor(guiParams, 'color');
     color.onChange((value) => {
         map.setFog({
-            "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', 1.0)',
+            "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.opacity + ')'
         });
     });
 };
@@ -189,7 +197,7 @@ map.on('style.load', function() {
 
     map.setFog(guiParams.enableFog ? {
         "range": [guiParams.start, guiParams.end],
-        "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', 1.0)',
+        "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
         "horizon-blend": guiParams.horizonBlend
     } : null);
 

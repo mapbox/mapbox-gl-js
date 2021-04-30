@@ -43,7 +43,8 @@ class Fog extends Evented {
     get state(): FogState {
         return {
             range: this.properties.get('range'),
-            horizonBlend: this.properties.get('horizon-blend')
+            horizonBlend: this.properties.get('horizon-blend'),
+            alpha: this.properties.get('color').a
         };
     }
 
@@ -68,6 +69,11 @@ class Fog extends Evented {
 
     getFogPitchFactor(pitch: number): number {
         return smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+    }
+
+    getFogOpacity(pitch: number): number {
+        const fogColor = (this.properties && this.properties.get('color')) || 1.0;
+        return this.getFogPitchFactor(pitch) * fogColor.a;
     }
 
     getOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
