@@ -161,7 +161,7 @@ class ProxiedTileID extends OverscaledTileID {
 }
 
 type OverlapStencilType = false | 'Clip' | 'Mask';
-type FBO = {fb: Framebuffer, tex: Texture, dirty: boolean, ref: number};
+type FBO = {fb: Framebuffer, tex: Texture, dirty: boolean};
 
 export class Terrain extends Elevation {
     terrainTileForTile: {[number | string]: Tile};
@@ -190,6 +190,7 @@ export class Terrain extends Elevation {
     _sourceTilesOverlap: {[string]: boolean};
     _overlapStencilMode: StencilMode;
     _overlapStencilType: OverlapStencilType;
+    _stencilRef: number;
 
     _exaggeration: number;
     _depthFBO: Framebuffer;
@@ -201,6 +202,7 @@ export class Terrain extends Elevation {
     currentFBO: FBO;
     renderedToTile: boolean;
     _drapedRenderBatches: Array<RenderBatch>;
+    _sharedDepthStencil: WebGLRenderbuffer;
 
     _findCoveringTileCache: {[string]: {[number]: ?number}};
 
@@ -333,6 +335,7 @@ export class Terrain extends Elevation {
     _disable() {
         if (!this.enabled) return;
         this.enabled = false;
+        this._sharedDepthStencil = undefined;
         this.proxySourceCache.deallocRenderCache();
         if (this._style) {
             for (const id in this._style._sourceCaches) {
@@ -438,10 +441,10 @@ export class Terrain extends Elevation {
         this._assignTerrainTiles(coords);
         this._prepareDEMTextures();
         this._setupDrapedRenderBatches();
+        this._initFBOPool();
         this._setupRenderCache(previousProxyToSource);
 
         this.renderingToTexture = false;
-        this._initFBOPool();
         this._updateTimestamp = browser.now();
 
         // Gather all dem tiles that are assigned to proxy tiles
@@ -810,6 +813,16 @@ export class Terrain extends Elevation {
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         const fb = context.createFramebuffer(bufferSize[0], bufferSize[1], false);
         fb.colorAttachment.set(tex.texture);
+        fb.depthAttachment = new DepthStencilAttachment(context, fb.framebuffer);
+
+        if (this._sharedDepthStencil === undefined) {
+            this._sharedDepthStencil = context.createRenderbuffer(context.gl.DEPTH_STENCIL, bufferSize[0], bufferSize[1]);
+            this._stencilRef = 0;
+            fb.depthAttachment.set(this._sharedDepthStencil);
+            context.clear({stencil: 0});
+        } else {
+            fb.depthAttachment.set(this._sharedDepthStencil);
+        }
 
         if (context.extTextureFilterAnisotropic && !context.extTextureFilterAnisotropicForceOff) {
             gl.texParameterf(gl.TEXTURE_2D,
@@ -817,7 +830,7 @@ export class Terrain extends Elevation {
                 context.extTextureFilterAnisotropicMax);
         }
 
-        return {fb, tex, dirty: false, ref: 1};
+        return {fb, tex, dirty: false};
     }
 
     _initFBOPool() {
@@ -1031,18 +1044,12 @@ export class Terrain extends Elevation {
             this._overlapStencilType = false;
             return;
         }
-        if (!fb.depthAttachment) {
-            const renderbuffer = context.createRenderbuffer(context.gl.DEPTH_STENCIL, fb.width, fb.height);
-            fb.depthAttachment = new DepthStencilAttachment(context, fb.framebuffer);
-            fb.depthAttachment.set(renderbuffer);
+        if (this._stencilRef + stencilRange > 255) {
             context.clear({stencil: 0});
+            this._stencilRef = 0;
         }
-        if (fbo.ref + stencilRange > 255) {
-            context.clear({stencil: 0});
-            fbo.ref = 0;
-        }
-        fbo.ref += stencilRange;
-        this._overlapStencilMode.ref = fbo.ref;
+        this._stencilRef += stencilRange;
+        this._overlapStencilMode.ref = this._stencilRef;
         if (layer.isTileClipped()) {
             this._renderTileClippingMasks(proxiedCoords, this._overlapStencilMode.ref);
         }
