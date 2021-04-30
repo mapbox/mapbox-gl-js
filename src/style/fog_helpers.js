@@ -13,7 +13,7 @@ export const FOG_SYMBOL_CLIPPING_THRESHOLD = 0.9;
 export type FogState = {
     range: [number, number],
     horizonBlend: number,
-    opacity: number
+    alpha: number
 };
 
 // As defined in _prelude_fog.fragment.glsl#fog_opacity
@@ -31,7 +31,7 @@ export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number
     falloff *= falloff * falloff;
     falloff = Math.min(1.0, 1.00747 * falloff);
 
-    return falloff * fogPitchOpacity * state.opacity;
+    return falloff * fogPitchOpacity * state.alpha;
 }
 
 export function getFogOpacityAtTileCoord(state: FogState, x: number, y: number, z: number, tileId: UnwrappedTileID, transform: Transform): number {

@@ -44,7 +44,7 @@ class Fog extends Evented {
         return {
             range: this.properties.get('range'),
             horizonBlend: this.properties.get('horizon-blend'),
-            opacity: this.properties.get('color').a
+            alpha: this.properties.get('color').a
         };
     }
 
