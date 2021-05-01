@@ -44,20 +44,23 @@ export class ErrorEvent extends Event {
 }
 
 /**
- * Methods mixed into other classes for event capabilities. Unless you are developing a plugin you will most likely use these methods through classes like `Map`, as in `map.on('load', ...)`, or `Popup` as in `popup.on('click', ...)`. See API documentation for each class to see a list of events you can listen for.
+ * `Evented` mixes methods into other classes for event capabilities. 
+ * 
+ * Unless you are developing a plugin you will most likely use these methods through classes like `Map` or `Popup`.
+ * 
+ * For lists of events you can listen for, see API documentation for specific classes: [`Map`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Marker`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Popup`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), and [`GeolocationControl`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  *
  * @mixin Evented
  * @example
- * // The 'load' event is an example of Evented.
- * // Set an event listener that fires
- * // when the map has finished loading.
- * map.on('load', function() {
- *    console.log('A load event occurred.');
- * });
- * @see See [`Map`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Marker`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Popup`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), and [`GeolocationControl`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
- * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
- * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
- * @see [Locate the user](https://docs.mapbox.com/mapbox-gl-js/example/locate-user/)
+* // The 'load' event is an example of Evented.
+* // Set an event listener that fires
+* // when the map has finished loading.
+* map.on('load', function() {
+*    console.log('A load event occurred.');
+* });
+* @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+* @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+* @see [Locate the user](https://docs.mapbox.com/mapbox-gl-js/example/locate-user/)
 */
 export class Evented {
     _listeners: Listeners;
