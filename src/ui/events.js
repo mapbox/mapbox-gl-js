@@ -10,7 +10,7 @@ import type Map from './map.js';
 import type LngLat from '../geo/lng_lat.js';
 
 /**
- * `MapMouseEvent` is the type for objects emitted by mouse-related `Map` events.
+ * `MapMouseEvent` includes properties and methods for mouse-related `Map` events.
  * @extends {Object}
  * @example
  * // Example of a MapMouseEvent of type "click"
@@ -105,7 +105,7 @@ export class MapMouseEvent extends Event {
 }
 
 /**
- * `MapTouchEvent` is the type for objects emitted by touch-related `Map` events.
+ * `MapTouchEvent` includes properties and methods for touch-related `Map` events.
  * @extends {Object}
  * @example
  * // Example of a MapTouchEvent of type "touch"
@@ -219,15 +219,14 @@ export class MapTouchEvent extends Event {
 }
 
 /**
- * `MapWheelEvent` is the type for objects emitted by wheel-related `Map` events.
+ * `MapWheelEvent` includes properties and methods for wheel-related `Map` events.
  * @extends {Object}
  * @example
  * // Example of a MapWheelEvent of type "wheel"
  * {
  *   originalEvent: WheelEvent {...},
  * 	 target: Map {...},
- * 	 type: "wheel",
- * 	 _defaultPrevented: false
+ * 	 type: "wheel"
  * }
 * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  */
@@ -276,7 +275,7 @@ export class MapWheelEvent extends Event {
 }
 
 /**
- * `MapBoxZoomEvent` is the type for objects emitted by boxzoom-related `Map` events.
+ * `MapBoxZoomEvent` includes properties for boxzoom-related `Map` events.
  *
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`
@@ -301,7 +300,7 @@ export type MapBoxZoomEvent = {
 };
 
 /**
- * `MapDataEvent` is the type for objects emitted by data-related `Map` events.
+ * `MapDataEvent` includes properties for data-related `Map` events.
  *
  * @typedef {Object} MapDataEvent
  * @property {string} type The type of originating event.

@@ -44,15 +44,16 @@ export class ErrorEvent extends Event {
 }
 
 /**
- * Methods mixed in to other classes for event capabilities.
+ * Methods mixed into other classes for event capabilities. Unless you are developing a plugin you will most likely use these methods through classes like `Map`, as in `map.on('load', ...)`, or `Popup` as in `popup.on('click', ...)`. See API documentation for each class to see a list of events you can listen for.
  *
  * @mixin Evented
  * @example
- * // Example of an Evented of type "trackuserlocationstart"
- * {
- *    type: "trackuserlocationstart",
- *    target: GeolocateControl {...}
- * }
+ * // The 'load' event is an example of Evented.
+ * // Set an event listener that fires
+ * // when the map has finished loading.
+ * map.on('load', function() {
+ *    console.log('A load event occurred.');
+ * });
  * @see See [`Map`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Marker`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Popup`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), and [`GeolocationControl`events](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
  * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
