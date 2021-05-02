@@ -3681,8 +3681,8 @@
     "range": {
       "type": "array",
       "default": [
-        2,
-        12
+        200,
+        1200
       ],
       "minimum": 0,
       "maximum": 2000,
