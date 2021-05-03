@@ -3689,10 +3689,10 @@
     "range": {
       "type": "array",
       "default": [
-        200,
-        1200
+        50,
+        1000
       ],
-      "minimum": 0,
+      "minimum": -1000,
       "maximum": 2000,
       "units": "vh",
       "length": 2,
@@ -3705,7 +3705,7 @@
           "zoom"
         ]
       },
-      "doc": "The start and end distance range in which fog fades from fully transparent to fully opaque. Units are relative to the map window height in CSS `vh` units, so that 200 corresponds to 200% the map window height.",
+      "doc": "The start and end distance range in which fog fades from fully transparent to fully opaque. The distance to the point at the center of the map is defined as zero, so that negative range values are closer to the camera, and positive values are farther away. Units are relative to the map window height in CSS `vh` units, so that 200 corresponds to 200% the map window height.",
       "example": [
         200,
         1200
