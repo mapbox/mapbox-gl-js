@@ -904,32 +904,6 @@ test('transform', (t) => {
             t.end();
         });
 
-        t.test('isPointOnMap', (t) => {
-            const transform = new Transform();
-            transform.maxPitch = 85;
-            transform.resize(800, 800);
-            transform.zoom = 10;
-            transform.center = {lng: 0, lat: 0};
-            transform.pitch = 85;
-            let p0;
-
-            t.true(transform.isHorizonVisible());
-
-            p0 = new Point(0, 0);
-            t.false(transform.isPointOnMap(p0));
-
-            p0 = new Point(0, 250);
-            t.false(transform.isPointOnMap(p0));
-
-            p0 = new Point(0, transform.horizonLineFromTop() - 10);
-            t.false(transform.isPointOnMap(p0));
-
-            p0 = new Point(10, transform.horizonLineFromTop() + 10);
-            t.true(transform.isPointOnMap(p0));
-
-            t.end();
-        });
-
         t.test('high pitch', (t) => {
             const transform = new Transform();
             transform.maxPitch = 85;
