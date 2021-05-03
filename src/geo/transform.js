@@ -1550,7 +1550,7 @@ class Transform {
      * Returns `null` if the ray misses the Map.
      *
      * @param {Point} p
-     * @param {boolean} exaggeration
+     * @param {boolean} withExaggeration
      * @returns {LngLatElevation | null}
      * @private
      */
