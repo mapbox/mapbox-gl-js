@@ -34,10 +34,10 @@ type Options = {
  * @param {string} [options.anchor='center'] A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
  * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
- * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
- * @param {number} [options.scale=1] The scale to use for the default marker if options.element is not provided. The default scale corresponds to a height of `41px` and a width of `27px`.
+ * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if `options.element` is not provided. The default is light blue.
+ * @param {number} [options.scale=1] The scale to use for the default marker if `options.element` is not provided. The default scale corresponds to a height of `41px` and a width of `27px`.
  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
- * @param {number} [options.clickTolerance=0] The max number of pixels a user can shift the mouse pointer during a click on the marker for it to be considered a valid click (as opposed to a marker drag). The default is to inherit map's clickTolerance.
+ * @param {number} [options.clickTolerance=0] The max number of pixels a user can shift the mouse pointer during a click on the marker for it to be considered a valid click (as opposed to a marker drag). The default is to inherit map's `clickTolerance`.
  * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective `rotationAlignment` setting. A positive value will rotate the marker clockwise.
  * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
  * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, maintaining a bearing as the map rotates. `viewport` aligns the `Marker`'s rotation relative to the viewport, agnostic to map rotations. `auto` is equivalent to `viewport`.
@@ -262,7 +262,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Removes the marker from a map
+     * Removes the marker from a map.
      * @example
      * var marker = new mapboxgl.Marker().addTo(map);
      * marker.remove();
@@ -537,7 +537,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Sets the offset of the marker
+     * Sets the offset of the marker.
      * @param {PointLike} offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
      * @returns {Marker} `this`
      */
@@ -567,25 +567,25 @@ export default class Marker extends Evented {
             this._state = 'active';
 
             /**
-             * Fired when dragging starts
+             * Fired when dragging starts.
              *
              * @event dragstart
              * @memberof Marker
              * @instance
              * @type {Object}
-             * @property {Marker} marker object that is being dragged
+             * @property {Marker} marker The object that is being dragged.
              */
             this.fire(new Event('dragstart'));
         }
 
         /**
-         * Fired while dragging
+         * Fired while dragging.
          *
          * @event drag
          * @memberof Marker
          * @instance
          * @type {Object}
-         * @property {Marker} marker object that is being dragged
+         * @property {Marker} marker The object that is being dragged.
          */
         this.fire(new Event('drag'));
     }
@@ -602,13 +602,13 @@ export default class Marker extends Evented {
         // only fire dragend if it was preceded by at least one drag event
         if (this._state === 'active') {
             /**
-            * Fired when the marker is finished being dragged
+            * Fired when the marker is finished being dragged.
             *
             * @event dragend
             * @memberof Marker
             * @instance
             * @type {Object}
-            * @property {Marker} marker object that was dragged
+            * @property {Marker} marker The object that was dragged. 
             */
             this.fire(new Event('dragend'));
         }
@@ -639,7 +639,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Sets the `draggable` property and functionality of the marker
+     * Sets the `draggable` property and functionality of the marker.
      * @param {boolean} [shouldBeDraggable=false] Turns drag functionality on/off
      * @returns {Marker} `this`
      */
@@ -662,7 +662,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Returns true if the marker can be dragged
+     * Returns true if the marker can be dragged.
      * @returns {boolean} True if the marker is draggable.
      */
     isDraggable() {
