@@ -16,6 +16,7 @@ import assert from 'assert';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
+import type {LngLatElevation} from './lng_lat.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -995,6 +996,21 @@ class Transform {
     }
 
     /**
+     * Given a coordinate, return the screen point that corresponds to it,
+     * The elevation of `coord` is treated as an absolute value relative to sea level
+     * @param {Coordinate} coord
+     * @returns {Point} screen point
+     * @private
+     */
+    _absoluteCoordinatePoint(coord: MercatorCoordinate) {
+        const p = [coord.x * this.worldSize, coord.y * this.worldSize, coord.toAltitude(), 1];
+        vec4.transformMat4(p, p, this.pixelMatrix);
+        return p[3] > 0 ?
+            new Point(p[0] / p[3], p[1] / p[3]) :
+            new Point(Number.MAX_VALUE, Number.MAX_VALUE);
+    }
+
+    /**
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
      * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
@@ -1530,13 +1546,15 @@ class Transform {
     }
 
     /**
-     * Returns true if a screenspace Point p, is on the quad of the Map.
+     * Returns a MercatorCoordinate if a screenspace Point p.
+     * Returns `null` if the ray misses the Map.
      *
      * @param {Point} p
-     * @returns {boolean}
+     * @param {boolean} exaggeration
+     * @returns {LngLatElevation | null}
      * @private
      */
-    isPointOnMap(p: Point): boolean {
+    raycastMap(p: Point, withExaggeration: boolean): LngLatElevation | null {
         if (!this.elevation) {
             const minWX = (this._renderWorldCopies) ? -NUM_WORLD_COPIES : 0;
             const maxWX = (this._renderWorldCopies) ? 1 + NUM_WORLD_COPIES : 1;
@@ -1545,17 +1563,23 @@ class Transform {
 
             const rayIntersection = this.pointRayIntersection(p);
             if (rayIntersection.t < 0) {
-                return false;
+                return null;
             }
             const coordinate = this.rayIntersectionCoordinate(rayIntersection);
             if (coordinate.x < minWX || coordinate.y < minWY ||
                 coordinate.x > maxWX || coordinate.y > maxWY) {
-                return false;
+                return null;
             }
 
-            return true;
+            return {location: coordinate.toLngLat(), elevation: null};
         } else {
-            return !!this.elevation.pointCoordinate(p);
+            const raycastRes = this.elevation.pointCoordinate(p, withExaggeration);
+
+            if (!raycastRes) return null;
+            return {
+                location: new MercatorCoordinate(raycastRes[0], raycastRes[1]).toLngLat(),
+                elevation: raycastRes[3]
+            };
         }
     }
 

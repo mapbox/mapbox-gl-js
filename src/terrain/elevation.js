@@ -12,11 +12,25 @@ import {OverscaledTileID} from '../source/tile_id.js';
 import type Tile from '../source/tile.js';
 
 /**
+ * Options common to {@link Map#queryTerrainElevation} and {@link Map#unproject3d}, used to control how elevation
+ * data is returned.
+ *
+ * @typedef {Object} ElevationQueryOptions
+ * @property {boolean} exaggerated When set to `true` returns the value of the elevation with the terrains `exaggeration` on the style already applied,
+ * when`false` it returns the raw value of the underlying data without styling applied.
+ */
+export type ElevationQueryOptions = {
+    exaggerated: boolean
+};
+
+/**
  * Provides access to elevation data from raster-dem source cache.
  */
 export class Elevation {
     /**
      * Helper around `getAtPoint` that guarantees that a numeric value is returned.
+     * @param point
+     * @param defaultIfNotLoaded
      */
     getAtPointOrZero(point: MercatorCoordinate, defaultIfNotLoaded: number = 0): number {
         return this.getAtPoint(point, defaultIfNotLoaded) || 0;
@@ -26,12 +40,13 @@ export class Elevation {
      * Altitude above sea level in meters at specified point.
      * @param {MercatorCoordinate} point Mercator coordinate of the point.
      * @param {number} defaultIfNotLoaded Value that is returned if the dem tile of the provided point is not loaded
+     * @param exaggerated
      * @returns {number} Altitude in meters.
      * If there is no loaded tile that carries information for the requested
      * point elevation, returns `defaultIfNotLoaded`.
      * Doesn't invoke network request to fetch the data.
      */
-    getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: ?number): number | null {
+    getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: ?number, exaggerated: boolean = true): number | null {
         // Force a cast to null for both null and undefined
         if (defaultIfNotLoaded == null) defaultIfNotLoaded = null;
 
@@ -54,8 +69,9 @@ export class Elevation {
         const y = (point.y * tilesAtTileZoom - demTile.tileID.canonical.y) * dem.dim;
         const i = Math.floor(x);
         const j = Math.floor(y);
+        const exaggeration = exaggerated ? this.exaggeration() : 1;
 
-        return this.exaggeration() * interpolate(
+        return exaggeration * interpolate(
             interpolate(dem.get(i, j), dem.get(i, j + 1), y - j),
             interpolate(dem.get(i + 1, j), dem.get(i + 1, j + 1), y - j),
             x - i);
@@ -142,10 +158,11 @@ export class Elevation {
      * Helper function that wraps `raycast`.
      *
      * @param {Point} screenPoint Screen point in pixels in top-left origin coordinate system.
+     * @param {boolean} withExaggeration Whether to exaggerate the elevation based on style or not.
      * @returns {vec3} If there is intersection with terrain, returns 3D MercatorCoordinate's of
      * intersection, as vec3(x, y, z), otherwise null.
      */ /* eslint no-unused-vars: ["error", { "args": "none" }] */
-    pointCoordinate(screenPoint: Point): ?vec3 {
+    pointCoordinate(screenPoint: Point, withExaggeration: boolean = true): ?vec3 {
         throw new Error('Pure virtual method called.');
     }
 

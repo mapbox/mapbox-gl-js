@@ -184,10 +184,13 @@ map.on('style.load', function() {
     });
     var elevationDebug = document.getElementById('elevationDebug');
     map.on('mousemove', (e) => {
-        const start = performance.now();
         const elevation = map.queryTerrainElevation(map.unproject(e.point));
-        console.log(`${performance.now() - start}`);
-        elevationDebug.innerHTML = (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + ' map.isUnderneath: ' + map.overlaps(e.point);
+        const elevation2 = map.queryTerrainElevation(map.unproject(e.point), {exaggerated: false});
+        const pos = map.unproject3d(e.point);
+        const pt = pos ? JSON.stringify(map.project3d(pos)) : null;
+        elevationDebug.innerHTML = 'Exaggerated: ' + (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + ' map.unproject3d: ' + JSON.stringify(map.unproject3d(e.point)) + '<br>' +
+          'Unexaggerated: ' + (elevation2 ? elevation2.toFixed(3) + 'm ' : 'Unavailable') + ' map.unproject3d: ' + JSON.stringify(map.unproject3d(e.point, {exaggerated: false})) + '<br>' +
+          'Pt: ' + pt;
     });
 
     const lerp = (a, b, t) => {
