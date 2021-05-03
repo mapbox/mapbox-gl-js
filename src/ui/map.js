@@ -2213,7 +2213,7 @@ class Map extends Camera {
     }
 
     /**
-     * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` and accounts for the value of `exaggeration` set on `terrain`.
+     * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
      * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
      *
      * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
