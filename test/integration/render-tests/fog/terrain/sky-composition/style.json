@@ -14,7 +14,7 @@
     "source": "rgbterrain"
   },
   "fog": {
-    "range": [100, 200],
+    "range": [-50, 50],
     "color": "white",
     "horizon-blend": 0.15
   },

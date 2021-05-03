@@ -1247,7 +1247,7 @@ test('Map', (t) => {
         const map = createMap(t, {style});
         map.on('load', () => {
             map.setFog({
-                "range": [200, 1200]
+                "range": [50, 1050]
             });
 
             t.ok(map.getFog());
