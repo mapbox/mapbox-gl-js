@@ -275,7 +275,11 @@ const defaultOptions = {
  *     }
  *   }
  * });
- * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
+ * @see [Web applications getting started guide](https://docs.mapbox.com/help/getting-started/web-apps/)
+ * @see Example: [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
+ * @see Example: [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+ * @see Example: [Display buildings in 3D](https://docs.mapbox.com/mapbox-gl-js/example/3d-buildings/)
+ * @see Tutorial: [Add custom markers in Mapbox GL JS](https://docs.mapbox.com/help/tutorials/custom-markers-gl-js/)
  */
 class Map extends Camera {
     style: Style;
