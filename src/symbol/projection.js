@@ -23,6 +23,9 @@ const FlipDecision = {
     flipRequired: 1,
     flipNotRequired: 2
 };
+
+const maxTangent = Math.tan(85 * Math.PI / 180);
+
 /*
  * # Overview of coordinate spaces
  *
@@ -256,7 +259,6 @@ function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffset
 // Check in the glCoordinate space, the rough estimation of angle between the text line and the Y axis.
 // If the angle if less or equal to 5 degree, then keep the text glyphs unflipped even if it is required.
 function isInUnflippedRetainRange(firstPoint, lastPoint) {
-    const maxTangent = Math.tan(Math.PI / 180 * 85);
     const deltaY = lastPoint.y - firstPoint.y;
     const deltaX = lastPoint.x - firstPoint.x;
     if (deltaX === 0.0) {
