@@ -116,14 +116,14 @@ window.onload = function() {
         } : null);
     });
 
-    var start = fog.add(guiParams, 'start', 0.0, 1500.0);
+    var start = fog.add(guiParams, 'start', -1000, 2000);
     start.onChange((value) => {
         map.setFog({
             "range": [value, guiParams.end],
         });
     });
 
-    var end = fog.add(guiParams, 'end', 0.0, 1500.0);
+    var end = fog.add(guiParams, 'end', -1000, 2000);
     end.onChange((value) => {
         map.setFog({
             "range": [guiParams.start, value],
