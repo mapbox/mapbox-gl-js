@@ -8,13 +8,16 @@ uniform highp float u_temporal_offset;
 
 void main() {
     float progress = acos(dot(normalize(v_uv), u_center_direction)) / u_radius;
-    vec4 color = texture2D(u_color_ramp, vec2(progress, 0.5)) * u_opacity;
+    vec4 color = texture2D(u_color_ramp, vec2(progress, 0.5));
 
 #ifdef FOG
-    // Apply fog contribution if enabled
+    // Apply fog contribution if enabled, make sure to un/post multiply alpha before/after
+    // applying sky gradient contribution, as color ramps are premultiplied-alpha colors.
     // Swizzle to put z-up (ignoring x-y mirror since fog does not depend on azimuth)
-    color.rgb = fog_apply_sky_gradient(v_uv.xzy, color.rgb);
+    color.rgb = fog_apply_sky_gradient(v_uv.xzy, color.rgb / color.a) * color.a;
 #endif
+
+    color *= u_opacity;
 
     // Dither
     color.rgb = dither(color.rgb, gl_FragCoord.xy + u_temporal_offset);
