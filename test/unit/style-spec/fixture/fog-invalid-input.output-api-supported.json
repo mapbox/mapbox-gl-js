@@ -1,11 +1,11 @@
 [
   {
     "line": 11,
-    "message": "range[0]: -2 is less than the minimum value 0"
+    "message": "range[0]: -10000 is less than the minimum value -1000"
   },
   {
     "line": 11,
-    "message": "range[1]: -1 is less than the minimum value 0"
+    "message": "range[1]: -8000 is less than the minimum value -1000"
   },
   {
     "line": 12,
