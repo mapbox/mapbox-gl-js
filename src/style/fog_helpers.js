@@ -2,7 +2,6 @@
 import {vec3} from 'gl-matrix';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import {smoothstep} from '../util/util.js';
-import {DEFAULT_FOV} from '../geo/transform.js';
 import type LngLat from '../geo/lng_lat.js';
 import type {UnwrappedTileID} from '../source/tile_id.js';
 import type Transform from '../geo/transform.js';
