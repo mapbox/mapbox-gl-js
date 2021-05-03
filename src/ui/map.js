@@ -2806,10 +2806,16 @@ class Map extends Camera {
         const timeoutElapsed = ignoreTimeout || timeStamp - this._averageElevationLastSampledAt > AVERAGE_ELEVATION_SAMPLING_INTERVAL;
 
         if (timeoutElapsed && !this._averageElevation.isEasing(timeStamp)) {
-            this._averageElevationLastSampledAt = timeStamp;
-
             const currentElevation = this.transform.averageElevation;
-            const newElevation = this.transform.sampleAverageElevation();
+            let newElevation = this.transform.sampleAverageElevation();
+
+            // New elevation is NaN if no terrain tiles were available
+            if (isNaN(newElevation)) {
+                newElevation = 0;
+            } else {
+                // Don't activate the timeout if no data was available
+                this._averageElevationLastSampledAt = timeStamp;
+            }
             const elevationChange = Math.abs(currentElevation - newElevation);
 
             if (elevationChange > AVERAGE_ELEVATION_EASE_THRESHOLD) {
