@@ -854,7 +854,7 @@ test('Marker and fog', (t) => {
 
     map.on('load', () => {
         map.setFog({
-            "range": [200, 1200]
+            "range": [50, 1050]
         });
 
         t.ok(map.getFog());

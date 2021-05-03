@@ -40,6 +40,7 @@ var GUIParams = function() {
     this.horizonBlend = 0.1;
     this.showTileBoundaries = false;
     this.showCollisionBoxes = false;
+    this.fov = 36.86989764584402;
 };
 
 var guiParams = new GUIParams();
@@ -86,6 +87,11 @@ window.onload = function() {
     enableSky.onFinishChange((value) => {
         map.setLayoutProperty('sky', 'visibility', value ? 'visible' : 'none');
     });
+    var fov = gui.add(guiParams, 'fov', 5, 60);
+    fov.onChange((value) => {
+        map.transform.fov = value;
+        map.resize();
+    });
 
     var terrain = gui.addFolder('Terrain');
     var enableTerrain = terrain.add(guiParams, 'enableTerrain');
@@ -110,14 +116,14 @@ window.onload = function() {
         } : null);
     });
 
-    var start = fog.add(guiParams, 'start', 0.0, 1500.0);
+    var start = fog.add(guiParams, 'start', -1000, 2000);
     start.onChange((value) => {
         map.setFog({
             "range": [value, guiParams.end],
         });
     });
 
-    var end = fog.add(guiParams, 'end', 0.0, 1500.0);
+    var end = fog.add(guiParams, 'end', -1000, 2000);
     end.onChange((value) => {
         map.setFog({
             "range": [guiParams.start, value],

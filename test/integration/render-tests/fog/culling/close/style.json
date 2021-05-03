@@ -36,7 +36,7 @@
     }
   },
   "fog": {
-    "range": [100, 120],
+    "range": [-50, -30],
     "color": "blue"
   },
   "layers": [

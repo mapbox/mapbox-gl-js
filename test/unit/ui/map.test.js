@@ -1247,7 +1247,7 @@ test('Map', (t) => {
         const map = createMap(t, {style});
         map.on('load', () => {
             map.setFog({
-                "range": [200, 1200]
+                "range": [50, 1050]
             });
 
             t.ok(map.getFog());
@@ -1278,6 +1278,13 @@ test('Map', (t) => {
                 t.deepEqual(map.queryFogOpacity([0, 2]), 1.0);
                 t.deepEqual(map.queryFogOpacity([-2, 0]), 1.0);
                 t.deepEqual(map.queryFogOpacity([-2, -2]), 1.0);
+
+                map.transform.fov = 30;
+
+                t.deepEqual(map.queryFogOpacity([0.5, 0]), 0.5917986598559982);
+                t.deepEqual(map.queryFogOpacity([0, 0.5]), 0.25673374114693215);
+                t.deepEqual(map.queryFogOpacity([-0.5, 0]), 0);
+                t.deepEqual(map.queryFogOpacity([-0.5, -0.5]), 0.27274069994707045);
 
                 t.end();
             });

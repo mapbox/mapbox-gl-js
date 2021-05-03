@@ -17,9 +17,9 @@ export type FogState = {
 };
 
 // As defined in _prelude_fog.fragment.glsl#fog_opacity
-export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number): number {
+export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number, fov: number): number {
     const fogPitchOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-    const [start, end] = state.range;
+    const [start, end] = getFovAdjustedFogRange(state, fov);
 
     // The output of this function must match _prelude_fog.fragment.glsl
     // For further details, refer to the implementation in the shader code
@@ -34,12 +34,21 @@ export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number
     return falloff * fogPitchOpacity * state.alpha;
 }
 
+export function getFovAdjustedFogRange(state: FogState, fov: number): [number, number] {
+    // This function computes a shifted fog range so that the appearance is unchanged
+    // when the fov changes. We define range=0 starting at the camera position given
+    // the default fov. We avoid starting the fog range at the camera center so that
+    // ranges aren't generally negative unless the FOV is modified.
+    const shift = 100 * 0.5 / Math.tan(fov * 0.5);
+    return [state.range[0] + shift, state.range[1] + shift];
+}
+
 export function getFogOpacityAtTileCoord(state: FogState, x: number, y: number, z: number, tileId: UnwrappedTileID, transform: Transform): number {
     const mat = transform.calculateFogTileMatrix(tileId);
     const pos = [x, y, z];
     vec3.transformMat4(pos, pos, mat);
 
-    return getFogOpacity(state, pos, transform.pitch);
+    return getFogOpacity(state, pos, transform.pitch, transform._fov);
 }
 
 export function getFogOpacityAtLngLat(state: FogState, lngLat: LngLat, transform: Transform): number {
@@ -48,5 +57,5 @@ export function getFogOpacityAtLngLat(state: FogState, lngLat: LngLat, transform
     const pos = [meters.x, meters.y, elevation];
     vec3.transformMat4(pos, pos, transform.mercatorFogMatrix);
 
-    return getFogOpacity(state, pos, transform.pitch);
+    return getFogOpacity(state, pos, transform.pitch, transform._fov);
 }
