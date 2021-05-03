@@ -387,9 +387,7 @@ class SymbolBucket implements Bucket {
         const zOrderByViewportY = zOrder === 'viewport-y' || (zOrder === 'auto' && !this.sortFeaturesByKey);
         this.sortFeaturesByY = zOrderByViewportY && this.canOverlap;
 
-        if (layout.get('symbol-placement') === 'point') {
-            this.writingModes = layout.get('text-writing-mode').map(wm => WritingMode[wm]);
-        }
+        this.writingModes = layout.get('text-writing-mode').map(wm => WritingMode[wm]);
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
 
