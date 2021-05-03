@@ -17,6 +17,8 @@ import type Tile from '../source/tile.js';
 export class Elevation {
     /**
      * Helper around `getAtPoint` that guarantees that a numeric value is returned.
+     * @param point
+     * @param defaultIfNotLoaded
      */
     getAtPointOrZero(point: MercatorCoordinate, defaultIfNotLoaded: number = 0): number {
         return this.getAtPoint(point, defaultIfNotLoaded) || 0;
