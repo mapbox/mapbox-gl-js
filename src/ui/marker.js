@@ -608,7 +608,7 @@ export default class Marker extends Evented {
             * @memberof Marker
             * @instance
             * @type {Object}
-            * @property {Marker} marker The object that was dragged. 
+            * @property {Marker} marker The object that was dragged.
             */
             this.fire(new Event('dragend'));
         }
