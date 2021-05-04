@@ -1279,7 +1279,7 @@ test('Marker interaction and raycast', (t) => {
                 // Raycast returns distance to closer point evaluates to occluded marker.
                 t.stub(tr, 'pointLocation3D').returns(bottomLngLat);
                 setTimeout(() => {
-                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded-low'));
+                    t.deepEqual(marker.getElement().style.opacity, 0.2);
                     t.end();
                 }, 100);
             });

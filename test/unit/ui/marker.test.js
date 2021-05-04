@@ -866,10 +866,7 @@ test('Marker and fog', (t) => {
                 marker.setLngLat([0, 0]);
 
                 setTimeout(() => {
-                    t.notOk(marker.getElement().classList.contains('mapboxgl-marker-occluded-low'));
-                    t.notOk(marker.getElement().classList.contains('mapboxgl-marker-occluded-mid'));
-                    t.notOk(marker.getElement().classList.contains('mapboxgl-marker-occluded-high'));
-                    t.notOk(marker.getElement().classList.contains('mapboxgl-marker-occluded'));
+                    t.deepEqual(marker.getElement().style.opacity, 1.0);
                     t.end();
                 }, 100);
             });
@@ -880,7 +877,7 @@ test('Marker and fog', (t) => {
                 marker.setLngLat([1.0, 0]);
 
                 setTimeout(() => {
-                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded-high'));
+                    t.deepEqual(marker.getElement().style.opacity, 0.5900236930983547);
                     t.end();
                 }, 100);
             });
@@ -891,7 +888,7 @@ test('Marker and fog', (t) => {
                 marker.setLngLat([1.2, 0]);
 
                 setTimeout(() => {
-                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded-mid'));
+                    t.deepEqual(marker.getElement().style.opacity, 0.45800425015137847);
                     t.end();
                 }, 100);
             });
@@ -902,7 +899,7 @@ test('Marker and fog', (t) => {
                 marker.setLngLat([2.5, 0]);
 
                 setTimeout(() => {
-                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded-low'));
+                    t.deepEqual(marker.getElement().style.opacity, 0.05345596833529398);
                     t.end();
                 }, 100);
             });
@@ -913,7 +910,7 @@ test('Marker and fog', (t) => {
                 marker.setLngLat([4, 0]);
 
                 setTimeout(() => {
-                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded'));
+                    t.deepEqual(marker.getElement().style.opacity, 0.0);
                     t.end();
                 }, 100);
             });
