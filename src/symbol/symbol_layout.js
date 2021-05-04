@@ -285,10 +285,10 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 addVerticalShapingForPointLabelIfNeeded();
 
                 // Verticalized line label.
-                if (allowsVerticalWritingMode(unformattedText) && textAlongLine && keepUpright) {
-                    shapedTextOrientations.vertical = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor, textJustify,
-                                                                spacingIfAllowed, textOffset, WritingMode.vertical, false, symbolPlacement, layoutTextSize, layoutTextSizeThisZoom);
-                }
+                // if (allowsVerticalWritingMode(unformattedText) && textAlongLine && keepUpright) {
+                //     shapedTextOrientations.vertical = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor, textJustify,
+                //                                                 spacingIfAllowed, textOffset, WritingMode.vertical, false, symbolPlacement, layoutTextSize, layoutTextSizeThisZoom);
+                // }
             }
         }
 
