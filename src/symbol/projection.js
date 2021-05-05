@@ -258,9 +258,9 @@ function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffset
 
 // Check in the glCoordinate space, the rough estimation of angle between the text line and the Y axis.
 // If the angle if less or equal to 5 degree, then keep the text glyphs unflipped even if it is required.
-function isInUnflippedRetainRange(firstPoint, lastPoint) {
+function isInFlipRetainRange(firstPoint, lastPoint, aspectRatio) {
     const deltaY = lastPoint.y - firstPoint.y;
-    const deltaX = lastPoint.x - firstPoint.x;
+    const deltaX = (lastPoint.x - firstPoint.x) * aspectRatio;
     if (deltaX === 0.0) {
         return true;
     }
@@ -291,11 +291,8 @@ function requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio) {
     // has entered before, it should have a valid flip stage indicating the flip decision made by the
     // the first time entering, take the flip stage directly. Otherwise, it should be the first time
     // entering, take the original flip decision and update placeSymbol's flip stage in this range.
-    if (isInUnflippedRetainRange(firstPoint, lastPoint)) {
-        if (symbol.needsFlipping !== FlipDecision.undefined) {
-            return (symbol.needsFlipping === FlipDecision.flipRequired) ? {needsFlipping: true} : null;
-        }
-        symbol.needsFlipping = flipRequired ? FlipDecision.flipRequired : FlipDecision.flipNotRequired;
+    if (symbol.needsFlipping !== FlipDecision.undefined && isInFlipRetainRange(firstPoint, lastPoint, aspectRatio)) {
+        return (symbol.needsFlipping === FlipDecision.flipRequired) ? {needsFlipping: true} : null;
     }
 
     return flipRequired ? {needsFlipping: true} : null;
@@ -323,6 +320,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
 
         if (keepUpright && !flip) {
             const orientationChange = requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio);
+            symbol.needsFlipping = orientationChange ? FlipDecision.flipRequired : FlipDecision.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
             }
@@ -353,6 +351,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
                 projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix);
 
             const orientationChange = requiresOrientationChange(symbol, a, b, aspectRatio);
+            symbol.needsFlipping = orientationChange ? FlipDecision.flipRequired : FlipDecision.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
             }
