@@ -165,16 +165,4 @@ class LngLat {
  */
 export type LngLatLike = LngLat | {lng: number, lat: number} | {lon: number, lat: number} | [number, number];
 
-/**
- * A {@link LngLat} object paired with elevation information representing a 3D location in the world.
- * Elevation is returned in `meters` with respect to sea level. `elevation` is returned as `null` when data
- * at the specified point is unavailable, or still has to be loaded-in.
- *
- *
- * @typedef {Object} LngLatElevation
- * @property {LngLatLike} location a location represented with a {@link LngLatLike object}
- * @property {number | null} elevation the elevation at the specified location in `meters`
- */
-export type LngLatElevation = {location: LngLatLike, elevation: number | null};
-
 export default LngLat;

@@ -186,11 +186,7 @@ map.on('style.load', function() {
     map.on('mousemove', (e) => {
         const elevation = map.queryTerrainElevation(map.unproject(e.point));
         const elevation2 = map.queryTerrainElevation(map.unproject(e.point), {exaggerated: false});
-        const pos = map.unproject3d(e.point);
-        const pt = pos ? JSON.stringify(map.project3d(pos)) : null;
-        elevationDebug.innerHTML = 'Exaggerated: ' + (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + ' map.unproject3d: ' + JSON.stringify(map.unproject3d(e.point)) + '<br>' +
-          'Unexaggerated: ' + (elevation2 ? elevation2.toFixed(3) + 'm ' : 'Unavailable') + ' map.unproject3d: ' + JSON.stringify(map.unproject3d(e.point, {exaggerated: false})) + '<br>' +
-          'Pt: ' + pt;
+        elevationDebug.innerHTML = 'Exaggerated: ' + (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + 'Unexaggerated: ' + (elevation2 ? elevation2.toFixed(3) + 'm ' : 'Unavailable');
     });
 
     const lerp = (a, b, t) => {

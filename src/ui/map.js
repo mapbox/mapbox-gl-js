@@ -33,7 +33,7 @@ import {setCacheLimits} from '../util/tile_request_cache.js';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type {RequestTransformFunction} from '../util/mapbox.js';
-import type {LngLatLike, LngLatElevation} from '../geo/lng_lat.js';
+import type {LngLatLike} from '../geo/lng_lat.js';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
 import type {StyleOptions, StyleSetterOptions} from '../style/style.js';
 import type {MapEvent, MapDataEvent} from './events.js';
@@ -906,47 +906,6 @@ class Map extends Camera {
      */
     unproject(point: PointLike) {
         return this.transform.pointLocation3D(Point.convert(point));
-    }
-
-    /**
-     * Returns a {@link Point} representing pixel coordinates, relative to the map's `container`,
-     * that correspond to the specified geographical location and elevation. Elevation is measured in `meters` and with respect to mean sea level.
-     *
-     * When the map is pitched and `lngLatElevation` is completely behind the camera, there are no pixel
-     * coordinates corresponding to that location. In that case,
-     * the `x` and `y` components of the returned {@link Point} are set to Number.MAX_VALUE.
-     *
-     * @param {LngLatElevation} lngLatElevation The geographical location to project.
-     * @returns {Point} The {@link Point} corresponding to `lngLatElevation`, relative to the map's `container`.
-     * @example
-     * var coordinate = [-122.420679, 37.772537];
-     * var point = map.project3d(coordinate);
-     */
-    project3d(lngLatElevation: LngLatElevation): Point {
-        const coord = MercatorCoordinate.fromLngLat(lngLatElevation.location, lngLatElevation.elevation || 0);
-        return this.transform._absoluteCoordinatePoint(coord);
-    }
-
-    /**
-     * Returns a {@link LngLatElevation} representing the 3D position and geographical coordinates that correspond
-     * to the specified pixel coordinates. If horizon is visible, and specified pixel is
-     * above horizon, returns `null`.
-     * If the terrain data hasn't been loaded in yet at the specified point it returns `elevation` as `null`.
-     *
-     * @param {PointLike} point The pixel coordinates to unproject.
-     * @param {ElevationQueryOptions} [options] options Object
-     * @param {boolean} [options.exaggerated=true] When `true` returns the terrain elevation with the value of `exaggeration` from the style already applied.
-     * When `false`, returns the raw value of the underlying data without styling applied.
-     * @returns {LngLatElevation} The {@link LngLatElevation} corresponding to `point`.
-     * @example
-     * map.on('click', function(e) {
-     *   // When the map is clicked, get the geographic coordinate.
-     *   const {location, elevation} = map.unproject3d(e.point);
-     * });
-     */
-    unproject3d(point: PointLike, options: ElevationQueryOptions): LngLatElevation | null {
-        options = extend({}, {exaggerated: true}, options);
-        return this.transform.raycastMap(Point.convert(point), options.exaggerated);
     }
 
     /**

@@ -158,11 +158,10 @@ export class Elevation {
      * Helper function that wraps `raycast`.
      *
      * @param {Point} screenPoint Screen point in pixels in top-left origin coordinate system.
-     * @param {boolean} withExaggeration Whether to exaggerate the elevation based on style or not.
      * @returns {vec3} If there is intersection with terrain, returns 3D MercatorCoordinate's of
      * intersection, as vec3(x, y, z), otherwise null.
      */ /* eslint no-unused-vars: ["error", { "args": "none" }] */
-    pointCoordinate(screenPoint: Point, withExaggeration: boolean = true): ?vec3 {
+    pointCoordinate(screenPoint: Point): ?vec3 {
         throw new Error('Pure virtual method called.');
     }
 
