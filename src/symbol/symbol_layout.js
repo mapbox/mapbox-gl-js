@@ -188,7 +188,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
     sizes.textMaxSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(18), canonical);
 
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
-    const keepUpright = layout.get('text-keep-upright');
     const textSize = layout.get('text-size');
 
     for (const feature of bucket.features) {
