@@ -875,7 +875,7 @@ class Painter {
         const fog = this.style && this.style.fog;
         if (!fog) return false;
 
-        const fogOpacity = fog.getFogPitchFactor(this.transform.pitch);
+        const fogOpacity = fog.getPitchFactor(this.transform.pitch);
         if (fogOpacity === 0) return false;
 
         return true;
