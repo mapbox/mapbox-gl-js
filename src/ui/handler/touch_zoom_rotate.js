@@ -267,7 +267,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
     }
 
     /**
-     * Returns a Boolean indicating whether the "drag to pitch" interaction is enabled.
+     * Checks if the "drag to pitch" interaction is enabled.
      *
      * @memberof TouchPitchHandler
      * @name isEnabled
@@ -276,7 +276,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
      */
 
     /**
-     * Returns a Boolean indicating whether the "drag to pitch" interaction is active, i.e. currently being used.
+     * Checks if the "drag to pitch" interaction is actively being used.
      *
      * @memberof TouchPitchHandler
      * @name isActive
