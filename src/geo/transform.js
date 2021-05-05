@@ -1548,11 +1548,11 @@ class Transform {
 
         // The mercator fog matrix encodes transformation necessary to transform a position to camera fog space (in meters):
         // translates p to camera origin and transforms it from pixels to meters. The windowScaleFactor is used to have a
-        // consistent transformation across different window sizes. The 100 in windowScaleFactor accounts for vh units (percentage of window height).
+        // consistent transformation across different window sizes.
         // - p = p - cameraOrigin
         // - p.xy = p.xy * cameraWorldSize * windowScaleFactor
         // - p.z  = p.z  * cameraPixelsPerMeter * windowScaleFactor
-        const windowScaleFactor = 100 / this.height;
+        const windowScaleFactor = 1 / this.height;
         const metersToPixel = [cameraWorldSize, cameraWorldSize, cameraPixelsPerMeter];
         vec3.scale(metersToPixel, metersToPixel, windowScaleFactor);
         vec3.scale(cameraPos, cameraPos, -1);

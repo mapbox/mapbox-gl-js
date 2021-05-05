@@ -13,7 +13,7 @@
   "zoom": 16,
   "pitch": 70,
   "fog": {
-    "range": [-50, 250],
+    "range": [-0.5, 2.5],
     "color": "rgba(255, 30, 35, 1)"
   },
   "sources": {},

@@ -3689,11 +3689,11 @@
     "range": {
       "type": "array",
       "default": [
-        50,
-        1000
+        0.5,
+        10
       ],
-      "minimum": -1000,
-      "maximum": 2000,
+      "minimum": -20,
+      "maximum": 20,
       "length": 2,
       "value": "number",
       "property-type": "data-constant",
@@ -3706,8 +3706,8 @@
       },
       "doc": "The start and end distance range in which fog fades from fully transparent to fully opaque. The distance to the point at the center of the map is defined as zero, so that negative range values are closer to the camera, and positive values are farther away.",
       "example": [
-        200,
-        1200
+        0.5,
+        10
       ],
       "sdk-support": {
         "basic functionality": {

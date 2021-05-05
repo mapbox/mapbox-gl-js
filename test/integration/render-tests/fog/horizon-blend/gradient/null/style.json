@@ -10,7 +10,7 @@
   "zoom": 16,
   "pitch": 85,
   "fog": {
-    "range": [50, 1050],
+    "range": [0.5, 10.5],
     "color": "white",
     "horizon-blend": 0.0
   },
