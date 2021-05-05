@@ -8,7 +8,7 @@
   },
   "layers": [],
   "fog": {
-    "range": [-10000, -8000],
+    "range": [-100, -80],
     "horizon-blend": -4
   }
 }

@@ -1247,7 +1247,7 @@ test('Map', (t) => {
         const map = createMap(t, {style});
         map.on('load', () => {
             map.setFog({
-                "range": [50, 1050]
+                "range": [0.5, 10.5]
             });
 
             t.ok(map.getFog());
@@ -1269,10 +1269,10 @@ test('Map', (t) => {
 
                 t.deepEqual(map.queryFogOpacity([0, 0]), 0.0);
 
-                t.deepEqual(map.queryFogOpacity([0.5, 0]), 0.5963360993372026);
-                t.deepEqual(map.queryFogOpacity([0, 0.5]), 0.3181747292975157);
-                t.deepEqual(map.queryFogOpacity([-0.5, 0]), 0.0021935811432850054);
-                t.deepEqual(map.queryFogOpacity([-0.5, -0.5]), 0.4147338484563584);
+                t.deepEqual(map.queryFogOpacity([0.5, 0]), 0.5963390859543484);
+                t.deepEqual(map.queryFogOpacity([0, 0.5]), 0.31817612773293763);
+                t.deepEqual(map.queryFogOpacity([-0.5, 0]), 0.0021931905967484703);
+                t.deepEqual(map.queryFogOpacity([-0.5, -0.5]), 0.4147318524978687);
 
                 t.deepEqual(map.queryFogOpacity([2, 0]), 1.0);
                 t.deepEqual(map.queryFogOpacity([0, 2]), 1.0);
@@ -1281,10 +1281,10 @@ test('Map', (t) => {
 
                 map.transform.fov = 30;
 
-                t.deepEqual(map.queryFogOpacity([0.5, 0]), 0.5917986598559982);
-                t.deepEqual(map.queryFogOpacity([0, 0.5]), 0.25673374114693215);
+                t.deepEqual(map.queryFogOpacity([0.5, 0]), 0.5917784571074153);
+                t.deepEqual(map.queryFogOpacity([0, 0.5]), 0.2567224170602245);
                 t.deepEqual(map.queryFogOpacity([-0.5, 0]), 0);
-                t.deepEqual(map.queryFogOpacity([-0.5, -0.5]), 0.27274069994707045);
+                t.deepEqual(map.queryFogOpacity([-0.5, -0.5]), 0.2727527139608868);
 
                 t.end();
             });
