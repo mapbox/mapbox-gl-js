@@ -4,7 +4,7 @@
 // there are also "special" normals that have a bigger length (of up to 126 in
 // this case).
 // #define scale 63.0
-#define scale 0.015873016
+#define EXTRUDE_SCALE 0.015873016
 
 attribute vec2 a_pos_normal;
 attribute vec4 a_data;
@@ -72,7 +72,7 @@ void main() {
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    mediump vec2 dist = outset * a_extrude * scale;
+    mediump vec2 dist = outset * a_extrude * EXTRUDE_SCALE;
 
     // Calculate the offset when drawing a line that is to the side of the actual line.
     // We do this by creating a vector that points towards the extrude, but rotate
@@ -80,7 +80,7 @@ void main() {
     // extrude vector points in another direction.
     mediump float u = 0.5 * a_direction;
     mediump float t = 1.0 - abs(u);
-    mediump vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
+    mediump vec2 offset2 = offset * a_extrude * EXTRUDE_SCALE * normal.y * mat2(t, -u, u, t);
 
     vec4 projected_extrude = u_matrix * vec4(dist / u_ratio, 0.0, 0.0);
     gl_Position = u_matrix * vec4(pos + offset2 / u_ratio, 0.0, 1.0) + projected_extrude;
