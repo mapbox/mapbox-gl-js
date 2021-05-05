@@ -60,6 +60,7 @@ import type {
     TerrainSpecification,
     SourceSpecification
 } from '../style-spec/types.js';
+import type {ElevationQueryOptions} from '../terrain/elevation.js';
 
 type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
@@ -275,7 +276,6 @@ const defaultOptions = {
  *     }
  *   }
  * });
- * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
  */
 class Map extends Camera {
     style: Style;
@@ -2171,20 +2171,26 @@ class Map extends Camera {
     }
 
     /**
-     * Queries the currently loaded data for elevation at a geographical location. This accounts for the value of `exaggeration` set on `terrain`.
+     * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
      * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
      *
      * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
-     * @param {LngLatLike} lnglat The geographical location to project.
-     * @returns {number | null} The elevation in meters, accounting for `terrain.exaggeration`.
+     * @param {LngLatLike} lnglat The geographical location at which to query.
+     * @param {ElevationQueryOptions} [options] options Object
+     * @param {boolean} [options.exaggerated=true] When `true` returns the terrain elevation with the value of `exaggeration` from the style already applied.
+     * When `false`, returns the raw value of the underlying data without styling applied.
+     * @returns {number | null} The elevation in meters
      * @example
      * var coordinate = [-122.420679, 37.772537];
-     * var elevation = map.queryTerrainElevationAt(coordinate);
+     * var elevation = map.queryTerrainElevation(coordinate);
      */
-    queryTerrainElevationAt(lnglat: LngLatLike): number | null {
-        if (!this.transform.elevation) return null;
-
-        return this.transform.elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat));
+    queryTerrainElevation(lnglat: LngLatLike, options: ElevationQueryOptions): number | null {
+        const elevation = this.transform.elevation;
+        if (elevation) {
+            options = extend({}, {exaggerated: true}, options);
+            return elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat), null, options.exaggerated);
+        }
+        return null;
     }
 
     /**
