@@ -39,7 +39,7 @@ export function getFovAdjustedFogRange(state: FogState, fov: number): [number, n
     // when the fov changes. We define range=0 starting at the camera position given
     // the default fov. We avoid starting the fog range at the camera center so that
     // ranges aren't generally negative unless the FOV is modified.
-    const shift = 100 * 0.5 / Math.tan(fov * 0.5);
+    const shift = 0.5 / Math.tan(fov * 0.5);
     return [state.range[0] + shift, state.range[1] + shift];
 }
 

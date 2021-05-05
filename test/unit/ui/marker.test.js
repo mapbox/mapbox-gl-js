@@ -854,7 +854,7 @@ test('Marker and fog', (t) => {
 
     map.on('load', () => {
         map.setFog({
-            "range": [50, 1050]
+            "range": [0.5, 10.5]
         });
 
         t.ok(map.getFog());
@@ -877,7 +877,7 @@ test('Marker and fog', (t) => {
                 marker.setLngLat([1.0, 0]);
 
                 setTimeout(() => {
-                    t.deepEqual(marker.getElement().style.opacity, 0.5900236930983547);
+                    t.deepEqual(marker.getElement().style.opacity, 0.5900199155427887);
                     t.end();
                 }, 100);
             });
@@ -888,7 +888,7 @@ test('Marker and fog', (t) => {
                 marker.setLngLat([1.2, 0]);
 
                 setTimeout(() => {
-                    t.deepEqual(marker.getElement().style.opacity, 0.45800425015137847);
+                    t.deepEqual(marker.getElement().style.opacity, 0.4580009697138284);
                     t.end();
                 }, 100);
             });
@@ -899,7 +899,7 @@ test('Marker and fog', (t) => {
                 marker.setLngLat([2.5, 0]);
 
                 setTimeout(() => {
-                    t.deepEqual(marker.getElement().style.opacity, 0.05345596833529398);
+                    t.deepEqual(marker.getElement().style.opacity, 0.053455443950435555);
                     t.end();
                 }, 100);
             });
