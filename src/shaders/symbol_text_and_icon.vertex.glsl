@@ -30,10 +30,6 @@ uniform vec2 u_texsize_icon;
 varying vec4 v_data0;
 varying vec4 v_data1;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity

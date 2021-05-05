@@ -3,10 +3,6 @@ uniform sampler2D u_texture;
 varying vec2 v_tex;
 varying float v_fade_opacity;
 
-#ifdef FOG
-varying vec3 v_fog_pos;
-#endif
-
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float fog_fade
 
