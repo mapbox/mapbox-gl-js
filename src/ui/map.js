@@ -2617,17 +2617,17 @@ class Map extends Camera {
      * @private
      */
     _render(paintStartTimeStamp: number) {
-        let gpuTimer, frameStartTime = 0;
+        let gpuTimer;
         const extTimerQuery = this.painter.context.extTimerQuery;
+        const frameStartTime = browser.now();
         if (this.listens('gpu-timing-frame')) {
             gpuTimer = extTimerQuery.createQueryEXT();
             extTimerQuery.beginQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
-            frameStartTime = browser.now();
         }
 
         const m = PerformanceUtils.beginMeasure('render');
 
-        let averageElevationChanged = this._updateAverageElevation(paintStartTimeStamp);
+        let averageElevationChanged = this._updateAverageElevation(frameStartTime);
 
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
         this.painter.context.setDirty();
@@ -2756,7 +2756,7 @@ class Map extends Camera {
             if (willIdle) {
                 // Before idling, we perform one last sample so that if the average elevation
                 // does not exactly match the terrain, we skip idle and ease it to its final state.
-                averageElevationChanged = this._updateAverageElevation(paintStartTimeStamp, true);
+                averageElevationChanged = this._updateAverageElevation(frameStartTime, true);
             }
 
             if (averageElevationChanged) {
@@ -2806,10 +2806,16 @@ class Map extends Camera {
         const timeoutElapsed = ignoreTimeout || timeStamp - this._averageElevationLastSampledAt > AVERAGE_ELEVATION_SAMPLING_INTERVAL;
 
         if (timeoutElapsed && !this._averageElevation.isEasing(timeStamp)) {
-            this._averageElevationLastSampledAt = timeStamp;
-
             const currentElevation = this.transform.averageElevation;
-            const newElevation = this.transform.sampleAverageElevation();
+            let newElevation = this.transform.sampleAverageElevation();
+
+            // New elevation is NaN if no terrain tiles were available
+            if (isNaN(newElevation)) {
+                newElevation = 0;
+            } else {
+                // Don't activate the timeout if no data was available
+                this._averageElevationLastSampledAt = timeStamp;
+            }
             const elevationChange = Math.abs(currentElevation - newElevation);
 
             if (elevationChange > AVERAGE_ELEVATION_EASE_THRESHOLD) {

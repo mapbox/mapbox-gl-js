@@ -347,7 +347,7 @@ class Transform {
             weightSum += weight;
         }
 
-        if (weightSum === 0) return 0;
+        if (weightSum === 0) return NaN;
         return elevationSum / weightSum;
     }
 
