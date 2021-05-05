@@ -176,7 +176,7 @@ function updateLineLabels(bucket: SymbolBucket,
         const symbol: any = placedSymbols.get(s);
 
         if (symbol.writingMode === WritingMode.vertical && !useVertical) {
-            if (s === 0 || placedSymbols.get(s-1).writingMode !== WritingMode.horizontal) {
+            if (s === 0 || placedSymbols.get(s - 1).writingMode !== WritingMode.horizontal) {
                 useVertical = true;
             }
         }
