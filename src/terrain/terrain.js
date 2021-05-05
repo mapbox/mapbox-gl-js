@@ -1115,7 +1115,9 @@ export class Terrain extends Elevation {
         const p = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
         const dir = vec3.subtract([], far.slice(0, 3), p);
         vec3.normalize(dir, dir);
-        const distanceAlongRay = this.raycast(p, dir, this._exaggeration);
+
+        const exaggeration = this._exaggeration;
+        const distanceAlongRay = this.raycast(p, dir, exaggeration);
 
         if (distanceAlongRay === null || !distanceAlongRay) return null;
         vec3.scaleAndAdd(p, p, dir, distanceAlongRay);

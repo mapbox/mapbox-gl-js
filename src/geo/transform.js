@@ -961,6 +961,8 @@ class Transform {
 
     /**
      * Returns true if a screenspace Point p, is above the horizon.
+     * This approximates the map as an infinite plane and does not account for z0-z3
+     * wherein the map is small quad with whitespace above the north pole and below the south pole.
      *
      * @param {Point} p
      * @returns {boolean}
