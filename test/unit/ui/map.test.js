@@ -1258,6 +1258,62 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#queryTerrainElevation', (t) => {
+        t.test('it defaults to returning exaggerated values', (t) => {
+            createMap(t, {}, (err, map) => {
+                t.error(err);
+                map.transform._elevation = { getAtPoint: function() {} };
+                t.spy(map.transform._elevation, 'getAtPoint');
+
+                const output = map.queryTerrainElevation([0, 0]);
+                const args = map.transform.elevation.getAtPoint.getCall(0).args;
+                t.equal(args[0].x, 0.5);
+                t.equal(args[0].y, 0.5);
+                t.equal(args[1], null);
+                t.equal(args[2], true);
+
+                t.end();
+            });
+        });
+
+        t.test('it respects  exaggerated: false option', (t) => {
+            createMap(t, {}, (err, map) => {
+                t.error(err);
+                map.transform._elevation = { getAtPoint: function() {} };
+                t.spy(map.transform._elevation, 'getAtPoint');
+
+                const output = map.queryTerrainElevation([0, 0], {exaggerated: false});
+                const args = map.transform.elevation.getAtPoint.getCall(0).args;
+                t.equal(args[0].x, 0.5);
+                t.equal(args[0].y, 0.5);
+                t.equal(args[1], null);
+                t.equal(args[2], false);
+
+                t.end();
+            });
+        });
+
+        t.test('it respects  exaggerated: true option', (t) => {
+            createMap(t, {}, (err, map) => {
+                t.error(err);
+                map.transform._elevation = { getAtPoint: function() {} };
+                t.spy(map.transform._elevation, 'getAtPoint');
+
+                const output = map.queryTerrainElevation([0, 0], {exaggerated: true});
+                const args = map.transform.elevation.getAtPoint.getCall(0).args;
+                t.equal(args[0].x, 0.5);
+                t.equal(args[0].y, 0.5);
+                t.equal(args[1], null);
+                t.equal(args[2], true);
+
+                t.end();
+            });
+        });
+
+
+        t.end();
+    });
+
     t.test('#setLayoutProperty', (t) => {
         t.test('sets property', (t) => {
             const map = createMap(t, {

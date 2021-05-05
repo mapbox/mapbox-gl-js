@@ -15,7 +15,7 @@ export function createConstElevationDEM(elevation, tileSize) {
     return new DEMData(0, new RGBAImage({height: tileSize + 2, width: tileSize + 2}, pixelData, "mapbox", false, true));
 }
 
-export function setMockElevationTerrain(map, demData, tileSize) {
+export function setMockElevationTerrain(map, demData, tileSize, exaggeration = 1) {
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
         "tiles": ['http://example.com/{z}/{x}/{y}.png'],
@@ -31,5 +31,5 @@ export function setMockElevationTerrain(map, demData, tileSize) {
         tile.state = 'loaded';
         callback(null);
     };
-    map.setTerrain({"source": "mapbox-dem"});
+    map.setTerrain({"source": "mapbox-dem", "exaggeration": exaggeration});
 }

@@ -30,6 +30,7 @@ function createStyle() {
 
 const TILE_SIZE = 128;
 const zeroDem = createConstElevationDEM(0, TILE_SIZE);
+const oneDem = createConstElevationDEM(1, TILE_SIZE);
 
 const createGradientDEM = () => {
     const pixels = new Uint8Array((TILE_SIZE + 2) * (TILE_SIZE + 2) * 4);
@@ -111,6 +112,52 @@ test('Elevation', (t) => {
                     const elevation2 = map.painter.terrain.getAtPoint({x: 1.15, y: -0.001}, elevationError);
                     t.equal(elevation1, elevationError);
                     t.equal(elevation2, elevationError);
+                    t.end();
+                });
+                t.end();
+            });
+        });
+    });
+
+    t.test('elevation sampling with exaggeration', t => {
+        const map = createMap(t);
+        map.on('style.load', () => {
+            setMockElevationTerrain(map, oneDem, TILE_SIZE, 2);
+            map.once('render', () => {
+                t.test('Sample', t => {
+                    const elevation = map.painter.terrain.getAtPoint({x: 0.51, y: 0.49});
+                    t.equal(elevation, 2);
+                    t.end();
+                });
+
+                t.test('Invalid sample position', t => {
+                    const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 1.1}, null);
+                    const elevation2 = map.painter.terrain.getAtPoint({x: 1.15, y: -0.001}, null);
+                    t.equal(elevation1, null);
+                    t.equal(elevation2, null);
+                    t.end();
+                });
+                t.end();
+            });
+        });
+    });
+
+    t.test('elevation sampling without exaggeration', t => {
+        const map = createMap(t);
+        map.on('style.load', () => {
+            setMockElevationTerrain(map, oneDem, TILE_SIZE, 2);
+            map.once('render', () => {
+                t.test('Sample', t => {
+                    const elevation = map.painter.terrain.getAtPoint({x: 0.51, y: 0.49}, null, false);
+                    t.equal(elevation, 1);
+                    t.end();
+                });
+
+                t.test('Invalid sample position', t => {
+                    const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 1.1}, null, false);
+                    const elevation2 = map.painter.terrain.getAtPoint({x: 1.15, y: -0.001}, null, false);
+                    t.equal(elevation1, null);
+                    t.equal(elevation2, null);
                     t.end();
                 });
                 t.end();
