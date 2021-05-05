@@ -2,7 +2,7 @@
 uniform lowp float u_device_pixel_ratio;
 uniform sampler2D u_image;
 uniform float u_mix;
-uniform vec4 u_scale;
+uniform vec3 u_scale;
 
 varying vec2 v_normal;
 varying vec2 v_width2;

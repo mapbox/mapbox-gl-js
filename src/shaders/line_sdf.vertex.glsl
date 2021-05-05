@@ -15,7 +15,8 @@ uniform mediump float u_ratio;
 uniform lowp float u_device_pixel_ratio;
 uniform vec2 u_units_to_pixels;
 
-uniform mediump vec4 u_scale;
+uniform vec2 u_texsize;
+uniform mediump vec3 u_scale;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
@@ -96,15 +97,14 @@ void main() {
     float tileZoomRatio = u_scale.x;
     float fromScale = u_scale.y;
     float toScale = u_scale.z;
-    float texHeight = u_scale.w;
 
     float widthA = dash_from.z * fromScale;
     float widthB = dash_to.z * toScale;
     float heightA = dash_from.y;
     float heightB = dash_to.y;
 
-    v_tex_a = vec2(a_linesofar * (tileZoomRatio / widthA) / floorwidth, (-normal.y * heightA + dash_from.x + 0.5) / texHeight);
-    v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, (-normal.y * heightB + dash_to.x + 0.5) / texHeight);
+    v_tex_a = vec2(a_linesofar * (tileZoomRatio / widthA) / floorwidth, (-normal.y * heightA + dash_from.x + 0.5) / u_texsize.y);
+    v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, (-normal.y * heightB + dash_to.x + 0.5) / u_texsize.y);
 
     v_width2 = vec2(outset, inset);
 }

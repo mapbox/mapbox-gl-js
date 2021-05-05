@@ -5,7 +5,6 @@ import {
     Uniform1f,
     Uniform2f,
     Uniform3f,
-    Uniform4f,
     UniformMatrix4f
 } from '../uniform_binding.js';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
@@ -49,10 +48,11 @@ export type LinePatternUniformsType = {|
 
 export type LineSDFUniformsType = {|
     'u_matrix': UniformMatrix4f,
+    'u_texsize': Uniform2f,
     'u_ratio': Uniform1f,
     'u_device_pixel_ratio': Uniform1f,
     'u_units_to_pixels': Uniform2f,
-    'u_scale': Uniform4f,
+    'u_scale': Uniform3f,
     'u_image': Uniform1i,
     'u_mix': Uniform1f
 |};
@@ -86,11 +86,12 @@ const linePatternUniforms = (context: Context, locations: UniformLocations): Lin
 
 const lineSDFUniforms = (context: Context, locations: UniformLocations): LineSDFUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
     'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
     'u_image': new Uniform1i(context, locations.u_image),
-    'u_scale': new Uniform4f(context, locations.u_scale),
+    'u_scale': new Uniform3f(context, locations.u_scale),
     'u_mix': new Uniform1f(context, locations.u_mix)
 });
 
@@ -159,11 +160,9 @@ const lineSDFUniformValues = (
     matrix: ?Float32Array
 ): UniformValues<LineSDFUniformsType> => {
     const tileZoomRatio = calculateTileRatio(tile, painter.transform);
-
-    const atlasHeight = tile.lineAtlasTexture.size[1];
-
     return extend(lineUniformValues(painter, tile, layer, matrix), {
-        'u_scale': [tileZoomRatio, crossfade.fromScale, crossfade.toScale, atlasHeight],
+        'u_texsize': tile.lineAtlasTexture.size,
+        'u_scale': [tileZoomRatio, crossfade.fromScale, crossfade.toScale],
         'u_image': 0,
         'u_mix': crossfade.t
     });
