@@ -1822,7 +1822,7 @@ class Map extends Camera {
      * @param {Object | CustomLayerInterface} layer The layer to add, conforming to either the Mapbox Style Specification's [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers) or, less commonly, the {@link CustomLayerInterface} specification.
      * The Mapbox Style Specification's layer definition is appropriate for most layers.
      *
-     * @param {string} layer.id A unique idenfier that you define.
+     * @param {string} layer.id A unique identifier that you define.
      * @param {string} layer.type The type of layer (for example `fill` or `symbol`).
      * A list of layer types is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#type).
      *
