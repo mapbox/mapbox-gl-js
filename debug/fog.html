@@ -175,6 +175,67 @@ map.on('style.load', function() {
         "maxzoom": 14
     });
 
+    map.addSource('fading-symbols', {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                "type": "Feature",
+                "properties": {
+                    "fadeIntensity": 1
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                    -118.66049766540527,
+                    36.38066121521225
+                    ]
+                }
+                },
+                {
+                "type": "Feature",
+                "properties": {
+                    "fadeIntensity": 0.5
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                    -118.64101409912108,
+                    36.38149043210595
+                    ]
+                }
+                },
+                {
+                "type": "Feature",
+                "properties": {
+                    "fadeIntensity": 2
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                    -118.62101554870605,
+                    36.382181439429935
+                    ]
+                }
+                },
+                {
+                "type": "Feature",
+                "properties": {
+                    "fadeIntensity": 0
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                    -118.6083984375,
+                    36.3823887404298
+                    ]
+                }
+                }
+            ]
+            }
+    });
+
     map.addLayer({
         'id': '3d-buildings',
         'source': 'composite',
@@ -203,6 +264,21 @@ map.on('style.load', function() {
                 22,
                 1
             ]
+        }
+    });
+
+    map.addLayer({
+        'id': 'fading-symbols',
+        'source': 'fading-symbols',
+        'type': 'symbol',
+        'layout': {
+            'text-field': ['concat', 'fade-intensity: ', ['get', 'fadeIntensity']]
+        },
+        'paint': {
+            'text-color': 'white',
+            'text-halo-color': 'black',
+            'text-halo-width': 2,
+            'text-fog-fade-intensity': ['get', 'fadeIntensity'],
         }
     });
 

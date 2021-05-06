@@ -27,9 +27,11 @@ varying vec2 v_tex;
 varying float v_fade_opacity;
 
 #pragma mapbox: define lowp float opacity
+#pragma mapbox: define lowp float fog_fade
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize lowp float fog_fade
 
     vec2 a_pos = a_pos_offset.xy;
     vec2 a_offset = a_pos_offset.zw;

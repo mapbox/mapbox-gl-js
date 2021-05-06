@@ -35,6 +35,7 @@ varying vec3 v_data1;
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float halo_width
 #pragma mapbox: define lowp float halo_blur
+#pragma mapbox: define lowp float fog_fade
 
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
@@ -42,6 +43,7 @@ void main() {
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
+    #pragma mapbox: initialize lowp float fog_fade
 
     vec2 a_pos = a_pos_offset.xy;
     vec2 a_offset = a_pos_offset.zw;

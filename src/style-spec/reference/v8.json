@@ -5321,7 +5321,7 @@
     "icon-fog-fade-intensity": {
       "type": "number",
       "doc": "The rate at which the icon fades as it gets pushed into the fog",
-      "default": 1,
+      "default": 0,
       "minimum": 0,
       "transition": true,
       "requires": [
@@ -5577,7 +5577,7 @@
     "text-fog-fade-intensity": {
       "type": "number",
       "doc": "The rate at which the text fades as it gets pushed into the fog",
-      "default": 1,
+      "default": 0,
       "minimum": 0,
       "transition": true,
       "requires": [
