@@ -213,6 +213,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    if (!params.github_token) {
+        params.github_token = prompt("Github Token");
+    }
+
     titleElement.addEventListener('click', function() {
         versionItem.classList.remove('active');
         titleItem.classList[titleItem.classList.contains('active') ? 'remove' : 'add']('active');
@@ -288,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         req = new XMLHttpRequest();
         req.addEventListener("load", loadedHTML);
-        url = page.url ? page.url : 'https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/example/' + page.key + '.html';
+        url = page.url ? page.url : 'https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/example/' + page.key + '.html??token=' + params.github_token;
         req.open("GET", url);
         req.send();
 
