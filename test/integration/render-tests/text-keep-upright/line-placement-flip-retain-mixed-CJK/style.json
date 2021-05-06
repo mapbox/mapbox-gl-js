@@ -13,14 +13,14 @@
         ],
         [
           "setBearing",
-          10
+          -10
         ],
         [
           "wait"
         ],
         [
           "setBearing",
-          -3
+          3
         ],
         [
           "wait"
@@ -75,14 +75,8 @@
       "source": "geojson",
       "layout": {
         "symbol-placement": "line",
-        "symbol-spacing": 3,
-        "text-allow-overlap": true,
-        "text-ignore-placement": true,
-        "text-field": "A",
-        "text-font": [
-          "Open Sans Semibold",
-          "Arial Unicode MS Bold"
-        ],
+        "text-field": "天空A",
+        "text-font": [ "NotoCJK" ],
         "text-keep-upright": true,
         "text-offset": [
           0.2,
