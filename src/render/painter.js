@@ -269,7 +269,7 @@ class Painter {
             data: new Uint8Array([0, 0, 0, 0])
         }, context.gl.RGBA);
 
-        this.identityMat = mat4.identity(new Float32Array(16));
+        this.identityMat = mat4.create();
 
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
