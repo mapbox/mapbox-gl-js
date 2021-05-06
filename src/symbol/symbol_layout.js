@@ -186,7 +186,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
     sizes.layoutIconSize = unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(tileZoom + 1), canonical);
     sizes.textMaxSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(18), canonical);
 
-    const lineHeight = layout.get('text-line-height') * ONE_EM;
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
     const keepUpright = layout.get('text-keep-upright');
     const textSize = layout.get('text-size');
@@ -206,6 +205,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         if (text) {
             const unformattedText = text.toString();
             const spacing = layout.get('text-letter-spacing').evaluate(feature, {}, canonical) * ONE_EM;
+            const lineHeight = layout.get('text-line-height').evaluate(feature, {}, canonical) * ONE_EM;
             const spacingIfAllowed = allowsLetterSpacing(unformattedText) ? spacing : 0;
 
             const textAnchor = layout.get('text-anchor').evaluate(feature, {}, canonical);
