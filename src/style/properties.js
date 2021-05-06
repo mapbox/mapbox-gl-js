@@ -256,10 +256,13 @@ class TransitioningPropertyValue<T, R> {
                 prior: ?TransitioningPropertyValue<T, R>,
                 transition: TransitionSpecification,
                 now: TimePoint) {
+        const delay = transition.delay || 0;
+        const duration = transition.duration || 0;
+        now = now || 0;
         this.property = property;
         this.value = value;
-        this.begin = now + transition.delay || 0;
-        this.end = this.begin + transition.duration || 0;
+        this.begin = now + delay;
+        this.end = this.begin + duration;
         if (property.specification.transition && (transition.delay || transition.duration)) {
             this.prior = prior;
         }

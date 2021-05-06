@@ -837,6 +837,13 @@ class Painter {
 
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
         const fog = this.style.fog;
+
+        // Fog is not enabled when rendering to texture so we
+        // can safely skip uploading uniforms in that case
+        if (this.terrain && this.terrain.renderingToTexture) {
+            return;
+        }
+
         if (fog) {
             const fogOpacity = fog.getOpacity(this.transform.pitch);
             if (fogOpacity !== 0.0) {

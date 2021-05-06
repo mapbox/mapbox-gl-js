@@ -409,6 +409,10 @@ class Style extends Evented {
             return true;
         }
 
+        if (this.fog && this.fog.hasTransition()) {
+            return true;
+        }
+
         for (const id in this._sourceCaches) {
             if (this._sourceCaches[id].hasTransition()) {
                 return true;
