@@ -197,7 +197,7 @@ export type LineLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "line-cap"?: PropertyValueSpecification<"butt" | "round" | "square">,
+        "line-cap"?: DataDrivenPropertyValueSpecification<"butt" | "round" | "square">,
         "line-join"?: DataDrivenPropertyValueSpecification<"bevel" | "round" | "miter">,
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
@@ -213,7 +213,7 @@ export type LineLayerSpecification = {|
         "line-gap-width"?: DataDrivenPropertyValueSpecification<number>,
         "line-offset"?: DataDrivenPropertyValueSpecification<number>,
         "line-blur"?: DataDrivenPropertyValueSpecification<number>,
-        "line-dasharray"?: PropertyValueSpecification<Array<number>>,
+        "line-dasharray"?: DataDrivenPropertyValueSpecification<Array<number>>,
         "line-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "line-gradient"?: ExpressionSpecification
     |}

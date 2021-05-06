@@ -34,6 +34,7 @@ import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
+import type LineAtlas from '../../render/line_atlas.js';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -169,21 +170,100 @@ class LineBucket implements Bucket {
             });
         }
 
+        const {lineAtlas, featureIndex} = options;
+        const hasFeatureDashes = this.addConstantDashes(lineAtlas);
+
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
+
+            if (hasFeatureDashes) {
+                this.addFeatureDashes(bucketFeature, lineAtlas);
+            }
 
             if (this.hasPattern) {
                 const patternBucketFeature = addPatternDependencies('line', this.layers, bucketFeature, this.zoom, options);
                 // pattern features are added only once the pattern is loaded into the image atlas
                 // so are stored during populate until later updated with positions by tile worker in addFeatures
                 this.patternFeatures.push(patternBucketFeature);
+
             } else {
-                this.addFeature(bucketFeature, geometry, index, canonical, {});
+                this.addFeature(bucketFeature, geometry, index, canonical, lineAtlas.positions);
             }
 
             const feature = features[index].feature;
-            options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
+            featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
+    }
+
+    addConstantDashes(lineAtlas: LineAtlas) {
+        let hasFeatureDashes = false;
+
+        for (const layer of this.layers) {
+            const dashPropertyValue = layer.paint.get('line-dasharray').value;
+            const capPropertyValue = layer.layout.get('line-cap').value;
+
+            if (dashPropertyValue.kind !== 'constant' || capPropertyValue.kind !== 'constant') {
+                hasFeatureDashes = true;
+
+            } else {
+                const round = capPropertyValue.value === 'round';
+                const constDash = dashPropertyValue.value;
+                if (!constDash) continue;
+                lineAtlas.addDash(constDash.from, round);
+                lineAtlas.addDash(constDash.to, round);
+                if (constDash.other) lineAtlas.addDash(constDash.other, round);
+            }
+        }
+
+        return hasFeatureDashes;
+    }
+
+    addFeatureDashes(feature: BucketFeature, lineAtlas: LineAtlas) {
+
+        const zoom = this.zoom;
+
+        for (const layer of this.layers) {
+            const dashPropertyValue = layer.paint.get('line-dasharray').value;
+            const capPropertyValue = layer.layout.get('line-cap').value;
+
+            if (dashPropertyValue.kind === 'constant' && capPropertyValue.kind === 'constant') continue;
+
+            let minDashArray, midDashArray, maxDashArray, minRound, midRound, maxRound;
+
+            if (dashPropertyValue.kind === 'constant') {
+                const constDash = dashPropertyValue.value;
+                if (!constDash) continue;
+                minDashArray = constDash.other || constDash.to;
+                midDashArray = constDash.to;
+                maxDashArray = constDash.from;
+
+            } else {
+                minDashArray = dashPropertyValue.evaluate({zoom: zoom - 1}, feature);
+                midDashArray = dashPropertyValue.evaluate({zoom}, feature);
+                maxDashArray = dashPropertyValue.evaluate({zoom: zoom + 1}, feature);
+            }
+
+            if (capPropertyValue.kind === 'constant') {
+                minRound = midRound = maxRound = capPropertyValue.value === 'round';
+
+            } else {
+                minRound = capPropertyValue.evaluate({zoom: zoom - 1}, feature) === 'round';
+                midRound = capPropertyValue.evaluate({zoom}, feature) === 'round';
+                maxRound = capPropertyValue.evaluate({zoom: zoom + 1}, feature) === 'round';
+            }
+
+            lineAtlas.addDash(minDashArray, minRound);
+            lineAtlas.addDash(midDashArray, midRound);
+            lineAtlas.addDash(maxDashArray, maxRound);
+
+            const min = lineAtlas.getKey(minDashArray, minRound);
+            const mid = lineAtlas.getKey(midDashArray, midRound);
+            const max = lineAtlas.getKey(maxDashArray, maxRound);
+
+            // save positions for paint array
+            feature.patterns[layer.id] = {min, mid, max};
+        }
+
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}) {
@@ -236,7 +316,7 @@ class LineBucket implements Bucket {
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
         const layout = this.layers[0].layout;
         const join = layout.get('line-join').evaluate(feature, {});
-        const cap = layout.get('line-cap');
+        const cap = layout.get('line-cap').evaluate(feature, {});
         const miterLimit = layout.get('line-miter-limit');
         const roundLimit = layout.get('line-round-limit');
         this.lineClips = this.lineFeatureClips(feature);

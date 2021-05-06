@@ -7,6 +7,7 @@ import type FeatureIndex from './feature_index.js';
 import type Context from '../gl/context.js';
 import type {FeatureStates} from '../source/source_state.js';
 import type {ImagePosition} from '../render/image_atlas.js';
+import type LineAtlas from '../render/line_atlas.js';
 import type {CanonicalTileID} from '../source/tile_id.js';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
@@ -26,7 +27,8 @@ export type PopulateParameters = {
     iconDependencies: {},
     patternDependencies: {},
     glyphDependencies: {},
-    availableImages: Array<string>
+    availableImages: Array<string>,
+    lineAtlas: LineAtlas
 }
 
 export type IndexedFeature = {

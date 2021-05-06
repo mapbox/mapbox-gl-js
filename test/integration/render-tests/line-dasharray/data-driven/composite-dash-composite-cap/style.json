@@ -1,0 +1,89 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 64
+    }
+  },
+  "zoom": 0.1,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"property": 2},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [[-40, -18], [40, -18]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {"property": 3},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [[-40, -10], [40, -10]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {"property": 4},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [[-40, -2], [40, -2]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {"property": 5},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [[-40, 7], [40, 7]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {"property": 6},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [[-40, 18], [40, 18]]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "road",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-cap": [
+          "step", ["zoom"],
+          ["case", ["==", ["%", ["get", "property"], 2], 0], "butt", "round"],
+          1, "butt"
+        ]
+      },
+      "paint": {
+        "line-width": ["get", "property"],
+        "line-dasharray": [
+          "step", ["zoom"],
+          [
+            "match", ["get", "property"],
+            2, ["literal", [2, 2]],
+            3, ["literal", [2, 3]],
+            4, ["literal", [2, 4]],
+            5, ["literal", [2, 5]],
+            ["literal", [2, 6]]
+          ],
+          1, ["literal", [1, 1]]
+        ]
+      }
+    }
+  ]
+}
