@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         req = new XMLHttpRequest();
         req.addEventListener("load", loadedHTML);
-        url = page.url ? page.url : 'https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/example/' + page.key + '.html??token=' + params.github_token;
+        url = page.url ? page.url : 'https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/example/' + page.key + '.html?token=' + params.github_token;
         req.open("GET", url);
         req.send();
 
