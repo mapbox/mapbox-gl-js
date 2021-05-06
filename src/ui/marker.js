@@ -448,7 +448,7 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _evaluateOpacity(requestAnimationFrame: boolean = false) {
+    _evaluateOpacity() {
         const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
 
         if (!this._withinScreenBounds(position)) {
@@ -472,16 +472,8 @@ export default class Marker extends Evented {
 
         const fogOpacity = this._map.queryFogOpacity(mapLocation);
         const opacity = (1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0);
-        const updateStyle = () => {
-            this._element.style.opacity = `${opacity}`;
-            if (this._popup) this._popup._setOpacity(`${opacity}`);
-        };
-
-        if (requestAnimationFrame) {
-            window.requestAnimationFrame(updateStyle);
-        } else {
-            updateStyle();
-        }
+        this._element.style.opacity = `${opacity}`;
+        if (this._popup) this._popup._setOpacity(`${opacity}`);
 
         this._fadeTimer = null;
     }
@@ -531,14 +523,16 @@ export default class Marker extends Evented {
         }
 
         this._map._requestDomTask(() => {
+            if (!this._map) return;
+
             if (this._element && this._pos && this._anchor) {
                 DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
             }
-        });
 
-        if ((this._map.getTerrain() || this._map.getFog()) && !this._fadeTimer) {
-            this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this, true), 60);
-        }
+            if ((this._map.getTerrain() || this._map.getFog()) && !this._fadeTimer) {
+                this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
+            }
+        });
     }
 
     /**
