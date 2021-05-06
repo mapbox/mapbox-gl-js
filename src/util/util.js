@@ -109,7 +109,7 @@ export function getBounds(points: Point[]): { min: Point, max: Point} {
  *
  * @param {Point} min The minimum extent of the AABB.
  * @param {Point} max The maximum extent of the AABB.
- * @param {Point} point The point to compute the distance from, may be undefined.
+ * @param {Point} [point] The point to compute the distance from, may be undefined.
  * @returns {number} The square distance from the AABB, 0.0 if the AABB contains the point.
  */
 export function getAABBPointSquareDist(min: Point, max: Point, point: ?Point): number {
