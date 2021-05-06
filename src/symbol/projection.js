@@ -320,7 +320,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
 
         if (keepUpright && !flip) {
             const orientationChange = requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio);
-            symbol.needsFlipping = orientationChange ? FlipDecision.flipRequired : FlipDecision.flipNotRequired;
+            symbol.needsFlipping = orientationChange && orientationChange.needsFlipping ? FlipDecision.flipRequired : FlipDecision.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
             }
