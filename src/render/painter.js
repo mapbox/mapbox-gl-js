@@ -838,7 +838,7 @@ class Painter {
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
         const fog = this.style.fog;
 
-        // Fog isn not enabled when rendering to texture so we
+        // Fog is not enabled when rendering to texture so we
         // can safely skip uploading uniforms in that case
         if (this.terrain && this.terrain.renderingToTexture) {
             return;
