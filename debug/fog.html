@@ -177,6 +177,7 @@ map.on('style.load', function() {
 
     map.addSource('fading-symbols', {
         "type": "geojson",
+        "generateId": true,
         "data": {
             "type": "FeatureCollection",
             "features": [
@@ -272,13 +273,22 @@ map.on('style.load', function() {
         'source': 'fading-symbols',
         'type': 'symbol',
         'layout': {
-            'text-field': ['concat', 'fade-intensity: ', ['get', 'fadeIntensity']]
+            'text-field': ['concat', 'fade-intensity: ', ['get', 'fadeIntensity']],
+            'icon-image': 'rectangle-orange-2',
+            'icon-offset': [0 , -20]
         },
         'paint': {
             'text-color': 'white',
             'text-halo-color': 'black',
             'text-halo-width': 2,
-            'text-fog-fade-intensity': ['get', 'fadeIntensity'],
+            'text-fog-fade-intensity': ['case',
+                                         ['feature-state', 'hover'], 0,
+                                         ['get', 'fadeIntensity']
+                                       ],
+            'icon-fog-fade-intensity': ['case',
+                                         ['feature-state', 'hover'], 0,
+                                         ['get', 'fadeIntensity']
+                                       ],
         }
     });
 
@@ -294,6 +304,33 @@ map.on('style.load', function() {
     } : null);
 
     map.showTileBoundaries = guiParams.showTileBoundaries;
+
+    let hoveredSymbol = null;
+    map.on('mousemove', 'fading-symbols', function (e) {
+        if (e.features.length > 0) {
+            if (hoveredSymbol !== null) {
+                map.setFeatureState(
+                    hoveredSymbol,
+                    {hover: false}
+                );
+            }
+            hoveredSymbol = e.features[0];
+            map.setFeatureState(
+                hoveredSymbol,
+                {hover: true}
+            );
+        }
+    });
+
+    map.on('mouseleave', 'fading-symbols', function () {
+        if (hoveredSymbol !== null) {
+            map.setFeatureState(
+                hoveredSymbol,
+                {hover: false}
+            );
+        }
+        hoveredSymbol = null;
+    });
 });
 
 </script>
