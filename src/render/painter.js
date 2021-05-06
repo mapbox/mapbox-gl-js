@@ -836,13 +836,14 @@ class Painter {
     }
 
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
-        const fog = this.style.fog;
 
         // Fog is not enabled when rendering to texture so we
         // can safely skip uploading uniforms in that case
         if (this.terrain && this.terrain.renderingToTexture) {
             return;
         }
+
+        const fog = this.style.fog;
 
         if (fog) {
             const fogOpacity = fog.getOpacity(this.transform.pitch);
@@ -882,7 +883,7 @@ class Painter {
         const fog = this.style && this.style.fog;
         if (!fog) return false;
 
-        const fogOpacity = fog.getPitchFactor(this.transform.pitch);
+        const fogOpacity = fog.getOpacity(this.transform.pitch);
         if (fogOpacity === 0) return false;
 
         return true;

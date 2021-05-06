@@ -67,13 +67,10 @@ class Fog extends Evented {
         }
     }
 
-    getPitchFactor(pitch: number): number {
-        return smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-    }
-
     getOpacity(pitch: number): number {
         const fogColor = (this.properties && this.properties.get('color')) || 1.0;
-        return this.getPitchFactor(pitch) * fogColor.a;
+        const pitchFactor = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+        return pitchFactor * fogColor.a;
     }
 
     getOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
