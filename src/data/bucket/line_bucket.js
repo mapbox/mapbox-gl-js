@@ -209,9 +209,9 @@ class LineBucket implements Bucket {
                 const round = capPropertyValue.value === 'round';
                 const constDash = dashPropertyValue.value;
                 if (!constDash) continue;
-                lineAtlas.getDash(constDash.from, round);
-                lineAtlas.getDash(constDash.to, round);
-                if (constDash.other) lineAtlas.getDash(constDash.other, round);
+                lineAtlas.addDash(constDash.from, round);
+                lineAtlas.addDash(constDash.to, round);
+                if (constDash.other) lineAtlas.addDash(constDash.other, round);
             }
         }
 
@@ -252,10 +252,9 @@ class LineBucket implements Bucket {
                 maxRound = capPropertyValue.evaluate({zoom: zoom + 1}, feature) === 'round';
             }
 
-            // add to line atlas
-            lineAtlas.getDash(minDashArray, minRound);
-            lineAtlas.getDash(midDashArray, midRound);
-            lineAtlas.getDash(maxDashArray, maxRound);
+            lineAtlas.addDash(minDashArray, minRound);
+            lineAtlas.addDash(midDashArray, midRound);
+            lineAtlas.addDash(maxDashArray, maxRound);
 
             const min = lineAtlas.getKey(minDashArray, minRound);
             const mid = lineAtlas.getKey(midDashArray, midRound);

@@ -31,7 +31,7 @@ class LineAtlas {
     }
 
     /**
-     * Get or create a dash line pattern.
+     * Get a dash line pattern.
      *
      * @param {Array<number>} dasharray
      * @param {boolean} round whether to add circle caps in between dash segments
@@ -40,10 +40,6 @@ class LineAtlas {
      */
     getDash(dasharray: Array<number>, round: boolean) {
         const key = this.getKey(dasharray, round);
-
-        if (!this.positions[key]) {
-            this.positions[key] = this.addDash(dasharray, round);
-        }
         return this.positions[key];
     }
 
@@ -158,6 +154,7 @@ class LineAtlas {
     }
 
     addDash(dasharray: Array<number>, round: boolean) {
+        const key = this.getKey(dasharray, round);
         const n = round ? 7 : 0;
         const height = 2 * n + 1;
 
@@ -196,10 +193,12 @@ class LineAtlas {
 
         this.nextRow += height;
 
-        return {
+        const pos = {
             tl: [y, n],
             br: [length, 0]
         };
+        this.positions[key] = pos;
+        return pos;
     }
 }
 
