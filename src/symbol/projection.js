@@ -18,8 +18,8 @@ import {WritingMode} from '../symbol/shaping.js';
 
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
-const FlipDecision = {
-    undefined: 0,
+const FlipState = {
+    unknown: 0,
     flipRequired: 1,
     flipNotRequired: 2
 };
@@ -284,18 +284,15 @@ function requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio) {
     if (symbol.writingMode === WritingMode.vertical) {
         return (firstPoint.y < lastPoint.y) ? {needsFlipping: true} : null;
     }
-    // Check if flipping is required for "horizontal" case.
-    const flipRequired = (firstPoint.x > lastPoint.x);
-    // If flipping is required, but the glyphs are lying roughly within the flip stage retain range,
-    // then first check if the placedSymbol has entered into this retain range before or not. if it
-    // has entered before, it should have a valid flip stage indicating the flip decision made by the
-    // the first time entering, take the flip stage directly. Otherwise, it should be the first time
-    // entering, take the original flip decision and update placeSymbol's flip stage in this range.
-    if (symbol.needsFlipping !== FlipDecision.undefined && isInFlipRetainRange(firstPoint, lastPoint, aspectRatio)) {
-        return (symbol.needsFlipping === FlipDecision.flipRequired) ? {needsFlipping: true} : null;
+
+    // symbol's flipState stores the flip decision from the previous frame, and that
+    // decision is reused when the symbol is in the retain range.
+    if (symbol.flipState !== FlipState.unknown && isInFlipRetainRange(firstPoint, lastPoint, aspectRatio)) {
+        return (symbol.flipState === FlipState.flipRequired) ? {needsFlipping: true} : null;
     }
 
-    return flipRequired ? {needsFlipping: true} : null;
+    // Check if flipping is required for "horizontal" case.
+    return (firstPoint.x > lastPoint.x) ? {needsFlipping: true} : null;
 }
 
 function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation) {
@@ -320,7 +317,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
 
         if (keepUpright && !flip) {
             const orientationChange = requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio);
-            symbol.needsFlipping = orientationChange && orientationChange.needsFlipping ? FlipDecision.flipRequired : FlipDecision.flipNotRequired;
+            symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
             }
@@ -351,7 +348,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
                 projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix);
 
             const orientationChange = requiresOrientationChange(symbol, a, b, aspectRatio);
-            symbol.needsFlipping = orientationChange ? FlipDecision.flipRequired : FlipDecision.flipNotRequired;
+            symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
             }

@@ -81,7 +81,7 @@ export const placement = createLayout([
     {type: 'Uint8', name: 'hidden'},
     {type: 'Uint32', name: 'crossTileID'},
     {type: 'Int16', name: 'associatedIconIndex'},
-    {type: 'Uint8', name: 'needsFlipping'}
+    {type: 'Uint8', name: 'flipState'}
 ]);
 
 export const symbolInstance = createLayout([

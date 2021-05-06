@@ -931,7 +931,7 @@ class PlacedSymbolStruct extends Struct {
     hidden: number;
     crossTileID: number;
     associatedIconIndex: number;
-    needsFlipping: number;
+    flipState: number;
     get anchorX() { return this._structArray.int16[this._pos2 + 0]; }
     get anchorY() { return this._structArray.int16[this._pos2 + 1]; }
     get glyphStartIndex() { return this._structArray.uint16[this._pos2 + 2]; }
@@ -952,8 +952,8 @@ class PlacedSymbolStruct extends Struct {
     get crossTileID() { return this._structArray.uint32[this._pos4 + 10]; }
     set crossTileID(x: number) { this._structArray.uint32[this._pos4 + 10] = x; }
     get associatedIconIndex() { return this._structArray.int16[this._pos2 + 22]; }
-    get needsFlipping() { return this._structArray.uint8[this._pos1 + 46]; }
-    set needsFlipping(x: number) { this._structArray.uint8[this._pos1 + 46] = x; }
+    get flipState() { return this._structArray.uint8[this._pos1 + 46]; }
+    set flipState(x: number) { this._structArray.uint8[this._pos1 + 46] = x; }
 }
 
 PlacedSymbolStruct.prototype.size = 48;
