@@ -452,7 +452,7 @@ export default class Marker extends Evented {
         const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
 
         if (!this._withinScreenBounds(position)) {
-            this._fadeTimer = null;
+            this._clearFadeTimer();
             return;
         }
 
