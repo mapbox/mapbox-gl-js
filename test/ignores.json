@@ -10,7 +10,6 @@
   "render-tests/geojson/inline-linestring-fill": "skip - current behavior is arbitrary",
   "render-tests/icon-image/icon-sdf-non-sdf-one-layer": "skip - render sdf icon and normal icon in one layer",
   "render-tests/icon-text-fit/text-variable-anchor-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode",
-  "render-tests/line-dasharray/case/square": "skip - https://github.com/mapbox/mapbox-gl-js/issues/9531",
   "render-tests/map-mode/static": "https://github.com/mapbox/mapbox-gl-js/issues/5649",
   "render-tests/map-mode/tile": "skip - mapbox-gl-js does not support tile-mode",
   "render-tests/map-mode/tile-avoid-edges": "skip - mapbox-gl-js does not support tile-mode",

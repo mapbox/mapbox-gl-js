@@ -34,12 +34,12 @@ class LineAtlas {
      * Get a dash line pattern.
      *
      * @param {Array<number>} dasharray
-     * @param {boolean} round whether to add circle caps in between dash segments
+     * @param {string} lineCap the type of line caps to be added to dashes
      * @returns {Object} position of dash texture in { y, height, width }
      * @private
      */
-    getDash(dasharray: Array<number>, round: boolean) {
-        const key = this.getKey(dasharray, round);
+    getDash(dasharray: Array<number>, lineCap: string) {
+        const key = this.getKey(dasharray, lineCap);
         return this.positions[key];
     }
 
@@ -49,8 +49,8 @@ class LineAtlas {
         this.image.resize({width, height});
     }
 
-    getKey(dasharray: Array<number>, round: boolean): string {
-        return dasharray.join(',') + String(round);
+    getKey(dasharray: Array<number>, lineCap: string): string {
+        return dasharray.join(',') + lineCap;
     }
 
     getDashRanges(dasharray: Array<number>, lineAtlasWidth: number, stretch: number) {
@@ -111,7 +111,7 @@ class LineAtlas {
         }
     }
 
-    addRegularDash(ranges: Object) {
+    addRegularDash(ranges: Object, capLength: number) {
 
         // Collapse any zero-length range
         // Collapse neighbouring same-type parts into a single part
@@ -147,14 +147,15 @@ class LineAtlas {
             const distRight = Math.abs(x - range.right);
 
             const minDist = Math.min(distLeft, distRight);
-            const signedDistance = range.isDash ? minDist : -minDist;
+            const signedDistance = (range.isDash ? minDist : -minDist) + capLength;
 
             this.image.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
         }
     }
 
-    addDash(dasharray: Array<number>, round: boolean) {
-        const key = this.getKey(dasharray, round);
+    addDash(dasharray: Array<number>, lineCap: string) {
+        const key = this.getKey(dasharray, lineCap);
+        const round = lineCap === 'round';
         const n = round ? 7 : 0;
         const height = 2 * n + 1;
 
@@ -185,7 +186,8 @@ class LineAtlas {
             if (round) {
                 this.addRoundDash(ranges, stretch, n);
             } else {
-                this.addRegularDash(ranges);
+                const capLength = lineCap === 'square' ? 0.5 * stretch : 0;
+                this.addRegularDash(ranges, capLength);
             }
         }
 

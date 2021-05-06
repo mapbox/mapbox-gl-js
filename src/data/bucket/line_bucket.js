@@ -206,12 +206,12 @@ class LineBucket implements Bucket {
                 hasFeatureDashes = true;
 
             } else {
-                const round = capPropertyValue.value === 'round';
+                const constCap = capPropertyValue.value;
                 const constDash = dashPropertyValue.value;
                 if (!constDash) continue;
-                lineAtlas.addDash(constDash.from, round);
-                lineAtlas.addDash(constDash.to, round);
-                if (constDash.other) lineAtlas.addDash(constDash.other, round);
+                lineAtlas.addDash(constDash.from, constCap);
+                lineAtlas.addDash(constDash.to, constCap);
+                if (constDash.other) lineAtlas.addDash(constDash.other, constCap);
             }
         }
 
@@ -228,7 +228,7 @@ class LineBucket implements Bucket {
 
             if (dashPropertyValue.kind === 'constant' && capPropertyValue.kind === 'constant') continue;
 
-            let minDashArray, midDashArray, maxDashArray, minRound, midRound, maxRound;
+            let minDashArray, midDashArray, maxDashArray, minCap, midCap, maxCap;
 
             if (dashPropertyValue.kind === 'constant') {
                 const constDash = dashPropertyValue.value;
@@ -244,21 +244,21 @@ class LineBucket implements Bucket {
             }
 
             if (capPropertyValue.kind === 'constant') {
-                minRound = midRound = maxRound = capPropertyValue.value === 'round';
+                minCap = midCap = maxCap = capPropertyValue.value;
 
             } else {
-                minRound = capPropertyValue.evaluate({zoom: zoom - 1}, feature) === 'round';
-                midRound = capPropertyValue.evaluate({zoom}, feature) === 'round';
-                maxRound = capPropertyValue.evaluate({zoom: zoom + 1}, feature) === 'round';
+                minCap = capPropertyValue.evaluate({zoom: zoom - 1}, feature);
+                midCap = capPropertyValue.evaluate({zoom}, feature);
+                maxCap = capPropertyValue.evaluate({zoom: zoom + 1}, feature);
             }
 
-            lineAtlas.addDash(minDashArray, minRound);
-            lineAtlas.addDash(midDashArray, midRound);
-            lineAtlas.addDash(maxDashArray, maxRound);
+            lineAtlas.addDash(minDashArray, minCap);
+            lineAtlas.addDash(midDashArray, midCap);
+            lineAtlas.addDash(maxDashArray, maxCap);
 
-            const min = lineAtlas.getKey(minDashArray, minRound);
-            const mid = lineAtlas.getKey(midDashArray, midRound);
-            const max = lineAtlas.getKey(maxDashArray, maxRound);
+            const min = lineAtlas.getKey(minDashArray, minCap);
+            const mid = lineAtlas.getKey(midDashArray, midCap);
+            const max = lineAtlas.getKey(maxDashArray, maxCap);
 
             // save positions for paint array
             feature.patterns[layer.id] = {min, mid, max};
@@ -540,7 +540,17 @@ class LineBucket implements Bucket {
 
             } else if (currentJoin === 'square') {
                 const offset = prevVertex ? 1 : -1; // closing or starting square cap
-                this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
+
+                if (!prevVertex) {
+                    this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
+                }
+
+                // make the cap it's own quad to avoid the cap affecting the line distance
+                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
+
+                if (prevVertex) {
+                    this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
+                }
 
             } else if (currentJoin === 'round') {
 
