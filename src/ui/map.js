@@ -2215,17 +2215,17 @@ class Map extends Camera {
     }
 
     /**
-     * Returns the fog opacity for a given geolocation.
+     * Returns the fog opacity for a given location.
      *
-     * An opacity of 0 means that there is no fog contribution for the given geolocation
-     * while a fog opacity of 1.0 means the geolocation is fully obscured by the fog effect.
+     * An opacity of 0 means that there is no fog contribution for the given location
+     * while a fog opacity of 1.0 means the location is fully obscured by the fog effect.
      *
-     * If there is no fog set on the map, this function will simply return 0.
+     * If there is no fog set on the map, this function will return 0.
      *
      * @param {LngLatLike} lnglat The geographical location to evaluate the fog on.
      * @returns {number} A value between 0 and 1 representing the fog opacity, where 1 means fully within, and 0 means not affected by the fog effect.
      */
-    queryFogOpacity(lnglat: LngLatLike): number {
+    _queryFogOpacity(lnglat: LngLatLike): number {
         if (!this.style || !this.style.fog) return 0.0;
         return this.style.fog.getOpacityAtLatLng(LngLat.convert(lnglat), this.transform);
     }
