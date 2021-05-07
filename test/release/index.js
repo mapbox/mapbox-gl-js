@@ -264,7 +264,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let doc = req.response;
 
-            if (!page.url) { // Only perform cleanups for pages hosted on docs.mapbox.com, otherwise directly use demo code
+            if (!page.url) { // Perform cleanups for pages hosted on docs.mapbox.com, otherwise directly use demo code
+                debugger;
                 const js = version === 'latest' ? jsLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.js';
                 const css = version === 'latest' ? cssLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.css';
 
@@ -282,6 +283,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Remove extraneous analytics
                 doc = doc.replace(instrumentileRegex, '');
                 doc = doc.replace(sentryRegex, '');
+            } else { // Perform cleanups of pages locally referenced
+                const versionLibRegex = /<script src='(.*)mapbox-gl(.*)\.js'><\/script>/g;
+                const versionCSSRegex = /<link rel='stylesheet'(.*)mapbox-gl\.css'(.*)\/>/g;
+                const apiKeyRegex = /<script(.*)access_token_generated\.js(.*)\/script>/g;
+
+                doc = doc.replace(versionLibRegex, js);
+                doc = doc.replace(versionCSSRegex, css);
+                doc = doc.replace(apiKeyRegex, '<script>mapboxgl.accessToken="' + params.access_token + '"</script>');
             }
 
             iframeDoc.write([doc].join(''));
