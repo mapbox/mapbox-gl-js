@@ -1,4 +1,4 @@
-## 2.3.0
+## 2.3.0-beta.1
 
 ### ✨ Features and improvements
 * Add configurable fog as a root style specification ([#10564](https://github.com/mapbox/mapbox-gl-js/pull/10564))
