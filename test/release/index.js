@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const js = version === 'latest' ? jsLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.js';
             const css = version === 'latest' ? cssLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.css';
 
-            const versionLibRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]\.[0-9]\.[0-9]\/mapbox-gl\.js/g;
+            const versionLibRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]+\.[0-9]+\.[0-9]+\/mapbox-gl\.js/g;
             const versionCSSRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]\.[0-9]\.[0-9]\/mapbox-gl\.css/g;
             const apiKeyRegex = /pk\..*?"/g;
 
