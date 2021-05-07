@@ -287,8 +287,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const versionCSSRegex = /<link rel='stylesheet'(.*)mapbox-gl\.css'(.*)\/>/g;
                 const apiKeyRegex = /<script(.*)access_token_generated\.js(.*)\/script>/g;
 
-                doc = doc.replace(versionLibRegex, js);
-                doc = doc.replace(versionCSSRegex, css);
+                doc = doc.replace(versionLibRegex, '<script src="' + js + '"></script>');
+                doc = doc.replace(versionCSSRegex, '<link rel="stylesheet" href="' + css + '" />');
                 doc = doc.replace(apiKeyRegex, '<script>mapboxgl.accessToken="' + params.access_token + '"</script>');
             }
 
