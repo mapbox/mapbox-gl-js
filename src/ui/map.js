@@ -2224,6 +2224,7 @@ class Map extends Camera {
      *
      * @param {LngLatLike} lnglat The geographical location to evaluate the fog on.
      * @returns {number} A value between 0 and 1 representing the fog opacity, where 1 means fully within, and 0 means not affected by the fog effect.
+     * @private
      */
     _queryFogOpacity(lnglat: LngLatLike): number {
         if (!this.style || !this.style.fog) return 0.0;
@@ -2796,6 +2797,7 @@ class Map extends Camera {
      * Update the average visible elevation by sampling terrain
      *
      * @returns {boolean} true if elevation has changed from the last sampling
+     * @private
      */
     _updateAverageElevation(timeStamp: number, ignoreTimeout: boolean = false): boolean {
         const applyUpdate = value => {
