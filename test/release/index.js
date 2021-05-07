@@ -248,6 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         req = new XMLHttpRequest();
         req.addEventListener("load", loadedHTML);
+
         url = page.url ? page.url : 'https://docs.mapbox.com/mapbox-gl-js/assets/' + page.key + '-demo.html';
         req.open("GET", url);
         req.send();
@@ -261,18 +262,27 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(iframe);
             const iframeDoc = iframe.contentWindow.document.open("text/html", "replace");
 
-            const js = version === 'latest' ? jsLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.js';
-            const css = version === 'latest' ? cssLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.css';
-
-            const versionLibRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]+\.[0-9]+\.[0-9]+\/mapbox-gl\.js/g;
-            const versionCSSRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]+\.[0-9]+\.[0-9]+\/mapbox-gl\.css/g;
-            const apiKeyRegex = /pk\..*?"/g;
-
             let doc = req.response;
 
-            doc = doc.replace(versionLibRegex, js);
-            doc = doc.replace(versionCSSRegex, css);
-            doc = doc.replace(apiKeyRegex, params.access_token + '"');
+            if (!page.url) { // Only perform cleanups for pages hosted on docs.mapbox.com, otherwise directly use demo code
+                const js = version === 'latest' ? jsLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.js';
+                const css = version === 'latest' ? cssLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.css';
+
+                const versionLibRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]+\.[0-9]+\.[0-9]+\/mapbox-gl\.js/g;
+                const versionCSSRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]+\.[0-9]+\.[0-9]+\/mapbox-gl\.css/g;
+                const sentryRegex = /<script src="https:\/\/js\.sentry-cdn\.com\/[0-9a-f]*\.min\.js"\s*crossorigin="anonymous"><\/script>/g;
+                const instrumentileRegex = /<script>if\(window\.map instanceof mapboxgl\.Map\)var i=new instrumentile.*<\/script>/g;
+                const apiKeyRegex = /pk\..*?"/g;
+
+                // Update versions + api key
+                doc = doc.replace(versionLibRegex, js);
+                doc = doc.replace(versionCSSRegex, css);
+                doc = doc.replace(apiKeyRegex, params.access_token + '"');
+
+                // Remove extraneous analytics
+                doc = doc.replace(instrumentileRegex, '');
+                doc = doc.replace(sentryRegex, '');
+            }
 
             iframeDoc.write([doc].join(''));
             iframeDoc.close();
