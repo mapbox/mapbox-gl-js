@@ -165,6 +165,14 @@ document.addEventListener('DOMContentLoaded', function() {
         params[entry[0]] = entry[1];
     });
 
+    if (!params.access_token) {
+        if (mapboxgl.accessToken) {
+            params.access_token = mapboxgl.accessToken;
+        } else {
+            params.access_token = prompt("Access Token");
+        }
+    }
+
     titleElement.addEventListener('click', function() {
         versionItem.classList.remove('active');
         titleItem.classList[titleItem.classList.contains('active') ? 'remove' : 'add']('active');
@@ -258,11 +266,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const versionLibRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]\.[0-9]\.[0-9]\/mapbox-gl\.js/g;
             const versionCSSRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]\.[0-9]\.[0-9]\/mapbox-gl\.css/g;
+            const apiKeyRegex = /pk\..*?"/g;
 
             let doc = req.response;
 
             doc = doc.replace(versionLibRegex, js);
             doc = doc.replace(versionCSSRegex, css);
+            doc = doc.replace(apiKeyRegex, params.access_token + '"');
 
             iframeDoc.write([doc].join(''));
             iframeDoc.close();
