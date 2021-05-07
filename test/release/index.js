@@ -256,13 +256,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const js = version === 'latest' ? jsLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.js';
             const css = version === 'latest' ? cssLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.css';
 
-            const versionLibRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v(.*)\/mapbox-gl\.js/g;
-            const versionCSSRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v(.*)\/mapbox-gl\.css/g;
+            const versionLibRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]\.[0-9]\.[0-9]\/mapbox-gl\.js/g;
+            const versionCSSRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]\.[0-9]\.[0-9]\/mapbox-gl\.css/g;
 
-            req.response = req.response.replace(versionLibRegex, js);
-            req.response = req.response.replace(versionCSSRegex, css);
+            let doc = req.response;
 
-            iframeDoc.write([req.response].join(''));
+            doc = doc.replace(versionLibRegex, js);
+            doc = doc.replace(versionCSSRegex, css);
+
+            iframeDoc.write([doc].join(''));
             iframeDoc.close();
         }
 
