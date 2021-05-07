@@ -192,8 +192,8 @@ const defaultOptions = {
  * such JSON.
  *
  * To load a style from the Mapbox API, you can use a URL of the form `mapbox://styles/:owner/:style`,
- * where `:owner` is your Mapbox account name and `:style` is the style ID. Or you can use one of the following
- * [the predefined Mapbox styles](https://www.mapbox.com/maps/):
+ * where `:owner` is your Mapbox account name and `:style` is the style ID. Or you can use a
+ * [Mapbox-owned style](https://docs.mapbox.com/api/maps/styles/#mapbox-styles):
  *
  *  * `mapbox://styles/mapbox/streets-v11`
  *  * `mapbox://styles/mapbox/outdoors-v11`
@@ -201,10 +201,8 @@ const defaultOptions = {
  *  * `mapbox://styles/mapbox/dark-v10`
  *  * `mapbox://styles/mapbox/satellite-v9`
  *  * `mapbox://styles/mapbox/satellite-streets-v11`
- *  * `mapbox://styles/mapbox/navigation-preview-day-v4`
- *  * `mapbox://styles/mapbox/navigation-preview-night-v4`
- *  * `mapbox://styles/mapbox/navigation-guidance-day-v4`
- *  * `mapbox://styles/mapbox/navigation-guidance-night-v4`
+ *  * `mapbox://styles/mapbox/navigation-day-v1`
+ *  * `mapbox://styles/mapbox/navigation-night-v1`
  *
  * Tilesets hosted with Mapbox can be style-optimized if you append `?optimize=true` to the end of your style URL, like `mapbox://styles/mapbox/streets-v11?optimize=true`.
  * Learn more about style-optimized vector tiles in our [API documentation](https://www.mapbox.com/api-documentation/maps/#retrieve-tiles).
