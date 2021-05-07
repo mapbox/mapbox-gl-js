@@ -451,7 +451,7 @@ class GeolocateControl extends Evented {
     */
     trigger() {
         if (!this._setup) {
-            warnOnce('GeolocateControl triggered before added to a map');
+            warnOnce('Geolocate Control triggered before added to a map');
             return false;
         }
         if (this.options.trackUserLocation) {
