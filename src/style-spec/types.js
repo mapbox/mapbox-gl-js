@@ -261,7 +261,7 @@ export type SymbolLayerSpecification = {|
         "text-font"?: DataDrivenPropertyValueSpecification<Array<string>>,
         "text-size"?: DataDrivenPropertyValueSpecification<number>,
         "text-max-width"?: DataDrivenPropertyValueSpecification<number>,
-        "text-line-height"?: PropertyValueSpecification<number>,
+        "text-line-height"?: DataDrivenPropertyValueSpecification<number>,
         "text-letter-spacing"?: DataDrivenPropertyValueSpecification<number>,
         "text-justify"?: DataDrivenPropertyValueSpecification<"auto" | "left" | "center" | "right">,
         "text-radial-offset"?: DataDrivenPropertyValueSpecification<number>,
