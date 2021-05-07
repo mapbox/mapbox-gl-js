@@ -8,6 +8,7 @@ import * as intersectionTests from '../util/intersection_tests.js';
 import Grid from './grid_index.js';
 import {mat4, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em.js';
+import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers.js';
 import assert from 'assert';
 
 import * as projection from '../symbol/projection.js';
@@ -17,6 +18,7 @@ import type {
     GlyphOffsetArray,
     SymbolLineVertexArray
 } from '../data/array_types.js';
+import type {FogState} from '../style/fog_helpers.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 
 // When a symbol crosses the edge that causes it to be included in
@@ -48,9 +50,11 @@ class CollisionIndex {
     screenBottomBoundary: number;
     gridRightBoundary: number;
     gridBottomBoundary: number;
+    fogState: ?FogState;
 
     constructor(
         transform: Transform,
+        fogState: ?FogState,
         grid: Grid = new Grid(transform.width + 2 * viewportPadding, transform.height + 2 * viewportPadding, 25),
         ignoredGrid: Grid = new Grid(transform.width + 2 * viewportPadding, transform.height + 2 * viewportPadding, 25)
     ) {
@@ -64,11 +68,12 @@ class CollisionIndex {
         this.screenBottomBoundary = transform.height + viewportPadding;
         this.gridRightBoundary = transform.width + 2 * viewportPadding;
         this.gridBottomBoundary = transform.height + 2 * viewportPadding;
+        this.fogState = fogState;
     }
 
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation);
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation, collisionBox.tileID);
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
         const tlY = (collisionBox.y1 * scale + shift.y - collisionBox.padding) * tileToViewport + projectedPoint.point.y;
@@ -116,7 +121,7 @@ class CollisionIndex {
 
         const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
         const anchorElevation = getElevation(tileUnitAnchorPoint);
-        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, anchorElevation);
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, anchorElevation, tileID);
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
@@ -355,12 +360,19 @@ class CollisionIndex {
         }
     }
 
-    projectAndGetPerspectiveRatio(posMatrix: mat4, x: number, y: number, elevation?: number) {
+    projectAndGetPerspectiveRatio(posMatrix: mat4, x: number, y: number, elevation?: number, tileID: ?OverscaledTileID) {
         const p = [x, y, elevation || 0, 1];
         let aboveHorizon = false;
         if (elevation || this.transform.pitch > 0) {
             vec4.transformMat4(p, p, posMatrix);
-            aboveHorizon = p[2] > p[3];
+
+            let behindFog = false;
+            if (this.fogState && tileID) {
+                const fogOpacity = getFogOpacityAtTileCoord(this.fogState, x, y, elevation || 0, tileID.toUnwrapped(), this.transform);
+                behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
+            }
+
+            aboveHorizon = p[2] > p[3] || behindFog;
         } else {
             projection.xyTransformMat4(p, p, posMatrix);
         }

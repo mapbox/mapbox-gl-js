@@ -44,7 +44,13 @@ void main() {
     vec3 u_high_vec = vec3(u_brightness_low, u_brightness_low, u_brightness_low);
     vec3 u_low_vec = vec3(u_brightness_high, u_brightness_high, u_brightness_high);
 
-    gl_FragColor = vec4(mix(u_high_vec, u_low_vec, rgb) * color.a, color.a);
+    vec3 out_color = mix(u_high_vec, u_low_vec, rgb);
+
+#ifdef FOG
+    out_color = fog_dither(fog_apply(out_color, v_fog_pos));
+#endif
+
+    gl_FragColor = vec4(out_color * color.a, color.a);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

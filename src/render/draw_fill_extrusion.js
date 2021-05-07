@@ -91,7 +91,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         }
 
         const matrix = painter.translatePosMatrix(
-            coord.posMatrix,
+            coord.projMatrix,
             tile,
             layer.paint.get('fill-extrusion-translate'),
             layer.paint.get('fill-extrusion-translate-anchor'));
@@ -100,6 +100,8 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         const uniformValues = image ?
             fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord, crossfade, tile) :
             fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity);
+
+        painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,

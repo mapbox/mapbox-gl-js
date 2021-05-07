@@ -1273,18 +1273,17 @@ test('Marker interaction and raycast', (t) => {
             });
 
             t.test('Occluded', (t) => {
-                marker._occlusionTimer = null;
+                marker._fadeTimer = null;
                 marker.setLngLat(terrainTopLngLat);
                 const bottomLngLat = tr.pointLocation3D(new Point(terrainTop.x, tr.height));
                 // Raycast returns distance to closer point evaluates to occluded marker.
                 t.stub(tr, 'pointLocation3D').returns(bottomLngLat);
                 setTimeout(() => {
-                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded'));
+                    t.deepEqual(marker.getElement().style.opacity, 0.2);
                     t.end();
                 }, 100);
             });
 
-            map.remove();
             t.end();
         });
     });

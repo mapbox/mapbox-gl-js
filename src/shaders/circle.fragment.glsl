@@ -32,7 +32,13 @@ void main() {
         extrude_length - radius / (radius + stroke_width)
     );
 
-    gl_FragColor = v_visibility * opacity_t * mix(color * opacity, stroke_color * stroke_opacity, color_t);
+    vec4 out_color = mix(color * opacity, stroke_color * stroke_opacity, color_t);
+
+#ifdef FOG
+    out_color = fog_apply_premultiplied(out_color, v_fog_pos);
+#endif
+
+    gl_FragColor = out_color * (v_visibility * opacity_t);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

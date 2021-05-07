@@ -67,6 +67,7 @@ export type StyleSpecification = {|
     "pitch"?: number,
     "light"?: LightSpecification,
     "terrain"?: TerrainSpecification,
+    "fog"?: FogSpecification,
     "sources": {[_: string]: SourceSpecification},
     "sprite"?: string,
     "glyphs"?: string,
@@ -84,6 +85,12 @@ export type LightSpecification = {|
 export type TerrainSpecification = {|
     "source": string,
     "exaggeration"?: PropertyValueSpecification<number>
+|}
+
+export type FogSpecification = {|
+    "range"?: PropertyValueSpecification<[number, number]>,
+    "color"?: PropertyValueSpecification<ColorSpecification>,
+    "horizon-blend"?: PropertyValueSpecification<number>
 |}
 
 export type VectorSourceSpecification = {

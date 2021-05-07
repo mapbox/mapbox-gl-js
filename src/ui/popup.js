@@ -591,6 +591,11 @@ export default class Popup extends Evented {
     _onClose() {
         this.remove();
     }
+
+    _setOpacity(opacity: string) {
+        if (this._content) this._content.style.opacity = opacity;
+        if (this._tip)  this._tip.style.opacity = opacity;
+    }
 }
 
 function normalizeOffset(offset: ?Offset) {

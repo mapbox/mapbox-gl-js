@@ -19,6 +19,7 @@ import shaders from '../shaders/shaders.js';
 import Program from './program.js';
 import {programUniforms} from './program/program_uniforms.js';
 import Context from '../gl/context.js';
+import {fogUniformValues} from '../render/fog.js';
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
@@ -59,7 +60,7 @@ const draw = {
 
 import type Transform from '../geo/transform.js';
 import type Tile from '../source/tile.js';
-import type {OverscaledTileID} from '../source/tile_id.js';
+import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id.js';
 import type Style from '../style/style.js';
 import type StyleLayer from '../style/style_layer.js';
 import type {CrossFaded} from '../style/properties.js';
@@ -139,6 +140,7 @@ class Painter {
     symbolFadeChange: number;
     gpuTimers: {[_: string]: any };
     emptyTexture: Texture;
+    identityMat: mat4;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
@@ -175,6 +177,22 @@ class Painter {
         const terrain: Terrain = this._terrain;
         this.transform.elevation = enabled ? terrain : null;
         terrain.update(style, this.transform, cameraChanging);
+    }
+
+    _updateFog(style: Style) {
+        const fog = style.fog;
+        if (!fog || (fog && fog.getOpacity(this.transform.pitch) !== 1.0)) {
+            this.transform.fogCullDistSq = null;
+            return;
+        }
+
+        // We start culling where the fog opacity function hits
+        // 98% which leaves a non-noticeable change threshold.
+        const [start, end] = fog.getFovAdjustedRange(this.transform._fov);
+        const fogBoundFraction = 0.78;
+        const fogCullDist = start + (end - start) * fogBoundFraction;
+
+        this.transform.fogCullDistSq = fogCullDist * fogCullDist;
     }
 
     get terrain(): ?Terrain {
@@ -251,6 +269,8 @@ class Painter {
             data: new Uint8Array([0, 0, 0, 0])
         }, context.gl.RGBA);
 
+        this.identityMat = mat4.create();
+
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
         this.loadTimeStamps.push(window.performance.now());
@@ -309,7 +329,7 @@ class Painter {
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
-                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.posMatrix),
+                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
                 '$clipping', this.tileExtentBuffer,
                 this.quadTriangleIndexBuffer, this.tileExtentSegments);
         }
@@ -477,7 +497,12 @@ class Painter {
         this.context.viewport.set([0, 0, this.width, this.height]);
 
         // Clear buffers in preparation for drawing to the main framebuffer
-        this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
+        // If fog is enabled, use the fog color as default clear color.
+        let clearColor = Color.transparent;
+        if (this.style.fog) {
+            clearColor = this.style.fog.properties.get('color');
+        }
+        this.context.clear({color: options.showOverdrawInspector ? Color.black : clearColor, depth: 1});
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
@@ -725,9 +750,15 @@ class Painter {
     currentGlobalDefines(): string[] {
         const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
-
+        const fog = this.style && this.style.fog;
         const defines = [];
+
         if (terrain) defines.push('TERRAIN');
+        // When terrain is active, fog is rendered as part of draping, not as part of tile
+        // rendering. Removing the fog flag during tile rendering avoids additional defines.
+        if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {
+            defines.push('FOG');
+        }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
         return defines;
@@ -804,6 +835,24 @@ class Painter {
         }
     }
 
+    prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
+
+        // Fog is not enabled when rendering to texture so we
+        // can safely skip uploading uniforms in that case
+        if (this.terrain && this.terrain.renderingToTexture) {
+            return;
+        }
+
+        const fog = this.style.fog;
+
+        if (fog) {
+            const fogOpacity = fog.getOpacity(this.transform.pitch);
+            if (fogOpacity !== 0.0) {
+                program.setFogUniformValues(context, fogUniformValues(this, fog, tileID, fogOpacity));
+            }
+        }
+    }
+
     setTileLoadedFlag(flag: boolean) {
         this.tileLoaded = flag;
     }
@@ -826,6 +875,18 @@ class Painter {
             canvasCopies: this.frameCopies,
             timeStamps: this.loadTimeStamps
         };
+    }
+
+    averageElevationNeedsEasing() {
+        if (!this.transform._elevation) return false;
+
+        const fog = this.style && this.style.fog;
+        if (!fog) return false;
+
+        const fogOpacity = fog.getOpacity(this.transform.pitch);
+        if (fogOpacity === 0) return false;
+
+        return true;
     }
 }
 

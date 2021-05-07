@@ -107,4 +107,8 @@ void main() {
     v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, (-normal.y * heightB + dash_to.x + 0.5) / u_texsize.y);
 
     v_width2 = vec2(outset, inset);
+
+#ifdef FOG
+    v_fog_pos = fog_position(pos);
+#endif
 }

@@ -347,6 +347,52 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('updating fog triggers style diffing using setFog operation', (t) => {
+            t.test('removing fog', (t) => {
+                const style = createStyle();
+                style['fog'] = {
+                    "range": [2, 5],
+                    "color": "white"
+                };
+                const map = createMap(t, {style});
+                const initStyleObj = map.style;
+                t.spy(initStyleObj, 'setFog');
+                t.spy(initStyleObj, 'setState');
+                map.on('style.load', () => {
+                    map.setStyle(createStyle());
+                    t.equal(initStyleObj, map.style);
+                    t.equal(initStyleObj.setState.callCount, 1);
+                    t.equal(initStyleObj.setFog.callCount, 1);
+                    t.ok(map.style.fog == null);
+                    t.end();
+                });
+            });
+
+            t.test('adding fog', (t) => {
+                const style = createStyle();
+                const map = createMap(t, {style});
+                const initStyleObj = map.style;
+                t.spy(initStyleObj, 'setFog');
+                t.spy(initStyleObj, 'setState');
+                map.on('style.load', () => {
+                    const styleWithFog = JSON.parse(JSON.stringify(style));
+
+                    styleWithFog['fog'] = {
+                        "range": [2, 5],
+                        "color": "white"
+                    };
+                    map.setStyle(styleWithFog);
+                    t.equal(initStyleObj, map.style);
+                    t.equal(initStyleObj.setState.callCount, 1);
+                    t.equal(initStyleObj.setFog.callCount, 1);
+                    t.ok(map.style.fog);
+                    t.end();
+                });
+            });
+
+            t.end();
+        });
+
         t.end();
     });
 
@@ -436,6 +482,40 @@ test('Map', (t) => {
                 t.deepEqual(map.getStyle(), extend(createStyle(), {
                     terrain, 'sources': map.getStyle().sources
                 }));
+                t.end();
+            });
+        });
+
+        t.test('returns the style with added fog', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+
+            map.on('load', () => {
+                const fog = {
+                    "range": [2, 5],
+                    "color": "blue"
+                };
+                map.setFog(fog);
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                    fog
+                }));
+                t.ok(map.getFog());
+                t.end();
+            });
+        });
+
+        t.test('returns the style with removed fog', (t) => {
+            const style = createStyle();
+            style['fog'] = {
+                "range": [2, 5],
+                "color": "white"
+            };
+            const map = createMap(t, {style});
+
+            map.on('load', () => {
+                map.setFog(null);
+                t.deepEqual(map.getStyle(), createStyle());
+                t.equal(map.getFog(), null);
                 t.end();
             });
         });
@@ -1159,6 +1239,55 @@ test('Map', (t) => {
             t.equals(images.length, 1);
             t.equals(images[0], 'img');
             t.end();
+        });
+    });
+
+    t.test('#queryFogOpacity', (t) => {
+        const style = createStyle();
+        const map = createMap(t, {style});
+        map.on('load', () => {
+            map.setFog({
+                "range": [0.5, 10.5]
+            });
+
+            t.ok(map.getFog());
+
+            map.once('render', () => {
+                map.setZoom(10);
+                map.setCenter([0, 0]);
+                map.setPitch(0);
+
+                t.deepEqual(map._queryFogOpacity([0, 0]), 0.0);
+
+                t.deepEqual(map._queryFogOpacity([50, 0]), 0.0);
+                t.deepEqual(map._queryFogOpacity([0, 50]), 0.0);
+                t.deepEqual(map._queryFogOpacity([-50, 0]), 0.0);
+                t.deepEqual(map._queryFogOpacity([-50, -50]), 0.0);
+
+                map.setBearing(90);
+                map.setPitch(70);
+
+                t.deepEqual(map._queryFogOpacity([0, 0]), 0.0);
+
+                t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.5963390859543484);
+                t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.31817612773293763);
+                t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0.0021931905967484703);
+                t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.4147318524978687);
+
+                t.deepEqual(map._queryFogOpacity([2, 0]), 1.0);
+                t.deepEqual(map._queryFogOpacity([0, 2]), 1.0);
+                t.deepEqual(map._queryFogOpacity([-2, 0]), 1.0);
+                t.deepEqual(map._queryFogOpacity([-2, -2]), 1.0);
+
+                map.transform.fov = 30;
+
+                t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.5917784571074153);
+                t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.2567224170602245);
+                t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0);
+                t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.2727527139608868);
+
+                t.end();
+            });
         });
     });
 

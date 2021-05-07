@@ -42,6 +42,22 @@ export function radToDeg(a: number): number {
     return a * RAD_TO_DEG;
 }
 
+const TILE_CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]];
+
+/**
+ * Given a particular bearing, returns the corner of the tile thats farthest
+ * along the bearing.
+ *
+ * @param {number} bearing angle in degrees (-180, 180]
+ * @returns {QuadCorner}
+ * @private
+ */
+export function furthestTileCorner(bearing: number): [number, number] {
+    const alignedBearing = ((bearing + 45) + 360) % 360;
+    const cornerIdx = Math.round(alignedBearing / 90) % 4;
+    return TILE_CORNERS[cornerIdx];
+}
+
 /**
  * @module util
  * @private
@@ -85,6 +101,28 @@ export function getBounds(points: Point[]): { min: Point, max: Point} {
         min: new Point(minX, minY),
         max: new Point(maxX, maxY),
     };
+}
+
+/**
+ * Returns the square of the 2D distance between an AABB defined by min and max and a point.
+ * If point is null or undefined, the AABB distance from the origin (0,0) is returned.
+ *
+ * @param {Point} min The minimum extent of the AABB.
+ * @param {Point} max The maximum extent of the AABB.
+ * @param {Point} [point] The point to compute the distance from, may be undefined.
+ * @returns {number} The square distance from the AABB, 0.0 if the AABB contains the point.
+ */
+export function getAABBPointSquareDist(min: Point, max: Point, point: ?Point): number {
+    let sqDist = 0.0;
+
+    for (let i = 0; i < 2; ++i) {
+        const v = point ? point[i] : 0.0;
+        assert(min[i] < max[i], 'Invalid aabb min and max inputs, min[i] must be < max[i].');
+        if (min[i] > v) sqDist += (min[i] - v) * (min[i] - v);
+        if (max[i] < v) sqDist += (v - max[i]) * (v - max[i]);
+    }
+
+    return sqDist;
 }
 
 /**
@@ -172,6 +210,20 @@ export const ease = bezier(0.25, 0.1, 0.25, 1);
  */
 export function clamp(n: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, n));
+}
+
+/**
+ * Equivalent to GLSL smoothstep.
+ *
+ * @param {number} e0 The lower edge of the sigmoid
+ * @param {number} e1 The upper edge of the sigmoid
+ * @param {number} x the value to be interpolated
+ * @returns {number} in the range [0, 1]
+ * @private
+ */
+export function smoothstep(e0: number, e1: number, x: number): number {
+    x = clamp((x - e0) / (e1 - e0), 0, 1);
+    return x * x * (3 - 2 * x);
 }
 
 /**

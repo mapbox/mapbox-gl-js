@@ -10,6 +10,7 @@ import ImageManager from '../render/image_manager.js';
 import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
 import Light from './light.js';
 import Terrain from './terrain.js';
+import Fog from './fog.js';
 import LineAtlas from '../render/line_atlas.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
@@ -64,7 +65,8 @@ import type {
     StyleSpecification,
     LightSpecification,
     SourceSpecification,
-    TerrainSpecification
+    TerrainSpecification,
+    FogSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator} from './validate_style.js';
@@ -83,7 +85,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setLight',
     'setTransition',
     'setGeoJSONSourceData',
-    'setTerrain'
+    'setTerrain',
+    'setFog'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -122,6 +125,7 @@ class Style extends Evented {
     lineAtlas: LineAtlas;
     light: Light;
     terrain: ?Terrain;
+    fog: ?Fog;
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
@@ -146,6 +150,7 @@ class Style extends Evented {
     _updatedPaintProps: {[layer: string]: true};
     _layerOrderChanged: boolean;
     _availableImages: Array<string>;
+    _markersNeedUpdate: boolean;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -185,6 +190,7 @@ class Style extends Evented {
         this._availableImages = [];
         this._order  = [];
         this._drapedFirstOrder = [];
+        this._markersNeedUpdate = false;
 
         this._resetUpdates();
 
@@ -322,6 +328,9 @@ class Style extends Evented {
         if (this.stylesheet.terrain) {
             this._createTerrain(this.stylesheet.terrain);
         }
+        if (this.stylesheet.fog) {
+            this._createFog(this.stylesheet.fog);
+        }
         this._updateDrapeFirstLayers();
 
         this.fire(new Event('data', {dataType: 'style'}));
@@ -400,6 +409,10 @@ class Style extends Evented {
             return true;
         }
 
+        if (this.fog && this.fog.hasTransition()) {
+            return true;
+        }
+
         for (const id in this._sourceCaches) {
             if (this._sourceCaches[id].hasTransition()) {
                 return true;
@@ -468,6 +481,9 @@ class Style extends Evented {
             }
 
             this.light.updateTransitions(parameters);
+            if (this.fog) {
+                this.fog.updateTransitions(parameters);
+            }
 
             this._resetUpdates();
         }
@@ -513,7 +529,15 @@ class Style extends Evented {
         if (this.terrain) {
             this.terrain.recalculate(parameters);
         }
+        if (this.fog) {
+            this.fog.recalculate(parameters);
+        }
         this.z = parameters.zoom;
+
+        if (this._markersNeedUpdate) {
+            this._updateMarkersOpacity();
+            this._markersNeedUpdate = false;
+        }
 
         if (changed) {
             this.fire(new Event('data', {dataType: 'style'}));
@@ -1146,6 +1170,7 @@ class Style extends Evented {
             metadata: this.stylesheet.metadata,
             light: this.stylesheet.light,
             terrain: this.stylesheet.terrain,
+            fog: this.stylesheet.fog,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
             bearing: this.stylesheet.bearing,
@@ -1381,6 +1406,7 @@ class Style extends Evented {
             delete this.stylesheet.terrain;
             this.dispatcher.broadcast('enableTerrain', false);
             this._force3DLayerUpdate();
+            this._markersNeedUpdate = true;
             return;
         }
 
@@ -1417,6 +1443,73 @@ class Style extends Evented {
         }
 
         this._updateDrapeFirstLayers();
+        this._markersNeedUpdate = true;
+    }
+
+    _createFog(fogOptions: FogSpecification) {
+        const fog = this.fog = new Fog(fogOptions);
+        this.stylesheet.fog = fogOptions;
+        const parameters = {
+            now: browser.now(),
+            transition: extend({
+                duration: 0
+            }, this.stylesheet.transition)
+        };
+
+        fog.updateTransitions(parameters);
+    }
+
+    _updateMarkersOpacity() {
+        if (this.map._markers.length === 0) {
+            return;
+        }
+        this.map._requestDomTask(() => {
+            for (const marker of this.map._markers) {
+                marker._evaluateOpacity();
+            }
+        });
+    }
+
+    getFog() {
+        return this.fog ? this.fog.get() : null;
+    }
+
+    setFog(fogOptions: FogSpecification) {
+        this._checkLoaded();
+
+        if (!fogOptions) {
+            // Remove fog
+            delete this.fog;
+            delete this.stylesheet.fog;
+            this._markersNeedUpdate = true;
+            return;
+        }
+
+        if (!this.fog) {
+            // Initialize Fog
+            this._createFog(fogOptions);
+        } else {
+            // Updating fog
+            const fog = this.fog;
+            const currSpec = fog.get();
+            for (const key in fogOptions) {
+                if (!deepEqual(fogOptions[key], currSpec[key])) {
+                    fog.set(fogOptions);
+                    this.stylesheet.fog = fogOptions;
+                    const parameters = {
+                        now: browser.now(),
+                        transition: extend({
+                            duration: 0
+                        }, this.stylesheet.transition)
+                    };
+
+                    fog.updateTransitions(parameters);
+                    break;
+                }
+            }
+        }
+
+        this._markersNeedUpdate = true;
     }
 
     _updateDrapeFirstLayers() {
@@ -1560,7 +1653,7 @@ class Style extends Evented {
         }
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, this.fog ? this.fog.state : null);
             this._layerOrderChanged = false;
         }
 

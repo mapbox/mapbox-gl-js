@@ -48,7 +48,11 @@ void main(void) {
 
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
-    vec4 pos = vec4(floor(a_pos * 0.5) + extrude, elevation(floor(a_pos * 0.5)), 1);
+    vec3 pos = vec3(floor(a_pos * 0.5) + extrude, elevation(floor(a_pos * 0.5)));
 
-    gl_Position = u_matrix * pos;
+    gl_Position = u_matrix * vec4(pos, 1);
+
+#ifdef FOG
+    v_fog_pos = fog_position(pos);
+#endif
 }

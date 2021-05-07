@@ -88,4 +88,8 @@ void main() {
     v_gamma_scale = 1.0;
 #endif
     v_width2 = vec2(outset, inset);
+
+#ifdef FOG
+    v_fog_pos = fog_position(pos);
+#endif
 }

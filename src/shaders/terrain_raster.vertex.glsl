@@ -6,6 +6,10 @@ attribute vec2 a_texture_pos;
 
 varying vec2 v_pos0;
 
+#ifdef FOG
+varying float v_fog_opacity;
+#endif
+
 const float skirtOffset = 24575.0;
 const float wireframeOffset = 0.00015;
 
@@ -18,4 +22,8 @@ void main() {
 #endif
     vec2 decodedPos = a_pos - vec2(skirt * skirtOffset, 0.0);
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
+
+#ifdef FOG
+    v_fog_opacity = fog(fog_position(vec3(decodedPos, elevation)));
+#endif
 }

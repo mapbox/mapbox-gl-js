@@ -20,7 +20,13 @@ void main() {
     vec2 pos2 = mix(u_pattern_tl_b / u_texsize, u_pattern_br_b / u_texsize, imagecoord_b);
     vec4 color2 = texture2D(u_image, pos2);
 
-    gl_FragColor = mix(color1, color2, u_mix) * u_opacity;
+    vec4 out_color = mix(color1, color2, u_mix);
+
+#ifdef FOG
+    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
+#endif
+
+    gl_FragColor = out_color * u_opacity;
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

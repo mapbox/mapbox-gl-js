@@ -158,6 +158,16 @@ const pages = [
         "url": "./3d-playground.html"
     },
     {
+        "key": "fog-demo",
+        "title": "Fog Demo",
+        "url": "./fog-demo.html"
+    },
+    {
+        "key": "fog",
+        "title": "Fog",
+        "url": "./fog.html"
+    },
+    {
         "key": "skybox-gradient",
         "title": "Skybox gradient",
         "url": "./skybox-gradient.html"

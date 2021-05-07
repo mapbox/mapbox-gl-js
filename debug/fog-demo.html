@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 4,
+    center: [119.94552235709455, -11.48731083806907],
+    pitch: 85,
+    bearing: 0,
+    interactive: false,
+    style: 'mapbox://styles/mapbox/satellite-streets-v11',
+});
+
+map.on('style.load', () => {
+    map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.terrain-rgb',
+        'tileSize': 512,
+        'maxzoom': 14
+    });
+
+    map.addLayer({
+        'id': 'sky-day',
+        'type': 'sky',
+        'paint': {
+            'sky-type': 'gradient',
+            'sky-opacity': [
+                'interpolate',
+                ['exponential', 0.1],
+                ['zoom'],
+                10, 0,
+                12, 1
+            ],
+            'sky-opacity-transition': {'duration': 500}
+        }
+    });
+
+    map.addLayer({
+        'id': 'sky-night',
+        'type': 'sky',
+        'paint': {
+            'sky-type': 'atmosphere',
+            'sky-atmosphere-sun': [90, 0],
+            'sky-atmosphere-halo-color': 'rgba(255, 255, 255, 0.5)',
+            'sky-atmosphere-color': 'rgba(255, 255, 255, 0.2)',
+            'sky-opacity': 0,
+            'sky-opacity-transition': {'duration': 500}
+        }
+    });
+
+    map.setFog({
+        'range': ['interpolate', ['exponential', 0.1],
+            ['zoom'],
+            10, ['literal', [10, 12]],
+            12, ['literal', [-1.5, 10]]],
+        'color': ['interpolate', ['linear'],
+            ['zoom'],
+            9, 'black',
+            11, 'white'],
+        'horizon-blend': ['interpolate', ['linear'],
+            ['zoom'],
+            10, 0.01,
+            12, 0.02],
+        'color-transition': {
+            'duration': 500
+        }
+    });
+
+    map.setTerrain({
+        'source': 'mapbox-dem',
+        'exaggeration': ['interpolate', ['linear'],
+            ['zoom'],
+            10, 0.0,
+            12, 1.5]
+    });
+});
+
+map.on('load', async () => {
+    await map.once('idle');
+
+    map.flyTo({
+        center: [8.11862, 46.58842],
+        zoom: 12.5,
+        bearing: 130,
+        pitch: 75,
+        duration: 12000
+    });
+
+    await map.once('idle');
+
+    let lastTime = 0.0;
+    let animationTime = 0.0;
+    let cycleTime = 0.0;
+    let day = true;
+
+    const initialBearing = map.getBearing();
+
+    function frame(time) {
+        const elapsedTime = 1.0 / (time - lastTime);
+
+        animationTime += elapsedTime;
+        cycleTime += elapsedTime;
+
+        if (cycleTime > 20.0) {
+            if (day) {
+                map.setPaintProperty('sky-day', 'sky-opacity', 1);
+                map.setPaintProperty('sky-night', 'sky-opacity', 0);
+                map.setFog({'color': 'white'});
+            } else {
+                map.setPaintProperty('sky-day', 'sky-opacity', 0);
+                map.setPaintProperty('sky-night', 'sky-opacity', 1);
+                map.setFog({'color': 'rgba(66, 88, 106, 1.0)'});
+            }
+
+            day = !day;
+            cycleTime = 0.0;
+        }
+
+        const rotation = (initialBearing + animationTime);
+        map.setBearing(rotation % 360);
+
+        lastTime = time;
+
+        window.requestAnimationFrame(frame);
+    }
+
+    window.requestAnimationFrame(frame);
+});
+
+</script>
+</body>
+</html>
