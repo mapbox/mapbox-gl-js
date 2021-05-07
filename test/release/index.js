@@ -19,11 +19,6 @@ const pages = [
         "title": "Get features under the mouse pointer"
     },
     {
-        "key": "queryrenderedfeatures",
-        "title": "Get features under the mouse pointer (3d)",
-        "inject3d": true
-    },
-    {
         "key": "scroll-fly-to",
         "title": "Fly to a location based on scroll position"
     },
@@ -40,11 +35,6 @@ const pages = [
         "title": "Display a satellite map"
     },
     {
-        "key": "satellite-map",
-        "title": "Display a satellite map (3d)",
-        "inject3d": true
-    },
-    {
         "key": "custom-marker-icons",
         "title": "Add custom icons with Markers"
     },
@@ -57,18 +47,8 @@ const pages = [
         "title": "Add a video"
     },
     {
-        "key": "video-on-a-map",
-        "title": "Add a video (3d)",
-        "inject3d": true
-    },
-    {
         "key": "custom-style-layer",
         "title": "Add a custom style layer"
-    },
-    {
-        "key": "custom-style-layer",
-        "title": "Add a custom style layer (3d)",
-        "inject3d": true
     },
     {
         "key": "adjust-layer-opacity",
@@ -87,18 +67,8 @@ const pages = [
         "title": "Display driving directions"
     },
     {
-        "key": "mapbox-gl-directions",
-        "title": "Display driving directions (3d)",
-        "inject3d": true
-    },
-    {
         "key": "mapbox-gl-draw",
         "title": "Show drawn polygon area"
-    },
-    {
-        "key": "mapbox-gl-draw",
-        "title": "Show drawn polygon area (3d)",
-        "inject3d": true
     },
     {
         "key": "mapbox-gl-compare",
@@ -111,11 +81,6 @@ const pages = [
     {
         "key": "heatmap-layer",
         "title": "Add a heatmap layer"
-    },
-    {
-        "key": "heatmap-layer",
-        "title": "Add a heatmap layer (3d)",
-        "inject3d": true
     },
     {
         "key": "add-terrain",
@@ -141,11 +106,6 @@ const pages = [
     {
         "key": "image-on-a-map",
         "title": "Image Source"
-    },
-    {
-        "key": "image-on-a-map",
-        "title": "Image Source (3d)",
-        "inject3d": true
     },
     {
         "key": "extrusion-query",
@@ -298,7 +258,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         req = new XMLHttpRequest();
         req.addEventListener("load", loadedHTML);
-        url = page.url ? page.url : 'https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/example/' + page.key + '.html';
+
+        url = page.url ? page.url : 'https://docs.mapbox.com/mapbox-gl-js/assets/' + page.key + '-demo.html';
         req.open("GET", url);
         req.send();
 
@@ -315,62 +276,33 @@ document.addEventListener('DOMContentLoaded', function() {
             const css = version === 'latest' ? cssLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.css';
 
             let doc = req.response;
-            // Only inject 3d code in version > v1
-            if (page.inject3d && params.version.substr(0, 2) !== 'v1' && params.version.substr(0, 2) !== 'v0') {
-                const regex0 = /new mapboxgl\.Map((.|\n)*?)}\)\);/g;
-                const regex1 = /new mapboxgl\.Map((.|\n)*?)}\);/g;
-                const match = req.response.match(regex0);
-                const regex = match && match.length > 0 ? regex0 : regex1;
-                doc = req.response.replace(regex, '$&' +
-                    `map.on('style.load', function () {
-                        map.addSource('mapbox_dem', {
-                            "type": "raster-dem",
-                            "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
-                            "tileSize": 512,
-                            "maxzoom": 14
-                        });
 
-                        map.addLayer({
-                            'id': 'sky_layer',
-                            'type': 'sky',
-                            'paint': {
-                                'sky-type': 'atmosphere',
-                                'sky-atmosphere-sun': [0, 0],
-                                'sky-opacity': [
-                                    'interpolate',
-                                    ['exponential', 0.1],
-                                    ['zoom'],
-                                    5,
-                                    0,
-                                    22,
-                                    1
-                                ]
-                            }
-                        });
+            if (!page.url) { // Perform cleanups for pages hosted on docs.mapbox.com, otherwise directly use demo code
+                const versionLibRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]+\.[0-9]+\.[0-9]+\/mapbox-gl\.js/g;
+                const versionCSSRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]+\.[0-9]+\.[0-9]+\/mapbox-gl\.css/g;
+                const sentryRegex = /<script src="https:\/\/js\.sentry-cdn\.com\/[0-9a-f]*\.min\.js"\s*crossorigin="anonymous"><\/script>/g;
+                const instrumentileRegex = /<script>if\(window\.map instanceof mapboxgl\.Map\)var i=new instrumentile.*<\/script>/g;
+                const apiKeyRegex = /pk\..*?"/g;
 
-                        map.setTerrain({"source": "mapbox_dem", "exaggeration": 1.2});
-                    });`
-                );
+                // Update versions + api key
+                doc = doc.replace(versionLibRegex, js);
+                doc = doc.replace(versionCSSRegex, css);
+                doc = doc.replace(apiKeyRegex, params.access_token + '"');
+
+                // Remove extraneous analytics
+                doc = doc.replace(instrumentileRegex, '');
+                doc = doc.replace(sentryRegex, '');
+            } else { // Perform cleanups of pages locally referenced
+                const versionLibRegex = /<script src='(.*)mapbox-gl(.*)\.js'><\/script>/g;
+                const versionCSSRegex = /<link rel='stylesheet'(.*)mapbox-gl\.css'(.*)\/>/g;
+                const apiKeyRegex = /<script(.*)access_token_generated\.js(.*)\/script>/g;
+
+                doc = doc.replace(versionLibRegex, '<script src="' + js + '"></script>');
+                doc = doc.replace(versionCSSRegex, '<link rel="stylesheet" href="' + css + '" />');
+                doc = doc.replace(apiKeyRegex, '<script>mapboxgl.accessToken="' + params.access_token + '"</script>');
             }
-            iframeDoc.write([
-                '<!DOCTYPE html>',
-                '<html>',
-                '<head>',
-                '    <title>Mapbox GL JS debug page</title>',
-                '    <meta charset="utf-8">',
-                '    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">',
-                '    <script src="' + js + '"><\/script>',
-                '    <script>mapboxgl.accessToken = "' + params.access_token + '";<\/script>',
-                '    <link rel="stylesheet" href="' + css + '" />',
-                '    <style>',
-                '        body { margin: 0; padding: 0; }',
-                '        html, body, #map { height: 100%; }',
-                '    </style>',
-                '</head>',
-                '<body>',
-                doc,
-                '</body>',
-                '</html>' ].join(''));
+
+            iframeDoc.write([doc].join(''));
             iframeDoc.close();
         }
 
