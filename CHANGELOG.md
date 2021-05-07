@@ -1,3 +1,27 @@
+## 2.3.0-beta.1
+
+### ✨ Features and improvements
+* Add configurable fog as a root style specification ([#10564](https://github.com/mapbox/mapbox-gl-js/pull/10564))
+* Add `map.queryTerrainElevation(lngLat)` API ([#10602](https://github.com/mapbox/mapbox-gl-js/pull/10602))
+* Reuse one renderbuffer for all draping. ([#10611](https://github.com/mapbox/mapbox-gl-js/pull/10611))
+* Add support for data-driven `text-line-height` ([#10612](https://github.com/mapbox/mapbox-gl-js/pull/10612))
+* Add support for data-driven expressions in `line-dasharray` and `line-cap` properties. ([#10591](https://github.com/mapbox/mapbox-gl-js/pull/10591))
+* Prevent unnecessary loading of tiles when terrain is active ([#10467](https://github.com/mapbox/mapbox-gl-js/pull/10467))
+
+### 🐞 Bug fixes
+* Fix style property transitions not invalidating the terrain render cache ([#10485](https://github.com/mapbox/mapbox-gl-js/pull/10485))
+* Fix raster tile expiry data not being retained. ([#10494](https://github.com/mapbox/mapbox-gl-js/pull/10494)) (h/t [andycalder](https://github.com/andycalder))
+* Fix unclustered points in a clustered GeoJSON source incorrectly snapping to a grid at high zoom levels. ([#10523](https://github.com/mapbox/mapbox-gl-js/pull/10523))
+* Fix `map.loadImage` followed by `map.addImage` with a delay failing in Safari and Firefox. ([#10524](https://github.com/mapbox/mapbox-gl-js/pull/10524))
+* Allow formatted images in text to be displayed conditionally ([#10553](https://github.com/mapbox/mapbox-gl-js/pull/10553))
+* Fix fill extrusion elevation underflow below sea level ([#10570](https://github.com/mapbox/mapbox-gl-js/pull/10570))
+* Fix dashed lines with square line caps. ([#9561](https://github.com/mapbox/mapbox-gl-js/pull/9561))
+* Batch render DOM elements to avoid reflow ([#10530](https://github.com/mapbox/mapbox-gl-js/pull/10530), [#10567](https://github.com/mapbox/mapbox-gl-js/pull/10567)) (h/t [zarov](https://github.com/zarov))
+* Fix markers sometimes throwing an error after being removed from a 3D map. ([#10478](https://github.com/mapbox/mapbox-gl-js/pull/10478)) (h/t [andycalder](https://github.com/andycalder))
+* Set attribution button type=button to prevent form submit when map nested in form ([#10531](https://github.com/mapbox/mapbox-gl-js/pull/10531))
+* Fix nine documentation typos ([#10546](https://github.com/mapbox/mapbox-gl-js/pull/10546), [#10548](https://github.com/mapbox/mapbox-gl-js/pull/10548) [#10551](https://github.com/mapbox/mapbox-gl-js/pull/10551) [#10646](https://github.com/mapbox/mapbox-gl-js/pull/10646)) (h/t [coliff](https://github.com/coliff)
+* Fix undefined type error when removing `line-gradient` paint property ([#10557](https://github.com/mapbox/mapbox-gl-js/pull/10557))
+
 ## 2.2.0
 
 ### Features and improvements
