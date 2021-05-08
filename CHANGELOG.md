@@ -2,7 +2,7 @@
 
 ### ✨ Features and improvements
 * Add configurable fog as a root style specification ([#10564](https://github.com/mapbox/mapbox-gl-js/pull/10564))
-* Add `map.queryTerrainElevation(lngLat)` API ([#10602](https://github.com/mapbox/mapbox-gl-js/pull/10602))
+* Add client-side elevation querying with `map.queryTerrainElevation(lngLat)` when terrain is active ([#10602](https://github.com/mapbox/mapbox-gl-js/pull/10602))
 * Reduce GPU memory footprint when terrain is active by sharing a single depth stencil renderbuffer for all draping ([#10611](https://github.com/mapbox/mapbox-gl-js/pull/10611))
 * Add support for data-driven `text-line-height` ([#10612](https://github.com/mapbox/mapbox-gl-js/pull/10612))
 * Add support for data-driven expressions in `line-dasharray` and `line-cap` properties. ([#10591](https://github.com/mapbox/mapbox-gl-js/pull/10591))
