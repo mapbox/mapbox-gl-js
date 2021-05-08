@@ -14,7 +14,7 @@ Optimize tile cover by preventing unnecessary tile loads when terrain is active 
 * Fix unclustered points in a clustered GeoJSON source incorrectly snapping to a grid at high zoom levels. ([#10523](https://github.com/mapbox/mapbox-gl-js/pull/10523))
 * Fix `map.loadImage` followed by `map.addImage` with a delay failing in Safari and Firefox. ([#10524](https://github.com/mapbox/mapbox-gl-js/pull/10524))
 * Allow formatted images in text to be displayed conditionally ([#10553](https://github.com/mapbox/mapbox-gl-js/pull/10553))
-* Fix fill extrusion elevation underflow below sea level ([#10570](https://github.com/mapbox/mapbox-gl-js/pull/10570))
+* Fix fill-extrusion elevation underflow below sea level ([#10570](https://github.com/mapbox/mapbox-gl-js/pull/10570))
 * Fix dashed lines with square line caps. ([#9561](https://github.com/mapbox/mapbox-gl-js/pull/9561))
 * Batch render DOM elements to avoid reflow ([#10530](https://github.com/mapbox/mapbox-gl-js/pull/10530), [#10567](https://github.com/mapbox/mapbox-gl-js/pull/10567)) (h/t [zarov](https://github.com/zarov))
 * Fix markers sometimes throwing an error after being removed from a 3D map. ([#10478](https://github.com/mapbox/mapbox-gl-js/pull/10478)) (h/t [andycalder](https://github.com/andycalder))
