@@ -24,7 +24,6 @@ import type LngLat from '../geo/lng_lat.js';
  *         x: 266,
  *         y: 464
  *     },
- *      preventDefault(),
  *      target: {...},
  *      type: "click"
  * }
