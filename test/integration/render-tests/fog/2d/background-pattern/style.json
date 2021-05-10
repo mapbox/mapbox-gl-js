@@ -1,0 +1,26 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "pitch": 80,
+  "zoom": 12,
+  "sources": {},
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-pattern": "school_striped"
+      }
+    }
+  ],
+  "fog": {
+    "range": [-1, 0],
+    "color": "white"
+  }
+}

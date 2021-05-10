@@ -4,6 +4,7 @@ import type {RequestParameters} from '../util/ajax.js';
 import type {RGBAImage, AlphaImage} from '../util/image.js';
 import type {GlyphPositions} from '../render/glyph_atlas.js';
 import type ImageAtlas from '../render/image_atlas.js';
+import type LineAtlas from '../render/line_atlas.js';
 import type {OverscaledTileID} from './tile_id.js';
 import type {Bucket} from '../data/bucket.js';
 import type FeatureIndex from '../data/feature_index.js';
@@ -52,6 +53,7 @@ export type WorkerTileResult = {
     buckets: Array<Bucket>,
     imageAtlas: ImageAtlas,
     glyphAtlasImage: AlphaImage,
+    lineAtlas: LineAtlas,
     featureIndex: FeatureIndex,
     collisionBoxArray: CollisionBoxArray,
     rawTileData?: ArrayBuffer,

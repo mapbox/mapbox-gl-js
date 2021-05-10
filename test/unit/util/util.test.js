@@ -2,7 +2,7 @@
 
 import {test} from '../../util/test.js';
 
-import {degToRad, radToDeg, easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util.js';
+import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util.js';
 import Point from '@mapbox/point-geometry';
 
 const EPSILON = 1e-8;
@@ -33,6 +33,32 @@ test('util', (t) => {
     t.equal(degToRad(radToDeg(-Math.PI)), -Math.PI);
     t.equal(radToDeg(degToRad(65)), 65);
     t.equal(radToDeg(degToRad(-34.2)), -34.2);
+
+    t.equal(smoothstep(30, 60, 29), 0);
+    t.equal(smoothstep(30, 60, 45), 0.5);
+    t.equal(smoothstep(30, 60, 61), 1);
+
+    t.deepEqual(furthestTileCorner(-200), [1, 1]);
+    t.deepEqual(furthestTileCorner(-95), [0, 1]);
+    t.deepEqual(furthestTileCorner(-30), [0, 0]);
+    t.deepEqual(furthestTileCorner(0), [1, 0]);
+    t.deepEqual(furthestTileCorner(30), [1, 0]);
+    t.deepEqual(furthestTileCorner(95), [1, 1]);
+    t.deepEqual(furthestTileCorner(130), [1, 1]);
+    t.deepEqual(furthestTileCorner(200), [0, 1]);
+    t.deepEqual(furthestTileCorner(275), [0, 0]);
+    t.deepEqual(furthestTileCorner(360), [1, 0]);
+    t.deepEqual(furthestTileCorner(390), [1, 0]);
+
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [1, 1]), 2);
+    t.deepEqual(getAABBPointSquareDist([0, 0], [3, 2], [1, 1]), 0);
+    t.deepEqual(getAABBPointSquareDist([-3, -2], [-2, -1], [1, 1]), 13);
+    t.deepEqual(getAABBPointSquareDist([-3, -2], [-2, -1], [-1, -1]), 1);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3]), 8);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [10, 3]), 8);
+    t.deepEqual(getAABBPointSquareDist([-2, -2], [2, 2]), 0);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [2.5, 0]), 4);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [2.5, -2]), 16);
 
     t.test('bindAll', (t) => {
         function MyClass() {

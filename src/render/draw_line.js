@@ -29,7 +29,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const colorMode = painter.colorModeForRenderPass();
 
-    const dasharray = layer.paint.get('line-dasharray');
+    const dasharrayProperty = layer.paint.get('line-dasharray');
+    const dasharray = dasharrayProperty.constantOr((1: any));
+    const capProperty = layer.layout.get('line-cap');
     const patternProperty = layer.paint.get('line-pattern');
     const image = patternProperty.constantOr((1: any));
 
@@ -44,8 +46,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const context = painter.context;
     const gl = context.gl;
 
-    let firstTile = true;
-
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         if (image && !tile.patternsLoaded()) continue;
@@ -55,9 +55,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.prepareDrawTile(coord);
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const prevProgram = painter.context.program.get();
         const program = painter.useProgram(programId, programConfiguration);
-        const programChanged = firstTile || program.program !== prevProgram;
 
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
@@ -67,9 +65,19 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        const matrix = painter.terrain ? coord.posMatrix : null;
+        const constantDash = dasharrayProperty.constantOr(null);
+        const constantCap = capProperty.constantOr((null: any));
+
+        if (!image && constantDash && constantCap && tile.lineAtlas) {
+            const atlas = tile.lineAtlas;
+            const posTo = atlas.getDash(constantDash.to, constantCap);
+            const posFrom = atlas.getDash(constantDash.from, constantCap);
+            if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
+        }
+
+        const matrix = painter.terrain ? coord.projMatrix : null;
         const uniformValues = image ? linePatternUniformValues(painter, tile, layer, crossfade, matrix) :
-            dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray, crossfade, matrix) :
+            dasharray ? lineSDFUniformValues(painter, tile, layer, crossfade, matrix) :
             gradient ? lineGradientUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length) :
             lineUniformValues(painter, tile, layer, matrix);
 
@@ -77,9 +85,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             programConfiguration.updatePaintBuffers(crossfade);
-        } else if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
+        } else if (dasharray) {
             context.activeTexture.set(gl.TEXTURE0);
-            painter.lineAtlas.bind(context);
+            tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
+            programConfiguration.updatePaintBuffers(crossfade);
         } else if (gradient) {
             const layerGradient = bucket.gradients[layer.id];
             let gradientTexture = layerGradient.texture;
@@ -115,12 +124,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             gradientTexture.bind(layer.stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);
         }
 
+        painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+
         program.draw(context, gl.TRIANGLES, depthMode,
             painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
             layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
-
-        firstTile = false;
-        // once refactored so that bound texture state is managed, we'll also be able to remove this firstTile/programChanged logic
     }
 }

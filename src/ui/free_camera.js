@@ -1,6 +1,6 @@
 // @flow
 
-import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {degToRad, wrap} from '../util/util.js';
 import {vec3, vec4, quat, mat4} from 'gl-matrix';
 import type {Elevation} from '../terrain/elevation.js';
@@ -247,6 +247,20 @@ class FreeCamera {
         return cameraToWorld;
     }
 
+    getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number, uniformScale: number): Float64Array {
+        const invPosition = this.position;
+
+        vec3.scale(invPosition, invPosition, -worldSize);
+        const matrix = new Float64Array(16);
+        mat4.fromScaling(matrix, [uniformScale, uniformScale, uniformScale]);
+        mat4.translate(matrix, matrix, invPosition);
+
+        // Adjust scale on z (3rd column 3rd row)
+        matrix[10] *= pixelsPerMeter;
+
+        return matrix;
+    }
+
     getWorldToCamera(worldSize: number, pixelsPerMeter: number): Float64Array {
         // transformation chain from world space to camera space:
         // 1. Height value (z) of renderables is in meters. Scale z coordinate by pixelsPerMeter
@@ -286,6 +300,12 @@ class FreeCamera {
         const matrix = new Float64Array(16);
         mat4.perspective(matrix, fovy, aspectRatio, nearZ, farZ);
         return matrix;
+    }
+
+    getDistanceToElevation(elevationMeters: number): number {
+        const z0 = elevationMeters === 0 ? 0 : mercatorZfromAltitude(elevationMeters, this.position[1]);
+        const f = this.forward();
+        return (z0 - this.position[2]) / f[2];
     }
 
     clone(): FreeCamera {

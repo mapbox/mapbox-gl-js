@@ -1,0 +1,74 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "width": 400,
+      "height": 256
+    }
+  },
+  "center": [
+    -18,
+    62
+  ],
+  "fog": {
+    "range": [2.5, 6.5],
+    "color": "rgba(255, 255, 255, 0.99)"
+  },
+  "zoom": 8.3,
+  "pitch": 75,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -18,
+                65
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "gradient",
+        "sky-gradient": "lightblue"
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "point",
+        "text-field": "Should be clipped",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 60
+      }
+    }
+  ]
+}

@@ -1,10 +1,11 @@
-import octokit from '@octokit/rest';
+import {Octokit} from '@octokit/rest';
 import fs from 'fs';
 
 const list = {};
 
-octokit()
-    .paginate(octokit.repos.listReleases.endpoint({
+const octokit = new Octokit();
+
+octokit.paginate(octokit.repos.listReleases.endpoint({
         owner: 'mapbox',
         repo: 'mapbox-gl-js'
     }))

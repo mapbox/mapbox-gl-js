@@ -79,7 +79,7 @@ function drawTileQueryGeometry(painter, sourceCache, coord: OverscaledTileID) {
     const context = painter.context;
     const gl = context.gl;
 
-    const posMatrix = coord.posMatrix;
+    const posMatrix = coord.projMatrix;
     const program = painter.useProgram('debug');
     const tile = sourceCache.getTileByID(coord.key);
     if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
@@ -122,7 +122,7 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     const context = painter.context;
     const gl = context.gl;
 
-    const posMatrix = coord.posMatrix;
+    const posMatrix = coord.projMatrix;
     const program = painter.useProgram('debug');
     const tile = sourceCache.getTileByID(coord.key);
     if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);

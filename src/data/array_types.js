@@ -190,6 +190,44 @@ register('StructArrayLayout10ui20', StructArrayLayout10ui20);
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Uint16[8]
+ *
+ * @private
+ */
+class StructArrayLayout8ui16 extends StructArray {
+    uint8: Uint8Array;
+    uint16: Uint16Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.uint16 = new Uint16Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7);
+    }
+
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
+        const o2 = i * 8;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
+        this.uint16[o2 + 2] = v2;
+        this.uint16[o2 + 3] = v3;
+        this.uint16[o2 + 4] = v4;
+        this.uint16[o2 + 5] = v5;
+        this.uint16[o2 + 6] = v6;
+        this.uint16[o2 + 7] = v7;
+        return i;
+    }
+}
+
+StructArrayLayout8ui16.prototype.bytesPerElement = 16;
+register('StructArrayLayout8ui16', StructArrayLayout8ui16);
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Int16[4]
  * [8]: Uint16[4]
  * [16]: Int16[4]
@@ -506,10 +544,11 @@ register('StructArrayLayout3ui6', StructArrayLayout3ui6);
  * [36]: Uint8[3]
  * [40]: Uint32[1]
  * [44]: Int16[1]
+ * [46]: Uint8[1]
  *
  * @private
  */
-class StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48 extends StructArray {
+class StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint16: Uint16Array;
@@ -524,13 +563,13 @@ class StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48 extends StructArray {
         this.float32 = new Float32Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number) {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number, v17: number) {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number) {
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number, v17: number) {
         const o2 = i * 24;
         const o4 = i * 12;
         const o1 = i * 48;
@@ -551,12 +590,13 @@ class StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48 extends StructArray {
         this.uint8[o1 + 38] = v14;
         this.uint32[o4 + 10] = v15;
         this.int16[o2 + 22] = v16;
+        this.uint8[o1 + 46] = v17;
         return i;
     }
 }
 
-StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48.prototype.bytesPerElement = 48;
-register('StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48', StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48);
+StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48.prototype.bytesPerElement = 48;
+register('StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48', StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48);
 
 /**
  * Implementation of the StructArray layout:
@@ -891,6 +931,7 @@ class PlacedSymbolStruct extends Struct {
     hidden: number;
     crossTileID: number;
     associatedIconIndex: number;
+    flipState: number;
     get anchorX() { return this._structArray.int16[this._pos2 + 0]; }
     get anchorY() { return this._structArray.int16[this._pos2 + 1]; }
     get glyphStartIndex() { return this._structArray.uint16[this._pos2 + 2]; }
@@ -911,6 +952,8 @@ class PlacedSymbolStruct extends Struct {
     get crossTileID() { return this._structArray.uint32[this._pos4 + 10]; }
     set crossTileID(x: number) { this._structArray.uint32[this._pos4 + 10] = x; }
     get associatedIconIndex() { return this._structArray.int16[this._pos2 + 22]; }
+    get flipState() { return this._structArray.uint8[this._pos1 + 46]; }
+    set flipState(x: number) { this._structArray.uint8[this._pos1 + 46] = x; }
 }
 
 PlacedSymbolStruct.prototype.size = 48;
@@ -920,7 +963,7 @@ export type PlacedSymbol = PlacedSymbolStruct;
 /**
  * @private
  */
-export class PlacedSymbolArray extends StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48 {
+export class PlacedSymbolArray extends StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48 {
     /**
      * Return the PlacedSymbolStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -1104,6 +1147,7 @@ export {
     StructArrayLayout2i4ub1f12,
     StructArrayLayout2f8,
     StructArrayLayout10ui20,
+    StructArrayLayout8ui16,
     StructArrayLayout4i4ui4i24,
     StructArrayLayout3f12,
     StructArrayLayout1ul4,
@@ -1112,7 +1156,7 @@ export {
     StructArrayLayout2f1f2i16,
     StructArrayLayout2ub2f12,
     StructArrayLayout3ui6,
-    StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48,
+    StructArrayLayout2i2ui3ul3ui2f3ub1ul1i1ub48,
     StructArrayLayout8i15ui1ul4f68,
     StructArrayLayout1f4,
     StructArrayLayout3i6,
@@ -1129,6 +1173,7 @@ export {
     StructArrayLayout2i4ub1f12 as LineLayoutArray,
     StructArrayLayout2f8 as LineExtLayoutArray,
     StructArrayLayout10ui20 as PatternLayoutArray,
+    StructArrayLayout8ui16 as DashLayoutArray,
     StructArrayLayout4i4ui4i24 as SymbolLayoutArray,
     StructArrayLayout3f12 as SymbolDynamicLayoutArray,
     StructArrayLayout1ul4 as SymbolOpacityArray,
