@@ -51,17 +51,7 @@ export class ErrorEvent extends Event {
  * For lists of events you can listen for, see API documentation for specific classes: [`Map`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Marker`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Popup`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), and [`GeolocationControl`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  *
  * @mixin Evented
- * @example
-* // The 'load' event is an example of Evented.
-* // Set an event listener that fires
-* // when the map has finished loading.
-* map.on('load', function() {
-*    console.log('A load event occurred.');
-* });
-* @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
-* @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
-* @see [Locate the user](https://docs.mapbox.com/mapbox-gl-js/example/locate-user/)
-*/
+ */
 export class Evented {
     _listeners: Listeners;
     _oneTimeListeners: Listeners;
