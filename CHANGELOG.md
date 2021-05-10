@@ -6,7 +6,7 @@
 * Reduce GPU memory footprint when terrain is active by sharing a single depth stencil renderbuffer for all draping ([#10611](https://github.com/mapbox/mapbox-gl-js/pull/10611))
 * Add support for data-driven `text-line-height` ([#10612](https://github.com/mapbox/mapbox-gl-js/pull/10612))
 * Add support for data-driven expressions in `line-dasharray` and `line-cap` properties. ([#10591](https://github.com/mapbox/mapbox-gl-js/pull/10591))
-Optimize tile cover by preventing unnecessary tile loads when terrain is active ([#10467](https://github.com/mapbox/mapbox-gl-js/pull/10467))
+* Optimize tile cover by preventing unnecessary tile loads when terrain is active ([#10467](https://github.com/mapbox/mapbox-gl-js/pull/10467))
 * Batch render DOM elements to avoid reflow ([#10530](https://github.com/mapbox/mapbox-gl-js/pull/10530), [#10567](https://github.com/mapbox/mapbox-gl-js/pull/10567)) (h/t [zarov](https://github.com/zarov))
 
 ### 🐞 Bug fixes
