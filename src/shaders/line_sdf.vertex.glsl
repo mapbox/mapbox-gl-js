@@ -98,13 +98,13 @@ void main() {
     float fromScale = u_scale.y;
     float toScale = u_scale.z;
 
-    float widthA = dash_from.z * fromScale;
-    float widthB = dash_to.z * toScale;
+    float scaleA = dash_from.z == 0.0 ? 0.0 : tileZoomRatio / (dash_from.z * fromScale);
+    float scaleB = dash_to.z == 0.0 ? 0.0 : tileZoomRatio / (dash_to.z * toScale);
     float heightA = dash_from.y;
     float heightB = dash_to.y;
 
-    v_tex_a = vec2(a_linesofar * (tileZoomRatio / widthA) / floorwidth, (-normal.y * heightA + dash_from.x + 0.5) / u_texsize.y);
-    v_tex_b = vec2(a_linesofar * (tileZoomRatio / widthB) / floorwidth, (-normal.y * heightB + dash_to.x + 0.5) / u_texsize.y);
+    v_tex_a = vec2(a_linesofar * scaleA / floorwidth, (-normal.y * heightA + dash_from.x + 0.5) / u_texsize.y);
+    v_tex_b = vec2(a_linesofar * scaleB / floorwidth, (-normal.y * heightB + dash_to.x + 0.5) / u_texsize.y);
 
     v_width2 = vec2(outset, inset);
 
