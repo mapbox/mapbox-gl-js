@@ -187,6 +187,7 @@
         "text-field": "{name}",
         "symbol-placement": "line",
         "symbol-spacing": 100,
+        "text-writing-mode": ["vertical", "horizontal"],
         "text-allow-overlap": true,
         "text-font": [ "NotoCJK" ]
       }
