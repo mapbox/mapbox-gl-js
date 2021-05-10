@@ -673,7 +673,9 @@ class SymbolBucket implements Bucket {
             (false: any),
             // The crossTileID is only filled/used on the foreground for dynamic text anchors
             0,
-            associatedIconIndex
+            associatedIconIndex,
+            // flipState is unknown initially; will be updated to flipRequired(1)/flipNotRequired(2) during line label reprojection
+            0
         );
     }
 
