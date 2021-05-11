@@ -61,7 +61,7 @@ const hillshadeUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: HillshadeStyleLayer,
-    matrix: ?Float32Array
+    matrix: ?Array<number>
 ): UniformValues<HillshadeUniformsType> => {
     const shadow = layer.paint.get("hillshade-shadow-color");
     const highlight = layer.paint.get("hillshade-highlight-color");

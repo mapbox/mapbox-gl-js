@@ -71,7 +71,7 @@ const backgroundPatternUniforms = (context: Context, locations: UniformLocations
 });
 
 const backgroundUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     opacity: number,
     color: Color
 ): UniformValues<BackgroundUniformsType> => ({
@@ -81,7 +81,7 @@ const backgroundUniformValues = (
 });
 
 const backgroundPatternUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     opacity: number,
     painter: Painter,
     image: CrossFaded<ResolvedImage>,

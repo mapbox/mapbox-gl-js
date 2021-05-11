@@ -151,9 +151,9 @@ const symbolIconUniformValues = (
     rotateInShader: boolean,
     pitchWithMap: boolean,
     painter: Painter,
-    matrix: Float32Array,
-    labelPlaneMatrix: Float32Array,
-    glCoordMatrix: Float32Array,
+    matrix: Array<number>,
+    labelPlaneMatrix: Array<number>,
+    glCoordMatrix: Array<number>,
     isText: boolean,
     texSize: [number, number]
 ): UniformValues<SymbolIconUniformsType> => {
@@ -185,9 +185,9 @@ const symbolSDFUniformValues = (
     rotateInShader: boolean,
     pitchWithMap: boolean,
     painter: Painter,
-    matrix: Float32Array,
-    labelPlaneMatrix: Float32Array,
-    glCoordMatrix: Float32Array,
+    matrix: Array<number>,
+    labelPlaneMatrix: Array<number>,
+    glCoordMatrix: Array<number>,
     isText: boolean,
     texSize: [number, number],
     isHalo: boolean
@@ -209,9 +209,9 @@ const symbolTextAndIconUniformValues = (
     rotateInShader: boolean,
     pitchWithMap: boolean,
     painter: Painter,
-    matrix: Float32Array,
-    labelPlaneMatrix: Float32Array,
-    glCoordMatrix: Float32Array,
+    matrix: Array<number>,
+    labelPlaneMatrix: Array<number>,
+    glCoordMatrix: Array<number>,
     texSizeSDF: [number, number],
     texSizeIcon: [number, number]
 ): UniformValues<SymbolIconUniformsType> => {

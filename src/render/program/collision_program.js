@@ -38,7 +38,7 @@ const collisionCircleUniforms = (context: Context, locations: UniformLocations):
 });
 
 const collisionUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     transform: Transform,
     tile: Tile
 ): UniformValues<CollisionUniformsType> => {
@@ -52,8 +52,8 @@ const collisionUniformValues = (
 };
 
 const collisionCircleUniformValues = (
-    matrix: Float32Array,
-    invMatrix: Float32Array,
+    matrix: Array<number>,
+    invMatrix: Array<number>,
     transform: Transform
 ): UniformValues<CollisionCircleUniformsType> => {
     return {

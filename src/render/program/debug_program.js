@@ -25,7 +25,7 @@ const debugUniforms = (context: Context, locations: UniformLocations): DebugUnif
     'u_overlay_scale':  new Uniform1f(context, locations.u_overlay_scale),
 });
 
-const debugUniformValues = (matrix: Float32Array, color: Color, scaleRatio: number = 1): UniformValues<DebugUniformsType> => ({
+const debugUniformValues = (matrix: Array<number>, color: Color, scaleRatio: number = 1): UniformValues<DebugUniformsType> => ({
     'u_matrix': matrix,
     'u_color': color,
     'u_overlay': 0,

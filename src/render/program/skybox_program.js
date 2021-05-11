@@ -39,7 +39,7 @@ const skyboxUniforms = (context: Context, locations: UniformLocations): SkyboxUn
 });
 
 const skyboxUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     sunDirection: vec3,
     cubemap: number,
     opacity: number,
@@ -63,7 +63,7 @@ const skyboxGradientUniforms = (context: Context, locations: UniformLocations): 
 });
 
 const skyboxGradientUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     centerDirection: vec3,
     radius: number, //degrees
     opacity: number,

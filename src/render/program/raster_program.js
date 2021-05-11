@@ -45,7 +45,7 @@ const rasterUniforms = (context: Context, locations: UniformLocations): RasterUn
 });
 
 const rasterUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     parentTL: [number, number],
     parentScaleBy: number,
     fade: {mix: number, opacity: number},

@@ -13,7 +13,7 @@ const clippingMaskUniforms = (context: Context, locations: UniformLocations): Cl
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix)
 });
 
-const clippingMaskUniformValues = (matrix: Float32Array): UniformValues<ClippingMaskUniformsType> => ({
+const clippingMaskUniformValues = (matrix: Array<number>): UniformValues<ClippingMaskUniformsType> => ({
     'u_matrix': matrix
 });
 

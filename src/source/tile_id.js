@@ -79,7 +79,7 @@ export class OverscaledTileID {
     wrap: number;
     canonical: CanonicalTileID;
     key: number;
-    projMatrix: Float32Array;
+    projMatrix: Array<number>;
 
     constructor(overscaledZ: number, wrap: number, z: number, x: number, y: number) {
         assert(overscaledZ >= z);

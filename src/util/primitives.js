@@ -33,7 +33,7 @@ class Frustum {
         this.planes = planes_;
     }
 
-    static fromInvProjectionMatrix(invProj: Float64Array, worldSize: number, zoom: number): Frustum {
+    static fromInvProjectionMatrix(invProj: Array<number>, worldSize: number, zoom: number): Frustum {
         const clipSpaceCorners = [
             [-1, 1, -1, 1],
             [ 1, 1, -1, 1],

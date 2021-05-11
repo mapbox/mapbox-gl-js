@@ -22,7 +22,7 @@ const terrainRasterUniforms = (context: Context, locations: UniformLocations): T
 });
 
 const terrainRasterUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     skirtHeight: number
 ): UniformValues<TerrainRasterUniformsType> => ({
     'u_matrix': matrix,

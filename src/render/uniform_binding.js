@@ -107,14 +107,14 @@ class UniformColor extends Uniform<Color> {
     }
 }
 
-const emptyMat4 = new Float32Array(16);
-class UniformMatrix4f extends Uniform<Float32Array> {
+const emptyMat4 = new Array(16);
+class UniformMatrix4f extends Uniform<Array<number>> {
     constructor(context: Context, location: WebGLUniformLocation) {
         super(context, location);
         this.current = emptyMat4;
     }
 
-    set(v: Float32Array): void {
+    set(v: Array<number>): void {
         // The vast majority of matrix comparisons that will trip this set
         // happen at i=12 or i=0, so we check those first to avoid lots of
         // unnecessary iteration:
@@ -133,14 +133,14 @@ class UniformMatrix4f extends Uniform<Float32Array> {
     }
 }
 
-const emptyMat3 = new Float32Array(9);
-class UniformMatrix3f extends Uniform<Float32Array> {
+const emptyMat3 = new Array(9);
+class UniformMatrix3f extends Uniform<Array<number>> {
     constructor(context: Context, location: WebGLUniformLocation) {
         super(context, location);
         this.current = emptyMat3;
     }
 
-    set(v: Float32Array): void {
+    set(v: Array<number>): void {
         for (let i = 0; i < 9; i++) {
             if (v[i] !== this.current[i]) {
                 this.current = v;

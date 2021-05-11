@@ -45,7 +45,7 @@ const heatmapTextureUniforms = (context: Context, locations: UniformLocations): 
 });
 
 const heatmapUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     tile: Tile,
     zoom: number,
     intensity: number

@@ -99,7 +99,7 @@ const lineUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: LineStyleLayer,
-    matrix: ?Float32Array
+    matrix: ?Array<number>
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
 
@@ -118,7 +118,7 @@ const lineGradientUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: LineStyleLayer,
-    matrix: ?Float32Array,
+    matrix: ?Array<number>,
     imageHeight: number
 ): UniformValues<LineGradientUniformsType> => {
     return extend(lineUniformValues(painter, tile, layer, matrix), {
@@ -132,7 +132,7 @@ const linePatternUniformValues = (
     tile: Tile,
     layer: LineStyleLayer,
     crossfade: CrossfadeParameters,
-    matrix: ?Float32Array
+    matrix: ?Array<number>
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
     const tileZoomRatio = calculateTileRatio(tile, transform);
@@ -157,7 +157,7 @@ const lineSDFUniformValues = (
     tile: Tile,
     layer: LineStyleLayer,
     crossfade: CrossfadeParameters,
-    matrix: ?Float32Array
+    matrix: ?Array<number>
 ): UniformValues<LineSDFUniformsType> => {
     const tileZoomRatio = calculateTileRatio(tile, painter.transform);
     return extend(lineUniformValues(painter, tile, layer, matrix), {

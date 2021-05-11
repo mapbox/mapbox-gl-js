@@ -79,12 +79,12 @@ const fillOutlinePatternUniforms = (context: Context, locations: UniformLocation
     'u_fade': new Uniform1f(context, locations.u_fade)
 });
 
-const fillUniformValues = (matrix: Float32Array): UniformValues<FillUniformsType> => ({
+const fillUniformValues = (matrix: Array<number>): UniformValues<FillUniformsType> => ({
     'u_matrix': matrix
 });
 
 const fillPatternUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     painter: Painter,
     crossfade: CrossfadeParameters,
     tile: Tile
@@ -94,7 +94,7 @@ const fillPatternUniformValues = (
 );
 
 const fillOutlineUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     drawingBufferSize: [number, number]
 ): UniformValues<FillOutlineUniformsType> => ({
     'u_matrix': matrix,
@@ -102,7 +102,7 @@ const fillOutlineUniformValues = (
 });
 
 const fillOutlinePatternUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     painter: Painter,
     crossfade: CrossfadeParameters,
     tile: Tile,

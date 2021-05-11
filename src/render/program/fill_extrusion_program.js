@@ -72,7 +72,7 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
 });
 
 const fillExtrusionUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     painter: Painter,
     shouldUseVerticalGradient: boolean,
     opacity: number
@@ -100,7 +100,7 @@ const fillExtrusionUniformValues = (
 };
 
 const fillExtrusionPatternUniformValues = (
-    matrix: Float32Array,
+    matrix: Array<number>,
     painter: Painter,
     shouldUseVerticalGradient: boolean,
     opacity: number,

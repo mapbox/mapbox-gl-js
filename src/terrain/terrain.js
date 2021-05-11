@@ -153,7 +153,7 @@ class ProxySourceCache extends SourceCache {
 class ProxiedTileID extends OverscaledTileID {
     proxyTileKey: number;
 
-    constructor(tileID: OverscaledTileID, proxyTileKey: number, projMatrix: Float32Array) {
+    constructor(tileID: OverscaledTileID, proxyTileKey: number, projMatrix: Array<number>) {
         super(tileID.overscaledZ, tileID.wrap, tileID.canonical.z, tileID.canonical.x, tileID.canonical.y);
         this.proxyTileKey = proxyTileKey;
         this.projMatrix = projMatrix;
@@ -546,7 +546,7 @@ export class Terrain extends Elevation {
         options?: {
             useDepthForOcclusion?: boolean,
             useMeterToDem?: boolean,
-            labelPlaneMatrixInv?: ?Float32Array,
+            labelPlaneMatrixInv?: ?Array<number>,
             morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number }
         }) {
         const context = this.painter.context;

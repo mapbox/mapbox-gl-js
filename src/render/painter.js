@@ -682,10 +682,10 @@ class Painter {
     /**
      * Transform a matrix to incorporate the *-translate and *-translate-anchor properties into it.
      * @param inViewportPixelUnitsUnits True when the units accepted by the matrix are in viewport pixels instead of tile units.
-     * @returns {Float32Array} matrix
+     * @returns {Array<number>} matrix
      * @private
      */
-    translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean) {
+    translatePosMatrix(matrix: Array<number>, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean) {
         if (!translate[0] && !translate[1]) return matrix;
 
         const angle = inViewportPixelUnitsUnits ?
@@ -707,9 +707,7 @@ class Painter {
             0
         ];
 
-        const translatedMatrix = new Float32Array(16);
-        mat4.translate(translatedMatrix, matrix, translation);
-        return translatedMatrix;
+        return mat4.translate([], matrix, translation);
     }
 
     saveTileTexture(texture: Texture) {

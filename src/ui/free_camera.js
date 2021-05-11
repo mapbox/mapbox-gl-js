@@ -241,18 +241,16 @@ class FreeCamera {
         return [col[0], col[1], col[2]];
     }
 
-    getCameraToWorld(worldSize: number, pixelsPerMeter: number): Float64Array {
-        const cameraToWorld = new Float64Array(16);
-        mat4.invert(cameraToWorld, this.getWorldToCamera(worldSize, pixelsPerMeter));
+    getCameraToWorld(worldSize: number, pixelsPerMeter: number): Array<number> {
+        const cameraToWorld = mat4.invert([], this.getWorldToCamera(worldSize, pixelsPerMeter));
         return cameraToWorld;
     }
 
-    getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number, uniformScale: number): Float64Array {
+    getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number, uniformScale: number): Array<number> {
         const invPosition = this.position;
 
         vec3.scale(invPosition, invPosition, -worldSize);
-        const matrix = new Float64Array(16);
-        mat4.fromScaling(matrix, [uniformScale, uniformScale, uniformScale]);
+        const matrix = mat4.fromScaling([], [uniformScale, uniformScale, uniformScale]);
         mat4.translate(matrix, matrix, invPosition);
 
         // Adjust scale on z (3rd column 3rd row)
@@ -261,7 +259,7 @@ class FreeCamera {
         return matrix;
     }
 
-    getWorldToCamera(worldSize: number, pixelsPerMeter: number): Float64Array {
+    getWorldToCamera(worldSize: number, pixelsPerMeter: number): Array<number> {
         // transformation chain from world space to camera space:
         // 1. Height value (z) of renderables is in meters. Scale z coordinate by pixelsPerMeter
         // 2. Transform from pixel coordinates to camera space with cameraMatrix^-1
@@ -269,16 +267,14 @@ class FreeCamera {
 
         // worldToCamera: flip * cam^-1 * zScale
         // cameraToWorld: (flip * cam^-1 * zScale)^-1 => (zScale^-1 * cam * flip^-1)
-        const matrix = new Float64Array(16);
 
         // Compute inverse of camera matrix and post-multiply negated translation
-        const invOrientation = new Float64Array(4);
         const invPosition = this.position;
 
-        quat.conjugate(invOrientation, this._orientation);
+        const invOrientation = quat.conjugate([], this._orientation);
         vec3.scale(invPosition, invPosition, -worldSize);
 
-        mat4.fromQuat(matrix, invOrientation);
+        const matrix = mat4.fromQuat([], invOrientation);
         mat4.translate(matrix, matrix, invPosition);
 
         // Pre-multiply y (2nd row)
@@ -296,10 +292,8 @@ class FreeCamera {
         return matrix;
     }
 
-    getCameraToClipPerspective(fovy: number, aspectRatio: number, nearZ: number, farZ: number): Float64Array {
-        const matrix = new Float64Array(16);
-        mat4.perspective(matrix, fovy, aspectRatio, nearZ, farZ);
-        return matrix;
+    getCameraToClipPerspective(fovy: number, aspectRatio: number, nearZ: number, farZ: number): Array<number> {
+        return mat4.perspective([], fovy, aspectRatio, nearZ, farZ);
     }
 
     getDistanceToElevation(elevationMeters: number): number {

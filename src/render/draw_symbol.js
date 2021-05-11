@@ -8,7 +8,7 @@ import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
 import {mat4} from 'gl-matrix';
-const identityMat4 = mat4.identity(new Float32Array(16));
+const identityMat4 = mat4.identity([]);
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
@@ -50,7 +50,7 @@ type SymbolTileRenderState = {
         isSDF: boolean,
         hasHalo: boolean,
         tile: Tile,
-        labelPlaneMatrixInv: ?Float32Array
+        labelPlaneMatrixInv: ?Array<number>
     }
 };
 
@@ -294,7 +294,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
         const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
-        const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(new Float32Array(16), labelPlaneMatrix) : identityMat4;
+        const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert([], labelPlaneMatrix) : identityMat4;
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.projMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
