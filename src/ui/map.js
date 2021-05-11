@@ -73,7 +73,7 @@ type IControl = {
 type MapOptions = {
     hash?: boolean | string,
     interactive?: boolean,
-    container: HTMLElement | string,
+    container: HTMLElement | string | HTMLCanvasElement | OffscreenCanvas,
     bearingSnap?: number,
     attributionControl?: boolean,
     customAttribution?: string | Array<string>,
@@ -331,6 +331,7 @@ class Map extends Camera {
     _speedIndexTiming: boolean;
     _clickTolerance: number;
     _silenceAuthErrors: boolean;
+    _domLess: boolean;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -405,6 +406,7 @@ class Map extends Camera {
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
+
         this._interactive = options.interactive;
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
@@ -433,8 +435,13 @@ class Map extends Camera {
             if (!this._container) {
                 throw new Error(`Container '${options.container}' not found.`);
             }
+            this._domLess = false;
+        } else if (options.container instanceof HTMLCanvasElement || options.container instanceof OffscreenCanvas) {
+            this._container = options.container;
+            this._domLess = true;
         } else if (options.container instanceof HTMLElement) {
             this._container = options.container;
+            this._domLess = false;
         } else {
             throw new Error(`Invalid type: 'container' must be a String or HTMLElement.`);
         }
@@ -461,7 +468,7 @@ class Map extends Camera {
         this.on('moveend', () => this._update(false));
         this.on('zoom', () => this._update(true));
 
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' || !this._domLess) {
             window.addEventListener('online', this._onWindowOnline, false);
             window.addEventListener('resize', this._onWindowResize, false);
             window.addEventListener('orientationchange', this._onWindowResize, false);
@@ -470,7 +477,7 @@ class Map extends Camera {
         this.handlers = new HandlerManager(this, options);
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
-        this._hash = options.hash && (new Hash(hashName)).addTo(this);
+        this._hash = (options.hash && !this._domLess) && (new Hash(hashName)).addTo(this);
         // don't set position from options if set through hash
         if (!this._hash || !this._hash._onHashChange()) {
             this.jumpTo({
@@ -493,11 +500,13 @@ class Map extends Camera {
 
         if (options.style) this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
 
-        if (options.attributionControl)
-            this.addControl(new AttributionControl({customAttribution: options.customAttribution}));
+        if (!this._domLess) {
+            if (options.attributionControl)
+                this.addControl(new AttributionControl({customAttribution: options.customAttribution}));
 
-        this._logoControl = new LogoControl();
-        this.addControl(this._logoControl, options.logoPosition);
+            this._logoControl = new LogoControl();
+            this.addControl(this._logoControl, options.logoPosition);
+        }
 
         this.on('style.load', () => {
             if (this.transform.unmodified) {
@@ -620,7 +629,7 @@ class Map extends Camera {
      * if (mapDiv.style.visibility === true) map.resize();
      */
     resize(eventData?: Object) {
-        const dimensions = this._containerDimensions();
+        const dimensions = this._domLess? [this._container.width, this._container.height] : this._containerDimensions();
         const width = dimensions[0];
         const height = dimensions[1];
 
@@ -2355,37 +2364,44 @@ class Map extends Camera {
 
     _setupContainer() {
         const container = this._container;
-        container.classList.add('mapboxgl-map');
 
-        const missingCSSCanary = this._missingCSSCanary = DOM.create('div', 'mapboxgl-canary', container);
-        missingCSSCanary.style.visibility = 'hidden';
-        this._detectMissingCSS();
+        if (!this._domLess) {
+            container.classList.add('mapboxgl-map');
 
-        const canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
-        if (this._interactive) {
-            canvasContainer.classList.add('mapboxgl-interactive');
+            const missingCSSCanary = this._missingCSSCanary = DOM.create('div', 'mapboxgl-canary', container);
+            missingCSSCanary.style.visibility = 'hidden';
+            this._detectMissingCSS();
+
+            const canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
+            if (this._interactive) {
+                canvasContainer.classList.add('mapboxgl-interactive');
+            }
+            this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
+
+            this._canvas.addEventListener('webglcontextlost', this._contextLost, false);
+            this._canvas.addEventListener('webglcontextrestored', this._contextRestored, false);
+            this._canvas.setAttribute('tabindex', '0');
+            this._canvas.setAttribute('aria-label', 'Map');
+            this._canvas.setAttribute('role', 'region');
+
+            const dimensions = this._containerDimensions();
+            this._resizeCanvas(dimensions[0], dimensions[1]);
+
+            const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
+            const positions = this._controlPositions = {};
+            ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((positionName) => {
+                positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
+            });
+
+            this._container.addEventListener('scroll', this._onMapScroll, false);
+        } else {
+            this._canvas = container;
         }
-
-        this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
-        this._canvas.addEventListener('webglcontextlost', this._contextLost, false);
-        this._canvas.addEventListener('webglcontextrestored', this._contextRestored, false);
-        this._canvas.setAttribute('tabindex', '0');
-        this._canvas.setAttribute('aria-label', 'Map');
-        this._canvas.setAttribute('role', 'region');
-
-        const dimensions = this._containerDimensions();
-        this._resizeCanvas(dimensions[0], dimensions[1]);
-
-        const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
-        const positions = this._controlPositions = {};
-        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((positionName) => {
-            positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
-        });
-
-        this._container.addEventListener('scroll', this._onMapScroll, false);
     }
 
     _resizeCanvas(width: number, height: number) {
+        if (this._domLess) return;
+
         const pixelRatio = browser.devicePixelRatio || 1;
 
         // Request the required canvas size taking the pixelratio into account.

@@ -173,53 +173,55 @@ class HandlerManager {
         // Track whether map is currently moving, to compute start/move/end events
         this._eventsInProgress = {};
 
-        this._addDefaultHandlers(options);
+        if (!map._domLess) {
+            this._addDefaultHandlers(options);
 
-        bindAll(['handleEvent', 'handleWindowEvent'], this);
+            bindAll(['handleEvent', 'handleWindowEvent'], this);
 
-        const el = this._el;
+            const el = this._el;
 
-        this._listeners = [
-            // This needs to be `passive: true` so that a double tap fires two
-            // pairs of touchstart/end events in iOS Safari 13. If this is set to
-            // `passive: false` then the second pair of events is only fired if
-            // preventDefault() is called on the first touchstart. Calling preventDefault()
-            // undesirably prevents click events.
-            [el, 'touchstart', {passive: true}],
-            // This needs to be `passive: false` so that scrolls and pinches can be
-            // prevented in browsers that don't support `touch-actions: none`, for example iOS Safari 12.
-            [el, 'touchmove', {passive: false}],
-            [el, 'touchend', undefined],
-            [el, 'touchcancel', undefined],
+            this._listeners = [
+                // This needs to be `passive: true` so that a double tap fires two
+                // pairs of touchstart/end events in iOS Safari 13. If this is set to
+                // `passive: false` then the second pair of events is only fired if
+                // preventDefault() is called on the first touchstart. Calling preventDefault()
+                // undesirably prevents click events.
+                [el, 'touchstart', {passive: true}],
+                // This needs to be `passive: false` so that scrolls and pinches can be
+                // prevented in browsers that don't support `touch-actions: none`, for example iOS Safari 12.
+                [el, 'touchmove', {passive: false}],
+                [el, 'touchend', undefined],
+                [el, 'touchcancel', undefined],
 
-            [el, 'mousedown', undefined],
-            [el, 'mousemove', undefined],
-            [el, 'mouseup', undefined],
+                [el, 'mousedown', undefined],
+                [el, 'mousemove', undefined],
+                [el, 'mouseup', undefined],
 
-            // Bind window-level event listeners for move and up/end events. In the absence of
-            // the pointer capture API, which is not supported by all necessary platforms,
-            // window-level event listeners give us the best shot at capturing events that
-            // fall outside the map canvas element. Use `{capture: true}` for the move event
-            // to prevent map move events from being fired during a drag.
-            [window.document, 'mousemove', {capture: true}],
-            [window.document, 'mouseup', undefined],
+                // Bind window-level event listeners for move and up/end events. In the absence of
+                // the pointer capture API, which is not supported by all necessary platforms,
+                // window-level event listeners give us the best shot at capturing events that
+                // fall outside the map canvas element. Use `{capture: true}` for the move event
+                // to prevent map move events from being fired during a drag.
+                [window.document, 'mousemove', {capture: true}],
+                [window.document, 'mouseup', undefined],
 
-            [el, 'mouseover', undefined],
-            [el, 'mouseout', undefined],
-            [el, 'dblclick', undefined],
-            [el, 'click', undefined],
+                [el, 'mouseover', undefined],
+                [el, 'mouseout', undefined],
+                [el, 'dblclick', undefined],
+                [el, 'click', undefined],
 
-            [el, 'keydown', {capture: false}],
-            [el, 'keyup', undefined],
+                [el, 'keydown', {capture: false}],
+                [el, 'keyup', undefined],
 
-            [el, 'wheel', {passive: false}],
-            [el, 'contextmenu', undefined],
+                [el, 'wheel', {passive: false}],
+                [el, 'contextmenu', undefined],
 
-            [window, 'blur', undefined]
-        ];
+                [window, 'blur', undefined]
+            ];
 
-        for (const [target, type, listenerOptions] of this._listeners) {
-            DOM.addEventListener(target, type, target === window.document ? this.handleWindowEvent : this.handleEvent, listenerOptions);
+            for (const [target, type, listenerOptions] of this._listeners) {
+                DOM.addEventListener(target, type, target === window.document ? this.handleWindowEvent : this.handleEvent, listenerOptions);
+            }
         }
     }
 
@@ -307,7 +309,7 @@ class HandlerManager {
     }
 
     isZooming() {
-        return !!this._eventsInProgress.zoom || this._map.scrollZoom.isZooming();
+        return !!this._eventsInProgress.zoom || (this._map.scrollZoom && this._map.scrollZoom.isZooming());
     }
     isRotating() {
         return !!this._eventsInProgress.rotate;
