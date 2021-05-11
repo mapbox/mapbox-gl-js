@@ -315,15 +315,17 @@ export type MapBoxZoomEvent = {
  * @example
  * // Example of a MapDataEvent of type "sourcedata"
  * {
- *   type: "sourcedata",
  *   dataType: "source",
- *   isSourceLoaded, false,
- *   source: {...},
- *   style: {...}
- *   sourceDataType: "",
+ *   isSourceLoaded: false,
+ *   source: {
+ *     type: "vector",
+ *     url: "mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2"
+ *   },
+ *   sourceDataType: "visibility",
  *   sourceId: "composite",
- *   tile: {...},
- *   coord: {...}
+ *   style: {...},
+ *   target: [circular object Object],
+ *   type: "sourcedata"
  * }
  * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Change a map's style](https://docs.mapbox.com/mapbox-gl-js/example/setstyle/)
