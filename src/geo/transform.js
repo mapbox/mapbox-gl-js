@@ -836,7 +836,7 @@ class Transform {
                 let overHorizonLine = false;
                 const horizonLineFromTop = this.horizonLineFromTop();
                 if (sqDist > fogCullDistSq && horizonLineFromTop !== 0) {
-                    const projMatrix = this.calculateProjMatrix(entry.tileID.toUnwrapped());
+                    const projMatrix = this.calculateProjMatrix([], entry.tileID.toUnwrapped());
 
                     let minmax;
                     if (useElevationData && this._elevation) {
@@ -1220,7 +1220,7 @@ class Transform {
         }
     }
 
-    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Array<number> {
+    calculatePosMatrix(output: Array<number>, unwrappedTileID: UnwrappedTileID, worldSize: number): Array<number> {
         const canonical = unwrappedTileID.canonical;
         const scale = worldSize / this.zoomScale(canonical.z);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
@@ -1247,7 +1247,7 @@ class Transform {
             return cache[fogTileMatrixKey];
         }
 
-        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
+        const posMatrix = this.calculatePosMatrix([], unwrappedTileID, this.cameraWorldSize);
         mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
         cache[fogTileMatrixKey] = posMatrix;
@@ -1259,7 +1259,7 @@ class Transform {
      * @param {UnwrappedTileID} unwrappedTileID;
      * @private
      */
-    calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Array<number> {
+    calculateProjMatrix(Array<number> output, unwrappedTileID: UnwrappedTileID, aligned: boolean = false) {
         const projMatrixKey = unwrappedTileID.key;
         const cache = aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
         if (cache[projMatrixKey]) {
