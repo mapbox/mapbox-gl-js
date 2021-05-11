@@ -1259,7 +1259,7 @@ class Transform {
      * @param {UnwrappedTileID} unwrappedTileID;
      * @private
      */
-    calculateProjMatrix(Array<number> output, unwrappedTileID: UnwrappedTileID, aligned: boolean = false) {
+    calculateProjMatrix(output: Array<number>, unwrappedTileID: UnwrappedTileID, aligned: boolean = false) {
         const projMatrixKey = unwrappedTileID.key;
         const cache = aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
         if (cache[projMatrixKey]) {
