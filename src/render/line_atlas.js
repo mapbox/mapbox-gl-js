@@ -155,6 +155,8 @@ class LineAtlas {
 
     addDash(dasharray: Array<number>, lineCap: string) {
         const key = this.getKey(dasharray, lineCap);
+        if (this.positions[key]) return this.positions[key];
+
         const round = lineCap === 'round';
         const n = round ? 7 : 0;
         const height = 2 * n + 1;
