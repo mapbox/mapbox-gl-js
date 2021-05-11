@@ -34,25 +34,60 @@ class Transform {
     lngRange: ?[number, number];
     latRange: ?[number, number];
     maxValidLatitude: number;
+
+    // 2^zoom, recalling worldSize = tileSize * scale
     scale: number;
+
+    // Map dimensions, not including the pixel ratio
     width: number;
     height: number;
+
+    // Bearing, radians, in [-pi, pi]
     angle: number;
-    rotationMatrix: Float64Array;
+
+    // 2D rotation matrix in the horizontal plane, as a function of bearing
+    rotationMatrix: Array<number>;
+
+    // Fractional part of the zoom (zoom % 1)
     zoomFraction: number;
+
+    // Conversion factor from pixels to NDC, [2 / width, -2 / height] (to account for flipped y-axis)
     pixelsToGLUnits: [number, number];
+
+    // Distance from camera to the center, in screen pixel units, independent of zoom
     cameraToCenterDistance: number;
+
+    // Transform (with projection) from mercator coordinates ([0, 0] nw, [1, 1] se) to GL clip
+    // coordinates in [-1, 1] x [-1, 1]
     mercatorMatrix: Array<number>;
+
+    // Translate points in mercator coordinates to be centered about the camera, with units chosen
+    // for screen-height-dependent scaling of fog.
     mercatorFogMatrix: Array<number>;
-    projMatrix: Float64Array;
-    invProjMatrix: Float64Array;
-    alignedProjMatrix: Float64Array;
-    pixelMatrix: Float64Array;
-    pixelMatrixInverse: Float64Array;
-    worldToFogMatrix: Float64Array;
-    skyboxMatrix: Float32Array;
-    glCoordMatrix: Float32Array;
-    labelPlaneMatrix: Float32Array;
+
+    // Camera projection matrix, post-multiplied for each tile by its position matrix
+    // for conversion from tile coordinates to screen coordinates
+    projMatrix: Array<number>;
+    invProjMatrix: Array<number>;
+
+    // Same projection matrix as above, pixel-aligned to avoid fractional pixels for raster tiles
+    alignedProjMatrix: Array<number>;
+
+    // From tile coordinates to screen coordinates (projMatrix premultiplied by labelPlaneMatrix)
+    pixelMatrix: Array<number>;
+    pixelMatrixInverse: Array<number>;
+
+    worldToFogMatrix: Array<number>;
+    skyboxMatrix: Array<number>;
+
+    // Matrix from screen coordinates to gl NDC,
+    // [0, w] x [h, 0] --> [-1, 1] x [-1, 1]
+    glCoordMatrix: Array<number>;
+
+    // Inverse of glCoordMatrix, from NDC to screen coordinates,
+    // [-1, 1] x [-1, 1] --> [0, w] x [h, 0]
+    labelPlaneMatrix: Array<number>;
+
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
@@ -71,9 +106,9 @@ class Transform {
     _center: LngLat;
     _edgeInsets: EdgeInsets;
     _constraining: boolean;
-    _projMatrixCache: {[_: number]: Float32Array};
-    _alignedProjMatrixCache: {[_: number]: Float32Array};
-    _fogTileMatrixCache: {[_: number]: Float32Array};
+    _projMatrixCache: {[_: number]: Array<number>};
+    _alignedProjMatrixCache: {[_: number]: Array<number>};
+    _fogTileMatrixCache: {[_: number]: Array<number>};
     _camera: FreeCamera;
     _centerAltitude: number;
     _horizonShift: number;
@@ -235,8 +270,7 @@ class Transform {
         this._calcMatrices();
 
         // 2x2 matrix for rotating points
-        this.rotationMatrix = mat2.create();
-        mat2.rotate(this.rotationMatrix, this.rotationMatrix, this.angle);
+        this.rotationMatrix = mat2.fromRotation([], this.rotationMatrix, this.angle);
     }
 
     get pitch(): number {
@@ -1186,13 +1220,12 @@ class Transform {
         }
     }
 
-    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Array<number> {
         const canonical = unwrappedTileID.canonical;
         const scale = worldSize / this.zoomScale(canonical.z);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
 
-        const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
+        const posMatrix = mat4.fromTranslation([], [unwrappedX * scale, canonical.y * scale, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 
         return posMatrix;
@@ -1207,7 +1240,7 @@ class Transform {
      * @param {UnwrappedTileID} unwrappedTileID;
      * @private
      */
-    calculateFogTileMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+    calculateFogTileMatrix(unwrappedTileID: UnwrappedTileID): Array<number> {
         const fogTileMatrixKey = unwrappedTileID.key;
         const cache = this._fogTileMatrixCache;
         if (cache[fogTileMatrixKey]) {
@@ -1217,7 +1250,7 @@ class Transform {
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
         mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
-        cache[fogTileMatrixKey] = new Float32Array(posMatrix);
+        cache[fogTileMatrixKey] = posMatrix;
         return cache[fogTileMatrixKey];
     }
 
@@ -1226,7 +1259,7 @@ class Transform {
      * @param {UnwrappedTileID} unwrappedTileID;
      * @private
      */
-    calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
+    calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Array<number> {
         const projMatrixKey = unwrappedTileID.key;
         const cache = aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
         if (cache[projMatrixKey]) {
@@ -1236,7 +1269,7 @@ class Transform {
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
         mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
 
-        cache[projMatrixKey] = new Float32Array(posMatrix);
+        cache[projMatrixKey] = posMatrix;
         return cache[projMatrixKey];
     }
 
@@ -1463,7 +1496,7 @@ class Transform {
         // - clipping starts appearing sooner when the camera is close to 3d features (bad)
         //
         // Smaller values worked well for mapbox-gl-js but deckgl was encountering precision issues
-        // when rendering it's layers using custom layers. This value was experimentally chosen and
+        // when rendering its layers using custom layers. This value was experimentally chosen and
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
         const nearZ = this.height / 50;
 
@@ -1474,25 +1507,21 @@ class Transform {
         cameraToClip[8] = -offset.x * 2 / this.width;
         cameraToClip[9] = offset.y * 2 / this.height;
 
-        let m = mat4.mul([], cameraToClip, worldToCamera);
+        this.projMatrix = mat4.mul([], cameraToClip, worldToCamera);
 
         // The mercatorMatrix can be used to transform points from mercator coordinates
         // ([0, 0] nw, [1, 1] se) to GL coordinates.
-        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter]);
-
-        this.projMatrix = m;
+        this.mercatorMatrix = mat4.scale([], this.projMatrix, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter]);
 
         // For tile cover calculation, use inverted of base (non elevated) matrix
         // as tile elevations are in tile coordinates and relative to center elevation.
-        this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
+        this.invProjMatrix = mat4.invert([], this.projMatrix);
 
-        const view = new Float32Array(16);
-        mat4.identity(view);
-        mat4.scale(view, view, [1, -1, 1]);
+        const view = mat4.fromScaling([], [1, -1, 1]);
         mat4.rotateX(view, view, this._pitch);
         mat4.rotateZ(view, view, this.angle);
 
-        const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, nearZ, farZ);
+        const projection = mat4.perspective([], this._fov, this.width / this.height, nearZ, farZ);
         // The distance in pixels the skybox needs to be shifted down by to meet the shifted horizon.
         const skyboxHorizonShift = (Math.PI / 2 - this._pitch) * (this.height / this._fov) * this._horizonShift;
         // Apply center of perspective offset to skybox projection
@@ -1510,28 +1539,24 @@ class Transform {
             angleCos = Math.cos(this.angle), angleSin = Math.sin(this.angle),
             dx = x - Math.round(x) + angleCos * xShift + angleSin * yShift,
             dy = y - Math.round(y) + angleCos * yShift + angleSin * xShift;
-        const alignedM = new Float64Array(m);
-        mat4.translate(alignedM, alignedM, [ dx > 0.5 ? dx - 1 : dx, dy > 0.5 ? dy - 1 : dy, 0 ]);
-        this.alignedProjMatrix = alignedM;
+        this.alignedProjMatrix = mat4.fromTranslation([], [ dx > 0.5 ? dx - 1 : dx, dy > 0.5 ? dy - 1 : dy, 0 ]);
 
-        m = mat4.create();
-        mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
+        let m = mat4.fromScaling([], [this.width / 2, -this.height / 2, 1]);
         mat4.translate(m, m, [1, -1, 0]);
         this.labelPlaneMatrix = m;
 
-        m = mat4.create();
-        mat4.scale(m, m, [1, -1, 1]);
+        m = mat4.fromScaling([], [1, -1, 1]);
         mat4.translate(m, m, [-1, -1, 0]);
         mat4.scale(m, m, [2 / this.width, 2 / this.height, 1]);
         this.glCoordMatrix = m;
 
         // matrix for conversion from location to screen coordinates
-        this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
+        this.pixelMatrix = mat4.multiply([], this.labelPlaneMatrix, this.projMatrix);
 
         this._calcFogMatrices();
 
         // inverse matrix for conversion from screen coordinates to location
-        m = mat4.invert(new Float64Array(16), this.pixelMatrix);
+        m = mat4.invert([], this.pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
@@ -1558,8 +1583,7 @@ class Transform {
         vec3.scale(cameraPos, cameraPos, -1);
         vec3.multiply(cameraPos, cameraPos, metersToPixel);
 
-        const m = mat4.create();
-        mat4.translate(m, m, cameraPos);
+        const m = mat4.fromTranslation([], cameraPos);
         mat4.scale(m, m, metersToPixel);
         this.mercatorFogMatrix = m;
 
