@@ -843,7 +843,7 @@ class SourceCache extends Evented {
     getVisibleCoordinates(symbolLayer?: boolean): Array<OverscaledTileID> {
         const coords = this.getRenderableIds(symbolLayer).map((id) => this._tiles[id].tileID);
         for (const coord of coords) {
-            coord.projMatrix = this.transform.calculateProjMatrix(coord.projMatrix, coord.toUnwrapped());
+            coord.projMatrix = this.transform.calculateProjMatrix(coord.toUnwrapped());
         }
         return coords;
     }
