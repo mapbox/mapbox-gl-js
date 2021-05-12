@@ -11,10 +11,12 @@
 </head>
 
 <body>
-
+<canvas id="map_c" width=1000 height=1000></canvas>
 <script src='https://unpkg.com/downloadjs@1.4.7/download.js'></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
 <script>
-    debugger;
+    const canvas = document.getElementById('map_c');
     const worker = new Worker('./offscreen-print.js');
     worker.postMessage('start');
 
