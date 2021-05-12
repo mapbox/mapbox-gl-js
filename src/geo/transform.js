@@ -38,7 +38,7 @@ class Transform {
     // 2^zoom (worldSize = tileSize * scale)
     scale: number;
 
-    // Map dimensions (not including the pixel ratio)
+    // Map viewport size (not including the pixel ratio)
     width: number;
     height: number;
 
@@ -69,10 +69,10 @@ class Transform {
     projMatrix: Float64Array;
     invProjMatrix: Float64Array;
 
-    // Same projection matrix as above, pixel-aligned to avoid fractional pixels for raster tiles
+    // Same as projMatrix, pixel-aligned to avoid fractional pixels for raster tiles
     alignedProjMatrix: Float64Array;
 
-    // From tile coordinates to screen coordinates (projMatrix premultiplied by labelPlaneMatrix)
+    // From world coordinates to screen pixel coordinates (projMatrix premultiplied by labelPlaneMatrix)
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
 
