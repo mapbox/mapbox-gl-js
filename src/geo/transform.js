@@ -62,7 +62,7 @@ class Transform {
     mercatorMatrix: Array<number>;
 
     // Translate points in mercator coordinates to be centered about the camera, with units chosen
-    // for screen-height-dependent scaling of fog. Not affected by orientation of camera.
+    // for screen-height-independent scaling of fog. Not affected by orientation of camera.
     mercatorFogMatrix: Array<number>;
 
     // Projection from world coordinates (mercator scaled by worldSize) to clip coordinates
