@@ -37,7 +37,7 @@ const exported = {
     },
 
     getImageData(img: CanvasImageSource, padding?: number = 0): ImageData {
-        const canvas = window.document.createElement('canvas');
+        const canvas = OffscreenCanvas ? new OffscreenCanvas(32, 32) : window.document.createElement('canvas');
         const context = canvas.getContext('2d');
         if (!context) {
             throw new Error('failed to create canvas 2d context');

@@ -4,7 +4,6 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         html, body { height: 100%; }
@@ -12,19 +11,18 @@
 </head>
 
 <body>
-<canvas id='map' width=1000 height=1000></canvas>
 
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
+<script src='https://unpkg.com/downloadjs@1.4.7/download.js'></script>
 <script>
+    debugger;
+    const worker = new Worker('./offscreen-print.js');
+    worker.postMessage('start');
 
-var map = window.map = new mapboxgl.Map({
-    container: document.getElementById('map'),
-    zoom: 12.5,
-    center: [-122.4194, 37.7749],
-    style: 'mapbox://styles/mapbox/streets-v10',
-    hash: true
-});
+    worker.onmessage = function(data) {
+        if(data.data.renderResult) {
+            download(data.data.renderResult, 'print.png', 'image/png');
+        }
+    }
 
 </script>
 </body>

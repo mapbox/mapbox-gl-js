@@ -14,8 +14,6 @@ if (!shared) {
     var sharedChunk = {};
     shared(sharedChunk);
     mapboxgl = chunk(sharedChunk);
-    if (typeof window !== 'undefined') {
-        mapboxgl.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
-    }
+    mapboxgl.workerUrl = URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
 }
 }

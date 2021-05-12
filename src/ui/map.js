@@ -436,10 +436,10 @@ class Map extends Camera {
                 throw new Error(`Container '${options.container}' not found.`);
             }
             this._domLess = false;
-        } else if (options.container instanceof HTMLCanvasElement || options.container instanceof OffscreenCanvas) {
+        } else if ((window.HTMLCanvasElement && options.container instanceof HTMLCanvasElement) || (OffscreenCanvas && options.container instanceof OffscreenCanvas)) {
             this._container = options.container;
             this._domLess = true;
-        } else if (options.container instanceof HTMLElement) {
+        } else if ((HTMLElement && options.container instanceof HTMLElement)) {
             this._container = options.container;
             this._domLess = false;
         } else {
