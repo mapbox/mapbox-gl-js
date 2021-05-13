@@ -622,18 +622,6 @@ export type MapEvent =
      * @instance
      * @property {MapWheelEvent} data
      * @example
-     * // Example of a MapDataEvent of type "sourcedata"
-     * {
-     *   type: "sourcedata",
-     *   dataType: "source",
-     *   isSourceLoaded, false,
-     *   source: {...},
-     *   style: {...}
-     *   sourceDataType: "",
-     *   sourceId: "composite",
-     *   tile: {...},
-     *   coord: {...}
-     * }
      */
     | 'wheel'
 
