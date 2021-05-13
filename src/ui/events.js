@@ -308,7 +308,7 @@ export type MapBoxZoomEvent = {
 
 /**
  * `MapDataEvent` is a class used by other classes to generate 
- * mouse events of specific types such as 'sourcedata' or 'style'.
+ * mouse events of specific types such as 'sourcedata' or 'dataloading'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
  * @typedef {Object} MapDataEvent
