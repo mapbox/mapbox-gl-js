@@ -324,7 +324,7 @@ export type MapBoxZoomEvent = {
  *   sourceDataType: "visibility",
  *   sourceId: "composite",
  *   style: {...},
- *   target: [circular object Object],
+ *   target: {...},
  *   type: "sourcedata"
  * }
  * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
