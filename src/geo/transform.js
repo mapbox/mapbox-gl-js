@@ -34,25 +34,58 @@ class Transform {
     lngRange: ?[number, number];
     latRange: ?[number, number];
     maxValidLatitude: number;
+
+    // 2^zoom (worldSize = tileSize * scale)
     scale: number;
+
+    // Map viewport size (not including the pixel ratio)
     width: number;
     height: number;
+
+    // Bearing, radians, in [-pi, pi]
     angle: number;
+
+    // 2D rotation matrix in the horizontal plane, as a function of bearing
     rotationMatrix: Float64Array;
+
+    // Zoom, modulo 1
     zoomFraction: number;
+
+    // The scale factor component of the conversion from pixels ([0, w] x [h, 0]) to GL
+    // NDC ([1, -1] x [1, -1]) (note flipped y)
     pixelsToGLUnits: [number, number];
+
+    // Distance from camera to the center, in screen pixel units, independent of zoom
     cameraToCenterDistance: number;
+
+    // Projection from mercator coordinates ([0, 0] nw, [1, 1] se) to GL clip coordinates
     mercatorMatrix: Array<number>;
+
+    // Translate points in mercator coordinates to be centered about the camera, with units chosen
+    // for screen-height-independent scaling of fog. Not affected by orientation of camera.
     mercatorFogMatrix: Array<number>;
+
+    // Projection from world coordinates (mercator scaled by worldSize) to clip coordinates
     projMatrix: Float64Array;
     invProjMatrix: Float64Array;
+
+    // Same as projMatrix, pixel-aligned to avoid fractional pixels for raster tiles
     alignedProjMatrix: Float64Array;
+
+    // From world coordinates to screen pixel coordinates (projMatrix premultiplied by labelPlaneMatrix)
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
+
     worldToFogMatrix: Float64Array;
     skyboxMatrix: Float32Array;
+
+    // Transform from screen coordinates to GL NDC, [0, w] x [h, 0] --> [-1, 1] x [-1, 1]
+    // Roughly speaking, applies pixelsToGLUnits scaling with a translation
     glCoordMatrix: Float32Array;
+
+    // Inverse of glCoordMatrix, from NDC to screen coordinates, [-1, 1] x [-1, 1] --> [0, w] x [h, 0]
     labelPlaneMatrix: Float32Array;
+
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;

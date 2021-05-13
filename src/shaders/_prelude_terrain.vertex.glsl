@@ -37,7 +37,7 @@ float decodeElevation(vec4 v) {
 
 float currentElevation(vec2 apos) {
 #ifdef TERRAIN_DEM_FLOAT_FORMAT
-    vec2 pos = (u_dem_size * (apos / 8192.0 * u_dem_scale + u_dem_tl) + 1.0) / (u_dem_size + 2.0);
+    vec2 pos = (u_dem_size * (apos / 8192.0 * u_dem_scale + u_dem_tl) + 1.5) / (u_dem_size + 2.0);
     return u_exaggeration * texture2D(u_dem, pos).a;
 #else
     float dd = 1.0 / (u_dem_size + 2.0);
@@ -59,7 +59,7 @@ float currentElevation(vec2 apos) {
 
 float prevElevation(vec2 apos) {
 #ifdef TERRAIN_DEM_FLOAT_FORMAT
-    vec2 pos = (u_dem_size * (apos / 8192.0 * u_dem_scale_prev + u_dem_tl_prev) + 1.0) / (u_dem_size + 2.0);
+    vec2 pos = (u_dem_size * (apos / 8192.0 * u_dem_scale_prev + u_dem_tl_prev) + 1.5) / (u_dem_size + 2.0);
     return u_exaggeration * texture2D(u_dem_prev, pos).a;
 #else
     float dd = 1.0 / (u_dem_size + 2.0);
