@@ -10,7 +10,9 @@ import type Map from './map.js';
 import type LngLat from '../geo/lng_lat.js';
 
 /**
- * `MapMouseEvent` includes properties and methods for mouse-related `Map` events.
+ * `MapMouseEvent` is a class used by other classes to generate 
+ * mouse events of specific types such as 'click' or 'hover'.
+ * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
  * @example
  * // Example of a MapMouseEvent of type "click"
@@ -33,7 +35,7 @@ import type LngLat from '../geo/lng_lat.js';
  */
 export class MapMouseEvent extends Event {
     /**
-     * The type of originating event.
+     * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
     type: 'mousedown'
         | 'mouseup'
@@ -104,7 +106,9 @@ export class MapMouseEvent extends Event {
 }
 
 /**
- * `MapTouchEvent` includes properties and methods for touch-related `Map` events.
+ * `MapTouchEvent` is a class used by other classes to generate 
+ * mouse events of specific types such as 'touchstart' or 'touchend'.
+ * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
  * @example
  * // Example of a MapTouchEvent of type "touch"
@@ -139,7 +143,7 @@ export class MapMouseEvent extends Event {
 */
 export class MapTouchEvent extends Event {
     /**
-     * The type of originating event.
+     * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
     type: 'touchstart'
         | 'touchend'
@@ -218,7 +222,9 @@ export class MapTouchEvent extends Event {
 }
 
 /**
- * `MapWheelEvent` includes properties and methods for wheel-related `Map` events.
+ * `MapWheelEvent` is a class used by other classes to generate 
+ * mouse events of specific types such as 'wheel'.
+ * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
  * @example
  * // Example of a MapWheelEvent of type "wheel"
@@ -231,7 +237,7 @@ export class MapTouchEvent extends Event {
  */
 export class MapWheelEvent extends Event {
     /**
-     * The type of originating event.
+     * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
     type: 'wheel';
 
@@ -274,11 +280,13 @@ export class MapWheelEvent extends Event {
 }
 
 /**
- * `MapBoxZoomEvent` includes properties for boxzoom-related `Map` events.
+ * `MapBoxZoomEvent` is a class used by other classes to generate 
+ * mouse events of specific types such as 'boxzoomstart' or 'boxzoomend'.
+ * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`
- * @property {string} type The type of originating event.
+ * @property {string} type The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @property {Map} target The `Map` instance that triggerred the event
  * @example
  * // Example of a BoxZoomEvent of type "boxzoomstart"
@@ -299,10 +307,12 @@ export type MapBoxZoomEvent = {
 };
 
 /**
- * `MapDataEvent` includes properties for data-related `Map` events.
+ * `MapDataEvent` is a class used by other classes to generate 
+ * mouse events of specific types such as 'sourcedata' or 'style'.
+ * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
  * @typedef {Object} MapDataEvent
- * @property {string} type The type of originating event.
+ * @property {string} type The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @property {string} dataType The type of data that has changed. One of `'source'` or `'style'`, where `'source'` refers to the non-tile data associated with any source, and `'style'` refers to the [style](https://docs.mapbox.com/help/glossary/style/) used by the map.
  * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
  * @property {Object} [source] The [style spec representation of the source](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) if the event has a `dataType` of `source`.
@@ -332,7 +342,12 @@ export type MapBoxZoomEvent = {
  * @see [Add a GeoJSON line](https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/)
  */
 export type MapDataEvent = {
-    type: string,
+    type: 'data'
+        | 'dataloading'
+        | 'styledata'
+        | 'styledataloading'
+        | 'sourcedata'
+        | 'sourcedataloading',
     dataType: string
 };
 
