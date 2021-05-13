@@ -334,7 +334,7 @@ export type MapBoxZoomEvent = {
  *   sourceDataType: "visibility",
  *   sourceId: "composite",
  *   style: {...},
- *   target: [circular object Object],
+ *   target: {...},
  *   type: "sourcedata"
  * }
  * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
@@ -637,18 +637,6 @@ export type MapEvent =
      * @instance
      * @property {MapWheelEvent} data
      * @example
-     * // Example of a MapDataEvent of type "sourcedata"
-     * {
-     *   type: "sourcedata",
-     *   dataType: "source",
-     *   isSourceLoaded, false,
-     *   source: {...},
-     *   style: {...}
-     *   sourceDataType: "",
-     *   sourceId: "composite",
-     *   tile: {...},
-     *   coord: {...}
-     * }
      */
     | 'wheel'
 
