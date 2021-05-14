@@ -2400,17 +2400,17 @@ class Map extends Camera {
     }
 
     _resizeCanvas(width: number, height: number) {
-        if (this._domLess) return;
-
         const pixelRatio = browser.devicePixelRatio || 1;
 
         // Request the required canvas size taking the pixelratio into account.
         this._canvas.width = pixelRatio * width;
         this._canvas.height = pixelRatio * height;
 
-        // Maintain the same canvas size, potentially downscaling it for HiDPI displays
-        this._canvas.style.width = `${width}px`;
-        this._canvas.style.height = `${height}px`;
+        if (this._canvas.style) {
+            // Maintain the same canvas size, potentially downscaling it for HiDPI displays
+            this._canvas.style.width = `${width}px`;
+            this._canvas.style.height = `${height}px`;
+        }
     }
 
     _setupPainter() {

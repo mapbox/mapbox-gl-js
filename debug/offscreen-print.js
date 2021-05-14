@@ -4,10 +4,11 @@ self.requestAnimationFrame = function(callback) {
   return setTimeout(callback, 16);
 };
 self.cancelAnimationFrame = clearTimeout;
-self.devicePixelRatio = 1;
+self.devicePixelRatio = 2;
 
 onmessage = function(e) {
-  const canvas = new OffscreenCanvas(e.data.width, e.data.height);
+  self.devicePixelRatio = e.data.pixelRatio;
+  const canvas = new OffscreenCanvas(e.data.width * e.data.dpi * self.devicePixelRatio, e.data.height * e.data.dpi * self.devicePixelRatio);
   var map = new mapboxgl.Map({
     container: canvas ,
     zoom: 12.5,

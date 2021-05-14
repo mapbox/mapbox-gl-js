@@ -7,40 +7,71 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body { height: 100%; }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .wrapper {
+            position: relative;
+            left: 12%;
+            top: 60%;
+            transform: scale(1.5);
+            width: 1px;
+            height: 100vh;
+        }
+
+        .el {
+            position: absolute;
+            opacity: 1;
+            width: 2px;
+            height: 24vh;
+            margin-top: -12vh;
+            transform-origin: 50% 100%;
+            background: white;
+        }
     </style>
     <link href='https://api.mapbox.com/mapbox-assembly/v1.0.1/assembly.min.css' rel='stylesheet'>
     <script async defer src='https://api.mapbox.com/mapbox-assembly/v1.0.1/assembly.js'></script>
+    <script src='https://unpkg.com/animejs@2.2.0/anime.min.js'></script>
 </head>
 
 <body>
-<div id='map'></div>
+<div class="wrapper"></div>
 <form id='printOpts' class="py6 px6 border round border--gray-light w300 bg-blue-faint my12 mx12">
   <div class='txt-bold txt-ms mb6'>Map options</div>
-  <div class='txt-bold txt-s w24 inline-block'>W</div>
-  <input class='input input--s w240 mb6 bg-white inline-block' id='width' placeholder='2800' />
+  <div class='txt-bold txt-s w24 inline-block'>W(in)</div>
+  <input class='input input--s w240 mb6 bg-white inline-block' id='width' placeholder='10' />
   <br />
-  <div class='txt-bold txt-s w24 inline-block'>H</div>
-  <input class='input input--s w240 mb6 bg-white inline-block' id='height' placeholder='1200' />
+  <div class='txt-bold txt-s w24 inline-block'>H(in)</div>
+  <input class='input input--s w240 mb6 bg-white inline-block' id='height' placeholder='10' />
   <br />
   <div class='txt-bold txt-s w24 inline-block'>DPI</div>
-  <input class='input input--s w240 mb6 bg-white inline-block' id='height' placeholder='227' />
-  <button class='btn round btn--s' onClick='handleClick()'>Download</button>
+  <input class='input input--s w240 mb6 bg-white inline-block' id='dpi' placeholder='100' />
+  <div class='txt-bold txt-s w24 inline-block'>pR</div>
+  <input class='input input--s w240 mb6 bg-white inline-block' id='pixelRatio' placeholder='100' />
+  <a class='btn round btn--s' onClick='handleClick()'>Download</a>
 </form>
 <script src='https://unpkg.com/downloadjs@1.4.7/download.js'></script>
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
 <script>
+const worker = new Worker('./offscreen-print.js');
 const handleClick = () => {
   const form = document.getElementById('printOpts');
-  const width = form.elements['width'].value;
-  const height = form.elements['height'].value;
+  const width = parseInt(form.elements['width'].value);
+  const height = parseInt(form.elements['height'].value);
+  const dpi = parseInt(form.elements['dpi'].value);
+  const pixelRatio = parseInt(form.elements['pixelRatio'].value);
 
-  const worker = new Worker('./offscreen-print.js');
 
   const postToWorker = () => {
     worker.postMessage({
       width: width,
-      height: height
+      height: height,
+      dpi: dpi,
+      pixelRatio: pixelRatio
     });
   }
 
@@ -52,6 +83,45 @@ const handleClick = () => {
     }
   }
 }
+
+// looping animation
+const wrapperEl = document.querySelector('.wrapper');
+    const numberOfEls = 90;
+    const duration = 6000;
+    const delay = duration / numberOfEls;
+
+    let tl = anime.timeline({
+      duration: delay,
+      complete: function() { tl.restart(); }
+    });
+
+    function createEl(i) {
+      let el = document.createElement('div');
+      const rotate = (360 / numberOfEls) * i;
+      const translateY = -50;
+      const hue = Math.round(360 / numberOfEls * i);
+      el.classList.add('el');
+      el.style.backgroundColor = 'hsl(' + hue + ', 40%, 60%)';
+      el.style.transform = 'rotate(' + rotate + 'deg) translateY(' + translateY + '%)';
+      tl.add({
+        begin: function() {
+          anime({
+            targets: el,
+            backgroundColor: ['hsl(' + hue + ', 40%, 60%)', 'hsl(' + hue + ', 60%, 80%)'],
+            rotate: [rotate + 'deg', rotate + 10 +'deg'],
+            translateY: [translateY + '%', translateY + 10 + '%'],
+            scale: [1, 1.25],
+            easing: 'easeInOutSine',
+            direction: 'alternate',
+            duration: duration * .1
+          });
+        }
+      });
+      wrapperEl.appendChild(el);
+    };
+
+    for (let i = 0; i < numberOfEls; i++) createEl(i);
+
 </script>
 </body>
 </html>
