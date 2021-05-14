@@ -675,6 +675,7 @@ function shapeLines(shaping: Shaping,
                     // move when we scale up or down.
                     glyphOffset = SHAPING_DEFAULT_OFFSET + (lineMaxScale - sectionScale) * ONE_EM;
                 }
+
             } else {
                 const imagePosition = imagePositions[section.imageName];
                 if (!imagePosition) continue;
