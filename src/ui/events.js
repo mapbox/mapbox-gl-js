@@ -348,7 +348,8 @@ export type MapDataEvent = {
         | 'styledataloading'
         | 'sourcedata'
         | 'sourcedataloading',
-    dataType: string
+    dataType: 'source'
+        | 'style'
 };
 
 export type MapContextEvent = {
