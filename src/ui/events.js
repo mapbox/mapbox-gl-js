@@ -313,7 +313,7 @@ export type MapBoxZoomEvent = {
  *
  * @typedef {Object} MapDataEvent
  * @property {string} type The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
- * @property {string} dataType The type of data that has changed. One of `'source'` or `'style'`, where `'source'` refers to the non-tile data associated with any source, and `'style'` refers to the [style](https://docs.mapbox.com/help/glossary/style/) used by the map.
+ * @property {string} dataType The type of data that has changed. One of `'source'` or `'style'`, where `'source'` refers to the data associated with any source, and `'style'` refers to the entire [style](https://docs.mapbox.com/help/glossary/style/) used by the map.
  * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
  * @property {Object} [source] The [style spec representation of the source](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) if the event has a `dataType` of `source`.
  * @property {string} [sourceDataType] Included if the event has a `dataType` of `source` and the event signals
