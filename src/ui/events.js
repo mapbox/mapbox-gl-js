@@ -10,7 +10,7 @@ import type Map from './map.js';
 import type LngLat from '../geo/lng_lat.js';
 
 /**
- * `MapMouseEvent` is a class used by other classes to generate 
+ * `MapMouseEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'click' or 'hover'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
@@ -106,7 +106,7 @@ export class MapMouseEvent extends Event {
 }
 
 /**
- * `MapTouchEvent` is a class used by other classes to generate 
+ * `MapTouchEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'touchstart' or 'touchend'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
@@ -222,7 +222,7 @@ export class MapTouchEvent extends Event {
 }
 
 /**
- * `MapWheelEvent` is a class used by other classes to generate 
+ * `MapWheelEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'wheel'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @extends {Object}
@@ -280,7 +280,7 @@ export class MapWheelEvent extends Event {
 }
 
 /**
- * `MapBoxZoomEvent` is a class used by other classes to generate 
+ * `MapBoxZoomEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'boxzoomstart' or 'boxzoomend'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
@@ -307,7 +307,7 @@ export type MapBoxZoomEvent = {
 };
 
 /**
- * `MapDataEvent` is a class used by other classes to generate 
+ * `MapDataEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'sourcedata' or 'dataloading'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
