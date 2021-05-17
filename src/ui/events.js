@@ -638,6 +638,13 @@ export type MapEvent =
      * @instance
      * @property {MapWheelEvent} data
      * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when a wheel event occurs within the map.
+     * map.on('wheel', function() {
+     *   console.log('A wheel event occurred.');
+     * });
      */
     | 'wheel'
 
