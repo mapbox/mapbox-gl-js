@@ -37,16 +37,11 @@ export const SDF_SCALE = 2;
 type Entry = {
     // null means we've requested the range, but the glyph wasn't included in the result.
     glyphs: {[id: number]: StyleGlyph | null},
-<<<<<<< HEAD
-    requests: {[range: number]: Array<Callback<{[_: number]: StyleGlyph | null}>>},
-    ranges: {[range: number]: boolean | null},
-    tinySDF?: TinySDF
-=======
     requests: {[range: number]: Array<Callback<{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}>>},
+    ranges: {[range: number]: boolean | null},
     tinySDF?: TinySDF,
     ascender: number,
     descender: number
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
 };
 
 export const LocalGlyphMode = {
@@ -62,7 +57,7 @@ class GlyphManager {
     entries: {[_: string]: Entry};
     // Multiple fontstacks may share the same local glyphs, so keep an index
     // into the glyphs based soley on font weight
-    localGlyphs: {[_: string]: {[id: number]: StyleGlyph | null}};
+    localGlyphs: {[_: string]: {[id: number]: StyleGlyph | null}, ascender: number, descender: number};
     url: ?string;
 
     // exposed as statics to enable stubbing in unit tests
@@ -87,7 +82,7 @@ class GlyphManager {
         this.url = url;
     }
 
-    getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}}>) {
+    getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}}>) {
         const all = [];
 
         for (const stack in glyphs) {
@@ -102,12 +97,9 @@ class GlyphManager {
                 entry = this.entries[stack] = {
                     glyphs: {},
                     requests: {},
-<<<<<<< HEAD
-                    ranges: {}
-=======
-                    ascender: 0,
-                    descender: 0
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
+                    ranges: {},
+                    ascender: 0.0,
+                    descender: 0.0
                 };
             }
 
@@ -139,11 +131,7 @@ class GlyphManager {
             if (!requests) {
                 requests = entry.requests[range] = [];
                 GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestManager,
-<<<<<<< HEAD
-                    (err, response: ?{[_: number]: StyleGlyph | null}) => {
-=======
                     (err, response: ?{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}) => {
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
                         if (response) {
                             entry.ascender = response.ascender;
                             entry.descender = response.descender;
@@ -161,11 +149,7 @@ class GlyphManager {
                     });
             }
 
-<<<<<<< HEAD
-            requests.push((err, result: ?{[_: number]: StyleGlyph | null}) => {
-=======
             requests.push((err, result: ?{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}) => {
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
                 if (err) {
                     callback(err);
                 } else if (result) {
@@ -267,22 +251,16 @@ class GlyphManager {
                 height: sdfHeight
             }, data),
             metrics: {
-<<<<<<< HEAD
                 width: width / SDF_SCALE,
                 height: height / SDF_SCALE,
                 left: left / SDF_SCALE,
                 top: top / SDF_SCALE - baselineAdjustment,
                 advance: advance / SDF_SCALE,
-                localGlyph: true
-                ascender: 0.0,
+                localGlyph: true,
+                // placeholder for ascender/descender, needs further updates once the data can be retrieved via
+                // tinySDF
+                ascender: 0.0, 
                 descender: 0.0
-=======
-                width: 24,
-                height: 24,
-                left: 0,
-                top: -8,
-                advance: 24
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
             }
         };
         return glyph;

@@ -59,13 +59,8 @@ export type WorkerTileResult = {
     rawTileData?: ArrayBuffer,
     resourceTiming?: Array<PerformanceResourceTiming>,
     // Only used for benchmarking:
-<<<<<<< HEAD
-    glyphMap?: {[_: string]: {[_: number]: ?StyleGlyph}} | null,
+    glyphMap?: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}} | null,
     iconMap?: {[_: string]: StyleImage} | null,
-=======
-    glyphMap?: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}} | null,
-    iconMap?: {[string]: StyleImage} | null,
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
     glyphPositions?: GlyphPositions | null
 };
 
