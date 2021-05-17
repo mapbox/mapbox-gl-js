@@ -29,27 +29,18 @@ export type GlyphPosition = {
     metrics: GlyphMetrics
 };
 
-<<<<<<< HEAD
-export type GlyphPositions = {[_: string]: {[_: number]: GlyphPosition } }
-=======
 export type GlyphPositionData = {
-    glyphPositionMap: { [number]: GlyphPosition },
+    glyphPositionMap: { [_: number]: GlyphPosition },
     ascender: number,
     descender: number
 };
 
-export type GlyphPositions = { [string]: GlyphPositionData };
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
+export type GlyphPositions = { [_: string]: GlyphPositionData };
 
 export default class GlyphAtlas {
     image: AlphaImage;
     positions: GlyphPositions;
-
-<<<<<<< HEAD
-    constructor(stacks: {[_: string]: {[_: number]: ?StyleGlyph } }) {
-=======
-    constructor(stacks: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}}) {
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
+    constructor(stacks: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph }, ascender: number, descender: number }}) {
         const positions = {};
         const bins = [];
 
@@ -85,12 +76,8 @@ export default class GlyphAtlas {
             for (const id in glyphData.glyphs) {
                 const src = glyphData.glyphs[+id];
                 if (!src || src.bitmap.width === 0 || src.bitmap.height === 0) continue;
-<<<<<<< HEAD
-                const bin = positions[stack][id].rect;
-                const padding = src.metrics.localGlyph ? localGlyphPadding : glyphPadding;
-=======
                 const bin = positions[stack].glyphPositionMap[id].rect;
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
+                const padding = src.metrics.localGlyphs ? localGlyphPadding : glyphPadding;
                 AlphaImage.copy(src.bitmap, image, {x: 0, y: 0}, {x: bin.x + padding, y: bin.y + padding}, src.bitmap);
             }
         }

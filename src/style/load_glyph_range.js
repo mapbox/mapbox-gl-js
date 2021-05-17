@@ -12,11 +12,7 @@ export default function (fontstack: string,
                            range: number,
                            urlTemplate: string,
                            requestManager: RequestManager,
-<<<<<<< HEAD
-                           callback: Callback<{[_: number]: StyleGlyph | null}>) {
-=======
                            callback: Callback<{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}>) {
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
     const begin = range * 256;
     const end = begin + 255;
 

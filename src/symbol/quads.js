@@ -2,7 +2,6 @@
 
 import Point from '@mapbox/point-geometry';
 
-<<<<<<< HEAD
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf.js';
 
 import type Anchor from './anchor.js';
@@ -14,16 +13,6 @@ import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type {Feature} from '../style-spec/expression/index.js';
 import type {StyleImage} from '../style/style_image.js';
 import ONE_EM from './one_em.js';
-=======
-import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
-
-import type Anchor from './anchor';
-import type {PositionedIcon, Shaping} from './shaping';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-import type {Feature} from '../style-spec/expression';
-import type {GlyphPositionData} from '../render/glyph_atlas';
-import ONE_EM from './one_em';
->>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
 
 /**
  * A textured quad for rendering a single icon or glyph.
