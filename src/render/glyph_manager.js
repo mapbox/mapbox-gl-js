@@ -192,7 +192,7 @@ class GlyphManager {
                 isChar['Hangul Syllables'](id) ||
                 isChar['Hiragana'](id) ||
                 isChar['Katakana'](id)) ||
-                // Extend Ideographs rasterization range to include CJK symbols and punctuations
+                // gl-native parity: Extend Ideographs rasterization range to include CJK symbols and punctuations
                 isChar['CJK Symbols and Punctuation'];
             /* eslint-enable new-cap */
         }
