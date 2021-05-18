@@ -26,7 +26,7 @@ import type {StyleImage} from '../style/style_image.js';
 import type {StyleGlyph} from '../style/style_glyph.js';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type {ImagePosition} from '../render/image_atlas.js';
-import type {GlyphPositionData} from '../render/glyph_atlas.js';
+import type {GlyphPositions} from '../render/glyph_atlas.js';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
 
 import Point from '@mapbox/point-geometry';
@@ -148,7 +148,7 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
 
 export function performSymbolLayout(bucket: SymbolBucket,
                              glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}},
-                             glyphPositions: {[_: string]: GlyphPositionData},
+                             glyphPositions: GlyphPositions,
                              imageMap: {[_: string]: StyleImage},
                              imagePositions: {[_: string]: ImagePosition},
                              showCollisionBoxes: boolean,
@@ -355,7 +355,6 @@ function addFeature(bucket: SymbolBucket,
                     shapedTextOrientations: any,
                     shapedIcon: PositionedIcon | void,
                     imageMap: {[_: string]: StyleImage},
-                    glyphPositionMap: {[_: string]: GlyphPositionData},
                     sizes: Sizes,
                     layoutTextSize: number,
                     layoutIconSize: number,
@@ -487,7 +486,6 @@ function addTextVertices(bucket: SymbolBucket,
                          writingMode: number,
                          placementTypes: Array<'vertical' | 'center' | 'left' | 'right'>,
                          placedTextSymbolIndices: {[_: string]: number},
-                         glyphPositionMap: {[_: string]: GlyphPositionData},
                          placedIconIndex: number,
                          sizes: Sizes,
                          canonical: CanonicalTileID) {
@@ -636,7 +634,6 @@ function addSymbol(bucket: SymbolBucket,
                    iconAlongLine: boolean,
                    iconOffset: [number, number],
                    feature: SymbolFeature,
-                   glyphPositionMap: {[_: string]: GlyphPositionData},
                    sizes: Sizes,
                    isSDFIcon: boolean,
                    canonical: CanonicalTileID,

@@ -6,7 +6,6 @@ import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf.js';
 
 import type Anchor from './anchor.js';
 import type {PositionedIcon, Shaping} from './shaping.js';
-import {SHAPING_DEFAULT_OFFSET} from './shaping.js';
 import {IMAGE_PADDING} from '../render/image_atlas.js';
 import {SDF_SCALE} from '../render/glyph_manager.js';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
@@ -227,14 +226,30 @@ export function getGlyphQuads(anchor: Anchor,
                        alongLine: boolean,
                        feature: Feature,
                        imageMap: {[_: string]: StyleImage},
-                       positions: {[string]: GlyphPositionData},
                        allowVerticalPlacement: boolean): Array<SymbolQuad> {
 
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
     const quads = [];
 
-
+    if (shaping.positionedLines.length === 0) return quads;
+    let shapingHeight = Math.abs(shaping.top - shaping.bottom);
     for (const line of shaping.positionedLines) {
+        shapingHeight -= line.lineOffset;
+    }
+    const lineCounts = shaping.positionedLines.length;
+    const lineHeight = shapingHeight / lineCounts;
+    const getMidlineOffset = function(shaping, lineHeight, previousOffset, lineIndex) {
+        const currentLineHeight = (lineHeight + shaping.positionedLines[lineIndex].lineOffset);
+        if (lineIndex === 0) {
+            return previousOffset + currentLineHeight / 2.0;
+        }
+        const aboveLineHeight = (lineHeight + shaping.positionedLines[lineIndex - 1].lineOffset);
+        return previousOffset + (currentLineHeight + aboveLineHeight) / 2.0;
+    };
+    let currentOffset = shaping.top;
+    for (let lineIndex = 0; lineIndex < lineCounts; ++lineIndex) {
+        const line = shaping.positionedLines[lineIndex];
+        currentOffset = getMidlineOffset(shaping, lineHeight, currentOffset, lineIndex);
         for (const positionedGlyph of line.positionedGlyphs) {
             if (!positionedGlyph.rect) continue;
             const textureRect = positionedGlyph.rect || {};
@@ -251,13 +266,14 @@ export function getGlyphQuads(anchor: Anchor,
 
             // Align images and scaled glyphs in the middle of a vertical line.
             if (allowVerticalPlacement && shaping.verticalizable) {
-                const scaledGlyphOffset = (positionedGlyph.scale - 1) * ONE_EM;
-                const imageOffset = (ONE_EM - positionedGlyph.metrics.width * positionedGlyph.scale) / 2;
-                lineOffset = line.lineOffset / 2 - (positionedGlyph.imageName ? -imageOffset : scaledGlyphOffset);
+                // image's advance for vertical shaping is its height, so that we have to take the difference into
+                // account after image glyph is rotated
+                lineOffset = positionedGlyph.imageName ? halfAdvance - positionedGlyph.metrics.width * positionedGlyph.scale / 2.0 : 0;
             }
 
             if (positionedGlyph.imageName) {
                 const image = imageMap[positionedGlyph.imageName];
+                if (!image) continue;
                 isSDF = image.sdf;
                 pixelRatio = image.pixelRatio;
                 rectBuffer = IMAGE_PADDING / pixelRatio;
@@ -291,22 +307,22 @@ export function getGlyphQuads(anchor: Anchor,
 
             if (rotateVerticalGlyph) {
                 // Vertical-supporting glyphs are laid out in 24x24 point boxes (1 square em)
-                // In horizontal orientation, the y values for glyphs are below the midline
-                // and we use a "yOffset" of -17 to pull them up to the middle.
+                // In horizontal orientation, the "yShift" is the negative value of the height that
+                // the glyph is above the horizontal midline.
                 // By rotating counter-clockwise around the point at the center of the left
                 // edge of a 24x24 layout box centered below the midline, we align the center
-                // of the glyphs with the horizontal midline, so the yOffset is no longer
+                // of the glyphs with the horizontal midline, so the yShift is no longer
                 // necessary, but we also pull the glyph to the left along the x axis.
-                // The y coordinate includes baseline yOffset, thus needs to be accounted
+                // Since the y coordinate includes yShift, therefore, needs to be accounted
                 // for when glyph is rotated and translated.
-                const center = new Point(-halfAdvance, halfAdvance - SHAPING_DEFAULT_OFFSET);
+                const yShift = positionedGlyph.y - currentOffset;
+                const center = new Point(-halfAdvance, halfAdvance - yShift);
                 const verticalRotation = -Math.PI / 2;
 
                 // xHalfWidthOffsetCorrection is a difference between full-width and half-width
                 // advance, should be 0 for full-width glyphs and will pull up half-width glyphs.
                 const xHalfWidthOffsetCorrection = ONE_EM / 2 - halfAdvance;
-                const yImageOffsetCorrection = positionedGlyph.imageName ? xHalfWidthOffsetCorrection : 0.0;
-                const halfWidthOffsetCorrection = new Point(5 - SHAPING_DEFAULT_OFFSET - xHalfWidthOffsetCorrection, -yImageOffsetCorrection);
+                const halfWidthOffsetCorrection = new Point(5 - yShift - xHalfWidthOffsetCorrection, 0);
                 const verticalOffsetCorrection = new Point(...verticalizedLabelOffset);
                 tl._rotateAround(verticalRotation, center)._add(halfWidthOffsetCorrection)._add(verticalOffsetCorrection);
                 tr._rotateAround(verticalRotation, center)._add(halfWidthOffsetCorrection)._add(verticalOffsetCorrection);
