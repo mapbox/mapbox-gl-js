@@ -66,7 +66,7 @@ class Transform {
     mercatorFogMatrix: Array<number>;
 
     // Projection from world coordinates (mercator scaled by worldSize) to clip coordinates
-    projMatrix: Float64Array;
+    projMatrix: Array<number>;
     invProjMatrix: Float64Array;
 
     // Same as projMatrix, pixel-aligned to avoid fractional pixels for raster tiles
