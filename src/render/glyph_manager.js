@@ -91,7 +91,7 @@ class GlyphManager {
             }
         }
 
-        asyncAll(all, ({stack, id}, callback: Callback<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
+        asyncAll(all, ({stack, id}, fnCallback: Callback<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
             let entry = this.entries[stack];
             if (!entry) {
                 entry = this.entries[stack] = {
@@ -105,25 +105,25 @@ class GlyphManager {
 
             let glyph = entry.glyphs[id];
             if (glyph !== undefined) {
-                callback(null, {stack, id, glyph});
+                fnCallback(null, {stack, id, glyph});
                 return;
             }
 
             glyph = this._tinySDF(entry, stack, id);
             if (glyph) {
                 entry.glyphs[id] = glyph;
-                callback(null, {stack, id, glyph});
+                fnCallback(null, {stack, id, glyph});
                 return;
             }
 
             const range = Math.floor(id / 256);
             if (range * 256 > 65535) {
-                callback(new Error('glyphs > 65535 not supported'));
+                fnCallback(new Error('glyphs > 65535 not supported'));
                 return;
             }
 
             if (entry.ranges[range]) {
-                callback(null, {stack, id, glyph});
+                fnCallback(null, {stack, id, glyph});
                 return;
             }
 
@@ -151,9 +151,9 @@ class GlyphManager {
 
             requests.push((err, result: ?{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}) => {
                 if (err) {
-                    callback(err);
+                    fnCallback(err);
                 } else if (result) {
-                    callback(null, {stack, id, glyph: result.glyphs[id] || null});
+                    fnCallback(null, {stack, id, glyph: result.glyphs[id] || null});
                 }
             });
         }, (err, glyphs: ?Array<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
