@@ -191,7 +191,9 @@ class GlyphManager {
             (isChar['CJK Unified Ideographs'](id) ||
                 isChar['Hangul Syllables'](id) ||
                 isChar['Hiragana'](id) ||
-                isChar['Katakana'](id));
+                isChar['Katakana'](id)) ||
+                // gl-native parity: Extend Ideographs rasterization range to include CJK symbols and punctuations
+                isChar['CJK Symbols and Punctuation'];
             /* eslint-enable new-cap */
         }
     }
