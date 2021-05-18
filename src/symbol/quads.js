@@ -6,7 +6,6 @@ import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf.js';
 
 import type Anchor from './anchor.js';
 import type {PositionedIcon, Shaping} from './shaping.js';
-import {SHAPING_DEFAULT_OFFSET} from './shaping.js';
 import {IMAGE_PADDING} from '../render/image_atlas.js';
 import {SDF_SCALE} from '../render/glyph_manager.js';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';

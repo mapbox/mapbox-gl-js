@@ -38,7 +38,7 @@ export type PositionedGlyph = {
     fontStack: string,
     sectionIndex: number,
     metrics: GlyphMetrics,
-    rect: Rect | null,
+    rect: GlyphRect | null,
     localGlyph?: boolean
 };
 
@@ -57,8 +57,8 @@ export type Shaping = {
     writingMode: 1 | 2,
     text: string,
     iconsInText: boolean,
-    verticalizable: boolean
-    hasBaseline: boolean,
+    verticalizable: boolean,
+    hasBaseline: boolean
 };
 
 function isEmpty(positionedLines: Array<PositionedLine>) {
@@ -140,7 +140,7 @@ class TaggedString {
         return this.sections[this.sectionIndex[index]];
     }
 
-    getSections(): Array<{ scale: number, fontStack: string }> {
+    getSections(): Array<SectionOptions> {
         return this.sections;
     }
 
@@ -243,8 +243,8 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
 }
 
 function shapeText(text: Formatted,
-                   glyphMaps: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}},
-                   glyphPositions: {[_: string]: {[_: number]: GlyphPosition}},
+                   glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}},
+                   glyphPositions: GlyphPositions,
                    imagePositions: {[_: string]: ImagePosition},
                    defaultFontStack: string,
                    maxWidth: number,
@@ -311,9 +311,7 @@ function shapeText(text: Formatted,
         right: translate[0],
         writingMode,
         iconsInText: false,
-        verticalizable: false
-        lineCount: lines.length,
-        yOffset: -17, // the y offset *should* be part of the font metadata
+        verticalizable: false,
         hasBaseline: false
     };
 
@@ -357,13 +355,13 @@ const breakable: {[_: number]: boolean} = {
 
 function getGlyphAdvance(codePoint: number,
                          section: SectionOptions,
-                         glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
+                         glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}},
                          imagePositions: {[_: string]: ImagePosition},
                          spacing: number,
                          layoutTextSize: number): number {
     if (!section.imageName) {
         const positions = glyphMap[section.fontStack];
-        const glyph = positions && positions[codePoint];
+        const glyph = positions && positions.glyphs[codePoint];
         if (!glyph) return 0;
         return glyph.metrics.advance * section.scale + spacing;
     } else {
@@ -581,8 +579,6 @@ function shapeLines(shaping: Shaping,
     let maxLineLength = 0;
     let maxLineHeight = 0;
 
-    let hasBaseline = false;
-
     const justify =
         textJustify === 'right' ? 1 :
         textJustify === 'left' ? 0 : 0.5;
@@ -596,7 +592,10 @@ function shapeLines(shaping: Shaping,
             const glyphPositionData = glyphPositions[section.fontStack];
             if (!glyphPositionData) continue;
 
-            hasBaseline = glyphPositionData.ascender !== 0 && glyphPositionData.descender !== 0;
+            const glyphData = glyphMap[section.fontStack];
+            if (!glyphData) continue;
+
+            hasBaseline = glyphData.ascender !== 0 && glyphData.descender !== 0;
             if (!hasBaseline) break;
         }
         if (!hasBaseline) break;
@@ -633,7 +632,6 @@ function shapeLines(shaping: Shaping,
             let ascender = 0;
             let descender = 0;
             let glyphOffset = 0;
-            let isLocalGlyph = false;
 
             const vertical = !(writingMode === WritingMode.horizontal ||
                 // Don't verticalize glyphs that have no upright orientation if vertical placement is disabled.
@@ -643,9 +641,10 @@ function shapeLines(shaping: Shaping,
                 (allowVerticalPlacement && (whitespace[codePoint] || charInComplexShapingScript(codePoint))));
 
             if (!section.imageName) {
+                // Find glyph position in the glyph atlas, if bitmap is null,
+                // glyphPosition will not exit in the glyphPosition map
                 const glyphPositionData = glyphPositions[section.fontStack];
                 if (!glyphPositionData) continue;
-
                 if (glyphPositionData[codePoint]) {
                     rect = glyphPositionData[codePoint];
                 }
@@ -655,10 +654,7 @@ function shapeLines(shaping: Shaping,
                 if (!glyph) continue;
 
                 metrics = glyph.metrics;
-                if (hasBaseline) {
-                   ascender = metrics.ascender;
-                   descender = metrics.descender;
-                }
+                verticalAdvance = codePoint !== 0x200b ? ONE_EM : 0;
 
                 // In order to make different fonts aligned, they must share a general baseline that aligns with every
                 // font's real baseline. Glyph's offset is counted from the top left corner, where is the ascender line
@@ -669,6 +665,8 @@ function shapeLines(shaping: Shaping,
                 // lie on the center line of the line, which will lead to a baseline shift. Then adjust the whole line
                 // with the baseline offset we calculated from the shift.
                 if (hasBaseline) {
+                    ascender = glyphData.ascender;
+                    descender = glyphData.descender;
                     const value = (ascender + descender) * section.scale;
                     if (biggestHeight < value) {
                         biggestHeight = value;
@@ -698,9 +696,7 @@ function shapeLines(shaping: Shaping,
                     left: IMAGE_PADDING,
                     top: -GLYPH_PBF_BORDER,
                     advance: vertical ? size[1] : size[0],
-                    localGlyph: false,
-                    ascender: 0.0,
-                    descender: 0.0};
+                    localGlyph: false};
 
                 // Difference between one EM and an image size.
                 // Aligns bottom of an image to a baseline level.
@@ -709,7 +705,7 @@ function shapeLines(shaping: Shaping,
                 if (!hasBaseline) {
                     glyphOffset = SHAPING_DEFAULT_OFFSET + lineMaxScale * ONE_EM - size[1] * section.scale;
                 } else {
-                     // Based on node-fontnik: 'top = heightAboveBaseline - Ascender'(it is not valid for locally
+                    // Based on node-fontnik: 'top = heightAboveBaseline - Ascender'(it is not valid for locally
                     // generated glyph). Since the top is a constant: glyph's borderSize. So if we set image glyph with
                     // 'ascender = height', it means we pull down the glyph under baseline with a distance of glyph's borderSize.
                     const imageAscender = metrics.height;
@@ -743,7 +739,7 @@ function shapeLines(shaping: Shaping,
             // Justify the line so that its top is aligned with the current height of y, and its horizontal coordinates
             // are justified according to the TextJustifyType
             if (hasBaseline) {
-                justifyLine(positionedGlyph, justify, lineOffset, baselineOffset, lineHeight * lineMaxScale / 2);
+                justifyLine(positionedGlyphs, justify, lineOffset, baselineOffset, lineHeight * lineMaxScale / 2);
             } else {
                 // Scaled line height offset is counted in glyphOffset, so here just use an unscaled line height
                 justifyLine(positionedGlyphs, justify, lineOffset, 0, lineHeight / 2);
@@ -761,7 +757,6 @@ function shapeLines(shaping: Shaping,
     const height = y;
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(textAnchor);
     align(shaping.positionedLines, justify, horizontalAlign, verticalAlign, maxLineLength, height);
- 
     // Calculate the bounding box
     shaping.top += -verticalAlign * height;
     shaping.bottom = shaping.top + height;

@@ -57,7 +57,7 @@ class GlyphManager {
     entries: {[_: string]: Entry};
     // Multiple fontstacks may share the same local glyphs, so keep an index
     // into the glyphs based soley on font weight
-    localGlyphs: {[_: string]: {[id: number]: StyleGlyph | null}, ascender: number, descender: number};
+    localGlyphs: {[_: string]: {glyphs: {[id: number]: StyleGlyph | null}, ascender: number, descender: number}};
     url: ?string;
 
     // exposed as statics to enable stubbing in unit tests
@@ -193,7 +193,7 @@ class GlyphManager {
                 isChar['Hiragana'](id) ||
                 isChar['Katakana'](id)) ||
                 // gl-native parity: Extend Ideographs rasterization range to include CJK symbols and punctuations
-                isChar['CJK Symbols and Punctuation'];
+                isChar['CJK Symbols and Punctuation'](id);
             /* eslint-enable new-cap */
         }
     }
@@ -261,7 +261,7 @@ class GlyphManager {
                 localGlyph: true,
                 // placeholder for ascender/descender, needs further updates once the data can be retrieved via
                 // tinySDF
-                ascender: 0.0, 
+                ascender: 0.0,
                 descender: 0.0
             }
         };
