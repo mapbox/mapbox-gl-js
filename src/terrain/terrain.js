@@ -969,7 +969,7 @@ export class Terrain extends Elevation {
 
         const sortedRenderBatch = [...this._drapedRenderBatches];
         sortedRenderBatch.sort((batchA, batchB) => {
-            const batchASize = batchA.end - batchA.start
+            const batchASize = batchA.end - batchA.start;
             const batchBSize = batchB.end - batchB.start;
             return batchBSize - batchASize;
         });
