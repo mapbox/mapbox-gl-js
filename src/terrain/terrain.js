@@ -1351,9 +1351,7 @@ export class Terrain extends Elevation {
      * Bookkeeping if something gets rendered to the tile.
      */
     prepareDrawTile(coord: OverscaledTileID) {
-        if (!this.renderedToTile) {
-            this.renderedToTile = true;
-        }
+        this.renderedToTile = true;
     }
 
     _clearRenderCacheForTile(source: string, coord: OverscaledTileID) {
