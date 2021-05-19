@@ -1,6 +1,7 @@
 {
   "ascender": 0,
   "descender": 0,
+  "glyphs": {
   "32": {
     "id": 32,
     "metrics": {
@@ -2123,5 +2124,5 @@
       "advance": 21
     },
     "rect": {"x": 0, "y": 0, "w": 32, "h": 32}
-  }
+  }}
 }
