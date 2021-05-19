@@ -967,6 +967,13 @@ export class Terrain extends Elevation {
 
         this._clearRasterFadeFromRenderCache();
 
+        const sortedRenderBatch = [...this._drapedRenderBatches];
+        sortedRenderBatch.sort((batchA, batchB) => {
+            const batchASize = batchA.end - batchA.start
+            const batchBSize = batchB.end - batchB.start;
+            return batchBSize - batchASize;
+        });
+
         const coords = this.proxyCoords;
         const dirty = this._tilesDirty;
         for (let i = coords.length - 1; i >= 0; i--) {
@@ -996,8 +1003,8 @@ export class Terrain extends Elevation {
                     psc.renderCache[psc.proxyCachedFBO[proxy.key][proxyFBO]].dirty = equal < 0 || equal !== Object.values(prev).length;
                 }
             } else {
-                for (let j = 0; j < this._drapedRenderBatches.length; ++j) {
-                    const batch = this._drapedRenderBatches[j];
+                for (let j = 0; j < sortedRenderBatch.length; ++j) {
+                    const batch = sortedRenderBatch[j];
                     // Assign renderCache FBO if there are available FBOs in pool.
                     let index = psc.renderCachePool.pop();
                     if (index === undefined && psc.renderCache.length < RENDER_CACHE_MAX_SIZE) {
