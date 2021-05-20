@@ -2678,10 +2678,15 @@ class Map extends Camera {
         // updates during fog transitions
         const fogIsTransitioning = this.style && this.style.fog && this.style.fog.hasTransition();
 
+        if (fogIsTransitioning) {
+            this.style._markersNeedUpdate = true;
+            this._sourcesDirty = true;
+        }
+
         // If we are in _render for any reason other than an in-progress paint
         // transition, update source caches to check for and load any tiles we
         // need for the current transform
-        if (this.style && (this._sourcesDirty || fogIsTransitioning)) {
+        if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
             this.painter._updateFog(this.style);
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
