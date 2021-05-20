@@ -603,6 +603,23 @@ export class Terrain extends Elevation {
         program.setTerrainUniformValues(context, uniforms);
     }
 
+    renderToBackBuffer(accumulatedDrapes: Array<OverscaledTileID>) {
+        if (accumulatedDrapes.length === 0) {
+            return;
+        }
+        const painter = this.painter;
+        const context = this.painter.context;
+
+        context.bindFramebuffer.set(null);
+        context.viewport.set([0, 0, painter.width, painter.height]);
+
+        this.renderingToTexture = false;
+        drawTerrainRaster(painter, this, this.proxySourceCache, accumulatedDrapes, this._updateTimestamp);
+        this.renderingToTexture = true;
+
+        accumulatedDrapes.splice(0, accumulatedDrapes.length);
+    }
+
     // For each proxy tile, render all layers until the non-draped layer (and
     // render the tile to the screen) before advancing to the next proxy tile.
     // Returns the last drawn index that is used as a start
@@ -619,17 +636,12 @@ export class Terrain extends Elevation {
         const context = this.painter.context;
         const psc = this.proxySourceCache;
         const proxies = this.proxiedCoords[psc.id];
-        const setupRenderToScreen = () => {
-            context.bindFramebuffer.set(null);
-            context.viewport.set([0, 0, painter.width, painter.height]);
-            this.renderingToTexture = false;
-        };
 
         // Consume batch of sequential drape layers and move next
         const drapedLayerBatch = this._drapedRenderBatches.shift();
         assert(drapedLayerBatch.start === startLayerIndex);
 
-        let drawAsRasterCoords = [];
+        let accumulatedDrapes = [];
         const layerIds = painter.style.order;
 
         let poolIndex = 0;
@@ -650,7 +662,7 @@ export class Terrain extends Elevation {
 
             if (renderCacheIndex !== undefined && !fbo.dirty) {
                 // Use cached render from previous pass, no need to render again.
-                drawAsRasterCoords.push(tile.tileID);
+                accumulatedDrapes.push(tile.tileID);
                 continue;
             }
 
@@ -683,23 +695,16 @@ export class Terrain extends Elevation {
             }
 
             fbo.dirty = this.renderedToTile;
-            if (this.renderedToTile) drawAsRasterCoords.push(tile.tileID);
+            if (this.renderedToTile) accumulatedDrapes.push(tile.tileID);
 
             if (poolIndex === FBO_POOL_SIZE) {
                 poolIndex = 0;
-                if (drawAsRasterCoords.length > 0) {
-                    setupRenderToScreen();
-                    drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
-                    this.renderingToTexture = true;
-                    drawAsRasterCoords = [];
-                }
+                this.renderToBackBuffer(accumulatedDrapes);
             }
         }
 
-        setupRenderToScreen();
-        if (drawAsRasterCoords.length > 0) {
-            drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
-        }
+        this.renderToBackBuffer(accumulatedDrapes);
+        this.renderingToTexture = false;
 
         return drapedLayerBatch.end + 1;
     }
