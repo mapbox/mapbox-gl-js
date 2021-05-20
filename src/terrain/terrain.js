@@ -967,13 +967,6 @@ export class Terrain extends Elevation {
 
         this._clearRasterFadeFromRenderCache();
 
-        const sortedRenderBatch = [...this._drapedRenderBatches];
-        sortedRenderBatch.sort((batchA, batchB) => {
-            const batchASize = batchA.end - batchA.start
-            const batchBSize = batchB.end - batchB.start;
-            return batchBSize - batchASize;
-        });
-
         const coords = this.proxyCoords;
         const dirty = this._tilesDirty;
         for (let i = coords.length - 1; i >= 0; i--) {
@@ -1002,9 +995,21 @@ export class Terrain extends Elevation {
                 for (const proxyFBO in psc.proxyCachedFBO[proxy.key]) {
                     psc.renderCache[psc.proxyCachedFBO[proxy.key][proxyFBO]].dirty = equal < 0 || equal !== Object.values(prev).length;
                 }
-            } else {
-                for (let j = 0; j < sortedRenderBatch.length; ++j) {
-                    const batch = sortedRenderBatch[j];
+            }
+        }
+
+        const sortedRenderBatch = [...this._drapedRenderBatches];
+        sortedRenderBatch.sort((batchA, batchB) => {
+            const batchASize = batchA.end - batchA.start
+            const batchBSize = batchB.end - batchB.start;
+            return batchBSize - batchASize;
+        });
+
+        for (let j = 0; j < sortedRenderBatch.length; ++j) {
+            const batch = sortedRenderBatch[j];
+            for (let i = coords.length - 1; i >= 0; i--) {
+                const proxy = coords[i];
+                if (psc.proxyCachedFBO[proxy.key] === undefined) {
                     // Assign renderCache FBO if there are available FBOs in pool.
                     let index = psc.renderCachePool.pop();
                     if (index === undefined && psc.renderCache.length < RENDER_CACHE_MAX_SIZE) {
