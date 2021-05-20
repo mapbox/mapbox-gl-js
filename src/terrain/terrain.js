@@ -641,7 +641,7 @@ export class Terrain extends Elevation {
         const drapedLayerBatch = this._drapedRenderBatches.shift();
         assert(drapedLayerBatch.start === startLayerIndex);
 
-        let accumulatedDrapes = [];
+        const accumulatedDrapes = [];
         const layerIds = painter.style.order;
 
         let poolIndex = 0;
