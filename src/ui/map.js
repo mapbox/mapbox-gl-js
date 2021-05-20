@@ -2674,8 +2674,6 @@ class Map extends Camera {
             this.style.update(parameters);
         }
 
-        // Fog affects tile culling, so we continuously check for necessary
-        // updates during fog transitions
         const fogIsTransitioning = this.style && this.style.fog && this.style.fog.hasTransition();
 
         if (fogIsTransitioning) {
