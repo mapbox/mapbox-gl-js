@@ -2674,10 +2674,14 @@ class Map extends Camera {
             this.style.update(parameters);
         }
 
+        // Fog affects tile culling, so we continuously check for necessary
+        // updates during fog transitions
+        const fogIsTransitioning = this.style && this.style.fog && this.style.fog.hasTransition();
+
         // If we are in _render for any reason other than an in-progress paint
         // transition, update source caches to check for and load any tiles we
         // need for the current transform
-        if (this.style && this._sourcesDirty) {
+        if (this.style && (this._sourcesDirty || fogIsTransitioning)) {
             this._sourcesDirty = false;
             this.painter._updateFog(this.style);
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
