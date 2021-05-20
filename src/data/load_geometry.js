@@ -5,6 +5,7 @@ import {warnOnce, clamp} from '../util/util.js';
 import EXTENT from './extent.js';
 
 import type Point from '@mapbox/point-geometry';
+import {mercatorXfromLng, mercatorYfromLat, lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
 
 // These bounds define the minimum and maximum supported coordinate values.
 // While visible coordinates are within [0, EXTENT], tiles may theoretically
@@ -29,8 +30,13 @@ export default function loadGeometry(feature: VectorTileFeature): Array<Array<Po
             const point = ring[p];
             // round here because mapbox-gl-native uses integers to represent
             // points and we need to do the same to avoid rendering differences.
-            const x = Math.round(point.x * scale);
-            const y = Math.round(point.y * scale);
+            let x = Math.round(point.x * scale);
+            let y = Math.round(point.y * scale);
+
+            x = mercatorXfromLng(lngFromMercatorX(x / EXTENT)) * EXTENT;
+            y = mercatorYfromLat(latFromMercatorY(y / EXTENT)) * EXTENT;
+
+
 
             point.x = clamp(x, MIN, MAX);
             point.y = clamp(y, MIN, MAX);
