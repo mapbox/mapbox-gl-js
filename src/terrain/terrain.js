@@ -199,7 +199,6 @@ export class Terrain extends Elevation {
     _updateTimestamp: number;
     _useVertexMorphing: boolean;
     pool: Array<FBO>;
-    currentFBO: FBO;
     renderedToTile: boolean;
     _drapedRenderBatches: Array<RenderBatch>;
     _sharedDepthStencil: WebGLRenderbuffer;
@@ -645,22 +644,16 @@ export class Terrain extends Elevation {
         const layerIds = painter.style.order;
 
         let poolIndex = 0;
-        for (let i = 0; i < proxies.length; i++) {
-            const proxy = proxies[i];
-
+        for (const proxy of proxies) {
             // bind framebuffer and assign texture to the tile (texture used in drawTerrainRaster).
             const tile = psc.getTileByID(proxy.proxyTileKey);
             const renderCacheIndex = psc.proxyCachedFBO[proxy.key] ? psc.proxyCachedFBO[proxy.key][startLayerIndex] : undefined;
+            const fbo = renderCacheIndex !== undefined ? psc.renderCache[renderCacheIndex] : this.pool[poolIndex++];
+            const useRenderCache = renderCacheIndex !== undefined;
 
-            let fbo;
-            if (renderCacheIndex !== undefined) {
-                fbo = this.currentFBO = psc.renderCache[renderCacheIndex];
-            } else {
-                fbo = this.currentFBO = this.pool[poolIndex++];
-            }
             tile.texture = fbo.tex;
 
-            if (renderCacheIndex !== undefined && !fbo.dirty) {
+            if (useRenderCache && !fbo.dirty) {
                 // Use cached render from previous pass, no need to render again.
                 accumulatedDrapes.push(tile.tileID);
                 continue;
@@ -688,15 +681,19 @@ export class Terrain extends Elevation {
                 const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
                 context.viewport.set([0, 0, fbo.fb.width, fbo.fb.height]);
                 if (currentStencilSource !== (sourceCache ? sourceCache.id : null)) {
-                    this._setupStencil(proxiedCoords, layer, sourceCache);
+                    this._setupStencil(fbo, proxiedCoords, layer, sourceCache);
                     currentStencilSource = sourceCache ? sourceCache.id : null;
                 }
                 painter.renderLayer(painter, sourceCache, layer, coords);
             }
 
-            fbo.dirty = this.renderedToTile;
-            if (this.renderedToTile) accumulatedDrapes.push(tile.tileID);
-
+            if (this.renderedToTile) {
+                fbo.dirty = true;
+                accumulatedDrapes.push(tile.tileID);
+            } else if (!useRenderCache) {
+                --poolIndex;
+                assert(poolIndex >= 0);
+            }
             if (poolIndex === FBO_POOL_SIZE) {
                 poolIndex = 0;
                 this.renderToBackBuffer(accumulatedDrapes);
@@ -1005,7 +1002,7 @@ export class Terrain extends Elevation {
 
         const sortedRenderBatch = [...this._drapedRenderBatches];
         sortedRenderBatch.sort((batchA, batchB) => {
-            const batchASize = batchA.end - batchA.start
+            const batchASize = batchA.end - batchA.start;
             const batchBSize = batchB.end - batchB.start;
             return batchBSize - batchASize;
         });
@@ -1034,7 +1031,7 @@ export class Terrain extends Elevation {
         this._tilesDirty = {};
     }
 
-    _setupStencil(proxiedCoords: Array<ProxiedTileID>, layer: StyleLayer, sourceCache?: SourceCache) {
+    _setupStencil(fbo: FBO, proxiedCoords: Array<ProxiedTileID>, layer: StyleLayer, sourceCache?: SourceCache) {
         if (!sourceCache || !this._sourceTilesOverlap[sourceCache.id]) {
             if (this._overlapStencilType) this._overlapStencilType = false;
             return;
@@ -1046,7 +1043,6 @@ export class Terrain extends Elevation {
         // more need: in such case, if there is no overlap, stencilling is disabled.
         if (proxiedCoords.length <= 1) { this._overlapStencilType = false; return; }
 
-        const fbo = this.currentFBO;
         const fb = fbo.fb;
         let stencilRange;
         if (layer.isTileClipped()) {
