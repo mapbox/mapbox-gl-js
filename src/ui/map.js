@@ -2672,6 +2672,13 @@ class Map extends Camera {
             this.style.update(parameters);
         }
 
+        const fogIsTransitioning = this.style && this.style.fog && this.style.fog.hasTransition();
+
+        if (fogIsTransitioning) {
+            this.style._markersNeedUpdate = true;
+            this._sourcesDirty = true;
+        }
+
         // If we are in _render for any reason other than an in-progress paint
         // transition, update source caches to check for and load any tiles we
         // need for the current transform
