@@ -1000,6 +1000,43 @@ class Map extends Camera {
     }
 
     /**
+     * Adds a listener for events of a specified type.
+     *
+     * @method
+     * @name on
+     * @memberof Map
+     * @instance
+     * @param {string} type The event type to listen for.
+     * @param {Function} listener The function to be called when the event is fired.
+     * @returns {Map} `this`
+     * @example
+     * // Set an event listener that will fire
+     * // when the map has finished loading.
+     * map.on('load', function() {
+     *   // Once the map has finished loading,
+     *   // add a new layer.
+     *   map.addLayer({
+     *     id: 'points-of-interest',
+     *     source: {
+     *       type: 'vector',
+     *       url: 'mapbox://mapbox.mapbox-streets-v8'
+     *     },
+     *     'source-layer': 'poi_label',
+     *     type: 'circle',
+     *     paint: {
+     *       // Mapbox Style Specification paint properties
+     *     },
+     *     layout: {
+     *       // Mapbox Style Specification layout properties
+     *     }
+     *   });
+     * });
+     * @see [Add 3D buildings](https://docs.mapbox.com/mapbox-gl-js/example/3d-buildings/)
+     * @see [Add terrain](https://docs.mapbox.com/mapbox-gl-js/example/add-terrain/)
+     * @see [Get coordinates of the mouse pointer](https://docs.mapbox.com/mapbox-gl-js/example/mouse-position/)
+     */
+
+    /**
      * Adds a listener for events of a specified type, optionally limited to features in a specified style layer.
      *
      * @param {string} type The event type to listen for. Events compatible with the optional `layerId` parameter are triggered
