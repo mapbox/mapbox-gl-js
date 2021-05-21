@@ -1843,8 +1843,7 @@ class Map extends Camera {
      * (This can also be `custom`. For more information, see {@link CustomLayerInterface}.)
      * @param {string | Object} [layer.source] The data source for the layer.
      * Reference a source that has _already been defined_ using the source's unique id.
-     * Reference a _new source_ using a source object (as defined in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/)) directly.
-     * This is **required** for all `layer.type` options _except_ for `custom`.
+     * This is **required** for all `layer.type` options _except_ for `custom` and `background`.
      * @param {string} [layer.sourceLayer] (optional) The name of the [source layer](https://docs.mapbox.com/help/glossary/source-layer/) within the specified `layer.source` to use for this style layer.
      * This is only applicable for vector tile sources and is **required** when `layer.source` is of the type `vector`.
      * @param {array} [layer.filter] (optional) An expression specifying conditions on source features.
