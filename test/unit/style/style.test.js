@@ -2355,21 +2355,21 @@ test('Style#getTerrain', (t) => {
     t.end();
 });
 
-test('Style#setFog', (t) => {
-    t.test('setFog(undefined) removes fog', (t) => {
+test('Style#setAtmosphere', (t) => {
+    t.test('setAtmosphere(undefined) removes atmosphere', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
-            "fog": {"range": [1, 2], "color": "white", "horizon-blend": 0.05},
+            "atmosphere": {"fog-range": [1, 2], "fog-color": "white", "fog-horizon-blend": 0.05},
             "sources": {},
             "layers": []
         });
 
         style.on('style.load', () => {
-            style.setFog(undefined);
-            t.ok(style.fog == null);
+            style.setAtmosphere(undefined);
+            t.ok(style.atmosphere == null);
             const serialized = style.serialize();
-            t.ok(serialized.fog == null);
+            t.ok(serialized.atmosphere == null);
             t.end();
         });
     });
@@ -2377,20 +2377,20 @@ test('Style#setFog', (t) => {
     t.end();
 });
 
-test('Style#getFog', (t) => {
+test('Style#getAtmosphere', (t) => {
     t.test('rolls up inline source into style', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
-            "fog": {"range": [1, 2], "color": "white", "horizon-blend": 0.05},
+            "atmosphere": {"fog-range": [1, 2], "fog-color": "white", "fog-horizon-blend": 0.05},
             "sources": {},
             "layers": []
         });
 
         style.on('style.load', () => {
-            style.setFog({"range": [0, 1], "color": "white", "horizon-blend": 0.0});
-            t.ok(style.getFog());
-            t.deepEqual(style.getFog(), {"range": [0, 1], "color": "white", "horizon-blend": 0.0});
+            style.setAtmosphere({"fog-range": [0, 1], "fog-color": "white", "fog-horizon-blend": 0.0});
+            t.ok(style.getAtmosphere());
+            t.deepEqual(style.getAtmosphere(), {"fog-range": [0, 1], "fog-color": "white", "fog-horizon-blend": 0.0});
             t.end();
         });
     });

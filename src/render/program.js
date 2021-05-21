@@ -7,8 +7,8 @@ import VertexArrayObject from './vertex_array_object.js';
 import Context from '../gl/context.js';
 import {terrainUniforms} from '../terrain/terrain.js';
 import type {TerrainUniformsType} from '../terrain/terrain.js';
-import {fogUniforms} from './fog.js';
-import type {FogUniformsType} from './fog.js';
+import {atmosphereUniforms} from './atmosphere.js';
+import type {AtmosphereUniformsType} from './atmosphere.js';
 
 import type SegmentVector from '../data/segment.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
@@ -43,7 +43,7 @@ class Program<Us: UniformBindings> {
     binderUniforms: Array<BinderUniform>;
     failedToCreate: boolean;
     terrainUniforms: ?TerrainUniformsType;
-    fogUniforms: ?FogUniformsType;
+    atmosphereUniforms: ?AtmosphereUniformsType;
 
     static cacheKey(name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
@@ -134,7 +134,7 @@ class Program<Us: UniformBindings> {
             this.terrainUniforms = terrainUniforms(context, uniformLocations);
         }
         if (fixedDefines.indexOf('FOG') !== -1) {
-            this.fogUniforms = fogUniforms(context, uniformLocations);
+            this.atmosphereUniforms = atmosphereUniforms(context, uniformLocations);
         }
     }
 
@@ -150,16 +150,16 @@ class Program<Us: UniformBindings> {
         }
     }
 
-    setFogUniformValues(context: Context, fogUniformsValues: UniformValues<FogUniformsType>) {
-        if (!this.fogUniforms) return;
-        const uniforms: FogUniformsType = this.fogUniforms;
+    setAtmosphereUniformValues(context: Context, atmosphereUniformsValues: UniformValues<AtmosphereUniformsType>) {
+        if (!this.atmosphereUniforms) return;
+        const uniforms: AtmosphereUniformsType = this.atmosphereUniforms;
 
         if (this.failedToCreate) return;
         context.program.set(this.program);
 
-        for (const name in fogUniformsValues) {
+        for (const name in atmosphereUniformsValues) {
             if (uniforms[name].location) {
-                uniforms[name].set(fogUniformsValues[name]);
+                uniforms[name].set(atmosphereUniformsValues[name]);
             }
         }
     }

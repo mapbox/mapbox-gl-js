@@ -10,7 +10,7 @@ import ImageManager from '../render/image_manager.js';
 import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
 import Light from './light.js';
 import Terrain from './terrain.js';
-import Fog from './fog.js';
+import Atmosphere from './atmosphere.js';
 import LineAtlas from '../render/line_atlas.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
@@ -66,7 +66,7 @@ import type {
     LightSpecification,
     SourceSpecification,
     TerrainSpecification,
-    FogSpecification
+    AtmosphereSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator} from './validate_style.js';
@@ -86,7 +86,7 @@ const supportedDiffOperations = pick(diffOperations, [
     'setTransition',
     'setGeoJSONSourceData',
     'setTerrain',
-    'setFog'
+    'setAtmosphere'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -125,7 +125,7 @@ class Style extends Evented {
     lineAtlas: LineAtlas;
     light: Light;
     terrain: ?Terrain;
-    fog: ?Fog;
+    atmosphere: ?Atmosphere;
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
@@ -328,8 +328,8 @@ class Style extends Evented {
         if (this.stylesheet.terrain) {
             this._createTerrain(this.stylesheet.terrain);
         }
-        if (this.stylesheet.fog) {
-            this._createFog(this.stylesheet.fog);
+        if (this.stylesheet.atmosphere) {
+            this._createAtmosphere(this.stylesheet.atmosphere);
         }
         this._updateDrapeFirstLayers();
 
@@ -409,7 +409,7 @@ class Style extends Evented {
             return true;
         }
 
-        if (this.fog && this.fog.hasTransition()) {
+        if (this.atmosphere && this.atmosphere.hasTransition()) {
             return true;
         }
 
@@ -481,8 +481,8 @@ class Style extends Evented {
             }
 
             this.light.updateTransitions(parameters);
-            if (this.fog) {
-                this.fog.updateTransitions(parameters);
+            if (this.atmosphere) {
+                this.atmosphere.updateTransitions(parameters);
             }
 
             this._resetUpdates();
@@ -529,8 +529,8 @@ class Style extends Evented {
         if (this.terrain) {
             this.terrain.recalculate(parameters);
         }
-        if (this.fog) {
-            this.fog.recalculate(parameters);
+        if (this.atmosphere) {
+            this.atmosphere.recalculate(parameters);
         }
         this.z = parameters.zoom;
 
@@ -1170,7 +1170,7 @@ class Style extends Evented {
             metadata: this.stylesheet.metadata,
             light: this.stylesheet.light,
             terrain: this.stylesheet.terrain,
-            fog: this.stylesheet.fog,
+            atmosphere: this.stylesheet.atmosphere,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
             bearing: this.stylesheet.bearing,
@@ -1446,9 +1446,9 @@ class Style extends Evented {
         this._markersNeedUpdate = true;
     }
 
-    _createFog(fogOptions: FogSpecification) {
-        const fog = this.fog = new Fog(fogOptions);
-        this.stylesheet.fog = fogOptions;
+    _createAtmosphere(atmosphereOptions: AtmosphereSpecification) {
+        const atmosphere = this.atmosphere = new Atmosphere(atmosphereOptions);
+        this.stylesheet.atmosphere = atmosphereOptions;
         const parameters = {
             now: browser.now(),
             transition: extend({
@@ -1456,7 +1456,7 @@ class Style extends Evented {
             }, this.stylesheet.transition)
         };
 
-        fog.updateTransitions(parameters);
+        atmosphere.updateTransitions(parameters);
     }
 
     _updateMarkersOpacity() {
@@ -1470,32 +1470,32 @@ class Style extends Evented {
         });
     }
 
-    getFog() {
-        return this.fog ? this.fog.get() : null;
+    getAtmosphere() {
+        return this.atmosphere ? this.atmosphere.get() : null;
     }
 
-    setFog(fogOptions: FogSpecification) {
+    setAtmosphere(atmosphereOptions: AtmosphereSpecification) {
         this._checkLoaded();
 
-        if (!fogOptions) {
-            // Remove fog
-            delete this.fog;
-            delete this.stylesheet.fog;
+        if (!atmosphereOptions) {
+            // Remove atmosphere
+            delete this.atmosphere;
+            delete this.stylesheet.atmosphere;
             this._markersNeedUpdate = true;
             return;
         }
 
-        if (!this.fog) {
-            // Initialize Fog
-            this._createFog(fogOptions);
+        if (!this.atmosphere) {
+            // Initialize Atmosphere
+            this._createAtmosphere(atmosphereOptions);
         } else {
-            // Updating fog
-            const fog = this.fog;
-            const currSpec = fog.get();
-            for (const key in fogOptions) {
-                if (!deepEqual(fogOptions[key], currSpec[key])) {
-                    fog.set(fogOptions);
-                    this.stylesheet.fog = fogOptions;
+            // Updating atmosphere
+            const atmosphere = this.atmosphere;
+            const currSpec = atmosphere.get();
+            for (const key in atmosphereOptions) {
+                if (!deepEqual(atmosphereOptions[key], currSpec[key])) {
+                    atmosphere.set(atmosphereOptions);
+                    this.stylesheet.atmosphere = atmosphereOptions;
                     const parameters = {
                         now: browser.now(),
                         transition: extend({
@@ -1503,7 +1503,7 @@ class Style extends Evented {
                         }, this.stylesheet.transition)
                     };
 
-                    fog.updateTransitions(parameters);
+                    atmosphere.updateTransitions(parameters);
                     break;
                 }
             }
@@ -1653,7 +1653,7 @@ class Style extends Evented {
         }
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, this.fog ? this.fog.state : null);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, this.atmosphere ? this.atmosphere.state : null);
             this._layerOrderChanged = false;
         }
 

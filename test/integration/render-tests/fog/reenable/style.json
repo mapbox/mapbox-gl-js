@@ -6,11 +6,11 @@
       "width": 256,
       "operations": [
         ["wait", 500],
-        ["setFog", null],
-        ["setFog", {
-          "range": [-0.5, 0.5],
-          "color": "blue",
-          "horizon-blend": 0.15
+        ["setAtmosphere", null],
+        ["setAtmosphere", {
+          "fog-range": [-0.5, 0.5],
+          "fog-color": "blue",
+          "fog-horizon-blend": 0.15
         }],
         ["wait", 500]
       ]
@@ -23,10 +23,10 @@
   "terrain": {
     "source": "rgbterrain"
   },
-  "fog": {
-    "range": [-0.5, 0.5],
-    "color": "white",
-    "horizon-blend": 0.15
+  "atmosphere": {
+    "fog-range": [-0.5, 0.5],
+    "fog-color": "white",
+    "fog-horizon-blend": 0.15
   },
   "sources": {
     "rgbterrain": {

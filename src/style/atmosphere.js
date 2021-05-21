@@ -3,48 +3,48 @@
 import styleSpec from '../style-spec/reference/latest.js';
 import {endsWith, extend, smoothstep} from '../util/util.js';
 import {Evented} from '../util/evented.js';
-import {validateStyle, validateFog, emitValidationErrors} from './validate_style.js';
+import {validateStyle, validateAtmosphere, emitValidationErrors} from './validate_style.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
 import Color from '../style-spec/util/color.js';
-import {FOG_PITCH_START, FOG_PITCH_END, getFogOpacityAtLngLat, getFovAdjustedFogRange} from './fog_helpers.js';
-import type {FogSpecification} from '../style-spec/types.js';
+import {FOG_PITCH_START, FOG_PITCH_END, getFogOpacityAtLngLat, getFovAdjustedFogRange} from './atmosphere_helpers.js';
+import type {AtmosphereSpecification} from '../style-spec/types.js';
 import type EvaluationParameters from './evaluation_parameters.js';
 import type {TransitionParameters} from './properties.js';
 import type LngLat from '../geo/lng_lat.js';
 import type Transform from '../geo/transform.js';
-import type {FogState} from './fog_helpers.js';
+import type {FogState} from './atmosphere_helpers.js';
 
 type Props = {|
-    "range": DataConstantProperty<[number, number]>,
-    "color": DataConstantProperty<Color>,
-    "horizon-blend": DataConstantProperty<number>,
+    "fog-range": DataConstantProperty<[number, number]>,
+    "fog-color": DataConstantProperty<Color>,
+    "fog-horizon-blend": DataConstantProperty<number>,
 |};
 
-const fogProperties: Properties<Props> = new Properties({
-    "range": new DataConstantProperty(styleSpec.fog.range),
-    "color": new DataConstantProperty(styleSpec.fog.color),
-    "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
+const atmosphereProperties: Properties<Props> = new Properties({
+    "fog-range": new DataConstantProperty(styleSpec.atmosphere["fog-range"]),
+    "fog-color": new DataConstantProperty(styleSpec.atmosphere["fog-color"]),
+    "fog-horizon-blend": new DataConstantProperty(styleSpec.atmosphere["fog-horizon-blend"]),
 });
 
 const TRANSITION_SUFFIX = '-transition';
 
-class Fog extends Evented {
+class Atmosphere extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
 
-    constructor(fogOptions?: FogSpecification) {
+    constructor(fogOptions?: AtmosphereSpecification) {
         super();
-        this._transitionable = new Transitionable(fogProperties);
+        this._transitionable = new Transitionable(atmosphereProperties);
         this.set(fogOptions);
         this._transitioning = this._transitionable.untransitioned();
     }
 
     get state(): FogState {
         return {
-            range: this.properties.get('range'),
-            horizonBlend: this.properties.get('horizon-blend'),
-            alpha: this.properties.get('color').a
+            range: this.properties.get('fog-range'),
+            horizonBlend: this.properties.get('fog-horizon-blend'),
+            alpha: this.properties.get('fog-color').a
         };
     }
 
@@ -52,13 +52,13 @@ class Fog extends Evented {
         return this._transitionable.serialize();
     }
 
-    set(fog?: FogSpecification) {
-        if (this._validate(validateFog, fog)) {
+    set(atmosphere?: AtmosphereSpecification) {
+        if (this._validate(validateAtmosphere, atmosphere)) {
             return;
         }
 
-        for (const name in fog) {
-            const value = fog[name];
+        for (const name in atmosphere) {
+            const value = atmosphere[name];
             if (endsWith(name, TRANSITION_SUFFIX)) {
                 this._transitionable.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), value);
             } else {
@@ -67,17 +67,17 @@ class Fog extends Evented {
         }
     }
 
-    getOpacity(pitch: number): number {
-        const fogColor = (this.properties && this.properties.get('color')) || 1.0;
+    getFogOpacity(pitch: number): number {
+        const fogColor = (this.properties && this.properties.get('fog-color')) || 1.0;
         const pitchFactor = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
         return pitchFactor * fogColor.a;
     }
 
-    getOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
+    getFogOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
         return getFogOpacityAtLngLat(this.state, lngLat, transform);
     }
 
-    getFovAdjustedRange(fov: number): [number, number] {
+    getFovAdjustedFogRange(fov: number): [number, number] {
         return getFovAdjustedFogRange(this.state, fov);
     }
 
@@ -106,4 +106,4 @@ class Fog extends Evented {
     }
 }
 
-export default Fog;
+export default Atmosphere;

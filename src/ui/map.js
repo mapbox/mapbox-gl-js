@@ -42,7 +42,7 @@ import type {MapEvent, MapDataEvent} from './events.js';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer.js';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image.js';
 import Terrain from '../style/terrain.js';
-import Fog from '../style/fog.js';
+import Atmosphere from '../style/atmosphere.js';
 
 import type ScrollZoomHandler from './handler/scroll_zoom.js';
 import type BoxZoomHandler from './handler/box_zoom.js';
@@ -61,7 +61,7 @@ import type {
     StyleSpecification,
     LightSpecification,
     TerrainSpecification,
-    FogSpecification,
+    AtmosphereSpecification,
     SourceSpecification
 } from '../style-spec/types.js';
 import type {ElevationQueryOptions} from '../terrain/elevation.js';
@@ -2186,36 +2186,36 @@ class Map extends Camera {
     }
 
     /**
-     * Sets the fog property of the style.
-     * @param fog The fog properties to set. Must conform the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#fog).
-     * If `null` or `undefined` is provided, this function call removes the fog from the map.
+     * Sets the atmosphere property of the style.
+     * @param atmosphere The atmosphere properties to set. Must conform the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#atmosphere).
+     * If `null` or `undefined` is provided, this function call removes the atmosphere from the map.
      * @returns {Map} `this`
      * @example
-     * map.setFog({
-     *  "range": [1.0, 12.0],
-     *  "color": 'white',
-     *  "horizon-blend": 0.1
+     * map.setAtmosphere({
+     *  "fog-range": [1.0, 12.0],
+     *  "fog-color": 'white',
+     *  "fog-horizon-blend": 0.1
      * });
      */
-    setFog(fog: FogSpecification) {
+    setAtmosphere(atmosphere: AtmosphereSpecification) {
         this._lazyInitEmptyStyle();
-        this.style.setFog(fog);
+        this.style.setAtmosphere(atmosphere);
         return this._update(true);
     }
 
     /**
-     * Returns the fog specification or `null` if fog is not set on the map.
+     * Returns the atmosphere specification or `null` if atmosphere is not set on the map.
      *
-     * @returns {Object} fog Fog specification properties of the style.
+     * @returns {Object} atmosphere Atmosphere specification properties of the style.
      */
-    getFog(): Fog | null {
-        return this.style ? this.style.getFog() : null;
+    getAtmosphere(): Atmosphere | null {
+        return this.style ? this.style.getAtmosphere() : null;
     }
 
     /**
-     * Returns the fog opacity for a given location.
+     * Returns the atmosphere opacity for a given location.
      *
-     * An opacity of 0 means that there is no fog contribution for the given location
+     * An opacity of 0 means that there is no atmosphere contribution for the given location
      * while a fog opacity of 1.0 means the location is fully obscured by the fog effect.
      *
      * If there is no fog set on the map, this function will return 0.
@@ -2225,8 +2225,8 @@ class Map extends Camera {
      * @private
      */
     _queryFogOpacity(lnglat: LngLatLike): number {
-        if (!this.style || !this.style.fog) return 0.0;
-        return this.style.fog.getOpacityAtLatLng(LngLat.convert(lnglat), this.transform);
+        if (!this.style || !this.style.atmosphere) return 0.0;
+        return this.style.atmosphere.getFogOpacityAtLatLng(LngLat.convert(lnglat), this.transform);
     }
 
     /**
@@ -2677,7 +2677,7 @@ class Map extends Camera {
         // need for the current transform
         if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
-            this.painter._updateFog(this.style);
+            this.painter._updateAtmosphere(this.style);
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             this.style._updateSources(this.transform);
         }

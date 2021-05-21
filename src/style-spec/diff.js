@@ -104,9 +104,9 @@ const operations = {
     setTerrain: 'setTerrain',
 
     /*
-     *  { command: 'setFog', args: [fogProperties] }
+     *  { command: 'setAtmosphere', args: [atmosphereProperties] }
      */
-    setFog: 'setFog'
+    setAtmosphere: 'setAtmosphere'
 
 };
 
@@ -360,8 +360,8 @@ function diffStyles(before, after) {
         if (!isEqual(before.light, after.light)) {
             commands.push({command: operations.setLight, args: [after.light]});
         }
-        if (!isEqual(before.fog, after.fog)) {
-            commands.push({command: operations.setFog, args: [after.fog]});
+        if (!isEqual(before.atmosphere, after.atmosphere)) {
+            commands.push({command: operations.setAtmosphere, args: [after.atmosphere]});
         }
 
         // Handle changes to `sources`

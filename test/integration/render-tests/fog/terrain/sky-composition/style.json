@@ -13,10 +13,10 @@
   "terrain": {
     "source": "rgbterrain"
   },
-  "fog": {
-    "range": [-0.5, 0.5],
-    "color": "white",
-    "horizon-blend": 0.15
+  "atmosphere": {
+    "fog-range": [-0.5, 0.5],
+    "fog-color": "white",
+    "fog-horizon-blend": 0.15
   },
   "sources": {
     "rgbterrain": {

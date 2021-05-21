@@ -18,7 +18,7 @@ import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../d
 import type FeatureIndex from '../data/feature_index.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type {TextAnchor} from './symbol_layout.js';
-import type {FogState} from '../style/fog_helpers.js';
+import type {FogState} from '../style/atmosphere_helpers.js';
 
 class OpacityState {
     opacity: number;

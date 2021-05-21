@@ -10,9 +10,9 @@
   "zoom": 12.1,
   "pitch": 80,
   "bearing": 64.5,
-  "fog": {
-    "range": [-0.5, 0.5],
-    "color": "white"
+  "atmosphere": {
+    "fog-range": [-0.5, 0.5],
+    "fog-color": "white"
   },
   "sources": {
     "satellite": {

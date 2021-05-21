@@ -7,16 +7,16 @@
     }
   },
   "layers": [],
-  "fog": {
-    "range": ["interpolate", ["exponential", 0.1],
+  "atmosphere": {
+    "fog-range": ["interpolate", ["exponential", 0.1],
              ["zoom"],
              5.5, ["literal", [10, 12]],
              12, ["literal", [1, 5]]],
-    "color": ["interpolate", ["linear"],
+    "fog-color": ["interpolate", ["linear"],
              ["zoom"],
              5, "black",
              5.5, "rgba(245, 244, 247, 1.0)"],
-    "horizon-blend": ["interpolate", ["linear"],
+    "fog-horizon-blend": ["interpolate", ["linear"],
                      ["zoom"],
                      7, 0.05,
                      15, 0.2]

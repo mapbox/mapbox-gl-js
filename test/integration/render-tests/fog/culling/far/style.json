@@ -35,9 +35,9 @@
       }
     }
   },
-  "fog": {
-    "range": [3.5, 4.5],
-    "color": "blue"
+  "atmosphere": {
+    "fog-range": [3.5, 4.5],
+    "fog-color": "blue"
   },
   "layers": [
     {

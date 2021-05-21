@@ -12,9 +12,9 @@
   ],
   "zoom": 16,
   "pitch": 70,
-  "fog": {
-    "range": [-0.5, 2.5],
-    "color": "rgba(255, 30, 35, 0.8)"
+  "atmosphere": {
+    "fog-range": [-0.5, 2.5],
+    "fog-color": "rgba(255, 30, 35, 0.8)"
   },
   "sources": {},
   "layers": [

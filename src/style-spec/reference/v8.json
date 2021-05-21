@@ -61,9 +61,9 @@
       "type": "terrain",
       "doc": "A global modifier that elevates layers and markers based on a DEM data source."
     },
-    "fog": {
-      "type": "fog",
-      "doc": "A global effect that fades layers and markers based on their distance to the camera. The fog can be used to approximate the effect of atmosphere on distant objects and enhance the depth perception of the map when used with terrain or 3D features."
+    "atmosphere": {
+      "type": "atmosphere",
+      "doc": "A global effect that simulates atmospheric effects in order to enhance the sense of depth when used with terrain or 3D features."
     },
     "sources": {
       "required": true,
@@ -3685,8 +3685,8 @@
       }
     }
   },
-  "fog": {
-    "range": {
+  "atmosphere": {
+    "fog-range": {
       "type": "array",
       "default": [
         0.5,
@@ -3704,7 +3704,7 @@
           "zoom"
         ]
       },
-      "doc": "The start and end distance range in which fog fades from fully transparent to fully opaque. The distance to the point at the center of the map is defined as zero, so that negative range values are closer to the camera, and positive values are farther away.",
+      "doc": "The start and end distance range in which the fog effect fades from fully transparent to fully opaque. The distance to the point at the center of the map is defined as zero, so that negative range values are closer to the camera, and positive values are farther away.",
       "example": [
         0.5,
         10
@@ -3715,7 +3715,7 @@
         }
       }
     },
-    "color": {
+    "fog-color": {
       "type": "color",
       "property-type": "data-constant",
       "default": "#ffffff",
@@ -3726,14 +3726,14 @@
         ]
       },
       "transition": true,
-      "doc": "The color of the fog. Using opacity is recommended only for smoothly transitioning fog on/off as anything less than 100% opacity results in more tiles loaded and drawn.",
+      "doc": "The color of the fog effect. Using opacity is recommended only for smoothly transitioning fog on/off as anything less than 100% opacity results in more tiles loaded and drawn.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
         }
       }
     },
-    "horizon-blend": {
+    "fog-horizon-blend": {
       "type": "number",
       "property-type": "data-constant",
       "default": 0.1,
@@ -3746,7 +3746,7 @@
         ]
       },
       "transition": true,
-      "doc": "Horizon blend applies a smooth fade from the color of the fog to the color of the sky. A value of zero leaves a sharp transition from fog to sky. Increasing the value blends the color of fog into increasingly high angles of the sky.",
+      "doc": "Horizon blend applies a smooth fade from the color of the fog effect to the color of the sky. A value of zero leaves a sharp transition from fog to sky. Increasing the value blends the color of fog into increasingly high angles of the sky.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"

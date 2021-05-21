@@ -9,10 +9,10 @@
   "sources": {},
   "zoom": 16,
   "pitch": 85,
-  "fog": {
-    "range": [2, 12],
-    "color": "rgba(255, 255, 255, 1.0)",
-    "horizon-blend": 0.2
+  "atmosphere": {
+    "fog-range": [2, 12],
+    "fog-color": "rgba(255, 255, 255, 1.0)",
+    "fog-horizon-blend": 0.2
   },
   "layers": [
     {

@@ -19,7 +19,7 @@ import shaders from '../shaders/shaders.js';
 import Program from './program.js';
 import {programUniforms} from './program/program_uniforms.js';
 import Context from '../gl/context.js';
-import {fogUniformValues} from '../render/fog.js';
+import {atmosphereUniformValues} from '../render/atmosphere.js';
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
@@ -179,16 +179,16 @@ class Painter {
         terrain.update(style, this.transform, cameraChanging);
     }
 
-    _updateFog(style: Style) {
-        const fog = style.fog;
-        if (!fog || fog.getOpacity(this.transform.pitch) < 1 || fog.properties.get('horizon-blend') < 0.03) {
+    _updateAtmosphere(style: Style) {
+        const atmosphere = style.atmosphere;
+        if (!atmosphere || atmosphere.getFogOpacity(this.transform.pitch) < 1 || atmosphere.properties.get('fog-horizon-blend') < 0.03) {
             this.transform.fogCullDistSq = null;
             return;
         }
 
         // We start culling where the fog opacity function hits
         // 98% which leaves a non-noticeable change threshold.
-        const [start, end] = fog.getFovAdjustedRange(this.transform._fov);
+        const [start, end] = atmosphere.getFovAdjustedFogRange(this.transform._fov);
         const fogBoundFraction = 0.78;
         const fogCullDist = start + (end - start) * fogBoundFraction;
 
@@ -499,8 +499,8 @@ class Painter {
         // Clear buffers in preparation for drawing to the main framebuffer
         // If fog is enabled, use the fog color as default clear color.
         let clearColor = Color.transparent;
-        if (this.style.fog) {
-            clearColor = this.style.fog.properties.get('color');
+        if (this.style.atmosphere) {
+            clearColor = this.style.atmosphere.properties.get('fog-color');
         }
         this.context.clear({color: options.showOverdrawInspector ? Color.black : clearColor, depth: 1});
         this.clearStencil();
@@ -750,13 +750,13 @@ class Painter {
     currentGlobalDefines(): string[] {
         const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
-        const fog = this.style && this.style.fog;
+        const atmosphere = this.style && this.style.atmosphere;
         const defines = [];
 
         if (terrain) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {
+        if (atmosphere && !rtt && atmosphere.getFogOpacity(this.transform.pitch) !== 0.0) {
             defines.push('FOG');
         }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
@@ -843,12 +843,12 @@ class Painter {
             return;
         }
 
-        const fog = this.style.fog;
+        const atmosphere = this.style.atmosphere;
 
-        if (fog) {
-            const fogOpacity = fog.getOpacity(this.transform.pitch);
+        if (atmosphere) {
+            const fogOpacity = atmosphere.getFogOpacity(this.transform.pitch);
             if (fogOpacity !== 0.0) {
-                program.setFogUniformValues(context, fogUniformValues(this, fog, tileID, fogOpacity));
+                program.setAtmosphereUniformValues(context, atmosphereUniformValues(this, atmosphere, tileID, fogOpacity));
             }
         }
     }
@@ -880,10 +880,10 @@ class Painter {
     averageElevationNeedsEasing() {
         if (!this.transform._elevation) return false;
 
-        const fog = this.style && this.style.fog;
-        if (!fog) return false;
+        const atmosphere = this.style && this.style.atmosphere;
+        if (!atmosphere) return false;
 
-        const fogOpacity = fog.getOpacity(this.transform.pitch);
+        const fogOpacity = atmosphere.getFogOpacity(this.transform.pitch);
         if (fogOpacity === 0) return false;
 
         return true;

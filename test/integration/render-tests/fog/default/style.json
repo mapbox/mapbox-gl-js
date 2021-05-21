@@ -8,7 +8,7 @@
   },
   "pitch": 80,
   "zoom": 12,
-  "fog": {},
+  "atmosphere": {},
   "layers": [
     {
       "id": "background",

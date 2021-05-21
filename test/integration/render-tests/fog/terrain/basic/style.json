@@ -13,9 +13,9 @@
   "terrain": {
     "source": "rgbterrain"
   },
-  "fog": {
-    "range": [-0.5, 0.5],
-    "color": "white"
+  "atmosphere": {
+    "fog-range": [-0.5, 0.5],
+    "fog-color": "white"
   },
   "sources": {
     "rgbterrain": {

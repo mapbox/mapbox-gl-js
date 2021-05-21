@@ -9,7 +9,7 @@ import type StyleLayer from './style_layer.js';
 import type SymbolStyleLayer from './style_layer/symbol_style_layer.js';
 import type Tile from '../source/tile.js';
 import type {BucketPart} from '../symbol/placement.js';
-import type {FogState} from './fog_helpers.js';
+import type {FogState} from './atmosphere_helpers.js';
 
 class LayerPlacement {
     _sortAcrossTiles: boolean;

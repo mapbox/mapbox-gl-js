@@ -412,40 +412,40 @@ test('diff', (t) => {
     ], 'changing transition');
 
     t.deepEqual(diffStyles({
-        'fog': {
-            'range': [1000, 2000],
-            'color': 'white',
-            'horizon-blend': 0.05
+        'atmosphere': {
+            'fog-range': [1000, 2000],
+            'fog-color': 'white',
+            'fog-horizon-blend': 0.05
         }
     }, {
-        'fog': {
-            'range': [1000, 2000],
-            'color': 'white',
-            'horizon-blend': 0.05
+        'atmosphere': {
+            'fog-range': [1000, 2000],
+            'fog-color': 'white',
+            'fog-horizon-blend': 0.05
         }
     }), [
-    ], 'fog no change');
+    ], 'atmosphere no change');
 
     t.deepEqual(diffStyles({
-        'fog': {
-            'range': [1000, 2000],
-            'color': 'white',
-            'horizon-blend': 0.05
+        'atmosphere': {
+            'fog-range': [1000, 2000],
+            'fog-color': 'white',
+            'fog-horizon-blend': 0.05
         }
     }, {
-        'fog': {
-            'range': [0, 2000],
-            'color': 'blue',
-            'horizon-blend': 0.5
+        'atmosphere': {
+            'fog-range': [0, 2000],
+            'fog-color': 'blue',
+            'fog-horizon-blend': 0.5
         }
     }), [{
-        command: 'setFog',
+        command: 'setAtmosphere',
         args: [{
-            'range': [0, 2000],
-            'color': 'blue',
-            'horizon-blend': 0.5
+            'fog-range': [0, 2000],
+            'fog-color': 'blue',
+            'fog-horizon-blend': 0.5
         }]
-    }], 'changing fog');
+    }], 'changing atmosphere');
 
     t.end();
 });

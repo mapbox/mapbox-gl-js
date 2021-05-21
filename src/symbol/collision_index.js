@@ -8,7 +8,7 @@ import * as intersectionTests from '../util/intersection_tests.js';
 import Grid from './grid_index.js';
 import {mat4, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em.js';
-import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers.js';
+import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/atmosphere_helpers.js';
 import assert from 'assert';
 
 import * as projection from '../symbol/projection.js';
@@ -18,7 +18,7 @@ import type {
     GlyphOffsetArray,
     SymbolLineVertexArray
 } from '../data/array_types.js';
-import type {FogState} from '../style/fog_helpers.js';
+import type {FogState} from '../style/atmosphere_helpers.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 
 // When a symbol crosses the edge that causes it to be included in

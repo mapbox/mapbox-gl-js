@@ -9,9 +9,9 @@
   "center": [-113.26903, 35.9654],
   "zoom": 11,
   "pitch": 70,
-  "fog": {
-    "range": [-0.5, 0.5],
-    "color": "white"
+  "atmosphere": {
+    "fog-range": [-0.5, 0.5],
+    "fog-color": "white"
   },
   "sources": {
     "source": {

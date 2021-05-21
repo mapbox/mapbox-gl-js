@@ -8,9 +8,9 @@
   },
   "pitch": 80,
   "zoom": 12,
-  "fog": {
-    "range": [-0.5, 0.5],
-    "color": "white"
+  "atmosphere": {
+    "fog-range": [-0.5, 0.5],
+    "fog-color": "white"
   },
   "layers": [
     {

@@ -7,7 +7,7 @@
     }
   },
   "layers": [],
-  "fog": {
-    "range": [2, 1]
+  "atmosphere": {
+    "fog-range": [2, 1]
   }
 }

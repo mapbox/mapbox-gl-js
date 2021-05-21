@@ -1,0 +1,6 @@
+[
+  {
+    "line": 10,
+    "message": "atmosphere: atmosphere.fog-range[0] can't be greater than or equal to atmosphere.fog-range[1]"
+  }
+]

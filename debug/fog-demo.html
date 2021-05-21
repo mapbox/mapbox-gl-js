@@ -64,20 +64,20 @@ map.on('style.load', () => {
         }
     });
 
-    map.setFog({
-        'range': ['interpolate', ['exponential', 0.1],
+    map.setAtmosphere({
+        'fog-range': ['interpolate', ['exponential', 0.1],
             ['zoom'],
             10, ['literal', [10, 12]],
             12, ['literal', [-1.5, 10]]],
-        'color': ['interpolate', ['linear'],
+        'fog-color': ['interpolate', ['linear'],
             ['zoom'],
             9, 'black',
             11, 'white'],
-        'horizon-blend': ['interpolate', ['linear'],
+        'fog-horizon-blend': ['interpolate', ['linear'],
             ['zoom'],
             10, 0.01,
             12, 0.02],
-        'color-transition': {
+        'fog-color-transition': {
             'duration': 500
         }
     });
@@ -121,11 +121,11 @@ map.on('load', async () => {
             if (day) {
                 map.setPaintProperty('sky-day', 'sky-opacity', 1);
                 map.setPaintProperty('sky-night', 'sky-opacity', 0);
-                map.setFog({'color': 'white'});
+                map.setAtmosphere({'fog-color': 'white'});
             } else {
                 map.setPaintProperty('sky-day', 'sky-opacity', 0);
                 map.setPaintProperty('sky-night', 'sky-opacity', 1);
-                map.setFog({'color': 'rgba(66, 88, 106, 1.0)'});
+                map.setAtmosphere({'fog-color': 'rgba(66, 88, 106, 1.0)'});
             }
 
             day = !day;

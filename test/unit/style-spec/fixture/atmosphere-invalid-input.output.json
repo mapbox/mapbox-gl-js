@@ -1,0 +1,14 @@
+[
+  {
+    "line": 11,
+    "message": "fog-range[0]: -100 is less than the minimum value -20"
+  },
+  {
+    "line": 11,
+    "message": "fog-range[1]: -80 is less than the minimum value -20"
+  },
+  {
+    "line": 12,
+    "message": "fog-horizon-blend: -4 is less than the minimum value 0"
+  }
+]

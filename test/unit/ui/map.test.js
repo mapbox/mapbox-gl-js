@@ -347,45 +347,45 @@ test('Map', (t) => {
             t.end();
         });
 
-        t.test('updating fog triggers style diffing using setFog operation', (t) => {
-            t.test('removing fog', (t) => {
+        t.test('updating atmosphere triggers style diffing using setAtmosphere operation', (t) => {
+            t.test('removing atmosphere', (t) => {
                 const style = createStyle();
-                style['fog'] = {
-                    "range": [2, 5],
-                    "color": "white"
+                style['atmosphere'] = {
+                    "fog-range": [2, 5],
+                    "fog-color": "white"
                 };
                 const map = createMap(t, {style});
                 const initStyleObj = map.style;
-                t.spy(initStyleObj, 'setFog');
+                t.spy(initStyleObj, 'setAtmosphere');
                 t.spy(initStyleObj, 'setState');
                 map.on('style.load', () => {
                     map.setStyle(createStyle());
                     t.equal(initStyleObj, map.style);
                     t.equal(initStyleObj.setState.callCount, 1);
-                    t.equal(initStyleObj.setFog.callCount, 1);
-                    t.ok(map.style.fog == null);
+                    t.equal(initStyleObj.setAtmosphere.callCount, 1);
+                    t.ok(map.style.atmosphere == null);
                     t.end();
                 });
             });
 
-            t.test('adding fog', (t) => {
+            t.test('adding atmosphere', (t) => {
                 const style = createStyle();
                 const map = createMap(t, {style});
                 const initStyleObj = map.style;
-                t.spy(initStyleObj, 'setFog');
+                t.spy(initStyleObj, 'setAtmosphere');
                 t.spy(initStyleObj, 'setState');
                 map.on('style.load', () => {
-                    const styleWithFog = JSON.parse(JSON.stringify(style));
+                    const styleWithAtmosphere = JSON.parse(JSON.stringify(style));
 
-                    styleWithFog['fog'] = {
-                        "range": [2, 5],
-                        "color": "white"
+                    styleWithAtmosphere['atmosphere'] = {
+                        "fog-range": [2, 5],
+                        "fog-color": "white"
                     };
-                    map.setStyle(styleWithFog);
+                    map.setStyle(styleWithAtmosphere);
                     t.equal(initStyleObj, map.style);
                     t.equal(initStyleObj.setState.callCount, 1);
-                    t.equal(initStyleObj.setFog.callCount, 1);
-                    t.ok(map.style.fog);
+                    t.equal(initStyleObj.setAtmosphere.callCount, 1);
+                    t.ok(map.style.atmosphere);
                     t.end();
                 });
             });
@@ -486,36 +486,36 @@ test('Map', (t) => {
             });
         });
 
-        t.test('returns the style with added fog', (t) => {
+        t.test('returns the style with added atmosphere', (t) => {
             const style = createStyle();
             const map = createMap(t, {style});
 
             map.on('load', () => {
-                const fog = {
-                    "range": [2, 5],
-                    "color": "blue"
+                const atmosphere = {
+                    "fog-range": [2, 5],
+                    "fog-color": "blue"
                 };
-                map.setFog(fog);
+                map.setAtmosphere(atmosphere);
                 t.deepEqual(map.getStyle(), extend(createStyle(), {
-                    fog
+                    atmosphere
                 }));
-                t.ok(map.getFog());
+                t.ok(map.getAtmosphere());
                 t.end();
             });
         });
 
-        t.test('returns the style with removed fog', (t) => {
+        t.test('returns the style with removed atmosphere', (t) => {
             const style = createStyle();
-            style['fog'] = {
-                "range": [2, 5],
-                "color": "white"
+            style['atmosphere'] = {
+                "fog-range": [2, 5],
+                "fog-color": "white"
             };
             const map = createMap(t, {style});
 
             map.on('load', () => {
-                map.setFog(null);
+                map.setAtmosphere(null);
                 t.deepEqual(map.getStyle(), createStyle());
-                t.equal(map.getFog(), null);
+                t.equal(map.getAtmosphere(), null);
                 t.end();
             });
         });
@@ -1246,11 +1246,11 @@ test('Map', (t) => {
         const style = createStyle();
         const map = createMap(t, {style});
         map.on('load', () => {
-            map.setFog({
-                "range": [0.5, 10.5]
+            map.setAtmosphere({
+                "fog-range": [0.5, 10.5]
             });
 
-            t.ok(map.getFog());
+            t.ok(map.getAtmosphere());
 
             map.once('render', () => {
                 map.setZoom(10);

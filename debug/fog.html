@@ -106,48 +106,48 @@ window.onload = function() {
         }
     });
 
-    var fog = gui.addFolder('Fog');
-    var enableFog = fog.add(guiParams, 'enableFog');
+    var atmosphere = gui.addFolder('Fog');
+    var enableFog = atmosphere.add(guiParams, 'enableFog');
     enableFog.onFinishChange((value) => {
-        map.setFog(value ? {
-            "range": [guiParams.start, guiParams.end],
-            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
-            "horizon-blend": guiParams.horizonBlend
+        map.setAtmosphere(value ? {
+            "fog-range": [guiParams.start, guiParams.end],
+            "fog-color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
+            "fog-horizon-blend": guiParams.horizonBlend
         } : null);
     });
 
-    var start = fog.add(guiParams, 'start', -20, 20);
+    var start = atmosphere.add(guiParams, 'start', -20, 20);
     start.onChange((value) => {
-        map.setFog({
-            "range": [value, guiParams.end],
+        map.setAtmosphere({
+            "fog-range": [value, guiParams.end],
         });
     });
 
-    var end = fog.add(guiParams, 'end', -20, 20);
+    var end = atmosphere.add(guiParams, 'end', -20, 20);
     end.onChange((value) => {
-        map.setFog({
-            "range": [guiParams.start, value],
+        map.setAtmosphere({
+            "fog-range": [guiParams.start, value],
         });
     });
 
-    var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 1.0);
+    var horizonBlend = atmosphere.add(guiParams, 'horizonBlend', 0.0, 1.0);
     horizonBlend.onChange((value) => {
-        map.setFog({
-            "horizon-blend": value,
+        map.setAtmosphere({
+            "fog-horizon-blend": value,
         });
     });
 
-    var opacity = fog.add(guiParams, 'opacity', 0.0, 1.0);
+    var opacity = atmosphere.add(guiParams, 'opacity', 0.0, 1.0);
     opacity.onChange((value) => {
-        map.setFog({
-            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + value + ')'
+        map.setAtmosphere({
+            "fog-color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + value + ')'
         });
     });
 
-    var color = fog.addColor(guiParams, 'color');
+    var color = atmosphere.addColor(guiParams, 'color');
     color.onChange((value) => {
-        map.setFog({
-            "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.opacity + ')'
+        map.setAtmosphere({
+            "fog-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.opacity + ')'
         });
     });
 };
@@ -206,10 +206,10 @@ map.on('style.load', function() {
         }
     });
 
-    map.setFog(guiParams.enableFog ? {
-        "range": [guiParams.start, guiParams.end],
-        "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
-        "horizon-blend": guiParams.horizonBlend
+    map.setAtmosphere(guiParams.enableFog ? {
+        "fog-range": [guiParams.start, guiParams.end],
+        "fog-color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
+        "fog-horizon-blend": guiParams.horizonBlend
     } : null);
 
     map.setTerrain(guiParams.enableTerrain ? {

@@ -35,9 +35,9 @@
       }
     }
   },
-  "fog": {
-    "range": [-0.5, -0.3],
-    "color": "rgba(0, 0, 255, 0.8)"
+  "atmosphere": {
+    "fog-range": [-0.5, -0.3],
+    "fog-color": "rgba(0, 0, 255, 0.8)"
   },
   "layers": [
     {

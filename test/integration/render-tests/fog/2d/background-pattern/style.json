@@ -19,8 +19,8 @@
       }
     }
   ],
-  "fog": {
-    "range": [-1, 0],
-    "color": "white"
+  "atmosphere": {
+    "fog-range": [-1, 0],
+    "fog-color": "white"
   }
 }

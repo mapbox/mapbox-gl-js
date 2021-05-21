@@ -853,11 +853,11 @@ test('Marker and fog', (t) => {
         .togglePopup();
 
     map.on('load', () => {
-        map.setFog({
-            "range": [0.5, 10.5]
+        map.setAtmosphere({
+            "fog-range": [0.5, 10.5]
         });
 
-        t.ok(map.getFog());
+        t.ok(map.getAtmosphere());
         map.once('render', () => {
             map.setZoom(10);
             map.setCenter([0, 0]);
