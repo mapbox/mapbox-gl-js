@@ -301,8 +301,10 @@ export function getGlyphQuads(anchor: Anchor,
                 builtInOffset = [0, 0];
             }
 
-            const paddedWidth = rect.w * positionedGlyph.scale / pixelRatio;
-            const paddedHeight = rect.h * positionedGlyph.scale / pixelRatio;
+            const paddedWidth =
+                rect.w * positionedGlyph.scale / (pixelRatio * (positionedGlyph.localGlyph ? SDF_SCALE : 1));
+            const  paddedHeight =
+                rect.h * positionedGlyph.scale / (pixelRatio * (positionedGlyph.localGlyph ? SDF_SCALE : 1));
 
             let tl, tr, bl, br;
 
