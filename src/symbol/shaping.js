@@ -152,8 +152,8 @@ class TaggedString {
         return this.text.charCodeAt(index);
     }
 
-    verticalizePunctuation() {
-        this.text = verticalizePunctuation(this.text);
+    verticalizePunctuation(skipChontextChecking: boolean) {
+        this.text = verticalizePunctuation(this.text, skipChontextChecking);
     }
 
     trim() {
@@ -261,7 +261,7 @@ function shapeText(text: Formatted,
     const logicalInput = TaggedString.fromFeature(text, defaultFontStack);
 
     if (writingMode === WritingMode.vertical) {
-        logicalInput.verticalizePunctuation();
+        logicalInput.verticalizePunctuation(allowVerticalPlacement && symbolPlacement === 'point');
     }
 
     let lines: Array<TaggedString>;
