@@ -1158,7 +1158,7 @@ class Map extends Camera {
 
     /**
      * Removes an event listener previously added with `Map#on`,
-     * optionally limited to for layer-specific events.
+     * optionally limited to layer-specific events.
      *
      * @param {string} type The event type previously used to install the listener.
      * @param {string} layerId The layer ID previously used to install the listener.
@@ -1174,7 +1174,7 @@ class Map extends Camera {
      *   console.log('The final coordinates are: ' + e.lngLat)
      *   map.off('mousemove', onMove);
      * }
-     * // Bind both functions to mouse events when a click occurs.
+     * // When a click occurs, bind both functions to mouse events.
      * map.on('mousedown', function (e) {
      *   map.on('mousemove', onMove);
      *   map.once('mouseup', onUp);
