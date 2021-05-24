@@ -11,6 +11,7 @@ import {SDF_SCALE} from '../render/glyph_manager.js';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type {Feature} from '../style-spec/expression/index.js';
 import type {StyleImage} from '../style/style_image.js';
+import {isVerticalClosePunctuation, isVerticalOpenPunctuation} from '../util/verticalize_punctuation.js';
 import ONE_EM from './one_em.js';
 
 /**
@@ -263,6 +264,9 @@ export function getGlyphQuads(anchor: Anchor,
 
             const rotateVerticalGlyph = (alongLine || allowVerticalPlacement) && positionedGlyph.vertical;
             const halfAdvance = positionedGlyph.metrics.advance * positionedGlyph.scale / 2;
+            const metrics = positionedGlyph.metrics;
+            const rect = positionedGlyph.rect;
+            if (rect === null) continue;
 
             // Align images and scaled glyphs in the middle of a vertical line.
             if (allowVerticalPlacement && shaping.verticalizable) {
@@ -297,39 +301,90 @@ export function getGlyphQuads(anchor: Anchor,
                 builtInOffset = [0, 0];
             }
 
-            const x1 = (positionedGlyph.metrics.left - rectBuffer) * positionedGlyph.scale - halfAdvance + builtInOffset[0];
-            const y1 = (-positionedGlyph.metrics.top - rectBuffer) * positionedGlyph.scale + builtInOffset[1];
-            const x2 = x1 + textureRect.w * positionedGlyph.scale / (pixelRatio * (positionedGlyph.localGlyph ? SDF_SCALE : 1));
-            const y2 = y1 + textureRect.h * positionedGlyph.scale / (pixelRatio * (positionedGlyph.localGlyph ? SDF_SCALE : 1));
+            const paddedWidth = rect.w * positionedGlyph.scale / pixelRatio;
+            const paddedHeight = rect.h * positionedGlyph.scale / pixelRatio;
 
-            const tl = new Point(x1, y1);
-            const tr = new Point(x2, y1);
-            const bl = new Point(x1, y2);
-            const br = new Point(x2, y2);
+            let tl, tr, bl, br;
 
-            if (rotateVerticalGlyph) {
+            if (!rotateVerticalGlyph) {
+                const x1 = (metrics.left - rectBuffer) * positionedGlyph.scale - halfAdvance + builtInOffset[0];
+                const y1 = (-metrics.top - rectBuffer) * positionedGlyph.scale + builtInOffset[1];
+                const x2 = x1 + paddedWidth;
+                const y2 = y1 + paddedHeight;
+
+                tl = new Point(x1, y1);
+                tr = new Point(x2, y1);
+                bl = new Point(x1, y2);
+                br = new Point(x2, y2);
+            } else {
+                // For vertical glyph placement, follow the steps to put the glyph bitmap in right coordinates:
+                // 1. Rotate the glyph by using original glyph coordinates instead of padded coordinates, since the
+                // rotation center and xOffsetCorrection are all based on original glyph's size.
+                // 2. Do x offset correction so that 'tl' is shifted to the same x coordinate before rotation.
+                // 3. Adjust glyph positon for 'tl' by applying vertial padding and horizontal shift, now 'tl' is the
+                // coordinate where we draw the glyph bitmap.
+                // 4. Calculate other three bitmap coordinates.
+
                 // Vertical-supporting glyphs are laid out in 24x24 point boxes (1 square em)
                 // In horizontal orientation, the "yShift" is the negative value of the height that
                 // the glyph is above the horizontal midline.
                 // By rotating counter-clockwise around the point at the center of the left
-                // edge of a 24x24 layout box centered below the midline, we align the center
-                // of the glyphs with the horizontal midline, so the yShift is no longer
+                // edge of a 24x24 layout box centered below the midline, we align the midline
+                // of the rotated glyphs with the horizontal midline, so the yShift is no longer
                 // necessary, but we also pull the glyph to the left along the x axis.
-                // Since the y coordinate includes yShift, therefore, needs to be accounted
-                // for when glyph is rotated and translated.
-                const yShift = positionedGlyph.y - currentOffset;
+                const yShift = (positionedGlyph.y - currentOffset);
                 const center = new Point(-halfAdvance, halfAdvance - yShift);
                 const verticalRotation = -Math.PI / 2;
-
-                // xHalfWidthOffsetCorrection is a difference between full-width and half-width
-                // advance, should be 0 for full-width glyphs and will pull up half-width glyphs.
-                const xHalfWidthOffsetCorrection = ONE_EM / 2 - halfAdvance;
-                const halfWidthOffsetCorrection = new Point(5 - yShift - xHalfWidthOffsetCorrection, 0);
                 const verticalOffsetCorrection = new Point(...verticalizedLabelOffset);
-                tl._rotateAround(verticalRotation, center)._add(halfWidthOffsetCorrection)._add(verticalOffsetCorrection);
-                tr._rotateAround(verticalRotation, center)._add(halfWidthOffsetCorrection)._add(verticalOffsetCorrection);
-                bl._rotateAround(verticalRotation, center)._add(halfWidthOffsetCorrection)._add(verticalOffsetCorrection);
-                br._rotateAround(verticalRotation, center)._add(halfWidthOffsetCorrection)._add(verticalOffsetCorrection);
+                // Relative position before rotation
+                // tl ----- tr
+                //   |     |
+                //   |     |
+                // bl ----- br
+                tl = new Point(-halfAdvance + builtInOffset[0], builtInOffset[1]);
+                tl._rotateAround(verticalRotation, center)._add(verticalOffsetCorrection);
+
+                // Relative position after rotating
+                // tr ----- br
+                //   |     |
+                //   |     |
+                // tl ----- bl
+                // After rotation, glyph lies on the horizontal midline.
+                // Shift back to tl's original x coordinate before rotation by applying 'xOffsetCorrection'.
+                const offsetCorrection = new Point(-yShift + halfAdvance, 0);
+                tl._add(offsetCorrection);
+
+                // Add padding for y coordinate's justification
+                tl.y -= (metrics.left - rectBuffer) * positionedGlyph.scale;
+
+                // Adjust x coordinate according to glyph bitmap's height and the vectical advance
+                const verticalAdvance = positionedGlyph.imageName ? metrics.advance * positionedGlyph.scale :
+                    ONE_EM * positionedGlyph.scale;
+                // Check wether the glyph is generated from server side or locally
+                const chr = String.fromCharCode(positionedGlyph.glyph);
+                if (isVerticalClosePunctuation(chr)) {
+                    // Place vertical punctuation in right place, pull down 1 pixel's space for close punctuations
+                    tl.x += (-rectBuffer + 1) * positionedGlyph.scale;
+                } else if (isVerticalOpenPunctuation(chr)) {
+                    const xOffset = verticalAdvance - metrics.height * positionedGlyph.scale;
+                    // Place vertical punctuation in right place, pull up 1 pixel's space for open punctuations
+                    tl.x += xOffset + (-rectBuffer - 1) * positionedGlyph.scale;
+                } else if (!positionedGlyph.imageName &&
+                           ((metrics.width + rectBuffer * 2) !== rect.w || metrics.height + rectBuffer * 2 !== rect.h)) {
+                    // Locally generated glyphs' bitmap do not have exact 'rectBuffer' padded around the glyphs,
+                    // but the original tl do have distance of rectBuffer padded to the top of the glyph.
+                    const perfectPaddedHeight = (metrics.height + rectBuffer * 2) * positionedGlyph.scale;
+                    const delta = verticalAdvance - perfectPaddedHeight;
+                    tl.x += delta / 2;
+                } else {
+                    // Place the glyph bitmap right in the center of the 24x24 point boxes
+                    const delta = verticalAdvance - paddedHeight;
+                    tl.x += delta / 2;
+                }
+                // Calculate other three points
+                tr = tl.add(new Point(0, -paddedWidth));
+                bl = tl.add(new Point(paddedHeight, 0));
+                br = tl .add(new Point(paddedHeight, -paddedWidth));
             }
 
             if (textRotate) {

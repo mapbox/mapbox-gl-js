@@ -110,3 +110,13 @@ export default function verticalizePunctuation(input: string) {
     return output;
 }
 
+export function isVerticalClosePunctuation(chr: string) {
+    return chr === '︶' || chr === '﹈' || chr === '︸' || chr === '﹄' || chr === '﹂' || chr === '︾' ||
+           chr === '︼' || chr === '︺' || chr === '︘' || chr === '﹀' || chr === '︐' || chr === '︓' ||
+           chr === '︔' || chr === '｀' || chr === '￣' || chr === '︑' || chr === '︒';
+}
+
+export function isVerticalOpenPunctuation(chr: string) {
+    return chr === '︵' || chr === '﹇' || chr === '︷' || chr === '﹃' || chr === '﹁' || chr === '︽' ||
+           chr === '︻' || chr === '︹' || chr === '︗' || chr === '︿';
+}
