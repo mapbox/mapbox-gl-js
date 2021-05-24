@@ -246,7 +246,7 @@ export function getGlyphQuads(anchor: Anchor,
         const aboveLineHeight = (lineHeight + shaping.positionedLines[lineIndex - 1].lineOffset);
         return previousOffset + (currentLineHeight + aboveLineHeight) / 2.0;
     };
-    let currentOffset = shaping.top;
+    let currentOffset = shaping.top - textOffset[1];
     for (let lineIndex = 0; lineIndex < lineCounts; ++lineIndex) {
         const line = shaping.positionedLines[lineIndex];
         currentOffset = getMidlineOffset(shaping, lineHeight, currentOffset, lineIndex);
@@ -291,7 +291,9 @@ export function getGlyphQuads(anchor: Anchor,
             if (rotateVerticalGlyph) {
                 // Vertical POI labels that are rotated 90deg CW and whose glyphs must preserve upright orientation
                 // need to be rotated 90deg CCW. After a quad is rotated, it is translated to the original built-in offset.
-                verticalizedLabelOffset = builtInOffset;
+                verticalizedLabelOffset = alongLine ?
+                    [0, 0] :
+                    [positionedGlyph.x + halfAdvance - textOffset[0], positionedGlyph.y + textOffset[1] - lineOffset];
                 builtInOffset = [0, 0];
             }
 
