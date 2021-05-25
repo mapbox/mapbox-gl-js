@@ -1,4 +1,4 @@
-[<img width="400" alt="Mapbox" src="https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/assets/logo.png">](https://www.mapbox.com/)
+[<img width="300" alt="Mapbox" src="https://assets-global.website-files.com/5d3ef00c73102c436bc83996/5d3ef00c73102c893bc83a28_logo-regular.png">](https://www.mapbox.com/)
 
 **Mapbox GL JS** is a JavaScript library for interactive, customizable vector maps on the web. It takes map styles that conform to the
 [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/), applies them to vector tiles that
@@ -24,7 +24,7 @@ native SDKs. For code and issues specific to the native SDKs, see the
 - [Open source styles](https://github.com/mapbox/mapbox-gl-styles)
 - [Contributor documentation](./CONTRIBUTING.md)
 
-[<img width="981" alt="Mapbox GL gallery" src="https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/assets/gallery.png">](https://www.mapbox.com/gallery/)
+[<img width="500" alt="Mapbox GL JS v2" src="https://assets.website-files.com/5e832e12eb7ca02ee9064d42/5fcfb4f93ec3c13395bc2a7c_Gl%20JS%20(1).png">](https://www.mapbox.com/mapbox-gljs)
 
 ## License
 
