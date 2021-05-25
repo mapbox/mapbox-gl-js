@@ -216,6 +216,20 @@ function getPxOffset(fixedOffset, fixedSize, stretchOffset, stretchSize) {
     return fixedOffset - fixedSize * stretchOffset / stretchSize;
 }
 
+function getRotateOffset(textOffset: [number, number]) {
+    const x = textOffset[0], y = textOffset[1];
+    const product = x * y;
+    if (product > 0) {
+        return [x, -y];
+    } else if (product < 0) {
+        return [-x, y];
+    } else if (x === 0) {
+        return [y, x];
+    } else {
+        return [y, -x];
+    }
+}
+
 /**
  * Create the quads used for rendering a text label.
  * @private
@@ -287,18 +301,19 @@ export function getGlyphQuads(anchor: Anchor,
                 [positionedGlyph.x + halfAdvance, positionedGlyph.y] :
                 [0, 0];
 
-            let builtInOffset = alongLine ?
-                [0, 0] :
-                [positionedGlyph.x + halfAdvance + textOffset[0], positionedGlyph.y + textOffset[1] - lineOffset];
-
+            let builtInOffset = [0, 0];
             let verticalizedLabelOffset = [0, 0];
-            if (rotateVerticalGlyph) {
+            let rotateOffset = textOffset;
+            if (!alongLine) {
+                if (rotateVerticalGlyph) {
                 // Vertical POI labels that are rotated 90deg CW and whose glyphs must preserve upright orientation
                 // need to be rotated 90deg CCW. After a quad is rotated, it is translated to the original built-in offset.
-                verticalizedLabelOffset = alongLine ?
-                    [0, 0] :
-                    [positionedGlyph.x + halfAdvance - textOffset[0], positionedGlyph.y + textOffset[1] - lineOffset];
-                builtInOffset = [0, 0];
+                    rotateOffset = getRotateOffset(textOffset);
+                    verticalizedLabelOffset =
+                        [positionedGlyph.x + halfAdvance + rotateOffset[0], positionedGlyph.y + rotateOffset[1] - lineOffset];
+                } else {
+                    builtInOffset =  [positionedGlyph.x + halfAdvance + textOffset[0], positionedGlyph.y + textOffset[1] - lineOffset];
+                }
             }
 
             const paddedWidth =
@@ -307,7 +322,6 @@ export function getGlyphQuads(anchor: Anchor,
                 rect.h * positionedGlyph.scale / (pixelRatio * (positionedGlyph.localGlyph ? SDF_SCALE : 1));
 
             let tl, tr, bl, br;
-
             if (!rotateVerticalGlyph) {
                 const x1 = (metrics.left - rectBuffer) * positionedGlyph.scale - halfAdvance + builtInOffset[0];
                 const y1 = (-metrics.top - rectBuffer) * positionedGlyph.scale + builtInOffset[1];
@@ -390,14 +404,11 @@ export function getGlyphQuads(anchor: Anchor,
             }
 
             if (textRotate) {
-                const sin = Math.sin(textRotate),
-                    cos = Math.cos(textRotate),
-                    matrix = [cos, -sin, sin, cos];
-
-                tl._matMult(matrix);
-                tr._matMult(matrix);
-                bl._matMult(matrix);
-                br._matMult(matrix);
+                const center = new Point(rotateOffset[0], rotateOffset[1]);
+                tl._rotateAround(textRotate, center);
+                tr._rotateAround(textRotate, center);
+                bl._rotateAround(textRotate, center);
+                br._rotateAround(textRotate, center);
             }
 
             const pixelOffsetTL = new Point(0, 0);
