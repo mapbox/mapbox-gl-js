@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let pageIndex = 0;
     for (let i = 0; i < pages.length; i++) {
-        if(params.page === pages[i].key) {
+        if (params.page === pages[i].key) {
             pageIndex = i;
             break;
         }
