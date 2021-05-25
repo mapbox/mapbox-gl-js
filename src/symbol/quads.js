@@ -242,11 +242,12 @@ export function getGlyphQuads(anchor: Anchor,
                        feature: Feature,
                        imageMap: {[_: string]: StyleImage},
                        allowVerticalPlacement: boolean): Array<SymbolQuad> {
+    const quads = [];
+    if (shaping.positionedLines.length === 0) return quads;
 
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
-    const quads = [];
+    const rotateOffset = getRotateOffset(textOffset);
 
-    if (shaping.positionedLines.length === 0) return quads;
     let shapingHeight = Math.abs(shaping.top - shaping.bottom);
     for (const line of shaping.positionedLines) {
         shapingHeight -= line.lineOffset;
@@ -303,14 +304,14 @@ export function getGlyphQuads(anchor: Anchor,
 
             let builtInOffset = [0, 0];
             let verticalizedLabelOffset = [0, 0];
-            let rotateOffset = textOffset;
+            let useRotateOffset = false;
             if (!alongLine) {
                 if (rotateVerticalGlyph) {
                 // Vertical POI labels that are rotated 90deg CW and whose glyphs must preserve upright orientation
                 // need to be rotated 90deg CCW. After a quad is rotated, it is translated to the original built-in offset.
-                    rotateOffset = getRotateOffset(textOffset);
                     verticalizedLabelOffset =
                         [positionedGlyph.x + halfAdvance + rotateOffset[0], positionedGlyph.y + rotateOffset[1] - lineOffset];
+                    useRotateOffset = true;
                 } else {
                     builtInOffset =  [positionedGlyph.x + halfAdvance + textOffset[0], positionedGlyph.y + textOffset[1] - lineOffset];
                 }
@@ -404,7 +405,16 @@ export function getGlyphQuads(anchor: Anchor,
             }
 
             if (textRotate) {
-                const center = new Point(rotateOffset[0], rotateOffset[1]);
+                let center;
+                if (!alongLine) {
+                    if (useRotateOffset) {
+                        center = new Point(rotateOffset[0], rotateOffset[1]);
+                    } else {
+                        center = new Point(textOffset[0], textOffset[1]);
+                    }
+                } else {
+                    center = new Point(0, 0);
+                }
                 tl._rotateAround(textRotate, center);
                 tr._rotateAround(textRotate, center);
                 bl._rotateAround(textRotate, center);
