@@ -1,7 +1,7 @@
 varying highp vec3 v_uv;
 
 uniform lowp sampler2D u_color_ramp;
-uniform lowp vec3 u_center_direction;
+uniform highp vec3 u_center_direction;
 uniform lowp float u_radius;
 uniform lowp float u_opacity;
 uniform highp float u_temporal_offset;
