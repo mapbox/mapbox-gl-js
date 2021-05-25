@@ -1127,7 +1127,7 @@ class Map extends Camera {
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
      * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
-     * @param {string} layerId The ID of a style layer. Only events whose location is within a visible
+     * @param {string} layerId (optional) The ID of a style layer. Only events whose location is within a visible
      * feature in this layer will trigger the listener. The event will have a `features` property containing
      * an array of the matching features.
      * @param {Function} listener The function to be called when the event is fired.
@@ -1157,11 +1157,11 @@ class Map extends Camera {
     }
 
     /**
-     * Removes an event listener previously added with `Map#on`,
+     * Removes an event listener previously added with {@link Map#on},
      * optionally limited to layer-specific events.
      *
      * @param {string} type The event type previously used to install the listener.
-     * @param {string} layerId The layer ID previously used to install the listener.
+     * @param {string} layerId (optional) The layer ID previously used to install the listener.
      * @param {Function} listener The function previously installed as a listener.
      * @returns {Map} `this`
      * @example
@@ -2271,7 +2271,6 @@ class Map extends Camera {
      * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
      * @returns {Map} The map object.
-     *
      * @example
      * // When the mouse moves over the `my-layer` layer, update
      * // the feature state for the feature under the mouse
