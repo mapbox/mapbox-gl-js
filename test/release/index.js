@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     const params = {
-        page: pages[0].page,
+        page: pages[0].key,
         version: 'latest',
         index: 0
     };
@@ -188,10 +188,15 @@ document.addEventListener('DOMContentLoaded', function() {
         titleItem.classList[titleItem.classList.contains('active') ? 'remove' : 'add']('active');
     });
 
-    let pageIndex = params.index;
-    if (pageIndex < 0) pageIndex = 0;
-    params.page = pages[pageIndex];
+    let pageIndex = 0;
+    for (let i = 0; i < pages.length; i++) {
+        if(params.page === pages[i].key) {
+            pageIndex = i;
+            break;
+        }
+    }
     params.index = pageIndex;
+    params.page = pages[pageIndex].key;
 
     for (let i = 0; i < pages.length; ++i) {
         const page = pages[i];
@@ -201,10 +206,9 @@ document.addEventListener('DOMContentLoaded', function() {
         item.dataset.page = page;
         item.dataset.index = i;
         item.addEventListener('click', function() {
-            params.page = this.dataset.page;
             pageIndex = this.dataset.index;
             if (pageIndex < 0) pageIndex = 0;
-            params.page = pages[pageIndex];
+            params.page = pages[pageIndex].key;
             params.index = pageIndex;
             titleItem.classList.remove('active');
             load();
@@ -249,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         while (container.firstChild) container.removeChild(container.firstChild);
 
-        params.page = pages[pageIndex].page;
+        params.page = pages[pageIndex].key;
         const version = params.version;
 
         const page = pages[pageIndex];
@@ -309,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
         prevButton.classList[(pageIndex === 0) ? 'add' : 'remove']('disabled');
         nextButton.classList[(pageIndex + 1 === pages.length) ? 'add' : 'remove']('disabled');
 
-        let hash = 'page=' + page;
+        let hash = 'page=' + page.key;
         if (version !== 'latest') {
             hash += '&version=' + version;
         }
@@ -327,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     nextButton.addEventListener('click', function() {
-        if (pageIndex + 1 <= pages.length) {
+        if (pageIndex + 1 < pages.length) {
             pageIndex++;
             load();
         }
