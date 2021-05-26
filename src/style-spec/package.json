@@ -9,7 +9,7 @@
     "mapbox-gl-js"
   ],
   "license": "ISC",
-  "main": "./dist/index.es.js",
+  "main": "./dist/index.cjs",
   "type": "module",
   "exports": {
     ".": {
