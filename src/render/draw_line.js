@@ -128,7 +128,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
         program.draw(context, gl.TRIANGLES, depthMode,
-            StencilMode.disabled || painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
             layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
     }

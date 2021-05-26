@@ -11,7 +11,7 @@ import SegmentVector from '../data/segment.js';
 import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
 import {values, MAX_SAFE_INTEGER} from '../util/util.js';
 import {isMapAuthenticated} from '../util/mapbox.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import {rasterBoundsAttributes} from '../data/bounds_attributes.js';
 import posAttributes from '../data/pos_attributes.js';
 import ProgramConfiguration from '../data/program_configuration.js';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
@@ -147,6 +147,7 @@ class Painter {
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
+    _numTileBorderSegments: number;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -234,14 +235,6 @@ class Painter {
         this.debugBuffer = context.createVertexBuffer(debugArray, posAttributes.members);
         this.debugSegments = SegmentVector.simpleSegment(0, 0, 4, 5);
 
-        const rasterBoundsArray = new RasterBoundsArray();
-        rasterBoundsArray.emplaceBack(0, 0, 0, 0);
-        rasterBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
-        rasterBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
-        rasterBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
-        this.rasterBoundsBuffer = context.createVertexBuffer(rasterBoundsArray, rasterBoundsAttributes.members);
-        this.rasterBoundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
-
         const viewportArray = new PosArray();
         viewportArray.emplaceBack(0, 0);
         viewportArray.emplaceBack(1, 0);
@@ -250,13 +243,15 @@ class Painter {
         this.viewportBuffer = context.createVertexBuffer(viewportArray, posAttributes.members);
         this.viewportSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
 
+        this._numTileBorderSegments = 32;
+        const n = 4 * this._numTileBorderSegments;
         const tileLineStripIndices = new LineStripIndexArray();
-        tileLineStripIndices.emplaceBack(0);
-        tileLineStripIndices.emplaceBack(1);
-        tileLineStripIndices.emplaceBack(3);
-        tileLineStripIndices.emplaceBack(2);
+        for (let i = 0; i < n; i++) {
+            tileLineStripIndices.emplaceBack(i);
+        }
         tileLineStripIndices.emplaceBack(0);
         this.tileBorderIndexBuffer = context.createIndexBuffer(tileLineStripIndices);
+        this.tileBorderSegments = SegmentVector.simpleSegment(0, 0, tileLineStripIndices.length, tileLineStripIndices.length);
 
         const quadTriangleIndices = new TriangleIndexArray();
         quadTriangleIndices.emplaceBack(0, 1, 2);
@@ -324,14 +319,14 @@ class Painter {
         this._tileClippingMaskIDs = {};
 
         for (const tileID of tileIDs) {
+            const tile = sourceCache.getTile(tileID);
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
-
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
                 ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
-                '$clipping', this.tileExtentBuffer,
-                this.quadTriangleIndexBuffer, this.tileExtentSegments);
+                '$clipping', tile.stencilBoundsBuffer,
+                tile.stencilBoundsIndexBuffer, tile.stencilBoundsSegments);
         }
     }
 

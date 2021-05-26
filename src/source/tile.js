@@ -16,8 +16,8 @@ import SourceFeatureState from '../source/source_state.js';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin.js';
 import {TileSpaceDebugBuffer} from '../data/debug_viz.js';
 import Color from '../style-spec/util/color.js';
-import {RasterBoundsArray, TriangleIndexArray} from '../data/array_types.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import {StencilBoundsArray, PosArray, TriangleIndexArray} from '../data/array_types.js';
+import {stencilBoundsAttributes} from '../data/bounds_attributes.js';
 import EXTENT from '../data/extent.js';
 import SegmentVector from '../data/segment.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
@@ -106,12 +106,17 @@ class Tile {
 
     queryGeometryDebugViz: TileSpaceDebugBuffer;
     queryBoundsDebugViz: TileSpaceDebugBuffer;
+
+    stencilBoundsBuffer: VertexBuffer;
+    stencilBoundsSegments: SegmentVector;
+    stencilBoundsIndexBuffer: IndexBuffer;
+
     /**
      * @param {OverscaledTileID} tileID
      * @param size
      * @private
      */
-    constructor(tileID: OverscaledTileID, size: number, tileZoom: number) {
+    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter: any) {
         this.tileID = tileID;
         this.uid = uniqueId();
         this.uses = 0;
@@ -131,6 +136,11 @@ class Tile {
         this.expiredRequestCount = 0;
 
         this.state = 'loading';
+
+        if (painter) {
+            this._makeStencilBoundsArray(painter.context, painter.transform, painter._numTileBorderSegments);
+            this._makeTileBorderArray(painter.context, painter.transform, painter._numTileBorderSegments);
+        }
     }
 
     registerFadeDuration(duration: number) {
@@ -517,38 +527,76 @@ class Tile {
         });
     }
 
-    makeRasterBoundsArray(context: Context, transform) {
-        if (this.rasterBoundsBuffer) return;
+    _makeTileBorderArray(context: Context, transform: Transform, numOfSegments: number) {
+        if (this.tileBorderBuffer) return;
 
         const s = Math.pow(2, -this.tileID.canonical.z);
         const x1 = (this.tileID.canonical.x) * s;
-        const x2 = (this.tileID.canonical.x + 1) * s;
         const y1 = (this.tileID.canonical.y) * s;
-        const y2 = (this.tileID.canonical.y + 1) * s;
- 
-        const rasterBoundsArray = new RasterBoundsArray();
-        const quadTriangleIndices = new TriangleIndexArray();
+        
+        const debugBoundsArray = new PosArray();
         const cs = transform.projection.tileTransform(this.tileID.canonical);
-        const emplace = (x, y, a, b) => {
+        const emplace = (x, y) => {
             const l = new MercatorCoordinate(x, y).toLngLat();
-            const x_ = ((transform.projection.projectX(l.lng, l.lat)) * cs.scale - cs.x) * EXTENT;
-            const y_ = ((transform.projection.projectY(l.lng, l.lat)) * cs.scale - cs.y) * EXTENT;
-            rasterBoundsArray.emplaceBack(x_, y_, a, b);
+            const xy = ((transform.projection.project(l.lng, l.lat)));
+            const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
+            const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
+            debugBoundsArray.emplaceBack(x_, y_);
         };
-        const n = 32;
-        const increment = s / n;
+
+        const increment = s / EXTENT;
         const add = (x, y) => {
             emplace(
                 x1 + x * increment,
-                y1 + y * increment,
-                x / n * EXTENT,
-                y / n * EXTENT);
+                y1 + y * increment);
         };
 
+        const stride = EXTENT / numOfSegments;
+        const SIDES = [
+            {start: [0, 0], step: [stride, 0]},
+            {start: [EXTENT, 0], step: [0, stride]},
+            {start: [EXTENT, EXTENT], step: [-stride, 0]},
+            {start: [0, EXTENT], step: [0, -stride]}
+        ];
 
-        for (let xi = 0; xi < n; xi++) {
-            for (let yi = 0; yi < n; yi++) {
-                const offset = rasterBoundsArray.length;
+        for (const {start, step} of SIDES) {
+            for (let i = 0; i < numOfSegments; i++) {
+                add(start[0] + (i * step[0]), start[1] + (i * step[1]));
+            }
+        }
+    
+        this.tileBorderBuffer = context.createVertexBuffer(debugBoundsArray, stencilBoundsAttributes.members);
+    }
+
+    _makeStencilBoundsArray(context: Context, transform: Transform, numOfSegments: number) {
+        if (this.stencilBoundsBuffer) return;
+
+        const s = Math.pow(2, -this.tileID.canonical.z);
+        const x1 = (this.tileID.canonical.x) * s;
+        const y1 = (this.tileID.canonical.y) * s;
+ 
+        const stencilBoundsArray = new StencilBoundsArray();
+        const quadTriangleIndices = new TriangleIndexArray();
+        const cs = transform.projection.tileTransform(this.tileID.canonical);
+        const emplace = (x, y) => {
+            const l = new MercatorCoordinate(x, y).toLngLat();
+            const xy = ((transform.projection.project(l.lng, l.lat)));
+            const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
+            const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
+            stencilBoundsArray.emplaceBack(x_, y_);
+        };
+
+        const increment = s / numOfSegments;
+        const add = (x, y) => {
+            emplace(
+                x1 + x * increment,
+                y1 + y * increment
+            );
+        };
+
+        for (let xi = 0; xi < numOfSegments; xi++) {
+            for (let yi = 0; yi < numOfSegments; yi++) {
+                const offset = stencilBoundsArray.length;
                 add(xi, yi);
                 add(xi + 1, yi);
                 add(xi, yi + 1);
@@ -558,10 +606,10 @@ class Tile {
             }
         }
 
-        this.rasterBoundsBuffer = context.createVertexBuffer(rasterBoundsArray, rasterBoundsAttributes.members);
-        this.rasterBoundsSegments = SegmentVector.simpleSegment(0, 0, 4 * n * n, 2 * n * n);
-
-        this.rasterBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
+        const numSquared = numOfSegments * numOfSegments;
+        this.stencilBoundsBuffer = context.createVertexBuffer(stencilBoundsArray, stencilBoundsAttributes.members);
+        this.stencilBoundsSegments = SegmentVector.simpleSegment(0, 0, 4 * numSquared, 2 * numSquared);
+        this.stencilBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
     }
 }
 

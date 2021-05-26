@@ -3,32 +3,16 @@
 import LngLat, {earthRadius} from '../geo/lng_lat.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 
-export const mercatorProjection = {
-    projectX: (lng) => mercatorXfromLng(lng),
-    projectY: (lng, lat) => mercatorYfromLat(lat),
-    unproject: (x, y) => new MercatorCoordinate(x, y).toLngLat(),
-    tileTransform: (id) => {
-        const scale = Math.pow(2, id.z);
-        return {
-            x: id.x,
-            y: id.y,
-            x2: id.x + 1,
-            y2: id.y + 1,
-            scale
-        };
-    }
-}
-
 /*
  * The average circumference of the world in meters.
  */
-const earthCircumfrence = 2 * Math.PI * earthRadius; // meters
+const earthCircumference = 2 * Math.PI * earthRadius; // meters
 
 /*
  * The circumference at a line of latitude in meters.
  */
 function circumferenceAtLatitude(latitude: number) {
-    return earthCircumfrence * Math.cos(latitude * Math.PI / 180);
+    return earthCircumference * Math.cos(latitude * Math.PI / 180);
 }
 
 export function mercatorXfromLng(lng: number) {
@@ -158,7 +142,7 @@ class MercatorCoordinate {
      */
     meterInMercatorCoordinateUnits() {
         // 1 meter / circumference at equator in meters * Mercator projection scale factor at this latitude
-        return 1 / earthCircumfrence * mercatorScale(latFromMercatorY(this.y));
+        return 1 / earthCircumference * mercatorScale(latFromMercatorY(this.y));
     }
 
 }

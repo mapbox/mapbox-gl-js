@@ -121,7 +121,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         painter.prepareDrawProgram(painter.context, program, coord.toUnwrapped());
 
         program.draw(painter.context, drawMode, depthMode,
-            StencilMode.disabled || painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, indexBuffer, segments,
             layer.paint, painter.transform.zoom, programConfiguration);
     }

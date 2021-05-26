@@ -2,7 +2,8 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorProjection, mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
+import projections, {makeTileTransform} from './projections';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -22,113 +23,6 @@ const DEFAULT_MIN_ZOOM = 0;
 
 type RayIntersectionResult = { p0: vec4, p1: vec4, t: number};
 type ElevationReference = "sea" | "ground";
-
-function idBounds(id) {
-    const s = Math.pow(2, -id.z);
-    const x1 = (id.x) * s;
-    const x2 = (id.x + 1) * s;
-    const y1 = (id.y) * s;
-    const y2 = (id.y + 1) * s;
-
-    const interp = (a, b, t) => a * (1 - t) + b * t;
-
-    const n = 2;
-    const locs = [];
-    for (let i = 0; i <= n; i++) {
-        const f = i / n;
-        locs.push(new MercatorCoordinate(interp(x1, x2, f), y1).toLngLat());
-        locs.push(new MercatorCoordinate(interp(x1, x2, f), y2).toLngLat());
-        locs.push(new MercatorCoordinate(x1, interp(y1, y2, f)).toLngLat());
-        locs.push(new MercatorCoordinate(x2, interp(y1, y2, f)).toLngLat());
-    }
-    return locs;
-}
-
-const sinusoidal = {
-    projectX: (lng, lat) => 0.5 + lng * Math.cos(lat / 180 * Math.PI) / 360 * 2,
-    projectY: (lng, lat) => 0.5 - lat / 360 * 2,
-    unproject: (x, y) => {
-        const lat = (0.5 - y) / 2 * 360;
-        const lng = (x - 0.5) / Math.cos(lat / 180 * Math.PI) / 2 * 360;
-        return new LngLat(lng, lat);
-    }
-};
-
-
-function sinc(x) {
-    return Math.sin(x) / x;
-}
-
-function winkelTripel(lng, lat) {
-    lat = lat / 180 * Math.PI;
-    lng = lng / 180 * Math.PI;
-    const phi1 = Math.acos(2 / Math.PI);
-    const alpha = Math.acos(Math.cos(lat) * Math.cos(lng / 2));
-    const x = 0.5 * (lng * Math.cos(phi1) + (2 * Math.cos(lat) * Math.sin(lng/2)) / sinc(alpha)) || 0;
-    const y = 0.5 * (lat + Math.sin(lat) / sinc(alpha)) || 0;
-    function s(n) {
-        return (n / (Math.PI) + 0.5) * 0.5;
-    }
-    return { x: s(x), y: 1 - s(y) };
-}
-const winkel = {
-    projectX: (lng, lat) => winkelTripel(lng, lat).x,
-    projectY: (lng, lat) => winkelTripel(lng, lat).y,
-};
-    
-function makeTileTransform(projection) {
-    return (id) => {
-        const locs = idBounds(id);
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-        for (const l of locs) {
-            const x = projection.projectX(l.lng, l.lat);
-            const y = projection.projectY(l.lng, l.lat);
-            minX = Math.min(minX, x);
-            maxX = Math.max(maxX, x);
-            minY = Math.min(minY, y);
-            maxY = Math.max(maxY, y);
-        }
-
-        const max = Math.max(maxX - minX, maxY - minY);
-        const scale = 1 / max;
-        return {
-            scale,
-            x: minX * scale,
-            y: minY * scale,
-            x2: maxX * scale,
-            y2: maxY * scale
-        };
-    }
-}
-const albers = {
-    project: (lng, lat) => {
-        const p1r = 29.5;
-        const p2r = 45.5;
-        const p1 = p1r / 180 * Math.PI;
-        const p2 = p2r / 180 * Math.PI;
-        const n = 0.5 * (Math.sin(p1) + Math.sin(p2));
-        const theta = n * ((lng + 77) / 180 * Math.PI);
-        const c = Math.pow(Math.cos(p1), 2) + 2 * n * Math.sin(p1);
-        const r = 0.5;
-        const a = r / n * Math.sqrt(c - 2 * n * Math.sin(lat / 180 * Math.PI));
-        const b = r / n * Math.sqrt(c - 2 * n * Math.sin(0 / 180 * Math.PI));
-        const x = a * Math.sin(theta);
-        const y = b - a * Math.cos(theta);
-        return {x: 0.5 + 0.5 * x, y: 0.5 + 0.5 * -y};
-    },
-    projectX: (lng, lat) => albers.project(lng, lat).x + 0.5,
-    projectY: (lng, lat) => albers.project(lng, lat).y + 0.5,
-    unproject: (x, y) => mercatorProjection.unproject(x, y)
-};
-const wgs84 = {
-    projectX: (lng) => 0.5 + lng / 360,
-    projectY: (lng, lat) => 0.5 - lat / 360,
-    unproject: () => {
-    }
-};
 
 /**
  * A single transform, generally used for a single tile to be
@@ -251,11 +145,11 @@ class Transform {
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
 
-        this.projection = mercatorProjection;
-        this.projection = sinusoidal;
-        this.projection = albers;
-        this.projection = winkel;
-
+        // this.projection = projections.mercator;
+        // this.projection = projections.sinusoidal;
+        // this.projection = projections.wgs84;
+        // this.projection = projections.albers;
+        this.projection = projections.winkelTripel;
         this.projection.tileTransform = makeTileTransform(this.projection);
     }
 
@@ -1355,14 +1249,11 @@ class Transform {
     }
 
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
-        const canonical = unwrappedTileID.canonical;
-        const scale = worldSize / this.zoomScale(canonical.z);
-        const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
-
         const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
-        mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
-
+        const cs = this.projection.tileTransform(unwrappedTileID.canonical);
+        mat4.scale(posMatrix, posMatrix, [1 /  cs.scale, 1 /  cs.scale, 1]);
+        mat4.translate(posMatrix, posMatrix, [cs.x, cs.y, 0]);
+        mat4.scale(posMatrix, posMatrix, [1 / EXTENT, 1 / EXTENT, 1]);
         return posMatrix;
     }
 
@@ -1395,7 +1286,6 @@ class Transform {
      * @private
      */
     calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
-        return this.calculateRasterMatrix(unwrappedTileID);
         const projMatrixKey = unwrappedTileID.key;
         const cache = aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
         if (cache[projMatrixKey]) {
@@ -1403,7 +1293,9 @@ class Transform {
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
-        mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
+        // TODO check
+        //mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
+        mat4.multiply(posMatrix, this.mercatorMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
         return cache[projMatrixKey];
@@ -1911,17 +1803,6 @@ class Transform {
         const pitch = this._pitch;
         const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
         return this.centerPoint.add(new Point(0, yOffset));
-    }
-
-    calculateRasterMatrix(id) {
-        const posMatrix = mat4.identity(new Float64Array(16));
-        const s = Math.pow(2, 14);
-        const cs = this.projection.tileTransform(id.canonical);
-        mat4.scale(posMatrix, posMatrix, [1 /  cs.scale, 1 /  cs.scale, 1]);
-        mat4.translate(posMatrix, posMatrix, [cs.x, cs.y, 0]);
-        mat4.scale(posMatrix, posMatrix, [1 / EXTENT, 1 / EXTENT, 1]);
-        mat4.multiply(posMatrix, this.mercatorMatrix, posMatrix);
-        return new Float32Array(posMatrix);
     }
 }
 

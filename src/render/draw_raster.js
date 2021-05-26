@@ -82,16 +82,14 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
-        tile.makeRasterBoundsArray(context, painter.transform);
-
         if (source instanceof ImageSource) {
             program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, source.boundsBuffer,
                 painter.quadTriangleIndexBuffer, source.boundsSegments);
         } else {
             program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                uniformValues, layer.id, tile.rasterBoundsBuffer,
-                tile.rasterBoundsIndexBuffer, tile.rasterBoundsSegments);
+                uniformValues, layer.id, tile.stencilBoundsBuffer,
+                tile.stencilBoundsIndexBuffer, tile.stencilBoundsSegments);
         }
     }
 }

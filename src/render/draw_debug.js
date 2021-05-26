@@ -138,7 +138,7 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
 
     program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         debugUniformValues(posMatrix, Color.red), id,
-        painter.debugBuffer, painter.tileBorderIndexBuffer, painter.debugSegments);
+        tile.tileBorderBuffer, painter.tileBorderIndexBuffer, painter.tileBorderSegments);
 
     const tileRawData = tile.latestRawTileData;
     const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;

@@ -3,7 +3,7 @@
 import ImageSource from './image_source.js';
 
 import window from '../util/window.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import {rasterBoundsAttributes} from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import {ErrorEvent} from '../util/evented.js';

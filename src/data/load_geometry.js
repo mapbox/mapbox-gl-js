@@ -47,13 +47,12 @@ export default function loadGeometry(feature: VectorTileFeature, canonical): Arr
     const cs = projection.tileTransform(canonical);
     const reproject = (p, featureExtent) => {
         const s = Math.pow(2, canonical.z)
-        const x = (canonical.x + p.x / featureExtent) / s;
-        const y = (canonical.y + p.y / featureExtent) / s;
-        const l = new MercatorCoordinate(x, y).toLngLat();
-        const x_ = projection.projectX(l.lng, l.lat);
-        const y_ = projection.projectY(l.lng, l.lat);
-        p.x = (x_ * cs.scale - cs.x) * EXTENT;
-        p.y = (y_ * cs.scale - cs.y) * EXTENT;
+        const x_ = (canonical.x + p.x / featureExtent) / s;
+        const y_ = (canonical.y + p.y / featureExtent) / s;
+        const l = new MercatorCoordinate(x_, y_).toLngLat();
+        const {x, y} = projection.project(l.lng, l.lat);
+        p.x = (x * cs.scale - cs.x) * EXTENT;
+        p.y = (y * cs.scale - cs.y) * EXTENT;
     };
     const scale = EXTENT / EXTENT;
     const geometry = feature.loadGeometry();

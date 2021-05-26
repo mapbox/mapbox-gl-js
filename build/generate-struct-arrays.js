@@ -118,7 +118,7 @@ function camelize (str) {
 global.camelize = camelize;
 
 import posAttributes from '../src/data/pos_attributes.js';
-import rasterBoundsAttributes from '../src/data/raster_bounds_attributes.js';
+import {rasterBoundsAttributes} from '../src/data/bounds_attributes.js';
 
 createStructArrayType('pos', posAttributes);
 createStructArrayType('raster_bounds', rasterBoundsAttributes);
