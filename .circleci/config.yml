@@ -123,6 +123,11 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - run:
+          name: Install mbx-ci
+          command: |
+            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > mbx-ci &&
+            chmod 755 ./mbx-ci
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
@@ -159,12 +164,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run:
-          name: Install mbx-ci
-          command: |
-            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > mbx-ci &&
-            chmod 755 ./mbx-ci &&
-            ./mbx-ci aws setup
+      - run: ./mbx-ci aws setup
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
