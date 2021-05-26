@@ -243,7 +243,7 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
 }
 
 function shapeText(text: Formatted,
-                   glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}},
+                   glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}},
                    glyphPositions: GlyphPositions,
                    imagePositions: {[_: string]: ImagePosition},
                    defaultFontStack: string,
@@ -355,7 +355,7 @@ const breakable: {[_: number]: boolean} = {
 
 function getGlyphAdvance(codePoint: number,
                          section: SectionOptions,
-                         glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}},
+                         glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}},
                          imagePositions: {[_: string]: ImagePosition},
                          spacing: number,
                          layoutTextSize: number): number {
@@ -374,7 +374,7 @@ function getGlyphAdvance(codePoint: number,
 function determineAverageLineWidth(logicalInput: TaggedString,
                                    spacing: number,
                                    maxWidth: number,
-                                   glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}},
+                                   glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}},
                                    imagePositions: {[_: string]: ImagePosition},
                                    layoutTextSize: number) {
     let totalWidth = 0;
@@ -478,7 +478,7 @@ function leastBadBreaks(lastLineBreak: ?Break): Array<number> {
 function determineLineBreaks(logicalInput: TaggedString,
                              spacing: number,
                              maxWidth: number,
-                             glyphMap: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}},
+                             glyphMap: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender?: number, descender?: number}},
                              imagePositions: {[_: string]: ImagePosition},
                              symbolPlacement: string,
                              layoutTextSize: number): Array<number> {
@@ -561,7 +561,7 @@ function getAnchorAlignment(anchor: SymbolAnchor) {
 }
 
 function shapeLines(shaping: Shaping,
-                    glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}},
+                    glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}},
                     glyphPositions: GlyphPositions,
                     imagePositions: {[_: string]: ImagePosition},
                     lines: Array<TaggedString>,
@@ -595,7 +595,7 @@ function shapeLines(shaping: Shaping,
             const glyphData = glyphMap[section.fontStack];
             if (!glyphData) continue;
 
-            hasBaseline = glyphData.ascender !== 0 && glyphData.descender !== 0;
+            hasBaseline = glyphData.ascender !== undefined && glyphData.descender !== undefined;
             if (!hasBaseline) break;
         }
         if (!hasBaseline) break;
@@ -664,7 +664,7 @@ function shapeLines(shaping: Shaping,
                 // the shaping box, for each line, we shift the glyph with biggest height(with scale) to make its center
                 // lie on the center line of the line, which will lead to a baseline shift. Then adjust the whole line
                 // with the baseline offset we calculated from the shift.
-                if (hasBaseline) {
+                if (hasBaseline && glyphData.ascender !== undefined && glyphData.descender !== undefined) {
                     ascender = glyphData.ascender;
                     descender = glyphData.descender;
                     const value = (ascender + descender) * section.scale;

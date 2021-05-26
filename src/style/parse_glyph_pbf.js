@@ -7,16 +7,14 @@ const border = 3;
 
 import type {StyleGlyph} from './style_glyph.js';
 
-function readFontstacks(tag: number, glyphData: {glyphs: Array<StyleGlyph>, ascender: number, descender: number}, pbf: Protobuf) {
+function readFontstacks(tag: number, glyphData: {glyphs: Array<StyleGlyph>, ascender?: number, descender?: number}, pbf: Protobuf) {
     glyphData.glyphs = [];
-    glyphData.ascender = 0;
-    glyphData.descender = 0;
     if (tag === 1) {
         pbf.readMessage(readFontstack, glyphData);
     }
 }
 
-function readFontstack(tag: number,  glyphData: {glyphs: Array<StyleGlyph>, ascender: number, descender: number}, pbf: Protobuf) {
+function readFontstack(tag: number,  glyphData: {glyphs: Array<StyleGlyph>, ascender?: number, descender?: number}, pbf: Protobuf) {
     if (tag === 3) {
         const {id, bitmap, width, height, left, top, advance} = pbf.readMessage(readGlyph, {});
         glyphData.glyphs.push({
@@ -44,7 +42,7 @@ function readGlyph(tag: number, glyph: Object, pbf: Protobuf) {
     else if (tag === 7) glyph.advance = pbf.readVarint();
 }
 
-export default function (data: ArrayBuffer | Uint8Array): {glyphs: Array<StyleGlyph>, ascender: number, descender: number} {
+export default function (data: ArrayBuffer | Uint8Array): {glyphs: Array<StyleGlyph>, ascender?: number, descender?: number} {
     return new Protobuf(data).readFields(readFontstacks, {});
 }
 

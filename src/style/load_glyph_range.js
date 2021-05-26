@@ -12,7 +12,7 @@ export default function (fontstack: string,
                            range: number,
                            urlTemplate: string,
                            requestManager: RequestManager,
-                           callback: Callback<{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}>) {
+                           callback: Callback<{glyphs: {[number]: StyleGlyph | null}, ascender?: number, descender?: number}>) {
     const begin = range * 256;
     const end = begin + 255;
 

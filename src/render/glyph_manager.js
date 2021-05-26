@@ -37,11 +37,11 @@ export const SDF_SCALE = 2;
 type Entry = {
     // null means we've requested the range, but the glyph wasn't included in the result.
     glyphs: {[id: number]: StyleGlyph | null},
-    requests: {[range: number]: Array<Callback<{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}>>},
+    requests: {[range: number]: Array<Callback<{glyphs: {[number]: StyleGlyph | null}, ascender?: number, descender?: number}>>},
     ranges: {[range: number]: boolean | null},
     tinySDF?: TinySDF,
-    ascender: number,
-    descender: number
+    ascender?: number,
+    descender?: number
 };
 
 export const LocalGlyphMode = {
@@ -57,7 +57,7 @@ class GlyphManager {
     entries: {[_: string]: Entry};
     // Multiple fontstacks may share the same local glyphs, so keep an index
     // into the glyphs based soley on font weight
-    localGlyphs: {[_: string]: {glyphs: {[id: number]: StyleGlyph | null}, ascender: number, descender: number}};
+    localGlyphs: {[_: string]: {glyphs: {[id: number]: StyleGlyph | null}, ascender: ?number, descender: ?number}};
     url: ?string;
 
     // exposed as statics to enable stubbing in unit tests
@@ -82,7 +82,7 @@ class GlyphManager {
         this.url = url;
     }
 
-    getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender: number, descender: number}}>) {
+    getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
         const all = [];
 
         for (const stack in glyphs) {
@@ -98,8 +98,8 @@ class GlyphManager {
                     glyphs: {},
                     requests: {},
                     ranges: {},
-                    ascender: 0.0,
-                    descender: 0.0
+                    ascender: undefined,
+                    descender: undefined
                 };
             }
 
@@ -131,7 +131,7 @@ class GlyphManager {
             if (!requests) {
                 requests = entry.requests[range] = [];
                 GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestManager,
-                    (err, response: ?{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}) => {
+                    (err, response: ?{glyphs: {[_: number]: StyleGlyph | null}, ascender?: number, descender?: number}) => {
                         if (response) {
                             entry.ascender = response.ascender;
                             entry.descender = response.descender;
@@ -149,7 +149,7 @@ class GlyphManager {
                     });
             }
 
-            requests.push((err, result: ?{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}) => {
+            requests.push((err, result: ?{glyphs: {[_: number]: StyleGlyph | null}, ascender?: number, descender?: number}) => {
                 if (err) {
                     fnCallback(err);
                 } else if (result) {
@@ -258,11 +258,7 @@ class GlyphManager {
                 left: left / SDF_SCALE,
                 top: top / SDF_SCALE - baselineAdjustment,
                 advance: advance / SDF_SCALE,
-                localGlyph: true,
-                // placeholder for ascender/descender, needs further updates once the data can be retrieved via
-                // tinySDF
-                ascender: 0.0,
-                descender: 0.0
+                localGlyph: true
             }
         };
         return glyph;
