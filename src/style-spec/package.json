@@ -9,7 +9,7 @@
     "mapbox-gl-js"
   ],
   "license": "ISC",
-  "main": "./dist/index.js",
+  "main": "./dist/index.es.js",
   "type": "module",
   "exports": {
     ".": {
@@ -24,7 +24,7 @@
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
     "prepublishOnly": "git clean -fdx && yarn copy-flow-typed && yarn build",
-    "postpublish": "rm -r flow-typed dist/index.js"
+    "postpublish": "rm -r flow-typed dist/index.cjs"
   },
   "repository": {
     "type": "git",
