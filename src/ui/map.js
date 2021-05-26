@@ -272,7 +272,7 @@ const defaultOptions = {
  *   center: [-122.420679, 37.772537], // starting position [lng, lat]
  *   zoom: 13, // starting zoom
  *   style: 'mapbox://styles/mapbox/streets-v11', // style URL or style object
- *   hash: true, // Sync `center`, `zoom`, `pitch`, and `bearing` with URL
+ *   hash: true, // sync `center`, `zoom`, `pitch`, and `bearing` with URL
  *   // Use `transformRequest` to modify requests that begin with `http://myHost`.
  *   transformRequest: (url, resourceType)=> {
  *     if(resourceType === 'Source' && url.startsWith('http://myHost')) {
