@@ -1137,6 +1137,23 @@ class Map extends Camera {
      * map.once('touchstart', function (e) {
      *   console.log('The first map touch was at: ' + e.lnglat)
      * });
+     * @example
+     *  // Define a source.
+     *  map.addSource('my-point-data', {
+     *    type: 'geojson',
+     *    data: 'path/to/my-data.geojson'
+     *  });
+     * // Create and add a new layer.
+     * map.addLayer({
+     *   'id': 'my-point-layer',
+     *   'type': 'circle',
+     *   'source': 'my-point-data',
+     *  });
+     * // Log the coordinates of a user's
+     * // first map touch on a specified layer.
+     * map.once('touchstart', 'my-point-layer', function (e) {
+     *   console.log('The first map touch on the point layer was at: ' + e.lnglat)
+     * });
      * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      * @see [Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
