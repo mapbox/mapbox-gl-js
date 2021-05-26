@@ -267,18 +267,6 @@ const defaultOptions = {
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
  * @example
- * <html>
- * <head>
- * <link href="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css" rel="stylesheet">
- * <script src="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js"></script>
- * <style>
- * body { margin: 0; padding: 0; }
- * #map { position: absolute; top: 0; bottom: 0; width: 100%; }
- * </style>
- * </head>
- * <body>
- * <div id="map"></div>
- * <script>
  * var map = new mapboxgl.Map({
  *   container: 'map', // container ID
  *   center: [-122.420679, 37.772537], // starting position [lng, lat]
@@ -296,9 +284,6 @@ const defaultOptions = {
  *     }
  *   }
  * });
- * </script>
- * </body>
- * </html>
  * @see [Display a map on a webpage](https://docs.mapbox.com/mapbox-gl-js/example/simple-map/)
  * @see [Display a map with a custom style](https://docs.mapbox.com/mapbox-gl-js/example/custom-style-id/)
  * @see [Check if Mapbox GL JS is supported](https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/)
