@@ -338,8 +338,7 @@ class Transform {
         // Camera zoom describes the distance of the camera to the sea level (altitude). It is used only for manipulating the camera location.
         // The standard zoom (this._zoom) defines the camera distance to the terrain (height). Its behavior and conceptual meaning in determining
         // which tiles to stream is same with or without the terrain.
-        // TODO
-        const elevationAtCenter = this._elevation.getAtPointOrZero(MercatorCoordinate.fromLngLat(this.center), -1);
+        const elevationAtCenter = this._elevation.getAtPointOrZero(this.locationCoordinate(this.center), -1);
 
         if (elevationAtCenter === -1) {
             // Elevation data not loaded yet
@@ -422,8 +421,7 @@ class Transform {
 
         // Compute zoom level from the height of the camera relative to the terrain
         const cameraZoom: number = this._cameraZoom;
-        // TODO
-        const elevationAtCenter = this._elevation.getAtPointOrZero(MercatorCoordinate.fromLngLat(this.center));
+        const elevationAtCenter = this._elevation.getAtPointOrZero(this.locationCoordinate(this.center));
         const mercatorElevation = mercatorZfromAltitude(elevationAtCenter, this.center.lat);
         const altitude  = this._mercatorZfromZoom(cameraZoom);
         const minHeight = this._mercatorZfromZoom(this._maxZoom);
