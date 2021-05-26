@@ -527,29 +527,29 @@ class Tile {
         });
     }
 
-    _makeTileBorderArray(context: Context, transform: Transform, numOfSegments: number) {
-        if (this.tileBorderBuffer) return;
-
+    _add(x, y, denominator, transform, arr) {
         const s = Math.pow(2, -this.tileID.canonical.z);
         const x1 = (this.tileID.canonical.x) * s;
         const y1 = (this.tileID.canonical.y) * s;
+        const cs = transform.projection.tileTransform(this.tileID.canonical);
+        const increment = s / denominator;
+        const x2 = x1 + x * increment;
+        const y2 = y1 + y * increment;
+        const l = new MercatorCoordinate(x2, y2).toLngLat();
+        const xy = ((transform.projection.project(l.lng, l.lat)));
+        const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
+        const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
+        arr.emplaceBack(x_, y_);
+    }
+
+    _makeTileBorderArray(context: Context, transform: Transform, numOfSegments: number) {
+        if (this.tileBorderBuffer) return;
         
         const debugBoundsArray = new PosArray();
-        const cs = transform.projection.tileTransform(this.tileID.canonical);
-        const emplace = (x, y) => {
-            const l = new MercatorCoordinate(x, y).toLngLat();
-            const xy = ((transform.projection.project(l.lng, l.lat)));
-            const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
-            const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
-            debugBoundsArray.emplaceBack(x_, y_);
-        };
 
-        const increment = s / EXTENT;
         const add = (x, y) => {
-            emplace(
-                x1 + x * increment,
-                y1 + y * increment);
-        };
+            this._add(x, y, EXTENT, transform, debugBoundsArray);
+        }
 
         const stride = EXTENT / numOfSegments;
         const SIDES = [
@@ -564,35 +564,19 @@ class Tile {
                 add(start[0] + (i * step[0]), start[1] + (i * step[1]));
             }
         }
-    
+
         this.tileBorderBuffer = context.createVertexBuffer(debugBoundsArray, stencilBoundsAttributes.members);
     }
 
     _makeStencilBoundsArray(context: Context, transform: Transform, numOfSegments: number) {
         if (this.stencilBoundsBuffer) return;
-
-        const s = Math.pow(2, -this.tileID.canonical.z);
-        const x1 = (this.tileID.canonical.x) * s;
-        const y1 = (this.tileID.canonical.y) * s;
  
         const stencilBoundsArray = new StencilBoundsArray();
         const quadTriangleIndices = new TriangleIndexArray();
-        const cs = transform.projection.tileTransform(this.tileID.canonical);
-        const emplace = (x, y) => {
-            const l = new MercatorCoordinate(x, y).toLngLat();
-            const xy = ((transform.projection.project(l.lng, l.lat)));
-            const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
-            const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
-            stencilBoundsArray.emplaceBack(x_, y_);
-        };
 
-        const increment = s / numOfSegments;
         const add = (x, y) => {
-            emplace(
-                x1 + x * increment,
-                y1 + y * increment
-            );
-        };
+            this._add(x, y, numOfSegments, transform, stencilBoundsArray);
+        }
 
         for (let xi = 0; xi < numOfSegments; xi++) {
             for (let yi = 0; yi < numOfSegments; yi++) {
