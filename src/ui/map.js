@@ -1143,19 +1143,8 @@ class Map extends Camera {
      *   console.log('The first map touch was at: ' + e.lnglat)
      * });
      * @example
-     *  // Define a source.
-     *  map.addSource('my-point-data', {
-     *    type: 'geojson',
-     *    data: 'path/to/my-data.geojson'
-     *  });
-     * // Create and add a new layer.
-     * map.addLayer({
-     *   'id': 'my-point-layer',
-     *   'type': 'circle',
-     *   'source': 'my-point-data',
-     *  });
-     * // Log the coordinates of a user's
-     * // first map touch on a specified layer.
+     * // Log the coordinates of a user's first map touch
+     * // on a specific layer.
      * map.once('touchstart', 'my-point-layer', function (e) {
      *   console.log('The first map touch on the point layer was at: ' + e.lnglat)
      * });
