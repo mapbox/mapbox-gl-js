@@ -44,15 +44,13 @@ if (typeof Object.freeze == 'function') {
  * @property {string} credentials `'same-origin'|'include'` Use 'include' to send cookies with cross-origin requests.
  * @property {boolean} collectResourceTiming If true, Resource Timing API information will be collected for these transformed requests and returned in a resourceTiming property of relevant data events.
  * @example
- * // Use transformRequest to modify requests
- * // that begin with `http://myHost`.
+ * // use transformRequest to modify requests that begin with `http://myHost`
  * transformRequest: function(url, resourceType) {
  *  if (resourceType === 'Source' && url.indexOf('http://myHost') > -1) {
  *    return {
  *      url: url.replace('http', 'https'),
  *      headers: { 'my-custom-header': true },
- *      // Include cookies for cross-origin requests.
- *      credentials: 'include'
+ *      credentials: 'include'  // Include cookies for cross-origin requests
  *    }
  *   }
  *  }
