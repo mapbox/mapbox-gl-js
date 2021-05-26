@@ -1057,10 +1057,12 @@ class Map extends Camera {
      * | [`sourcedataloading`](#map.event:sourcedataloading)       |                           |
      * | [`styleimagemissing`](#map.event:styleimagemissing)       |                           |
      *
-     * @param {string} layerId (optional) The ID of a style layer. Event will only be triggered if its location
-     * is within a visible feature in this layer. The event will have a `features` property containing
-     * an array of the matching features. If `layerId` is not supplied, the event will not have a `features` property.
-     * Please note that many event types are not compatible with the optional `layerId` parameter.
+     * @param {string} layerId (optional) The ID of a style layer. If you provide a `layerId`,
+     * the listener will be triggered only if its location is within a visible feature in this layer,
+     * and the event will have a `features` property containing an array of the matching features.
+     * If you do not provide a `layerId`, the listener will be triggered by a corresponding event
+     * happening anywhere on the map, and the event will not have a `features` property.
+     * Note that many event types are not compatible with the optional `layerId` parameter.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
      * @example
@@ -1127,9 +1129,12 @@ class Map extends Camera {
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
      * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
-     * @param {string} layerId (optional) The ID of a style layer. Only events whose location is within a visible
-     * feature in this layer will trigger the listener. The event will have a `features` property containing
-     * an array of the matching features.
+     * @param {string} layerId (optional) The ID of a style layer. If you provide a `layerId`,
+     * the listener will be triggered only if its location is within a visible feature in this layer,
+     * and the event will have a `features` property containing an array of the matching features.
+     * If you do not provide a `layerId`, the listener will be triggered by a corresponding event
+     * happening anywhere on the map, and the event will not have a `features` property.
+     * Note that many event types are not compatible with the optional `layerId` parameter.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
      * @example
