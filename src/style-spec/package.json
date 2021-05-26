@@ -10,8 +10,16 @@
   ],
   "license": "ISC",
   "main": "./dist/index.js",
-  "module": "./dist/index.es.js",
   "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.es.js"
+    },
+    "./": {
+      "import": "./"
+    }
+  },
   "scripts": {
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
