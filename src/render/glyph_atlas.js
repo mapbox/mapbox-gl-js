@@ -32,7 +32,7 @@ export type GlyphPositions = { [_: string]: glyphPositionMap };
 export default class GlyphAtlas {
     image: AlphaImage;
     positions: GlyphPositions;
-    constructor(stacks: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph }, ascender: number, descender: number }}) {
+    constructor(stacks: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph }, ascender?: number, descender?: number }}) {
         const positions = {};
         const bins = [];
 
