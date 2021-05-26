@@ -159,6 +159,11 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run:
+          name: Install mbx-ci
+          command: |
+            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > mbx-ci && chmod 755 ./mbx-ci
+      - run: mbx-ci aws setup
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
@@ -171,14 +176,6 @@ jobs:
           name: Check bundle size
           command: |
             node build/check-bundle-size.js
-      - deploy:
-          name: Trigger memory metrics when merging to main
-          command: |
-            if [ -n "${WEB_METRICS_TOKEN}" ]; then
-              if [[ $CIRCLE_BRANCH == main ]]; then
-                curl -X POST https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/build?circle-token=${WEB_METRICS_TOKEN}
-              fi
-            fi
       - store_artifacts:
           path: "dist"
       - store_artifacts:
