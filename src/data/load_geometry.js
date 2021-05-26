@@ -4,7 +4,7 @@ import {warnOnce, clamp} from '../util/util.js';
 
 import EXTENT from './extent.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
-import Transform from '../geo/transform.js';
+import getProjection from '../geo/projection';
 import assert from 'assert';
 
 import type Point from '@mapbox/point-geometry';
@@ -17,7 +17,11 @@ const BITS = 15;
 const MAX = Math.pow(2, BITS - 1) - 1;
 const MIN = -MAX - 1;
 
-const projection = (new Transform()).projection;
+let projection;
+
+export function setProjection(projectionName) {
+    projection = getProjection(projectionName);
+}
 
 function resample(ring) {
     if (ring.length === 0) return;

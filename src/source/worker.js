@@ -2,6 +2,7 @@
 
 import Actor from '../util/actor.js';
 
+import {setProjection} from '../data/load_geometry.js';
 import StyleLayerIndex from '../style/style_layer_index.js';
 import VectorTileWorkerSource from './vector_tile_worker_source.js';
 import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source.js';
@@ -114,6 +115,10 @@ export default class Worker {
     enableTerrain(mapId: string, enable: boolean, callback: WorkerTileCallback) {
         this.terrain = enable;
         callback();
+    }
+
+    setProjection(mapId: string, projectionName: string) {
+        setProjection(projectionName);
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {

@@ -3,7 +3,7 @@
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
-import projections, {makeTileTransform} from './projections';
+import getProjection from './projection';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -23,6 +23,12 @@ const DEFAULT_MIN_ZOOM = 0;
 
 type RayIntersectionResult = { p0: vec4, p1: vec4, t: number};
 type ElevationReference = "sea" | "ground";
+type Projection = {
+    name: string,
+    range: Array<number>,
+    project: (lng: number, lat: number, options?: Object) => {x: number, y: number},
+    unproject: (x: number, y: number) => LngLat
+};
 
 /**
  * A single transform, generally used for a single tile to be
@@ -91,6 +97,7 @@ class Transform {
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
     _averageElevation: number;
+    projection: Projection;
     _elevation: ?Elevation;
     _fov: number;
     _pitch: number;
@@ -112,7 +119,7 @@ class Transform {
     _centerAltitude: number;
     _horizonShift: number;
 
-    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection: string) {
         this.tileSize = 512; // constant
         this.maxValidLatitude = 85.051129; // constant
 
@@ -124,6 +131,8 @@ class Transform {
         this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
 
         this.setMaxBounds();
+
+        this.projection = getProjection(projection);
 
         this.width = 0;
         this.height = 0;
@@ -144,17 +153,10 @@ class Transform {
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
-
-        // this.projection = projections.mercator;
-        // this.projection = projections.sinusoidal;
-        // this.projection = projections.wgs84;
-        // this.projection = projections.albers;
-        this.projection = projections.winkelTripel;
-        this.projection.tileTransform = makeTileTransform(this.projection);
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies);
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.projection.name);
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone.tileSize = this.tileSize;
@@ -336,6 +338,7 @@ class Transform {
         // Camera zoom describes the distance of the camera to the sea level (altitude). It is used only for manipulating the camera location.
         // The standard zoom (this._zoom) defines the camera distance to the terrain (height). Its behavior and conceptual meaning in determining
         // which tiles to stream is same with or without the terrain.
+        // TODO
         const elevationAtCenter = this._elevation.getAtPointOrZero(MercatorCoordinate.fromLngLat(this.center), -1);
 
         if (elevationAtCenter === -1) {
@@ -419,6 +422,7 @@ class Transform {
 
         // Compute zoom level from the height of the camera relative to the terrain
         const cameraZoom: number = this._cameraZoom;
+        // TODO
         const elevationAtCenter = this._elevation.getAtPointOrZero(MercatorCoordinate.fromLngLat(this.center));
         const mercatorElevation = mercatorZfromAltitude(elevationAtCenter, this.center.lat);
         const altitude  = this._mercatorZfromZoom(cameraZoom);
@@ -656,7 +660,7 @@ class Transform {
         if (options.minzoom !== undefined && z < options.minzoom) return [];
         if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
 
-        const centerCoord = MercatorCoordinate.fromLngLat(this.center);
+        const centerCoord = this.locationCoordinate(this.center);
         const numTiles = 1 << z;
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
         const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
@@ -918,13 +922,14 @@ class Transform {
 
     project(lnglat: LngLat) {
         const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
+        const projectedLngLat = this.projection.project(lnglat.lng, lat);
         return new Point(
-                mercatorXfromLng(lnglat.lng) * this.worldSize,
-                mercatorYfromLat(lat) * this.worldSize);
+                projectedLngLat.x * this.worldSize,
+                projectedLngLat.y * this.worldSize);
     }
 
     unproject(point: Point): LngLat {
-        return new MercatorCoordinate(point.x / this.worldSize, point.y / this.worldSize).toLngLat();
+        return this.projection.unproject(point.x / this.worldSize, point.y / this.worldSize);
     }
 
     get point(): Point { return this.project(this.center); }
@@ -1003,8 +1008,15 @@ class Transform {
      * @returns {Coordinate}
      * @private
      */
-    locationCoordinate(lnglat: LngLat) {
-        return MercatorCoordinate.fromLngLat(lnglat);
+    locationCoordinate(lnglat: LngLat, altitude: number) {
+        const z = altitude ?
+            mercatorZfromAltitude(altitude, lngLat.lat) :
+            undefined;
+        const projectedLngLat = this.projection.project(lnglat.lng, lnglat.lat);
+        return new MercatorCoordinate(
+            projectedLngLat.x,
+            projectedLngLat.y,
+            z);
     }
 
     /**
@@ -1014,7 +1026,7 @@ class Transform {
      * @private
      */
     coordinateLocation(coord: MercatorCoordinate) {
-        return coord.toLngLat();
+        return this.projection.unproject(coord.x, coord.y);
     }
 
     /**
@@ -1338,7 +1350,7 @@ class Transform {
             // Camera zoom has to be updated as the orbit distance might have changed
             this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
             this._centerAltitude = newCenter.toAltitude();
-            this._center = newCenter.toLngLat();
+            this._center = this.coordinateLocation(newCenter);
             this._updateZoomFromElevation();
             this._constrain();
             this._calcMatrices();
@@ -1358,7 +1370,7 @@ class Transform {
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
         if (cameraHeight < minHeight) {
-            const center = MercatorCoordinate.fromLngLat(this._center, this._centerAltitude);
+            const center = this.locationCoordinate(this._center, this._centerAltitude);
             const cameraPos = this._camera.mercatorPosition;
             const cameraToCenter = [center.x - cameraPos.x, center.y - cameraPos.y, center.z - cameraPos.z];
             const prevDistToCamera = vec3.length(cameraToCenter);
@@ -1629,6 +1641,15 @@ class Transform {
         this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
     }
 
+    _rotate(x, y, angle) {
+        const cos = Math.cos(angle / 180 * Math.PI);
+        const sin = Math.sin(angle / 180 * Math.PI);
+        return {
+            x: x * cos - y * sin,
+            y: x * sin + y * cos
+        };
+    }
+
     _updateCameraState() {
         if (!this.height) return;
 
@@ -1697,7 +1718,7 @@ class Transform {
         if (this._terrainEnabled())
             this._updateCameraOnTerrain();
 
-        this._center = new MercatorCoordinate(position[0], position[1], position[2]).toLngLat();
+        this._center = this.coordinateLocation(new MercatorCoordinate(position[0], position[1], position[2]));
         this._unmodified = false;
         this._constrain();
         this._calcMatrices();

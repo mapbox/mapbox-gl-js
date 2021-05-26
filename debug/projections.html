@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        .map-overlay {
+            background-color: #fff;
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            font: bold 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            left: 10px;
+            padding: 10px;
+            position: absolute;
+            top: 10px;
+            width: 150px;
+            z-index: 1;
+        }
+
+        fieldset {
+            border: none;
+            padding: 5px 0;
+        }
+         
+        select, input {
+            background-color: transparent;
+            border-radius: 3px;
+            margin: 0;
+        }
+
+        select {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="map-overlay top">
+        <fieldset>
+            <label>Projection:</label>
+            <select id="projName">
+                <option value="mercator">Mercator</option>
+                <option value="winkel">Winkel Tripel</option>
+                <option value="sinusoidal">Sinusoidal</option>
+                <option value="wgs84">WGS84</option>
+                <option value="albers" selected>Albers USA</option>
+                <option value="albersAlaska">Albers Alaska</option>
+            </select>
+        </fieldset>
+        <fieldset>
+            <label>Style:</label>
+            <select id="styleName">
+                <option value="streets" selected>Streets</option>
+                <option value="satellite">Satellite</option>
+            </select>
+        </fieldset>
+        <fieldset>
+            <label>Graticule:</label>
+            <input id="graticule" type="checkbox">
+        </fieldset>
+        <fieldset>
+            <label>Unskew:</label>
+            <input id="unskew" type="checkbox" checked>
+        </fieldset>
+        <fieldset>
+            <label>Unrotate:</label>
+            <input id="unrotate" type="checkbox" checked>
+        </fieldset>
+    </div>
+    <div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+
+let map;
+makeMap();
+
+function makeMap() {
+    if (map) map.remove();
+    const el = document.getElementById('projName');
+    const zooms = {
+        albers: 3,
+        albersAlaska: 4,
+        winkel: 1.2,
+        mercator: 1.0,
+        sinusoidal: 1.0,
+        wgs84: 1.0
+    };
+    const centers = {
+        albers: [-122.414, 37.776],
+        albersAlaska: [-154, 63],
+        winkel: [0, 0],
+        mercator: [0, 0],
+        sinusoidal: [0, 0],
+        wgs84: [0, 0]
+    };
+    const projection = el.options[el.selectedIndex].value;
+    const zoom = zooms[projection] || 2;
+    const center = centers[projection] || [-97.48, 40.16];
+    const styles = {
+        streets: 'mapbox://styles/mapbox/streets-v10',
+        satellite: 'mapbox://styles/mapbox/satellite-streets-v11'
+    };
+    const styleEl = document.getElementById('styleName');
+    const styleName = styleEl.options[styleEl.selectedIndex].value;
+    const style = styles[styleName];
+
+    map = new mapboxgl.Map({
+        projection,
+        container: 'map',
+        zoom,
+        center,
+        style,
+        hash: true
+    });
+    map.showTileBoundaries = true;
+    map.transform.unskew = !!document.getElementById('unskew').checked;
+    map.transform.unrotate = !!document.getElementById('unrotate').checked;
+    update();
+    addGraticule();
+}
+
+
+function update() {
+    map.transform._calcMatrices();
+    map.triggerRepaint();
+}
+document.getElementById('projName').addEventListener('change', (e) => {
+    makeMap();
+});
+document.getElementById('styleName').addEventListener('change', (e) => {
+    makeMap();
+});
+document.getElementById('graticule').addEventListener('change', (e) => {
+    map.setPaintProperty('graticule', 'line-opacity', e.target.checked ? 1 : 0);
+});
+
+document.getElementById('unskew').addEventListener('change', (e) => {
+    map.transform.unskew = !!e.target.checked;
+    update();
+});
+
+document.getElementById('unrotate').addEventListener('change', (e) => {
+    map.transform.unrotate = !!e.target.checked;
+    update();
+});
+
+function addGraticule() {
+map.on('style.load', () => {
+    const fc = {
+        type: 'FeatureCollection',
+        features: []
+    };
+
+    for (let i = -170; i < 180; i += 10) {
+        fc.features.push({
+            type: 'Feature',
+            geometry: {
+                type: 'LineString',
+                coordinates: [[i, -80], [i, 80]]
+            }
+        });
+    }
+    for (let i = -80; i < 80; i += 10) {
+        fc.features.push({
+            type: 'Feature',
+            geometry: {
+                type: 'LineString',
+                coordinates: [[-180, i], [180, i]]
+            }
+        });
+    }
+
+    map.addSource('graticule', {
+        buffer: 0,
+        type: 'geojson',
+        data: fc
+    });
+
+    map.addLayer({
+        id: 'graticule',
+        source: 'graticule',
+        type: 'line',
+        paint: {
+            'line-width': 1,
+            'line-color': '#aaa',
+            'line-opacity': document.getElementById('graticule').checked ? 1 : 0
+        }
+    }, 'building-line');
+    return;
+});
+}
+
+</script>
+</body>
+</html>

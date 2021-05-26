@@ -1,6 +1,7 @@
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
 
 export default {
+    name: 'mercator',
     project: (lng, lat) => {
         const x = mercatorXfromLng(lng);
         const y = mercatorYfromLat(lat);

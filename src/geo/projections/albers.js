@@ -16,6 +16,7 @@ function albers (lng, lat) {
 }
 
 export default {
+    name: 'albers',
     project: (lng, lat) => {
         const {x, y} = albers(lng, lat);
 

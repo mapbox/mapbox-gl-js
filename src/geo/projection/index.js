@@ -1,16 +1,17 @@
-import albers from './albers';
+import {albers, alaska} from './albers';
 import mercator from './mercator';
 import sinusoidal from './sinusoidal';
 import wgs84 from './wgs84';
-import winkelTripel from './winkelTripel';
-import MercatorCoordinate from '../mercator_coordinate.js';
+import winkel from './winkelTripel';
+import MercatorCoordinate from '../mercator_coordinate';
 
-export default {
+const projections = {
     albers,
+    alaska,
     mercator,
     sinusoidal,
     wgs84,
-    winkelTripel
+    winkel
 };
 
 function idBounds(id) {
@@ -34,7 +35,7 @@ function idBounds(id) {
     return locs;
 }
     
-export function makeTileTransform (projection) {
+function makeTileTransform(projection) {
     return (id) => {
         const locs = idBounds(id);
         let minX = Infinity;
@@ -59,4 +60,11 @@ export function makeTileTransform (projection) {
             y2: maxY * scale
         };
     }
+}
+
+export default function (projectionName) {
+    if (!projectionName) projectionName = 'mercator';
+    const p = projections[projectionName];
+    p.tileTransform = makeTileTransform(p);
+    return p;
 }

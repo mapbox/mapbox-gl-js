@@ -117,7 +117,8 @@ type MapOptions = {
     transformRequest?: RequestTransformFunction,
     accessToken: string,
     testMode: ?boolean,
-    locale?: Object
+    locale?: Object,
+    projection?: string
 };
 
 const defaultMinZoom = -2;
@@ -132,6 +133,7 @@ const defaultOptions = {
     zoom: 0,
     bearing: 0,
     pitch: 0,
+    projection: 'mercator',
 
     minZoom: defaultMinZoom,
     maxZoom: defaultMaxZoom,
@@ -266,6 +268,7 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
+ * @param {string} [options.projection='mercator'] The map projection to use when creating a map. Defaults to the Web Mercator ('mercator') projection. Other options are Winkel Tripel ('winkel'), Sinusoidal ('sinusoidal'), Albers ('albers'), Albers Alaska ('alaska'), and WGS84 ('wgs84').
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -273,6 +276,7 @@ const defaultOptions = {
  *   zoom: 13,
  *   style: style_object,
  *   hash: true,
+ *   projection: 'winkel',
  *   transformRequest: (url, resourceType)=> {
  *     if(resourceType === 'Source' && url.startsWith('http://myHost')) {
  *       return {
@@ -414,7 +418,7 @@ class Map extends Camera {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
         }
 
-        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
+        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, options.projection);
         super(transform, options);
 
         this._interactive = options.interactive;

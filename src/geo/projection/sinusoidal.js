@@ -1,4 +1,5 @@
 export default {
+    name: 'sinusoidal',
     project: (lng, lat) => {
         const x = 0.5 + lng * Math.cos(lat / 180 * Math.PI) / 360 * 2;
         const y = 0.5 - lat / 360 * 2;
