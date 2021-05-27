@@ -268,11 +268,12 @@ const defaultOptions = {
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
  * @example
  * var map = new mapboxgl.Map({
- *   container: 'map',
- *   center: [-122.420679, 37.772537],
- *   zoom: 13,
- *   style: style_object,
- *   hash: true,
+ *   container: 'map', // container ID
+ *   center: [-122.420679, 37.772537], // starting position [lng, lat]
+ *   zoom: 13, // starting zoom
+ *   style: 'mapbox://styles/mapbox/streets-v11', // style URL or style object
+ *   hash: true, // sync `center`, `zoom`, `pitch`, and `bearing` with URL
+ *   // Use `transformRequest` to modify requests that begin with `http://myHost`.
  *   transformRequest: (url, resourceType)=> {
  *     if(resourceType === 'Source' && url.startsWith('http://myHost')) {
  *       return {
@@ -283,6 +284,9 @@ const defaultOptions = {
  *     }
  *   }
  * });
+ * @see [Display a map on a webpage](https://docs.mapbox.com/mapbox-gl-js/example/simple-map/)
+ * @see [Display a map with a custom style](https://docs.mapbox.com/mapbox-gl-js/example/custom-style-id/)
+ * @see [Check if Mapbox GL JS is supported](https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/)
  */
 class Map extends Camera {
     style: Style;
