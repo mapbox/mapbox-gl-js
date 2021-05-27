@@ -186,12 +186,9 @@ jobs:
       - store_artifacts:
           path: "test/release"
       - persist_to_workspace:
-          root: ~/
+          root: .
           paths:
-            - mapbox-gl-js
-            - .ssh
-            - .aws
-
+            - dist
 
   test-flow:
     <<: *defaults
