@@ -128,7 +128,7 @@ jobs:
           command: |
             curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > mbx-ci &&
             chmod 755 ./mbx-ci &&
-            echo "export NOTIFIER_TOKEN=$(./mbx-ci github notifier token)" >> $BASH_ENV
+            echo "export NOTIFIER_TOKEN=$(./mbx-ci github notifier token)" >> .mbx-ci-envvars
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
@@ -177,7 +177,7 @@ jobs:
       - run:
           name: Check bundle size
           command: |
-            node build/check-bundle-size.js
+            source .mbx-ci-envvars && node build/check-bundle-size.js
       - store_artifacts:
           path: "dist"
       - store_artifacts:
