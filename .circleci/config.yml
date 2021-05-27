@@ -186,7 +186,7 @@ jobs:
       - store_artifacts:
           path: "test/release"
       - persist_to_workspace:
-          root: .
+          root: ~/mapbox-gl-js
           paths:
             - dist
 
