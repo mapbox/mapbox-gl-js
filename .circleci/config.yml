@@ -126,9 +126,9 @@ jobs:
       - run:
           name: Install mbx-ci
           command: |
-            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > mbx-ci &&
-            chmod 755 ./mbx-ci &&
-            echo "export NOTIFIER_TOKEN=$(./mbx-ci github notifier token)" >> .mbx-ci-envvars
+            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > ~/mbx-ci &&
+            chmod 755 ~/mbx-ci &&
+            ~/mbx-ci aws setup
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
@@ -139,15 +139,18 @@ jobs:
             - '~/.yarn'
             - 'node_modules'
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - .
+            - mapbox-gl-js
+            - .ssh
+            - .aws
+
 
   lint:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - restore_cache:
           keys:
             - v2-lint-{{ .Branch }}
@@ -164,8 +167,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
-      - run: ./mbx-ci aws setup
+          at: ~/
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
@@ -177,35 +179,38 @@ jobs:
       - run:
           name: Check bundle size
           command: |
-            source .mbx-ci-envvars && node build/check-bundle-size.js
+            node build/check-bundle-size.js
       - store_artifacts:
           path: "dist"
       - store_artifacts:
           path: "test/release"
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - dist
+            - mapbox-gl-js
+            - .ssh
+            - .aws
+
 
   test-flow:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-flow
 
   test-unit:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-unit
 
   test-render:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - browser-tools/install-chrome
       - run: yarn run test-render
       - store_test_results:
@@ -217,7 +222,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - browser-tools/install-chrome
       - run: yarn run test-render-prod
       - store_test_results:
@@ -229,7 +234,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - browser-tools/install-chrome
       - run: yarn run test-query
       - store_test_results:
@@ -241,7 +246,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Build Webpack
           command: |
@@ -256,7 +261,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - browser-tools/install-chrome
       - run:
           name: Collect performance stats
@@ -270,7 +275,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - browser-tools/install-browser-tools
       - run: yarn run build-dev
       - run: yarn run build-token
@@ -291,14 +296,14 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-expressions
 
   deploy-benchmarks:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Build
           command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
@@ -314,7 +319,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - aws-cli/install
       - run:
           name: Check build file for correct SDK version
