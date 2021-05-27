@@ -603,11 +603,12 @@ export class Terrain extends Elevation {
     }
 
     renderToBackBuffer(accumulatedDrapes: Array<OverscaledTileID>) {
+        const painter = this.painter;
+        const context = this.painter.context;
+
         if (accumulatedDrapes.length === 0) {
             return;
         }
-        const painter = this.painter;
-        const context = this.painter.context;
 
         context.bindFramebuffer.set(null);
         context.viewport.set([0, 0, painter.width, painter.height]);
@@ -700,8 +701,12 @@ export class Terrain extends Elevation {
             }
         }
 
+        // Reset states and render last drapes
         this.renderToBackBuffer(accumulatedDrapes);
         this.renderingToTexture = false;
+
+        context.bindFramebuffer.set(null);
+        context.viewport.set([0, 0, painter.width, painter.height]);
 
         return drapedLayerBatch.end + 1;
     }
