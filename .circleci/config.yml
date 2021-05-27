@@ -76,7 +76,9 @@ workflows:
             - build
           filters:
             tags:
-              only: /.*/
+              ignore: /.*/
+            branches:
+              only: main
       - deploy-benchmarks:
           requires:
             - lint
