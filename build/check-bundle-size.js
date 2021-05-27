@@ -28,7 +28,7 @@ const repo = 'mapbox-gl-js';
 (async () => {
     // Initialize github client
     const github = new Octokit({
-        auth: execSync('./mbx-ci github notifier token').toString().trim()
+        auth: process.env.NOTIFIER_TOKEN
     });
 
     //get current sizes

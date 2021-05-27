@@ -127,7 +127,8 @@ jobs:
           name: Install mbx-ci
           command: |
             curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > mbx-ci &&
-            chmod 755 ./mbx-ci
+            chmod 755 ./mbx-ci &&
+            echo 'export $NOTIFIER_TOKEN = $(./mbx-ci github notifier token)' >> $BASH_ENV
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
