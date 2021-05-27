@@ -1000,15 +1000,14 @@ export class Terrain extends Elevation {
             }
         }
 
-        const sortedRenderBatch = [...this._drapedRenderBatches];
-        sortedRenderBatch.sort((batchA, batchB) => {
+        const sortedRenderBatches = [...this._drapedRenderBatches];
+        sortedRenderBatches.sort((batchA, batchB) => {
             const batchASize = batchA.end - batchA.start;
             const batchBSize = batchB.end - batchB.start;
             return batchBSize - batchASize;
         });
 
-        for (let j = 0; j < sortedRenderBatch.length; ++j) {
-            const batch = sortedRenderBatch[j];
+        for (const batch of sortedRenderBatches) {
             for (let i = coords.length - 1; i >= 0; i--) {
                 const proxy = coords[i];
                 if (psc.proxyCachedFBO[proxy.key] === undefined) {
