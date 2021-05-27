@@ -130,14 +130,14 @@ class CollisionGroups {
     }
 }
 
-function calculateVariableLayoutShift(anchor: TextAnchor, width: number, height: number, textOffset: [number, number], textBoxScale: number): Point {
+function calculateVariableLayoutShift(anchor: TextAnchor, width: number, height: number, textOffset: [number, number], textScale: number): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
     const shiftY = -(verticalAlign - 0.5) * height;
     const offset = evaluateVariableOffset(anchor, textOffset);
     return new Point(
-        shiftX + offset[0] * textBoxScale,
-        shiftY + offset[1] * textBoxScale
+        shiftX + offset[0] * textScale,
+        shiftY + offset[1] * textScale
     );
 }
 
@@ -154,7 +154,7 @@ export type VariableOffset = {
     width: number,
     height: number,
     anchor: TextAnchor,
-    textBoxScale: number,
+    textScale: number,
     prevAnchor?: TextAnchor
 };
 
@@ -298,14 +298,13 @@ export class Placement {
     }
 
     attemptAnchorPlacement(anchor: TextAnchor, textBox: SingleCollisionBox, width: number, height: number,
-                           textBoxScale: number, rotateWithMap: boolean, pitchWithMap: boolean, textPixelRatio: number,
+                           textScale: number, rotateWithMap: boolean, pitchWithMap: boolean, textPixelRatio: number,
                            posMatrix: mat4, collisionGroup: CollisionGroup, textAllowOverlap: boolean,
                            symbolInstance: SymbolInstance, symbolIndex: number, bucket: SymbolBucket,
                            orientation: number, iconBox: ?SingleCollisionBox, textSize: any, iconSize: any): ?{ shift: Point, placedGlyphBoxes: { box: Array<number>, offscreen: boolean } }  {
 
         const textOffset = [symbolInstance.textOffset0, symbolInstance.textOffset1];
-        const textScale = bucket.getSymbolInstanceTextSize(textSize, symbolInstance, this.transform.zoom, symbolIndex);
-        const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textBoxScale);
+        const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textScale);
 
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
             textScale, textBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
@@ -335,7 +334,7 @@ export class Placement {
                 width,
                 height,
                 anchor,
-                textBoxScale,
+                textScale,
                 prevAnchor
             };
             this.markUsedJustification(bucket, anchor, symbolInstance, orientation);
@@ -515,9 +514,9 @@ export class Placement {
                     }
 
                     const placeBoxForVariableAnchors = (collisionTextBox, collisionIconBox, orientation) => {
-                        const textBoxScale = symbolInstance.textBoxScale;
-                        const width = (collisionTextBox.x2 - collisionTextBox.x1) * textBoxScale + 2.0 * collisionTextBox.padding;
-                        const height = (collisionTextBox.y2 - collisionTextBox.y1) * textBoxScale + 2.0 * collisionTextBox.padding;
+                        const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, symbolIndex);
+                        const width = (collisionTextBox.x2 - collisionTextBox.x1) * textScale + 2.0 * collisionTextBox.padding;
+                        const height = (collisionTextBox.y2 - collisionTextBox.y1) * textScale + 2.0 * collisionTextBox.padding;
 
                         const variableIconBox = hasIconTextFit && !iconAllowOverlap ? collisionIconBox : null;
                         if (variableIconBox) updateBoxData(variableIconBox);
@@ -528,7 +527,7 @@ export class Placement {
                             const anchor = anchors[i % anchors.length];
                             const allowOverlap = (i >= anchors.length);
                             const result = this.attemptAnchorPlacement(
-                                anchor, collisionTextBox, width, height, textBoxScale, rotateWithMap,
+                                anchor, collisionTextBox, width, height, textScale, rotateWithMap,
                                 pitchWithMap, textPixelRatio, posMatrix, collisionGroup, allowOverlap,
                                 symbolInstance, symbolIndex, bucket, orientation, variableIconBox,
                                 partiallyEvaluatedTextSize, partiallyEvaluatedIconSize);
@@ -991,7 +990,7 @@ export class Placement {
                                    variableOffset.width,
                                    variableOffset.height,
                                    variableOffset.textOffset,
-                                   variableOffset.textBoxScale);
+                                   variableOffset.textScale);
                                 if (rotateWithMap) {
                                     shift._rotate(pitchWithMap ? this.transform.angle : -this.transform.angle);
                                 }
