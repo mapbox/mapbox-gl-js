@@ -5,11 +5,11 @@
         {
           "glyph": 104,
           "imageName": null,
-          "localGlyph": null,
           "x": -10,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -17,7 +17,8 @@
             "height": 19,
             "left": 2,
             "top": -7,
-            "advance": 14
+            "advance": 14,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -29,11 +30,11 @@
         {
           "glyph": 105,
           "imageName": null,
-          "localGlyph": null,
           "x": 4,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -41,7 +42,8 @@
             "height": 18,
             "left": 1,
             "top": -8,
-            "advance": 6
+            "advance": 6,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -57,10 +59,10 @@
   "text": "hi\u0000",
   "top": -12,
   "bottom": 12,
-  "hasBaseline": false,
   "left": -10,
   "right": 10,
   "writingMode": 1,
   "iconsInText": false,
-  "verticalizable": false
+  "verticalizable": false,
+  "hasBaseline": false
 }

@@ -5,11 +5,11 @@
         {
           "glyph": 97,
           "imageName": null,
-          "localGlyph": null,
           "x": -38.5,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -17,7 +17,8 @@
             "height": 15,
             "left": 1,
             "top": -12,
-            "advance": 13
+            "advance": 13,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -29,11 +30,11 @@
         {
           "glyph": 98,
           "imageName": null,
-          "localGlyph": null,
           "x": -22.5,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -41,7 +42,8 @@
             "height": 20,
             "left": 2,
             "top": -7,
-            "advance": 14
+            "advance": 14,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -53,11 +55,11 @@
         {
           "glyph": 99,
           "imageName": null,
-          "localGlyph": null,
           "x": -5.5,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -65,7 +67,8 @@
             "height": 15,
             "left": 1,
             "top": -12,
-            "advance": 11
+            "advance": 11,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -77,11 +80,11 @@
         {
           "glyph": 100,
           "imageName": null,
-          "localGlyph": null,
           "x": 8.5,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -89,7 +92,8 @@
             "height": 20,
             "left": 1,
             "top": -7,
-            "advance": 14
+            "advance": 14,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -101,11 +105,11 @@
         {
           "glyph": 101,
           "imageName": null,
-          "localGlyph": null,
           "x": 25.5,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -113,7 +117,8 @@
             "height": 15,
             "left": 1,
             "top": -12,
-            "advance": 13
+            "advance": 13,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -129,10 +134,10 @@
   "text": "abcde",
   "top": -12,
   "bottom": 12,
-  "hasBaseline": false,
   "left": -38.5,
   "right": 38.5,
   "writingMode": 1,
   "iconsInText": false,
-  "verticalizable": false
+  "verticalizable": false,
+  "hasBaseline": false
 }

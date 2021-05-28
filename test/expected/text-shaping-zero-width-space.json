@@ -5,11 +5,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": -63,
           "y": -41,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -17,7 +17,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -29,11 +30,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": -42,
           "y": -41,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -41,7 +42,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -53,11 +55,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": -21,
           "y": -41,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -65,7 +67,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -77,11 +80,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": 0,
           "y": -41,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -89,7 +92,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -101,11 +105,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": 21,
           "y": -41,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -113,7 +117,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -125,11 +130,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": 42,
           "y": -41,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -137,7 +142,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -154,11 +160,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": -63,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -166,7 +172,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -178,11 +185,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": -42,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -190,7 +197,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -202,11 +210,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": -21,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -214,7 +222,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -226,11 +235,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": 0,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -238,7 +247,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -250,11 +260,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": 21,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -262,7 +272,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -274,11 +285,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": 42,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -286,7 +297,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -303,11 +315,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": -21,
           "y": 7,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -315,7 +327,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -327,11 +340,11 @@
         {
           "glyph": 19977,
           "imageName": null,
-          "localGlyph": null,
           "x": 0,
           "y": 7,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -339,7 +352,8 @@
             "height": 18,
             "left": 2,
             "top": -8,
-            "advance": 21
+            "advance": 21,
+            "localGlyph": null
           },
           "rect": {
             "x": 0,
@@ -355,10 +369,10 @@
   "text": "三三​三三​三三​三三三三三三​三三",
   "top": -36,
   "bottom": 36,
-  "hasBaseline": false,
   "left": -63,
   "right": 63,
   "writingMode": 1,
   "iconsInText": false,
-  "verticalizable": false
+  "verticalizable": false,
+  "hasBaseline": false
 }
