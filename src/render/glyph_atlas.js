@@ -24,10 +24,10 @@ export type GlyphRect = {
     h: number
 };
 // {glyphID: glyphRect}
-export type glyphPositionMap = { [_: number]: GlyphRect };
+export type GlyphPositionMap = { [_: number]: GlyphRect };
 
 // {fontStack: glyphPoistionMap}
-export type GlyphPositions = { [_: string]: glyphPositionMap };
+export type GlyphPositions = { [_: string]: GlyphPositionMap };
 
 export default class GlyphAtlas {
     image: AlphaImage;
