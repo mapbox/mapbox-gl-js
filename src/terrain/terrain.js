@@ -1013,22 +1013,21 @@ export class Terrain extends Elevation {
         });
 
         for (const batch of sortedRenderBatches) {
-            for (let i = coords.length - 1; i >= 0; i--) {
-                const proxy = coords[i];
-                if (psc.proxyCachedFBO[proxy.key] === undefined) {
-                    // Assign renderCache FBO if there are available FBOs in pool.
-                    let index = psc.renderCachePool.pop();
-                    if (index === undefined && psc.renderCache.length < RENDER_CACHE_MAX_SIZE) {
-                        index = psc.renderCache.length;
-                        psc.renderCache.push(this._createFBO());
-                        // assert(psc.renderCache.length <= coords.length);
-                    }
-                    if (index !== undefined) {
-                        if (psc.proxyCachedFBO[proxy.key] === undefined)
-                            psc.proxyCachedFBO[proxy.key] = {};
-                        psc.proxyCachedFBO[proxy.key][batch.start] = index;
-                        psc.renderCache[index].dirty = true; // needs to be rendered to.
-                    }
+            for (const id of coords) {
+                if (psc.proxyCachedFBO[id.key]) {
+                    continue;
+                }
+
+                // Assign renderCache FBO if there are available FBOs in pool.
+                let index = psc.renderCachePool.pop();
+                if (index === undefined && psc.renderCache.length < RENDER_CACHE_MAX_SIZE) {
+                    index = psc.renderCache.length;
+                    psc.renderCache.push(this._createFBO());
+                }
+                if (index !== undefined) {
+                    psc.proxyCachedFBO[id.key] = {};
+                    psc.proxyCachedFBO[id.key][batch.start] = index;
+                    psc.renderCache[index].dirty = true; // needs to be rendered to.
                 }
             }
         }
