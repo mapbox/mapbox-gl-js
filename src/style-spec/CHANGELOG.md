@@ -1,3 +1,11 @@
+## 13.20.0
+
+### ✨ Features and improvements
+
+* Add configurable fog as a root style specification ([#10564](https://github.com/mapbox/mapbox-gl-js/pull/10564))
+* Add support for data-driven expressions in `line-dasharray` and `line-cap` properties. ([#10591](https://github.com/mapbox/mapbox-gl-js/pull/10591))
+* Add support for data-driven `text-line-height` ([#10612](https://github.com/mapbox/mapbox-gl-js/pull/10612))
+
 ## 13.19.0
 
 ### ✨ Features and improvements
