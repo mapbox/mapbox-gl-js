@@ -694,10 +694,6 @@ function shapeLines(shaping: Shaping,
                     advance: vertical ? size[1] : size[0],
                     localGlyph: false};
 
-                // Difference between one EM and an image size.
-                // Aligns bottom of an image to a baseline level.
-                const imageOffset = ONE_EM - size[1] * section.scale;
-                baselineOffset = maxLineOffset + imageOffset;
                 if (!hasBaseline) {
                     glyphOffset = SHAPING_DEFAULT_OFFSET + lineMaxScale * ONE_EM - size[1] * sectionScale;
                 } else {
@@ -706,6 +702,7 @@ function shapeLines(shaping: Shaping,
                     // 'ascender = height', it means we pull down the glyph under baseline with a distance of glyph's borderSize.
                     const imageAscender = metrics.height;
                     glyphOffset = -imageAscender * sectionScale;
+
                 }
                 verticalAdvance = metrics.advance;
 
