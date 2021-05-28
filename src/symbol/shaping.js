@@ -589,9 +589,6 @@ function shapeLines(shaping: Shaping,
         for (const section of sections) {
             if (section.imageName) continue;
 
-            const glyphPositionData = glyphPositions[section.fontStack];
-            if (!glyphPositionData) continue;
-
             const glyphData = glyphMap[section.fontStack];
             if (!glyphData) continue;
 
@@ -625,12 +622,11 @@ function shapeLines(shaping: Shaping,
             const sectionIndex = line.getSectionIndex(i);
             const codePoint = line.getCharCode(i);
 
+            let sectionScale = section.scale;
             let metrics = null;
             let rect = null;
             let imageName = null;
             let verticalAdvance = ONE_EM;
-            let ascender = 0;
-            let descender = 0;
             let glyphOffset = 0;
 
             const vertical = !(writingMode === WritingMode.horizontal ||
@@ -664,20 +660,20 @@ function shapeLines(shaping: Shaping,
                 // the shaping box, for each line, we shift the glyph with biggest height(with scale) to make its center
                 // lie on the center line of the line, which will lead to a baseline shift. Then adjust the whole line
                 // with the baseline offset we calculated from the shift.
-                if (hasBaseline && glyphData.ascender !== undefined && glyphData.descender !== undefined) {
-                    ascender = glyphData.ascender;
-                    descender = glyphData.descender;
-                    const value = (ascender + descender) * section.scale;
+                if (hasBaseline) {
+                    const ascender = glyphData.ascender !== undefined ? Math.abs(glyphData.ascender) : 0;
+                    const descender = glyphData.descender !== undefined ? Math.abs(glyphData.descender) : 0;
+                    const value = (ascender + descender) * sectionScale;
                     if (biggestHeight < value) {
                         biggestHeight = value;
-                        baselineOffset = (ascender - descender) / 2 * section.scale;
+                        baselineOffset = (ascender - descender) / 2 * sectionScale;
                     }
-                    glyphOffset = -ascender * section.scale;
+                    glyphOffset = -ascender * sectionScale;
                 } else {
                     // If font's baseline is not applicable, fall back to use a default baseline offset, see
                     // Shaping::yOffset. Since we're laying out at 24 points, we need also calculate how much it will
                     // move when we scale up or down.
-                    glyphOffset = SHAPING_DEFAULT_OFFSET + (lineMaxScale - section.scale) * ONE_EM;
+                    glyphOffset = SHAPING_DEFAULT_OFFSET + (lineMaxScale - sectionScale) * ONE_EM;
                 }
             } else {
                 const imagePosition = imagePositions[section.imageName];
@@ -689,7 +685,7 @@ function shapeLines(shaping: Shaping,
                 // If needed, allow to set scale factor for an image using
                 // alias "image-scale" that could be alias for "font-scale"
                 // when FormattedSection is an image section.
-                section.scale = section.scale * ONE_EM / layoutTextSizeThisZoom;
+                sectionScale = sectionScale * ONE_EM / layoutTextSizeThisZoom;
 
                 metrics = {width: size[0],
                     height: size[1],
@@ -703,32 +699,31 @@ function shapeLines(shaping: Shaping,
                 const imageOffset = ONE_EM - size[1] * section.scale;
                 baselineOffset = maxLineOffset + imageOffset;
                 if (!hasBaseline) {
-                    glyphOffset = SHAPING_DEFAULT_OFFSET + lineMaxScale * ONE_EM - size[1] * section.scale;
+                    glyphOffset = SHAPING_DEFAULT_OFFSET + lineMaxScale * ONE_EM - size[1] * sectionScale;
                 } else {
                     // Based on node-fontnik: 'top = heightAboveBaseline - Ascender'(it is not valid for locally
                     // generated glyph). Since the top is a constant: glyph's borderSize. So if we set image glyph with
                     // 'ascender = height', it means we pull down the glyph under baseline with a distance of glyph's borderSize.
                     const imageAscender = metrics.height;
-                    glyphOffset = -imageAscender * section.scale;
+                    glyphOffset = -imageAscender * sectionScale;
                 }
                 verticalAdvance = metrics.advance;
 
                 // Difference between height of an image and one EM at max line scale.
                 // Pushes current line down if an image size is over 1 EM at max line scale.
-                const offset = vertical ? size[0] * section.scale - ONE_EM * lineMaxScale :
-                    size[1] * section.scale - ONE_EM * lineMaxScale;
+                const offset = (vertical ? size[0] : size[1]) * sectionScale - ONE_EM * lineMaxScale;
                 if (offset > 0 && offset > lineOffset) {
                     lineOffset = offset;
                 }
             }
 
             if (!vertical) {
-                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + glyphOffset, vertical, scale: section.scale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
-                x += metrics.advance * section.scale + spacing;
+                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
+                x += metrics.advance * sectionScale + spacing;
             } else {
                 shaping.verticalizable = true;
-                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + glyphOffset, vertical, scale: section.scale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
-                x += verticalAdvance * section.scale + spacing;
+                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
+                x += verticalAdvance * sectionScale + spacing;
             }
         }
 
