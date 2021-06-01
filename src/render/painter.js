@@ -181,7 +181,7 @@ class Painter {
 
     _updateFog(style: Style) {
         const fog = style.fog;
-        if (!fog || (fog && fog.getOpacity(this.transform.pitch) !== 1.0)) {
+        if (!fog || fog.getOpacity(this.transform.pitch) < 1 || fog.properties.get('horizon-blend') < 0.03) {
             this.transform.fogCullDistSq = null;
             return;
         }
