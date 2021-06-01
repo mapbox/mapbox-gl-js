@@ -1150,6 +1150,29 @@
       },
       "property-type": "data-driven"
     },
+    "symbol-clip": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Hides a symbol based on runtime conditions",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.5.0"
+        },
+        "data-driven styling": {
+          "js": "2.5.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature",
+          "pitch",
+          "distance-from-camera"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "symbol-z-order": {
       "type": "enum",
       "values": {
@@ -3142,7 +3165,7 @@
       },
       "zoom": {
         "doc": "Gets the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level \"step\" or \"interpolate\" expression.",
-        "group": "Zoom",
+        "group": "Camera",
         "sdk-support": {
           "basic functionality": {
             "js": "0.41.0",
@@ -3182,6 +3205,24 @@
         "sdk-support": {
           "basic functionality": {
             "js": "2.0.0"
+          }
+        }
+      },
+      "pitch": {
+        "doc": "The current pitch of the map in degrees.",
+        "group": "Camera",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "2.5.0"
+          }
+        }
+      },
+      "distance-from-camera": {
+        "doc": "The distance of the feature from the camera",
+        "group": "Camera",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "2.5.0"
           }
         }
       },
