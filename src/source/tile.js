@@ -16,10 +16,9 @@ import SourceFeatureState from '../source/source_state.js';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin.js';
 import {TileSpaceDebugBuffer} from '../data/debug_viz.js';
 import Color from '../style-spec/util/color.js';
-import {StencilBoundsArray, PosArray, TriangleIndexArray} from '../data/array_types.js';
-import {stencilBoundsAttributes} from '../data/bounds_attributes.js';
+import {TileBoundsArray, PosArray, TriangleIndexArray} from '../data/array_types.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import EXTENT from '../data/extent.js';
-import SegmentVector from '../data/segment.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
@@ -107,9 +106,8 @@ class Tile {
     queryGeometryDebugViz: TileSpaceDebugBuffer;
     queryBoundsDebugViz: TileSpaceDebugBuffer;
 
-    stencilBoundsBuffer: VertexBuffer;
-    stencilBoundsSegments: SegmentVector;
-    stencilBoundsIndexBuffer: IndexBuffer;
+    tileBoundsBuffer: VertexBuffer;
+    tileBoundsIndexBuffer: IndexBuffer;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -138,8 +136,8 @@ class Tile {
         this.state = 'loading';
 
         if (painter) {
-            this._makeStencilBoundsArray(painter.context, painter.transform, painter._numTileBorderSegments);
-            this._makeTileBorderArray(painter.context, painter.transform, painter._numTileBorderSegments);
+            this._makeTileBoundsArray(painter.context, painter.transform, painter._numTileBorderSegments);
+            this._makeTileDebugArray(painter.context, painter.transform, painter._numTileBorderSegments);
         }
     }
 
@@ -539,11 +537,13 @@ class Tile {
         const xy = ((transform.projection.project(l.lng, l.lat)));
         const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
         const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
-        arr.emplaceBack(x_, y_);
+        const a = x / denominator * EXTENT;
+        const b = y / denominator * EXTENT;
+        arr.emplaceBack(x_, y_, a, b);
     }
 
-    _makeTileBorderArray(context: Context, transform: Transform, numOfSegments: number) {
-        if (this.tileBorderBuffer) return;
+    _makeTileDebugArray(context: Context, transform: Transform, numOfSegments: number) {
+        if (this.tileDebugBuffer) return;
         
         const debugBoundsArray = new PosArray();
 
@@ -565,22 +565,22 @@ class Tile {
             }
         }
 
-        this.tileBorderBuffer = context.createVertexBuffer(debugBoundsArray, stencilBoundsAttributes.members);
+        this.tileDebugBuffer = context.createVertexBuffer(debugBoundsArray, boundsAttributes.members);
     }
 
-    _makeStencilBoundsArray(context: Context, transform: Transform, numOfSegments: number) {
-        if (this.stencilBoundsBuffer) return;
+    _makeTileBoundsArray(context: Context, transform: Transform, numOfSegments: number) {
+        if (this.tileBoundsBuffer) return;
  
-        const stencilBoundsArray = new StencilBoundsArray();
+        const tileBoundsArray = new TileBoundsArray();
         const quadTriangleIndices = new TriangleIndexArray();
 
         const add = (x, y) => {
-            this._add(x, y, numOfSegments, transform, stencilBoundsArray);
+            this._add(x, y, numOfSegments, transform, tileBoundsArray);
         }
 
         for (let xi = 0; xi < numOfSegments; xi++) {
             for (let yi = 0; yi < numOfSegments; yi++) {
-                const offset = stencilBoundsArray.length;
+                const offset = tileBoundsArray.length;
                 add(xi, yi);
                 add(xi + 1, yi);
                 add(xi, yi + 1);
@@ -590,10 +590,8 @@ class Tile {
             }
         }
 
-        const numSquared = numOfSegments * numOfSegments;
-        this.stencilBoundsBuffer = context.createVertexBuffer(stencilBoundsArray, stencilBoundsAttributes.members);
-        this.stencilBoundsSegments = SegmentVector.simpleSegment(0, 0, 4 * numSquared, 2 * numSquared);
-        this.stencilBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
+        this.tileBoundsBuffer = context.createVertexBuffer(tileBoundsArray, boundsAttributes.members);
+        this.tileBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
     }
 }
 

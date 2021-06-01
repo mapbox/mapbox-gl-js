@@ -88,8 +88,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 painter.quadTriangleIndexBuffer, source.boundsSegments);
         } else {
             program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                uniformValues, layer.id, tile.stencilBoundsBuffer,
-                tile.stencilBoundsIndexBuffer, tile.stencilBoundsSegments);
+                uniformValues, layer.id, tile.tileBoundsBuffer,
+                tile.tileBoundsIndexBuffer, painter.tileBoundsSegments);
         }
     }
 }

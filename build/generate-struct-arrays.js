@@ -118,10 +118,10 @@ function camelize (str) {
 global.camelize = camelize;
 
 import posAttributes from '../src/data/pos_attributes.js';
-import {rasterBoundsAttributes} from '../src/data/bounds_attributes.js';
+import boundsAttributes from '../src/data/bounds_attributes.js';
 
 createStructArrayType('pos', posAttributes);
-createStructArrayType('raster_bounds', rasterBoundsAttributes);
+createStructArrayType('raster_bounds', boundsAttributes);
 
 import circleAttributes from '../src/data/bucket/circle_attributes.js';
 import fillAttributes from '../src/data/bucket/fill_attributes.js';

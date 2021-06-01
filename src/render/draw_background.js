@@ -60,7 +60,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-            uniformValues, layer.id, tile.stencilBoundsBuffer,
-                tile.stencilBoundsIndexBuffer, tile.stencilBoundsSegments);
+            uniformValues, layer.id, tile.tileBoundsBuffer,
+                tile.tileBoundsIndexBuffer, painter.tileBoundsSegments);
     }
 }
