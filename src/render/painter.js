@@ -565,6 +565,7 @@ class Painter {
                 const terrain = (((this.terrain): any): Terrain);
                 const prevLayer = this.currentLayer;
                 this.currentLayer = terrain.renderBatch(this.currentLayer);
+                assert(this.context.bindFramebuffer.current === null);
                 assert(this.currentLayer > prevLayer);
                 continue;
             }
