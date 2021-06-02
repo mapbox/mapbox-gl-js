@@ -15,9 +15,8 @@ import type {
     GeoJSONPolygon,
     GeoJSONMultiPolygon
 } from "@mapbox/geojson-types";
-import {classifyRings, updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util.js';
-import CheapRuler from "cheap-ruler";
-import type {GeometryPoint} from "cheap-ruler";
+import {classifyRings, updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment, CheapRuler} from '../../util/geometry_util.js';
+import type {GeometryPoint} from '../../util/geometry_util.js';
 import Point from "@mapbox/point-geometry";
 import Queue from "tinyqueue";
 
