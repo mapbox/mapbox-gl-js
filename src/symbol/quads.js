@@ -230,6 +230,15 @@ function getRotateOffset(textOffset: [number, number]) {
     }
 }
 
+function getMidlineOffset(shaping, lineHeight, previousOffset, lineIndex) {
+    const currentLineHeight = (lineHeight + shaping.positionedLines[lineIndex].lineOffset);
+    if (lineIndex === 0) {
+        return previousOffset + currentLineHeight / 2.0;
+    }
+    const aboveLineHeight = (lineHeight + shaping.positionedLines[lineIndex - 1].lineOffset);
+    return previousOffset + (currentLineHeight + aboveLineHeight) / 2.0;
+}
+
 /**
  * Create the quads used for rendering a text label.
  * @private
@@ -254,14 +263,6 @@ export function getGlyphQuads(anchor: Anchor,
     }
     const lineCounts = shaping.positionedLines.length;
     const lineHeight = shapingHeight / lineCounts;
-    const getMidlineOffset = function(shaping, lineHeight, previousOffset, lineIndex) {
-        const currentLineHeight = (lineHeight + shaping.positionedLines[lineIndex].lineOffset);
-        if (lineIndex === 0) {
-            return previousOffset + currentLineHeight / 2.0;
-        }
-        const aboveLineHeight = (lineHeight + shaping.positionedLines[lineIndex - 1].lineOffset);
-        return previousOffset + (currentLineHeight + aboveLineHeight) / 2.0;
-    };
     let currentOffset = shaping.top - textOffset[1];
     for (let lineIndex = 0; lineIndex < lineCounts; ++lineIndex) {
         const line = shaping.positionedLines[lineIndex];
@@ -368,8 +369,7 @@ export function getGlyphQuads(anchor: Anchor,
                 // tl ----- bl
                 // After rotation, glyph lies on the horizontal midline.
                 // Shift back to tl's original x coordinate before rotation by applying 'xOffsetCorrection'.
-                const offsetCorrection = new Point(-yShift + halfAdvance, 0);
-                tl._add(offsetCorrection);
+                tl.x += -yShift + halfAdvance;
 
                 // Add padding for y coordinate's justification
                 tl.y -= (metrics.left - rectBuffer) * positionedGlyph.scale;
@@ -399,9 +399,9 @@ export function getGlyphQuads(anchor: Anchor,
                     tl.x += delta / 2;
                 }
                 // Calculate other three points
-                tr = tl.add(new Point(0, -paddedWidth));
-                bl = tl.add(new Point(paddedHeight, 0));
-                br = tl .add(new Point(paddedHeight, -paddedWidth));
+                tr = new Point(tl.x, tl.y - paddedWidth);
+                bl = new Point(tl.x + paddedHeight, tl.y);
+                br = new Point(tl.x + paddedHeight, tl.y - paddedWidth);
             }
 
             if (textRotate) {
