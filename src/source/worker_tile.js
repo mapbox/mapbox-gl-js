@@ -15,7 +15,7 @@ import LineAtlas from '../render/line_atlas.js';
 import ImageAtlas from '../render/image_atlas.js';
 import GlyphAtlas from '../render/glyph_atlas.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
-import {OverscaledTileID} from './tile_id.js';
+import {CanonicalTileID, OverscaledTileID} from './tile_id.js';
 import {PerformanceUtils} from '../util/performance.js';
 
 import type {Bucket} from '../data/bucket.js';
@@ -35,6 +35,7 @@ class WorkerTile {
     uid: number;
     zoom: number;
     tileZoom: number;
+    canonical: CanonicalTileID;
     pixelRatio: number;
     tileSize: number;
     source: string;

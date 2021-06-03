@@ -40,6 +40,8 @@ import type {LayerFeatureStates} from './source_state.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {FilterSpecification} from '../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
+import type IndexBuffer from "../gl/index_buffer.js";
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -106,6 +108,7 @@ class Tile {
     queryGeometryDebugViz: TileSpaceDebugBuffer;
     queryBoundsDebugViz: TileSpaceDebugBuffer;
 
+    tileDebugBuffer: VertexBuffer;
     tileBoundsBuffer: VertexBuffer;
     tileBoundsIndexBuffer: IndexBuffer;
 
@@ -525,7 +528,7 @@ class Tile {
         });
     }
 
-    _add(x, y, denominator, transform, arr) {
+    _add(x: number, y: number, denominator: number, transform: Transform) {
         const s = Math.pow(2, -this.tileID.canonical.z);
         const x1 = (this.tileID.canonical.x) * s;
         const y1 = (this.tileID.canonical.y) * s;
@@ -539,7 +542,7 @@ class Tile {
         const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
         const a = x / denominator * EXTENT;
         const b = y / denominator * EXTENT;
-        arr.emplaceBack(x_, y_, a, b);
+        return {x_, y_, a, b};
     }
 
     _makeTileDebugArray(context: Context, transform: Transform, numOfSegments: number) {
@@ -548,7 +551,8 @@ class Tile {
         const debugBoundsArray = new PosArray();
 
         const add = (x, y) => {
-            this._add(x, y, EXTENT, transform, debugBoundsArray);
+            const {x_, y_} = this._add(x, y, EXTENT, transform);
+            debugBoundsArray.emplaceBack(x_, y_);
         }
 
         const stride = EXTENT / numOfSegments;
@@ -575,7 +579,8 @@ class Tile {
         const quadTriangleIndices = new TriangleIndexArray();
 
         const add = (x, y) => {
-            this._add(x, y, numOfSegments, transform, tileBoundsArray);
+            const {x_, y_, a, b} = this._add(x, y, numOfSegments, transform);
+            tileBoundsArray.emplaceBack(x_, y_, a, b);
         }
 
         for (let xi = 0; xi < numOfSegments; xi++) {

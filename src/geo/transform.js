@@ -27,7 +27,8 @@ type Projection = {
     name: string,
     range: Array<number>,
     project: (lng: number, lat: number, options?: Object) => {x: number, y: number},
-    unproject: (x: number, y: number) => LngLat
+    unproject: (x: number, y: number) => LngLat,
+    tileTransform: (id: Object) => {scale: number, x: number, y: number, x2: number, y2: number}
 };
 
 /**
@@ -1000,17 +1001,17 @@ class Transform {
     }
 
     /**
-     * Given a geographical lnglat, return an unrounded
+     * Given a geographical lngLat, return an unrounded
      * coordinate that represents it at this transform's zoom level.
-     * @param {LngLat} lnglat
+     * @param {LngLat} lngLat
      * @returns {Coordinate}
      * @private
      */
-    locationCoordinate(lnglat: LngLat, altitude: number) {
+    locationCoordinate(lngLat: LngLat, altitude?: number) {
         const z = altitude ?
             mercatorZfromAltitude(altitude, lngLat.lat) :
             undefined;
-        const projectedLngLat = this.projection.project(lnglat.lng, lnglat.lat);
+        const projectedLngLat = this.projection.project(lngLat.lng, lngLat.lat);
         return new MercatorCoordinate(
             projectedLngLat.x,
             projectedLngLat.y,
@@ -1020,7 +1021,7 @@ class Transform {
     /**
      * Given a Coordinate, return its geographical position.
      * @param {Coordinate} coord
-     * @returns {LngLat} lnglat
+     * @returns {LngLat} lngLat
      * @private
      */
     coordinateLocation(coord: MercatorCoordinate) {
@@ -1639,7 +1640,7 @@ class Transform {
         this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
     }
 
-    _rotate(x, y, angle) {
+    _rotate(x: number, y: number, angle: number) {
         const cos = Math.cos(angle / 180 * Math.PI);
         const sin = Math.sin(angle / 180 * Math.PI);
         return {

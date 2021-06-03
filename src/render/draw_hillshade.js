@@ -64,8 +64,8 @@ function renderHillshade(painter, coord, tile, layer, depthMode, stencilMode, co
     painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        uniformValues, layer.id, painter.rasterBoundsBuffer,
-        painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
+        uniformValues, layer.id, tile.tileBoundsBuffer,
+        tile.tileBoundsIndexBuffer, painter.tileBoundsSegments);
 }
 
 export function prepareDEMTexture(painter: Painter, tile: Tile, dem: DEMData) {
@@ -117,8 +117,8 @@ function prepareHillshade(painter, tile, layer, depthMode, stencilMode, colorMod
     painter.useProgram('hillshadePrepare').draw(context, gl.TRIANGLES,
         depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         hillshadeUniformPrepareValues(tile.tileID, dem),
-        layer.id, painter.rasterBoundsBuffer,
-        painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
+        layer.id, tile.tileBoundsBuffer,
+        tile.tileBoundsIndexBuffer, painter.tileBoundsSegments);
 
     tile.needsHillshadePrepare = false;
 }

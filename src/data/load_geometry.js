@@ -5,7 +5,7 @@ import {warnOnce, clamp} from '../util/util.js';
 import EXTENT from './extent.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import getProjection from '../geo/projection';
-import assert from 'assert';
+import type {CanonicalTileID} from '../source/tile_id.js';
 
 import type Point from '@mapbox/point-geometry';
 
@@ -19,12 +19,12 @@ const MIN = -MAX - 1;
 
 let projection;
 
-export function setProjection(projectionName) {
+export function setProjection(projectionName: string) {
     projection = getProjection(projectionName);
 }
 
 function resample(ring) {
-    if (ring.length === 0) return;
+    if (ring.length === 0) return [];
     const result = [];
     result.push(ring[0]);
     for (let i = 1; i < ring.length; i++) {
@@ -46,7 +46,7 @@ function resample(ring) {
  * @param {VectorTileFeature} feature
  * @private
  */
-export default function loadGeometry(feature: VectorTileFeature, canonical): Array<Array<Point>> {
+export default function loadGeometry(feature: VectorTileFeature, canonical?: CanonicalTileID): Array<Array<Point>> {
     if (!canonical) return [];
     const cs = projection.tileTransform(canonical);
     const reproject = (p, featureExtent) => {
