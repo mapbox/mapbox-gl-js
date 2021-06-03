@@ -1231,6 +1231,30 @@ class Transform {
         return posMatrix;
     }
 
+    calculateGlobeMatrix(/*unwrappedTileID: UnwrappedTileID, */worldSize: number): Float32Array {
+        const localRadius = EXTENT / (2.0 * Math.PI);
+        const wsRadius = worldSize / (2.0 * Math.PI);
+        const s = wsRadius / localRadius;
+
+        //const canonical = unwrappedTileID.canonical;
+
+        const posMatrix = mat4.identity(new Float64Array(16));
+        const cameraPos = this._camera.position;
+        mat4.translate(posMatrix, posMatrix, [cameraPos[0] * worldSize, cameraPos[1] * worldSize, 0.0]);
+        //mat4.translate(posMatrix, posMatrix, [0, 0, -wsRadius]);
+        mat4.scale(posMatrix, posMatrix, [s, s, s]);
+        mat4.rotateY(posMatrix, posMatrix, degToRad(this._center.lng));
+
+        return posMatrix;
+
+        // const scale = worldSize / this.zoomScale(canonical.z);
+        // const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
+
+        // const posMatrix = mat4.identity(new Float64Array(16));
+        // mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
+        // mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
+    }
+
     /**
      * Calculate the fogTileMatrix that, given a tile coordinate, can be used to
      * calculate its position relative to the camera in units of pixels divided
@@ -1260,6 +1284,7 @@ class Transform {
      * @private
      */
     calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
+        return this.calculateGlobeProjMatrix();
         const projMatrixKey = unwrappedTileID.key;
         const cache = aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
         if (cache[projMatrixKey]) {
@@ -1271,6 +1296,12 @@ class Transform {
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
         return cache[projMatrixKey];
+    }
+
+    calculateGlobeProjMatrix(): Float32Array {
+        const matrix = this.calculateGlobeMatrix(this.worldSize);
+        mat4.multiply(matrix, this.projMatrix, matrix);
+        return matrix;
     }
 
     customLayerMatrix(): Array<number> {
@@ -1462,7 +1493,7 @@ class Transform {
         const halfFov = this._fov / 2;
         const offset = this.centerOffset;
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height;
-        const pixelsPerMeter = this.pixelsPerMeter;
+        const pixelsPerMeter = 1.0;// this.pixelsPerMeter;
 
         this._updateCameraState();
 
@@ -1489,7 +1520,7 @@ class Transform {
 
         const horizonDistance = cameraToSeaLevelDistance * (1 / this._horizonShift);
 
-        const farZ = Math.min(furthestDistance * 1.01, horizonDistance);
+        const farZ = Math.min(furthestDistance * 1.01, horizonDistance) * 4.0;
 
         // The larger the value of nearZ is
         // - the more depth precision is available for features (good)

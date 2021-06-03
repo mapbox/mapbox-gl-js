@@ -455,7 +455,7 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
-            if (!needGeometry)  evaluationFeature.geometry = loadGeometry(feature);
+            if (!needGeometry)  evaluationFeature.geometry = loadGeometry(feature, canonical);
 
             let text: Formatted | void;
             if (hasText) {
@@ -628,6 +628,8 @@ class SymbolBucket implements Bucket {
                canonical: CanonicalTileID) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
+
+        //console.log(labelAnchor.x + " " + labelAnchor.y);
 
         const segment = arrays.segments.prepareSegment(4 * quads.length, layoutVertexArray, indexArray, this.canOverlap ? feature.sortKey : undefined);
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;

@@ -399,12 +399,12 @@ function addFeature(bucket: SymbolBucket,
     }
 
     const addSymbolAtAnchor = (line, anchor) => {
-        if (anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT) {
-            // Symbol layers are drawn across tile boundaries, We filter out symbols
-            // outside our tile boundaries (which may be included in vector tile buffers)
-            // to prevent double-drawing symbols.
-            return;
-        }
+        // if (anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT) {
+        //     // Symbol layers are drawn across tile boundaries, We filter out symbols
+        //     // outside our tile boundaries (which may be included in vector tile buffers)
+        //     // to prevent double-drawing symbols.
+        //     return;
+        // }
 
         addSymbol(bucket, anchor, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
@@ -639,7 +639,7 @@ function addSymbol(bucket: SymbolBucket,
                    canonical: CanonicalTileID,
                    layoutTextSize: number) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
-
+    //console.log(anchor.x + " " + anchor.y);
     let textBoxIndex, iconBoxIndex, verticalTextBoxIndex, verticalIconBoxIndex;
     let textCircle, verticalTextCircle, verticalIconCircle;
 

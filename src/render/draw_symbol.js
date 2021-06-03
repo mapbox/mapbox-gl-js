@@ -7,7 +7,7 @@ import SegmentVector from '../data/segment.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
-import {mat4} from 'gl-matrix';
+import {mat4, vec4} from 'gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
@@ -243,20 +243,33 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const hasSortKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
     let sortFeaturesByKey = false;
 
-    const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
+    const depthMode = painter.depthModeForSublayer(0, DepthMode.disabled);
 
     const variablePlacement = layer.layout.get('text-variable-anchor');
 
     const tileRenderState: Array<SymbolTileRenderState> = [];
     const defines = painter.terrain && pitchWithMap ? ['PITCH_WITH_MAP_TERRAIN'] : null;
 
+    let i = 0;
+    const t = 0;
     for (const coord of coords) {
+        // if (i++ != t)
+        //     continue;
         const tile = sourceCache.getTile(coord);
         const bucket: SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
         const buffers = isText ? bucket.text : bucket.icon;
         if (!buffers || !buffers.segments.get().length) continue;
         const programConfiguration = buffers.programConfigurations.get(layer.id);
+
+        // const a = buffers.layoutVertexArray.int16;
+        // for (let i = 0; i < a.length; i += 12) {
+        //     const pos = [a[i+0], a[i+1], 0, 1];
+        //     vec4.transformMat4(pos, pos, coord.projMatrix);
+        //     const s = 1.0 / pos[3];
+        //     vec4.scale(pos, pos, 1.0 / pos[3]);
+        //     console.log(pos[0] + " " + pos[1] + " " + pos[2]);
+        // }
 
         const isSDF = isText || bucket.sdfIcons;
 
