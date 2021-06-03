@@ -1,4 +1,5 @@
-import LngLat from '../lng_lat';
+// @flow
+import LngLat from '../lng_lat.js';
 
 const albersConstants = {
     refLng: -96,
@@ -9,7 +10,7 @@ const albersConstants = {
 const alaskaConstants = {
     refLng: -154,
     p1r: 55,
-    p2r: 65    
+    p2r: 65
 };
 
 function project(lng, lat, constants) {
@@ -26,7 +27,7 @@ function project(lng, lat, constants) {
     const ret = {x: 0.5 + 0.5 * x, y: 0.5 + 0.5 * -y};
     ret.x += 0.5;
     ret.y += 0.5;
-    
+
     return ret;
 }
 
@@ -41,9 +42,9 @@ function unproject(x, y, constants) {
     const y__ = y - 0.5;
     const x_ = (x__ - 0.5) * 2;
     const y_ = (y__ - 0.5) * -2;
-    const y_2 = -(y_ - b);
-    const theta = Math.atan2(x_, y_2);
-    const lng = (theta /n * 180 / Math.PI) + constants.refLng;
+    const y2 = -(y_ - b);
+    const theta = Math.atan2(x_, y2);
+    const lng = (theta / n * 180 / Math.PI) + constants.refLng;
     const a = x_ / Math.sin(theta);
     const lat = Math.asin((Math.pow(a / r * n, 2) - c) / (-2 * n)) * 180 / Math.PI;
 

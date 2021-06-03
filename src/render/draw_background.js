@@ -3,7 +3,6 @@
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
-import Tile from '../source/tile.js';
 import {
     backgroundUniformValues,
     backgroundPatternUniformValues

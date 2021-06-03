@@ -77,7 +77,6 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
-
 let map;
 makeMap();
 
@@ -126,7 +125,6 @@ function makeMap() {
     addGraticule();
 }
 
-
 function update() {
     map.transform._calcMatrices();
     map.triggerRepaint();
@@ -152,49 +150,49 @@ document.getElementById('unrotate').addEventListener('change', (e) => {
 });
 
 function addGraticule() {
-map.on('style.load', () => {
-    const fc = {
-        type: 'FeatureCollection',
-        features: []
-    };
+    map.on('style.load', () => {
+        const fc = {
+            type: 'FeatureCollection',
+            features: []
+        };
 
-    for (let i = -170; i < 180; i += 10) {
-        fc.features.push({
-            type: 'Feature',
-            geometry: {
-                type: 'LineString',
-                coordinates: [[i, -80], [i, 80]]
-            }
-        });
-    }
-    for (let i = -80; i < 80; i += 10) {
-        fc.features.push({
-            type: 'Feature',
-            geometry: {
-                type: 'LineString',
-                coordinates: [[-180, i], [180, i]]
-            }
-        });
-    }
-
-    map.addSource('graticule', {
-        buffer: 0,
-        type: 'geojson',
-        data: fc
-    });
-
-    map.addLayer({
-        id: 'graticule',
-        source: 'graticule',
-        type: 'line',
-        paint: {
-            'line-width': 1,
-            'line-color': '#aaa',
-            'line-opacity': document.getElementById('graticule').checked ? 1 : 0
+        for (let i = -170; i < 180; i += 10) {
+            fc.features.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: [[i, -80], [i, 80]]
+                }
+            });
         }
-    }, 'building-line');
-    return;
-});
+        for (let i = -80; i < 80; i += 10) {
+            fc.features.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: [[-180, i], [180, i]]
+                }
+            });
+        }
+
+        map.addSource('graticule', {
+            buffer: 0,
+            type: 'geojson',
+            data: fc
+        });
+
+        map.addLayer({
+            id: 'graticule',
+            source: 'graticule',
+            type: 'line',
+            paint: {
+                'line-width': 1,
+                'line-color': '#aaa',
+                'line-opacity': document.getElementById('graticule').checked ? 1 : 0
+            }
+        }, 'building-line');
+
+    });
 }
 
 </script>

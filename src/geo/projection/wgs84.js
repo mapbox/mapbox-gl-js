@@ -1,3 +1,4 @@
+// @flow
 export default {
     name: 'wgs84',
     project: (lng, lat) => {

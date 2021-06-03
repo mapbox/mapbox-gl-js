@@ -4,7 +4,7 @@ import {warnOnce, clamp} from '../util/util.js';
 
 import EXTENT from './extent.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
-import getProjection from '../geo/projection';
+import getProjection from '../geo/projection/index.js';
 import type {CanonicalTileID} from '../source/tile_id.js';
 
 import type Point from '@mapbox/point-geometry';
@@ -50,7 +50,7 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
     if (!canonical) return [];
     const cs = projection.tileTransform(canonical);
     const reproject = (p, featureExtent) => {
-        const s = Math.pow(2, canonical.z)
+        const s = Math.pow(2, canonical.z);
         const x_ = (canonical.x + p.x / featureExtent) / s;
         const y_ = (canonical.y + p.y / featureExtent) / s;
         const l = new MercatorCoordinate(x_, y_).toLngLat();
@@ -58,18 +58,13 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
         p.x = (x * cs.scale - cs.x) * EXTENT;
         p.y = (y * cs.scale - cs.y) * EXTENT;
     };
-    const scale = EXTENT / EXTENT;
     const geometry = feature.loadGeometry();
     for (let r = 0; r < geometry.length; r++) {
         let ring = geometry[r];
         ring = resample(ring);
         geometry[r] = ring;
         for (let p = 0; p < ring.length; p++) {
-            let point = ring[p];
-            // round here because mapbox-gl-native uses integers to represent
-            // points and we need to do the same to avoid rendering differences.
-            //const x = Math.round(point.x * scale);
-            //const y = Math.round(point.y * scale);
+            const point = ring[p];
             reproject(point, feature.extent);
             const {x, y} = point;
 

@@ -1,3 +1,6 @@
+// @flow
+import LngLat from '../lng_lat.js';
+
 export default {
     name: 'sinusoidal',
     project: (lng, lat) => {

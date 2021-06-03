@@ -3,7 +3,7 @@
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
-import getProjection from './projection';
+import getProjection from './projection/index.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -1259,7 +1259,7 @@ class Transform {
         }
     }
 
-    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
         const posMatrix = mat4.identity(new Float64Array(16));
         const cs = this.projection.tileTransform(unwrappedTileID.canonical);
         mat4.scale(posMatrix, posMatrix, [1 /  cs.scale, 1 /  cs.scale, 1]);
@@ -1304,7 +1304,6 @@ class Transform {
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
-        // TODO check
         //mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
         mat4.multiply(posMatrix, this.mercatorMatrix, posMatrix);
 
@@ -1825,7 +1824,5 @@ class Transform {
         return this.centerPoint.add(new Point(0, yOffset));
     }
 }
-
-
 
 export default Transform;

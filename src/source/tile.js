@@ -6,7 +6,7 @@ import FeatureIndex from '../data/feature_index.js';
 import GeoJSONFeature from '../util/vectortile_to_geojson.js';
 import featureFilter from '../style-spec/feature_filter/index.js';
 import SymbolBucket from '../data/bucket/symbol_bucket.js';
-import {CollisionBoxArray} from '../data/array_types.js';
+import {CollisionBoxArray, TileBoundsArray, PosArray, TriangleIndexArray} from '../data/array_types.js';
 import Texture from '../render/texture.js';
 import browser from '../util/browser.js';
 import {Debug} from '../util/debug.js';
@@ -16,7 +16,7 @@ import SourceFeatureState from '../source/source_state.js';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin.js';
 import {TileSpaceDebugBuffer} from '../data/debug_viz.js';
 import Color from '../style-spec/util/color.js';
-import {TileBoundsArray, PosArray, TriangleIndexArray} from '../data/array_types.js';
+
 import boundsAttributes from '../data/bounds_attributes.js';
 import EXTENT from '../data/extent.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
@@ -547,13 +547,13 @@ class Tile {
 
     _makeTileDebugArray(context: Context, transform: Transform, numOfSegments: number) {
         if (this.tileDebugBuffer) return;
-        
+
         const debugBoundsArray = new PosArray();
 
         const add = (x, y) => {
             const {x_, y_} = this._add(x, y, EXTENT, transform);
             debugBoundsArray.emplaceBack(x_, y_);
-        }
+        };
 
         const stride = EXTENT / numOfSegments;
         const SIDES = [
@@ -574,14 +574,14 @@ class Tile {
 
     _makeTileBoundsArray(context: Context, transform: Transform, numOfSegments: number) {
         if (this.tileBoundsBuffer) return;
- 
+
         const tileBoundsArray = new TileBoundsArray();
         const quadTriangleIndices = new TriangleIndexArray();
 
         const add = (x, y) => {
             const {x_, y_, a, b} = this._add(x, y, numOfSegments, transform);
             tileBoundsArray.emplaceBack(x_, y_, a, b);
-        }
+        };
 
         for (let xi = 0; xi < numOfSegments; xi++) {
             for (let yi = 0; yi < numOfSegments; yi++) {

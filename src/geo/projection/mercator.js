@@ -1,3 +1,4 @@
+// @flow
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
 
 export default {
@@ -9,4 +10,4 @@ export default {
         return {x, y};
     },
     unproject: (x, y) => new MercatorCoordinate(x, y).toLngLat()
-}
+};
