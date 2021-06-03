@@ -1105,8 +1105,8 @@ class Map extends Camera {
      * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
-    on(type: MapEvent, layerId: any, listener: any) {
-        if (listener === undefined) {
+    on(type: MapEvent, layerId?: any, listener: any) {
+        if (listener === undefined && typeof layerId === 'function') {
             return super.on(type, layerId);
         }
 
