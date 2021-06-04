@@ -509,7 +509,7 @@ class Painter {
         if (!this.terrain) {
             for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
                 const layer = this.style._layers[layerIds[this.currentLayer]];
-                const sourceCache = style._getLayerSourceCache(layer);
+                const sourceCache = style._getLayerSourceCache(layer) || style._getAnySourceCache();
                 if (layer.isSky()) continue;
                 const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
 
