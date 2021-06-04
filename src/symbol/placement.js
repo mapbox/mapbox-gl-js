@@ -957,17 +957,15 @@ export class Placement {
             if (hasIcon) {
                 const packedOpacity = packOpacity(opacityState.icon);
 
-                const useHorizontal = !(hasIconTextFit && symbolInstance.verticalPlacedIconSymbolIndex && horizontalHidden);
-
                 if (symbolInstance.placedIconSymbolIndex >= 0) {
-                    const horizontalOpacity = useHorizontal ? packedOpacity : PACKED_HIDDEN_OPACITY;
+                    const horizontalOpacity = !horizontalHidden ? packedOpacity : PACKED_HIDDEN_OPACITY;
                     addOpacities(bucket.icon, symbolInstance.numIconVertices, horizontalOpacity);
                     bucket.icon.placedSymbolArray.get(symbolInstance.placedIconSymbolIndex).hidden =
                         (opacityState.icon.isHidden(): any);
                 }
 
                 if (symbolInstance.verticalPlacedIconSymbolIndex >= 0) {
-                    const verticalOpacity = !useHorizontal ? packedOpacity : PACKED_HIDDEN_OPACITY;
+                    const verticalOpacity = !verticalHidden ? packedOpacity : PACKED_HIDDEN_OPACITY;
                     addOpacities(bucket.icon, symbolInstance.numVerticalIconVertices, verticalOpacity);
                     bucket.icon.placedSymbolArray.get(symbolInstance.verticalPlacedIconSymbolIndex).hidden =
                         (opacityState.icon.isHidden(): any);
