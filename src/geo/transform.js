@@ -129,7 +129,6 @@ class Transform {
 
         if (!projection) projection = 'mercator';
         this.projection = projections[projection];
-        console.log('this.projection: ', this.projection);
 
         this.width = 0;
         this.height = 0;
