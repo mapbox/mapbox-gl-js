@@ -22,8 +22,8 @@ function idBounds(id) {
     return locs;
 }
 
-export default function (project) {
-    return (id) => {
+export default function (project: function) {
+    return (id: Object) => {
         const locs = idBounds(id);
         let minX = Infinity;
         let minY = Infinity;
