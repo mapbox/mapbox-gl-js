@@ -32,6 +32,6 @@ Copyright © 2020 Mapbox
 
 All rights reserved.
 
-Mapbox gl-js version 2.0 or higher (“Mapbox Web SDK”) must be used according to the Mapbox Terms of Service. This license allows developers with a current active Mapbox account to use and modify the Mapbox Web SDK. Developers may modify the Mapbox Web SDK code so long as the modifications do not change or interfere with marked portions of the code related to billing, accounting, and anonymized data collection. The Mapbox Web SDK only sends anonymized usage data, which Mapbox uses for fixing bugs and errors, accounting, and generating aggregated anonymized statistics. This license terminates automatically if a user no longer has an active Mapbox account.
+Mapbox GL-JS version 2.0 or higher (“Mapbox Web SDK”) must be used according to the Mapbox Terms of Service. This license allows developers with a current active Mapbox account to use and modify the Mapbox Web SDK. Developers may modify the Mapbox Web SDK code so long as the modifications do not change or interfere with marked portions of the code related to billing, accounting, and anonymized data collection. The Mapbox Web SDK sends only anonymized usage data, which Mapbox uses for fixing bugs and errors, accounting, and generating aggregated anonymized statistics. This license terminates automatically if a user no longer has an active Mapbox account.
 
 For the full license terms, please see the [Mapbox Terms of Service](https://www.mapbox.com/legal/tos/).
