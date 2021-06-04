@@ -2210,6 +2210,7 @@ class Map extends Camera {
      *  "color": 'white',
      *  "horizon-blend": 0.1
      * });
+     * @see [Add fog to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-fog/)
      */
     setFog(fog: FogSpecification) {
         this._lazyInitEmptyStyle();
@@ -2256,6 +2257,7 @@ class Map extends Camera {
      * @example
      * var coordinate = [-122.420679, 37.772537];
      * var elevation = map.queryTerrainElevation(coordinate);
+     * @see [Query terrain elevation](https://docs.mapbox.com/mapbox-gl-js/example/query-terrain-elevation/)
      */
     queryTerrainElevation(lnglat: LngLatLike, options: ElevationQueryOptions): number | null {
         const elevation = this.transform.elevation;
