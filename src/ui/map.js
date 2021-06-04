@@ -2256,6 +2256,7 @@ class Map extends Camera {
      * @example
      * var coordinate = [-122.420679, 37.772537];
      * var elevation = map.queryTerrainElevation(coordinate);
+     * @see [Query terrain elevation](https://docs.mapbox.com/mapbox-gl-js/example/query-terrain-elevation/)
      */
     queryTerrainElevation(lnglat: LngLatLike, options: ElevationQueryOptions): number | null {
         const elevation = this.transform.elevation;
