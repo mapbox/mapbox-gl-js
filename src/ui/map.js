@@ -2210,6 +2210,7 @@ class Map extends Camera {
      *  "color": 'white',
      *  "horizon-blend": 0.1
      * });
+     * @see [Add fog to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-fog/)
      */
     setFog(fog: FogSpecification) {
         this._lazyInitEmptyStyle();
