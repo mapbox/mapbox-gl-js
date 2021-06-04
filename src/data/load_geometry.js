@@ -4,7 +4,7 @@ import {warnOnce, clamp} from '../util/util.js';
 
 import EXTENT from './extent.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
-import getProjection from '../geo/projection/index.js';
+import projections from '../geo/projection/index.js';
 import type {CanonicalTileID} from '../source/tile_id.js';
 
 import type Point from '@mapbox/point-geometry';
@@ -20,7 +20,7 @@ const MIN = -MAX - 1;
 let projection;
 
 export function setProjection(projectionName: string) {
-    projection = getProjection(projectionName);
+    projection = projections[projectionName];
 }
 
 function resample(ring) {

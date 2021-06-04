@@ -3,7 +3,7 @@
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
-import getProjection from './projection/index.js';
+import projections from './projection/index.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -17,19 +17,13 @@ import assert from 'assert';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
+import type {Projection} from './projection/index.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
 
 type RayIntersectionResult = { p0: vec4, p1: vec4, t: number};
 type ElevationReference = "sea" | "ground";
-type Projection = {
-    name: string,
-    range: Array<number>,
-    project: (lng: number, lat: number, options?: Object) => {x: number, y: number},
-    unproject: (x: number, y: number) => LngLat,
-    tileTransform: (id: Object) => {scale: number, x: number, y: number, x2: number, y2: number}
-};
 
 /**
  * A single transform, generally used for a single tile to be
@@ -133,7 +127,9 @@ class Transform {
 
         this.setMaxBounds();
 
-        this.projection = getProjection(projection);
+        if (!projection) projection = 'mercator';
+        this.projection = projections[projection];
+        console.log('this.projection: ', this.projection);
 
         this.width = 0;
         this.height = 0;
@@ -1284,7 +1280,7 @@ class Transform {
             return cache[fogTileMatrixKey];
         }
 
-        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID);
         mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
         cache[fogTileMatrixKey] = new Float32Array(posMatrix);
@@ -1303,7 +1299,7 @@ class Transform {
             return cache[projMatrixKey];
         }
 
-        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID);
         //mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
         mat4.multiply(posMatrix, this.mercatorMatrix, posMatrix);
 
