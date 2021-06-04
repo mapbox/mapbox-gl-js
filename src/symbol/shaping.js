@@ -261,7 +261,7 @@ function shapeText(text: Formatted,
     const logicalInput = TaggedString.fromFeature(text, defaultFontStack);
 
     if (writingMode === WritingMode.vertical) {
-        logicalInput.verticalizePunctuation(allowVerticalPlacement && symbolPlacement === 'point');
+        logicalInput.verticalizePunctuation(allowVerticalPlacement);
     }
 
     let lines: Array<TaggedString>;
