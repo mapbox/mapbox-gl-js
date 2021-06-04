@@ -2,7 +2,7 @@
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
 import makeTileTransform from './tile_transform.js';
 
-function project(lat: number, lng: number) {
+function project(lng: number, lat: number) {
     const x = mercatorXfromLng(lng);
     const y = mercatorYfromLat(lat);
 
