@@ -40,24 +40,24 @@ function resample(ring) {
     return result;
 }
 
+function reproject(p, featureExtent, canonical) {
+    const cs = projection.tileTransform(canonical);
+    const s = Math.pow(2, canonical.z);
+    const x_ = (canonical.x + p.x / featureExtent) / s;
+    const y_ = (canonical.y + p.y / featureExtent) / s;
+    const l = new MercatorCoordinate(x_, y_).toLngLat();
+    const {x, y} = projection.project(l.lng, l.lat);
+    p.x = (x * cs.scale - cs.x) * EXTENT;
+    p.y = (y * cs.scale - cs.y) * EXTENT;
+};
+
 /**
  * Loads a geometry from a VectorTileFeature and scales it to the common extent
  * used internally.
  * @param {VectorTileFeature} feature
  * @private
  */
-export default function loadGeometry(feature: VectorTileFeature, canonical?: CanonicalTileID): Array<Array<Point>> {
-    if (!canonical) return [];
-    const cs = projection.tileTransform(canonical);
-    const reproject = (p, featureExtent) => {
-        const s = Math.pow(2, canonical.z);
-        const x_ = (canonical.x + p.x / featureExtent) / s;
-        const y_ = (canonical.y + p.y / featureExtent) / s;
-        const l = new MercatorCoordinate(x_, y_).toLngLat();
-        const {x, y} = projection.project(l.lng, l.lat);
-        p.x = (x * cs.scale - cs.x) * EXTENT;
-        p.y = (y * cs.scale - cs.y) * EXTENT;
-    };
+export default function loadGeometry(feature: VectorTileFeature, canonical?: CanonicalTileID): Array<Array<Point>> { 
     const geometry = feature.loadGeometry();
     for (let r = 0; r < geometry.length; r++) {
         let ring = geometry[r];
@@ -65,8 +65,18 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
         geometry[r] = ring;
         for (let p = 0; p < ring.length; p++) {
             const point = ring[p];
-            reproject(point, feature.extent);
-            const {x, y} = point;
+            let x, y;
+            if (canonical) {
+                reproject(point, feature.extent, canonical);
+                x = point.x;
+                y = point.y;
+            } else {
+                const scale = EXTENT / feature.extent;
+                // round here because mapbox-gl-native uses integers to represent
+                // points and we need to do the same to avoid rendering differences.
+                x = Math.round(point.x * scale);
+                y = Math.round(point.y * scale);
+            }
 
             point.x = clamp(x, MIN, MAX);
             point.y = clamp(y, MIN, MAX);
