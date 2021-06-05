@@ -49,7 +49,7 @@ function reproject(p, featureExtent, canonical) {
     const {x, y} = projection.project(l.lng, l.lat);
     p.x = (x * cs.scale - cs.x) * EXTENT;
     p.y = (y * cs.scale - cs.y) * EXTENT;
-};
+}
 
 /**
  * Loads a geometry from a VectorTileFeature and scales it to the common extent
@@ -57,7 +57,7 @@ function reproject(p, featureExtent, canonical) {
  * @param {VectorTileFeature} feature
  * @private
  */
-export default function loadGeometry(feature: VectorTileFeature, canonical?: CanonicalTileID): Array<Array<Point>> { 
+export default function loadGeometry(feature: VectorTileFeature, canonical?: CanonicalTileID): Array<Array<Point>> {
     const geometry = feature.loadGeometry();
     for (let r = 0; r < geometry.length; r++) {
         let ring = geometry[r];

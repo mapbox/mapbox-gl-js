@@ -825,7 +825,6 @@ class Transform {
                 const dx = centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) * (1 << (z - it.zoom)));
                 const dy = centerPoint[1] - 0.5 - y;
                 const id = it.tileID ? it.tileID : new OverscaledTileID(tileZoom, it.wrap, it.zoom, x, y);
-
                 result.push({tileID: id, distanceSq: dx * dx + dy * dy});
                 continue;
             }
@@ -834,7 +833,8 @@ class Transform {
                 const childX = (x << 1) + (i % 2);
                 const childY = (y << 1) + (i >> 1);
 
-                const aabb = aabbForTile(it.zoom + 1, childX, childY, it.wrap, 0, 0);
+                const aabb = it.aabb.quadrant(i);
+                // const aabb = aabbForTile(it.zoom + 1, childX, childY, it.wrap, 0, 0);
                 const child = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined};
                 if (useElevationData) {
                     child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
