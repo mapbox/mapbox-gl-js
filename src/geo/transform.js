@@ -833,8 +833,7 @@ class Transform {
                 const childX = (x << 1) + (i % 2);
                 const childY = (y << 1) + (i >> 1);
 
-                const aabb = it.aabb.quadrant(i);
-                // const aabb = aabbForTile(it.zoom + 1, childX, childY, it.wrap, 0, 0);
+                const aabb = this.projection.name === 'mercator' ? it.aabb.quadrant(i) : aabbForTile(it.zoom + 1, childX, childY, it.wrap, 0, 0);
                 const child = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined};
                 if (useElevationData) {
                     child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
