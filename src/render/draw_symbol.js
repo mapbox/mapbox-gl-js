@@ -225,7 +225,7 @@ function getSymbolProgramName(isSDF: boolean, isText: boolean, bucket: SymbolBuc
         return 'symbolIcon';
     }
 }
-
+//#error TODO: ne pienet dotit jotka ei projisoidu globelle on kai symboleita! Fiksaa loput shaderit siis
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
                           rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode) {
     const context = painter.context;

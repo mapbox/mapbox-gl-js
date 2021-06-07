@@ -17,6 +17,7 @@ import {backgroundUniforms, backgroundPatternUniforms} from './background_progra
 import {terrainRasterUniforms} from '../../terrain/terrain_raster_program.js';
 import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program.js';
 import {skyboxCaptureUniforms} from './skybox_capture_program.js';
+import {globeRasterUniforms} from '../../terrain/globe_raster_program.js';
 
 export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType;
 
@@ -50,5 +51,6 @@ export const programUniforms = {
     terrainDepth: terrainRasterUniforms,
     skybox: skyboxUniforms,
     skyboxGradient: skyboxGradientUniforms,
-    skyboxCapture: skyboxCaptureUniforms
+    skyboxCapture: skyboxCaptureUniforms,
+    globeRaster: globeRasterUniforms
 };

@@ -1,6 +1,7 @@
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 attribute vec4 a_pixeloffset;
+attribute vec4 a_globe_ext;
 attribute vec3 a_projected_pos;
 attribute float a_fade_opacity;
 
@@ -63,8 +64,9 @@ void main() {
         size = u_size;
     }
 
-    float h = elevation(a_pos);
+    float h = a_globe_ext.x;// elevation(a_pos);
     vec4 projectedPoint = u_matrix * vec4(a_pos, h, 1);
+    //vec4 projectedPoint = u_matrix * vec4(a_pos, a_globe_ext.x, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     // If the label is pitched with the map, layout is done in pitched space,
@@ -103,6 +105,7 @@ void main() {
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
     vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, h, 1.0);
+    //vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, a_globe_ext.x, 1.0);
     float z = 0.0;
     vec2 offset = rotation_matrix * (a_offset / 32.0 * fontScale + a_pxoffset);
 #ifdef PITCH_WITH_MAP_TERRAIN

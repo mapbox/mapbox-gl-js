@@ -1241,9 +1241,10 @@ class Transform {
         const posMatrix = mat4.identity(new Float64Array(16));
         const cameraPos = this._camera.position;
         mat4.translate(posMatrix, posMatrix, [cameraPos[0] * worldSize, cameraPos[1] * worldSize, 0.0]);
-        //mat4.translate(posMatrix, posMatrix, [0, 0, -wsRadius]);
+        mat4.translate(posMatrix, posMatrix, [0, 0, -wsRadius]);
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
-        mat4.rotateY(posMatrix, posMatrix, degToRad(this._center.lng));
+        mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
+        mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
 
         return posMatrix;
 

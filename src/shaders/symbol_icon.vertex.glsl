@@ -1,6 +1,7 @@
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 attribute vec4 a_pixeloffset;
+attribute vec4 a_globe_ext;
 attribute vec3 a_projected_pos;
 attribute float a_fade_opacity;
 
@@ -52,8 +53,9 @@ void main() {
         size = u_size;
     }
 
-    float h = elevation(a_pos);
+    float h = a_globe_ext.x;// elevation(a_pos);
     vec4 projectedPoint = u_matrix * vec4(a_pos, h, 1);
+    //vec4 projectedPoint = u_matrix * vec4(a_pos, a_globe_ext.x, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     // See comments in symbol_sdf.vertex

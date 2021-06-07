@@ -114,7 +114,7 @@ const shaderOpacityAttributes = [
     {name: 'a_fade_opacity', components: 1, type: 'Uint8', offset: 0}
 ];
 
-function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex, isSDF: boolean, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY) {
+function addVertex(array, anchorX, anchorY, anchorZ, ox, oy, tx, ty, sizeVertex, isSDF: boolean, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY) {
     const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0])) : 0;
     const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1])) : 0;
     array.emplaceBack(
@@ -132,7 +132,12 @@ function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex, isSDF: b
         pixelOffsetX * 16,
         pixelOffsetY * 16,
         minFontScaleX * 256,
-        minFontScaleY * 256
+        minFontScaleY * 256,
+        
+        anchorZ,
+        0,
+        0,
+        0
     );
 }
 
@@ -644,10 +649,10 @@ class SymbolBucket implements Bucket {
             const index = segment.vertexLength;
 
             const y = glyphOffset[1];
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
 
             addDynamicAttributes(arrays.dynamicLayoutVertexArray, labelAnchor, angle);
 
