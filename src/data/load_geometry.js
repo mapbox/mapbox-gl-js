@@ -3,11 +3,9 @@
 import {warnOnce, clamp} from '../util/util.js';
 
 import EXTENT from './extent.js';
-import MercatorCoordinate from '../geo/mercator_coordinate.js';
-import getProjection from '../geo/projection';
-import assert from 'assert';
-
-import type Point from '@mapbox/point-geometry';
+import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
+import getProjection from '../geo/projection/index.js';
+import Point from '@mapbox/point-geometry';
 
 // These bounds define the minimum and maximum supported coordinate values.
 // While visible coordinates are within [0, EXTENT], tiles may theoretically
@@ -23,21 +21,22 @@ export function setProjection(projectionName) {
     projection = getProjection(projectionName);
 }
 
-function resample(ring) {
-    if (ring.length === 0) return;
-    const result = [];
-    result.push(ring[0]);
-    for (let i = 1; i < ring.length; i++) {
-        const last = result[result.length - 1];
-        const p = ring[i];
-        const d = p.dist(last);
-        const m = 16;
-        for (let i = m; i < d; i += m) {
-            result.push(last.add(p.sub(last).mult(i / d)));
-        }
-        result.push(p);
+function clampPoint(point: Point) {
+    const {x, y} = point;
+    point.x = clamp(x, MIN, MAX);
+    point.y = clamp(y, MIN, MAX);
+    if (x < point.x || x > point.x + 1 || y < point.y || y > point.y + 1) {
+        // warn when exceeding allowed extent except for the 1-px-off case
+        // https://github.com/mapbox/mapbox-gl-js/issues/8992
+        warnOnce('Geometry exceeds allowed extent, reduce your vector tile buffer size');
     }
-    return result;
+    return point;
+}
+
+function pointToLineDist(px, py, ax, ay, bx, by) {
+    const dx = ax - bx;
+    const dy = ay - by;
+    return Math.abs((ay - py) * dx - (ax - px) * dy) / Math.hypot(dx, dy);
 }
 
 /**
@@ -48,40 +47,57 @@ function resample(ring) {
  */
 export default function loadGeometry(feature: VectorTileFeature, canonical): Array<Array<Point>> {
     if (!canonical) return [];
+
     const cs = projection.tileTransform(canonical);
-    const reproject = (p, featureExtent) => {
-        const s = Math.pow(2, canonical.z)
-        const x_ = (canonical.x + p.x / featureExtent) / s;
-        const y_ = (canonical.y + p.y / featureExtent) / s;
-        const l = new MercatorCoordinate(x_, y_).toLngLat();
-        const {x, y} = projection.project(l.lng, l.lat);
-        p.x = (x * cs.scale - cs.x) * EXTENT;
-        p.y = (y * cs.scale - cs.y) * EXTENT;
-    };
-    const scale = EXTENT / EXTENT;
-    const geometry = feature.loadGeometry();
-    for (let r = 0; r < geometry.length; r++) {
-        let ring = geometry[r];
-        ring = resample(ring);
-        geometry[r] = ring;
-        for (let p = 0; p < ring.length; p++) {
-            let point = ring[p];
-            // round here because mapbox-gl-native uses integers to represent
-            // points and we need to do the same to avoid rendering differences.
-            //const x = Math.round(point.x * scale);
-            //const y = Math.round(point.y * scale);
-            reproject(point, feature.extent);
-            const {x, y} = point;
+    const z2 = Math.pow(2, canonical.z);
+    const featureExtent = feature.extent;
 
-            point.x = clamp(x, MIN, MAX);
-            point.y = clamp(y, MIN, MAX);
+    function reproject(p) {
+        const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
+        const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
+        const {x, y} = projection.project(lng, lat);
+        return new Point(
+            (x * cs.scale - cs.x) * EXTENT,
+            (y * cs.scale - cs.y) * EXTENT
+        );
+    }
 
-            if (x < point.x || x > point.x + 1 || y < point.y || y > point.y + 1) {
-                // warn when exceeding allowed extent except for the 1-px-off case
-                // https://github.com/mapbox/mapbox-gl-js/issues/8992
-                warnOnce('Geometry exceeds allowed extent, reduce your vector tile buffer size');
-            }
+    function addResampled(resampled, startMerc, endMerc, startProj, endProj) {
+        const midMerc = new Point((startMerc.x + endMerc.x) / 2, (startMerc.y + endMerc.y) / 2);
+        const midProj = reproject(midMerc, feature.extent);
+        const err = pointToLineDist(midProj.x, midProj.y, startProj.x, startProj.y, endProj.x, endProj.y);
+
+        if (err >= 1) {
+            // TODO make sure we never reach max call stack
+            addResampled(resampled, startMerc, midMerc, startProj, midProj);
+            addResampled(resampled, midMerc, endMerc, midProj, endProj);
+        } else {
+            resampled.push(clampPoint(endProj));
         }
     }
+
+    const geometry = feature.loadGeometry();
+
+    for (let r = 0; r < geometry.length; r++) {
+        const ring = geometry[r];
+        const resampled = [];
+
+        for (let i = 0, prevMerc, prevProj; i < ring.length; i++) {
+            const pointMerc = ring[i];
+            const pointProj = reproject(ring[i]);
+
+            if (i === 0 || feature.type === 1) {
+                resampled.push(clampPoint(pointProj));
+            } else {
+                addResampled(resampled, prevMerc, pointMerc, prevProj, pointProj);
+            }
+
+            prevMerc = pointMerc;
+            prevProj = pointProj;
+        }
+
+        geometry[r] = resampled;
+    }
+
     return geometry;
 }
