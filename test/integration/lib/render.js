@@ -192,10 +192,10 @@ async function runTest(t) {
         // 1. get pixel data from test canvas as Uint8Array
         if (options.output === "terrainDepth") {
             const pixels = drawTerrainDepth(map, w, h);
-            actualImageData = Uint8ClampedArray.from(pixels);
-            if (!actualImageData) {
+            if (!pixels) {
                 throw new Error('Failed to render terrain depth, make sure that terrain is enabled on the render test');
             }
+            actualImageData = Uint8ClampedArray.from(pixels);
         } else {
             actualImageData = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
             gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, actualImageData);
