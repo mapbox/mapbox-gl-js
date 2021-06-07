@@ -27,6 +27,7 @@ import type {PropertyValueSpecification} from '../types.js';
 import type {FormattedSection} from './types/formatted.js';
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../source/tile_id.js';
+import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -65,24 +66,26 @@ export class StyleExpression {
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, refLocation?: MercatorCoordinate): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
         this._evaluator.canonical = canonical;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection;
+        this._evaluator.cameraDistanceReferencePoint = refLocation || null;
 
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, refLocation?: MercatorCoordinate): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;
         this._evaluator.canonical = canonical;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection || null;
+        this._evaluator.cameraDistanceReferencePoint = refLocation || null;
 
         try {
             const val = this.expression.evaluate(this._evaluator);
@@ -197,12 +200,12 @@ export class CameraDependentExpression<Kind: EvaluationKind> {
         this._styleExpression = expression;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, ): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
-        return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, refLocation: MercatorCoordinate): any {
+        return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection, refLocation);
     }
 }
 
@@ -241,7 +244,7 @@ export type CameraStateExpression = {
 
 export type CompositeCameraStateExpression = {
     kind: 'composite',
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, refLocation?: MercatorCoordinate) => any,
 };
 
 export type StylePropertyExpression =

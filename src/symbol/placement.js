@@ -267,7 +267,7 @@ export class Placement {
         if (tile.latestFeatureIndex) {
 
             clippingData = {
-                distanceMatrix: this.transform.calculateFogTileMatrix(unwrappedTileID),
+                unwrappedTileID,
                 featureIndex: tile.latestFeatureIndex
             }
         }
@@ -436,7 +436,7 @@ export class Placement {
                 clipExpression.parameters.cameraDistanceMatrix = this.transform.mercatorFogMatrix;
                 const feature = getSymbolFeature(symbolInstance);
                 const canonicalTileId = this.retainedQueryData[bucket.bucketInstanceId].tileID.canonical;
-                const shouldClip = clipExpression.evaluate(feature, {}, canonicalTileId);
+                const shouldClip = clipExpression.evaluate(feature, {}, canonicalTileId, null, clippingData.unwrappedTileID.getMercatorFromTilePoint(symbolInstance.anchorX, symbolInstance.anchorY));
 
                 if (shouldClip) return;
             }

@@ -43,6 +43,14 @@ export class CanonicalTileID {
             .replace('{bbox-epsg-3857}', bbox);
     }
 
+    getMercatorFromTilePoint(x: number, y: number): MercatorCoordinate {
+        const tilesAtZoom = Math.pow(2, this.z);
+        return new MercatorCoordinate(
+            (this.x * EXTENT + x ) / (tilesAtZoom * EXTENT),
+            (this.y * EXTENT + y ) / (tilesAtZoom * EXTENT)
+        );
+    }
+
     getTilePoint(coord: MercatorCoordinate) {
         const tilesAtZoom = Math.pow(2, this.z);
         return new Point(
@@ -71,6 +79,10 @@ export class UnwrappedTileID {
         this.wrap = wrap;
         this.canonical = canonical;
         this.key = calculateKey(wrap, canonical.z, canonical.z, canonical.x, canonical.y);
+    }
+
+    getMercatorFromTilePoint(x: number, y: number): MercatorCoordinate {
+        return this.canonical.getMercatorFromTilePoint(x, y);
     }
 }
 
