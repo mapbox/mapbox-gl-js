@@ -152,8 +152,8 @@ class TaggedString {
         return this.text.charCodeAt(index);
     }
 
-    verticalizePunctuation(skipChontextChecking: boolean) {
-        this.text = verticalizePunctuation(this.text, skipChontextChecking);
+    verticalizePunctuation(skipContextChecking: boolean) {
+        this.text = verticalizePunctuation(this.text, skipContextChecking);
     }
 
     trim() {
@@ -478,7 +478,7 @@ function leastBadBreaks(lastLineBreak: ?Break): Array<number> {
 function determineLineBreaks(logicalInput: TaggedString,
                              spacing: number,
                              maxWidth: number,
-                             glyphMap: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender?: number, descender?: number}},
+                             glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}},
                              imagePositions: {[_: string]: ImagePosition},
                              symbolPlacement: string,
                              layoutTextSize: number): Array<number> {
@@ -653,7 +653,7 @@ function shapeLines(shaping: Shaping,
                 verticalAdvance = codePoint !== 0x200b ? ONE_EM : 0;
 
                 // In order to make different fonts aligned, they must share a general baseline that aligns with every
-                // font's real baseline. Glyph's offset is counted from the top left corner, where is the ascender line
+                // font's real baseline. Glyph's offset is counted from the top left corner, where the ascender line
                 // starts.
                 // First of all, each glyph's baseline lies on the center line of the shaping line. Since ascender
                 // is above the baseline, the glyphOffset is the negative shift. Then, in order to make glyphs fit in
