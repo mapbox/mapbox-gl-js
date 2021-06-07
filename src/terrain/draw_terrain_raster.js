@@ -161,26 +161,23 @@ function latLngToECEF(lat, lng, r) {
 }
 
 function createGridVertices(count: number, z, y, ws): any {
-    const a = new GlobeVertexArray();
-    a.emplaceBack(-0.5, 0.5, 0.5, 0.0, 0.0);
-    a.emplaceBack( 0.5, 0.5, 0.5, 0.0, 0.0);
-    a.emplaceBack(-0.5, -0.5, 0.5, 0.0, 0.0);
-    a.emplaceBack( 0.5, -0.5, 0.5, 0.0, 0.0);
-    return a;
-
-    const [latLngTL, latLngBR]= tileLatLngCorners(new CanonicalTileID(z, 0, y));
+    const tiles = Math.pow(2, z);
+    const [latLngTL, latLngBR]= tileLatLngCorners(new CanonicalTileID(z, tiles / 2, y));
     const lerp = (a, b, t) => a * (1 - t) + b * t;
     const radius = ws / Math.PI / 2.0;
     const boundsArray = new GlobeVertexArray();
+
+    const gridExt = count;
+    const vertexExt = gridExt + 1;
     boundsArray.reserve(count * count);
 
-    for (let y = 0; y <= count; y++) {
-        for (let x = 0; x <= count; x++) {
-            const lat = lerp(latLngTL[0], latLngBR[0], y / count);
-            const lng = lerp(latLngTL[1], latLngBR[1], x / count);
+    for (let y = 0; y < vertexExt; y++) {
+        for (let x = 0; x < vertexExt; x++) {
+            const lat = lerp(latLngTL[0], latLngBR[0], y / gridExt);
+            const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
 
             const p = latLngToECEF(lat, lng, radius);
-            boundsArray.emplaceBack(p[0], p[1], p[2], x / count, y / count);
+            boundsArray.emplaceBack(p[0], p[1], p[2], x / gridExt, y / gridExt);
         }
     }
 
@@ -211,8 +208,8 @@ function createGridVertices(count: number, z, y, ws): any {
 
 function createGridIndices(count) {
     const indexArray = new TriangleIndexArray();
-    const vertexExt = count + 1;
     const quadExt = count;
+    const vertexExt = quadExt + 1;
     const quad = (i, j) => {
         const index = j * vertexExt + i;
         indexArray.emplaceBack(index + 1, index, index + vertexExt);
@@ -256,7 +253,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     };
 
     const colorMode = painter.colorModeForRenderPass();
-    const depthMode = DepthMode.disabled;// new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+    const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     vertexMorphing.update(now);
     const tr = painter.transform;
     const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
@@ -285,9 +282,9 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             }
 
             if (!gridBuffer) {
-                gridBuffer = context.createVertexBuffer(gridMesh, layout, true);
+                gridBuffer = context.createVertexBuffer(gridMesh, layout.members, true);
                 gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
-                gridSegments = SegmentVector.simpleSegment(0, 0, gridExt * gridExt, gridExt * gridExt * 2);
+                gridSegments = SegmentVector.simpleSegment(0, 0, (gridExt + 1) * (gridExt + 1), gridExt * gridExt * 2);
             } else {
                 gridBuffer.updateData(gridMesh);
                 //console.log(gridMesh.length);
@@ -315,15 +312,22 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                 elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
             }
 
-            const posMatrix = mat4.identity(new Float64Array(16));
-            // const cameraPos = tr._camera.position;
-            // const ws = tr.worldSize;
-            // const s = tr.worldSize / (tr.tileSize * Math.pow(2, coord.canonical.z));
-            // mat4.translate(posMatrix, posMatrix, [cameraPos[0] * ws, cameraPos[1] * ws, 0.0]);
-            // mat4.translate(posMatrix, posMatrix, [0, 0, -(ws / Math.PI / 2.0)]);
-            // mat4.scale(posMatrix, posMatrix, [s, s, s]);
+            const tileDim = Math.pow(2, coord.canonical.z);
+            const xOffset = coord.canonical.x - tileDim / 2;
+            const yAngle = xOffset / tileDim * Math.PI * 2.0;
 
-            const projMatrix = posMatrix;// mat4.multiply([], tr.projMatrix, posMatrix);
+            const posMatrix = mat4.identity(new Float64Array(16));
+            const cameraPos = tr._camera.position;
+            const ws = tr.worldSize;
+            const s = tr.worldSize / (tr.tileSize * tileDim);
+            mat4.translate(posMatrix, posMatrix, [cameraPos[0] * ws, cameraPos[1] * ws, 0.0]);
+            mat4.translate(posMatrix, posMatrix, [0, 0, -(ws / Math.PI / 2.0)]);
+            mat4.scale(posMatrix, posMatrix, [s, s, s]);
+            mat4.rotateX(posMatrix, posMatrix, degToRad(-tr._center.lat));
+            mat4.rotateY(posMatrix, posMatrix, degToRad(-tr._center.lng));
+            mat4.rotateY(posMatrix, posMatrix, yAngle);
+
+            const projMatrix = mat4.multiply([], tr.projMatrix, posMatrix);
 
             //const test = vec4.transformMat4([], [0, 0, ws / Math.PI / 2.0, 1], projMatrix);
 
@@ -332,7 +336,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
             setShaderMode(shaderMode, isWireframe);
 
-            //terrain.setupElevationDraw(tile, program, elevationOptions);
+            terrain.setupElevationDraw(tile, program, elevationOptions);
 
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
