@@ -223,20 +223,24 @@ export class Placement {
     getBucketParts(results: Array<BucketPart>, styleLayer: StyleLayer, tile: Tile, sortAcrossTiles: boolean) {
         const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
         const bucketFeatureIndex = tile.latestFeatureIndex;
+
         if (!symbolBucket || !bucketFeatureIndex || styleLayer.id !== symbolBucket.layerIds[0])
             return;
 
-        const collisionBoxArray = tile.collisionBoxArray;
-
         const layout = symbolBucket.layers[0].layout;
+        const clipAll = layout.get('symbol-clip').constantOr(false);
+        if (clipAll) return;
 
+        const collisionBoxArray = tile.collisionBoxArray;
         const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
         const textPixelRatio = tile.tileSize / EXTENT;
+        const unwrappedTileID = tile.tileID.toUnwrapped();
 
-        const posMatrix = this.transform.calculateProjMatrix(tile.tileID.toUnwrapped());
+        const posMatrix = this.transform.calculateProjMatrix(unwrappedTileID);
 
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
+        const needsDynamicClipping = layout.get('symbol-clip').constantOr(true);
         const pixelsToTiles = pixelsToTileUnits(tile, 1, this.transform.zoom);
 
         const textLabelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix,
@@ -258,6 +262,16 @@ export class Placement {
             labelToScreenMatrix = mat4.multiply([], this.transform.labelPlaneMatrix, glMatrix);
         }
 
+        let clippingData = null;
+        assert(!!tile.latestFeatureIndex)
+        if (tile.latestFeatureIndex) {
+
+            clippingData = {
+                distanceMatrix: this.transform.calculateFogTileMatrix(unwrappedTileID),
+                featureIndex: tile.latestFeatureIndex
+            }
+        }
+
         // As long as this placement lives, we have to hold onto this bucket's
         // matching FeatureIndex/data for querying purposes
         this.retainedQueryData[symbolBucket.bucketInstanceId] = new RetainedQueryData(
@@ -274,6 +288,7 @@ export class Placement {
             posMatrix,
             textLabelPlaneMatrix,
             labelToScreenMatrix,
+            clippingData,
             scale,
             textPixelRatio,
             holdingForFade: tile.holdingForFade(),
@@ -356,6 +371,7 @@ export class Placement {
             posMatrix,
             textLabelPlaneMatrix,
             labelToScreenMatrix,
+            clippingData,
             textPixelRatio,
             holdingForFade,
             collisionBoxArray,
@@ -398,7 +414,33 @@ export class Placement {
             bucket.updateCollisionDebugBuffers(this.transform.zoom, collisionBoxArray);
         }
 
+        const getSymbolFeature = (symbolInstance: SymbolInstance): VectorTileFeature => {
+            assert(clippingData);
+            const featureIndex = clippingData.featureIndex;
+            const retainedQueryData = this.retainedQueryData[bucket.bucketInstanceId];
+            return featureIndex.loadFeature({
+                featureIndex: symbolInstance.featureIndex,
+                bucketIndex: retainedQueryData.bucketIndex,
+                sourceLayerIndex: retainedQueryData.sourceLayerIndex,
+                layoutVertexArrayOffset: 0
+            });
+        };
+
+
         const placeSymbol = (symbolInstance: SymbolInstance, symbolIndex: number, collisionArrays: CollisionArrays) => {
+            if (clippingData) {
+                const clipExpression = layout.get('symbol-clip');
+                // TODO: feature state support, image expression support
+                clipExpression.parameters.zoom = this.transform.zoom;
+                clipExpression.parameters.pitch = this.transform.pitch;
+                clipExpression.parameters.cameraDistanceMatrix = this.transform.mercatorFogMatrix;
+                const feature = getSymbolFeature(symbolInstance);
+                const canonicalTileId = this.retainedQueryData[bucket.bucketInstanceId].tileID.canonical;
+                const shouldClip = clipExpression.evaluate(feature, {}, canonicalTileId);
+
+                if (shouldClip) return;
+            }
+
             if (seenCrossTileIDs[symbolInstance.crossTileID]) return;
             if (holdingForFade) {
                 // Mark all symbols from this tile as "not placed", but don't add to seenCrossTileIDs, because we don't

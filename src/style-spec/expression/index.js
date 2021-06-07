@@ -15,7 +15,7 @@ import definitions from './definitions/index.js';
 import * as isConstant from './is_constant.js';
 import RuntimeError from './runtime_error.js';
 import {success, error} from '../util/result.js';
-import {supportsPropertyExpression, supportsZoomExpression, supportsInterpolation} from '../util/properties.js';
+import {supportsPropertyExpression, supportsZoomExpression, supportsInterpolation, supportsCameraStateExpression} from '../util/properties.js';
 
 import type {Type, EvaluationKind} from './types.js';
 import type {Value} from './values.js';
@@ -188,6 +188,24 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
     }
 }
 
+export class CameraDependentExpression<Kind: EvaluationKind> {
+    kind: Kind;
+    _styleExpression: StyleExpression;
+
+    constructor(kind: Kind, expression: StyleExpression) {
+        this.kind = kind;
+        this._styleExpression = expression;
+    }
+
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
+    }
+
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
+    }
+}
+
 export type ConstantExpression = {
     kind: 'constant',
     +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
@@ -216,11 +234,23 @@ export type CompositeExpression = {
     interpolationType: ?InterpolationType
 };
 
+export type CameraStateExpression = {
+    kind: 'camera',
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
+};
+
+export type CompositeCameraStateExpression = {
+    kind: 'composite',
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
+};
+
 export type StylePropertyExpression =
     | ConstantExpression
     | SourceExpression
     | CameraExpression
-    | CompositeExpression;
+    | CompositeExpression
+    | CameraStateExpression
+    | CompositeCameraStateExpression;
 
 export function createPropertyExpression(expression: mixed, propertySpec: StylePropertySpecification): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec);
@@ -235,9 +265,15 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
         return error([new ParsingError('', 'data expressions not supported')]);
     }
 
-    const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom']);
+    const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'pitch', 'distance-from-camera']);
     if (!isZoomConstant && !supportsZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
+    }
+
+    if (supportsCameraStateExpression(propertySpec)) {
+        return success(isFeatureConstant ?
+                (new CameraDependentExpression('composite', expression.value): CameraStateExpression) :
+                (new CameraDependentExpression('composite', expression.value): CompositeCameraStateExpression));
     }
 
     const zoomCurve = findZoomCurve(parsed);

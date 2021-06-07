@@ -262,6 +262,17 @@ class FeatureIndex {
         return result;
     }
 
+    loadFeature(featureIndexData: FeatureIndices): VectorTileFeature {
+        const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
+
+        this.loadVTLayers();
+        const sourceLayerName = this.sourceLayerCoder.decode(sourceLayerIndex);
+        const sourceLayer = this.vtLayers[sourceLayerName];
+        const feature = sourceLayer.feature(featureIndex);
+
+        return feature;
+    }
+
     hasLayer(id: string) {
         for (const layerIDs of this.bucketLayerIDs) {
             for (const layerID of layerIDs) {

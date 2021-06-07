@@ -2666,10 +2666,12 @@ class Map extends Camera {
             this._styleDirty = false;
 
             const zoom = this.transform.zoom;
+            const pitch = this.transform.pitch;
+            const cameraDistanceMatrix = this.transform.mercatorFogMatrix;
             const now = browser.now();
             this.style.zoomHistory.update(zoom, now);
 
-            const parameters = new EvaluationParameters(zoom, {
+            const parameters = new EvaluationParameters(zoom, pitch, cameraDistanceMatrix, {
                 now,
                 fadeDuration,
                 zoomHistory: this.style.zoomHistory,
