@@ -39,9 +39,12 @@ class OpacityState {
 class JointOpacityState {
     text: OpacityState;
     icon: OpacityState;
-    constructor(prevState: ?JointOpacityState, increment: number, placedText: boolean, placedIcon: boolean, skipFade: ?boolean) {
+    clipped: boolean;
+    constructor(prevState: ?JointOpacityState, increment: number, placedText: boolean, placedIcon: boolean, skipFade: ?boolean, clipped: boolean = false) {
         this.text = new OpacityState(prevState ? prevState.text : null, increment, placedText, skipFade);
         this.icon = new OpacityState(prevState ? prevState.icon : null, increment, placedIcon, skipFade);
+
+        this.clipped = clipped;
     }
     isHidden() {
         return this.text.isHidden() && this.icon.isHidden();
@@ -56,10 +59,13 @@ class JointPlacement {
     // and if a subsequent viewport change brings them into view, they'll be fully
     // visible right away.
     skipFade: boolean;
-    constructor(text: boolean, icon: boolean, skipFade: boolean) {
+
+    clipped: boolean
+    constructor(text: boolean, icon: boolean, skipFade: boolean, clipped: boolean = false) {
         this.text = text;
         this.icon = icon;
         this.skipFade = skipFade;
+        this.clipped = clipped;
     }
 }
 
@@ -438,7 +444,11 @@ export class Placement {
                 const canonicalTileId = this.retainedQueryData[bucket.bucketInstanceId].tileID.canonical;
                 const shouldClip = clipExpression.evaluate(feature, {}, canonicalTileId, null, clippingData.unwrappedTileID.getMercatorFromTilePoint(symbolInstance.anchorX, symbolInstance.anchorY));
 
-                if (shouldClip) return;
+                if (shouldClip) {
+                    this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false, true);
+                    seenCrossTileIDs[symbolInstance.crossTileID] = true;
+                    return;
+                }
             }
 
             if (seenCrossTileIDs[symbolInstance.crossTileID]) return;
@@ -840,12 +850,12 @@ export class Placement {
             const jointPlacement = this.placements[crossTileID];
             const prevOpacity = prevOpacities[crossTileID];
             if (prevOpacity) {
-                this.opacities[crossTileID] = new JointOpacityState(prevOpacity, increment, jointPlacement.text, jointPlacement.icon);
+                this.opacities[crossTileID] = new JointOpacityState(prevOpacity, increment, jointPlacement.text, jointPlacement.icon, null, jointPlacement.clipped);
                 placementChanged = placementChanged ||
                     jointPlacement.text !== prevOpacity.text.placed ||
                     jointPlacement.icon !== prevOpacity.icon.placed;
             } else {
-                this.opacities[crossTileID] = new JointOpacityState(null, increment, jointPlacement.text, jointPlacement.icon, jointPlacement.skipFade);
+                this.opacities[crossTileID] = new JointOpacityState(null, increment, jointPlacement.text, jointPlacement.icon, jointPlacement.skipFade, jointPlacement.clipped);
                 placementChanged = placementChanged || jointPlacement.text || jointPlacement.icon;
             }
         }
@@ -908,6 +918,7 @@ export class Placement {
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
+        const hasClipping = layout.get('symbol-clip').constantOr(true);
         // If allow-overlap is true, we can show symbols before placement runs on them
         // But we have to wait for placement if we potentially depend on a paired icon/text
         // with allow-overlap: false.
@@ -1019,8 +1030,8 @@ export class Placement {
                 const collisionArrays = bucket.collisionArrays[s];
                 if (collisionArrays) {
                     let shift = new Point(0, 0);
+                    let used = true;
                     if (collisionArrays.textBox || collisionArrays.verticalTextBox) {
-                        let used = true;
                         if (variablePlacement) {
                             const variableOffset = this.variableOffsets[crossTileID];
                             if (variableOffset) {
@@ -1044,6 +1055,10 @@ export class Placement {
                             }
                         }
 
+                        if (hasClipping) {
+                            used = !opacityState.clipped;
+                        }
+
                         if (collisionArrays.textBox) {
                             updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used || horizontalHidden, shift.x, shift.y);
                         }
@@ -1052,7 +1067,7 @@ export class Placement {
                         }
                     }
 
-                    const verticalIconUsed = Boolean(!verticalHidden && collisionArrays.verticalIconBox);
+                    const verticalIconUsed = used && Boolean(!verticalHidden && collisionArrays.verticalIconBox);
 
                     if (collisionArrays.iconBox) {
                         updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, verticalIconUsed,

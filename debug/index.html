@@ -34,6 +34,26 @@ map.once('load', () => {
         true
     ]
     );
+
+    map.setLayoutProperty('poi-label', 'symbol-clip',
+        ["case",
+            ["<", ["pitch"], 60], false,
+            ["all", [">=", ["pitch"], 60], ["<", ["distance-from-camera"], 4]], false,
+            true
+        ]
+    );
+
+    map.setLayoutProperty('transit-label', 'symbol-clip',
+    ["case",
+        ["<", ["pitch"], 60], false,
+        ["all", [">=", ["pitch"], 60], ["<", ["distance-from-camera"], 3]], false,
+        true
+    ]
+    );
+
+    map.once('idle', () => {
+        map.panTo([-122.4199724, 37.7687162], {duration: 50000});
+    })
 });
 
 </script>
