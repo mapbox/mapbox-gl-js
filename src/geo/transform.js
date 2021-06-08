@@ -1319,13 +1319,13 @@ class Transform {
         return posMatrix;
     }
 
-    calculateGlobeMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
+
+    calculateGlobeMatrix(worldSize: number): Float64Array {
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadius = worldSize / (2.0 * Math.PI);
         const s = wsRadius / localRadius;
 
-        //const canonical = unwrappedTileID.canonical;
-
+        // transform the globe from reference coordinate space to world space
         const posMatrix = mat4.identity(new Float64Array(16));
         const cameraPos = this._camera.position;
         mat4.translate(posMatrix, posMatrix, [cameraPos[0] * worldSize, cameraPos[1] * worldSize, 0.0]);
@@ -1334,22 +1334,33 @@ class Transform {
         mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
         mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
 
+        return posMatrix;
+    }
+
+    calculateGlobeMatrixForTile(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
+        const localRadius = EXTENT / (2.0 * Math.PI);
+        const wsRadius = worldSize / (2.0 * Math.PI);
+        const s = wsRadius / localRadius;
+
+        // transform the globe from reference coordinate space to world space
+        const posMatrix = this.calculateGlobeMatrix(worldSize);
+        // const posMatrix = mat4.identity(new Float64Array(16));
+        // const cameraPos = this._camera.position;
+        // mat4.translate(posMatrix, posMatrix, [cameraPos[0] * worldSize, cameraPos[1] * worldSize, 0.0]);
+        // mat4.translate(posMatrix, posMatrix, [0, 0, -wsRadius]);
+        // mat4.scale(posMatrix, posMatrix, [s, s, s]);
+        // mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
+        // mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
+
         const bounds = tileBoundsOnGlobe(unwrappedTileID.canonical);
 
-        // Denormalize points
+        // Denormalize points to the correct range
         const st = 1.0 / ((1 << 15) - 1);
         mat4.translate(posMatrix, posMatrix, bounds.min);
         mat4.scale(posMatrix, posMatrix, vec3.sub([], bounds.max, bounds.min));
         mat4.scale(posMatrix, posMatrix, [st, st, st]);
 
         return posMatrix;
-
-        // const scale = worldSize / this.zoomScale(canonical.z);
-        // const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
-
-        // const posMatrix = mat4.identity(new Float64Array(16));
-        // mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
-        // mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
     }
 
     /**
@@ -1381,7 +1392,7 @@ class Transform {
      * @private
      */
     calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
-        const matrix = this.calculateGlobeMatrix(unwrappedTileID, this.worldSize);
+        const matrix = this.calculateGlobeMatrixForTile(unwrappedTileID, this.worldSize);
         mat4.multiply(matrix, this.projMatrix, matrix);
         return matrix;
         const projMatrixKey = unwrappedTileID.key;
@@ -1397,11 +1408,11 @@ class Transform {
         return cache[projMatrixKey];
     }
 
-    calculateGlobeProjMatrix(): Float32Array {
-        const matrix = this.calculateGlobeMatrix(this.worldSize);
-        mat4.multiply(matrix, this.projMatrix, matrix);
-        return matrix;
-    }
+    // calculateGlobeProjMatrix(): Float32Array {
+    //     const matrix = this.calculateGlobeMatrix(this.worldSize);
+    //     mat4.multiply(matrix, this.projMatrix, matrix);
+    //     return matrix;
+    // }
 
     customLayerMatrix(): Array<number> {
         return this.mercatorMatrix.slice();

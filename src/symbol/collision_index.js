@@ -74,7 +74,6 @@ class CollisionIndex {
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
         //const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation, collisionBox.tileID);
-        const testpoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, 0, collisionBox.tileID);
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.anchorPointZ, collisionBox.tileID);
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;

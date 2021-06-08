@@ -461,7 +461,7 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
-            if (!needGeometry)  evaluationFeature.geometry = loadGeometry(feature, canonical);
+            if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, layout.get('symbol-placement') !== 'line' ? canonical : undefined);
 
             let text: Formatted | void;
             if (hasText) {

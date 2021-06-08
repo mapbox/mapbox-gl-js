@@ -128,16 +128,9 @@ export default function loadGeometry(feature: VectorTileFeature, id: ?CanonicalT
     const geometry = feature.loadGeometry();
 
     if (id) {
-        // // Get corner points of the tile in mercator coordinates and
-        // // convert them to lat&lng presentation
-        // const [latLngTL, latLngBR] = tileLatLngCorners(id);
-        // const [minLatLng, maxLatLng] = tileLatLngCorners(id, MAX);
-
         // TODO: Compute aabb of the tile on the sphere using zoom=0 as the reference space
         // (this means that diameter of earth is EXTENT / PI, which is also max size of the globe bounds)
         const bounds = tileBoundsOnGlobe(id);
-
-        // let minLng = 
         const tiles = Math.pow(2.0, id.z);
 
         for (let r = 0; r < geometry.length; r++) {
@@ -157,11 +150,7 @@ export default function loadGeometry(feature: VectorTileFeature, id: ?CanonicalT
                 const lng = lngFromMercatorX(mercX);
 
                 let up = latLngToECEF(lat, lng, refRadius);
-                
-                if (inside) {
-                    console.log("encoded: " + up[0] + " " + up[1] + " " + up[2]);
-                }
-                
+
                 // Normalize. TODO: does not work with geometry outside of the tile!
                 up = normalizeECEF(up, bounds);
 
