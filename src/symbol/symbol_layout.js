@@ -26,7 +26,7 @@ import type {StyleImage} from '../style/style_image.js';
 import type {StyleGlyph} from '../style/style_glyph.js';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type {ImagePosition} from '../render/image_atlas.js';
-import type {GlyphPosition} from '../render/glyph_atlas.js';
+import type {GlyphPositions} from '../render/glyph_atlas.js';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
 
 import Point from '@mapbox/point-geometry';
@@ -63,6 +63,7 @@ export type TextAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-l
 // (see "yOffset" in shaping.js)
 const baselineOffset = 7;
 const INVALID_TEXT_OFFSET = Number.POSITIVE_INFINITY;
+const sqrt2 = Math.sqrt(2);
 
 export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, number]) {
 
@@ -70,7 +71,7 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
         let x = 0, y = 0;
         if (radialOffset < 0) radialOffset = 0; // Ignore negative offset.
         // solve for r where r^2 + r^2 = radialOffset^2
-        const hypotenuse = radialOffset / Math.sqrt(2);
+        const hypotenuse = radialOffset / sqrt2;
         switch (anchor) {
         case 'top-right':
         case 'top-left':
@@ -147,8 +148,8 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
-                             glyphMap: {[_: string]: {[number]: ?StyleGlyph}},
-                             glyphPositions: {[_: string]: {[number]: GlyphPosition}},
+                             glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}},
+                             glyphPositions: GlyphPositions,
                              imageMap: {[_: string]: StyleImage},
                              imagePositions: {[_: string]: ImagePosition},
                              showCollisionBoxes: boolean,
@@ -551,7 +552,8 @@ export function evaluateBoxCollisionFeature(collisionBoxArray: CollisionBoxArray
                                      bucketIndex: number,
                                      shaped: Object,
                                      padding: number,
-                                     rotate: number): number {
+                                     rotate: number,
+                                     textOffset: ?[number, number]): number {
     let y1 = shaped.top;
     let y2 = shaped.bottom;
     let x1 = shaped.left;
@@ -576,11 +578,16 @@ export function evaluateBoxCollisionFeature(collisionBoxArray: CollisionBoxArray
         const br = new Point(x2, y2);
 
         const rotateRadians = degToRad(rotate);
+        let rotateCenter = new Point(0, 0);
 
-        tl._rotate(rotateRadians);
-        tr._rotate(rotateRadians);
-        bl._rotate(rotateRadians);
-        br._rotate(rotateRadians);
+        if (textOffset) {
+            rotateCenter = new Point(textOffset[0], textOffset[1]);
+        }
+
+        tl._rotateAround(rotateRadians, rotateCenter);
+        tr._rotateAround(rotateRadians, rotateCenter);
+        bl._rotateAround(rotateRadians, rotateCenter);
+        br._rotateAround(rotateRadians, rotateCenter);
 
         // Collision features require an "on-axis" geometry,
         // so take the envelope of the rotated geometry
@@ -671,7 +678,7 @@ function addSymbol(bucket: SymbolBucket,
         } else {
             const textRotation = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
             const verticalTextRotation = textRotation + 90.0;
-            verticalTextBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textPadding, verticalTextRotation);
+            verticalTextBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textPadding, verticalTextRotation, textOffset);
             if (verticallyShapedIcon) {
                 verticalIconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconPadding, verticalTextRotation);
             }
@@ -758,7 +765,7 @@ function addSymbol(bucket: SymbolBucket,
                 textCircle = evaluateCircleCollisionFeature(shaping);
             } else {
                 const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
-                textBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaping, textPadding, textRotate);
+                textBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaping, textPadding, textRotate, textOffset);
             }
         }
 
