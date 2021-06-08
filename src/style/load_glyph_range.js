@@ -12,7 +12,7 @@ export default function (fontstack: string,
                            range: number,
                            urlTemplate: string,
                            requestManager: RequestManager,
-                           callback: Callback<{[_: number]: StyleGlyph | null}>) {
+                           callback: Callback<{glyphs: {[number]: StyleGlyph | null}, ascender?: number, descender?: number}>) {
     const begin = range * 256;
     const end = begin + 255;
 
@@ -27,12 +27,11 @@ export default function (fontstack: string,
             callback(err);
         } else if (data) {
             const glyphs = {};
-
-            for (const glyph of parseGlyphPBF(data)) {
+            const glyphData = parseGlyphPBF(data);
+            for (const glyph of glyphData.glyphs) {
                 glyphs[glyph.id] = glyph;
             }
-
-            callback(null, glyphs);
+            callback(null, {glyphs, ascender: glyphData.ascender, descender: glyphData.descender});
         }
     });
 }
