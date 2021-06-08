@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='checkboxes'>
+    <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
+    <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
+    <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
+    <label><input id='pitch-checkbox' type='checkbox' checked> pitch with rotate</label><br />
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    hash: true,
+    style: {
+        version: 8,
+        sources: {},
+        layers: [],
+        glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf'
+    }
+});
+
+const n = 101;
+
+map.on('load', function () {
+    map.addSource('maine', {
+        'type': 'geojson',
+        'data': {
+            'type': 'Feature',
+            'properties': {'title': 'Valley View Road Northeast'},
+            'geometry': {
+                'type': 'LineString',
+                'coordinates':
+                    [...Array(n).keys()].map((_, i) => [
+                        90 * (i / (n - 1) - 0.5),
+                        5 * Math.sin(i / (n - 1) * 10.0 * Math.PI)
+                    ])
+
+            }
+        }
+    });
+
+    map.addLayer({
+        'id': 'path',
+        'type': 'line',
+        'source': 'maine',
+        'layout': {},
+        'paint': {
+            'line-color': '#000',
+            'line-width': 3
+        }
+    });
+
+    map.addLayer({
+        'id': 'path-label',
+        'type': 'symbol',
+        'source': 'maine',
+        'minzoom': 1,
+        'maxzoom': 20,
+        'layout': {
+            'symbol-placement': 'line',
+            'text-offset': [0, 0.5],
+            'text-font': ['Open Sans Regular'],
+            'text-field': '{title}',
+            'text-pitch-alignment': 'viewport',
+            'text-size': 24
+        },
+        'paint': {
+        }
+    });
+});
+
+</script>
+</body>
+</html>
