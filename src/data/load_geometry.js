@@ -46,29 +46,35 @@ function pointToLineDist(px, py, ax, ay, bx, by) {
  * @private
  */
 export default function loadGeometry(feature: VectorTileFeature, canonical): Array<Array<Point>> {
-    if (!canonical) return [];
 
-    const cs = projection.tileTransform(canonical);
+    const projectionTransform = projection && canonical ? projection.tileTransform(canonical) : null;
     const z2 = Math.pow(2, canonical.z);
     const featureExtent = feature.extent;
 
     function reproject(p) {
-        const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
-        const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
-        const {x, y} = projection.project(lng, lat);
-        return new Point(
-            (x * cs.scale - cs.x) * EXTENT,
-            (y * cs.scale - cs.y) * EXTENT
-        );
+        if (projectionTransform) {
+            const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
+            const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
+            const {x, y} = projection.project(lng, lat);
+            return new Point(
+                (x * projectionTransform.scale - projectionTransform.x) * EXTENT,
+                (y * projectionTransform.scale - projectionTransform.y) * EXTENT
+            );
+
+        } else {
+            const scale = EXTENT / featureExtent;
+            return new Point(Math.round(p.x * scale), Math.round(p.y * scale));
+        }
     }
 
     function addResampled(resampled, startMerc, endMerc, startProj, endProj) {
         const midMerc = new Point((startMerc.x + endMerc.x) / 2, (startMerc.y + endMerc.y) / 2);
-        const midProj = reproject(midMerc, feature.extent);
+        const midProj = reproject(midMerc);
         const err = pointToLineDist(midProj.x, midProj.y, startProj.x, startProj.y, endProj.x, endProj.y);
 
         if (err >= 1) {
-            // TODO make sure we never reach max call stack
+            // we're very unlikely to hit max call stack exceeded here,
+            // but we might want to safeguard against it in the future
             addResampled(resampled, startMerc, midMerc, startProj, midProj);
             addResampled(resampled, midMerc, endMerc, midProj, endProj);
         } else {
@@ -86,10 +92,10 @@ export default function loadGeometry(feature: VectorTileFeature, canonical): Arr
             const pointMerc = ring[i];
             const pointProj = reproject(ring[i]);
 
-            if (i === 0 || feature.type === 1) {
-                resampled.push(clampPoint(pointProj));
-            } else {
+            if (prevMerc && prevProj && feature.type !== 1) {
                 addResampled(resampled, prevMerc, pointMerc, prevProj, pointProj);
+            } else {
+                resampled.push(clampPoint(pointProj));
             }
 
             prevMerc = pointMerc;
