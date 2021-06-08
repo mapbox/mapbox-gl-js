@@ -69,6 +69,7 @@ export type SingleCollisionBox = {
     padding: number;
     anchorPointX: number;
     anchorPointY: number;
+    anchorPointZ: number;
     elevation?: number;
     tileID?: OverscaledTileID;
 };
@@ -686,24 +687,27 @@ class SymbolBucket implements Bucket {
         );
     }
 
-    _commitLayoutVertex(array: StructArray, point: Point, anchorX: number, anchorY: number, extrude: Point) {
+    _commitLayoutVertex(array: StructArray, point: any, anchorX: number, anchorY: number, anchorZ: number, extrude: Point) {
         array.emplaceBack(
             // pos
-            point.x,
-            point.y,
+            point[0],
+            point[1],
+            point[2],
             // a_anchor_pos
             anchorX,
             anchorY,
+            anchorZ,
             // extrude
             Math.round(extrude.x),
             Math.round(extrude.y));
     }
 
-    _addCollisionDebugVertices(box: CollisionBox, scale: number, arrays: CollisionBuffers, boxAnchorPoint: Point, symbolInstance: SymbolInstance) {
+    _addCollisionDebugVertices(box: CollisionBox, scale: number, arrays: CollisionBuffers, boxAnchorPoint: any, symbolInstance: SymbolInstance) {
         const segment = arrays.segments.prepareSegment(4, arrays.layoutVertexArray, arrays.indexArray);
         const index = segment.vertexLength;
         const anchorX = symbolInstance.anchorX;
         const anchorY = symbolInstance.anchorY;
+        const anchorZ = symbolInstance.anchorZ || 0;
 
         for (let i = 0; i < 4; i++) {
             arrays.collisionVertexArray.emplaceBack(0, 0, 0, 0);
@@ -714,10 +718,10 @@ class SymbolBucket implements Bucket {
         arrays.collisionVertexArrayExt.emplaceBack(scale,  box.padding,  box.padding);
         arrays.collisionVertexArrayExt.emplaceBack(scale, -box.padding,  box.padding);
 
-        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(box.x1, box.y1));
-        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(box.x2, box.y1));
-        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(box.x2, box.y2));
-        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(box.x1, box.y2));
+        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, anchorZ, new Point(box.x1, box.y1));
+        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, anchorZ, new Point(box.x2, box.y1));
+        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, anchorZ, new Point(box.x2, box.y2));
+        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, anchorZ, new Point(box.x1, box.y2));
 
         segment.vertexLength += 4;
 
@@ -735,7 +739,7 @@ class SymbolBucket implements Bucket {
             const box: CollisionBox = (collisionBoxArray.get(b): any);
             const scale = this.getSymbolInstanceTextSize(size, instance, zoom, b);
 
-            this._addCollisionDebugVertices(box, scale, this.textCollisionBox, box.anchorPoint, instance);
+            this._addCollisionDebugVertices(box, scale, this.textCollisionBox, [box.anchorPointX, box.anchorPointY, box.anchorPointZ], /*box.anchorPoint,*/ instance);
         }
     }
 
@@ -744,7 +748,7 @@ class SymbolBucket implements Bucket {
             const box: CollisionBox = (collisionBoxArray.get(b): any);
             const scale = this.getSymbolInstanceIconSize(size, zoom, b);
 
-            this._addCollisionDebugVertices(box, scale, this.iconCollisionBox, box.anchorPoint, instance);
+            this._addCollisionDebugVertices(box, scale, this.iconCollisionBox, [box.anchorPointX, box.anchorPointY, box.anchorPointZ],/*box.anchorPoint,*/ instance);
         }
     }
 
@@ -851,27 +855,27 @@ class SymbolBucket implements Bucket {
         const collisionArrays = {};
         for (let k = textStartIndex; k < textEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.textBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY};
+            collisionArrays.textBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY, anchorPointZ: box.anchorPointZ};
             collisionArrays.textFeatureIndex = box.featureIndex;
             break; // Only one box allowed per instance
         }
         for (let k = verticalTextStartIndex; k < verticalTextEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.verticalTextBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY};
+            collisionArrays.verticalTextBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY, anchorPointZ: box.anchorPointZ};
             collisionArrays.verticalTextFeatureIndex = box.featureIndex;
             break; // Only one box allowed per instance
         }
         for (let k = iconStartIndex; k < iconEndIndex; k++) {
             // An icon can only have one box now, so this indexing is a bit vestigial...
             const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.iconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY};
+            collisionArrays.iconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY, anchorPointZ: box.anchorPointZ};
             collisionArrays.iconFeatureIndex = box.featureIndex;
             break; // Only one box allowed per instance
         }
         for (let k = verticalIconStartIndex; k < verticalIconEndIndex; k++) {
             // An icon can only have one box now, so this indexing is a bit vestigial...
             const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.verticalIconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY};
+            collisionArrays.verticalIconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY, anchorPointZ: box.anchorPointZ};
             collisionArrays.verticalIconFeatureIndex = box.featureIndex;
             break; // Only one box allowed per instance
         }

@@ -163,7 +163,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
     const layout = bucket.layers[0].layout;
     const unevaluatedLayoutValues = bucket.layers[0]._unevaluatedLayout._values;
-
+//#error TODO: jossain täällä rakennetaan collisionBoxArray, johon pitäisi saada dumpattua z-arvo
     const sizes = {};
 
     if (bucket.textSizeData.kind === 'composite') {
@@ -465,7 +465,8 @@ function addFeature(bucket: SymbolBucket,
         for (const points of feature.geometry) {
             for (const point of points) {
                 if (point.z) {
-                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z, 0));
+                    if (point.inside)
+                        addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z, 0));
                 } else {
                     addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0));
                 }
@@ -595,7 +596,8 @@ export function evaluateBoxCollisionFeature(collisionBoxArray: CollisionBoxArray
         y2 = Math.max(tl.y, tr.y, bl.y, br.y);
     }
 
-    collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, padding, featureIndex, sourceLayerIndex, bucketIndex);
+    const anchorZ = anchor.z ? anchor.z : 0;
+    collisionBoxArray.emplaceBack(anchor.x, anchor.y, anchor.z, x1, y1, x2, y2, padding, featureIndex, sourceLayerIndex, bucketIndex);
 
     return collisionBoxArray.length - 1;
 }
@@ -813,6 +815,7 @@ function addSymbol(bucket: SymbolBucket,
     bucket.symbolInstances.emplaceBack(
         anchor.x,
         anchor.y,
+        anchor.z || 0,
         placedTextSymbolIndices.right >= 0 ? placedTextSymbolIndices.right : -1,
         placedTextSymbolIndices.center >= 0 ? placedTextSymbolIndices.center : -1,
         placedTextSymbolIndices.left >= 0 ? placedTextSymbolIndices.left : -1,

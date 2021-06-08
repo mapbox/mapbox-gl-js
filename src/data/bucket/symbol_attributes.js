@@ -31,6 +31,7 @@ export const collisionBox = createLayout([
     // the box is centered around the anchor point
     {type: 'Int16', name: 'anchorPointX'},
     {type: 'Int16', name: 'anchorPointY'},
+    {type: 'Int16', name: 'anchorPointZ'},
 
     // distances to the edges from the anchor
     {type: 'Float32', name: 'x1'},
@@ -49,8 +50,8 @@ export const collisionBox = createLayout([
 ]);
 
 export const collisionBoxLayout = createLayout([ // used to render collision boxes for debugging purposes
-    {name: 'a_pos',        components: 2, type: 'Int16'},
-    {name: 'a_anchor_pos', components: 2, type: 'Int16'},
+    {name: 'a_pos',        components: 3, type: 'Int16'},
+    {name: 'a_anchor_pos', components: 3, type: 'Int16'},
     {name: 'a_extrude',    components: 2, type: 'Int16'}
 ], 4);
 
@@ -88,6 +89,7 @@ export const placement = createLayout([
 export const symbolInstance = createLayout([
     {type: 'Int16', name: 'anchorX'},
     {type: 'Int16', name: 'anchorY'},
+    {type: 'Int16', name: 'anchorZ'},
     {type: 'Int16', name: 'rightJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'centerJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'leftJustifiedTextSymbolIndex'},

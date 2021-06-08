@@ -154,20 +154,34 @@ export default function loadGeometry(feature: VectorTileFeature, id: ?CanonicalT
         const bounds = tileBoundsOnGlobe(id);
 
         // let minLng = 
+        const tiles = Math.pow(2.0, id.z);
 
         for (let r = 0; r < geometry.length; r++) {
             const ring = geometry[r];
             for (let p = 0; p < ring.length; p++) {
                 const point = ring[p];
+
+                const px = point.x / feature.extent;
+                const py = point.y / feature.extent;
+                const inside = px >= 0 && px <= 1.0 && py >= 0.0 && py < 1.0;
+
+                // Convert point to a mercator position
+                const mercX = (id.x + px) / tiles;
+                const mercY = (id.y + py) / tiles;
+
+                const lat = latFromMercatorY(mercY);
+                const lng = lngFromMercatorX(mercX);
+
                 // round here because mapbox-gl-native uses integers to represent
                 // points and we need to do the same to avoid rendering differences.
                 
-                // Find lat&lng presentation of the point
-                let lat = lerp(latLngTL[0], latLngBR[0], point.y / feature.extent);
-                let lng = lerp(latLngTL[1], latLngBR[1], point.x / feature.extent);
+                // // Find lat&lng presentation of the point
+                // let lat = lerp(latLngTL[0], latLngBR[0], point.y / feature.extent);
+                // let lng = lerp(latLngTL[1], latLngBR[1], point.x / feature.extent);
 
-                lat = clamp(lat, maxLatLng[0], minLatLng[0]);
-                lng = clamp(lng, minLatLng[1], maxLatLng[1]);
+
+                //lat = clamp(lat, maxLatLng[0], minLatLng[0]);
+                //lng = clamp(lng, minLatLng[1], maxLatLng[1]);
 
                 let up = latLngToECEF(lat, lng, refRadius);
 
@@ -177,6 +191,7 @@ export default function loadGeometry(feature: VectorTileFeature, id: ?CanonicalT
                 point.x = up[0];
                 point.y = up[1];
                 point.z = up[2];
+                point.inside = inside;
 
                 // // Convert this to spherical representation. Use zoom=0 as a reference
                 // const sx = Math.cos(lat) * Math.sin(lng) * refRadius;

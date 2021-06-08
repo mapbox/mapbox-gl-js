@@ -12,7 +12,7 @@ import {easeCubicInOut} from '../util/util.js';
 import EXTENT from '../data/extent.js';
 import {warnOnce, clamp, degToRad} from '../util/util.js';
 import {GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
-import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
+import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import {createLayout} from '../util/struct_array.js';
 import SegmentVector from '../data/segment.js';
 
@@ -160,9 +160,9 @@ function latLngToECEF(lat, lng, r) {
     return [sx, sy, sz];
 }
 
-function createGridVertices(count: number, z, y, ws): any {
-    const tiles = Math.pow(2, z);
-    const [latLngTL, latLngBR]= tileLatLngCorners(new CanonicalTileID(z, tiles / 2, y));
+function createGridVertices(count: number, sz, sy, ws): any {
+    const tiles = Math.pow(2, sz);
+    const [latLngTL, latLngBR]= tileLatLngCorners(new CanonicalTileID(sz, tiles / 2, sy));
     const lerp = (a, b, t) => a * (1 - t) + b * t;
     const radius = ws / Math.PI / 2.0;
     const boundsArray = new GlobeVertexArray();
@@ -172,12 +172,14 @@ function createGridVertices(count: number, z, y, ws): any {
     boundsArray.reserve(count * count);
 
     for (let y = 0; y < vertexExt; y++) {
+        const lat = lerp(latLngTL[0], latLngBR[0], y / gridExt);
+        const mercY = clamp(mercatorYfromLat(lat), 0, 1);
+        const uvY = (mercY * tiles) - sy;
         for (let x = 0; x < vertexExt; x++) {
-            const lat = lerp(latLngTL[0], latLngBR[0], y / gridExt);
             const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
 
             const p = latLngToECEF(lat, lng, radius);
-            boundsArray.emplaceBack(p[0], p[1], p[2], x / gridExt, y / gridExt);
+            boundsArray.emplaceBack(p[0], p[1], p[2], x / gridExt, uvY);
         }
     }
 
@@ -223,7 +225,7 @@ function createGridIndices(count) {
     return indexArray;
 }
 
-const gridExt = 1;
+const gridExt = 32;
 const gridMeshDatabase = {};
 const gridIndices = createGridIndices(gridExt);
 

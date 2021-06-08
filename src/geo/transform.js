@@ -115,7 +115,7 @@ class Transform {
         this.tileSize = 512; // constant
         this.maxValidLatitude = 85.051129; // constant
 
-        this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
+        this._renderWorldCopies = renderWorldCopies === undefined ? false : renderWorldCopies;
         this._minZoom = minZoom || DEFAULT_MIN_ZOOM;
         this._maxZoom = maxZoom || 22;
 
