@@ -46,22 +46,20 @@ function pointToLineDist(px, py, ax, ay, bx, by) {
  * @param {VectorTileFeature} feature
  * @private
  */
-export default function loadGeometry(feature: VectorTileFeature, canonical: CanonicalTileID): Array<Array<Point>> {
-
-    const projectionTransform = projection && canonical ? projection.tileTransform(canonical) : null;
-    const z2 = Math.pow(2, canonical.z);
+export default function loadGeometry(feature: VectorTileFeature, canonical?: CanonicalTileID): Array<Array<Point>> {
     const featureExtent = feature.extent;
 
     function reproject(p) {
-        if (projectionTransform) {
+        if (canonical) {
+            const cs = projection.tileTransform(canonical);
+            const z2 = Math.pow(2, canonical.z);
             const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
             const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
             const {x, y} = projection.project(lng, lat);
             return new Point(
-                (x * projectionTransform.scale - projectionTransform.x) * EXTENT,
-                (y * projectionTransform.scale - projectionTransform.y) * EXTENT
+                (x * cs.scale - cs.x) * EXTENT,
+                (y * cs.scale - cs.y) * EXTENT
             );
-
         } else {
             const scale = EXTENT / featureExtent;
             return new Point(Math.round(p.x * scale), Math.round(p.y * scale));
