@@ -63,8 +63,9 @@ void main() {
         size = u_size;
     }
 
-    float h = elevation(a_pos);
+    float h = a_globe_ext.x;// elevation(a_pos);
     vec4 projectedPoint = u_matrix * vec4(a_pos, h, 1);
+    //vec4 projectedPoint = u_matrix * vec4(a_pos, a_globe_ext.x, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     // If the label is pitched with the map, layout is done in pitched space,

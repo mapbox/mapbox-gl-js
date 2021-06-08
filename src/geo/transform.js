@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, lngFromMercatorX} from './mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -22,6 +22,94 @@ const DEFAULT_MIN_ZOOM = 0;
 
 type RayIntersectionResult = { p0: vec4, p1: vec4, t: number};
 type ElevationReference = "sea" | "ground";
+
+const refRadius = EXTENT / Math.PI / 2.0;
+
+function tileLatLngCorners(id: CanonicalTileID, padding: ?number) {
+    const tileScale = Math.pow(2, id.z);
+    const left = id.x / tileScale;
+    const right = (id.x + 1) / tileScale;
+    const top = id.y / tileScale;
+    const bottom = (id.y + 1) / tileScale;
+
+    const latLngTL = [ latFromMercatorY(top), lngFromMercatorX(left) ];
+    const latLngBR = [ latFromMercatorY(bottom), lngFromMercatorX(right) ];
+
+    // if (padding) {
+    //     const MIN_LAT = latFromMercatorY(bottom + padding / EXTENT);
+    //     const MAX_LAT = latFromMercatorY(top - padding / EXTENT);
+    //     const MIN_LNG = lngFromMercatorX(left - padding / EXTENT);
+    //     const MAX_LNG = lngFromMercatorX(right + padding / EXTENT);
+
+    //     latLngTL[0] = MAX_LAT;//clamp(latLngTL[0], MIN_LAT, MAX_LAT);
+    //     latLngTL[1] = MIN_LNG;//clamp(latLngTL[1], MIN_LNG, MAX_LNG);
+    //     latLngBR[0] = MIN_LAT;//clamp(latLngBR[0], MIN_LAT, MAX_LAT);
+    //     latLngBR[1] = MAX_LNG;//clamp(latLngBR[1], MIN_LNG, MAX_LNG);
+    // }
+
+    return [latLngTL, latLngBR];
+}
+
+function latLngToECEF(lat, lng, r) {
+    lat = degToRad(lat);
+    lng = degToRad(lng);
+
+    // Convert lat & lng to spherical representation. Use zoom=0 as a reference
+    const sx = Math.cos(lat) * Math.sin(lng) * r;
+    const sy = -Math.sin(lat) * r;
+    const sz = Math.cos(lat) * Math.cos(lng) * r;
+
+    // TODO: Normalization to the range [bounds_min, bounds_max] should be done
+    // in order to support 16bit vertices
+    return [sx, sy, sz];
+}
+
+function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
+    const z = id.z;
+
+    const mn = -refRadius;
+    const mx = refRadius;
+
+    if (z === 0) {
+        return new Aabb([mn, mn, mn], [mx, mx, mx]);
+    } else if (z === 1) {
+        if (id.x === 0 && id.y === 0) {
+            return new Aabb([mn, mn, mn], [0, 0, mx]);
+        } else if (id.x === 1 && id.y === 0) {
+            return new Aabb([0, mn, mn], [mx, 0, mx]);
+        } else if (id.x === 0 && id.y === 1) {
+            return new Aabb([mn, 0, mn], [0, mx, mx]);
+        } else if (id.x === 1 && id.y === 1) {
+            return new Aabb([0, 0, mn], [mx, mx, mx]);
+        }
+    }
+
+    // After zoom 1 surface function is monotonic for all tile patches
+    // => it is enough to project corner points
+    const [min, max] = tileLatLngCorners(id);
+
+    const corners = [
+        latLngToECEF(min[0], min[1], refRadius),
+        latLngToECEF(min[0], max[1], refRadius),
+        latLngToECEF(max[0], min[1], refRadius),
+        latLngToECEF(max[0], max[1], refRadius)
+    ];
+
+    const bMin = [mx, mx, mx];
+    const bMax = [mn, mn, mn];
+
+    for (const p of corners) {
+        bMin[0] = Math.min(bMin[0], p[0]);
+        bMin[1] = Math.min(bMin[1], p[1]);
+        bMin[2] = Math.min(bMin[2], p[2]);
+
+        bMax[0] = Math.max(bMax[0], p[0]);
+        bMax[1] = Math.max(bMax[1], p[1]);
+        bMax[2] = Math.max(bMax[2], p[2]);
+    }
+
+    return new Aabb(bMin, bMax);
+}
 
 /**
  * A single transform, generally used for a single tile to be
@@ -1231,7 +1319,7 @@ class Transform {
         return posMatrix;
     }
 
-    calculateGlobeMatrix(/*unwrappedTileID: UnwrappedTileID, */worldSize: number): Float32Array {
+    calculateGlobeMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadius = worldSize / (2.0 * Math.PI);
         const s = wsRadius / localRadius;
@@ -1245,6 +1333,14 @@ class Transform {
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
         mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
         mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
+
+        const bounds = tileBoundsOnGlobe(unwrappedTileID.canonical);
+
+        // Denormalize points
+        const st = 1.0 / ((1 << 15) - 1);
+        mat4.translate(posMatrix, posMatrix, bounds.min);
+        mat4.scale(posMatrix, posMatrix, vec3.sub([], bounds.max, bounds.min));
+        mat4.scale(posMatrix, posMatrix, [st, st, st]);
 
         return posMatrix;
 
@@ -1285,7 +1381,9 @@ class Transform {
      * @private
      */
     calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
-        return this.calculateGlobeProjMatrix();
+        const matrix = this.calculateGlobeMatrix(unwrappedTileID, this.worldSize);
+        mat4.multiply(matrix, this.projMatrix, matrix);
+        return matrix;
         const projMatrixKey = unwrappedTileID.key;
         const cache = aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
         if (cache[projMatrixKey]) {
