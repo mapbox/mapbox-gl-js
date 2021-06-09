@@ -62,7 +62,8 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
             );
         } else {
             const scale = EXTENT / featureExtent;
-            return new Point(Math.round(p.x * scale), Math.round(p.y * scale));
+            const p = new Point(Math.round(p.x * scale), Math.round(p.y * scale));
+            return clampPoint(p);
         }
     }
 
