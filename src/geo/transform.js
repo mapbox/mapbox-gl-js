@@ -1253,12 +1253,22 @@ class Transform {
         }
     }
 
-    calculatePosMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
-        const posMatrix = mat4.identity(new Float64Array(16));
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
+        const isMercator = this.projection.name === 'mercator';
         const cs = this.projection.tileTransform(unwrappedTileID.canonical);
-        mat4.scale(posMatrix, posMatrix, [1 /  cs.scale, 1 /  cs.scale, 1]);
-        mat4.translate(posMatrix, posMatrix, [cs.x, cs.y, 0]);
-        mat4.scale(posMatrix, posMatrix, [1 / EXTENT, 1 / EXTENT, 1]);
+        const canonical = unwrappedTileID.canonical;
+        const scale = isMercator ? worldSize / this.zoomScale(canonical.z) : 1;
+        const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
+        const scaledX = isMercator ? unwrappedX * scale : cs.x;
+        const scaledY = isMercator ? canonical.y * scale : cs.y;
+
+        const posMatrix = mat4.identity(new Float64Array(16));
+        if (!isMercator) {
+            mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, 1]);
+        }
+        mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);
+        mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
+
         return posMatrix;
     }
 
@@ -1278,7 +1288,7 @@ class Transform {
             return cache[fogTileMatrixKey];
         }
 
-        const posMatrix = this.calculatePosMatrix(unwrappedTileID);
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
         mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
         cache[fogTileMatrixKey] = new Float32Array(posMatrix);
@@ -1297,9 +1307,9 @@ class Transform {
             return cache[projMatrixKey];
         }
 
-        const posMatrix = this.calculatePosMatrix(unwrappedTileID);
-        //mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
-        mat4.multiply(posMatrix, this.mercatorMatrix, posMatrix);
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
+        const projMatrix = this.projection.name === 'mercator' ? aligned ? this.alignedProjMatrix : this.projMatrix : this.mercatorMatrix;
+        mat4.multiply(posMatrix, projMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
         return cache[projMatrixKey];
