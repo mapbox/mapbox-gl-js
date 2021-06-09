@@ -263,83 +263,83 @@ test('Elevation', (t) => {
         });
     });
 
-    // t.test('mapbox-gl-js-internal#91', t => {
-    //     const data = {
-    //         "type": "FeatureCollection",
-    //         "features": [{
-    //             "type": "Feature",
-    //             "properties": {},
-    //             "geometry": {
-    //                 "type": "LineString",
-    //                 "coordinates": []
-    //             }
-    //         }]
-    //     };
-    //     const map = createMap(t, {
-    //         style: extend(createStyle(), {
-    //             sources: {
-    //                 trace: {
-    //                     type: 'geojson',
-    //                     data
-    //                 }
-    //             },
-    //             layers: [{
-    //                 "id": "background",
-    //                 "type": "background",
-    //                 "paint": {
-    //                     "background-color": "black"
-    //                 }
-    //             }, {
-    //                 'id': 'trace',
-    //                 'type': 'line',
-    //                 'source': 'trace',
-    //                 'paint': {
-    //                     'line-color': "red",
-    //                     'line-width': 5,
-    //                     'line-opacity': 1
-    //                 }
-    //             }]
-    //         })
-    //     });
-    //     map.on('style.load', () => {
-    //         setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-    //         const source = map.getSource('trace');
-    //         data.features[0].geometry.coordinates = [
-    //             [180, 0],
-    //             [180.1, 0],
-    //             [180.2, 0.1]
-    //         ];
-    //         source.setData(data);
-    //         t.equal(source.loaded(), false);
-    //         const onLoaded = (e) => {
-    //             if (e.sourceDataType === 'visibility') return;
-    //             source.off('data', onLoaded);
-    //             t.equal(map.getSource('trace').loaded(), true);
-    //             let beganRenderingContent = false;
-    //             map.on('render', () => {
-    //                 const gl = map.painter.context.gl;
-    //                 const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
-    //                 gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    //                 const centerOffset = map.getContainer().clientWidth / 2 * (map.getContainer().clientHeight + 1) * 4;
-    //                 const isCenterRendered = pixels[centerOffset] === 255;
-    //                 if (!beganRenderingContent) {
-    //                     beganRenderingContent = isCenterRendered;
-    //                     if (beganRenderingContent) {
-    //                         data.features[0].geometry.coordinates.push([180.1, 0.1]);
-    //                         source.setData(data);
-    //                         t.equal(map.getSource('trace').loaded(), false);
-    //                     }
-    //                 } else {
-    //                     // Previous trace data should be rendered while loading update.
-    //                     t.ok(isCenterRendered);
-    //                     setTimeout(() => map.remove(), 0); // avoids re-triggering render after t.end. Don't remove while in render().
-    //                     t.end();
-    //                 }
-    //             });
-    //         };
-    //         source.on('data', onLoaded);
-    //     });
-    // });
+    t.test('mapbox-gl-js-internal#91', t => {
+        const data = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": []
+                }
+            }]
+        };
+        const map = createMap(t, {
+            style: extend(createStyle(), {
+                sources: {
+                    trace: {
+                        type: 'geojson',
+                        data
+                    }
+                },
+                layers: [{
+                    "id": "background",
+                    "type": "background",
+                    "paint": {
+                        "background-color": "black"
+                    }
+                }, {
+                    'id': 'trace',
+                    'type': 'line',
+                    'source': 'trace',
+                    'paint': {
+                        'line-color': "red",
+                        'line-width': 5,
+                        'line-opacity': 1
+                    }
+                }]
+            })
+        });
+        map.on('style.load', () => {
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+            const source = map.getSource('trace');
+            data.features[0].geometry.coordinates = [
+                [180, 0],
+                [180.1, 0],
+                [180.2, 0.1]
+            ];
+            source.setData(data);
+            t.equal(source.loaded(), false);
+            const onLoaded = (e) => {
+                if (e.sourceDataType === 'visibility') return;
+                source.off('data', onLoaded);
+                t.equal(map.getSource('trace').loaded(), true);
+                let beganRenderingContent = false;
+                map.on('render', () => {
+                    const gl = map.painter.context.gl;
+                    const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
+                    gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+                    const centerOffset = map.getContainer().clientWidth / 2 * (map.getContainer().clientHeight + 1) * 4;
+                    const isCenterRendered = pixels[centerOffset] === 255;
+                    if (!beganRenderingContent) {
+                        beganRenderingContent = isCenterRendered;
+                        if (beganRenderingContent) {
+                            data.features[0].geometry.coordinates.push([180.1, 0.1]);
+                            source.setData(data);
+                            t.equal(map.getSource('trace').loaded(), false);
+                        }
+                    } else {
+                        // Previous trace data should be rendered while loading update.
+                        t.ok(isCenterRendered);
+                        setTimeout(() => map.remove(), 0); // avoids re-triggering render after t.end. Don't remove while in render().
+                        t.end();
+                    }
+                });
+            };
+            source.on('data', onLoaded);
+        });
+    });
 
     t.test('mapbox-gl-js-internal#281', t => {
         const data = {
