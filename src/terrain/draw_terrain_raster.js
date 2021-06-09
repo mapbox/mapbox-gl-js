@@ -12,7 +12,7 @@ import {easeCubicInOut} from '../util/util.js';
 import EXTENT from '../data/extent.js';
 import {warnOnce, clamp, degToRad} from '../util/util.js';
 import {GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
-import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat} from '../geo/mercator_coordinate.js';
+import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {createLayout} from '../util/struct_array.js';
 import SegmentVector from '../data/segment.js';
 
@@ -318,12 +318,18 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             const xOffset = coord.canonical.x - tileDim / 2;
             const yAngle = xOffset / tileDim * Math.PI * 2.0;
 
+            // mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
+            
+            // Reprojection of altitude from mercator coordinates is not linear
+            const latScale = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, tr.center.lat);
+
             const posMatrix = mat4.identity(new Float64Array(16));
-            const cameraPos = tr._camera.position;
+            //const cameraPos = tr._camera.position;
+            const point = tr.point;
             const ws = tr.worldSize;
             const s = tr.worldSize / (tr.tileSize * tileDim);
-            mat4.translate(posMatrix, posMatrix, [cameraPos[0] * ws, cameraPos[1] * ws, 0.0]);
-            mat4.translate(posMatrix, posMatrix, [0, 0, -(ws / Math.PI / 2.0)]);
+            //mat4.translate(posMatrix, posMatrix, [0, 0, -(ws / Math.PI / 2.0)]);
+            mat4.translate(posMatrix, posMatrix, [point.x, point.y, -(ws / Math.PI / 2.0) + tr.cameraToCenterDistance * latScale]);
             mat4.scale(posMatrix, posMatrix, [s, s, s]);
             mat4.rotateX(posMatrix, posMatrix, degToRad(-tr._center.lat));
             mat4.rotateY(posMatrix, posMatrix, degToRad(-tr._center.lng));
