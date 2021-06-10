@@ -68,6 +68,7 @@ export const quadTriangle = createLayout([
 export const placement = createLayout([
     {type: 'Int16', name: 'anchorX'},
     {type: 'Int16', name: 'anchorY'},
+    {type: 'Int16', name: 'anchorZ'},
     {type: 'Uint16', name: 'glyphStartIndex'},
     {type: 'Uint16', name: 'numGlyphs'},
     {type: 'Uint32', name: 'vertexStartIndex'},

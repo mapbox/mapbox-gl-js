@@ -461,7 +461,8 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
-            if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, layout.get('symbol-placement') !== 'line' ? canonical : undefined);
+            const linePlacement = layout.get('symbol-placement') === 'line' || layout.get('symbol-placement') === 'line-center';
+            if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, !linePlacement ? canonical : undefined);
 
             let text: Formatted | void;
             if (hasText) {
@@ -670,7 +671,7 @@ class SymbolBucket implements Bucket {
             }
         }
 
-        arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y,
+        arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y, labelAnchor.z || 0,
             glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart, vertexStartIndex,
             lineStartIndex, lineLength, (labelAnchor.segment: any),
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,

@@ -250,26 +250,13 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const tileRenderState: Array<SymbolTileRenderState> = [];
     const defines = painter.terrain && pitchWithMap ? ['PITCH_WITH_MAP_TERRAIN'] : null;
 
-    let i = 0;
-    const t = 0;
     for (const coord of coords) {
-        // if (i++ != t)
-        //     continue;
         const tile = sourceCache.getTile(coord);
         const bucket: SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
         const buffers = isText ? bucket.text : bucket.icon;
         if (!buffers || !buffers.segments.get().length) continue;
         const programConfiguration = buffers.programConfigurations.get(layer.id);
-
-        // const a = buffers.layoutVertexArray.int16;
-        // for (let i = 0; i < a.length; i += 12) {
-        //     const pos = [a[i+0], a[i+1], 0, 1];
-        //     vec4.transformMat4(pos, pos, coord.projMatrix);
-        //     const s = 1.0 / pos[3];
-        //     vec4.scale(pos, pos, 1.0 / pos[3]);
-        //     console.log(pos[0] + " " + pos[1] + " " + pos[2]);
-        // }
 
         const isSDF = isText || bucket.sdfIcons;
 
@@ -319,7 +306,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             const elevation = tr.elevation;
             const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : null;
             const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
-            symbolProjection.updateLineLabels(bucket, globeMatrix/*coord.projMatrix*/, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, getElevation);
+            mat4.multiply(globeMatrix, painter.transform.projMatrix, globeMatrix);
+            symbolProjection.updateLineLabels(bucket, globeMatrix/*coord.projMatrix*/, painter, isText, tr.labelPlaneMatrix /*labelPlaneMatrix*/, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
         }
 
         const matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),

@@ -399,6 +399,10 @@ function addFeature(bucket: SymbolBucket,
     }
 
     const addSymbolAtAnchor = (line, anchor) => {
+        // TODO tämä johonkin paremmin!
+        if (!anchor.inside) {
+            return;
+        }
         // if (anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT) {
         //     // Symbol layers are drawn across tile boundaries, We filter out symbols
         //     // outside our tile boundaries (which may be included in vector tile buffers)
@@ -411,6 +415,10 @@ function addFeature(bucket: SymbolBucket,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
             feature, sizes, isSDFIcon, canonical, layoutTextSize);
+    };
+
+    const anchorInside = (x, y) => {
+        return x >= 0 && x <= EXTENT && y >= 0 && y <= EXTENT;
     };
 
     if (symbolPlacement === 'line') {
@@ -454,21 +462,27 @@ function addFeature(bucket: SymbolBucket,
         for (const polygon of classifyRings(feature.geometry, 0)) {
             // 16 here represents 2 pixels
             const poi = findPoleOfInaccessibility(polygon, 16);
-            addSymbolAtAnchor(polygon[0], new Anchor(poi.x, poi.y, 0, 0));
+            addSymbolAtAnchor(polygon[0], new Anchor(poi.x, poi.y, 0, 0, undefined, anchorInside(poi.x, poi.y)));
         }
     } else if (feature.type === 'LineString') {
         // https://github.com/mapbox/mapbox-gl-js/issues/3808
         for (const line of feature.geometry) {
-            addSymbolAtAnchor(line, new Anchor(line[0].x, line[0].y, 0, 0));
+            addSymbolAtAnchor(line, new Anchor(line[0].x, line[0].y, 0, 0, undefined, anchorInside(line[0].x, line[0].y)));
         }
     } else if (feature.type === 'Point') {
         for (const points of feature.geometry) {
             for (const point of points) {
-                if (point.z) {
-                    if (point.inside)
-                        addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z, 0));
+                //if (point.z !== undefined) {
+                //    if (point.inside)
+                //        addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z, 0));
+                //} else {
+                //    addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z || 0, 0, undefined, true));
+                //}
+
+                if (point.z === undefined) {
+                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0, undefined, anchorInside(point.x, point.y)));
                 } else {
-                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0));
+                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z, 0, undefined, point.inside));
                 }
             }
         }
@@ -810,6 +824,10 @@ function addSymbol(bucket: SymbolBucket,
 
     if (feature.sortKey !== undefined) {
         bucket.addToSortKeyRanges(bucket.symbolInstances.length, feature.sortKey);
+    }
+
+    if (useRuntimeCollisionCircles) {
+        console.log("circles using anchor: " + anchor.x + " " + anchor.y);
     }
 
     bucket.symbolInstances.emplaceBack(

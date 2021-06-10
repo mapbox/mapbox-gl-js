@@ -20,7 +20,8 @@ import type {
 } from '../data/array_types.js';
 import type {FogState} from '../style/fog_helpers.js';
 import {OverscaledTileID} from '../source/tile_id.js';
-import {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
+import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
+import {degToRad} from '../util/util.js';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around
@@ -29,6 +30,19 @@ import {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 // occur offscreen. Making this constant greater increases label
 // stability, but it's expensive.
 const viewportPadding = 100;
+
+const refRadius = 8192.0 / Math.PI / 2.0;
+
+function latLngToECEF(lat, lng, r) {
+    lat = degToRad(lat);
+    lng = degToRad(lng);
+
+    const sx = Math.cos(lat) * Math.sin(lng) * r;
+    const sy = -Math.sin(lat) * r;
+    const sz = Math.cos(lat) * Math.cos(lng) * r;
+
+    return [sx, sy, sz];
+}
 
 /**
  * A collision index used to prevent symbols from overlapping. It keep tracks of
@@ -122,17 +136,33 @@ class CollisionIndex {
         const getElevation = elevation ? (p => elevation.getAtTileOffset(tileID, p.x, p.y)) : (_ => 0);
 
         const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
-        const anchorElevation = getElevation(tileUnitAnchorPoint);
-        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, anchorElevation, tileID);
+
+        // Project to globe
+        const tiles = Math.pow(2.0, tileID.canonical.z);
+        const mx = (tileUnitAnchorPoint.x / 8192.0 + tileID.canonical.x) / tiles;
+        const my = (tileUnitAnchorPoint.y / 8192.0 + tileID.canonical.y) / tiles;
+        const lat = latFromMercatorY(my);
+        const lng = lngFromMercatorX(mx);
+        const point = latLngToECEF(lat, lng, refRadius);
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, point[0], point[1], point[2], tileID);
+
+        screenAnchorPoint.point.x -= viewportPadding;
+        screenAnchorPoint.point.y -= viewportPadding;
+
+        //const anchorElevation = getElevation(tileUnitAnchorPoint);
+        //const screenAnchorPointTEMP = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, 0, tileID);
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
 
-        const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix, anchorElevation).point;
+        //const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix, anchorElevation).point;
+        const labelPlaneAnchorPoint = screenAnchorPoint.point;
 
         const projectionCache = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
+
+        const toScreen = mat4.multiply([], this.transform.labelPlaneMatrix, posMatrix);
 
         const firstAndLastGlyph = screenAnchorPoint.signedDistanceFromCamera > 0 ? projection.placeFirstAndLastGlyph(
             labelPlaneFontScale,
@@ -144,10 +174,11 @@ class CollisionIndex {
             tileUnitAnchorPoint,
             symbol,
             lineVertexArray,
-            labelPlaneMatrix,
+            toScreen, //posMatrix, //labelPlaneMatrix,
             projectionCache,
             elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
-            pitchWithMap && !!elevation
+            pitchWithMap && !!elevation,
+            tileID
         ) : null;
 
         let collisionDetected = false;
