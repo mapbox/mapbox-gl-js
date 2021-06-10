@@ -1643,15 +1643,6 @@ class Transform {
         this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
     }
 
-    _rotate(x: number, y: number, angle: number) {
-        const cos = Math.cos(angle / 180 * Math.PI);
-        const sin = Math.sin(angle / 180 * Math.PI);
-        return {
-            x: x * cos - y * sin,
-            y: x * sin + y * cos
-        };
-    }
-
     _updateCameraState() {
         if (!this.height) return;
 

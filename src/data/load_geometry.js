@@ -50,7 +50,11 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
     const featureExtent = feature.extent;
 
     function reproject(p) {
-        if (canonical) {
+        if (projection && projection.name === 'mercator' || !canonical) {
+            const scale = EXTENT / featureExtent;
+            const p_ = new Point(Math.round(p.x * scale), Math.round(p.y * scale));
+            return clampPoint(p_);
+        } else {
             const cs = projection.tileTransform(canonical);
             const z2 = Math.pow(2, canonical.z);
             const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
@@ -60,10 +64,6 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
                 (x * cs.scale - cs.x) * EXTENT,
                 (y * cs.scale - cs.y) * EXTENT
             );
-        } else {
-            const scale = EXTENT / featureExtent;
-            const p = new Point(Math.round(p.x * scale), Math.round(p.y * scale));
-            return clampPoint(p);
         }
     }
 
