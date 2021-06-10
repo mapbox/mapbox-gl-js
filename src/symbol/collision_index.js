@@ -20,6 +20,7 @@ import type {
 } from '../data/array_types.js';
 import type {FogState} from '../style/fog_helpers.js';
 import {OverscaledTileID} from '../source/tile_id.js';
+import {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around
@@ -381,12 +382,16 @@ class CollisionIndex {
             (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
             (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding
         );
+
+        // Compensate the curvature of the globe
+        const s = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.transform.center.lat);
+
         return {
             point: a,
             // See perspective ratio comment in symbol_sdf.vertex
             // We're doing collision detection in viewport space so we need
             // to scale down boxes in the distance
-            perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3]), 1.5),
+            perspectiveRatio: Math.min(0.5 + 0.5 * ((1.0 - s) * this.transform.cameraToCenterDistance / p[3]), 1.5),
             signedDistanceFromCamera: p[3],
             aboveHorizon
         };

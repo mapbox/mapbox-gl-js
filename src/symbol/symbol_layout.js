@@ -163,7 +163,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
     const layout = bucket.layers[0].layout;
     const unevaluatedLayoutValues = bucket.layers[0]._unevaluatedLayout._values;
-//#error TODO: jossain täällä rakennetaan collisionBoxArray, johon pitäisi saada dumpattua z-arvo
+
     const sizes = {};
 
     if (bucket.textSizeData.kind === 'composite') {

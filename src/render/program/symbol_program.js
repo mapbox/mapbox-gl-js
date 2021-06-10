@@ -168,7 +168,7 @@ const symbolIconUniformValues = (
         'u_is_size_feature_constant': +(functionType === 'constant' || functionType === 'camera'),
         'u_size_t': size ? size.uSizeT : 0,
         'u_size': size ? size.uSize : 0,
-        'u_camera_to_center_distance': transform.cameraToCenterDistance - transform.cameraToCenterDistance * s,
+        'u_camera_to_center_distance': (1.0 - s) * transform.cameraToCenterDistance,
         'u_pitch': transform.pitch / 360 * 2 * Math.PI,
         'u_rotate_symbol': +rotateInShader,
         'u_aspect_ratio': transform.width / transform.height,
