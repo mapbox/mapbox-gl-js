@@ -59,8 +59,9 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
+        const segments = tile.tileBoundsSegments || painter.tileBoundsSegments;
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, tile.tileBoundsBuffer,
-                tile.tileBoundsIndexBuffer, painter.tileBoundsSegments);
+                tile.tileBoundsIndexBuffer, segments);
     }
 }

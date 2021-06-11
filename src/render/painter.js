@@ -322,12 +322,13 @@ class Painter {
         for (const tileID of tileIDs) {
             const tile = sourceCache.getTile(tileID);
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
+            const segments = tile.tileBoundsSegments || this.tileBoundsSegments;
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
                 ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
                 '$clipping', tile.tileBoundsBuffer,
-                tile.tileBoundsIndexBuffer, this.tileBoundsSegments);
+                tile.tileBoundsIndexBuffer, segments);
         }
     }
 

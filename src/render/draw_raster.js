@@ -87,9 +87,10 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 uniformValues, layer.id, source.boundsBuffer,
                 painter.quadTriangleIndexBuffer, source.boundsSegments);
         } else {
+            const segments = tile.tileBoundsSegments || painter.tileBoundsSegments;
             program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, tile.tileBoundsBuffer,
-                tile.tileBoundsIndexBuffer, painter.tileBoundsSegments);
+                tile.tileBoundsIndexBuffer, segments);
         }
     }
 }
