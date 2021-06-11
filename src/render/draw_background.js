@@ -59,9 +59,16 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
-        const segments = tile.tileBoundsSegments || painter.tileBoundsSegments;
+        let tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments;
+        if (tile.tileBoundsSegments) {
+            ({tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = tile);
+        } else {
+            ({tileBoundsBuffer, quadTriangleIndexBuffer: tileBoundsIndexBuffer, tileBoundsSegments} = painter);
+        }
+        console.log('lfdkjsalfd', tile.tileBoundsBuffer, painter.tileBoundsBuffer);
+        console.log(tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments);
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-            uniformValues, layer.id, tile.tileBoundsBuffer,
-                tile.tileBoundsIndexBuffer, segments);
+            uniformValues, layer.id, tileBoundsBuffer,
+                tileBoundsIndexBuffer, tileBoundsSegments);
     }
 }

@@ -575,41 +575,32 @@ class Tile {
     }
 
     _makeTileBoundsArray(context: Context, transform: Transform, numOfSegments: number) {
-        if (this.tileBoundsBuffer) return;
+        if (this.tileBoundsBuffer || transform && transform.projection.name === 'mercator') return;
 
         const tileBoundsArray = new TileBoundsArray();
         const quadTriangleIndices = new TriangleIndexArray();
+        const n2 = numOfSegments * numOfSegments;
 
         const add = (x, y) => {
             const {x_, y_, a, b} = this._add(x, y, numOfSegments, transform);
             tileBoundsArray.emplaceBack(x_, y_, a, b);
         };
 
-        if (transform && transform.projection.name === 'mercator') {
-            tileBoundsArray.emplaceBack(0, 0, 0, 0);
-            tileBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
-            tileBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
-            tileBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
-
-            quadTriangleIndices.emplaceBack(0, 1, 2);
-            quadTriangleIndices.emplaceBack(2, 1, 3);
-            this.tileBoundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
-        } else {
-            for (let xi = 0; xi < numOfSegments; xi++) {
-                for (let yi = 0; yi < numOfSegments; yi++) {
-                    const offset = tileBoundsArray.length;
-                    add(xi, yi);
-                    add(xi + 1, yi);
-                    add(xi, yi + 1);
-                    add(xi + 1, yi + 1);
-                    quadTriangleIndices.emplaceBack(offset + 0, offset + 1, offset + 2);
-                    quadTriangleIndices.emplaceBack(offset + 2, offset + 1, offset + 3);
-                }
+        for (let xi = 0; xi < numOfSegments; xi++) {
+            for (let yi = 0; yi < numOfSegments; yi++) {
+                const offset = tileBoundsArray.length;
+                add(xi, yi);
+                add(xi + 1, yi);
+                add(xi, yi + 1);
+                add(xi + 1, yi + 1);
+                quadTriangleIndices.emplaceBack(offset + 0, offset + 1, offset + 2);
+                quadTriangleIndices.emplaceBack(offset + 2, offset + 1, offset + 3);
             }
         }
 
         this.tileBoundsBuffer = context.createVertexBuffer(tileBoundsArray, boundsAttributes.members);
         this.tileBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
+        this.tileBoundsSegments = SegmentVector.simpleSegment(0, 0, 4 * n2, 2 * n2);
     }
 }
 
