@@ -17,8 +17,12 @@ vec3 fog_apply(vec3 color, vec3 pos) {
 }
 
 // Apply fog computed in the vertex shader
-vec3 fog_apply_from_vert(vec3 color, float fog_opac) {
-    return mix(color, u_fog_color.rgb, fog_opac);
+vec4 fog_apply_from_vert(vec4 color, float fog_opac) {
+    float alpha = EPSILON + color.a;
+    color.rgb /= alpha;
+    color.rgb = mix(color.rgb, u_fog_color.rgb, fog_opac);
+    color.rgb *= alpha;
+    return color;
 }
 
 // Assumes z up
