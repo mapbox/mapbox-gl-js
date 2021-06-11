@@ -5,8 +5,6 @@
       "height": 256,
       "width": 256,
       "operations": [
-        ["forceRenderCached", true],
-        ["wait"],
         ["setPaintProperty", "fill", "fill-color", ["rgba", 117.0, 207.0, 0.0, 1.0 ]],
         ["wait", 0],
         ["wait", 350]

@@ -96,13 +96,6 @@ export const operationHandlers = {
             map.updateImage(params[0], image);
             doneCb();
         });
-    },
-    forceRenderCached(map, params, doneCb) {
-        const terrain = map.painter.terrain;
-        if (terrain) {
-            terrain.forceRenderCached = params[0];
-        }
-        doneCb();
     }
 };
 
