@@ -1,6 +1,6 @@
 // @flow
 
-import {uniqueId, parseCacheControl} from '../util/util.js';
+import {uniqueId, parseCacheControl, NUM_OF_SEGMENTS} from '../util/util.js';
 import {deserialize as deserializeBucket} from '../data/bucket.js';
 import FeatureIndex from '../data/feature_index.js';
 import GeoJSONFeature from '../util/vectortile_to_geojson.js';
@@ -141,8 +141,14 @@ class Tile {
         this.state = 'loading';
 
         if (painter) {
-            this._makeTileBoundsArray(painter.context, painter.transform, painter._numTileBorderSegments);
-            this._makeTileDebugArray(painter.context, painter.transform, painter._numTileBorderSegments);
+            const projection = painter && painter.transform.projection;
+            // this._tileDebugBoundsArray = this._makeTileDebugArray(projection);
+            this._makeTileDebugArray(painter.context, projection);
+            const boundsArrays = this._makeTileBoundsArray(painter.context, projection);
+
+            if (!boundsArrays) return;
+            this._tileBoundsArray = boundsArrays.tileBoundsArray;
+            this._quadTriangleIndices = boundsArrays.quadTriangleIndices;
         }
     }
 
@@ -530,16 +536,16 @@ class Tile {
         });
     }
 
-    _add(x: number, y: number, denominator: number, transform: Transform) {
+    _add(x: number, y: number, denominator: number, projection: projection) {
         const s = Math.pow(2, -this.tileID.canonical.z);
         const x1 = (this.tileID.canonical.x) * s;
         const y1 = (this.tileID.canonical.y) * s;
-        const cs = transform.projection.tileTransform(this.tileID.canonical);
+        const cs = projection.tileTransform(this.tileID.canonical);
         const increment = s / denominator;
         const x2 = x1 + x * increment;
         const y2 = y1 + y * increment;
         const l = new MercatorCoordinate(x2, y2).toLngLat();
-        const xy = ((transform.projection.project(l.lng, l.lat)));
+        const xy = ((projection.project(l.lng, l.lat)));
         const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
         const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
         const a = x / denominator * EXTENT;
@@ -547,17 +553,17 @@ class Tile {
         return {x_, y_, a, b};
     }
 
-    _makeTileDebugArray(context: Context, transform: Transform, numOfSegments: number) {
-        if (this.tileDebugBuffer) return;
+    _makeTileDebugArray(context, projection: Projection) {
+        if (this._tileDebugBoundsArray) return;
 
         const debugBoundsArray = new PosArray();
 
         const add = (x, y) => {
-            const {x_, y_} = this._add(x, y, EXTENT, transform);
+            const {x_, y_} = this._add(x, y, EXTENT, projection);
             debugBoundsArray.emplaceBack(x_, y_);
         };
 
-        const stride = EXTENT / numOfSegments;
+        const stride = EXTENT / NUM_OF_SEGMENTS;
         const SIDES = [
             {start: [0, 0], step: [stride, 0]},
             {start: [EXTENT, 0], step: [0, stride]},
@@ -566,28 +572,28 @@ class Tile {
         ];
 
         for (const {start, step} of SIDES) {
-            for (let i = 0; i < numOfSegments; i++) {
+            for (let i = 0; i < NUM_OF_SEGMENTS; i++) {
                 add(start[0] + (i * step[0]), start[1] + (i * step[1]));
             }
         }
 
         this.tileDebugBuffer = context.createVertexBuffer(debugBoundsArray, boundsAttributes.members);
+        // return debugBoundsArray;
     }
 
-    _makeTileBoundsArray(context: Context, transform: Transform, numOfSegments: number) {
-        if (this.tileBoundsBuffer || transform && transform.projection.name === 'mercator') return;
+    _makeTileBoundsArray(context, projection: Projection) {
+        if (this._tileBoundsArray || projection && projection.name === 'mercator') return;
 
         const tileBoundsArray = new TileBoundsArray();
         const quadTriangleIndices = new TriangleIndexArray();
-        const n2 = numOfSegments * numOfSegments;
 
         const add = (x, y) => {
-            const {x_, y_, a, b} = this._add(x, y, numOfSegments, transform);
+            const {x_, y_, a, b} = this._add(x, y, NUM_OF_SEGMENTS, projection);
             tileBoundsArray.emplaceBack(x_, y_, a, b);
         };
 
-        for (let xi = 0; xi < numOfSegments; xi++) {
-            for (let yi = 0; yi < numOfSegments; yi++) {
+        for (let xi = 0; xi < NUM_OF_SEGMENTS; xi++) {
+            for (let yi = 0; yi < NUM_OF_SEGMENTS; yi++) {
                 const offset = tileBoundsArray.length;
                 add(xi, yi);
                 add(xi + 1, yi);
@@ -598,9 +604,7 @@ class Tile {
             }
         }
 
-        this.tileBoundsBuffer = context.createVertexBuffer(tileBoundsArray, boundsAttributes.members);
-        this.tileBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
-        this.tileBoundsSegments = SegmentVector.simpleSegment(0, 0, 4 * n2, 2 * n2);
+        return {tileBoundsArray, quadTriangleIndices};
     }
 }
 
