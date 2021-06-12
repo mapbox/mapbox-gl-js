@@ -281,12 +281,10 @@ class Painter {
     }
 
     getTileBoundsBuffers(tile) {
-        const context = this.context;
-
         let tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments;
-        if (tile._tileBoundsArray) {
-            tileBoundsBuffer = context.createVertexBuffer(tile._tileBoundsArray, boundsAttributes.members);
-            tileBoundsIndexBuffer = context.createIndexBuffer(tile._quadTriangleIndices);
+        if (tile._tileBoundsBuffer) {
+            tileBoundsBuffer = tile._tileBoundsBuffer;
+            tileBoundsIndexBuffer = tile._tileBoundsIndexBuffer;
             tileBoundsSegments = this.nonmercatorBoundsSegments;
         } else {
             tileBoundsBuffer = this.mercatorBoundsBuffer;
@@ -295,10 +293,6 @@ class Painter {
         }
 
         return {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments};
-    }
-
-    getTileDebugBoundsBuffer(tile) {
-        return this.context.createVertexBuffer(tile._tileDebugBoundsArray, boundsAttributes.members);
     }
 
     /*

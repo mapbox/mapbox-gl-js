@@ -109,10 +109,9 @@ class Tile {
     queryGeometryDebugViz: TileSpaceDebugBuffer;
     queryBoundsDebugViz: TileSpaceDebugBuffer;
 
-    tileDebugBuffer: VertexBuffer;
-    tileBoundsBuffer: VertexBuffer;
-    tileBoundsIndexBuffer: IndexBuffer;
-    tileBoundsSegments: ?SegmentVector;
+    _tileDebugBoundsBuffer: VertexBuffer;
+    _tileBoundsBuffer: VertexBuffer;
+    _tileBoundsIndexBuffer: IndexBuffer;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -142,13 +141,8 @@ class Tile {
 
         if (painter) {
             const projection = painter && painter.transform.projection;
-            // this._tileDebugBoundsArray = this._makeTileDebugArray(projection);
-            this._makeTileDebugArray(painter.context, projection);
-            const boundsArrays = this._makeTileBoundsArray(painter.context, projection);
-
-            if (!boundsArrays) return;
-            this._tileBoundsArray = boundsArrays.tileBoundsArray;
-            this._quadTriangleIndices = boundsArrays.quadTriangleIndices;
+            this._makeTileDebugBuffer(painter.context, projection);
+            this._makeTileBoundsBuffers(painter.context, projection);
         }
     }
 
@@ -553,8 +547,8 @@ class Tile {
         return {x_, y_, a, b};
     }
 
-    _makeTileDebugArray(context, projection: Projection) {
-        if (this._tileDebugBoundsArray) return;
+    _makeTileDebugBuffer(context: Context, projection: Projection) {
+        if (this._tileDebugBoundsBuffer) return;
 
         const debugBoundsArray = new PosArray();
 
@@ -577,12 +571,11 @@ class Tile {
             }
         }
 
-        this.tileDebugBuffer = context.createVertexBuffer(debugBoundsArray, boundsAttributes.members);
-        // return debugBoundsArray;
+        this._tileDebugBoundsBuffer = context.createVertexBuffer(debugBoundsArray, boundsAttributes.members);
     }
 
-    _makeTileBoundsArray(context, projection: Projection) {
-        if (this._tileBoundsArray || projection && projection.name === 'mercator') return;
+    _makeTileBoundsBuffers(context: Context, projection: Projection) {
+        if (this._tileBoundsBuffer || projection && projection.name === 'mercator') return;
 
         const tileBoundsArray = new TileBoundsArray();
         const quadTriangleIndices = new TriangleIndexArray();
@@ -604,7 +597,8 @@ class Tile {
             }
         }
 
-        return {tileBoundsArray, quadTriangleIndices};
+        this._tileBoundsBuffer = context.createVertexBuffer(tileBoundsArray, boundsAttributes.members);
+        this._tileBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
     }
 }
 
