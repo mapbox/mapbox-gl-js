@@ -37,8 +37,6 @@ import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
 
-const FACTOR = Math.pow(2, 13);
-
 // Also declared in _prelude_terrain.vertex.glsl
 // Used to scale most likely elevation values to fit well in an uint16
 // (Elevation of Dead Sea + ELEVATION_OFFSET) * ELEVATION_SCALE is roughly 0
@@ -46,18 +44,26 @@ const FACTOR = Math.pow(2, 13);
 export const ELEVATION_SCALE = 7.0;
 export const ELEVATION_OFFSET = 450;
 
-function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
+const NORMAL_UP = 0x7E00;
+
+function addVertex(vertexArray, x, y, normal, normalUp, top, e) {
     vertexArray.emplaceBack(
         // a_pos_normal_ed:
         // Encode top and side/up normal using the least significant bits
         (x << 1) + top,
         (y << 1) + normalUp,
-        // dxdy is signed, encode quadrant info using the least significant bit
-        (Math.floor(nxRatio * FACTOR) << 1) + nySign,
+        normal,
         // edgedistance (used for wrapping patterns around extrusion sides)
         Math.round(e)
     );
 }
+
+function supportedRoofType(feature, polygons) {
+    const roofType = feature.properties && feature.properties['roof:shape'];
+    return (roofType === 'gabled' || roofType === 'pyramidal' || roofType == 'dome') ? roofType : null;
+}
+
+type RingBoundaryType = 'split' | 'inside';
 
 class PartMetadata {
     acc: Point;
@@ -301,13 +307,53 @@ class FillExtrusionBucket implements Bucket {
         this.segments.destroy();
     }
 
+    encodeSideNormal(p1: Point, p2: Point): number {
+        const d = p1.sub(p2)._perp();
+        return this.encodeNormal(d.x, d.y, 0);
+    }
+
+    encodeNormal(x: number, y: number, z: number) {
+        let normal = 0x01;
+        if (y < 0) {
+            y = -y;
+            normal = 0;
+        }
+
+        const xAbs = Math.abs(x);
+        const w = 126.0 / (xAbs + y + z);
+        let xBits = Math.floor(w * xAbs);
+        let zBits = Math.floor(w * z);
+        normal = normal | (xBits << 1) | (zBits << 8);
+        if (x < 0) {
+            // endode dx sign using the sign of the int16.
+            normal = -normal;
+        }
+        return normal;
+    }
+
+    encodeFaceNormal(p1: Point, p2: Point, p3: Point): number {
+        const d21 = p1.sub(p2);
+        const d23 = p3.sub(p2);
+        const meter = -1 / this.tileToMeter;
+        
+        let x = d21.y * meter;
+        let y = -d21.x * meter;
+        let z = d21.x * d23.y - d21.y * d23.x;
+
+        return this.encodeNormal(x, y, z);
+    }
+
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
         const flatRoof = this.enableTerrain && feature.properties &&
             vectorTileFeatureTypes[feature.type] === 'Polygon';
 
         const metadata = flatRoof ? new PartMetadata() : null;
 
-        for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
+        const polygons = classifyRings(geometry, EARCUT_MAX_RINGS);
+        // Roof shape type is supported if there is no pattern
+        const roofShapeType = !this.hasPattern && supportedRoofType(feature, polygons);
+
+        for (const polygon of polygons) {
             let numVertices = 0;
             let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
@@ -315,6 +361,10 @@ class FillExtrusionBucket implements Bucket {
                 continue;
             }
 
+            if (roofShapeType) {
+                segment = this.addRoofVertices(roofShapeType, polygon, segment, metadata);
+                continue;
+            }
             for (let i = 0; i < polygon.length; i++) {
                 const ring = polygon[i];
                 if (ring.length === 0) {
@@ -336,22 +386,17 @@ class FillExtrusionBucket implements Bucket {
                             if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                             }
-
-                            const d = p1.sub(p2)._perp();
-                            // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
-                            // This information is sufficient to reconstruct normal vector in vertex shader.
-                            const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
-                            const nySign = d.y > 0 ? 1 : 0;
+                            const normal = this.encodeSideNormal(p1, p2);
                             const dist = p2.dist(p1);
                             if (edgeDistance + dist > 32768) edgeDistance = 0;
 
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
+                            addVertex(this.layoutVertexArray, p1.x, p1.y, normal, 0, 0, edgeDistance);
+                            addVertex(this.layoutVertexArray, p1.x, p1.y, normal, 0, 1, edgeDistance);
 
                             edgeDistance += dist;
 
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, edgeDistance);
+                            addVertex(this.layoutVertexArray, p2.x, p2.y, normal, 0, 0, edgeDistance);
+                            addVertex(this.layoutVertexArray, p2.x, p2.y, normal, 0, 1, edgeDistance);
 
                             const bottomRight = segment.vertexLength;
 
@@ -396,7 +441,7 @@ class FillExtrusionBucket implements Bucket {
                 for (let i = 0; i < ring.length; i++) {
                     const p = ring[i];
 
-                    addVertex(this.layoutVertexArray, p.x, p.y, 0, 0, 1, 1, 0);
+                    addVertex(this.layoutVertexArray, p.x, p.y, NORMAL_UP, 1, 1, 0);
 
                     flattened.push(p.x);
                     flattened.push(p.y);
@@ -486,6 +531,210 @@ class FillExtrusionBucket implements Bucket {
                 this.centroidVertexArray.emplace(offset++, x, y);
             }
         }
+    }
+
+    getBoundaryPosition(ring: Array<Point>): RingBoundaryType {
+        let bordersCut = 0;
+        let paddedBorder = 0;
+        let isVerticalBorder = false;
+        for (let p = 0; p < ring.length - 1; p++) {
+            const p1 = ring[p];
+            const p2 = ring[p + 1];
+            if (p1.x === p2.x && (p1.x < 0 || p1.x > EXTENT)) {
+                bordersCut++;
+                paddedBorder = p1.x;
+                isVerticalBorder = true;
+            } else if (p1.y === p2.y && (p1.y < 0 || p1.y > EXTENT)) {
+                bordersCut++;
+                paddedBorder = p1.y;
+            }
+        }
+        if (bordersCut === 0) {
+            return 'inside';
+        }
+        return 'split';
+    }
+
+    addTriangleVertices(p1: Point, p2: Point, top: Point, segment: Segment, normal: number): Segment {
+        if (segment.vertexLength + 3 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
+            segment = this.segments.prepareSegment(3, this.layoutVertexArray, this.indexArray);
+        }
+        const offset = segment.vertexLength;
+        addVertex(this.layoutVertexArray, p1.x, p1.y, normal, 0, 0, 0);
+        addVertex(this.layoutVertexArray, top.x, top.y, normal, 0, 1, 0);
+        addVertex(this.layoutVertexArray, p2.x, p2.y, normal, 0, 0, 0);
+        this.indexArray.emplaceBack(offset, offset + 1, offset + 2);
+        segment.vertexLength += 3;
+        segment.primitiveLength++;
+        return segment;
+    }
+
+    addRectVertices(p1: Point, p1t: Point, p2: Point, p2t: Point, segment: Segment, normal: ?number, center: ?Point): Segment {
+        if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
+            segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+        }
+        const offset = segment.vertexLength;
+        addVertex(this.layoutVertexArray, p1.x, p1.y, normal, 0, 0, 0);
+        addVertex(this.layoutVertexArray, p1t.x, p1t.y, normal, 0, 1, 0);
+        addVertex(this.layoutVertexArray, p2.x, p2.y, normal, 0, 0, 0);
+        addVertex(this.layoutVertexArray, p2t.x, p2t.y, normal, 0, 1, 0);
+        this.indexArray.emplaceBack(offset, offset + 1, offset + 2);
+        this.indexArray.emplaceBack(offset + 2, offset + 1, offset + 3);
+        segment.vertexLength += 4;
+        segment.primitiveLength += 2;
+        return segment;
+    }
+
+    addRoofVertices(roofType: RoofType, polygon: Polygon, seg: Segment, metadata: ?PartMetadata): Segment {
+        let segment = seg;
+        if (roofType === 'gabled') {
+            for (let i = 0; i < polygon.length; i++) {
+                const ring = polygon[i];
+                // TODO: cut border roofs are hidden, return and render cuboid until it is possible to reconstruct
+                if (ring.length < 3 || this.getBoundaryPosition(ring) === 'split' || ring.length !== 5) {
+                    continue;
+                }
+
+                if (metadata) metadata.startRing(ring[0]);
+                let shortestEdge = Number.MAX_VALUE;
+                let shortestEdgeStartPoint = 0;
+
+                for (let p = 1; p < ring.length; p++) {
+                    const p2 = ring[p];
+                    const p1 = ring[p - 1];
+                    const dist = p2.distSqr(p1);
+                    if (dist < shortestEdge) {
+                        shortestEdge = dist;
+                        shortestEdgeStartPoint = p - 1;
+                    }
+                    if (metadata) metadata.append(p1, p2);
+                }
+                if (metadata) {
+                    metadata.currentPolyCount.edges = 0;
+                    metadata.currentPolyCount.top = 14; // two rectangles and two triangles
+                }
+
+                for (let p = 0; p < ring.length - 1; p++) {
+                    const p1 = ring[p];
+                    const p2 = ring[p + 1];
+                    if (p === shortestEdgeStartPoint || p === (shortestEdgeStartPoint + 2) % 4) {
+                        const normal = this.encodeSideNormal(p2, p1);
+                        segment = this.addTriangleVertices(p1, p2, p1.add(p2)._mult(0.5)._round(), segment, normal);
+                    } else {
+                        const p0 = ring[(p + 3) % 4];
+                        const p3 = ring[(p + 2) % 4];
+                        const p01 = p0.add(p1)._mult(0.5)._round();
+                        const p23 = p2.add(p3)._mult(0.5)._round();
+                        const normal = this.encodeFaceNormal(p2, p1, p01);
+                        segment = this.addRectVertices(p1, p01, p2, p23, segment, normal);
+                    }
+                }
+            }
+        } else if (roofType === 'pyramidal') {
+            for (let i = 0; i < polygon.length; i++) {
+                const ring = polygon[i];
+                // TODO: cut border roofs are hidden, return and render cuboid until it is possible to reconstruct
+                if (ring.length < 3 || this.getBoundaryPosition(ring) === 'split') {
+                    continue;
+                }
+                if (metadata) metadata.startRing(ring[0]);
+
+                // Low number of points expected so no need to use standard convex hull approach.
+                let farthestDistanceSquare = 0;
+                let farthestPoints = [0, 1];
+
+                for (let i = 0; i < ring.length - 1; i++) {
+                    const p1 = ring[i];
+                    if (metadata) metadata.append(p1, ring[i + 1]);
+                    for (let j = i + 1; j < ring.length; j++) {
+                        const distSquare = p1.distSqr(ring[j]);
+                        if (distSquare > farthestDistanceSquare) {
+                            farthestDistanceSquare = distSquare;
+                            farthestPoints = [i, j];
+                        }
+                    }
+                }
+                const vertexCount = (ring.length - 1) * 3; // triangle over every edge 
+                if (metadata) {
+                    metadata.currentPolyCount.edges = 0;
+                    metadata.currentPolyCount.top = vertexCount;
+                }
+                const p0 = ring[farthestPoints[0]].add(ring[farthestPoints[1]])._mult(0.5)._round();
+
+                for (let p = 0; p < ring.length - 1; p++) {
+                    const p1 = ring[p];
+                    const p2 = ring[p + 1];
+                    const normal = this.encodeFaceNormal(p2, p1, p0);
+                    segment = this.addTriangleVertices(p1, p2, p0, segment, normal);
+                }
+            }
+        } else if (roofType === 'dome') {
+            for (let i = 0; i < polygon.length; i++) {
+                const ring = polygon[i];
+                // TODO: cut border roofs are hidden, return and render cuboid until it is possible to reconstruct
+                if (ring.length < 3 || this.getBoundaryPosition(ring) === 'split') {
+                    continue;
+                }
+                if (metadata) metadata.startRing(ring[0]);
+        
+                const c = ring.reduce((acc, v) => acc._add(v), new Point(0.0, 0.0))._div(ring.length)._round();
+                const height = ring[0].dist(c);
+
+                const steps = 5;
+                const meter = 1 / this.tileToMeter;
+                const levelCount = ring.length - 1;
+                const vertexCount = levelCount * steps + 1;
+
+                if (metadata) {
+                    metadata.currentPolyCount.edges = 0;
+                    metadata.currentPolyCount.top = vertexCount;
+                }
+                if (segment.vertexLength + vertexCount > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
+                    segment = this.segments.prepareSegment(vertexCount, this.layoutVertexArray, this.indexArray);
+                }
+                const index = segment.vertexLength;
+                segment.vertexLength += vertexCount;
+                segment.primitiveLength += ((steps - 1) * levelCount * 2 + levelCount);
+                for (let i = 0; i < steps; i++) {
+                    const cos = Math.cos(i * Math.PI / 2 / 5);
+                    const sin = Math.sin(i * Math.PI / 2 / 5);
+                    const hAdjusted = (height * sin) * (height * sin) / meter;
+
+                    for (let p = 0; p < levelCount; p++) {
+                        const pCircle = ring[p];
+                        const offset = pCircle.sub(c)._mult(cos);
+                        const p1 = c.add(offset).round();
+                        // Normal direction is from center to vertex, with height scaled
+                        // to one meter: as we don't know the height yet, normal.z is
+                        // adjusted in shader code.
+                        // While elsewhere we use face normals, here per-vertex normals are
+                        // used to achieve smooth results (and use less vertices).
+                        const normal = this.encodeNormal(-offset.x, -offset.y, hAdjusted);
+                        // 1 (normal up) 0 (top) combination encodes that `edge` field is used
+                        // for ratio of height - base (vertical offset over base).
+                        addVertex(this.layoutVertexArray, p1.x, p1.y, normal, 1, 0, sin * 8192.0);
+                    }
+                }
+                addVertex(this.layoutVertexArray, c.x, c.y, NORMAL_UP, 0, 1, 0);
+        
+                for (let q = 0; q < steps - 1; q++) {
+                    for (let p = 0; p < levelCount; p++) {
+                        const i = index + q * levelCount + p;
+                        // closed circle: wire last to first
+                        const j = p < levelCount - 1 ? i + 1 : i - p;
+                        this.indexArray.emplaceBack(i, i + levelCount, j);
+                        this.indexArray.emplaceBack(i + levelCount, j + levelCount, j);
+                    }
+                }
+                for (let p = 0; p < levelCount; p++) {
+                    const i = index + (steps - 1) * levelCount + p;
+                    // closed circle: wire last to first
+                    const j = p < levelCount - 1 ? i + 1 : i - p;
+                    this.indexArray.emplaceBack(i, segment.vertexLength - 1, j);
+                }
+            }
+        }
+        return segment;
     }
 }
 

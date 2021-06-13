@@ -25,7 +25,7 @@
     <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
     <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
     <label><input id='freeze-tile-coverage-checkbox' type='checkbox'> freeze tile coverage </label><br />
-    <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
+    <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
     <label><input id='show-terrain-wireframe-checkbox' type='checkbox'> terrain wireframe</label><br />
     <label><input id='satellite-checkbox' type='checkbox'> satellite</label><br />
     <label><input id='buildings-checkbox' type='checkbox'> buildings</label><br />
@@ -42,8 +42,8 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 13.5,
-    center: [-122.45814, 37.76159],
+    zoom: 18.7,
+    center: [-122.4188441, 37.779359],
     style: 'mapbox://styles/mapbox/streets-v11',
     // style: 'mapbox://styles/claretrainor/ck2pc4ljf1jbe1codiy7oxzjg', // Style with additional traffic vector source.
     hash: true
@@ -80,6 +80,12 @@ map.on('style.load', function() {
         maxzoom: 16
     });
 
+    map.addSource('sf-buildings', {
+        type: 'vector',
+        url: 'mapbox://astojilj.08wlhlf8',
+        maxzoom: 16
+    });
+
     map.addSource("satellite", {
         "type": "raster",
         "url": "mapbox://mapbox.satellite",
@@ -112,15 +118,15 @@ map.on('style.load', function() {
     } else {
         map.addLayer({
             'id': buildingsLayerId,
-            'source': 'composite',
-            'source-layer': 'building',
-            'filter': ['==', 'extrude', 'true'],
+            'source': 'sf-buildings',
+            'source-layer': 'cityhall-0f8aj3',
+//            'filter': ['==', 'extrude', 'true'],
             'type': 'fill-extrusion',
             'minzoom': 15,
             'paint': {
-                'fill-extrusion-color': ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
-                'fill-extrusion-height': ["get", "height"],
-                'fill-extrusion-opacity': 0.7
+                'fill-extrusion-color': '#aaa',
+                'fill-extrusion-height': ["to-number", ["get", "height"], 0],
+                'fill-extrusion-base': ["to-number", ["get", "min_height"], 0]
             }
         }, 'waterway-label');
     }
