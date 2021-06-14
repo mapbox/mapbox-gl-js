@@ -91,6 +91,7 @@ export const symbolInstance = createLayout([
     {type: 'Int16', name: 'anchorX'},
     {type: 'Int16', name: 'anchorY'},
     {type: 'Int16', name: 'anchorZ'},
+    {type: 'Int16', name: 'dynamicAnchor'},
     {type: 'Int16', name: 'rightJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'centerJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'leftJustifiedTextSymbolIndex'},

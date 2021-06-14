@@ -86,10 +86,26 @@ class CollisionIndex {
         this.fogState = fogState;
     }
 
-    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
+    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, dynamicAnchor, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
+
+        let projectedPoint = null;
+        if (dynamicAnchor) {
+            const tileID = collisionBox.tileID;
+            const tiles = Math.pow(2.0, tileID.canonical.z);
+            const mx = (collisionBox.anchorPointX / 8192.0 + tileID.canonical.x) / tiles;
+            const my = (collisionBox.anchorPointY / 8192.0 + tileID.canonical.y) / tiles;
+            const lat = latFromMercatorY(my);
+            const lng = lngFromMercatorX(mx);
+            const pg = latLngToECEF(lat, lng, refRadius);
+            projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, pg[0], pg[1], pg[2], collisionBox.tileID);
+
+        } else {
+            projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.anchorPointZ, collisionBox.tileID);
+        }
+
         //const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation, collisionBox.tileID);
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.anchorPointZ, collisionBox.tileID);
+        //const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.anchorPointZ, collisionBox.tileID);
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
         const tlY = (collisionBox.y1 * scale + shift.y - collisionBox.padding) * tileToViewport + projectedPoint.point.y;

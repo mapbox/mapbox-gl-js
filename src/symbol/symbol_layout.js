@@ -398,7 +398,7 @@ function addFeature(bucket: SymbolBucket,
         }
     }
 
-    const addSymbolAtAnchor = (line, anchor) => {
+    const addSymbolAtAnchor = (line, anchor, reproject) => {
         // TODO tämä johonkin paremmin!
         if (!anchor.inside) {
             return;
@@ -414,7 +414,7 @@ function addFeature(bucket: SymbolBucket,
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
-            feature, sizes, isSDFIcon, canonical, layoutTextSize);
+            feature, sizes, isSDFIcon, canonical, layoutTextSize, reproject);
     };
 
     const anchorInside = (x, y) => {
@@ -437,7 +437,7 @@ function addFeature(bucket: SymbolBucket,
             for (const anchor of anchors) {
                 const shapedText = defaultHorizontalShaping;
                 if (!shapedText || !anchorIsTooClose(bucket, shapedText.text, textRepeatDistance, anchor)) {
-                    addSymbolAtAnchor(line, anchor);
+                    addSymbolAtAnchor(line, anchor, true);
                 }
             }
         }
@@ -454,17 +454,19 @@ function addFeature(bucket: SymbolBucket,
                     glyphSize,
                     textMaxBoxScale);
                 if (anchor) {
-                    addSymbolAtAnchor(line, anchor);
+                    addSymbolAtAnchor(line, anchor, true);
                 }
             }
         }
     } else if (feature.type === 'Polygon') {
+        // TODO: not implemented yet
         for (const polygon of classifyRings(feature.geometry, 0)) {
             // 16 here represents 2 pixels
             const poi = findPoleOfInaccessibility(polygon, 16);
             addSymbolAtAnchor(polygon[0], new Anchor(poi.x, poi.y, 0, 0, undefined, anchorInside(poi.x, poi.y)));
         }
     } else if (feature.type === 'LineString') {
+        // TODO: not implemented yet
         // https://github.com/mapbox/mapbox-gl-js/issues/3808
         for (const line of feature.geometry) {
             addSymbolAtAnchor(line, new Anchor(line[0].x, line[0].y, 0, 0, undefined, anchorInside(line[0].x, line[0].y)));
@@ -480,9 +482,9 @@ function addFeature(bucket: SymbolBucket,
                 //}
 
                 if (point.z === undefined) {
-                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0, undefined, anchorInside(point.x, point.y)));
+                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0, undefined, anchorInside(point.x, point.y)), false);
                 } else {
-                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z, 0, undefined, point.inside));
+                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z, 0, undefined, point.inside), false);
                 }
             }
         }
@@ -657,7 +659,8 @@ function addSymbol(bucket: SymbolBucket,
                    sizes: Sizes,
                    isSDFIcon: boolean,
                    canonical: CanonicalTileID,
-                   layoutTextSize: number) {
+                   layoutTextSize: number,
+                   reprojectionRequired: boolean) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
     //console.log(anchor.x + " " + anchor.y);
     let textBoxIndex, iconBoxIndex, verticalTextBoxIndex, verticalIconBoxIndex;
@@ -834,6 +837,7 @@ function addSymbol(bucket: SymbolBucket,
         anchor.x,
         anchor.y,
         anchor.z || 0,
+        reprojectionRequired,
         placedTextSymbolIndices.right >= 0 ? placedTextSymbolIndices.right : -1,
         placedTextSymbolIndices.center >= 0 ? placedTextSymbolIndices.center : -1,
         placedTextSymbolIndices.left >= 0 ? placedTextSymbolIndices.left : -1,

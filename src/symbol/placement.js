@@ -310,16 +310,16 @@ export class Placement {
 
         const textOffset = [symbolInstance.textOffset0, symbolInstance.textOffset1];
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textScale);
-
+return;
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
             textScale, textBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
-            textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
+            textAllowOverlap, textPixelRatio, posMatrix, false, collisionGroup.predicate);
 
         if (iconBox) {
             const placedIconBoxes = this.collisionIndex.placeCollisionBox(
                 bucket.getSymbolInstanceIconSize(iconSize, this.transform.zoom, symbolIndex),
                 iconBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
-                textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
+                textAllowOverlap, textPixelRatio, posMatrix, false, collisionGroup.predicate);
             if (placedIconBoxes.box.length === 0) return;
         }
 
@@ -412,7 +412,7 @@ export class Placement {
                 this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false);
                 return;
             }
-
+            //console.log(symbolInstance.dynamicAnchor);
             let placeText = false;
             let placeIcon = false;
             let offscreen = true;
@@ -480,8 +480,9 @@ export class Placement {
                 if (!layout.get('text-variable-anchor')) {
                     const placeBox = (collisionTextBox, orientation) => {
                         const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, symbolIndex);
+                        const matrix = symbolInstance.dynamicAnchor ? globeMatrix : posMatrix;
                         const placedFeature = this.collisionIndex.placeCollisionBox(textScale, collisionTextBox,
-                            new Point(0, 0), textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
+                            new Point(0, 0), textAllowOverlap, textPixelRatio, matrix/*posMatrix*/, symbolInstance.dynamicAnchor, collisionGroup.predicate);
                         if (placedFeature && placedFeature.box && placedFeature.box.length) {
                             this.markUsedOrientation(bucket, orientation, symbolInstance);
                             this.placedOrientations[symbolInstance.crossTileID] = orientation;
@@ -634,10 +635,10 @@ export class Placement {
                     const shiftPoint: Point = hasIconTextFit && shift ?
                         offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle) :
                         new Point(0, 0);
-
+                    const matrix = symbolInstance.dynamicAnchor ? globeMatrix : posMatrix;
                     const iconScale = bucket.getSymbolInstanceIconSize(partiallyEvaluatedIconSize, this.transform.zoom, symbolIndex);
                     return this.collisionIndex.placeCollisionBox(iconScale, iconBox, shiftPoint,
-                        iconAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
+                        iconAllowOverlap, textPixelRatio, matrix/*posMatrix*/, symbolInstance.dynamicAnchor, collisionGroup.predicate);
                 };
 
                 if (placedVerticalText && placedVerticalText.box && placedVerticalText.box.length && collisionArrays.verticalIconBox) {
