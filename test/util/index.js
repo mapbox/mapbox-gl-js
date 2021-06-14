@@ -8,7 +8,7 @@ export function createMap(t, options, callback) {
         container,
         interactive: false,
         attributionControl: false,
-        trackResize: true,
+        shouldTrackResize: () => true,
         testMode: true,
         style: {
             "version": 8,

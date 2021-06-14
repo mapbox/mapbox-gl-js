@@ -725,8 +725,8 @@ test('Map', (t) => {
             createMap(t);
         });
 
-        t.test('do not resize if trackResize is false', (t) => {
-            const map = createMap(t, {trackResize: false});
+        t.test('do not resize if shouldTrackResize return false', (t) => {
+            const map = createMap(t, {shouldTrackResize: () => false});
 
             t.spy(map, 'stop');
             t.spy(map, '_update');
@@ -741,7 +741,7 @@ test('Map', (t) => {
             t.end();
         });
 
-        t.test('do resize if trackResize is true (default)', (t) => {
+        t.test('do resize if shouldTrackResize return true (default)', (t) => {
             const map = createMap(t);
 
             t.spy(map, '_update');

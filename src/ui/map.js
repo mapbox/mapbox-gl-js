@@ -106,7 +106,7 @@ type MapOptions = {
     doubleClickZoom?: boolean,
     touchZoomRotate?: boolean,
     touchPitch?: boolean,
-    trackResize?: boolean,
+    shouldTrackResize?: () => boolean,
     center?: LngLatLike,
     zoom?: number,
     bearing?: number,
@@ -158,7 +158,7 @@ const defaultOptions = {
 
     failIfMajorPerformanceCaveat: false,
     preserveDrawingBuffer: false,
-    trackResize: true,
+    shouldTrackResize: () => true,
     optimizeForTerrain: true,
     renderWorldCopies: true,
     refreshExpiredTiles: true,
@@ -235,7 +235,7 @@ const defaultOptions = {
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
  * @param {boolean|Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
  * @param {boolean|Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler#enable}.
- * @param {boolean} [options.trackResize=true]  If `true`, the map will automatically resize when the browser window resizes.
+ * @param {boolean} [options.shouldTrackResize=()=>true]  If that function return `true`, the map will automatically resize when the browser window resizes.
  * @param {LngLatLike} [options.center=[0, 0]] The inital geographical centerpoint of the map. If `center` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: Mapbox GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
  * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
@@ -317,7 +317,7 @@ class Map extends Camera {
     _loaded: boolean;
     // accounts for placement finishing as well
     _fullyLoaded: boolean;
-    _trackResize: boolean;
+    _shouldTrackResize: () => boolean;
     _preserveDrawingBuffer: boolean;
     _failIfMajorPerformanceCaveat: boolean;
     _antialias: boolean;
@@ -426,7 +426,7 @@ class Map extends Camera {
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
         this._antialias = options.antialias;
-        this._trackResize = options.trackResize;
+        this._shouldTrackResize = options.shouldTrackResize;
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
@@ -3024,7 +3024,7 @@ class Map extends Camera {
     }
 
     _onWindowResize(event: Event) {
-        if (this._trackResize) {
+        if (this._shouldTrackResize()) {
             this.resize({originalEvent: event})._update();
         }
     }
