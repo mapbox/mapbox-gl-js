@@ -2,8 +2,6 @@
 import ValidationError from '../error/validation_error.js';
 import validate from './validate.js';
 import getType from '../util/get_type.js';
-import {isExpression} from '../expression/index.js';
-import {deepUnbundle} from '../util/unbundle_jsonlint.js';
 
 export default function validateFog(options) {
     const fog = options.value;
