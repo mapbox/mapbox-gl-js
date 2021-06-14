@@ -77,15 +77,20 @@ const maxTangent = Math.tan(85 * Math.PI / 180);
  * Returns a matrix for converting from tile units to the correct label coordinate space.
  */
 function getLabelPlaneMatrix(posMatrix: mat4,
+                             tileID,
                              pitchWithMap: boolean,
                              rotateWithMap: boolean,
                              transform: Transform,
                              pixelsToTileUnits: number) {
-    const m = mat4.create();
+    let m = mat4.create();
     if (pitchWithMap) {
-        mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
+        m = transform.calculateGlobeLabelMatrix(tileID);
+        //mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
         if (!rotateWithMap) {
-            mat4.rotateZ(m, m, transform.angle);
+            const rot = mat4.identity([]);
+            mat4.rotateZ(rot, rot, transform.angle);
+            m = mat4.multiply(rot, rot, m);
+            //mat4.rotateZ(m, m, transform.angle);
         }
     } else {
         mat4.multiply(m, transform.labelPlaneMatrix, posMatrix);
@@ -97,16 +102,20 @@ function getLabelPlaneMatrix(posMatrix: mat4,
  * Returns a matrix for converting from the correct label coordinate space to gl coords.
  */
 function getGlCoordMatrix(posMatrix: mat4,
+                          tileID,
                           pitchWithMap: boolean,
                           rotateWithMap: boolean,
                           transform: Transform,
                           pixelsToTileUnits: number) {
     if (pitchWithMap) {
-        const m = mat4.clone(posMatrix);
-        mat4.scale(m, m, [pixelsToTileUnits, pixelsToTileUnits, 1]);
-        if (!rotateWithMap) {
-            mat4.rotateZ(m, m, -transform.angle);
-        }
+        const m = getLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits);
+        mat4.invert(m, m);
+        mat4.multiply(m, posMatrix, m);
+        // const m = mat4.clone(posMatrix);
+        // mat4.scale(m, m, [pixelsToTileUnits, pixelsToTileUnits, 1]);
+        // if (!rotateWithMap) {
+        //     mat4.rotateZ(m, m, -transform.angle);
+        // }
         return m;
     } else {
         return transform.glCoordMatrix;
@@ -178,11 +187,12 @@ function isVisible(anchorPos: [number, number, number, number],
  */
 function updateLineLabels(bucket: SymbolBucket,
                           posMatrix: mat4,
-                          globeMatrix: mat4,
                           painter: Painter,
                           isText: boolean,
                           labelPlaneMatrix: mat4,
                           glCoordMatrix: mat4,
+                          globeLabelPlaneMatrix,
+                          globeGlCoordMatrix,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
                           getElevation: ?((p: Point) => number),
@@ -243,10 +253,9 @@ function updateLineLabels(bucket: SymbolBucket,
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
 
-        let toScreen = mat4.multiply([], labelPlaneMatrix, posMatrix);
-        const transformedTileAnchor = project(new Point(symbol.anchorX, symbol.anchorY), toScreen, symbol.anchorZ);
+        //let toScreen = mat4.multiply([], labelPlaneMatrix, posMatrix);
+        const transformedTileAnchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix, symbol.anchorZ);
         const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-        //const transformedTileAnchor = project(tileAnchorPoint, labelPlaneMatrix, elevation);
 
         // Skip labels behind the camera
         if (transformedTileAnchor.signedDistanceFromCamera <= 0.0) {
@@ -263,10 +272,10 @@ function updateLineLabels(bucket: SymbolBucket,
 
         let projectionCache = {};
         
-        toScreen = mat4.multiply([], labelPlaneMatrix, globeMatrix);
+        //toScreen = mat4.multiply([], labelPlaneMatrix, globeMatrix);
 
         const getElevationForPlacement = null;// pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
-        const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, toScreen/*labelPlaneMatrix*/, glCoordMatrix,
+        const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, globeLabelPlaneMatrix, globeGlCoordMatrix,
             bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tileID);
 
         useVertical = placeUnflipped.useVertical;
@@ -274,7 +283,7 @@ function updateLineLabels(bucket: SymbolBucket,
         if (getElevationForPlacement && placeUnflipped.needsFlipping) projectionCache = {}; // Truncated points should be recalculated.
         if (placeUnflipped.notEnoughRoom || useVertical ||
             (placeUnflipped.needsFlipping &&
-             placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, toScreen/*labelPlaneMatrix*/, glCoordMatrix,
+             placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, globeLabelPlaneMatrix, globeGlCoordMatrix,
                  bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tileID).notEnoughRoom)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
         }
@@ -410,6 +419,10 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
             symbol.lineStartIndex, symbol.lineStartIndex + symbol.lineLength, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation, false, false, tileID);
         if (!singleGlyph)
             return {notEnoughRoom: true};
+
+        const p = singleGlyph.point;
+        const a = vec4.transformMat4([], [p.x, p.y, 0, 1], glCoordMatrix);
+        const b = vec4.transformMat4([], a, posMatrix);
 
         placedGlyphs = [singleGlyph];
     }

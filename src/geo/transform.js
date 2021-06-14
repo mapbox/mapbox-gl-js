@@ -1307,6 +1307,19 @@ class Transform {
         }
     }
 
+    decodeMatrix(unwrappedTileID: UnwrappedTileID): Float64Array {
+        const bounds = tileBoundsOnGlobe(unwrappedTileID.canonical);
+        const m = mat4.identity(new Float64Array(16));
+
+        // Denormalize points to the correct range
+        const st = 1.0 / ((1 << 15) - 1);
+        mat4.translate(m, m, bounds.min);
+        mat4.scale(m, m, vec3.sub([], bounds.max, bounds.min));
+        mat4.scale(m, m, [st, st, st]);
+
+        return m;
+    }
+
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
         const canonical = unwrappedTileID.canonical;
         const scale = worldSize / this.zoomScale(canonical.z);
@@ -1319,7 +1332,6 @@ class Transform {
         return posMatrix;
     }
 
-
     calculateGlobeMatrix(worldSize: number): Float64Array {
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadius = worldSize / (2.0 * Math.PI);
@@ -1327,7 +1339,6 @@ class Transform {
 
         // transform the globe from reference coordinate space to world space
         const posMatrix = mat4.identity(new Float64Array(16));
-        const cameraPos = this._camera.position;
         const point = this.point;
         mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
@@ -1340,15 +1351,27 @@ class Transform {
     calculateGlobeMatrixForTile(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
         // transform the globe from reference coordinate space to world space
         const posMatrix = this.calculateGlobeMatrix(worldSize);
-        const bounds = tileBoundsOnGlobe(unwrappedTileID.canonical);
+        const decode = this.decodeMatrix(unwrappedTileID);
 
-        // Denormalize points to the correct range
-        const st = 1.0 / ((1 << 15) - 1);
-        mat4.translate(posMatrix, posMatrix, bounds.min);
-        mat4.scale(posMatrix, posMatrix, vec3.sub([], bounds.max, bounds.min));
-        mat4.scale(posMatrix, posMatrix, [st, st, st]);
+        return mat4.multiply([], posMatrix, decode);
+    }
 
-        return posMatrix;
+    calculateGlobeLabelMatrix(unwrappedTileID: UnwrappedTileID) {
+        const localRadius = EXTENT / (2.0 * Math.PI);
+        const wsRadius = this.worldSize / (2.0 * Math.PI);
+        const s = wsRadius / localRadius;
+
+        // transform the globe from reference coordinate space to world space
+        const posMatrix = mat4.identity(new Float64Array(16));
+
+        mat4.translate(posMatrix, posMatrix, [0, 0, -wsRadius]);
+        mat4.scale(posMatrix, posMatrix, [s, s, s]);
+        mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
+        mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
+
+        const decode = this.decodeMatrix(unwrappedTileID);
+
+        return mat4.multiply([], posMatrix, decode);
     }
 
     /**
