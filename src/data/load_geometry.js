@@ -22,18 +22,6 @@ function tileLatLngCorners(id: CanonicalTileID, padding: ?number) {
     const latLngTL = [ latFromMercatorY(top), lngFromMercatorX(left) ];
     const latLngBR = [ latFromMercatorY(bottom), lngFromMercatorX(right) ];
 
-    // if (padding) {
-    //     const MIN_LAT = latFromMercatorY(bottom + padding / EXTENT);
-    //     const MAX_LAT = latFromMercatorY(top - padding / EXTENT);
-    //     const MIN_LNG = lngFromMercatorX(left - padding / EXTENT);
-    //     const MAX_LNG = lngFromMercatorX(right + padding / EXTENT);
-
-    //     latLngTL[0] = MAX_LAT;//clamp(latLngTL[0], MIN_LAT, MAX_LAT);
-    //     latLngTL[1] = MIN_LNG;//clamp(latLngTL[1], MIN_LNG, MAX_LNG);
-    //     latLngBR[0] = MIN_LAT;//clamp(latLngBR[0], MIN_LAT, MAX_LAT);
-    //     latLngBR[1] = MAX_LNG;//clamp(latLngBR[1], MIN_LNG, MAX_LNG);
-    // }
-
     return [latLngTL, latLngBR];
 }
 

@@ -307,7 +307,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : null;
             const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
             mat4.multiply(globeMatrix, painter.transform.projMatrix, globeMatrix);
-            symbolProjection.updateLineLabels(bucket, globeMatrix/*coord.projMatrix*/, painter, isText, tr.labelPlaneMatrix /*labelPlaneMatrix*/, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
+            symbolProjection.updateLineLabels(bucket, coord.projMatrix, globeMatrix, painter, isText, tr.labelPlaneMatrix /*labelPlaneMatrix*/, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
         }
 
         const matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),

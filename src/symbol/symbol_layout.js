@@ -29,6 +29,11 @@ import type {ImagePosition} from '../render/image_atlas.js';
 import type {GlyphPosition} from '../render/glyph_atlas.js';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
 
+import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
+import {Aabb} from '../util/primitives.js';
+import {vec3} from 'gl-matrix';
+import {clamp} from '../util/util.js';
+
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
 
@@ -144,6 +149,99 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
     }
 
     return (offset[1] !== INVALID_TEXT_OFFSET) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
+}
+
+const refRadius = 8192.0 / Math.PI / 2.0;
+
+function latLngToECEF(lat, lng, r) {
+    lat = degToRad(lat);
+    lng = degToRad(lng);
+
+    const sx = Math.cos(lat) * Math.sin(lng) * r;
+    const sy = -Math.sin(lat) * r;
+    const sz = Math.cos(lat) * Math.cos(lng) * r;
+
+    return [sx, sy, sz];
+}
+
+const reprojectTileAnchor = (p, tileID) => {
+    const tiles = Math.pow(2.0, tileID.z);
+    const mx = (p.x / 8192.0 + tileID.x) / tiles;
+    const my = (p.y / 8192.0 + tileID.y) / tiles;
+    const lat = latFromMercatorY(my);
+    const lng = lngFromMercatorX(mx);
+    return latLngToECEF(lat, lng, refRadius);
+};
+
+function tileLatLngCorners(id: CanonicalTileID, padding: ?number) {
+    const tileScale = Math.pow(2, id.z);
+    const left = id.x / tileScale;
+    const right = (id.x + 1) / tileScale;
+    const top = id.y / tileScale;
+    const bottom = (id.y + 1) / tileScale;
+
+    const latLngTL = [ latFromMercatorY(top), lngFromMercatorX(left) ];
+    const latLngBR = [ latFromMercatorY(bottom), lngFromMercatorX(right) ];
+
+    return [latLngTL, latLngBR];
+}
+
+function normalizeECEF(point, bounds: Aabb) {
+    const size = vec3.sub([], bounds.max, bounds.min);
+    const normPoint = vec3.divide([], vec3.sub([], point, bounds.min), size);
+
+    normPoint[0] = clamp(normPoint[0], 0, 1);
+    normPoint[1] = clamp(normPoint[1], 0, 1);
+    normPoint[2] = clamp(normPoint[2], 0, 1);
+
+    return normPoint;
+}
+
+function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
+    const z = id.z;
+
+    const mn = -refRadius;
+    const mx = refRadius;
+
+    if (z === 0) {
+        return new Aabb([mn, mn, mn], [mx, mx, mx]);
+    } else if (z === 1) {
+        if (id.x === 0 && id.y === 0) {
+            return new Aabb([mn, mn, mn], [0, 0, mx]);
+        } else if (id.x === 1 && id.y === 0) {
+            return new Aabb([0, mn, mn], [mx, 0, mx]);
+        } else if (id.x === 0 && id.y === 1) {
+            return new Aabb([mn, 0, mn], [0, mx, mx]);
+        } else if (id.x === 1 && id.y === 1) {
+            return new Aabb([0, 0, mn], [mx, mx, mx]);
+        }
+    }
+
+    // After zoom 1 surface function is monotonic for all tile patches
+    // => it is enough to project corner points
+    const [min, max] = tileLatLngCorners(id);
+
+    const corners = [
+        latLngToECEF(min[0], min[1], refRadius),
+        latLngToECEF(min[0], max[1], refRadius),
+        latLngToECEF(max[0], min[1], refRadius),
+        latLngToECEF(max[0], max[1], refRadius)
+    ];
+
+    const bMin = [mx, mx, mx];
+    const bMax = [mn, mn, mn];
+
+    for (const p of corners) {
+        bMin[0] = Math.min(bMin[0], p[0]);
+        bMin[1] = Math.min(bMin[1], p[1]);
+        bMin[2] = Math.min(bMin[2], p[2]);
+
+        bMax[0] = Math.max(bMax[0], p[0]);
+        bMax[1] = Math.max(bMax[1], p[1]);
+        bMax[2] = Math.max(bMax[2], p[2]);
+    }
+
+    return new Aabb(bMin, bMax);
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
@@ -398,7 +496,7 @@ function addFeature(bucket: SymbolBucket,
         }
     }
 
-    const addSymbolAtAnchor = (line, anchor, reproject) => {
+    const addSymbolAtAnchor = (line, anchor, tileAnchor) => {
         // TODO tämä johonkin paremmin!
         if (!anchor.inside) {
             return;
@@ -410,16 +508,18 @@ function addFeature(bucket: SymbolBucket,
         //     return;
         // }
 
-        addSymbol(bucket, anchor, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
+        addSymbol(bucket, anchor, tileAnchor || anchor, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
-            feature, sizes, isSDFIcon, canonical, layoutTextSize, reproject);
+            feature, sizes, isSDFIcon, canonical, layoutTextSize);
     };
 
     const anchorInside = (x, y) => {
         return x >= 0 && x <= EXTENT && y >= 0 && y <= EXTENT;
     };
+
+    const bounds = tileBoundsOnGlobe(canonical);
 
     if (symbolPlacement === 'line') {
         for (const line of clipLine(feature.geometry, 0, 0, EXTENT, EXTENT)) {
@@ -437,7 +537,16 @@ function addFeature(bucket: SymbolBucket,
             for (const anchor of anchors) {
                 const shapedText = defaultHorizontalShaping;
                 if (!shapedText || !anchorIsTooClose(bucket, shapedText.text, textRepeatDistance, anchor)) {
-                    addSymbolAtAnchor(line, anchor, true);
+                    const tileAnchor = anchor.clone();
+
+                    let p = reprojectTileAnchor(anchor, canonical);
+                    p = normalizeECEF(p, bounds);
+                    anchor.x = p[0] * ((1 << 15) - 1);
+                    anchor.y = p[1] * ((1 << 15) - 1);
+                    anchor.z = p[2] * ((1 << 15) - 1);
+                    anchor.inside = anchorInside(tileAnchor.x, tileAnchor.y);
+
+                    addSymbolAtAnchor(line, anchor, tileAnchor);
                 }
             }
         }
@@ -454,7 +563,17 @@ function addFeature(bucket: SymbolBucket,
                     glyphSize,
                     textMaxBoxScale);
                 if (anchor) {
-                    addSymbolAtAnchor(line, anchor, true);
+                    const tileAnchor = anchor.clone();
+
+                    let p = reprojectTileAnchor(anchor, canonical);
+                    p = normalizeECEF(p, bounds);
+                    anchor.x = p[0] * ((1 << 15) - 1);
+                    anchor.y = p[1] * ((1 << 15) - 1);
+                    anchor.z = p[2] * ((1 << 15) - 1);
+                    anchor.inside = anchorInside(tileAnchor.x, tileAnchor.y);
+
+                    addSymbolAtAnchor(line, anchor, tileAnchor);
+                    //addSymbolAtAnchor(line, anchor, null);
                 }
             }
         }
@@ -482,9 +601,9 @@ function addFeature(bucket: SymbolBucket,
                 //}
 
                 if (point.z === undefined) {
-                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0, undefined, anchorInside(point.x, point.y)), false);
+                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0, undefined, anchorInside(point.x, point.y)), null);
                 } else {
-                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z, 0, undefined, point.inside), false);
+                    addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z, 0, undefined, point.inside), null);
                 }
             }
         }
@@ -497,6 +616,7 @@ export {MAX_PACKED_SIZE};
 
 function addTextVertices(bucket: SymbolBucket,
                          anchor: Point,
+                         tileAnchor: Point,
                          shapedText: Shaping,
                          imageMap: {[_: string]: StyleImage},
                          layer: SymbolStyleLayer,
@@ -542,6 +662,7 @@ function addTextVertices(bucket: SymbolBucket,
         feature,
         writingMode,
         anchor,
+        tileAnchor,
         lineArray.lineStartIndex,
         lineArray.lineLength,
         placedIconIndex,
@@ -638,6 +759,7 @@ export function evaluateCircleCollisionFeature(shaped: Object): number | null {
  */
 function addSymbol(bucket: SymbolBucket,
                    anchor: Anchor,
+                   tileAnchor: Anchor,
                    line: Array<Point>,
                    shapedTextOrientations: any,
                    shapedIcon: PositionedIcon | void,
@@ -659,8 +781,7 @@ function addSymbol(bucket: SymbolBucket,
                    sizes: Sizes,
                    isSDFIcon: boolean,
                    canonical: CanonicalTileID,
-                   layoutTextSize: number,
-                   reprojectionRequired: boolean) {
+                   layoutTextSize: number) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
     //console.log(anchor.x + " " + anchor.y);
     let textBoxIndex, iconBoxIndex, verticalTextBoxIndex, verticalIconBoxIndex;
@@ -742,6 +863,7 @@ function addSymbol(bucket: SymbolBucket,
             feature,
             false,
             anchor,
+            tileAnchor,
             lineArray.lineStartIndex,
             lineArray.lineLength,
             // The icon itself does not have an associated symbol since the text isnt placed yet
@@ -761,6 +883,7 @@ function addSymbol(bucket: SymbolBucket,
                 feature,
                 WritingMode.vertical,
                 anchor,
+                tileAnchor,
                 lineArray.lineStartIndex,
                 lineArray.lineLength,
                 // The icon itself does not have an associated symbol since the text isnt placed yet
@@ -787,7 +910,7 @@ function addSymbol(bucket: SymbolBucket,
 
         const singleLine = shaping.positionedLines.length === 1;
         numHorizontalGlyphVertices += addTextVertices(
-            bucket, anchor, shaping, imageMap, layer, textAlongLine, feature, textOffset, lineArray,
+            bucket, anchor, tileAnchor, shaping, imageMap, layer, textAlongLine, feature, textOffset, lineArray,
             shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly,
             singleLine ? (Object.keys(shapedTextOrientations.horizontal): any) : [justification],
             placedTextSymbolIndices, placedIconSymbolIndex, sizes, canonical);
@@ -799,7 +922,7 @@ function addSymbol(bucket: SymbolBucket,
 
     if (shapedTextOrientations.vertical) {
         numVerticalGlyphVertices += addTextVertices(
-            bucket, anchor, shapedTextOrientations.vertical, imageMap, layer, textAlongLine, feature,
+            bucket, anchor, tileAnchor, shapedTextOrientations.vertical, imageMap, layer, textAlongLine, feature,
             textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices, verticalPlacedIconSymbolIndex, sizes, canonical);
     }
 
@@ -830,14 +953,18 @@ function addSymbol(bucket: SymbolBucket,
     }
 
     if (useRuntimeCollisionCircles) {
-        console.log("circles using anchor: " + anchor.x + " " + anchor.y);
+        console.log("circles using anchor: " + anchor.x + " " + anchor.y + " " + anchor.z);
     }
+
+    const tileAnchorX = tileAnchor.x;
+    const tileAnchorY = tileAnchor.y;
 
     bucket.symbolInstances.emplaceBack(
         anchor.x,
         anchor.y,
         anchor.z || 0,
-        reprojectionRequired,
+        tileAnchorX,
+        tileAnchorY,
         placedTextSymbolIndices.right >= 0 ? placedTextSymbolIndices.right : -1,
         placedTextSymbolIndices.center >= 0 ? placedTextSymbolIndices.center : -1,
         placedTextSymbolIndices.left >= 0 ? placedTextSymbolIndices.left : -1,

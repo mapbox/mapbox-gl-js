@@ -90,19 +90,19 @@ class CollisionIndex {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
 
         let projectedPoint = null;
-        if (dynamicAnchor) {
-            const tileID = collisionBox.tileID;
-            const tiles = Math.pow(2.0, tileID.canonical.z);
-            const mx = (collisionBox.anchorPointX / 8192.0 + tileID.canonical.x) / tiles;
-            const my = (collisionBox.anchorPointY / 8192.0 + tileID.canonical.y) / tiles;
-            const lat = latFromMercatorY(my);
-            const lng = lngFromMercatorX(mx);
-            const pg = latLngToECEF(lat, lng, refRadius);
-            projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, pg[0], pg[1], pg[2], collisionBox.tileID);
+        // if (dynamicAnchor) {
+        //     const tileID = collisionBox.tileID;
+        //     const tiles = Math.pow(2.0, tileID.canonical.z);
+        //     const mx = (collisionBox.anchorPointX / 8192.0 + tileID.canonical.x) / tiles;
+        //     const my = (collisionBox.anchorPointY / 8192.0 + tileID.canonical.y) / tiles;
+        //     const lat = latFromMercatorY(my);
+        //     const lng = lngFromMercatorX(mx);
+        //     const pg = latLngToECEF(lat, lng, refRadius);
+        //     projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, pg[0], pg[1], pg[2], collisionBox.tileID);
 
-        } else {
+        // } else {
             projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.anchorPointZ, collisionBox.tileID);
-        }
+        //}
 
         //const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation, collisionBox.tileID);
         //const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.anchorPointZ, collisionBox.tileID);
@@ -139,6 +139,7 @@ class CollisionIndex {
                           glyphOffsetArray: GlyphOffsetArray,
                           fontSize: number,
                           posMatrix: mat4,
+                          globeMatrix: mat4,
                           labelPlaneMatrix: mat4,
                           labelToScreenMatrix?: mat4,
                           showCollisionCircles: boolean,
@@ -151,16 +152,19 @@ class CollisionIndex {
         const elevation = this.transform.elevation;
         const getElevation = elevation ? (p => elevation.getAtTileOffset(tileID, p.x, p.y)) : (_ => 0);
 
-        const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
+        const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
 
-        // Project to globe
-        const tiles = Math.pow(2.0, tileID.canonical.z);
-        const mx = (tileUnitAnchorPoint.x / 8192.0 + tileID.canonical.x) / tiles;
-        const my = (tileUnitAnchorPoint.y / 8192.0 + tileID.canonical.y) / tiles;
-        const lat = latFromMercatorY(my);
-        const lng = lngFromMercatorX(mx);
-        const point = latLngToECEF(lat, lng, refRadius);
-        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, point[0], point[1], point[2], tileID);
+        //// Project to globe
+        //const tiles = Math.pow(2.0, tileID.canonical.z);
+        //const mx = (tileUnitAnchorPoint.x / 8192.0 + tileID.canonical.x) / tiles;
+        //const my = (tileUnitAnchorPoint.y / 8192.0 + tileID.canonical.y) / tiles;
+        //const lat = latFromMercatorY(my);
+        //const lng = lngFromMercatorX(mx);
+        //const point = latLngToECEF(lat, lng, refRadius);
+        //const screenAnchorPoint = this.projectAndGetPerspectiveRatio(globeMatrix, point[0], point[1], point[2], tileID);
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, symbol.anchorX, symbol.anchorY, symbol.anchorZ, tileID);
+
+        //console.log(screenAnchorPoint.point.x + " " + screenAnchorPoint.point.y + " | " + screenAnchorPoint2.point.x + " " + screenAnchorPoint2.point.y);
 
         screenAnchorPoint.point.x -= viewportPadding;
         screenAnchorPoint.point.y -= viewportPadding;
@@ -178,7 +182,7 @@ class CollisionIndex {
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
 
-        const toScreen = mat4.multiply([], this.transform.labelPlaneMatrix, posMatrix);
+        const toScreen = mat4.multiply([], this.transform.labelPlaneMatrix, globeMatrix);
 
         const firstAndLastGlyph = screenAnchorPoint.signedDistanceFromCamera > 0 ? projection.placeFirstAndLastGlyph(
             labelPlaneFontScale,
@@ -192,7 +196,7 @@ class CollisionIndex {
             lineVertexArray,
             toScreen, //posMatrix, //labelPlaneMatrix,
             projectionCache,
-            elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
+            null, //elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
             pitchWithMap && !!elevation,
             tileID
         ) : null;
@@ -286,6 +290,8 @@ class CollisionIndex {
                 for (let i = 0; i < numCircles; i++) {
                     const t = i / Math.max(numCircles - 1, 1);
                     const circlePosition = interpolator.lerp(t);
+                    if (i === 0)
+                    console.log(circlePosition.x + " " + circlePosition.y);
 
                     // add viewport padding to the position and perform initial collision check
                     const centerX = circlePosition.x + viewportPadding;
@@ -430,15 +436,12 @@ class CollisionIndex {
             (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding
         );
 
-        // Compensate the curvature of the globe
-        const s = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.transform.center.lat);
-
         return {
             point: a,
             // See perspective ratio comment in symbol_sdf.vertex
             // We're doing collision detection in viewport space so we need
             // to scale down boxes in the distance
-            perspectiveRatio: Math.min(0.5 + 0.5 * ((1.0 - s) * this.transform.cameraToCenterDistance / p[3]), 1.5),
+            perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3]), 1.5),
             signedDistanceFromCamera: p[3],
             aboveHorizon
         };

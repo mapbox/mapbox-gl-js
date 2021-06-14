@@ -629,6 +629,7 @@ class SymbolBucket implements Bucket {
                feature: SymbolFeature,
                writingMode: any,
                labelAnchor: Anchor,
+               tileAnchor: Anchor,
                lineStartIndex: number,
                lineLength: number,
                associatedIconIndex: number,
@@ -656,7 +657,7 @@ class SymbolBucket implements Bucket {
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
 
-            addDynamicAttributes(arrays.dynamicLayoutVertexArray, labelAnchor, angle);
+            addDynamicAttributes(arrays.dynamicLayoutVertexArray, tileAnchor, angle);
 
             indexArray.emplaceBack(index, index + 1, index + 2);
             indexArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -671,9 +672,13 @@ class SymbolBucket implements Bucket {
             }
         }
 
-        arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y, labelAnchor.z || 0,
+        if (labelAnchor.x === tileAnchor.x) {
+            const asd = 2;
+        }
+
+        arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y, labelAnchor.z || 0, tileAnchor.x, tileAnchor.y,
             glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart, vertexStartIndex,
-            lineStartIndex, lineLength, (labelAnchor.segment: any),
+            lineStartIndex, lineLength, (tileAnchor.segment: any),
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
             lineOffset[0], lineOffset[1],
             writingMode,

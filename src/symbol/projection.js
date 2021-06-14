@@ -178,6 +178,7 @@ function isVisible(anchorPos: [number, number, number, number],
  */
 function updateLineLabels(bucket: SymbolBucket,
                           posMatrix: mat4,
+                          globeMatrix: mat4,
                           painter: Painter,
                           isText: boolean,
                           labelPlaneMatrix: mat4,
@@ -218,54 +219,53 @@ function updateLineLabels(bucket: SymbolBucket,
         useVertical = false;
 
         // const elevation = getElevation ? getElevation({x: symbol.anchorX, y: symbol.anchorY}) : 0;
-        // const anchorPos = [symbol.anchorX, symbol.anchorY, elevation, 1];
-        // vec4.transformMat4(anchorPos, anchorPos, posMatrix);
-        const elevation = undefined;
+        const anchorPos = [symbol.anchorX, symbol.anchorY, symbol.anchorZ, 1];
+        vec4.transformMat4(anchorPos, anchorPos, posMatrix);
+        //const elevation = undefined;
         //const anchorPos = [symbol.anchorX, symbol.anchorY, 0, 1];
-        const anchorProjection = tileAnchorToScreen(new Point(symbol.anchorX, symbol.anchorY), posMatrix, tileID);
+        //const anchorProjection = project()
+        //const anchorProjection = tileAnchorToScreen(new Point(symbol.anchorX, symbol.anchorY), posMatrix, tileID);
         //const w = anchorProjection.signedDistanceFromCamera;
         //const anchorPos = [anchorProjection.point.x * w, anchorProjection.point.y * w, 0, w];
 
         // Don't bother calculating the correct point for invisible labels.
-        // TODO
-        // if (!isVisible(anchorPos, clippingBuffer)) {
-        //     hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
-        //     continue;
-        // }
+        if (!isVisible(anchorPos, clippingBuffer)) {
+            hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
+            continue;
+        }
         
-        //const cameraToAnchorDistance = anchorPos[3];
-        const cameraToAnchorDistance = anchorProjection.signedDistanceFromCamera;
+        const cameraToAnchorDistance = anchorPos[3];
+        //const cameraToAnchorDistance = anchorProjection.signedDistanceFromCamera;
 
         // Compensate the curvature of the globe
-        const sca = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, painter.transform.center.lat);
-        const cameraToCenterDistance = (1.0 - sca) * painter.transform.cameraToCenterDistance;
-
-        const perspectiveRatio = getPerspectiveRatio(cameraToCenterDistance, cameraToAnchorDistance);
+        const perspectiveRatio = getPerspectiveRatio(painter.transform.cameraToCenterDistance, cameraToAnchorDistance);
 
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
 
-        const tileAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
+        let toScreen = mat4.multiply([], labelPlaneMatrix, posMatrix);
+        const transformedTileAnchor = project(new Point(symbol.anchorX, symbol.anchorY), toScreen, symbol.anchorZ);
+        const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         //const transformedTileAnchor = project(tileAnchorPoint, labelPlaneMatrix, elevation);
 
         // Skip labels behind the camera
-        //if (transformedTileAnchor.signedDistanceFromCamera <= 0.0) {
-        if (anchorProjection.signedDistanceFromCamera <= 0.0) {
+        if (transformedTileAnchor.signedDistanceFromCamera <= 0.0) {
+        //if (anchorProjection.signedDistanceFromCamera <= 0.0) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
 
-        //const anchorPoint = transformedTileAnchor.point;
-        const pe = vec4.transformMat4([], [anchorProjection.point.x, anchorProjection.point.y, 0, 1], labelPlaneMatrix);
-        pe[0] /= pe[3];
-        pe[1] /= pe[3];
-        const anchorPoint = new Point(pe[0], pe[1]);
+        const anchorPoint = transformedTileAnchor.point;
+        // const pe = vec4.transformMat4([], [anchorProjection.point.x, anchorProjection.point.y, 0, 1], labelPlaneMatrix);
+        // pe[0] /= pe[3];
+        // pe[1] /= pe[3];
+        // const anchorPoint = new Point(pe[0], pe[1]);
 
         let projectionCache = {};
         
-                const toScreen = mat4.multiply([], labelPlaneMatrix, posMatrix);
+        toScreen = mat4.multiply([], labelPlaneMatrix, globeMatrix);
 
-        const getElevationForPlacement = pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
+        const getElevationForPlacement = null;// pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
         const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, toScreen/*labelPlaneMatrix*/, glCoordMatrix,
             bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tileID);
 

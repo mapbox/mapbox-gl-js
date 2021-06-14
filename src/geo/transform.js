@@ -1325,13 +1325,11 @@ class Transform {
         const wsRadius = worldSize / (2.0 * Math.PI);
         const s = wsRadius / localRadius;
 
-        // Reprojection of altitude from mercator coordinates is not linear
-        const altitudeScaler = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
-
         // transform the globe from reference coordinate space to world space
         const posMatrix = mat4.identity(new Float64Array(16));
         const cameraPos = this._camera.position;
-        mat4.translate(posMatrix, posMatrix, [cameraPos[0] * worldSize, cameraPos[1] * worldSize, -wsRadius + this.cameraToCenterDistance * altitudeScaler]);
+        const point = this.point;
+        mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
         mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
         mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
@@ -1592,8 +1590,10 @@ class Transform {
 
         const halfFov = this._fov / 2;
         const offset = this.centerOffset;
-        this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height;
         const pixelsPerMeter = 1.0;// this.pixelsPerMeter;
+        
+        const altitudeScaler = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
+        this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * (1.0 - altitudeScaler);
 
         this._updateCameraState();
 

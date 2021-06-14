@@ -310,7 +310,7 @@ export class Placement {
 
         const textOffset = [symbolInstance.textOffset0, symbolInstance.textOffset1];
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textScale);
-return;
+
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
             textScale, textBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
             textAllowOverlap, textPixelRatio, posMatrix, false, collisionGroup.predicate);
@@ -480,9 +480,8 @@ return;
                 if (!layout.get('text-variable-anchor')) {
                     const placeBox = (collisionTextBox, orientation) => {
                         const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, symbolIndex);
-                        const matrix = symbolInstance.dynamicAnchor ? globeMatrix : posMatrix;
                         const placedFeature = this.collisionIndex.placeCollisionBox(textScale, collisionTextBox,
-                            new Point(0, 0), textAllowOverlap, textPixelRatio, matrix/*posMatrix*/, symbolInstance.dynamicAnchor, collisionGroup.predicate);
+                            new Point(0, 0), textAllowOverlap, textPixelRatio, posMatrix, symbolInstance.dynamicAnchor, collisionGroup.predicate);
                         if (placedFeature && placedFeature.box && placedFeature.box.length) {
                             this.markUsedOrientation(bucket, orientation, symbolInstance);
                             this.placedOrientations[symbolInstance.crossTileID] = orientation;
@@ -605,7 +604,8 @@ return;
                         bucket.lineVertexArray,
                         bucket.glyphOffsetArray,
                         fontSize,
-                        globeMatrix, //posMatrix,
+                        posMatrix,
+                        globeMatrix,
                         textLabelPlaneMatrix,
                         labelToScreenMatrix,
                         showCollisionBoxes,
@@ -635,10 +635,9 @@ return;
                     const shiftPoint: Point = hasIconTextFit && shift ?
                         offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle) :
                         new Point(0, 0);
-                    const matrix = symbolInstance.dynamicAnchor ? globeMatrix : posMatrix;
                     const iconScale = bucket.getSymbolInstanceIconSize(partiallyEvaluatedIconSize, this.transform.zoom, symbolIndex);
                     return this.collisionIndex.placeCollisionBox(iconScale, iconBox, shiftPoint,
-                        iconAllowOverlap, textPixelRatio, matrix/*posMatrix*/, symbolInstance.dynamicAnchor, collisionGroup.predicate);
+                        iconAllowOverlap, textPixelRatio, posMatrix, symbolInstance.dynamicAnchor, collisionGroup.predicate);
                 };
 
                 if (placedVerticalText && placedVerticalText.box && placedVerticalText.box.length && collisionArrays.verticalIconBox) {

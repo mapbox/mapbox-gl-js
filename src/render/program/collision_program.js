@@ -45,11 +45,9 @@ const collisionUniformValues = (
 ): UniformValues<CollisionUniformsType> => {
     const pixelRatio = EXTENT / tile.tileSize;
 
-    const s = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, transform.center.lat);
-
     return {
         'u_matrix': matrix,
-        'u_camera_to_center_distance': transform.cameraToCenterDistance - transform.cameraToCenterDistance * s,
+        'u_camera_to_center_distance': transform.cameraToCenterDistance,
         'u_extrude_scale': [transform.pixelsToGLUnits[0] / pixelRatio,
             transform.pixelsToGLUnits[1] / pixelRatio]
     };
