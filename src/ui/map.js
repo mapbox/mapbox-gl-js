@@ -2170,7 +2170,7 @@ class Map extends Camera {
     /**
      * Sets the terrain property of the style.
      *
-     * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#terrain).
+     * @param terrain Terrain properties to set. Must conform to the [Terrain Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/terrain/).
      * If `null` or `undefined` is provided, function removes terrain.
      * @returns {Map} `this`
      * @example
@@ -2201,7 +2201,7 @@ class Map extends Camera {
 
     /**
      * Sets the fog property of the style.
-     * @param fog The fog properties to set. Must conform the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#fog).
+     * @param fog The fog properties to set. Must conform the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
      * If `null` or `undefined` is provided, this function call removes the fog from the map.
      * @returns {Map} `this`
      * @example
