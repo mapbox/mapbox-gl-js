@@ -88,7 +88,6 @@ class CollisionIndex {
 
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, dynamicAnchor, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
-
         let projectedPoint = null;
         // if (dynamicAnchor) {
         //     const tileID = collisionBox.tileID;
@@ -290,8 +289,6 @@ class CollisionIndex {
                 for (let i = 0; i < numCircles; i++) {
                     const t = i / Math.max(numCircles - 1, 1);
                     const circlePosition = interpolator.lerp(t);
-                    if (i === 0)
-                    console.log(circlePosition.x + " " + circlePosition.y);
 
                     // add viewport padding to the position and perform initial collision check
                     const centerX = circlePosition.x + viewportPadding;

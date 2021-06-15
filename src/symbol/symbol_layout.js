@@ -288,6 +288,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const keepUpright = layout.get('text-keep-upright');
     const textSize = layout.get('text-size');
 
+    //console.log(canonical);
+
     for (const feature of bucket.features) {
         const fontstack = layout.get('text-font').evaluate(feature, {}, canonical).join(',');
         const layoutTextSizeThisZoom = textSize.evaluate(feature, {}, canonical);
@@ -593,13 +595,6 @@ function addFeature(bucket: SymbolBucket,
     } else if (feature.type === 'Point') {
         for (const points of feature.geometry) {
             for (const point of points) {
-                //if (point.z !== undefined) {
-                //    if (point.inside)
-                //        addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z, 0));
-                //} else {
-                //    addSymbolAtAnchor([point], new Anchor(point.x, point.y, point.z || 0, 0, undefined, true));
-                //}
-
                 if (point.z === undefined) {
                     addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0, undefined, anchorInside(point.x, point.y)), null);
                 } else {

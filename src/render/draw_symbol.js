@@ -236,9 +236,10 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const pitchWithMap = pitchAlignment === 'map';
     const alongLine = rotateWithMap && layer.layout.get('symbol-placement') !== 'point';
 
+    let theLayer = false;
     if (layer.id === "road-number-shield")
     {
-        const test = 2;
+        theLayer = true;
     }
 
     // Line label rotation happens in `updateLineLabels`
