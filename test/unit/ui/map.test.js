@@ -1243,52 +1243,112 @@ test('Map', (t) => {
     });
 
     t.test('#queryFogOpacity', (t) => {
-        const style = createStyle();
-        const map = createMap(t, {style});
-        map.on('load', () => {
-            map.setFog({
-                "range": [0.5, 10.5]
-            });
+        t.test('normal range', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+            map.on('load', () => {
+                map.setFog({
+                    "range": [0.5, 10.5]
+                });
 
-            t.ok(map.getFog());
+                t.ok(map.getFog());
 
-            map.once('render', () => {
-                map.setZoom(10);
-                map.setCenter([0, 0]);
-                map.setPitch(0);
+                map.once('render', () => {
+                    map.setZoom(10);
+                    map.setCenter([0, 0]);
+                    map.setPitch(0);
 
-                t.deepEqual(map._queryFogOpacity([0, 0]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([0, 0]), 0.0);
 
-                t.deepEqual(map._queryFogOpacity([50, 0]), 0.0);
-                t.deepEqual(map._queryFogOpacity([0, 50]), 0.0);
-                t.deepEqual(map._queryFogOpacity([-50, 0]), 0.0);
-                t.deepEqual(map._queryFogOpacity([-50, -50]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([50, 0]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([0, 50]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([-50, 0]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([-50, -50]), 0.0);
 
-                map.setBearing(90);
-                map.setPitch(70);
+                    map.setBearing(90);
+                    map.setPitch(70);
 
-                t.deepEqual(map._queryFogOpacity([0, 0]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([0, 0]), 0.0);
 
-                t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.5963390859543484);
-                t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.31817612773293763);
-                t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0.0021931905967484703);
-                t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.4147318524978687);
+                    t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.5963390859543484);
+                    t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.31817612773293763);
+                    t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0.0021931905967484703);
+                    t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.4147318524978687);
 
-                t.deepEqual(map._queryFogOpacity([2, 0]), 1.0);
-                t.deepEqual(map._queryFogOpacity([0, 2]), 1.0);
-                t.deepEqual(map._queryFogOpacity([-2, 0]), 1.0);
-                t.deepEqual(map._queryFogOpacity([-2, -2]), 1.0);
+                    t.deepEqual(map._queryFogOpacity([2, 0]), 1.0);
+                    t.deepEqual(map._queryFogOpacity([0, 2]), 1.0);
+                    t.deepEqual(map._queryFogOpacity([-2, 0]), 1.0);
+                    t.deepEqual(map._queryFogOpacity([-2, -2]), 1.0);
 
-                map.transform.fov = 30;
+                    map.transform.fov = 30;
 
-                t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.5917784571074153);
-                t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.2567224170602245);
-                t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0);
-                t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.2727527139608868);
+                    t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.5917784571074153);
+                    t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.2567224170602245);
+                    t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0);
+                    t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.2727527139608868);
 
-                t.end();
+                    t.end();
+                });
             });
         });
+
+        t.test('inverted range', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+            map.on('load', () => {
+                map.setFog({
+                    "range": [10.5, 0.5]
+                });
+
+                t.ok(map.getFog());
+
+                map.once('render', () => {
+                    map.setZoom(10);
+                    map.setCenter([0, 0]);
+                    map.setBearing(90);
+                    map.setPitch(70);
+
+                    t.deepEqual(map._queryFogOpacity([0, 0]), 1.0);
+
+                    t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.961473076058084);
+                    t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.9841669559435576);
+                    t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0.9988871471476187);
+                    t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.9784993261529342);
+
+                    t.end();
+                });
+            });
+        });
+
+        t.test('identical range', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+            map.on('load', () => {
+                map.setFog({
+                    "range": [0, 0]
+                });
+
+                t.ok(map.getFog());
+
+                map.once('render', () => {
+                    map.setZoom(5);
+                    map.setCenter([0, 0]);
+                    map.setBearing(90);
+                    map.setPitch(70);
+
+                    t.deepEqual(map._queryFogOpacity([0, 0]), 0);
+
+                    t.deepEqual(map._queryFogOpacity([0.5, 0]), 1);
+                    t.deepEqual(map._queryFogOpacity([0, 0.5]), 0);
+                    t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0);
+                    t.deepEqual(map._queryFogOpacity([0, -0.5]), 0);
+
+                    t.end();
+                });
+            });
+        });
+
+        t.end();
     });
 
     t.test('#listImages throws an error if called before "load"', (t) => {
