@@ -5,7 +5,7 @@ import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import {getImage, ResourceType} from '../util/ajax.js';
 import EXTENT from '../data/extent.js';
 import {RasterBoundsArray} from '../data/array_types.js';
-import {rasterBoundsAttributes} from '../data/bounds_attributes.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
@@ -222,7 +222,7 @@ class ImageSource extends Evented implements Source {
         const gl = context.gl;
 
         if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
         }
 
         if (!this.boundsSegments) {

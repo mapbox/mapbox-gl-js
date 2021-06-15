@@ -3,7 +3,7 @@
 import {getVideo, ResourceType} from '../util/ajax.js';
 
 import ImageSource from './image_source.js';
-import {rasterBoundsAttributes} from '../data/bounds_attributes.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import {ErrorEvent} from '../util/evented.js';
@@ -163,7 +163,7 @@ class VideoSource extends ImageSource {
         const gl = context.gl;
 
         if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
         }
 
         if (!this.boundsSegments) {

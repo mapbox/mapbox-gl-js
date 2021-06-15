@@ -1,12 +1,12 @@
 // @flow
 
-import {uniqueId, parseCacheControl} from '../util/util.js';
+import {uniqueId, parseCacheControl, NUM_OF_SEGMENTS} from '../util/util.js';
 import {deserialize as deserializeBucket} from '../data/bucket.js';
 import FeatureIndex from '../data/feature_index.js';
 import GeoJSONFeature from '../util/vectortile_to_geojson.js';
 import featureFilter from '../style-spec/feature_filter/index.js';
 import SymbolBucket from '../data/bucket/symbol_bucket.js';
-import {CollisionBoxArray} from '../data/array_types.js';
+import {CollisionBoxArray, TileBoundsArray, PosArray, TriangleIndexArray} from '../data/array_types.js';
 import Texture from '../render/texture.js';
 import browser from '../util/browser.js';
 import {Debug} from '../util/debug.js';
@@ -16,10 +16,9 @@ import SourceFeatureState from '../source/source_state.js';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin.js';
 import {TileSpaceDebugBuffer} from '../data/debug_viz.js';
 import Color from '../style-spec/util/color.js';
-import {StencilBoundsArray, PosArray, TriangleIndexArray} from '../data/array_types.js';
-import {stencilBoundsAttributes} from '../data/bounds_attributes.js';
+
+import boundsAttributes from '../data/bounds_attributes.js';
 import EXTENT from '../data/extent.js';
-import SegmentVector from '../data/segment.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
@@ -41,6 +40,9 @@ import type {LayerFeatureStates} from './source_state.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {FilterSpecification} from '../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
+import type IndexBuffer from '../gl/index_buffer.js';
+import type {Projection} from '../geo/projection/index.js';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -107,9 +109,9 @@ class Tile {
     queryGeometryDebugViz: TileSpaceDebugBuffer;
     queryBoundsDebugViz: TileSpaceDebugBuffer;
 
-    stencilBoundsBuffer: VertexBuffer;
-    stencilBoundsSegments: SegmentVector;
-    stencilBoundsIndexBuffer: IndexBuffer;
+    _tileDebugBoundsBuffer: VertexBuffer;
+    _tileBoundsBuffer: VertexBuffer;
+    _tileBoundsIndexBuffer: IndexBuffer;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -138,8 +140,9 @@ class Tile {
         this.state = 'loading';
 
         if (painter) {
-            this._makeStencilBoundsArray(painter.context, painter.transform, painter._numTileBorderSegments);
-            this._makeTileBorderArray(painter.context, painter.transform, painter._numTileBorderSegments);
+            const projection = painter && painter.transform && painter.transform.projection;
+            this._makeTileDebugBuffer(painter.context, projection);
+            this._makeTileBoundsBuffers(painter.context, projection);
         }
     }
 
@@ -527,31 +530,34 @@ class Tile {
         });
     }
 
-    _makeTileBorderArray(context: Context, transform: Transform, numOfSegments: number) {
-        if (this.tileBorderBuffer) return;
-
+    _add(x: number, y: number, denominator: number, projection: Projection) {
         const s = Math.pow(2, -this.tileID.canonical.z);
         const x1 = (this.tileID.canonical.x) * s;
         const y1 = (this.tileID.canonical.y) * s;
-        
+        const cs = projection.tileTransform(this.tileID.canonical);
+        const increment = s / denominator;
+        const x2 = x1 + x * increment;
+        const y2 = y1 + y * increment;
+        const l = new MercatorCoordinate(x2, y2).toLngLat();
+        const xy = ((projection.project(l.lng, l.lat)));
+        const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
+        const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
+        const a = x / denominator * EXTENT;
+        const b = y / denominator * EXTENT;
+        return {x_, y_, a, b};
+    }
+
+    _makeTileDebugBuffer(context: Context, projection: Projection) {
+        if (this._tileDebugBoundsBuffer || !projection) return;
+
         const debugBoundsArray = new PosArray();
-        const cs = transform.projection.tileTransform(this.tileID.canonical);
-        const emplace = (x, y) => {
-            const l = new MercatorCoordinate(x, y).toLngLat();
-            const xy = ((transform.projection.project(l.lng, l.lat)));
-            const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
-            const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
+
+        const add = (x, y) => {
+            const {x_, y_} = this._add(x, y, EXTENT, projection);
             debugBoundsArray.emplaceBack(x_, y_);
         };
 
-        const increment = s / EXTENT;
-        const add = (x, y) => {
-            emplace(
-                x1 + x * increment,
-                y1 + y * increment);
-        };
-
-        const stride = EXTENT / numOfSegments;
+        const stride = EXTENT / NUM_OF_SEGMENTS;
         const SIDES = [
             {start: [0, 0], step: [stride, 0]},
             {start: [EXTENT, 0], step: [0, stride]},
@@ -560,43 +566,28 @@ class Tile {
         ];
 
         for (const {start, step} of SIDES) {
-            for (let i = 0; i < numOfSegments; i++) {
+            for (let i = 0; i < NUM_OF_SEGMENTS; i++) {
                 add(start[0] + (i * step[0]), start[1] + (i * step[1]));
             }
         }
-    
-        this.tileBorderBuffer = context.createVertexBuffer(debugBoundsArray, stencilBoundsAttributes.members);
+
+        this._tileDebugBoundsBuffer = context.createVertexBuffer(debugBoundsArray, boundsAttributes.members);
     }
 
-    _makeStencilBoundsArray(context: Context, transform: Transform, numOfSegments: number) {
-        if (this.stencilBoundsBuffer) return;
+    _makeTileBoundsBuffers(context: Context, projection: Projection) {
+        if (this._tileBoundsBuffer || !projection || projection.name === 'mercator') return;
 
-        const s = Math.pow(2, -this.tileID.canonical.z);
-        const x1 = (this.tileID.canonical.x) * s;
-        const y1 = (this.tileID.canonical.y) * s;
- 
-        const stencilBoundsArray = new StencilBoundsArray();
+        const tileBoundsArray = new TileBoundsArray();
         const quadTriangleIndices = new TriangleIndexArray();
-        const cs = transform.projection.tileTransform(this.tileID.canonical);
-        const emplace = (x, y) => {
-            const l = new MercatorCoordinate(x, y).toLngLat();
-            const xy = ((transform.projection.project(l.lng, l.lat)));
-            const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
-            const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
-            stencilBoundsArray.emplaceBack(x_, y_);
-        };
 
-        const increment = s / numOfSegments;
         const add = (x, y) => {
-            emplace(
-                x1 + x * increment,
-                y1 + y * increment
-            );
+            const {x_, y_, a, b} = this._add(x, y, NUM_OF_SEGMENTS, projection);
+            tileBoundsArray.emplaceBack(x_, y_, a, b);
         };
 
-        for (let xi = 0; xi < numOfSegments; xi++) {
-            for (let yi = 0; yi < numOfSegments; yi++) {
-                const offset = stencilBoundsArray.length;
+        for (let xi = 0; xi < NUM_OF_SEGMENTS; xi++) {
+            for (let yi = 0; yi < NUM_OF_SEGMENTS; yi++) {
+                const offset = tileBoundsArray.length;
                 add(xi, yi);
                 add(xi + 1, yi);
                 add(xi, yi + 1);
@@ -606,10 +597,8 @@ class Tile {
             }
         }
 
-        const numSquared = numOfSegments * numOfSegments;
-        this.stencilBoundsBuffer = context.createVertexBuffer(stencilBoundsArray, stencilBoundsAttributes.members);
-        this.stencilBoundsSegments = SegmentVector.simpleSegment(0, 0, 4 * numSquared, 2 * numSquared);
-        this.stencilBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
+        this._tileBoundsBuffer = context.createVertexBuffer(tileBoundsArray, boundsAttributes.members);
+        this._tileBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
     }
 }
 

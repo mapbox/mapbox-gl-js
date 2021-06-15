@@ -4,8 +4,9 @@ import {warnOnce, clamp} from '../util/util.js';
 
 import EXTENT from './extent.js';
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
-import getProjection from '../geo/projection/index.js';
+import projections from '../geo/projection/index.js';
 import Point from '@mapbox/point-geometry';
+import type {CanonicalTileID} from '../source/tile_id.js';
 
 // These bounds define the minimum and maximum supported coordinate values.
 // While visible coordinates are within [0, EXTENT], tiles may theoretically
@@ -17,8 +18,8 @@ const MIN = -MAX - 1;
 
 let projection;
 
-export function setProjection(projectionName) {
-    projection = getProjection(projectionName);
+export function setProjection(projectionName: string) {
+    projection = projections[projectionName];
 }
 
 function clampPoint(point: Point) {
@@ -45,25 +46,27 @@ function pointToLineDist(px, py, ax, ay, bx, by) {
  * @param {VectorTileFeature} feature
  * @private
  */
-export default function loadGeometry(feature: VectorTileFeature, canonical): Array<Array<Point>> {
-
-    const projectionTransform = projection && canonical ? projection.tileTransform(canonical) : null;
-    const z2 = Math.pow(2, canonical.z);
+export default function loadGeometry(feature: VectorTileFeature, canonical?: CanonicalTileID): Array<Array<Point>> {
     const featureExtent = feature.extent;
+    const scale = EXTENT / featureExtent;
+    let cs, z2;
+    if (canonical) {
+        cs = projection.tileTransform(canonical);
+        z2 = Math.pow(2, canonical.z);
+    }
 
     function reproject(p) {
-        if (projectionTransform) {
+        if (projection && projection.name === 'mercator' || !canonical) {
+            const p_ = new Point(Math.round(p.x * scale), Math.round(p.y * scale));
+            return clampPoint(p_);
+        } else {
             const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
             const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
             const {x, y} = projection.project(lng, lat);
             return new Point(
-                (x * projectionTransform.scale - projectionTransform.x) * EXTENT,
-                (y * projectionTransform.scale - projectionTransform.y) * EXTENT
+                (x * cs.scale - cs.x) * EXTENT,
+                (y * cs.scale - cs.y) * EXTENT
             );
-
-        } else {
-            const scale = EXTENT / featureExtent;
-            return new Point(Math.round(p.x * scale), Math.round(p.y * scale));
         }
     }
 

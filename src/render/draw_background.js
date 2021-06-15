@@ -51,7 +51,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         const matrix = coords ? tileID.projMatrix : painter.transform.calculateProjMatrix(unwrappedTileID);
         painter.prepareDrawTile(tileID);
 
-        const tile = new Tile(tileID, null, null, painter);
+        const tile = new Tile(tileID, tileSize, transform.zoom, painter);
 
         const uniformValues = image ?
             backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}, crossfade) :
@@ -59,8 +59,10 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
+        const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
+
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-            uniformValues, layer.id, tile.stencilBoundsBuffer,
-                tile.stencilBoundsIndexBuffer, tile.stencilBoundsSegments);
+            uniformValues, layer.id, tileBoundsBuffer,
+                tileBoundsIndexBuffer, tileBoundsSegments);
     }
 }

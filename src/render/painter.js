@@ -8,11 +8,11 @@ import SourceCache from '../source/source_cache.js';
 import EXTENT from '../data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import SegmentVector from '../data/segment.js';
-import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
-import {values, MAX_SAFE_INTEGER} from '../util/util.js';
+import {PosArray, TileBoundsArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
+import {values, MAX_SAFE_INTEGER, NUM_OF_SEGMENTS} from '../util/util.js';
 import {isMapAuthenticated} from '../util/mapbox.js';
-import {rasterBoundsAttributes} from '../data/bounds_attributes.js';
 import posAttributes from '../data/pos_attributes.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import ProgramConfiguration from '../data/program_configuration.js';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
 import shaders from '../shaders/shaders.js';
@@ -113,12 +113,14 @@ class Painter {
     tileExtentSegments: SegmentVector;
     debugBuffer: VertexBuffer;
     debugSegments: SegmentVector;
-    rasterBoundsBuffer: VertexBuffer;
-    rasterBoundsSegments: SegmentVector;
     viewportBuffer: VertexBuffer;
     viewportSegments: SegmentVector;
     quadTriangleIndexBuffer: IndexBuffer;
-    tileBorderIndexBuffer: IndexBuffer;
+    tileDebugIndexBuffer: IndexBuffer;
+    tileDebugSegments: SegmentVector;
+    mercatorBoundsBuffer: VertexBuffer;
+    mercatorBoundsSegments: SegmentVector;
+    nonmercatorBoundsSegments: SegmentVector;
     _tileClippingMaskIDs: {[_: number]: number };
     stencilClearMode: StencilMode;
     style: Style;
@@ -147,7 +149,6 @@ class Painter {
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
-    _numTileBorderSegments: number;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -243,15 +244,24 @@ class Painter {
         this.viewportBuffer = context.createVertexBuffer(viewportArray, posAttributes.members);
         this.viewportSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
 
-        this._numTileBorderSegments = 32;
-        const n = 4 * this._numTileBorderSegments;
-        const tileLineStripIndices = new LineStripIndexArray();
+        const tileBoundsArray = new TileBoundsArray();
+        tileBoundsArray.emplaceBack(0, 0, 0, 0);
+        tileBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
+        tileBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
+        tileBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
+        this.mercatorBoundsBuffer = context.createVertexBuffer(tileBoundsArray, boundsAttributes.members);
+        this.mercatorBoundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
+        const n2 = NUM_OF_SEGMENTS * NUM_OF_SEGMENTS;
+        this.nonmercatorBoundsSegments = SegmentVector.simpleSegment(0, 0, 4 * n2, 2 * n2);
+
+        const n = 4 * NUM_OF_SEGMENTS;
+        const tileDebugIndices = new LineStripIndexArray();
         for (let i = 0; i < n; i++) {
-            tileLineStripIndices.emplaceBack(i);
+            tileDebugIndices.emplaceBack(i);
         }
-        tileLineStripIndices.emplaceBack(0);
-        this.tileBorderIndexBuffer = context.createIndexBuffer(tileLineStripIndices);
-        this.tileBorderSegments = SegmentVector.simpleSegment(0, 0, tileLineStripIndices.length, tileLineStripIndices.length);
+        tileDebugIndices.emplaceBack(0);
+        this.tileDebugIndexBuffer = context.createIndexBuffer(tileDebugIndices);
+        this.tileDebugSegments = SegmentVector.simpleSegment(0, 0, tileDebugIndices.length, tileDebugIndices.length);
 
         const quadTriangleIndices = new TriangleIndexArray();
         quadTriangleIndices.emplaceBack(0, 1, 2);
@@ -269,6 +279,21 @@ class Painter {
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
         this.loadTimeStamps.push(window.performance.now());
+    }
+
+    getTileBoundsBuffers(tile: Tile) {
+        let tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments;
+        if (tile._tileBoundsBuffer) {
+            tileBoundsBuffer = tile._tileBoundsBuffer;
+            tileBoundsIndexBuffer = tile._tileBoundsIndexBuffer;
+            tileBoundsSegments = this.nonmercatorBoundsSegments;
+        } else {
+            tileBoundsBuffer = this.mercatorBoundsBuffer;
+            tileBoundsIndexBuffer = this.quadTriangleIndexBuffer;
+            tileBoundsSegments = this.mercatorBoundsSegments;
+        }
+
+        return {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments};
     }
 
     /*
@@ -321,12 +346,14 @@ class Painter {
         for (const tileID of tileIDs) {
             const tile = sourceCache.getTile(tileID);
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
+            const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
+
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
                 ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
-                '$clipping', tile.stencilBoundsBuffer,
-                tile.stencilBoundsIndexBuffer, tile.stencilBoundsSegments);
+                '$clipping', tileBoundsBuffer,
+                tileBoundsIndexBuffer, tileBoundsSegments);
         }
     }
 

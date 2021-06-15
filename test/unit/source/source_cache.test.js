@@ -334,7 +334,10 @@ test('SourceCache#removeTile', (t) => {
                 callback();
             }
         });
-        sourceCache.map = {painter: {crossTileSymbolIndex: "", tileExtentVAO: {}}};
+        sourceCache.map = {painter: {crossTileSymbolIndex: "", tileExtentVAO: {}, context: {
+            createIndexBuffer: () => {},
+            createVertexBuffer: () => {}
+        }}};
 
         sourceCache._addTile(tileID);
 

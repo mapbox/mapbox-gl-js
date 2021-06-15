@@ -11,6 +11,10 @@ import type {Callback} from '../types/callback.js';
 // Number.MAX_SAFE_INTEGER not available in IE
 export const MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
 
+// the number of segments created to reproject tiles from Mercator
+// to another projection
+export const NUM_OF_SEGMENTS = 32;
+
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
 

@@ -3,7 +3,7 @@
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
-import getProjection from './projection';
+import projections from './projection/index.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -17,18 +17,13 @@ import assert from 'assert';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
+import type {Projection} from './projection/index.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
 
 type RayIntersectionResult = { p0: vec4, p1: vec4, t: number};
 type ElevationReference = "sea" | "ground";
-type Projection = {
-    name: string,
-    range: Array<number>,
-    project: (lng: number, lat: number, options?: Object) => {x: number, y: number},
-    unproject: (x: number, y: number) => LngLat
-};
 
 /**
  * A single transform, generally used for a single tile to be
@@ -132,7 +127,8 @@ class Transform {
 
         this.setMaxBounds();
 
-        this.projection = getProjection(projection);
+        if (!projection) projection = 'mercator';
+        this.projection = projections[projection];
 
         this.width = 0;
         this.height = 0;
@@ -338,8 +334,7 @@ class Transform {
         // Camera zoom describes the distance of the camera to the sea level (altitude). It is used only for manipulating the camera location.
         // The standard zoom (this._zoom) defines the camera distance to the terrain (height). Its behavior and conceptual meaning in determining
         // which tiles to stream is same with or without the terrain.
-        // TODO
-        const elevationAtCenter = this._elevation.getAtPointOrZero(MercatorCoordinate.fromLngLat(this.center), -1);
+        const elevationAtCenter = this._elevation.getAtPointOrZero(this.locationCoordinate(this.center), -1);
 
         if (elevationAtCenter === -1) {
             // Elevation data not loaded yet
@@ -422,8 +417,7 @@ class Transform {
 
         // Compute zoom level from the height of the camera relative to the terrain
         const cameraZoom: number = this._cameraZoom;
-        // TODO
-        const elevationAtCenter = this._elevation.getAtPointOrZero(MercatorCoordinate.fromLngLat(this.center));
+        const elevationAtCenter = this._elevation.getAtPointOrZero(this.locationCoordinate(this.center));
         const mercatorElevation = mercatorZfromAltitude(elevationAtCenter, this.center.lat);
         const altitude  = this._mercatorZfromZoom(cameraZoom);
         const minHeight = this._mercatorZfromZoom(this._maxZoom);
@@ -831,7 +825,6 @@ class Transform {
                 const dx = centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) * (1 << (z - it.zoom)));
                 const dy = centerPoint[1] - 0.5 - y;
                 const id = it.tileID ? it.tileID : new OverscaledTileID(tileZoom, it.wrap, it.zoom, x, y);
-
                 result.push({tileID: id, distanceSq: dx * dx + dy * dy});
                 continue;
             }
@@ -840,7 +833,7 @@ class Transform {
                 const childX = (x << 1) + (i % 2);
                 const childY = (y << 1) + (i >> 1);
 
-                const aabb = aabbForTile(it.zoom + 1, childX, childY, it.wrap, 0, 0);
+                const aabb = this.projection.name === 'mercator' ? it.aabb.quadrant(i) : aabbForTile(it.zoom + 1, childX, childY, it.wrap, 0, 0);
                 const child = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined};
                 if (useElevationData) {
                     child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
@@ -1002,17 +995,17 @@ class Transform {
     }
 
     /**
-     * Given a geographical lnglat, return an unrounded
+     * Given a geographical lngLat, return an unrounded
      * coordinate that represents it at this transform's zoom level.
-     * @param {LngLat} lnglat
+     * @param {LngLat} lngLat
      * @returns {Coordinate}
      * @private
      */
-    locationCoordinate(lnglat: LngLat, altitude: number) {
+    locationCoordinate(lngLat: LngLat, altitude?: number) {
         const z = altitude ?
             mercatorZfromAltitude(altitude, lngLat.lat) :
             undefined;
-        const projectedLngLat = this.projection.project(lnglat.lng, lnglat.lat);
+        const projectedLngLat = this.projection.project(lngLat.lng, lngLat.lat);
         return new MercatorCoordinate(
             projectedLngLat.x,
             projectedLngLat.y,
@@ -1022,7 +1015,7 @@ class Transform {
     /**
      * Given a Coordinate, return its geographical position.
      * @param {Coordinate} coord
-     * @returns {LngLat} lnglat
+     * @returns {LngLat} lngLat
      * @private
      */
     coordinateLocation(coord: MercatorCoordinate) {
@@ -1261,11 +1254,26 @@ class Transform {
     }
 
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
+        let scale, scaledX, scaledY;
+        const canonical = unwrappedTileID.canonical;
         const posMatrix = mat4.identity(new Float64Array(16));
-        const cs = this.projection.tileTransform(unwrappedTileID.canonical);
-        mat4.scale(posMatrix, posMatrix, [1 /  cs.scale, 1 /  cs.scale, 1]);
-        mat4.translate(posMatrix, posMatrix, [cs.x, cs.y, 0]);
-        mat4.scale(posMatrix, posMatrix, [1 / EXTENT, 1 / EXTENT, 1]);
+
+        if (this.projection.name === 'mercator') {
+            scale = worldSize / this.zoomScale(canonical.z);
+            const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
+            scaledX = unwrappedX * scale;
+            scaledY = canonical.y * scale;
+        } else {
+            const cs = this.projection.tileTransform(canonical);
+            scale = 1;
+            scaledX = cs.x;
+            scaledY = cs.y;
+            mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, 1]);
+        }
+
+        mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);
+        mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
+
         return posMatrix;
     }
 
@@ -1305,9 +1313,8 @@ class Transform {
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
-        // TODO check
-        //mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
-        mat4.multiply(posMatrix, this.mercatorMatrix, posMatrix);
+        const projMatrix = this.projection.name === 'mercator' ? aligned ? this.alignedProjMatrix : this.projMatrix : this.mercatorMatrix;
+        mat4.multiply(posMatrix, projMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
         return cache[projMatrixKey];
@@ -1641,15 +1648,6 @@ class Transform {
         this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
     }
 
-    _rotate(x, y, angle) {
-        const cos = Math.cos(angle / 180 * Math.PI);
-        const sin = Math.sin(angle / 180 * Math.PI);
-        return {
-            x: x * cos - y * sin,
-            y: x * sin + y * cos
-        };
-    }
-
     _updateCameraState() {
         if (!this.height) return;
 
@@ -1826,7 +1824,5 @@ class Transform {
         return this.centerPoint.add(new Point(0, yOffset));
     }
 }
-
-
 
 export default Transform;
