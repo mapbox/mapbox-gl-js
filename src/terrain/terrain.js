@@ -183,9 +183,6 @@ export class Terrain extends Elevation {
     orthoMatrix: mat4;
     enabled: boolean;
 
-    renderCached: boolean;
-    forceRenderCached: boolean; // debugging purpose.
-
     _visibleDemTiles: Array<Tile>;
     _sourceTilesOverlap: {[string]: boolean};
     _overlapStencilMode: StencilMode;
@@ -402,10 +399,6 @@ export class Terrain extends Elevation {
             this._emptyDEMTextureDirty = !this._initializing;
         }
 
-        const options = this.painter.options;
-        this.renderCached = (options.zooming || options.moving || options.rotating || !!this.forceRenderCached) && !this._invalidateRenderCache;
-
-        this._invalidateRenderCache = false;
         const coords = this.proxyCoords = psc.getIds().map((id) => {
             const tileID = psc.getTileByID(id).tileID;
             tileID.projMatrix = tr.calculateProjMatrix(tileID.toUnwrapped());
@@ -840,10 +833,6 @@ export class Terrain extends Elevation {
     }
 
     _shouldDisableRenderCache(): boolean {
-        if (!this.renderCached) {
-            return true;
-        }
-
         // Disable render caches on dynamic events due to fading or transitioning.
         if (this._style.light && this._style.light.hasTransition()) {
             return true;
@@ -952,7 +941,8 @@ export class Terrain extends Elevation {
 
     _setupRenderCache(previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
         const psc = this.proxySourceCache;
-        if (this._shouldDisableRenderCache()) {
+        if (this._shouldDisableRenderCache() || this._invalidateRenderCache) {
+            this._invalidateRenderCache = false;
             if (psc.renderCache.length > psc.renderCachePool.length) {
                 const used = ((Object.values(psc.proxyCachedFBO): any): Array<{[string | number]: number}>);
                 psc.proxyCachedFBO = {};

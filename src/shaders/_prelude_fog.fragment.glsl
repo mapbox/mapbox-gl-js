@@ -17,8 +17,10 @@ vec3 fog_apply(vec3 color, vec3 pos) {
 }
 
 // Apply fog computed in the vertex shader
-vec3 fog_apply_from_vert(vec3 color, float fog_opac) {
-    return mix(color, u_fog_color.rgb, fog_opac);
+vec4 fog_apply_from_vert(vec4 color, float fog_opac) {
+    float alpha = EPSILON + color.a;
+    color.rgb = mix(color.rgb / alpha, u_fog_color.rgb, fog_opac) * alpha;
+    return color;
 }
 
 // Assumes z up
@@ -31,9 +33,7 @@ vec3 fog_apply_sky_gradient(vec3 camera_ray, vec3 sky_color) {
 // For use with colors using premultiplied alpha
 vec4 fog_apply_premultiplied(vec4 color, vec3 pos) {
     float alpha = EPSILON + color.a;
-    color.rgb /= alpha;
-    color.rgb = fog_apply(color.rgb, pos);
-    color.rgb *= alpha;
+    color.rgb = fog_apply(color.rgb / alpha, pos) * alpha;
     return color;
 }
 
