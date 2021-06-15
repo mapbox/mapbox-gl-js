@@ -335,7 +335,6 @@ document.getElementById('repaint-checkbox').onclick = function() {
         window.clearInterval(this.fpsTimer);
         document.getElementById('fps').innerHTML = `0`;
     }
-    if (map.painter.terrain) map.painter.terrain.forceRenderCached = !!this.checked;
 };
 
 document.getElementById('circles-checkbox').onclick = function() {
