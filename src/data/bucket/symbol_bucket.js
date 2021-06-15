@@ -118,6 +118,7 @@ const shaderOpacityAttributes = [
 function addVertex(array, anchorX, anchorY, anchorZ, ox, oy, tx, ty, sizeVertex, isSDF: boolean, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY) {
     const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0])) : 0;
     const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1])) : 0;
+
     array.emplaceBack(
         // a_pos_offset
         anchorX,

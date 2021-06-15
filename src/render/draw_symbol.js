@@ -127,7 +127,7 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
 
         const pixelToTileScale = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.unwrappedTileID, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.unwrappedTileID, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale, true);
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
 
         if (size) {
@@ -225,7 +225,7 @@ function getSymbolProgramName(isSDF: boolean, isText: boolean, bucket: SymbolBuc
         return 'symbolIcon';
     }
 }
-//#error TODO: ne pienet dotit jotka ei projisoidu globelle on kai symboleita! Fiksaa loput shaderit siis
+
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
                           rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode) {
     const context = painter.context;
@@ -233,11 +233,11 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const tr = painter.transform;
 
     const rotateWithMap = rotationAlignment === 'map';
-    const pitchWithMap = pitchAlignment === 'map';
+    const pitchWithMap  = pitchAlignment === 'map';
     const alongLine = rotateWithMap && layer.layout.get('symbol-placement') !== 'point';
 
     let theLayer = false;
-    if (layer.id === "road-number-shield")
+    if (layer.id === "road-oneway-arrow-blue")
     {
         theLayer = true;
     }
@@ -255,7 +255,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const variablePlacement = layer.layout.get('text-variable-anchor');
 
     const tileRenderState: Array<SymbolTileRenderState> = [];
-    const defines = painter.terrain && pitchWithMap ? ['PITCH_WITH_MAP_TERRAIN'] : null;
+    const defines = null;// painter.terrain && pitchWithMap ? ['PITCH_WITH_MAP_TERRAIN'] : null;
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -299,15 +299,15 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         }
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, true);
         // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
         const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(new Float32Array(16), labelPlaneMatrix) : identityMat4;
-        const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
+        const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, true);
 
         const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
         mat4.multiply(globeMatrix, painter.transform.projMatrix, globeMatrix);
-        const globeLabelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
-        const globeGlCoordMatrix = symbolProjection.getGlCoordMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
+        const globeLabelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, false);
+        const globeGlCoordMatrix = symbolProjection.getGlCoordMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, false);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&
@@ -325,6 +325,29 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
 
         const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;
+
+        if (theLayer) {
+            const arr = bucket.icon.layoutVertexArray;
+
+            for (let i = 0; i < arr.length; i += 16) {
+                const x = arr.int16[i + 0];
+                const y = arr.int16[i + 1];
+                const z = arr.int16[i + 12];
+
+                const labelPos = vec4.transformMat4([], [x, y, z, 1], uLabelPlaneMatrix);
+                labelPos[0] /= labelPos[3];
+                labelPos[1] /= labelPos[3];
+                labelPos[2] /= labelPos[3];
+
+                const projPos = vec4.transformMat4([], labelPos, uglCoordMatrix);
+                projPos[0] /= projPos[3];
+                projPos[1] /= projPos[3];
+                projPos[2] /= projPos[3];
+
+                const test = 2;
+
+            }
+        }
 
         let uniformValues;
         if (isSDF) {

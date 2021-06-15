@@ -1356,22 +1356,33 @@ class Transform {
         return mat4.multiply([], posMatrix, decode);
     }
 
-    calculateGlobeLabelMatrix(unwrappedTileID: UnwrappedTileID) {
+    calculateGlobeLabelMatrix(unwrappedTileID: UnwrappedTileID, decode) {
+
+        // Camera is moved closer towards the ground near poles which has to be compensated for labels
+        // pitching with the map. This equals to applying reprojection from mercator to ecef spaces.
+        // Whithout this logic map aligned symbols would appear larger than intended
+        const altitudeScaler = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
+        const ws = this.worldSize * (1.0 / (1.0 - altitudeScaler));
+
         const localRadius = EXTENT / (2.0 * Math.PI);
-        const wsRadius = this.worldSize / (2.0 * Math.PI);
+        const wsRadius = ws / (2.0 * Math.PI);
         const s = wsRadius / localRadius;
 
         // transform the globe from reference coordinate space to world space
         const posMatrix = mat4.identity(new Float64Array(16));
+
+        //const altitudeScaler = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
+        //this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * (1.0 - altitudeScaler);
 
         mat4.translate(posMatrix, posMatrix, [0, 0, -wsRadius]);
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
         mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
         mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
 
-        const decode = this.decodeMatrix(unwrappedTileID);
-
-        return mat4.multiply([], posMatrix, decode);
+        if (decode)
+            return mat4.multiply([], posMatrix, this.decodeMatrix(unwrappedTileID));
+        
+        return posMatrix;
     }
 
     /**

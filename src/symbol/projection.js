@@ -81,10 +81,11 @@ function getLabelPlaneMatrix(posMatrix: mat4,
                              pitchWithMap: boolean,
                              rotateWithMap: boolean,
                              transform: Transform,
-                             pixelsToTileUnits: number) {
+                             pixelsToTileUnits: number,
+                             decode) {
     let m = mat4.create();
     if (pitchWithMap) {
-        m = transform.calculateGlobeLabelMatrix(tileID);
+        m = transform.calculateGlobeLabelMatrix(tileID, decode);
         //mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
         if (!rotateWithMap) {
             const rot = mat4.identity([]);
@@ -106,9 +107,10 @@ function getGlCoordMatrix(posMatrix: mat4,
                           pitchWithMap: boolean,
                           rotateWithMap: boolean,
                           transform: Transform,
-                          pixelsToTileUnits: number) {
+                          pixelsToTileUnits: number,
+                          decode) {
     if (pitchWithMap) {
-        const m = getLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits);
+        const m = getLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits, decode);
         mat4.invert(m, m);
         mat4.multiply(m, posMatrix, m);
         // const m = mat4.clone(posMatrix);
