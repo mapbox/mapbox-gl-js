@@ -52,20 +52,18 @@ function unproject(x, y, constants) {
     return new LngLat(lng, lat);
 }
 
-function albersProject(lng, lat) {
+function albersProject(lng: number, lat: number) {
     return project(lng, lat, albersConstants);
 }
 
-function alaskaProject(lng, lat) {
+function alaskaProject(lng: number, lat: number) {
     return project(lng, lat, alaskaConstants);
 }
 
 export const albers = {
     name: 'albers',
     range: [3.5, 7],
-    project: (lng: number, lat: number) => {
-        return albersProject(lng, lat);
-    },
+    project: albersProject,
     unproject: (x: number, y: number) => {
         return unproject(x, y, albersConstants);
     },
@@ -75,9 +73,7 @@ export const albers = {
 export const alaska = {
     name: 'alaska',
     range: [4, 7],
-    project: (lng: number, lat: number) => {
-        return alaskaProject(lng, lat);
-    },
+    project: alaskaProject,
     unproject: (x: number, y: number) => {
         return unproject(x, y, alaskaConstants);
     },

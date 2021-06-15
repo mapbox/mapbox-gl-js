@@ -19,7 +19,6 @@ import Color from '../style-spec/util/color.js';
 
 import boundsAttributes from '../data/bounds_attributes.js';
 import EXTENT from '../data/extent.js';
-import SegmentVector from '../data/segment.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
@@ -42,7 +41,8 @@ import type {Cancelable} from '../types/cancelable.js';
 import type {FilterSpecification} from '../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
-import type IndexBuffer from "../gl/index_buffer.js";
+import type IndexBuffer from '../gl/index_buffer.js';
+import type {Projection} from '../geo/projection/index.js';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -140,7 +140,7 @@ class Tile {
         this.state = 'loading';
 
         if (painter) {
-            const projection = painter && painter.transform.projection;
+            const projection = painter && painter.transform && painter.transform.projection;
             this._makeTileDebugBuffer(painter.context, projection);
             this._makeTileBoundsBuffers(painter.context, projection);
         }
@@ -530,7 +530,7 @@ class Tile {
         });
     }
 
-    _add(x: number, y: number, denominator: number, projection: projection) {
+    _add(x: number, y: number, denominator: number, projection: Projection) {
         const s = Math.pow(2, -this.tileID.canonical.z);
         const x1 = (this.tileID.canonical.x) * s;
         const y1 = (this.tileID.canonical.y) * s;
@@ -548,7 +548,7 @@ class Tile {
     }
 
     _makeTileDebugBuffer(context: Context, projection: Projection) {
-        if (this._tileDebugBoundsBuffer) return;
+        if (this._tileDebugBoundsBuffer || !projection) return;
 
         const debugBoundsArray = new PosArray();
 
@@ -575,7 +575,7 @@ class Tile {
     }
 
     _makeTileBoundsBuffers(context: Context, projection: Projection) {
-        if (this._tileBoundsBuffer || projection && projection.name === 'mercator') return;
+        if (this._tileBoundsBuffer || !projection || projection.name === 'mercator') return;
 
         const tileBoundsArray = new TileBoundsArray();
         const quadTriangleIndices = new TriangleIndexArray();

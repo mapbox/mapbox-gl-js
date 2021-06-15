@@ -1254,18 +1254,23 @@ class Transform {
     }
 
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
-        const isMercator = this.projection.name === 'mercator';
-        const cs = this.projection.tileTransform(unwrappedTileID.canonical);
+        let scale, scaledX, scaledY;
         const canonical = unwrappedTileID.canonical;
-        const scale = isMercator ? worldSize / this.zoomScale(canonical.z) : 1;
-        const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
-        const scaledX = isMercator ? unwrappedX * scale : cs.x;
-        const scaledY = isMercator ? canonical.y * scale : cs.y;
-
         const posMatrix = mat4.identity(new Float64Array(16));
-        if (!isMercator) {
+
+        if (this.projection.name === 'mercator') {
+            scale = worldSize / this.zoomScale(canonical.z);
+            const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
+            scaledX = unwrappedX * scale;
+            scaledY = canonical.y * scale;
+        } else {
+            const cs = this.projection.tileTransform(canonical);
+            scale = 1;
+            scaledX = cs.x;
+            scaledY = cs.y;
             mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, 1]);
         }
+
         mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 

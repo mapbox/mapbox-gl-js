@@ -113,13 +113,14 @@ class Painter {
     tileExtentSegments: SegmentVector;
     debugBuffer: VertexBuffer;
     debugSegments: SegmentVector;
-    tileBoundsBuffer: VertexBuffer;
-    tileBoundsSegments: SegmentVector;
     viewportBuffer: VertexBuffer;
     viewportSegments: SegmentVector;
     quadTriangleIndexBuffer: IndexBuffer;
     tileDebugIndexBuffer: IndexBuffer;
     tileDebugSegments: SegmentVector;
+    mercatorBoundsBuffer: VertexBuffer;
+    mercatorBoundsSegments: SegmentVector;
+    nonmercatorBoundsSegments: SegmentVector;
     _tileClippingMaskIDs: {[_: number]: number };
     stencilClearMode: StencilMode;
     style: Style;
@@ -280,7 +281,7 @@ class Painter {
         this.loadTimeStamps.push(window.performance.now());
     }
 
-    getTileBoundsBuffers(tile) {
+    getTileBoundsBuffers(tile: Tile) {
         let tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments;
         if (tile._tileBoundsBuffer) {
             tileBoundsBuffer = tile._tileBoundsBuffer;
@@ -345,7 +346,7 @@ class Painter {
         for (const tileID of tileIDs) {
             const tile = sourceCache.getTile(tileID);
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
-            let {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
+            const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
 
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.

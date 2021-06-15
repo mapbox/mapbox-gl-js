@@ -59,7 +59,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
-        let {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
+        const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, tileBoundsBuffer,
