@@ -543,14 +543,14 @@ class HandlerManager {
             const centerRay = tr.screenPointToMercatorRay(tr.centerPoint);
 
             if (aroundRay.dir[2] < 0) {
-                // Compute center point on the elevated map plane by casting a ray from the center of the screen.
-                // ZoomDelta is then subtracted from the relative zoom value and converted to a movement vector
-                const pickedAltitude = altitudeFromMercatorZ(pickedPosition[2], pickedPosition[1]);
-                const centerOnTargetPlane = tr.rayIntersectionCoordinate(tr.pointRayIntersection(tr.centerPoint, pickedAltitude));
-                const movement = tr.zoomDeltaToMovement(toVec3(centerOnTargetPlane), zoomDelta) * (centerRay.dir[2] / aroundRay.dir[2]);
+            //     // Compute center point on the elevated map plane by casting a ray from the center of the screen.
+            //     // ZoomDelta is then subtracted from the relative zoom value and converted to a movement vector
+            //     const pickedAltitude = altitudeFromMercatorZ(pickedPosition[2], pickedPosition[1]);
+            //     const centerOnTargetPlane = tr.rayIntersectionCoordinate(tr.pointRayIntersection(tr.centerPoint, pickedAltitude));
+            //     const movement = tr.zoomDeltaToMovement(toVec3(centerOnTargetPlane), zoomDelta) * (centerRay.dir[2] / aroundRay.dir[2]);
 
-                vec3.scale(zoomVec, aroundRay.dir, movement);
-            } else if (tr._terrainEnabled()) {
+            //     vec3.scale(zoomVec, aroundRay.dir, movement);
+            // } else if (tr._terrainEnabled()) {
                 // Special handling is required if the ray created from the cursor is heading up.
                 // This scenario is possible if user is trying to zoom towards e.g. a hill or a mountain.
                 // Convert zoomDelta to a movement vector as if the camera would be orbiting around the picked point

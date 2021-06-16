@@ -1208,6 +1208,51 @@ class Transform {
         return this.rayIntersectionCoordinate(this.pointRayIntersection(clamped));
     }
 
+    pointCoordinateOnGlobe(p: Point): ?MercatorCoordinate {
+
+        const p0 = [p.x, p.y, 0, 1];
+        const p1 = [p.x, p.y, 1, 1];
+
+        vec4.transformMat4(p0, p0, this.pixelMatrixInverse);
+        vec4.transformMat4(p1, p1, this.pixelMatrixInverse);
+
+        vec4.scale(p0, p0, 1 / p0[3]);
+        vec4.scale(p1, p1, 1 / p1[3]);
+
+        const dir = vec3.normalize([], vec3.sub([], p1, p0));
+
+        // Compute globe origo in world space
+        const matrix = this.calculateGlobeMatrix(this.worldSize);
+        const center = vec3.transformMat4([], [0, 0, 0], matrix);
+        const radius = this.worldSize / (2.0 * Math.PI);
+
+        const oc = vec3.sub([], p0, center);
+        const a = vec3.dot(dir, dir);
+        const b = 2.0 * vec3.dot(oc, dir);
+        const c = vec3.dot(oc, oc) - radius * radius;
+        const d = b * b - 4 * a * c;
+
+        if (d < 0) {
+            return null;
+        }
+
+        const t = (-b - Math.sqrt(d)) / (2.0 * a);
+        const pOnGlobe = vec3.sub([], vec3.scaleAndAdd([], p0, dir, t), center);
+
+        // Transform coordinate axes to find lat & lng of the position
+        const xa = vec3.normalize([], vec4.transformMat4([], [1, 0, 0, 0], matrix));
+        const ya = vec3.normalize([], vec4.transformMat4([], [0,-1, 0, 0], matrix));
+        const za = vec3.normalize([], vec4.transformMat4([], [0, 0, 1, 0], matrix));
+
+        const lat = Math.asin(vec3.dot(ya, pOnGlobe) / radius) * 180 / Math.PI;
+        const xp = vec3.dot(xa, pOnGlobe);
+        const zp = vec3.dot(za, pOnGlobe);
+        const lng = Math.atan2(xp, zp) * 180 / Math.PI;
+
+        // ...and back to mercator
+        return new MercatorCoordinate(mercatorXfromLng(lng), mercatorYfromLat(lat));
+    }
+
     /**
      * Given a point on screen, returns MercatorCoordinate.
      * In 3D mode, raycast to terrain. In 2D mode, behaves the same as {@see pointCoordinate}.
@@ -1388,19 +1433,8 @@ class Transform {
             mercatorXfromLng(this.center.lng) * worldSize,
             mercatorYfromLat(lat) * worldSize);
 
-        /*
-        get point() { return this.project(this.center) }
-
-        project(lnglat: LngLat) {
-            const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
-            return new Point(
-                    mercatorXfromLng(lnglat.lng) * this.worldSize,
-                    mercatorYfromLat(lat) * this.worldSize);
-        }*/
-
         // transform the globe from reference coordinate space to world space
         const posMatrix = mat4.identity(new Float64Array(16));
-        //const point = this.point;
         mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
         mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
