@@ -4,6 +4,7 @@ import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
 import projections from './projection/index.js';
+import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -677,7 +678,7 @@ class Transform {
         const minRange = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
 
         const aabbForTile = (z, x, y, wrap, min, max) => {
-            const tt = this.projection.tileTransform({z, x, y});
+            const tt = tileTransform({z, x, y}, this.projection.project);
             const tx = tt.x / tt.scale;
             const ty = tt.y / tt.scale;
             const tx2 = tt.x2 / tt.scale;
@@ -1264,7 +1265,7 @@ class Transform {
             scaledX = unwrappedX * scale;
             scaledY = canonical.y * scale;
         } else {
-            const cs = this.projection.tileTransform(canonical);
+            const cs = tileTransform(canonical, this.projection.project);
             scale = 1;
             scaledX = cs.x;
             scaledY = cs.y;

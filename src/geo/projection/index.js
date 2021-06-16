@@ -10,8 +10,7 @@ export type Projection = {
     name: string,
     range: Array<number>,
     project: (lng: number, lat: number, options?: Object) => {x: number, y: number},
-    unproject: (x: number, y: number) => LngLat,
-    tileTransform: (id: Object) => {scale: number, x: number, y: number, x2: number, y2: number}
+    unproject: (x: number, y: number) => LngLat
 };
 
 export default {

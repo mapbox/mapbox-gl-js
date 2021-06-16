@@ -5,6 +5,7 @@ import {warnOnce, clamp} from '../util/util.js';
 import EXTENT from './extent.js';
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
 import projections from '../geo/projection/index.js';
+import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../source/tile_id.js';
 
@@ -51,14 +52,13 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
     const scale = EXTENT / featureExtent;
     let cs, z2;
     if (canonical) {
-        cs = projection.tileTransform(canonical);
+        cs = tileTransform(canonical, projection.project);
         z2 = Math.pow(2, canonical.z);
     }
 
     function reproject(p) {
         if (projection && projection.name === 'mercator' || !canonical) {
-            const p_ = new Point(Math.round(p.x * scale), Math.round(p.y * scale));
-            return clampPoint(p_);
+            return new Point(Math.round(p.x * scale), Math.round(p.y * scale));
         } else {
             const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
             const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
@@ -95,7 +95,7 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
             const pointMerc = ring[i];
             const pointProj = reproject(ring[i]);
 
-            if (prevMerc && prevProj && feature.type !== 1) {
+            if (projection && projection.name !== 'mercator' && prevMerc && prevProj && feature.type !== 1) {
                 addResampled(resampled, prevMerc, pointMerc, prevProj, pointProj);
             } else {
                 resampled.push(clampPoint(pointProj));

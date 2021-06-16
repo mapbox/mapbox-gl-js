@@ -1,6 +1,5 @@
 // @flow
 import LngLat from '../lng_lat.js';
-import makeTileTransform from './tile_transform.js';
 
 const albersConstants = {
     refLng: -96,
@@ -52,30 +51,24 @@ function unproject(x, y, constants) {
     return new LngLat(lng, lat);
 }
 
-function albersProject(lng: number, lat: number) {
-    return project(lng, lat, albersConstants);
-}
-
-function alaskaProject(lng: number, lat: number) {
-    return project(lng, lat, alaskaConstants);
-}
-
 export const albers = {
     name: 'albers',
     range: [3.5, 7],
-    project: albersProject,
+    project(lng: number, lat: number) {
+        return project(lng, lat, albersConstants);
+    },
     unproject: (x: number, y: number) => {
         return unproject(x, y, albersConstants);
-    },
-    tileTransform: makeTileTransform(albersProject)
+    }
 };
 
 export const alaska = {
     name: 'alaska',
     range: [4, 7],
-    project: alaskaProject,
+    project(lng: number, lat: number) {
+        return project(lng, lat, alaskaConstants);
+    },
     unproject: (x: number, y: number) => {
         return unproject(x, y, alaskaConstants);
-    },
-    tileTransform: makeTileTransform(alaskaProject)
+    }
 };
