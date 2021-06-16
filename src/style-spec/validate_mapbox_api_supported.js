@@ -51,7 +51,7 @@ function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     if (!source.type || !isValid(source.type, typePattern)) {
         errors.push(new ValidationError(`sources[${i}]`, source.type, "Source type must be vector, raster, or raster-dem"));
     }
-    
+
     /*
      * "source" is required. Valid examples:
      * mapbox://mapbox.abcd1234
