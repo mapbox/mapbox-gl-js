@@ -42,6 +42,7 @@ import custom from './draw_custom.js';
 import sky from './draw_sky.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
+import Tile from '../source/tile.js';
 
 const draw = {
     symbol,
@@ -59,7 +60,6 @@ const draw = {
 };
 
 import type Transform from '../geo/transform.js';
-import type Tile from '../source/tile.js';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id.js';
 import type Style from '../style/style.js';
 import type StyleLayer from '../style/style_layer.js';
@@ -148,6 +148,7 @@ class Painter {
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
     _numTileBorderSegments: number;
+    _backgroundTiles: {[_: number | string]: Tile};
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -167,6 +168,7 @@ class Painter {
 
         this.gpuTimers = {};
         this.frameCounter = 0;
+        this._backgroundTiles = {};
     }
 
     updateTerrain(style: Style, cameraChanging: boolean) {
@@ -509,7 +511,7 @@ class Painter {
         if (!this.terrain) {
             for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
                 const layer = this.style._layers[layerIds[this.currentLayer]];
-                const sourceCache = style._getLayerSourceCache(layer) || style._getAnySourceCache();
+                const sourceCache = style._getLayerSourceCache(layer);
                 if (layer.isSky()) continue;
                 const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
 
@@ -882,6 +884,19 @@ class Painter {
         if (fogOpacity === 0) return false;
 
         return true;
+    }
+
+    getBackgroundTiles() {
+        const tileIDs = this.transform.coveringTiles({
+            tileSize: 512
+        });
+        const oldTiles = this._backgroundTiles;
+        const newTiles = {};
+        for (const tileID of tileIDs) {
+            newTiles[tileID.key] = oldTiles[tileID.key] || new Tile(tileID, null, null, this);
+        }
+        this._backgroundTiles = newTiles;
+        return newTiles;
     }
 }
 

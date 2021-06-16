@@ -37,7 +37,13 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     const program = painter.useProgram(image ? 'backgroundPattern' : 'background');
 
-    const tileIDs = coords ? coords : transform.coveringTiles({tileSize});
+    let tileIDs = coords;
+    let backgroundTiles;
+    if (!tileIDs) {
+        backgroundTiles = painter.getBackgroundTiles();
+        console.log(tileIDs, backgroundTiles);
+        tileIDs = Object.values(backgroundTiles).map(tile => tile.tileID);
+    }
 
     if (image) {
         context.activeTexture.set(gl.TEXTURE0);
@@ -50,7 +56,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         const matrix = coords ? tileID.projMatrix : painter.transform.calculateProjMatrix(unwrappedTileID);
         painter.prepareDrawTile(tileID);
 
-        const tile = sourceCache.getTile(tileID);
+        const tile = coords ? sourceCache.getTile(tileID) : backgroundTiles[tileID.key];
 
         const uniformValues = image ?
             backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}, crossfade) :

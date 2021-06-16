@@ -1736,12 +1736,6 @@ class Style extends Evented {
         return this._otherSourceCaches[source];
     }
 
-    _getAnySourceCache(): SourceCache | void {
-        for (const key in this._otherSourceCaches) {
-            return this._otherSourceCaches[key];
-        }
-    }
-
     _getLayerSourceCache(layer: StyleLayer): SourceCache | void {
         return layer.type === 'symbol' ?
             this._symbolSourceCaches[layer.source] :
