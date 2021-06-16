@@ -5,6 +5,7 @@ import window from '../util/window.js';
 import Dispatcher from './dispatcher.js';
 import getWorkerPool from './global_worker_pool.js';
 import {PerformanceUtils} from './performance.js';
+import Map from '../ui/map.js';
 
 const performance = window.performance;
 
@@ -14,6 +15,10 @@ export const WorkerPerformanceUtils = {
 
     getPerformanceMetricsAsync(callback: (error: ?Error, result: ?Object) => void) {
         const metrics = PerformanceUtils.getPerformanceMetrics();
+
+        if (Map.map) {
+            Object.assign(metrics, Map.map._getMetrics());
+        }
         const dispatcher = new Dispatcher(getWorkerPool(), this);
 
         const createTime = performance.getEntriesByName('create', 'mark')[0].startTime;

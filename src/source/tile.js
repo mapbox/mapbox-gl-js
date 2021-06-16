@@ -16,6 +16,7 @@ import SourceFeatureState from '../source/source_state.js';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin.js';
 import {TileSpaceDebugBuffer} from '../data/debug_viz.js';
 import Color from '../style-spec/util/color.js';
+import {sumMetrics} from '../util/performance.js';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -510,6 +511,27 @@ class Tile {
                 this.queryBoundsDebugViz.clearPoints();
             }
         });
+    }
+
+    getMetrics() {
+        const bucketCounts = [];
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            const type = bucket.layers[0].type;
+            const m = {};
+            if (type === 'symbol') {
+                const textVertices = bucket.text.layoutVertexBuffer ? bucket.text.layoutVertexBuffer.length : 0;
+                const iconVertices = bucket.icon.layoutVertexBuffer ? bucket.icon.layoutVertexBuffer.length : 0;
+                m[type + 'LayoutVertices'] = textVertices + iconVertices;
+            } else {
+                m[type + 'LayoutVertices'] = bucket.layoutVertexBuffer.length;
+            }
+            m[type + 'GeometryVertices'] = bucket.numGeometryVertices;
+            m[type + 'Features'] = bucket.numFeatures;
+            m[type + 'Buckets'] = 1;
+            bucketCounts.push(m);
+        }
+        return sumMetrics(bucketCounts);
     }
 }
 

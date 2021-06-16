@@ -17,6 +17,7 @@ import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
 import browser from '../util/browser.js';
 import Dispatcher from '../util/dispatcher.js';
+import {sumMetrics} from '../util/performance.js';
 import {validateStyle, emitValidationErrors as _emitValidationErrors} from './validate_style.js';
 import {QueryGeometry} from '../style/query_geometry.js';
 import {
@@ -1762,6 +1763,10 @@ class Style extends Evented {
 
     hasCircleLayers(): boolean {
         return this._numCircleLayers > 0;
+    }
+
+    getMetrics() {
+        return sumMetrics(Object.values(this._sourceCaches).map(sourceCache => sourceCache.getMetrics()));
     }
 }
 

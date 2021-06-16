@@ -130,6 +130,7 @@ class LineBucket implements Bucket {
         this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
         this.segments = new SegmentVector();
         this.maxLineLength = 0;
+        this.numGeometryVertices = 0;
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
     }
@@ -193,6 +194,8 @@ class LineBucket implements Bucket {
             const feature = features[index].feature;
             featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
+
+        this.numFeatures = bucketFeatures.length;
     }
 
     addConstantDashes(lineAtlas: LineAtlas) {
@@ -580,6 +583,8 @@ class LineBucket implements Bucket {
                 }
             }
         }
+
+        this.numGeometryVertices += vertices.length;
     }
 
     /**

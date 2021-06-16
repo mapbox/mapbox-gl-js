@@ -165,4 +165,14 @@ export function getPerformanceMeasurement(request: ?RequestParameters) {
     return performance.getEntriesByName(url);
 }
 
+export function sumMetrics(metricObjects) {
+    const result = {};
+    for (const counts of metricObjects) {
+        for (const metric in counts) {
+            result[metric] = (result[metric] || 0) + counts[metric];
+        }
+    }
+    return result;
+}
+
 export default performance;

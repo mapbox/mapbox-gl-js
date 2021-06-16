@@ -10,6 +10,7 @@ import browser from '../util/browser.js';
 import {OverscaledTileID} from './tile_id.js';
 import assert from 'assert';
 import SourceFeatureState from './source_state.js';
+import {sumMetrics} from '../util/performance.js';
 
 import type {Source} from './source.js';
 import type Map from '../ui/map.js';
@@ -916,6 +917,10 @@ class SourceCache extends Evented {
             }
         }
         this._cache.filter(tile => !tile.hasDependency(namespaces, keys));
+    }
+
+    getMetrics() {
+        return sumMetrics(Object.values(this._tiles).map(tile => tile.getMetrics()));
     }
 }
 

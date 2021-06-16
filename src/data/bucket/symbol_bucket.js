@@ -529,6 +529,8 @@ class SymbolBucket implements Bucket {
                     }
                 }
             }
+
+            this.numFeatures = this.features.length;
         }
 
         if (layout.get('symbol-placement') === 'line') {

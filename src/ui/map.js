@@ -420,6 +420,7 @@ class Map extends Camera {
 
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
+        Map.map = this;
 
         this._interactive = options.interactive;
         this._maxTileCacheSize = options.maxTileCacheSize;
@@ -3027,6 +3028,10 @@ class Map extends Camera {
         if (this._trackResize) {
             this.resize({originalEvent: event})._update();
         }
+    }
+
+    _getMetrics() {
+        return this.style.getMetrics();
     }
 
     /**
