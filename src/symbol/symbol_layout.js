@@ -947,10 +947,6 @@ function addSymbol(bucket: SymbolBucket,
         bucket.addToSortKeyRanges(bucket.symbolInstances.length, feature.sortKey);
     }
 
-    if (useRuntimeCollisionCircles) {
-        console.log("circles using anchor: " + anchor.x + " " + anchor.y + " " + anchor.z);
-    }
-
     const tileAnchorX = tileAnchor.x;
     const tileAnchorY = tileAnchor.y;
 

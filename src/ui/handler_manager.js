@@ -522,13 +522,22 @@ class HandlerManager {
         const panVec = [0, 0, 0];
         if (panDelta) {
             assert(this._dragOrigin, '_dragOrigin should have been setup with a previous dragstart');
-            const startRay = tr.screenPointToMercatorRay(around);
-            const endRay = tr.screenPointToMercatorRay(around.sub(panDelta));
 
-            const startPoint = this._trackingEllipsoid.projectRay(startRay.dir);
-            const endPoint = this._trackingEllipsoid.projectRay(endRay.dir);
-            panVec[0] = endPoint[0] - startPoint[0];
-            panVec[1] = endPoint[1] - startPoint[1];
+            const startPoint = tr.pointCoordinateOnGlobe(around);
+            const endPoint = tr.pointCoordinateOnGlobe(around.sub(panDelta));
+
+            if (startPoint && endPoint) {
+                panVec[0] = endPoint.x - startPoint.x;
+                panVec[1] = endPoint.y - startPoint.y;
+            }
+
+            // const startRay = tr.screenPointToMercatorRay(around);
+            // const endRay = tr.screenPointToMercatorRay(around.sub(panDelta));
+
+            // const startPoint = this._trackingEllipsoid.projectRay(startRay.dir);
+            // const endPoint = this._trackingEllipsoid.projectRay(endRay.dir);
+            //panVec[0] = endPoint[0] - startPoint[0];
+            //panVec[1] = endPoint[1] - startPoint[1];
         }
 
         const originalZoom = tr.zoom;

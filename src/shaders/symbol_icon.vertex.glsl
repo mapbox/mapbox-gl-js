@@ -82,8 +82,8 @@ void main() {
         symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
     }
 
-    highp float angle_sin = sin(segment_angle);
-    highp float angle_cos = cos(segment_angle);
+    highp float angle_sin = sin(segment_angle + symbol_rotation);
+    highp float angle_cos = cos(segment_angle + symbol_rotation);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
     //mat2 rotation_matrix = mat2(1.0, 0.0, 0.0, 1.0);
 
