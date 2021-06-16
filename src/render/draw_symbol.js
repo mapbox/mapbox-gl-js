@@ -7,7 +7,7 @@ import SegmentVector from '../data/segment.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
-import {mat4, vec4} from 'gl-matrix';
+import {mat4, vec4, vec3} from 'gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
@@ -257,6 +257,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const tileRenderState: Array<SymbolTileRenderState> = [];
     const defines = null;// painter.terrain && pitchWithMap ? ['PITCH_WITH_MAP_TERRAIN'] : null;
 
+    // Compute center of the globe to find symbols on the dark side of the globe
+    const globeOrigo = vec3.transformMat4([], [0, 0, 0], tr.calculateGlobeMatrix(tr.worldSize));
+
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         const bucket: SymbolBucket = (tile.getBucket(layer): any);
@@ -318,6 +321,52 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             const elevation = tr.elevation;
             const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : null;
             symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, globeLabelPlaneMatrix, globeGlCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
+        } else {
+            // Hide each placed point symbol that is behind the globe
+            const tileGlobeMatrix = tr.calculateGlobeMatrixForTile(tile.tileID.toUnwrapped(), tr.worldSize);
+            const fwd = tr._camera.forward();
+
+            const placedSymbols = buffers.placedSymbolArray;
+            const dynamicLayoutVertexArray = buffers.dynamicLayoutVertexArray;
+
+            let offset = 0;
+            for (let i = 0; i < placedSymbols.length; i++) {
+                const placedSymbol = placedSymbols.get(i);
+
+                const worldPosOnGlobe = vec3.transformMat4([], [placedSymbol.anchorX, placedSymbol.anchorY, placedSymbol.anchorZ], tileGlobeMatrix);
+                const normal = vec3.normalize([], vec3.sub([], worldPosOnGlobe, globeOrigo));
+                const behindGlobe = vec3.dot(normal, fwd) > 0.0;
+
+                // Modify directly the dynamic layout vertex array. We know that each glyph has 4 vertices with 3 float components each
+                if (behindGlobe) {
+                    for (let j = 0; j < placedSymbol.numGlyphs; j++) {
+                        dynamicLayoutVertexArray.float32[offset + 0] = -Infinity;
+                        dynamicLayoutVertexArray.float32[offset + 1] = -Infinity;
+                        dynamicLayoutVertexArray.float32[offset + 3] = -Infinity;
+                        dynamicLayoutVertexArray.float32[offset + 4] = -Infinity;
+                        dynamicLayoutVertexArray.float32[offset + 6] = -Infinity;
+                        dynamicLayoutVertexArray.float32[offset + 7] = -Infinity;
+                        dynamicLayoutVertexArray.float32[offset + 9] = -Infinity;
+                        dynamicLayoutVertexArray.float32[offset + 10] = -Infinity;
+                        offset+=12;
+                    }
+                } else {
+                    // Restore visibility by writing original anchor values to the dynamic layout array
+                    for (let j = 0; j < placedSymbol.numGlyphs; j++) {
+                        dynamicLayoutVertexArray.float32[offset + 0] = placedSymbol.anchorX;
+                        dynamicLayoutVertexArray.float32[offset + 1] = placedSymbol.anchorY;
+                        dynamicLayoutVertexArray.float32[offset + 3] = placedSymbol.anchorX;
+                        dynamicLayoutVertexArray.float32[offset + 4] = placedSymbol.anchorY;
+                        dynamicLayoutVertexArray.float32[offset + 6] = placedSymbol.anchorX;
+                        dynamicLayoutVertexArray.float32[offset + 7] = placedSymbol.anchorY;
+                        dynamicLayoutVertexArray.float32[offset + 9] = placedSymbol.anchorX;
+                        dynamicLayoutVertexArray.float32[offset + 10] = placedSymbol.anchorY;
+                        offset+=12;
+                    }
+                }
+            }
+            if (buffers.dynamicLayoutVertexBuffer)
+                buffers.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
         }
 
         const matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),
@@ -325,29 +374,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
 
         const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;
-
-        if (theLayer) {
-            const arr = bucket.icon.layoutVertexArray;
-
-            for (let i = 0; i < arr.length; i += 16) {
-                const x = arr.int16[i + 0];
-                const y = arr.int16[i + 1];
-                const z = arr.int16[i + 12];
-
-                const labelPos = vec4.transformMat4([], [x, y, z, 1], uLabelPlaneMatrix);
-                labelPos[0] /= labelPos[3];
-                labelPos[1] /= labelPos[3];
-                labelPos[2] /= labelPos[3];
-
-                const projPos = vec4.transformMat4([], labelPos, uglCoordMatrix);
-                projPos[0] /= projPos[3];
-                projPos[1] /= projPos[3];
-                projPos[2] /= projPos[3];
-
-                const test = 2;
-
-            }
-        }
 
         let uniformValues;
         if (isSDF) {
