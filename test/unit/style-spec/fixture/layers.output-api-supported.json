@@ -76,11 +76,11 @@
     "line": 14
   },
   {
-    "message": "sources[2]: Source type must be vector, raster, or raster-dem",
+    "message": "sources[2].type: Expected one of [vector, raster, raster-dem]",
     "line": 13
   },
   {
-    "message": "sources[2]: Source url must be a valid Mapbox tileset url"
+    "message": "sources[2].url: Expected a valid Mapbox tileset url"
   },
   {
     "message": "source.data: Unsupported property \"data\"",
@@ -91,10 +91,10 @@
     "line": 19
   },
   {
-    "message": "sources[3]: Source type must be vector, raster, or raster-dem",
+    "message": "sources[3].type: Expected one of [vector, raster, raster-dem]",
     "line": 17
   },
   {
-    "message": "sources[3]: Source url must be a valid Mapbox tileset url"
+    "message": "sources[3].url: Expected a valid Mapbox tileset url"
   }
 ]

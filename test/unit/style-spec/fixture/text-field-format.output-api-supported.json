@@ -28,10 +28,10 @@
     "line": 6
   },
   {
-    "message": "sources[0]: Source type must be vector, raster, or raster-dem",
+    "message": "sources[0].type: Expected one of [vector, raster, raster-dem]",
     "line": 5
   },
   {
-    "message": "sources[0]: Source url must be a valid Mapbox tileset url"
+    "message": "sources[0].url: Expected a valid Mapbox tileset url"
   }
 ]

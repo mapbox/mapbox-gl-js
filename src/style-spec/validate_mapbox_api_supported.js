@@ -34,6 +34,7 @@ function getAllowedKeyErrors(obj: Object, keys: Array<*>, path: ?string): Array<
     return errors;
 }
 
+const acceptedSourceTypes = new Set(["vector", "raster", "raster-dem"]);
 function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     const errors = [];
 
@@ -47,9 +48,8 @@ function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     /*
      * "type" is required and must be one of "vector", "raster", "raster-dem"
      */
-    const typePattern = /^(vector|raster|raster-dem)$/;
-    if (!source.type || !isValid(source.type, typePattern)) {
-        errors.push(new ValidationError(`sources[${i}]`, source.type, "Source type must be vector, raster, or raster-dem"));
+    if (!acceptedSourceTypes.has(String(source.type))) {
+        errors.push(new ValidationError(`sources[${i}].type`, source.type, `Expected one of [${Array.from(acceptedSourceTypes).join(", ")}]`));
     }
 
     /*
@@ -60,7 +60,7 @@ function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
      */
     const sourceUrlPattern = /^mapbox:\/\/([^/]*)$/;
     if (!source.url || !isValid(source.url, sourceUrlPattern)) {
-        errors.push(new ValidationError(`sources[${i}]`, source.url, 'Source url must be a valid Mapbox tileset url'));
+        errors.push(new ValidationError(`sources[${i}].url`, source.url, 'Expected a valid Mapbox tileset url'));
     }
 
     return errors;
