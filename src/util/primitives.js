@@ -53,7 +53,7 @@ class Frustum {
                 const s = vec4.transformMat4([], v, invProj);
                 const k = 1.0 / s[3] / worldSize * scale;
                 // Z scale in meters.
-                return vec4.mul(s, s, [k, k, 1.0 / s[3], k]);
+                return vec4.mul(s, s, [k, k, k/*1.0 / s[3]*/, k]);
             });
 
         const frustumPlanePointIndices = [
@@ -114,6 +114,19 @@ class Aabb {
     distanceZ(point: Array<number>): number {
         const pointOnAabb = Math.max(Math.min(this.max[2], point[2]), this.min[2]);
         return pointOnAabb - point[2];
+    }
+
+    getCorners() {
+        return [
+            [this.min[0], this.min[1], this.min[2]],
+            [this.max[0], this.min[1], this.min[2]],
+            [this.max[0], this.max[1], this.min[2]],
+            [this.min[0], this.max[1], this.min[2]],
+            [this.min[0], this.min[1], this.max[2]],
+            [this.max[0], this.min[1], this.max[2]],
+            [this.max[0], this.max[1], this.max[2]],
+            [this.min[0], this.max[1], this.max[2]],
+        ];
     }
 
     // Performs a frustum-aabb intersection test. Returns 0 if there's no intersection,

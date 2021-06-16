@@ -35,18 +35,6 @@ function tileLatLngCorners(id: CanonicalTileID, padding: ?number) {
     const latLngTL = [ latFromMercatorY(top), lngFromMercatorX(left) ];
     const latLngBR = [ latFromMercatorY(bottom), lngFromMercatorX(right) ];
 
-    // if (padding) {
-    //     const MIN_LAT = latFromMercatorY(bottom + padding / EXTENT);
-    //     const MAX_LAT = latFromMercatorY(top - padding / EXTENT);
-    //     const MIN_LNG = lngFromMercatorX(left - padding / EXTENT);
-    //     const MAX_LNG = lngFromMercatorX(right + padding / EXTENT);
-
-    //     latLngTL[0] = MAX_LAT;//clamp(latLngTL[0], MIN_LAT, MAX_LAT);
-    //     latLngTL[1] = MIN_LNG;//clamp(latLngTL[1], MIN_LNG, MAX_LNG);
-    //     latLngBR[0] = MIN_LAT;//clamp(latLngBR[0], MIN_LAT, MAX_LAT);
-    //     latLngBR[1] = MAX_LNG;//clamp(latLngBR[1], MIN_LNG, MAX_LNG);
-    // }
-
     return [latLngTL, latLngBR];
 }
 
@@ -64,11 +52,11 @@ function latLngToECEF(lat, lng, r) {
     return [sx, sy, sz];
 }
 
-function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
+function tileBoundsOnGlobe(id: CanonicalTileID, r): Aabb {
     const z = id.z;
 
-    const mn = -refRadius;
-    const mx = refRadius;
+    const mn = -r;
+    const mx = r;
 
     if (z === 0) {
         return new Aabb([mn, mn, mn], [mx, mx, mx]);
@@ -89,10 +77,10 @@ function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
     const [min, max] = tileLatLngCorners(id);
 
     const corners = [
-        latLngToECEF(min[0], min[1], refRadius),
-        latLngToECEF(min[0], max[1], refRadius),
-        latLngToECEF(max[0], min[1], refRadius),
-        latLngToECEF(max[0], max[1], refRadius)
+        latLngToECEF(min[0], min[1], r),
+        latLngToECEF(min[0], max[1], r),
+        latLngToECEF(max[0], min[1], r),
+        latLngToECEF(max[0], max[1], r)
     ];
 
     const bMin = [mx, mx, mx];
@@ -752,6 +740,32 @@ class Transform {
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation ? z : 0;
+        
+        // Compute size of the globe in tiles, ie. worldSize / tileSize
+        //const radiusInTiles = numTiles / (2.0 * Math.PI);
+        const globeMatrix = this.calculateGlobeMatrix(numTiles);
+        const globeOrigo = vec3.transformMat4([], [0, 0, 0], globeMatrix);
+
+        // Computes bounding box for a tile that is oriented properly on the screen.
+        // Better way would be to create frustum that is transformed once into the coordinate space of the globe
+        const orientedGlobeBoundsForTile = (id) => {
+            const aabb = tileBoundsOnGlobe(id, refRadius);
+
+            // Transform corners of the aabb to the correct space
+            const corners = aabb.getCorners();
+
+            const mx = Number.MAX_VALUE;
+            const max = [-mx, -mx, -mx];
+            const min = [mx, mx, mx];
+
+            for (let i = 0; i < corners.length; i++) {
+                vec3.transformMat4(corners[i], corners[i], globeMatrix);
+                vec3.min(min, min, corners[i]);
+                vec3.max(max, max, corners[i]);
+            }
+
+            return new Aabb(min, max);
+        };
 
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).
@@ -764,6 +778,7 @@ class Transform {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
                 aabb: new Aabb([wrap * numTiles, 0, min], [(wrap + 1) * numTiles, numTiles, max]),
+                globeAabb: orientedGlobeBoundsForTile(new CanonicalTileID(0, 0, 0)),
                 zoom: 0,
                 x: 0,
                 y: 0,
@@ -849,13 +864,13 @@ class Transform {
             return distanceSqr < distToSplitSqr;
         };
 
-        if (this._renderWorldCopies) {
-            // Render copy of the globe thrice on both sides
-            for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
-                stack.push(newRootTile(-i));
-                stack.push(newRootTile(i));
-            }
-        }
+        // if (this._renderWorldCopies) {
+        //     // Render copy of the globe thrice on both sides
+        //     for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
+        //         stack.push(newRootTile(-i));
+        //         stack.push(newRootTile(i));
+        //     }
+        // }
 
         stack.push(newRootTile(0));
 
@@ -867,12 +882,41 @@ class Transform {
 
             // Visibility of a tile is not required if any of its ancestor if fully inside the frustum
             if (!fullyVisible) {
-                const intersectResult = it.aabb.intersects(cameraFrustum);
+                //const intersectResult = it.aabb.intersects(cameraFrustum);
+                const intersectResult = it.globeAabb.intersects(cameraFrustum);
 
                 if (intersectResult === 0)
                     continue;
 
                 fullyVisible = intersectResult === 2;
+            }
+
+            // Tile on globe facing away from the camera
+            if (it.zoom > 1) {
+                const fwd = this._camera.forward();
+                const [min, max] = tileLatLngCorners(new CanonicalTileID(it.zoom, x, y));
+
+                const corners = [
+                    vec3.transformMat4([], latLngToECEF(min[0], min[1], refRadius), globeMatrix),
+                    vec3.transformMat4([], latLngToECEF(min[0], max[1], refRadius), globeMatrix),
+                    vec3.transformMat4([], latLngToECEF(max[0], min[1], refRadius), globeMatrix),
+                    vec3.transformMat4([], latLngToECEF(max[0], max[1], refRadius), globeMatrix)
+                ];
+
+                let numFacingAway = 0;
+
+                for (let i = 0; i < corners.length; i++) {
+                    const p = corners[i];
+                    const dir = vec3.sub([], p, globeOrigo);
+
+                    if (vec3.dot(dir, fwd) >= 0) {
+                        numFacingAway++;
+                    }
+                }
+
+                if (numFacingAway === 4) {
+                    continue;
+                }
             }
 
             // Have we reached the target depth or is the tile too far away to be any split further?
@@ -896,7 +940,8 @@ class Transform {
                 const childY = (y << 1) + (i >> 1);
 
                 const aabb = it.aabb.quadrant(i);
-                const child = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined};
+                const globeAabb = orientedGlobeBoundsForTile(new CanonicalTileID(it.zoom + 1, childX, childY));
+                const child = {aabb, globeAabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined};
                 if (useElevationData) {
                     child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
                     getAABBFromElevation(child);
@@ -995,6 +1040,7 @@ class Transform {
         const newCenter = new MercatorCoordinate(
                 loc.x - (a.x - b.x),
                 loc.y - (a.y - b.y));
+
         this.center = this.coordinateLocation(newCenter);
         if (this._renderWorldCopies) {
             this.center = this.center.wrap();
@@ -1308,7 +1354,7 @@ class Transform {
     }
 
     decodeMatrix(unwrappedTileID: UnwrappedTileID): Float64Array {
-        const bounds = tileBoundsOnGlobe(unwrappedTileID.canonical);
+        const bounds = tileBoundsOnGlobe(unwrappedTileID.canonical, refRadius);
         const m = mat4.identity(new Float64Array(16));
 
         // Denormalize points to the correct range
@@ -1337,9 +1383,24 @@ class Transform {
         const wsRadius = worldSize / (2.0 * Math.PI);
         const s = wsRadius / localRadius;
 
+        const lat = clamp(this.center.lat, -this.maxValidLatitude, this.maxValidLatitude);
+        const point = new Point(
+            mercatorXfromLng(this.center.lng) * worldSize,
+            mercatorYfromLat(lat) * worldSize);
+
+        /*
+        get point() { return this.project(this.center) }
+
+        project(lnglat: LngLat) {
+            const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
+            return new Point(
+                    mercatorXfromLng(lnglat.lng) * this.worldSize,
+                    mercatorYfromLat(lat) * this.worldSize);
+        }*/
+
         // transform the globe from reference coordinate space to world space
         const posMatrix = mat4.identity(new Float64Array(16));
-        const point = this.point;
+        //const point = this.point;
         mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
         mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
@@ -1358,8 +1419,8 @@ class Transform {
 
     calculateGlobeLabelMatrix(unwrappedTileID: UnwrappedTileID, decode) {
 
-        // Camera is moved closer towards the ground near poles which has to be compensated for labels
-        // pitching with the map. This equals to applying reprojection from mercator to ecef spaces.
+        // Camera is moved closer towards the ground near poles as part of compesanting the reprojection.
+        // This has to be compensated for the map aligned label space.
         // Whithout this logic map aligned symbols would appear larger than intended
         const altitudeScaler = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
         const ws = this.worldSize * (1.0 / (1.0 - altitudeScaler));
