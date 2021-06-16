@@ -5,6 +5,7 @@ import {warnOnce, clamp} from '../util/util.js';
 import EXTENT from './extent.js';
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
 import projections from '../geo/projection/index.js';
+import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../source/tile_id.js';
 
@@ -51,7 +52,7 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
     const scale = EXTENT / featureExtent;
     let cs, z2;
     if (canonical) {
-        cs = projection.tileTransform(canonical);
+        cs = tileTransform(canonical, projection.project);
         z2 = Math.pow(2, canonical.z);
     }
 

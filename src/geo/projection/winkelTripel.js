@@ -4,6 +4,5 @@ export default {
     name: 'winkel',
     range: [3.5, 7],
     project: () => {},
-    unproject: () => {},
-    tileTransform: () => {}
+    unproject: () => {}
 };

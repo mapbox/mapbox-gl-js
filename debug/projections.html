@@ -48,7 +48,7 @@
                 <option value="sinusoidal">Sinusoidal</option>
                 <option value="wgs84">WGS84</option>
                 <option value="albers" selected>Albers USA</option>
-                <option value="albersAlaska">Albers Alaska</option>
+                <option value="alaska">Albers Alaska</option>
             </select>
         </fieldset>
         <fieldset>
@@ -85,7 +85,7 @@ function makeMap() {
     const el = document.getElementById('projName');
     const zooms = {
         albers: 3,
-        albersAlaska: 4,
+        alaska: 4,
         winkel: 1.2,
         mercator: 1.0,
         sinusoidal: 1.0,
@@ -93,7 +93,7 @@ function makeMap() {
     };
     const centers = {
         albers: [-122.414, 37.776],
-        albersAlaska: [-154, 63],
+        alaska: [-154, 63],
         winkel: [0, 0],
         mercator: [0, 0],
         sinusoidal: [0, 0],
