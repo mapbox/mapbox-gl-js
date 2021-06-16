@@ -9,6 +9,8 @@ import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import {Event, ErrorEvent} from '../../../src/util/evented.js';
 import simulate from '../../util/simulate_interaction.js';
 import {fixedLngLat, fixedNum} from '../../util/fixed.js';
+import Fog from '../../../src/style/fog.js';
+import Color from '../../../src/style-spec/util/color.js';
 
 function createStyleSource() {
     return {
@@ -344,6 +346,65 @@ test('Map', (t) => {
                 });
             });
 
+            t.end();
+        });
+
+        t.test('updating fog results in correct transitions', (t) => {
+            t.test('sets fog with transition', (t) => {
+                const fog = new Fog({
+                    'color': 'white',
+                    'range': [0, 1],
+                    'horizon-blend': 0.0
+                });
+                fog.set({'color-transition': {duration: 3000}});
+
+                fog.set({'color': 'red'});
+                fog.updateTransitions({transition: true}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                t.deepEqual(fog.properties.get('color'), new Color(1, 0.5, 0.5, 1));
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                t.deepEqual(fog.properties.get('color'), new Color(1, 0.0, 0.0, 1));
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                t.deepEqual(fog.properties.get('color'), new Color(1, 0.0, 0.0, 1));
+
+                fog.set({'range-transition': {duration: 3000}});
+                fog.set({'range': [2, 5]});
+                fog.updateTransitions({transition: true}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                t.deepEqual(fog.properties.get('range')[0], 1);
+                t.deepEqual(fog.properties.get('range')[1], 3);
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                t.deepEqual(fog.properties.get('range')[0], 2);
+                t.deepEqual(fog.properties.get('range')[1], 5);
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                t.deepEqual(fog.properties.get('range')[0], 2);
+                t.deepEqual(fog.properties.get('range')[1], 5);
+
+                fog.set({'horizon-blend-transition': {duration: 3000}});
+                fog.set({'horizon-blend': 0.5});
+                fog.updateTransitions({transition: true}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                t.deepEqual(fog.properties.get('horizon-blend'), 0.25);
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                t.deepEqual(fog.properties.get('horizon-blend'), 0.5);
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                t.deepEqual(fog.properties.get('horizon-blend'), 0.5);
+
+                t.end();
+            });
+
+            t.test('fog respects validation option', (t) => {
+                const fog = new Fog({});
+                const fogSpy = t.spy(fog, '_validate');
+
+                fog.set({color: [444]}, {validate: false});
+                fog.updateTransitions({transition: false}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 10});
+
+                t.ok(fogSpy.calledOnce);
+                t.deepEqual(fog.properties.get('color'), [444]);
+                t.end();
+            });
             t.end();
         });
 
