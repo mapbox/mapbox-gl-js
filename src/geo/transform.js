@@ -1536,6 +1536,7 @@ class Transform {
     }
 
     recenterOnTerrain() {
+        return;
         if (!this._elevation)
             return;
 
