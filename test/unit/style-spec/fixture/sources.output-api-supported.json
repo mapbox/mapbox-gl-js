@@ -40,6 +40,19 @@
     "line": 50
   },
   {
+    "message": "sources[0]: Source type must be vector, raster, or raster-dem"
+  },
+  {
+    "message": "sources[0]: Source url must be a valid Mapbox tileset url"
+  },
+  {
+    "message": "sources[1]: Source type must be vector, raster, or raster-dem",
+    "line": 7
+  },
+  {
+    "message": "sources[1]: Source url must be a valid Mapbox tileset url"
+  },
+  {
     "message": "source.tiles: Unsupported property \"tiles\"",
     "line": 12
   },
@@ -64,8 +77,22 @@
     "line": 22
   },
   {
+    "message": "sources[4]: Source type must be vector, raster, or raster-dem",
+    "line": 20
+  },
+  {
+    "message": "sources[4]: Source url must be a valid Mapbox tileset url"
+  },
+  {
     "message": "source.urls: Unsupported property \"urls\"",
     "line": 28
+  },
+  {
+    "message": "sources[5]: Source type must be vector, raster, or raster-dem",
+    "line": 27
+  },
+  {
+    "message": "sources[5]: Source url must be a valid Mapbox tileset url"
   },
   {
     "message": "source.urls: Unsupported property \"urls\"",
@@ -76,12 +103,26 @@
     "line": 33
   },
   {
+    "message": "sources[6]: Source type must be vector, raster, or raster-dem",
+    "line": 31
+  },
+  {
+    "message": "sources[6]: Source url must be a valid Mapbox tileset url"
+  },
+  {
     "message": "source.canvas: Unsupported property \"canvas\"",
     "line": 39
   },
   {
     "message": "source.coordinates: Unsupported property \"coordinates\"",
     "line": 40
+  },
+  {
+    "message": "sources[7]: Source type must be vector, raster, or raster-dem",
+    "line": 38
+  },
+  {
+    "message": "sources[7]: Source url must be a valid Mapbox tileset url"
   },
   {
     "message": "source.data: Unsupported property \"data\"",
@@ -94,5 +135,12 @@
   {
     "message": "source.clusterProperties: Unsupported property \"clusterProperties\"",
     "line": 48
+  },
+  {
+    "message": "sources[8]: Source type must be vector, raster, or raster-dem",
+    "line": 45
+  },
+  {
+    "message": "sources[8]: Source url must be a valid Mapbox tileset url"
   }
 ]

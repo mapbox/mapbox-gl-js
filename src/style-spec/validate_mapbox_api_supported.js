@@ -45,13 +45,21 @@ function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     errors.push(...getAllowedKeyErrors(source, sourceKeys, 'source'));
 
     /*
+     * "type" is required and must be one of "vector", "raster", "raster-dem"
+     */
+    const typePattern = /^(vector|raster|raster-dem)$/;
+    if (!source.type || !isValid(source.type, typePattern)) {
+        errors.push(new ValidationError(`sources[${i}]`, source.type, "Source type must be vector, raster, or raster-dem"));
+    }
+    
+    /*
      * "source" is required. Valid examples:
      * mapbox://mapbox.abcd1234
      * mapbox://penny.abcd1234
      * mapbox://mapbox.abcd1234,penny.abcd1234
      */
     const sourceUrlPattern = /^mapbox:\/\/([^/]*)$/;
-    if (!isValid(source.url, sourceUrlPattern)) {
+    if (!source.url || !isValid(source.url, sourceUrlPattern)) {
         errors.push(new ValidationError(`sources[${i}]`, source.url, 'Source url must be a valid Mapbox tileset url'));
     }
 
