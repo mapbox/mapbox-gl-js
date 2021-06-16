@@ -264,11 +264,11 @@ class Transform {
         return new Point(this.width, this.height);
     }
 
-    get bearing(): number {
+    get rotation(): number {
         return -this.angle / Math.PI * 180;
     }
-    set bearing(bearing: number) {
-        const b = -wrap(bearing, -180, 180) * Math.PI / 180;
+    set rotation(rotation: number) {
+        const b = -wrap(rotation, -180, 180) * Math.PI / 180;
         if (this.angle === b) return;
         this._unmodified = false;
         this.angle = b;
@@ -871,7 +871,7 @@ class Transform {
 
                     if (!minmax) { minmax = {min: minRange, max: maxRange}; }
 
-                    const cornerFar = furthestTileCorner(this.bearing);
+                    const cornerFar = furthestTileCorner(this.rotation);
 
                     const farX = cornerFar[0] * EXTENT;
                     const farY = cornerFar[1] * EXTENT;

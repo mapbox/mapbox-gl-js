@@ -111,7 +111,7 @@ export default class HandlerInertia {
 
         if (deltas.bearing) {
             const result = calculateEasing(deltas.bearing, duration, defaultBearingInertiaOptions);
-            easeOptions.bearing = this._map.transform.bearing + clamp(result.amount, -179, 179);
+            easeOptions.bearing = this._map.transform.rotation + clamp(result.amount, -179, 179);
             extendDuration(easeOptions, result);
         }
 
