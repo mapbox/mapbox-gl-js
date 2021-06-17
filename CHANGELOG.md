@@ -1,3 +1,11 @@
+## 2.3.1
+
+### 🐞 Bug fixes
+* Increase strictness of the style API validation ([#10779](https://github.com/mapbox/mapbox-gl-js/pull/10779))
+* Remove strictly-increasing requirement for fog range validation ([#10772](https://github.com/mapbox/mapbox-gl-js/pull/10772))
+* Fix fog flickering when `optimizeForTerrain` is false ([#10763](https://github.com/mapbox/mapbox-gl-js/pull/10767))
+
+
 ## 2.3.0
 
 ### ✨ Features and improvements
