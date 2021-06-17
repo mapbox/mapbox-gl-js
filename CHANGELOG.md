@@ -1,6 +1,7 @@
 ## 2.3.1
 
 ### 🐞 Bug fixes
+
 * Fix fog flickering when the map option `optimizeForTerrain` is set to false ([#10763](https://github.com/mapbox/mapbox-gl-js/pull/10767))
 
 ## 2.3.0
