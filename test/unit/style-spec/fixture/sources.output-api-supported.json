@@ -40,11 +40,24 @@
     "line": 50
   },
   {
+    "message": "sources[0].type: Expected one of [vector, raster, raster-dem]"
+  },
+  {
+    "message": "sources[0].url: Expected a valid Mapbox tileset url"
+  },
+  {
+    "message": "sources[1].type: Expected one of [vector, raster, raster-dem]",
+    "line": 7
+  },
+  {
+    "message": "sources[1].url: Expected a valid Mapbox tileset url"
+  },
+  {
     "message": "source.tiles: Unsupported property \"tiles\"",
     "line": 12
   },
   {
-    "message": "sources[2]: Source url must be a valid Mapbox tileset url",
+    "message": "sources[2].url: Expected a valid Mapbox tileset url",
     "line": 11
   },
   {
@@ -52,7 +65,7 @@
     "line": 17
   },
   {
-    "message": "sources[3]: Source url must be a valid Mapbox tileset url",
+    "message": "sources[3].url: Expected a valid Mapbox tileset url",
     "line": 16
   },
   {
@@ -64,8 +77,22 @@
     "line": 22
   },
   {
+    "message": "sources[4].type: Expected one of [vector, raster, raster-dem]",
+    "line": 20
+  },
+  {
+    "message": "sources[4].url: Expected a valid Mapbox tileset url"
+  },
+  {
     "message": "source.urls: Unsupported property \"urls\"",
     "line": 28
+  },
+  {
+    "message": "sources[5].type: Expected one of [vector, raster, raster-dem]",
+    "line": 27
+  },
+  {
+    "message": "sources[5].url: Expected a valid Mapbox tileset url"
   },
   {
     "message": "source.urls: Unsupported property \"urls\"",
@@ -76,12 +103,26 @@
     "line": 33
   },
   {
+    "message": "sources[6].type: Expected one of [vector, raster, raster-dem]",
+    "line": 31
+  },
+  {
+    "message": "sources[6].url: Expected a valid Mapbox tileset url"
+  },
+  {
     "message": "source.canvas: Unsupported property \"canvas\"",
     "line": 39
   },
   {
     "message": "source.coordinates: Unsupported property \"coordinates\"",
     "line": 40
+  },
+  {
+    "message": "sources[7].type: Expected one of [vector, raster, raster-dem]",
+    "line": 38
+  },
+  {
+    "message": "sources[7].url: Expected a valid Mapbox tileset url"
   },
   {
     "message": "source.data: Unsupported property \"data\"",
@@ -94,5 +135,15 @@
   {
     "message": "source.clusterProperties: Unsupported property \"clusterProperties\"",
     "line": 48
+  },
+  {
+    "message": "sources[8].type: Expected one of [vector, raster, raster-dem]",
+    "line": 45
+  },
+  {
+    "message": "sources[8].url: Expected a valid Mapbox tileset url"
+  },
+  {
+    "message": "sources[9].url: Expected a valid Mapbox tileset url"
   }
 ]

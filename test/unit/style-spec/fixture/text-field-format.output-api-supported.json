@@ -26,5 +26,12 @@
   {
     "message": "source.data: Unsupported property \"data\"",
     "line": 6
+  },
+  {
+    "message": "sources[0].type: Expected one of [vector, raster, raster-dem]",
+    "line": 5
+  },
+  {
+    "message": "sources[0].url: Expected a valid Mapbox tileset url"
   }
 ]
