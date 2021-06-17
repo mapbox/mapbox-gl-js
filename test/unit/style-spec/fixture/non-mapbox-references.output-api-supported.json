@@ -8,11 +8,11 @@
     "line": 4
   },
   {
-    "message": "sources[0]: Source url must be a valid Mapbox tileset url",
+    "message": "sources[0].url: Expected a valid Mapbox tileset url",
     "line": 8
   },
   {
-    "message": "sources[1]: Source url must be a valid Mapbox tileset url",
+    "message": "sources[1].url: Expected a valid Mapbox tileset url",
     "line": 12
   }
 ]
