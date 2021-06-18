@@ -268,7 +268,16 @@ class Transform {
         return -this.angle / Math.PI * 180;
     }
     set rotation(rotation: number) {
-        const b = -wrap(rotation, -180, 180) * Math.PI / 180;
+        let {lng, lat} = this.center;
+        const north = {lng, lat: lat += 0.0001};
+        const projectedCenter = this.projection.project(lng, lat);
+        const mercatorNorth = MercatorCoordinate.fromLngLat(north);
+        const northVector = {x: mercatorNorth.x - projectedCenter.x, y: mercatorNorth.y - projectedCenter.y};
+        const radians = Math.atan2(northVector.x, northVector.y);
+        const degrees = radians * 180 / Math.PI;
+        const angle = rotation - degrees;
+        console.log('angle: ', angle, -wrap(angle, -180, 180) * Math.PI / 180);
+        const b = -wrap(angle, -180, 180) * Math.PI / 180;
         if (this.angle === b) return;
         this._unmodified = false;
         this.angle = b;
