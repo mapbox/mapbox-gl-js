@@ -275,9 +275,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 if (textJustify === "auto") {
                     textJustify = getAnchorJustification(textAnchor);
                 }
-                // Horizontal point or line label.
-                // Text writing mode only requests for vertical mode, check further if vertical label is supported for
-                // the text contents, i.e. CJK text. If not, then fallback to use horizontal layout
+                // Add horizontal shaping for all point labels and line labels that need horizontal writing mode.
                 if (isPointPlacement || ((layout.get("text-writing-mode").indexOf('horizontal') >= 0) || !allowsVerticalWritingMode(unformattedText))) {
                     const shaping = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed,
                                             textOffset, WritingMode.horizontal, false, symbolPlacement, layoutTextSize, layoutTextSizeThisZoom);
@@ -368,7 +366,7 @@ function addFeature(bucket: SymbolBucket,
     }
     const layout = bucket.layers[0].layout;
     const iconOffset = layout.get('icon-offset').evaluate(feature, {}, canonical);
-    const defaultHorizontalShaping = getDefaultHorizontalShaping(shapedTextOrientations.horizontal) || shapedTextOrientations.vertical;
+    const defaultShaping = getDefaultHorizontalShaping(shapedTextOrientations.horizontal) || shapedTextOrientations.vertical;
     const glyphSize = ONE_EM,
         fontScale = layoutTextSize / glyphSize,
         textMaxBoxScale = bucket.tilePixelRatio * textMaxSize / glyphSize,
@@ -384,14 +382,15 @@ function addFeature(bucket: SymbolBucket,
 
     const iconTextFit = layout.get('icon-text-fit');
     let verticallyShapedIcon;
+
     // Adjust shaped icon size when icon-text-fit is used.
     if (shapedIcon && iconTextFit !== 'none') {
         if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
             verticallyShapedIcon = fitIconToText(shapedIcon, shapedTextOrientations.vertical, iconTextFit,
                 layout.get('icon-text-fit-padding'), iconOffset, fontScale);
         }
-        if (defaultHorizontalShaping) {
-            shapedIcon = fitIconToText(shapedIcon, defaultHorizontalShaping, iconTextFit,
+        if (defaultShaping) {
+            shapedIcon = fitIconToText(shapedIcon, defaultShaping, iconTextFit,
                                        layout.get('icon-text-fit-padding'), iconOffset, fontScale);
         }
     }
@@ -417,7 +416,7 @@ function addFeature(bucket: SymbolBucket,
                 line,
                 symbolMinDistance,
                 textMaxAngle,
-                shapedTextOrientations.vertical || defaultHorizontalShaping,
+                shapedTextOrientations.vertical || defaultShaping,
                 shapedIcon,
                 glyphSize,
                 textMaxBoxScale,
@@ -425,7 +424,7 @@ function addFeature(bucket: SymbolBucket,
                 EXTENT
             );
             for (const anchor of anchors) {
-                const shapedText = defaultHorizontalShaping;
+                const shapedText = defaultShaping;
                 if (!shapedText || !anchorIsTooClose(bucket, shapedText.text, textRepeatDistance, anchor)) {
                     addSymbolAtAnchor(line, anchor);
                 }
@@ -439,7 +438,7 @@ function addFeature(bucket: SymbolBucket,
                 const anchor = getCenterAnchor(
                     line,
                     textMaxAngle,
-                    shapedTextOrientations.vertical || defaultHorizontalShaping,
+                    shapedTextOrientations.vertical || defaultShaping,
                     shapedIcon,
                     glyphSize,
                     textMaxBoxScale);
