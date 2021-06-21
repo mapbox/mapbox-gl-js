@@ -387,9 +387,7 @@ class SymbolBucket implements Bucket {
         const zOrderByViewportY = zOrder === 'viewport-y' || (zOrder === 'auto' && !this.sortFeaturesByKey);
         this.sortFeaturesByY = zOrderByViewportY && this.canOverlap;
 
-        if (layout.get('symbol-placement') === 'point') {
-            this.writingModes = layout.get('text-writing-mode').map(wm => WritingMode[wm]);
-        }
+        this.writingModes = layout.get('text-writing-mode').map(wm => WritingMode[wm]);
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
 
@@ -408,7 +406,7 @@ class SymbolBucket implements Bucket {
     calculateGlyphDependencies(text: string, stack: {[_: number]: boolean}, textAlongLine: boolean, allowVerticalPlacement: boolean, doesAllowVerticalWritingMode: boolean) {
         for (let i = 0; i < text.length; i++) {
             stack[text.charCodeAt(i)] = true;
-            if ((textAlongLine || allowVerticalPlacement) && doesAllowVerticalWritingMode) {
+            if (allowVerticalPlacement && doesAllowVerticalWritingMode) {
                 const verticalChar = verticalizedCharacterMap[text.charAt(i)];
                 if (verticalChar) {
                     stack[verticalChar.charCodeAt(0)] = true;

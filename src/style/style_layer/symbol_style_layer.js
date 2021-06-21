@@ -77,18 +77,20 @@ class SymbolStyleLayer extends StyleLayer {
             this.layout._values['icon-pitch-alignment'] = this.layout.get('icon-rotation-alignment');
         }
 
-        if (this.layout.get('symbol-placement') === 'point') {
-            const writingModes = this.layout.get('text-writing-mode');
-            if (writingModes) {
-                // remove duplicates, preserving order
-                const deduped = [];
-                for (const m of writingModes) {
-                    if (deduped.indexOf(m) < 0) deduped.push(m);
-                }
-                this.layout._values['text-writing-mode'] = deduped;
-            } else {
-                this.layout._values['text-writing-mode'] = ['horizontal'];
+        const writingModes = this.layout.get('text-writing-mode');
+        if (writingModes) {
+            // remove duplicates, preserving order
+            const deduped = [];
+            for (const m of writingModes) {
+                if (deduped.indexOf(m) < 0) deduped.push(m);
             }
+            this.layout._values['text-writing-mode'] = deduped;
+        } else if (this.layout.get('symbol-placement') === 'point') {
+            // default value for 'point' placement symbols
+            this.layout._values['text-writing-mode'] = ['horizontal'];
+        } else {
+            // default value for 'line' placement symbols
+            this.layout._values['text-writing-mode'] = ['horizontal', 'vertical'];
         }
 
         this._setPaintOverrides();
