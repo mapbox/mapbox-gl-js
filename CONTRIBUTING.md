@@ -145,7 +145,7 @@ Here is a recommended way to get setup:
 
 ## Changelog Conventions
 
-`CHANGELOG.md` is a file containing a formatted, lightly editorialized history of changes in the project. Pull requests are the unit of change and are normally categorized and summarized when reviewed. The changelog is maintained by combining automated content search and formatting with a final human edit.
+`CHANGELOG.md` is a valuable document many people read. It contains a formatted, lightly editorialized history of changes in the project. Pull requests are the unit of change and are normally categorized and summarized when reviewed. The changelog is maintained by combining automated content search and formatting with a final human edit.
 
 What warrants a changelog entry?
 
