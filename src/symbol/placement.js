@@ -587,7 +587,8 @@ export class Placement {
             offscreen = placedGlyphBoxes && placedGlyphBoxes.offscreen;
 
             if (symbolInstance.useRuntimeCollisionCircles) {
-                const placedSymbol = bucket.text.placedSymbolArray.get(symbolInstance.centerJustifiedTextSymbolIndex);
+                const placedSymbolIndex = symbolInstance.centerJustifiedTextSymbolIndex >= 0 ? symbolInstance.centerJustifiedTextSymbolIndex : symbolInstance.verticalPlacedTextSymbolIndex;
+                const placedSymbol = bucket.text.placedSymbolArray.get(placedSymbolIndex);
                 const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
 
                 const textPixelPadding = layout.get('text-padding');
@@ -956,17 +957,15 @@ export class Placement {
             if (hasIcon) {
                 const packedOpacity = packOpacity(opacityState.icon);
 
-                const useHorizontal = !(hasIconTextFit && symbolInstance.verticalPlacedIconSymbolIndex && horizontalHidden);
-
                 if (symbolInstance.placedIconSymbolIndex >= 0) {
-                    const horizontalOpacity = useHorizontal ? packedOpacity : PACKED_HIDDEN_OPACITY;
+                    const horizontalOpacity = !horizontalHidden ? packedOpacity : PACKED_HIDDEN_OPACITY;
                     addOpacities(bucket.icon, symbolInstance.numIconVertices, horizontalOpacity);
                     bucket.icon.placedSymbolArray.get(symbolInstance.placedIconSymbolIndex).hidden =
                         (opacityState.icon.isHidden(): any);
                 }
 
                 if (symbolInstance.verticalPlacedIconSymbolIndex >= 0) {
-                    const verticalOpacity = !useHorizontal ? packedOpacity : PACKED_HIDDEN_OPACITY;
+                    const verticalOpacity = !verticalHidden ? packedOpacity : PACKED_HIDDEN_OPACITY;
                     addOpacities(bucket.icon, symbolInstance.numVerticalIconVertices, verticalOpacity);
                     bucket.icon.placedSymbolArray.get(symbolInstance.verticalPlacedIconSymbolIndex).hidden =
                         (opacityState.icon.isHidden(): any);
