@@ -55,7 +55,8 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         const matrix = coords ? tileID.projMatrix : painter.transform.calculateProjMatrix(unwrappedTileID);
         painter.prepareDrawTile(tileID);
 
-        const tile = backgroundTiles ? backgroundTiles[tileID.key] : sourceCache.getTile(tileID);
+        const tile = sourceCache ? sourceCache.getTile(tileID) : backgroundTiles ? backgroundTiles[tileID.key] : null;
+        if (!tile) continue;
 
         const uniformValues = image ?
             backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}, crossfade) :
