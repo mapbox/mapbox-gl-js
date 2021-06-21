@@ -25,7 +25,6 @@ git clone git@github.com:mapbox/mapbox-gl-js.git
 
 Install node module dependencies
 ```bash
-cd mapbox-gl-js &&
 yarn install
 ```
 
@@ -51,7 +50,6 @@ git clone git@github.com:mapbox/mapbox-gl-js.git
 
 Install node module dependencies
 ```bash
-cd mapbox-gl-js &&
 yarn install
 ```
 
@@ -67,7 +65,6 @@ git clone git@github.com:mapbox/mapbox-gl-js.git
 
 Install node module dependencies
 ```bash
-cd mapbox-gl-js
 yarn install
 ```
 
