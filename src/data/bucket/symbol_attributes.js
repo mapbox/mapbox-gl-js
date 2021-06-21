@@ -108,7 +108,6 @@ export const symbolInstance = createLayout([
     {type: 'Uint16', name: 'numVerticalIconVertices'},
     {type: 'Uint16', name: 'useRuntimeCollisionCircles'},
     {type: 'Uint32', name: 'crossTileID'},
-    {type: 'Float32', name: 'textBoxScale'},
     {type: 'Float32', components: 2, name: 'textOffset'},
     {type: 'Float32', name: 'collisionCircleDiameter'},
 ]);
