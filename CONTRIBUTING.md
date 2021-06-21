@@ -145,20 +145,24 @@ Here is a recommended way to get setup:
 
 ## Changelog Conventions
 
+`CHANGELOG.md` is a file containing a formatted, lightly editorialized history of changes in the project. Pull requests are the unit of change and are normally categorized and summarized when reviewed. The changelog is maintained by combining automated content search and formatting with a final human edit.
+
 What warrants a changelog entry?
 
 - Any change that affects the public API, visual appearance or user security *must* have a changelog entry
 - Any performance improvement or bugfix *should* have a changelog entry
-- Any contribution from a community member *may* have a changelog entry, no matter how small
+- Any contribution from a community member *may* have a changelog entry, no matter how small (accompanied by a hat-tip in the final changelog: `(h/t [<user>](https://github.com/<user>))`)
 - Any documentation related changes *should not* have a changelog entry
 - Any regression change introduced and fixed within the same release *should not* have a changelog entry
 - Any internal refactoring, technical debt reduction, render test, unit test or benchmark related change *should not* have a changelog entry
 
-How to add your changelog?
+How to add your changelog? Changelog entries are written inside the `<changelog></changelog>` tag in the PR template. A changelog entry should:
 
-- Any changelog entry should be descriptive and concise; it should explain the change to a reader without context
-- Any changelog entry should be added to the pull request in the following format: `<changelog>Changelog description</changelog>`
-- Any change that does not require a changelog should be labelled `skip changelog`
+- be descriptive and concise; it should explain the change to a reader without context
+- describe the surface bug and not the underlying problem. This might require some research.
+- be labeled `skip changelog` if the PR has no impact on end users and does not require a changelog entry
+- be labeled `breaking change` if the PR is a breaking change
+- reference a PR and optionally an issue.
 
 ## Documentation Conventions
 
