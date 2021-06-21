@@ -3,7 +3,6 @@
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
-import Tile from '../source/tile.js';
 import {
     backgroundUniformValues,
     backgroundPatternUniformValues
@@ -42,7 +41,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     let backgroundTiles;
     if (!tileIDs) {
         backgroundTiles = painter.getBackgroundTiles();
-        tileIDs = Object.values(backgroundTiles).map(tile => tile.tileID);
+        tileIDs = Object.values(backgroundTiles).map(tile => (tile: any).tileID);
     }
 
     if (image) {
@@ -56,7 +55,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         const matrix = coords ? tileID.projMatrix : painter.transform.calculateProjMatrix(unwrappedTileID);
         painter.prepareDrawTile(tileID);
 
-        const tile = coords ? sourceCache.getTile(tileID) : backgroundTiles[tileID.key];
+        const tile = backgroundTiles ? backgroundTiles[tileID.key] : sourceCache.getTile(tileID);
 
         const uniformValues = image ?
             backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}, crossfade) :

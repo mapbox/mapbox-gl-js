@@ -917,9 +917,10 @@ class Painter {
         const oldTiles = this._backgroundTiles;
         const newTiles = this._backgroundTiles = {};
 
-        const tileIDs = this.transform.coveringTiles({tileSize: 512});
+        const tileSize = 512;
+        const tileIDs = this.transform.coveringTiles({tileSize});
         for (const tileID of tileIDs) {
-            newTiles[tileID.key] = oldTiles[tileID.key] || new Tile(tileID, null, null, this);
+            newTiles[tileID.key] = oldTiles[tileID.key] || new Tile(tileID, tileSize, this.transform.tileZoom, this);
         }
         return newTiles;
     }
