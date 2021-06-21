@@ -259,6 +259,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     vertexMorphing.update(now);
     const tr = painter.transform;
     const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
+    const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
 
     const batches = showWireframe ? [false, true] : [false];
 
@@ -334,8 +335,38 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
             //const test = vec4.transformMat4([], [0, 0, ws / Math.PI / 2.0, 1], projMatrix);
 
+            // Compute normal vectors of corner points. They're used for adding elevation to curved surface
+            const tiles = Math.pow(2, coord.canonical.z);
+            const normId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
+
+            const refRadius = EXTENT / (2.0 * Math.PI);
+            const latLngCorners = tileLatLngCorners(normId);
+            const tl = latLngCorners[0];
+            const br = latLngCorners[1];
+            const tlNorm = latLngToECEF(tl[0], tl[1], refRadius);
+            const trNorm = latLngToECEF(tl[0], br[1], refRadius);
+            const brNorm = latLngToECEF(br[0], br[1], refRadius);
+            const blNorm = latLngToECEF(br[0], tl[1], refRadius);
+
+            vec3.normalize(tlNorm, tlNorm);
+            vec3.normalize(trNorm, trNorm);
+            vec3.normalize(brNorm, brNorm);
+            vec3.normalize(blNorm, blNorm);
+
+            //const origo = vec3.transformMat4([], [0, 0, 0], globeMatrix);
+//
+            //vec3.normalize(tlNorm, vec3.sub(tlNorm, vec3.transformMat4(tlNorm, tlNorm, globeMatrix), origo));
+            //vec3.normalize(trNorm, vec3.sub(trNorm, vec3.transformMat4(trNorm, trNorm, globeMatrix), origo));
+            //vec3.normalize(brNorm, vec3.sub(brNorm, vec3.transformMat4(brNorm, brNorm, globeMatrix), origo));
+            //vec3.normalize(blNorm, vec3.sub(blNorm, vec3.transformMat4(blNorm, blNorm, globeMatrix), origo));
+
+            // Pixels per meters have to be interpolated for the latitude range
+            const ws2 = tr.tileSize * Math.pow(2, coord.canonical.z);
+            const topPixelsPerMeter = mercatorZfromAltitude(1, tl[0]) * ws2;
+            const bottomPixelsPerMeter = mercatorZfromAltitude(1, br[0]) * ws2;
+
             //const uniformValues = terrainRasterUniformValues(coord.projMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt);
-            const uniformValues = globeRasterUniformValues(/*coord.*/projMatrix);
+            const uniformValues = globeRasterUniformValues(projMatrix, tlNorm, trNorm, brNorm, blNorm, topPixelsPerMeter, bottomPixelsPerMeter);
 
             setShaderMode(shaderMode, isWireframe);
 
