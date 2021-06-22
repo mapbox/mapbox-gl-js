@@ -69,6 +69,8 @@ import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 import globeFrag from './globe_raster.fragment.glsl';
 import globeVert from './globe_raster.vertex.glsl';
+import atmosphereFrag from './globe_atmosphere.fragment.glsl';
+import atmosphereVert from './globe_atmosphere.vertex.glsl';
 
 export let preludeTerrain = {};
 export let preludeFog = {};
@@ -110,7 +112,8 @@ export default {
     skybox: compile(skyboxFrag, skyboxVert),
     skyboxGradient: compile(skyboxGradientFrag, skyboxVert),
     skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert),
-    globeRaster: compile(globeFrag, globeVert)
+    globeRaster: compile(globeFrag, globeVert),
+    globeAtmosphere: compile(atmosphereFrag, atmosphereVert)
 };
 
 // Expand #pragmas to #ifdefs.

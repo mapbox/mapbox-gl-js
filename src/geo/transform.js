@@ -1750,7 +1750,7 @@ class Transform {
 
         const horizonDistance = cameraToSeaLevelDistance * (1 / this._horizonShift);
 
-        const farZ = Math.min(furthestDistance * 1.01, horizonDistance) * 4.0;
+        this._farZ = Math.min(furthestDistance * 1.01, horizonDistance) * 4.0;
 
         // The larger the value of nearZ is
         // - the more depth precision is available for features (good)
@@ -1759,10 +1759,10 @@ class Transform {
         // Smaller values worked well for mapbox-gl-js but deckgl was encountering precision issues
         // when rendering it's layers using custom layers. This value was experimentally chosen and
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
-        const nearZ = this.height / 50;
+        this._nearZ = this.height / 50;
 
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
-        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, nearZ, farZ);
+        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
 
         // Apply center of perspective offset
         cameraToClip[8] = -offset.x * 2 / this.width;
@@ -1786,7 +1786,7 @@ class Transform {
         mat4.rotateX(view, view, this._pitch);
         mat4.rotateZ(view, view, this.angle);
 
-        const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, nearZ, farZ);
+        const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, this._nearZ, this._farZ);
         // The distance in pixels the skybox needs to be shifted down by to meet the shifted horizon.
         const skyboxHorizonShift = (Math.PI / 2 - this._pitch) * (this.height / this._fov) * this._horizonShift;
         // Apply center of perspective offset to skybox projection

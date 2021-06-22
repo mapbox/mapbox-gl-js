@@ -499,7 +499,6 @@ function addFeature(bucket: SymbolBucket,
     }
 
     const addSymbolAtAnchor = (line, anchor, tileAnchor) => {
-        // TODO tämä johonkin paremmin!
         if (!anchor.inside) {
             return;
         }

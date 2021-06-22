@@ -498,7 +498,7 @@ class Painter {
 
         // Clear buffers in preparation for drawing to the main framebuffer
         // If fog is enabled, use the fog color as default clear color.
-        let clearColor = Color.transparent;
+        let clearColor = Color.black;// Color.transparent;
         if (this.style.fog) {
             clearColor = this.style.fog.properties.get('color');
         }
