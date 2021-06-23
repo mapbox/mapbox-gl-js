@@ -58,17 +58,17 @@ function getCenterAnchor(line: Array<Point>,
                 y = interpolate(a.y, b.y, t);
 
             const anchor = new Anchor(x, y, b.angleTo(a), i);
-            anchor._round();
+            // anchor._round();
             // If the anchor point is very close to a or b, its x or y coordinate may become exactly the same as a or b
             // after rounding. In this case, we will have to update the anchor point to be equal to a or b. Otherwise, the
             // anchor point will not be on the line, further leading to angle calculation error when projecting symbols.
-            if (t > 0.99 && (anchor.x === b.x || anchor.y === b.y)) {
-                anchor.x = b.x;
-                anchor.y = b.y;
-            } else if (t < 0.01 && (anchor.x === a.x || anchor.y === a.y)) {
-                anchor.x = a.x;
-                anchor.y = a.y;
-            }
+            // if (t > 0.99 && (anchor.x === b.x || anchor.y === b.y)) {
+            //     anchor.x = b.x;
+            //     anchor.y = b.y;
+            // } else if (t < 0.01 && (anchor.x === a.x || anchor.y === a.y)) {
+            //     anchor.x = a.x;
+            //     anchor.y = a.y;
+            // }
             if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
                 return anchor;
             } else {
