@@ -103,7 +103,7 @@ test('getAnchors', (t) => {
         const line = [new Point(1, 1), new Point(1, 3.1), new Point(3, 6), new Point(4, 7)];
         const anchor = getCenterAnchor(line, Math.PI, shapedText, shapedIcon, glyphSize, 1);
         t.deepEqual(anchor,
-            {x: 2, y: 4, angle: 0.9670469933974603, segment: 1});
+            {x:  1.8053282193580078, y: 4.267725918069111, angle: 0.9670469933974603, segment: 1});
         t.end();
     });
 
@@ -111,7 +111,7 @@ test('getAnchors', (t) => {
         const line = [new Point(-10, -10), new Point(5, 5)];
         const anchor = getCenterAnchor(line, 2, Math.PI, shapedText, shapedIcon, glyphSize, 1);
         t.deepEqual(anchor,
-            {x: -2, y: -2, angle: 0.7853981633974483, segment: 0});
+            {x: -2.5, y: -2.5, angle: 0.7853981633974483, segment: 0});
         t.end();
     });
 
