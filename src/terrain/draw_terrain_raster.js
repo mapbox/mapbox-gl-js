@@ -3,6 +3,7 @@
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
 import {terrainRasterUniformValues} from './terrain_raster_program.js';
 import {globeRasterUniformValues} from './globe_raster_program.js';
 import {Terrain} from './terrain.js';
@@ -11,7 +12,7 @@ import assert from 'assert';
 import {easeCubicInOut} from '../util/util.js';
 import EXTENT from '../data/extent.js';
 import {warnOnce, clamp, degToRad} from '../util/util.js';
-import {GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
+import {RasterBoundsArray, GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
 import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {createLayout} from '../util/struct_array.js';
 import SegmentVector from '../data/segment.js';
@@ -134,7 +135,7 @@ const shaderDefines = {
 };
 
 const layout = createLayout([
-    { type: 'Float32', name: 'a_pos', components: 3 },
+    { type: 'Float32', name: 'a_globe_pos', components: 3 },
     { type: 'Float32', name: 'a_uv', components: 2 }
 ]);
 
@@ -187,6 +188,30 @@ function createGridVertices(count: number, sz, sy, ws): any {
 
             const p = latLngToECEF(lat, lng, radius);
             boundsArray.emplaceBack(p[0], p[1], p[2], x / gridExt, uvY);
+        }
+    }
+
+    return boundsArray;
+}
+
+function createFlatVertices(count): any {
+    //const tiles = Math.pow(2, sz);
+    //const [latLngTL, latLngBR]= tileLatLngCorners(new CanonicalTileID(sz, tiles / 2, sy));
+    //const radius = ws / Math.PI / 2.0;
+    const boundsArray = new RasterBoundsArray();
+
+    const gridExt = count;
+    const vertexExt = gridExt + 1;
+    boundsArray.reserve(count * count);
+
+    for (let y = 0; y < vertexExt; y++) {
+        //const lat = lerp(latLngTL[0], latLngBR[0], y / gridExt);
+        //const mercY = clamp(mercatorYfromLat(lat), 0, 1);
+        const uvY = y / gridExt;
+        for (let x = 0; x < vertexExt; x++) {
+            //const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
+            //const p = latLngToECEF(lat, lng, radius);
+            boundsArray.emplaceBack(x / gridExt * EXTENT, y / gridExt * EXTENT, x / gridExt * EXTENT, y / gridExt * EXTENT);
         }
     }
 
@@ -247,9 +272,10 @@ const gridMeshDatabase = {};
 const gridIndices = createGridIndices(gridExt);
 const poleFanDatabase = {};
 
-let gridBuffer = null;// context.createVertexBuffer(triangleGridArray, rasterBoundsAttributes.members);
-let gridIndexBuffer = null;// context.createIndexBuffer(triangleGridIndices);
-let gridSegments = null;// SegmentVector.simpleSegment(0, 0, triangleGridArray.length, skirtIndicesOffset);
+let flatGridBuffer = null;
+let gridBuffer = null;
+let gridIndexBuffer = null;
+let gridSegments = null;
 
 function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>, now: number) {
     const context = painter.context;
@@ -276,6 +302,10 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
     const batches = showWireframe ? [false, true] : [false];
 
+    //const transitionLerp = clamp(tr.zoom - 5.0, 0.0, 1.0);// (now % 1000.0) / 1000.0;
+    const phase = (now % 10000.0) / 10000.0;
+    const transitionLerp = phase <= 0.5 ? phase * 2.0 : 2.0 - 2.0 * phase;
+
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
         // terrain (if applicable) so that this is enough to ensure the correct program is
@@ -298,6 +328,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             }
 
             if (!gridBuffer) {
+                flatGridBuffer = context.createVertexBuffer(createFlatVertices(gridExt), rasterBoundsAttributes.members, true);
                 gridBuffer = context.createVertexBuffer(gridMesh, layout.members, true);
                 gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
                 gridSegments = SegmentVector.simpleSegment(0, 0, (gridExt + 1) * (gridExt + 1), gridExt * gridExt * 2);
@@ -343,6 +374,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             mat4.rotateY(posMatrix, posMatrix, yAngle);
 
             const projMatrix = mat4.multiply([], tr.projMatrix, posMatrix);
+            const mercProjMatrix = mat4.multiply([], tr.projMatrix, tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize));
 
             // Compute normal vectors of corner points. They're used for adding elevation to curved surface
             const tiles = Math.pow(2, coord.canonical.z);
@@ -367,7 +399,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             const topPixelsPerMeter = mercatorZfromAltitude(1, tl[0]) * ws2;
             const bottomPixelsPerMeter = mercatorZfromAltitude(1, br[0]) * ws2;
 
-            const uniformValues = globeRasterUniformValues(projMatrix, tlNorm, trNorm, brNorm, blNorm, topPixelsPerMeter, bottomPixelsPerMeter);
+            const uniformValues = globeRasterUniformValues(projMatrix, mercProjMatrix, transitionLerp, tlNorm, trNorm, brNorm, blNorm, topPixelsPerMeter, bottomPixelsPerMeter);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -376,10 +408,10 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
             program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                uniformValues, "globe_raster", gridBuffer, gridIndexBuffer, gridSegments);
+                uniformValues, "globe_raster", gridBuffer, gridIndexBuffer, gridSegments, null, null, null, flatGridBuffer);
 
             // Fill poles by extrapolating adjacent border tiles
-            if (coord.canonical.y === 0 || coord.canonical.y === tiles - 1) {
+            if (transitionLerp === 0 && coord.canonical.y === 0 || coord.canonical.y === tiles - 1) {
                 // Mesh already exists?
                 const key = calculateGridKey(coord.canonical.y, coord.canonical.z);
                 let mesh = null;
@@ -414,6 +446,8 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
                 const unis = globeRasterUniformValues(
                     poleMatrix,
+                    poleMatrix,
+                    0.0,
                     [0, -1, 0],
                     [0, -1, 0],
                     [0, -1, 0],

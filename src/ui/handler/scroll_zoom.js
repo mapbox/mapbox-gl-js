@@ -248,7 +248,7 @@ class ScrollZoomHandler {
         const tr = this._map.transform;
 
         const startingZoom = () => {
-            return tr._terrainEnabled() ? tr.computeZoomRelativeTo(this._aroundCoord) : tr.zoom;
+            return (tr._terrainEnabled() && this._aroundCoord) ? tr.computeZoomRelativeTo(this._aroundCoord) : tr.zoom;
         };
 
         // if we've had scroll events since the last render frame, consume the

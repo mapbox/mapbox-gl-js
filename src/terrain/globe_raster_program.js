@@ -20,7 +20,9 @@ import type Context from '../gl/context.js';
 import type {UniformValues, UniformLocations} from '../render/uniform_binding.js';
 
 export type GlobeRasterUniformsType = {|
-    'u_matrix': UniformMatrix4f,
+    'u_globe_matrix': UniformMatrix4f,
+    'u_mercator_matrix': UniformMatrix4f,
+    'u_transition_lerp': Uniform1f,
     'u_image0': Uniform1i,
     'u_tl_normal': Uniform3f,
     'u_tr_normal': Uniform3f,
@@ -41,7 +43,9 @@ export type AtmosphereUniformsType = {|
 |};
 
 const globeRasterUniforms = (context: Context, locations: UniformLocations): GlobeRasterUniformsType => ({
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_globe_matrix': new UniformMatrix4f(context, locations.u_globe_matrix),
+    'u_mercator_matrix': new UniformMatrix4f(context, locations.u_mercator_matrix),
+    'u_transition_lerp': new Uniform1f(context, locations.u_transition_lerp),
     'u_image0': new Uniform1i(context, locations.u_image0),
     'u_tl_normal': new Uniform3f(context, locations.u_tl_normal),
     'u_tr_normal': new Uniform3f(context, locations.u_tr_normal),
@@ -61,8 +65,16 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_end_color': new Uniform3f(context, locations.u_end_color)
 });
 
+/*
+uniform mat4 u_globe_matrix;
+uniform mat4 u_mercator_matrix;
+uniform float u_transition_lerp;
+*/
+
 const globeRasterUniformValues = (
-    matrix: Float32Array,
+    globeMatrix: Float32Array,
+    mercMatrix: Float32Array,
+    transitionLerp,
     tlNormal,
     trNormal,
     brNormal,
@@ -70,7 +82,9 @@ const globeRasterUniformValues = (
     topMetersToPixels,
     bottomMetersToPixels
 ): UniformValues<GlobeRasterUniformsType> => ({
-    'u_matrix': matrix,
+    'u_globe_matrix': globeMatrix,
+    'u_mercator_matrix': mercMatrix,
+    'u_transition_lerp': transitionLerp,
     'u_image0': 0,
     'u_tl_normal': tlNormal,
     'u_tr_normal': trNormal,

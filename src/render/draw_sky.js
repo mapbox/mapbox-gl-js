@@ -151,8 +151,6 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
 
         const pixelRadius = vec3.length(vec3.sub([], radiusOnScreen, centerOnScreen));
 
-        console.log(atmosphereOpacity);
-
         const uniforms = atmosphereUniformValues(
             centerOnScreen,
             pixelRadius,
