@@ -341,7 +341,7 @@ class Camera extends Evented {
      * @returns The map's current bearing.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    getBearing(): number { return this.transform.bearing; }
+    getBearing(): number { return this.transform.rotation; }
 
     /**
      * Sets the map's bearing (rotation). The bearing is the compass direction that is "up"; for example, a bearing
@@ -698,7 +698,7 @@ class Camera extends Evented {
         return {
             center: tr.center,
             zoom: tr.zoom,
-            bearing: tr.bearing,
+            bearing: tr.rotation,
             pitch: tr.pitch
         };
     }
@@ -907,9 +907,9 @@ class Camera extends Evented {
             tr.center = LngLat.convert(options.center);
         }
 
-        if ('bearing' in options && tr.bearing !== +options.bearing) {
+        if ('bearing' in options && tr.rotation !== +options.bearing) {
             bearingChanged = true;
-            tr.bearing = +options.bearing;
+            tr.rotation = +options.bearing;
         }
 
         if ('pitch' in options && tr.pitch !== +options.pitch) {
@@ -984,13 +984,13 @@ class Camera extends Evented {
         const tr = this.transform;
         const prevZoom = tr.zoom;
         const prevPitch = tr.pitch;
-        const prevBearing = tr.bearing;
+        const prevBearing = tr.rotation;
 
         tr.setFreeCameraOptions(options);
 
         const zoomChanged = prevZoom !== tr.zoom;
         const pitchChanged = prevPitch !== tr.pitch;
-        const bearingChanged = prevBearing !== tr.bearing;
+        const bearingChanged = prevBearing !== tr.rotation;
 
         this.fire(new Event('movestart', eventData))
             .fire(new Event('move', eventData));
@@ -1102,7 +1102,7 @@ class Camera extends Evented {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
             if (this._rotating) {
-                tr.bearing = interpolate(startBearing, bearing, k);
+                tr.rotation = interpolate(startBearing, bearing, k);
             }
             if (this._pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
@@ -1392,7 +1392,7 @@ class Camera extends Evented {
             tr.zoom = k === 1 ? zoom : startZoom + tr.scaleZoom(scale);
 
             if (this._rotating) {
-                tr.bearing = interpolate(startBearing, bearing, k);
+                tr.rotation = interpolate(startBearing, bearing, k);
             }
             if (this._pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);

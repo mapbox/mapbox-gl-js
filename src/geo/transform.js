@@ -264,11 +264,20 @@ class Transform {
         return new Point(this.width, this.height);
     }
 
-    get bearing(): number {
+    get rotation(): number {
         return -this.angle / Math.PI * 180;
     }
-    set bearing(bearing: number) {
-        const b = -wrap(bearing, -180, 180) * Math.PI / 180;
+    set rotation(rotation: number) {
+        let {lng, lat} = this.center;
+        const north = {lng, lat: lat += 0.0001};
+        const projectedCenter = this.projection.project(lng, lat);
+        const mercatorNorth = MercatorCoordinate.fromLngLat(north);
+        const northVector = {x: mercatorNorth.x - projectedCenter.x, y: mercatorNorth.y - projectedCenter.y};
+        const radians = Math.atan2(northVector.x, northVector.y);
+        const degrees = radians * 180 / Math.PI;
+        const angle = rotation - degrees;
+        console.log('angle: ', angle, -wrap(angle, -180, 180) * Math.PI / 180);
+        const b = -wrap(angle, -180, 180) * Math.PI / 180;
         if (this.angle === b) return;
         this._unmodified = false;
         this.angle = b;
@@ -871,7 +880,7 @@ class Transform {
 
                     if (!minmax) { minmax = {min: minRange, max: maxRange}; }
 
-                    const cornerFar = furthestTileCorner(this.bearing);
+                    const cornerFar = furthestTileCorner(this.rotation);
 
                     const farX = cornerFar[0] * EXTENT;
                     const farY = cornerFar[1] * EXTENT;
