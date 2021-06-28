@@ -2845,10 +2845,14 @@ class Map extends Camera {
                 this._averageElevationLastSampledAt = timeStamp;
             }
             const elevationChange = Math.abs(currentElevation - newElevation);
-            const easeTime = this._isInitialLoad ? 0 : AVERAGE_ELEVATION_EASE_TIME;
 
             if (elevationChange > AVERAGE_ELEVATION_EASE_THRESHOLD) {
-                this._averageElevation.easeTo(newElevation, timeStamp, easeTime);
+                if (this._isInitialLoad) {
+                    this._averageElevation.jumpTo(newElevation);
+                    return applyUpdate(newElevation);
+                } else {
+                    this._averageElevation.easeTo(newElevation, timeStamp, AVERAGE_ELEVATION_EASE_TIME);
+                }
             } else if (elevationChange > AVERAGE_ELEVATION_CHANGE_THRESHOLD) {
                 this._averageElevation.jumpTo(newElevation);
                 return applyUpdate(newElevation);
