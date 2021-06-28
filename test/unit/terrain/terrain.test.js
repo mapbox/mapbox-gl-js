@@ -287,7 +287,6 @@ test('Elevation', (t) => {
                 "tileSize": TILE_SIZE,
                 "maxzoom": 14
             });
-            map.transform._horizonShift = 0;
             const cache = map.style._getSourceCache('mapbox-dem');
             cache.used = cache._sourceLoaded = true;
             cache._loadTile = (tile, callback) => {
@@ -336,19 +335,19 @@ test('Elevation', (t) => {
                 changed = map._updateAverageElevation(timestamp);
                 t.true(changed);
                 t.true(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 152.3310212900335);
+                t.equal(map.transform.averageElevation, 152.33102130398143);
 
                 timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
                 changed = map._updateAverageElevation(timestamp);
                 t.true(changed);
                 t.true(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 304.662042580067);
+                t.equal(map.transform.averageElevation, 304.66204260796286);
 
                 timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
                 changed = map._updateAverageElevation(timestamp);
                 t.false(changed);
                 t.false(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 304.662042580067);
+                t.equal(map.transform.averageElevation, 304.66204260796286);
 
                 t.end();
             });
