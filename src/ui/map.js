@@ -76,10 +76,10 @@ type IControl = {
 }
 /* eslint-enable no-use-before-define */
 
-const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
-const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
-const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
-const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
+export const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
+export const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
+export const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
+export const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
 
 type MapOptions = {
     hash?: boolean | string,
