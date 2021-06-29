@@ -300,6 +300,7 @@ test('Elevation', (t) => {
 
             map.once('render', () => {
                 map._updateTerrain();
+                map._isInitialLoad = false;
 
                 t.false(map.painter.averageElevationNeedsEasing());
 
