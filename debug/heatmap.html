@@ -39,6 +39,18 @@ var map = window.map = new mapboxgl.Map({
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
 
+map.repaint = true;
+let counter = 0;
+let totalGPUTime = 0;
+map.on('gpu-timing-layer', function(data) {
+    if (!data.layerTimes['heatmap']) {
+        return;
+    }
+    totalGPUTime += data.layerTimes['heatmap'];
+    counter += 1;
+    console.log(data.gpuTime, totalGPUTime / counter);
+});
+
 map.on('load', function() {
 
     map.addSource('heatmap', {

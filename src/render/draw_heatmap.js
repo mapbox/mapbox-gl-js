@@ -131,6 +131,6 @@ function renderTextureToMap(painter, layer) {
     painter.useProgram('heatmapTexture').draw(context, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
         heatmapTextureUniformValues(painter, layer, 0, 1),
-        layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
+        layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer2,
         painter.viewportSegments, layer.paint, painter.transform.zoom);
 }

@@ -249,12 +249,11 @@ class Painter {
         this.rasterBoundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
 
         const viewportArray = new PosArray();
-        viewportArray.emplaceBack(0, 0);
-        viewportArray.emplaceBack(1, 0);
-        viewportArray.emplaceBack(0, 1);
-        viewportArray.emplaceBack(1, 1);
+        viewportArray.emplaceBack(-1, -4);
+        viewportArray.emplaceBack(-1,  1);
+        viewportArray.emplaceBack( 4,  1);
         this.viewportBuffer = context.createVertexBuffer(viewportArray, posAttributes.members);
-        this.viewportSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
+        this.viewportSegments = SegmentVector.simpleSegment(0, 0, 3, 1);
 
         const tileLineStripIndices = new LineStripIndexArray();
         tileLineStripIndices.emplaceBack(0);
@@ -268,6 +267,10 @@ class Painter {
         quadTriangleIndices.emplaceBack(0, 1, 2);
         quadTriangleIndices.emplaceBack(2, 1, 3);
         this.quadTriangleIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
+
+        const quadTriangleIndices2 = new TriangleIndexArray();
+        quadTriangleIndices2.emplaceBack(0, 1, 2);
+        this.quadTriangleIndexBuffer2 = context.createIndexBuffer(quadTriangleIndices2);
 
         this.emptyTexture = new Texture(context, {
             width: 1,
