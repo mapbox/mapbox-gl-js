@@ -292,21 +292,7 @@ class Painter {
 
         this.nextStencilID = 1;
         this.currentStencilSource = undefined;
-
-        // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
-        // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
-        // effectively clearing the stencil buffer: once an upstream patch lands, remove
-        // this function in favor of context.clear({ stencil: 0x0 })
-
-        const matrix = mat4.create();
-        mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
-        mat4.scale(matrix, matrix, [gl.drawingBufferWidth, gl.drawingBufferHeight, 0]);
-
-        this.useProgram('clippingMask').draw(context, gl.TRIANGLES,
-            DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
-            clippingMaskUniformValues(matrix),
-            '$clipping', this.viewportBuffer,
-            this.quadTriangleIndexBuffer, this.viewportSegments);
+        this.context.clear({ stencil: 0x0 });
     }
 
     _renderTileClippingMasks(layer: StyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
