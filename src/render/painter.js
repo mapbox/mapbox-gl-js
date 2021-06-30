@@ -249,10 +249,10 @@ class Painter {
         this.rasterBoundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
 
         const viewportArray = new PosArray();
-        viewportArray.emplaceBack(0, 0);
-        viewportArray.emplaceBack(1, 0);
-        viewportArray.emplaceBack(0, 1);
-        viewportArray.emplaceBack(1, 1);
+        viewportArray.emplaceBack(-1, -1);
+        viewportArray.emplaceBack( 1, -1);
+        viewportArray.emplaceBack(-1,  1);
+        viewportArray.emplaceBack( 1,  1);
         this.viewportBuffer = context.createVertexBuffer(viewportArray, posAttributes.members);
         this.viewportSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
 
