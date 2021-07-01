@@ -307,7 +307,7 @@ function requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio) {
 function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation) {
     const fontScale = fontSize / 24;
     const lineOffsetX = symbol.lineOffsetX * fontScale;
-    const lineOffsetY = (symbol.lineOffsetY + (flip ? -1 : 1) * symbol.flipDependentLineOffsetY) * fontScale;
+    const lineOffsetY = (symbol.lineOffsetY + (flip ? -1 : 1) * symbol.flippedLineOffsetY) * fontScale;
 
     let placedGlyphs;
     if (symbol.numGlyphs > 1) {

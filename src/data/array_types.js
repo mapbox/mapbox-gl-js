@@ -927,7 +927,7 @@ class PlacedSymbolStruct extends Struct {
     upperSize: number;
     lineOffsetX: number;
     lineOffsetY: number;
-    flipDependentLineOffsetY: number;
+    flippedLineOffsetY: number;
     writingMode: number;
     placedOrientation: number;
     hidden: number;
@@ -946,7 +946,7 @@ class PlacedSymbolStruct extends Struct {
     get upperSize() { return this._structArray.uint16[this._pos2 + 14]; }
     get lineOffsetX() { return this._structArray.float32[this._pos4 + 8]; }
     get lineOffsetY() { return this._structArray.float32[this._pos4 + 9]; }
-    get flipDependentLineOffsetY() { return this._structArray.float32[this._pos4 + 10]; }
+    get flippedLineOffsetY() { return this._structArray.float32[this._pos4 + 10]; }
     get writingMode() { return this._structArray.uint8[this._pos1 + 44]; }
     get placedOrientation() { return this._structArray.uint8[this._pos1 + 45]; }
     set placedOrientation(x: number) { this._structArray.uint8[this._pos1 + 45] = x; }
