@@ -76,6 +76,7 @@ export const placement = createLayout([
     {type: 'Uint16', name: 'upperSize'},
     {type: 'Float32', name: 'lineOffsetX'},
     {type: 'Float32', name: 'lineOffsetY'},
+    {type: 'Float32', name: 'flipDependentLineOffsetY'},
     {type: 'Uint8', name: 'writingMode'},
     {type: 'Uint8', name: 'placedOrientation'},
     {type: 'Uint8', name: 'hidden'},

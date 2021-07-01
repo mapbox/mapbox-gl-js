@@ -616,6 +616,7 @@ class SymbolBucket implements Bucket {
                quads: Array<SymbolQuad>,
                sizeVertex: any,
                lineOffset: [number, number],
+               flipDependentLineOffsetY: number,
                alongLine: boolean,
                feature: SymbolFeature,
                writingMode: any,
@@ -665,6 +666,7 @@ class SymbolBucket implements Bucket {
             lineStartIndex, lineLength, (labelAnchor.segment: any),
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
             lineOffset[0], lineOffset[1],
+            flipDependentLineOffsetY,
             writingMode,
             // placedOrientation is null initially; will be updated to horizontal(1)/vertical(2) if placed
             0,
