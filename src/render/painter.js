@@ -250,9 +250,9 @@ class Painter {
 
         const viewportArray = new PosArray();
         viewportArray.emplaceBack(-1, -1);
-        viewportArray.emplaceBack( 1, -1);
-        viewportArray.emplaceBack(-1,  1);
-        viewportArray.emplaceBack( 1,  1);
+        viewportArray.emplaceBack(1, -1);
+        viewportArray.emplaceBack(-1, 1);
+        viewportArray.emplaceBack(1, 1);
         this.viewportBuffer = context.createVertexBuffer(viewportArray, posAttributes.members);
         this.viewportSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
 
@@ -287,12 +287,9 @@ class Painter {
      * new tiles at the same location, while retaining previously drawn pixels.
      */
     clearStencil() {
-        const context = this.context;
-        const gl = context.gl;
-
         this.nextStencilID = 1;
         this.currentStencilSource = undefined;
-        this.context.clear({ stencil: 0x0 });
+        this.context.clear({stencil: 0x0});
     }
 
     _renderTileClippingMasks(layer: StyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {

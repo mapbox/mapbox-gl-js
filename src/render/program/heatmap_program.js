@@ -1,11 +1,8 @@
 // @flow
 
-import {mat4} from 'gl-matrix';
-
 import {
     Uniform1i,
     Uniform1f,
-    Uniform2f,
     UniformMatrix4f
 } from '../uniform_binding.js';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
