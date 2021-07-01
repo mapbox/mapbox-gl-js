@@ -302,10 +302,7 @@ class FillExtrusionBucket implements Bucket {
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
-        const flatRoof = this.enableTerrain && feature.properties &&
-            vectorTileFeatureTypes[feature.type] === 'Polygon';
-
-        const metadata = flatRoof ? new PartMetadata() : null;
+        const metadata = this.enableTerrain ? new PartMetadata() : null;
 
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
