@@ -887,6 +887,12 @@ class Transform {
     zoomScale(zoom: number) { return Math.pow(2, zoom); }
     scaleZoom(scale: number) { return Math.log(scale) / Math.LN2; }
 
+    /**
+     * Given a location, return the point in map-pixel coordinates. 
+     * @param {LngLat} lnglat location
+     * @returns {Point} point in map-pixel coordinates
+     * @private
+     */
     project(lnglat: LngLat) {
         const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
         return new Point(
@@ -894,6 +900,12 @@ class Transform {
                 mercatorYfromLat(lat) * this.worldSize);
     }
 
+    /**
+     * Given a point in map-pixel coordinates, return location.
+     * @param {Point} point point in map-pixel coordinates
+     * @returns {LngLat} location
+     * @private
+     */
     unproject(point: Point): LngLat {
         return new MercatorCoordinate(point.x / this.worldSize, point.y / this.worldSize).toLngLat();
     }
