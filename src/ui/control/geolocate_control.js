@@ -349,8 +349,8 @@ class GeolocateControl extends Evented {
      */
     _updateMarkerRotation() {
         if (this._userLocationDotMarker && typeof this._heading === 'number') {
-            this._dotElement.classList.add('mapboxgl-user-location-show-heading');
             this._userLocationDotMarker.setRotation(this._heading);
+            this._dotElement.classList.add('mapboxgl-user-location-show-heading');
         } else {
             this._dotElement.classList.remove('mapboxgl-user-location-show-heading');
             this._userLocationDotMarker.setRotation(0);
@@ -493,7 +493,8 @@ class GeolocateControl extends Evented {
     */
     _onDeviceOrientation(deviceOrientationEvent: DeviceOrientationEvent) {
         if (this._userLocationDotMarker) {
-            this._heading = deviceOrientationEvent.alpha;
+            // alpha increases counter clockwise around the z axis
+            this._heading = deviceOrientationEvent.alpha * -1;
             this._updateMarkerRotationThrottled();
         }
     }

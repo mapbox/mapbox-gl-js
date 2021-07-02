@@ -590,13 +590,13 @@ test('GeolocateControl watching device orientation event', (t) => {
         t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot marker on map');
         t.notOk(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation does not have stale class');
         geolocate.once('trackuserlocationend', () => {
-            const event = deviceOrientationEventLike(359);
+            const event = deviceOrientationEventLike(-359);
             window.dispatchEvent(event);
             setImmediate(() => {
                 t.ok(geolocate._dotElement.classList.contains('mapboxgl-user-location-show-heading'), 'userLocation should have heading');
                 t.equal(geolocate._userLocationDotMarker._rotation, 359, 'userLocation rotation is not rotated by 359 degrees');
 
-                const event = deviceOrientationEventLike(15);
+                const event = deviceOrientationEventLike(-15);
                 window.dispatchEvent(event);
                 setImmediate(() => {
                     t.equal(geolocate._userLocationDotMarker._rotation, 15, 'userLocation rotation is not rotated by 15 degrees');
