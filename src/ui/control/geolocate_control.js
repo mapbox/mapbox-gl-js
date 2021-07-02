@@ -5,9 +5,9 @@ import DOM from '../../util/dom.js';
 import window from '../../util/window.js';
 import {extend, bindAll, warnOnce} from '../../util/util.js';
 import assert from 'assert';
-import LngLat from '../../geo/lng_lat';
-import Marker from '../marker';
-import throttle from '../../util/throttle';
+import Marker from '../marker.js';
+import LngLat from '../../geo/lng_lat.js';
+import throttle from '../../util/throttle.js';
 
 import type Map from '../map.js';
 import type {AnimationOptions, CameraOptions} from '../camera.js';
@@ -20,6 +20,13 @@ type Options = {
     showUserLocation?: boolean,
     showUserHeading?: boolean
 };
+
+type DeviceOrientationEvent = {
+    absolute: Boolean,
+    alpha: number,
+    beta: number,
+    gamma: number
+}
 
 const defaultOptions: Options = {
     positionOptions: {
@@ -116,6 +123,7 @@ class GeolocateControl extends Evented {
     _accuracy: number;
     _setup: boolean; // set to true once the control has been setup
     _heading: ?number;
+    _updateMarkerRotationThrottled: Function;
 
     constructor(options: Options) {
         super();
@@ -341,8 +349,8 @@ class GeolocateControl extends Evented {
      */
     _updateMarkerRotation() {
         if (this._userLocationDotMarker && typeof this._heading === 'number') {
-            this._userLocationDotMarker.setRotation(this._heading);
             this._dotElement.classList.add('mapboxgl-user-location-show-heading');
+            this._userLocationDotMarker.setRotation(this._heading);
         } else {
             this._dotElement.classList.remove('mapboxgl-user-location-show-heading');
             this._userLocationDotMarker.setRotation(0);
@@ -485,7 +493,7 @@ class GeolocateControl extends Evented {
     */
     _onDeviceOrientation(deviceOrientationEvent: DeviceOrientationEvent) {
         if (this._userLocationDotMarker) {
-            this._heading = deviceOrientationEvent.webkitCompassHeading || deviceOrientationEvent.alpha;
+            this._heading = deviceOrientationEvent.alpha;
             this._updateMarkerRotationThrottled();
         }
     }
@@ -586,7 +594,7 @@ class GeolocateControl extends Evented {
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
 
-                if (this.options.showUserHeading && 'ondeviceorientation' in window) {
+                if (this.options.showUserHeading) {
                     window.addEventListener('deviceorientation', this._onDeviceOrientation.bind(this));
                 }
             }

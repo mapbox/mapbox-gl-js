@@ -288,6 +288,59 @@ test('GeolocateControl watching map updates recenter on location with dot', (t) 
     geolocation.send({latitude: 10, longitude: 20, accuracy: 30});
 });
 
+test('GeolocateControl watching device orientation event', (t) => {
+    t.plan(6);
+
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0
+        },
+        showUserHeading: true,
+        showUserLocation: true,
+        trackUserLocation: true,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    let moveendCount = 0;
+    map.once('moveend', () => {
+        // moveend was being called a second time, this ensures that we don't run the tests a second time
+        if (moveendCount > 0) return;
+        moveendCount++;
+
+        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location after 1st update');
+        t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot marker on map');
+        t.false(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation does not have stale class');
+        map.once('moveend', () => {
+            t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 40, lng: 50}, 'map centered on location after 2nd update');
+            geolocate.once('error', () => {
+                t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot  marker on map');
+                t.ok(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation has stale class');
+                // t.end();
+            });
+            geolocation.changeError({code: 2, message: 'position unavailable'});
+
+            window.dispatchEvent(new window.Event('deviceorientation', {
+                absolute: false,
+                alpha: 1,
+                beta: 0,
+                gamma: 0,
+            }));
+
+            geolocate.on('trackuserlocationend', () => {
+                console.log('trackuserlocationend');
+                t.end();
+            });
+        });
+        geolocation.change({latitude: 40, longitude: 50, accuracy: 60});
+    });
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+});
+
 test('GeolocateControl watching map background event', (t) => {
     const map = createMap(t);
     t.plan(0);
