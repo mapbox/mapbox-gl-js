@@ -709,20 +709,20 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
 .mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::before {
     content: "";
-    width: 0;
-    height: 0;
+    width: 1;
+    height: 1;
     border-left: 7.5px solid transparent;
-    border-bottom: 7.5px solid #1da1f2;
+    border-bottom: 7.5px solid #4aa1eb;
     transform: translate(0, -28px) skewY(-20deg);
     position: absolute;
 }
 
 .mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::after {
     content: "";
-    width: 0;
-    height: 0;
+    width: 1;
+    height: 1;
     border-right: 7.5px solid transparent;
-    border-bottom: 7.5px solid #1da1f2;
+    border-bottom: 7.5px solid #4aa1eb;
     transform: translate(7.5px, -28px) skewY(20deg);
     position: absolute;
 }

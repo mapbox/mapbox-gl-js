@@ -340,7 +340,7 @@ class GeolocateControl extends Evented {
      * @private
      */
     _updateMarkerRotation() {
-        if (this._userLocationDotMarker && this._heading) {
+        if (this._userLocationDotMarker && typeof this._heading === 'number') {
             this._userLocationDotMarker.setRotation(this._heading);
             this._dotElement.classList.add('mapboxgl-user-location-show-heading');
         } else {
@@ -484,16 +484,6 @@ class GeolocateControl extends Evented {
     * @private
     */
     _onDeviceOrientation(deviceOrientationEvent: DeviceOrientationEvent) {
-        if (!deviceOrientationEvent.absolute && !deviceOrientationEvent.webkitCompassHeading) {
-            // an absolute orientation or a webkitCompassHeading is required
-
-            // disable the listeners since we assume future triggers will be the same
-            window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientation);
-            window.removeEventListener('deviceorientation', this._onDeviceOrientation);
-
-            return;
-        }
-
         if (this._userLocationDotMarker) {
             this._heading = deviceOrientationEvent.webkitCompassHeading || deviceOrientationEvent.alpha;
             this._updateMarkerRotationThrottled();
@@ -596,14 +586,9 @@ class GeolocateControl extends Evented {
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
 
-                if (this.options.showUserHeading) {
-                    if ('ondeviceorientationabsolute' in window) {
-                        window.addEventListener('deviceorientationabsolute', this._onDeviceOrientation.bind(this));
-                    } else if ('ondeviceorientation' in window) {
-                        window.addEventListener('deviceorientation', this._onDeviceOrientation.bind(this));
-                    }
+                if (this.options.showUserHeading && 'ondeviceorientation' in window) {
+                    window.addEventListener('deviceorientation', this._onDeviceOrientation.bind(this));
                 }
-
             }
         } else {
             window.navigator.geolocation.getCurrentPosition(
