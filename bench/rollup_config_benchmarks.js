@@ -1,10 +1,8 @@
 import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
-import replace from 'rollup-plugin-replace';
-import {plugins} from '../build/rollup_plugins';
-import buble from 'rollup-plugin-buble';
-import resolve from 'rollup-plugin-node-resolve';
-import commonjs from 'rollup-plugin-commonjs';
+import replace from '@rollup/plugin-replace';
+import {plugins} from '../build/rollup_plugins.js';
+import resolve from '@rollup/plugin-node-resolve';
 
 let styles = ['mapbox://styles/mapbox/streets-v10'];
 
@@ -57,12 +55,7 @@ const viewConfig = {
         indent: false,
         sourcemap: false
     },
-    plugins: [
-        buble({transforms: {dangerousForOf: true}, objectAssign: true}),
-        resolve({browser: true, preferBuiltins: false}),
-        commonjs(),
-        replace(replaceConfig)
-    ]
+    plugins: [resolve({browser: true, preferBuiltins: false})]
 };
 
 export default splitConfig('versions').concat(splitConfig('styles')).concat(viewConfig);

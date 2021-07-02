@@ -5,18 +5,17 @@ import {
     Uniform1i,
     Uniform1f,
     Uniform2f,
-    Uniform4f
-} from '../uniform_binding';
-import pixelsToTileUnits from '../../source/pixels_to_tile_units';
-import browser from '../../util/browser';
+    Uniform3f
+} from '../uniform_binding.js';
+import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
 
-import type Painter from '../painter';
-import type {OverscaledTileID} from '../../source/tile_id';
-import type {CrossFaded} from '../../style/properties';
-import type {CrossfadeParameters} from '../../style/evaluation_parameters';
-import type {UniformValues} from '../uniform_binding';
-import type Tile from '../../source/tile';
-import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
+import type Painter from '../painter.js';
+import type {OverscaledTileID} from '../../source/tile_id.js';
+import type {CrossFaded} from '../../style/properties.js';
+import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
+import type {UniformValues} from '../uniform_binding.js';
+import type Tile from '../../source/tile.js';
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 
 type BackgroundPatternUniformsType = {|
     'u_image': Uniform1i,
@@ -39,7 +38,7 @@ export type PatternUniformsType = {|
     // pattern uniforms:
     'u_image': Uniform1i,
     'u_texsize': Uniform2f,
-    'u_scale': Uniform4f,
+    'u_scale': Uniform3f,
     'u_fade': Uniform1f,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f
@@ -60,8 +59,7 @@ function patternUniformValues(crossfade: CrossfadeParameters, painter: Painter,
     return {
         'u_image': 0,
         'u_texsize': tile.imageAtlasTexture.size,
-        // this assumes all images in the icon atlas texture have the same pixel ratio
-        'u_scale': [browser.devicePixelRatio, tileRatio, crossfade.fromScale, crossfade.toScale],
+        'u_scale': [tileRatio, crossfade.fromScale, crossfade.toScale],
         'u_fade': crossfade.t,
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
         'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],

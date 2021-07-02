@@ -1,10 +1,10 @@
-import {test} from '../../util/test';
-import window from '../../../src/util/window';
-import {createMap as globalCreateMap} from '../../util';
-import Popup from '../../../src/ui/popup';
-import LngLat from '../../../src/geo/lng_lat';
+import {test} from '../../util/test.js';
+import window from '../../../src/util/window.js';
+import {createMap as globalCreateMap} from '../../util/index.js';
+import Popup from '../../../src/ui/popup.js';
+import LngLat from '../../../src/geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
-import simulate from '../../util/simulate_interaction';
+import simulate from '../../util/simulate_interaction.js';
 
 const containerWidth = 512;
 const containerHeight = 512;
@@ -89,6 +89,32 @@ test('Popup has no close button if closeButton option is false', (t) => {
         .addTo(map);
 
     t.equal(popup.getElement().querySelectorAll('.mapboxgl-popup-close-button').length, 0);
+    t.end();
+});
+
+test('Popup does not close on map move events when the closeOnMove option is false', (t) => {
+    const map = createMap(t);
+    const popup = new Popup({closeOnMove: false})
+        .setText('Test')
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    map.setCenter([-10, 0]); // longitude bounds: [-370, 350]
+
+    t.ok(popup.isOpen());
+    t.end();
+});
+
+test('Popup closes on map move events when the closeOnMove option is true', (t) => {
+    const map = createMap(t);
+    const popup = new Popup({closeOnMove: true})
+        .setText('Test')
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    map.setCenter([-10, 0]); // longitude bounds: [-370, 350]
+
+    t.ok(!popup.isOpen());
     t.end();
 });
 
@@ -297,6 +323,31 @@ test('Popup preserves object constancy of position after auto-wrapping center (r
     t.end();
 });
 
+test('Popup preserves object constancy of position after auto-wrapping center with horizon', (t) => {
+    const map = createMap(t, {width: 1024});
+    map.setCenter([-175, 0]); // longitude bounds: [-535, 185]
+    map.setPitch(69);
+    map.setBearing(90);
+
+    const popup = new Popup()
+        .setLngLat([-720, 0])
+        .setText('Test')
+        .addTo(map);
+    // invoke smart wrap multiple times.
+    map.setCenter([0, 0]);
+    map.setCenter([300, 0]);
+    map.setPitch(72);
+    map.setCenter([600, 0]);
+    map.setPitch(75);
+    map.setCenter([900, 0]);
+    map.setPitch(80);
+    map.setCenter([175, 0]);
+
+    t.deepEqual(popup._pos, map.project([720, 0]));
+
+    t.end();
+});
+
 test('Popup wraps position after map move if it would otherwise go offscreen (right)', (t) => {
     const map = createMap(t, {width: 1024}); // longitude bounds: [-360, 360]
 
@@ -342,6 +393,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
         .setLngLat([0, 0])
         .setText('Test')
         .addTo(map);
+    map._domRenderTaskQueue.run();
 
     t.ok(popup.getElement().classList.contains('mapboxgl-popup-anchor-top-left'));
     t.end();
@@ -368,12 +420,15 @@ test('Popup anchors as specified by the anchor option', (t) => {
             .setLngLat([0, 0])
             .setText('Test')
             .addTo(map);
+        map._domRenderTaskQueue.run();
 
         Object.defineProperty(popup.getElement(), 'offsetWidth', {value: 100});
         Object.defineProperty(popup.getElement(), 'offsetHeight', {value: 100});
 
         t.stub(map, 'project').returns(point);
+        t.stub(map.transform, 'locationPoint3D').returns(point);
         popup.setLngLat([0, 0]);
+        map._domRenderTaskQueue.run();
 
         t.ok(popup.getElement().classList.contains(`mapboxgl-popup-anchor-${anchor}`));
         t.end();
@@ -382,11 +437,13 @@ test('Popup anchors as specified by the anchor option', (t) => {
     test(`Popup translation reflects offset and ${anchor} anchor`, (t) => {
         const map = createMap(t);
         t.stub(map, 'project').returns(new Point(0, 0));
+        t.stub(map.transform, 'locationPoint3D').returns(new Point(0, 0));
 
         const popup = new Popup({anchor, offset: 10})
             .setLngLat([0, 0])
             .setText('Test')
             .addTo(map);
+        map._domRenderTaskQueue.run();
 
         t.equal(popup.getElement().style.transform, transform);
         t.end();
@@ -404,12 +461,14 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
         .setLngLat([0, 0])
         .setText('Test')
         .addTo(map);
+    map._domRenderTaskQueue.run();
 
     Object.defineProperty(popup.getElement(), 'offsetWidth', {value: containerWidth / 2});
     Object.defineProperty(popup.getElement(), 'offsetHeight', {value: containerHeight / 2});
 
     t.stub(map, 'project').returns(point);
     popup.setLngLat([0, 0]);
+    map._domRenderTaskQueue.run();
 
     t.ok(popup.getElement().classList.contains('mapboxgl-popup-anchor-top'));
     t.end();
@@ -418,11 +477,13 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
 test('Popup is offset via a PointLike offset option', (t) => {
     const map = createMap(t);
     t.stub(map, 'project').returns(new Point(0, 0));
+    t.stub(map.transform, 'locationPoint3D').returns(new Point(0, 0));
 
     const popup = new Popup({anchor: 'top-left', offset: [5, 10]})
         .setLngLat([0, 0])
         .setText('Test')
         .addTo(map);
+    map._domRenderTaskQueue.run();
 
     t.equal(popup.getElement().style.transform, 'translate(0,0) translate(5px,10px)');
     t.end();
@@ -431,11 +492,13 @@ test('Popup is offset via a PointLike offset option', (t) => {
 test('Popup is offset via an object offset option', (t) => {
     const map = createMap(t);
     t.stub(map, 'project').returns(new Point(0, 0));
+    t.stub(map.transform, 'locationPoint3D').returns(new Point(0, 0));
 
     const popup = new Popup({anchor: 'top-left', offset: {'top-left': [5, 10]}})
         .setLngLat([0, 0])
         .setText('Test')
         .addTo(map);
+    map._domRenderTaskQueue.run();
 
     t.equal(popup.getElement().style.transform, 'translate(0,0) translate(5px,10px)');
     t.end();
@@ -444,13 +507,31 @@ test('Popup is offset via an object offset option', (t) => {
 test('Popup is offset via an incomplete object offset option', (t) => {
     const map = createMap(t);
     t.stub(map, 'project').returns(new Point(0, 0));
+    t.stub(map.transform, 'locationPoint3D').returns(new Point(0, 0));
 
     const popup = new Popup({anchor: 'top-right', offset: {'top-left': [5, 10]}})
         .setLngLat([0, 0])
         .setText('Test')
         .addTo(map);
+    map._domRenderTaskQueue.run();
 
     t.equal(popup.getElement().style.transform, 'translate(-100%,0) translate(0px,0px)');
+    t.end();
+});
+
+test('Popup offset can be set via setOffset', (t) => {
+    const map = createMap(t);
+
+    const popup = new Popup({offset: 5})
+        .setLngLat([0, 0])
+        .setText('Test')
+        .addTo(map);
+
+    t.equal(popup.options.offset, 5);
+
+    popup.setOffset(10);
+
+    t.equal(popup.options.offset, 10);
     t.end();
 });
 
@@ -623,5 +704,104 @@ test('Popup closes on Map#remove', (t) => {
     map.remove();
 
     t.ok(!popup.isOpen());
+    t.end();
+});
+
+test('Adding popup with no focusable content (Popup#setText) does not change the active element', (t) => {
+    const dummyFocusedEl = window.document.createElement('button');
+    dummyFocusedEl.focus();
+
+    new Popup({closeButton: false})
+        .setText('Test')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    t.equal(window.document.activeElement, dummyFocusedEl);
+    t.end();
+});
+
+test('Adding popup with no focusable content (Popup#setHTML) does not change the active element', (t) => {
+    const dummyFocusedEl = window.document.createElement('button');
+    dummyFocusedEl.focus();
+
+    new Popup({closeButton: false})
+        .setHTML('<span>Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    t.equal(window.document.activeElement, dummyFocusedEl);
+    t.end();
+});
+
+test('Close button is focused if it is the only focusable element', (t) => {
+    const dummyFocusedEl = window.document.createElement('button');
+    dummyFocusedEl.focus();
+
+    const popup = new Popup({closeButton: true})
+        .setHTML('<span>Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    // Suboptimal because the string matching is case-sensitive
+    const closeButton = popup._container.querySelector("[aria-label^='Close']");
+
+    t.equal(window.document.activeElement, closeButton);
+    t.end();
+});
+
+test('If popup content contains a focusable element it is focused', (t) => {
+    const popup = new Popup({closeButton: true})
+        .setHTML('<span tabindex="0" data-testid="abc">Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    const focusableEl = popup._container.querySelector("[data-testid='abc']");
+
+    t.equal(window.document.activeElement, focusableEl);
+    t.end();
+});
+
+test('Element with tabindex="-1" is not focused', (t) => {
+    const popup = new Popup({closeButton: true})
+        .setHTML('<span tabindex="-1" data-testid="abc">Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    const nonFocusableEl = popup._container.querySelector("[data-testid='abc']");
+    const closeButton = popup._container.querySelector("button[aria-label='Close popup']");
+
+    t.notEqual(window.document.activeElement, nonFocusableEl);
+    t.equal(window.document.activeElement, closeButton);
+    t.end();
+});
+
+test('If popup contains a disabled button and a focusable element then the latter is focused', (t) => {
+    const popup = new Popup({closeButton: true})
+        .setHTML(`
+            <button disabled>No focus here</button>
+            <select data-testid="abc">
+                <option value="1">1</option>
+                <option value="2">2</option>
+            </select>
+        `)
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    const focusableEl = popup._container.querySelector("[data-testid='abc']");
+
+    t.equal(window.document.activeElement, focusableEl);
+    t.end();
+});
+
+test('Popup with disabled focusing does not change the active element', (t) => {
+    const dummyFocusedEl = window.document.createElement('button');
+    dummyFocusedEl.focus();
+
+    new Popup({closeButton: false, focusAfterOpen: false})
+        .setHTML('<span tabindex="0" data-testid="abc">Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    t.equal(window.document.activeElement, dummyFocusedEl);
     t.end();
 });

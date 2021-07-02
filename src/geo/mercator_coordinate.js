@@ -1,18 +1,18 @@
 // @flow
 
-import LngLat from '../geo/lng_lat';
-import type {LngLatLike} from '../geo/lng_lat';
+import LngLat, {earthRadius} from '../geo/lng_lat.js';
+import type {LngLatLike} from '../geo/lng_lat.js';
 
 /*
- * The circumference of the world in meters at the equator.
+ * The average circumference of the world in meters.
  */
-const circumferenceAtEquator = 2 * Math.PI * 6378137;
+const earthCircumfrence = 2 * Math.PI * earthRadius; // meters
 
 /*
- * The circumference of the world in meters at the given latitude.
+ * The circumference at a line of latitude in meters.
  */
 function circumferenceAtLatitude(latitude: number) {
-    return circumferenceAtEquator * Math.cos(latitude * Math.PI / 180);
+    return earthCircumfrence * Math.cos(latitude * Math.PI / 180);
 }
 
 export function mercatorXfromLng(lng: number) {
@@ -112,7 +112,7 @@ class MercatorCoordinate {
      * @returns {LngLat} The `LngLat` object.
      * @example
      * var coord = new mapboxgl.MercatorCoordinate(0.5, 0.5, 0);
-     * var latLng = coord.toLngLat(); // LngLat(0, 0)
+     * var lngLat = coord.toLngLat(); // LngLat(0, 0)
      */
     toLngLat() {
         return new LngLat(
@@ -142,7 +142,7 @@ class MercatorCoordinate {
      */
     meterInMercatorCoordinateUnits() {
         // 1 meter / circumference at equator in meters * Mercator projection scale factor at this latitude
-        return 1 / circumferenceAtEquator * mercatorScale(latFromMercatorY(this.y));
+        return 1 / earthCircumfrence * mercatorScale(latFromMercatorY(this.y));
     }
 
 }

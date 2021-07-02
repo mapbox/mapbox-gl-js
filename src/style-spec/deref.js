@@ -1,5 +1,5 @@
 
-import refProperties from './util/ref_properties';
+import refProperties from './util/ref_properties.js';
 
 function deref(layer, parent) {
     const result = {};

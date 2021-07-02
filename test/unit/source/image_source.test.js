@@ -1,11 +1,11 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import assert from 'assert';
-import ImageSource from '../../../src/source/image_source';
-import {Evented} from '../../../src/util/evented';
-import Transform from '../../../src/geo/transform';
-import {extend} from '../../../src/util/util';
-import browser from '../../../src/util/browser';
-import window from '../../../src/util/window';
+import ImageSource from '../../../src/source/image_source.js';
+import {Evented} from '../../../src/util/evented.js';
+import Transform from '../../../src/geo/transform.js';
+import {extend} from '../../../src/util/util.js';
+import browser from '../../../src/util/browser.js';
+import window from '../../../src/util/window.js';
 
 function createSource(options) {
     options = extend({

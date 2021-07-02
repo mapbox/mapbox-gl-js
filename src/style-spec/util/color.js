@@ -30,12 +30,13 @@ class Color {
     static white: Color;
     static transparent: Color;
     static red: Color;
+    static blue: Color;
 
     /**
      * Parses valid CSS color strings and returns a `Color` instance.
      * @returns A `Color` instance, or `undefined` if the input is not a valid color string.
      */
-    static parse(input: ?string): Color | void {
+    static parse(input?: string | Color | null): Color | void {
         if (!input) {
             return undefined;
         }
@@ -91,5 +92,6 @@ Color.black = new Color(0, 0, 0, 1);
 Color.white = new Color(1, 1, 1, 1);
 Color.transparent = new Color(0, 0, 0, 0);
 Color.red = new Color(1, 0, 0, 1);
+Color.blue = new Color(0, 0, 1, 1);
 
 export default Color;

@@ -1,12 +1,12 @@
 // @flow
 
-import {StringType, BooleanType, CollatorType} from '../types';
-import Collator from '../types/collator';
+import {StringType, BooleanType, CollatorType} from '../types.js';
+import Collator from '../types/collator.js';
 
-import type {Expression} from '../expression';
-import type EvaluationContext from '../evaluation_context';
-import type ParsingContext from '../parsing_context';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type ParsingContext from '../parsing_context.js';
+import type {Type} from '../types.js';
 
 export default class CollatorExpression implements Expression {
     type: Type;
@@ -50,7 +50,7 @@ export default class CollatorExpression implements Expression {
         return new Collator(this.caseSensitive.evaluate(ctx), this.diacriticSensitive.evaluate(ctx), this.locale ? this.locale.evaluate(ctx) : null);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.caseSensitive);
         fn(this.diacriticSensitive);
         if (this.locale) {
@@ -58,12 +58,12 @@ export default class CollatorExpression implements Expression {
         }
     }
 
-    possibleOutputs() {
+    outputDefined() {
         // Technically the set of possible outputs is the combinatoric set of Collators produced
-        // by all possibleOutputs of locale/caseSensitive/diacriticSensitive
+        // by all possible outputs of locale/caseSensitive/diacriticSensitive
         // But for the primary use of Collators in comparison operators, we ignore the Collator's
-        // possibleOutputs anyway, so we can get away with leaving this undefined for now.
-        return [undefined];
+        // possible outputs anyway, so we can get away with leaving this false for now.
+        return false;
     }
 
     serialize() {

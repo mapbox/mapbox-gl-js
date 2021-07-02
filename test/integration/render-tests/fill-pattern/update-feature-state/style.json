@@ -27,34 +27,42 @@
     "geojson": {
       "type": "geojson",
       "data": {
-        "type": "Polygon",
-        "id": 1,
-        "properties": {
-          "pattern": "generic_icon"
-        },
-        "coordinates": [
-          [
-            [
-              -10,
-              -10
-            ],
-            [
-              -10,
-              10
-            ],
-            [
-              10,
-              10
-            ],
-            [
-              10,
-              -10
-            ],
-            [
-              -10,
-              -10
-            ]
-          ]
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "id": 1,
+                "properties": {
+                  "pattern": "generic_icon"
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                      [
+                        [
+                          -10,
+                          -10
+                        ],
+                        [
+                          -10,
+                          10
+                        ],
+                        [
+                          10,
+                          10
+                        ],
+                        [
+                          10,
+                          -10
+                        ],
+                        [
+                          -10,
+                          -10
+                        ]
+                      ]
+                    ]
+                }
+            }
         ]
       }
     }

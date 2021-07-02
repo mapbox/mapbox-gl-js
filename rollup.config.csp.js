@@ -15,7 +15,7 @@ const config = (input, file, format) => ({
         banner
     },
     treeshake: true,
-    plugins: plugins(true, true)
+    plugins: plugins(true, true, false)
 });
 
 export default [

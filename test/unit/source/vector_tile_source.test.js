@@ -1,15 +1,17 @@
-import {test} from '../../util/test';
-import VectorTileSource from '../../../src/source/vector_tile_source';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import window from '../../../src/util/window';
-import {Evented} from '../../../src/util/evented';
-import {RequestManager} from '../../../src/util/mapbox';
+import {test} from '../../util/test.js';
+import VectorTileSource from '../../../src/source/vector_tile_source.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import window from '../../../src/util/window.js';
+import {Evented} from '../../../src/util/evented.js';
+import {RequestManager} from '../../../src/util/mapbox.js';
+import sourceFixture from '../../fixtures/source.json';
 
 const wrapDispatcher = (dispatcher) => {
     return {
         getActor() {
             return dispatcher;
-        }
+        },
+        ready: true
     };
 };
 
@@ -22,7 +24,12 @@ function createSource(options, transformCallback) {
     source.onAdd({
         transform: {showCollisionBoxes: false},
         _getMapId: () => 1,
-        _requestManager: new RequestManager(transformCallback)
+        _requestManager: new RequestManager(transformCallback),
+        style: {
+            _getSourceCaches: () => {
+                return [{clearTiles: () => {}}];
+            }
+        }
     });
 
     source.on('error', (e) => {
@@ -63,7 +70,7 @@ test('VectorTileSource', (t) => {
     });
 
     t.test('can be constructed from a TileJSON URL', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
 
         const source = createSource({url: "/source.json"});
 
@@ -81,7 +88,7 @@ test('VectorTileSource', (t) => {
     });
 
     t.test('transforms the request for TileJSON URL', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
         const transformSpy = t.spy((url) => {
             return {url};
         });
@@ -94,7 +101,7 @@ test('VectorTileSource', (t) => {
     });
 
     t.test('fires event with metadata property', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
         const source = createSource({url: "/source.json"});
         source.on('data', (e) => {
             if (e.sourceDataType === 'content') t.end();
@@ -103,7 +110,7 @@ test('VectorTileSource', (t) => {
     });
 
     t.test('fires "dataloading" event', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
         const evented = new Evented();
         let dataloadingFired = false;
         evented.on('dataloading', () => {
@@ -177,7 +184,7 @@ test('VectorTileSource', (t) => {
     testScheme('tms', 'http://example.com/10/5/1018.png');
 
     t.test('transforms tile urls before requesting', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
 
         const source = createSource({url: "/source.json"});
         const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
@@ -198,6 +205,33 @@ test('VectorTileSource', (t) => {
         });
 
         window.server.respond();
+    });
+
+    t.test('canonicalizes tile URLs in inline TileJSON', (t) => {
+        const source = createSource({
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: "Mapbox",
+            tiles: ["https://api.mapbox.com/v4/user.map/{z}/{x}/{y}.png?access_token=key"]
+        });
+        const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                t.deepEqual(source.tiles, ["mapbox://tiles/user.map/{z}/{x}/{y}.png?access_token=key"]);
+                const tile = {
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                    state: 'loading',
+                    loadVectorData () {},
+                    setExpiryData() {}
+                };
+                source.loadTile(tile, () => {});
+                t.ok(transformSpy.calledOnce);
+                t.equal(transformSpy.getCall(0).args[0], `https://api.mapbox.com/v4/user.map/10/5/5.png?sku=${source.map._requestManager._skuToken}&access_token=key`);
+                t.equal(transformSpy.getCall(0).args[1], 'Tile');
+                t.end();
+            }
+        });
+
     });
 
     t.test('reloads a loading tile properly', (t) => {
@@ -323,6 +357,36 @@ test('VectorTileSource', (t) => {
         const source = createSource({url: "/source.json"});
         source.onRemove();
         t.equal(window.server.lastRequest.aborted, true);
+        t.end();
+    });
+
+    t.test('supports url property updates', (t) => {
+        const source = createSource({
+            url: "http://localhost:2900/source.json"
+        });
+        source.setUrl("http://localhost:2900/source2.json");
+        t.deepEqual(source.serialize(), {
+            type: 'vector',
+            url: "http://localhost:2900/source2.json"
+        });
+        t.end();
+    });
+
+    t.test('supports tiles property updates', (t) => {
+        const source = createSource({
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: "Mapbox",
+            tiles: ["http://example.com/{z}/{x}/{y}.png"]
+        });
+        source.setTiles(["http://example2.com/{z}/{x}/{y}.png"]);
+        t.deepEqual(source.serialize(), {
+            type: 'vector',
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: "Mapbox",
+            tiles: ["http://example2.com/{z}/{x}/{y}.png"]
+        });
         t.end();
     });
 

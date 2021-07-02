@@ -11,7 +11,7 @@ export type Anchor =
     | 'bottom-left'
     | 'bottom-right';
 
-export const anchorTranslate: {[Anchor]: string} = {
+export const anchorTranslate: {[_: Anchor]: string} = {
     'center': 'translate(-50%,-50%)',
     'top': 'translate(-50%,0)',
     'top-left': 'translate(0,0)',

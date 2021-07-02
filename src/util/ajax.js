@@ -1,15 +1,15 @@
 // @flow
 
-import window from './window';
-import {extend, warnOnce, isWorker} from './util';
-import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox';
-import config from './config';
+import window from './window.js';
+import {extend, warnOnce, isWorker} from './util.js';
+import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox.js';
+import config from './config.js';
 import assert from 'assert';
-import {cacheGet, cachePut} from './tile_request_cache';
-import webpSupported from './webp_supported';
+import {cacheGet, cachePut} from './tile_request_cache.js';
+import webpSupported from './webp_supported.js';
 
-import type {Callback} from '../types/callback';
-import type {Cancelable} from '../types/cancelable';
+import type {Callback} from '../types/callback.js';
+import type {Cancelable} from '../types/cancelable.js';
 
 /**
  * The type of a resource.
@@ -38,7 +38,23 @@ if (typeof Object.freeze == 'function') {
  * @typedef {Object} RequestParameters
  * @property {string} url The URL to be requested.
  * @property {Object} headers The headers to be sent with the request.
+ * @property {string} method Request method `'GET' | 'POST' | 'PUT'`.
+ * @property {string} body Request body.
+ * @property {string} type Response body type to be returned `'string' | 'json' | 'arrayBuffer'`.
  * @property {string} credentials `'same-origin'|'include'` Use 'include' to send cookies with cross-origin requests.
+ * @property {boolean} collectResourceTiming If true, Resource Timing API information will be collected for these transformed requests and returned in a resourceTiming property of relevant data events.
+ * @example
+ * // use transformRequest to modify requests that begin with `http://myHost`
+ * transformRequest: function(url, resourceType) {
+ *  if (resourceType === 'Source' && url.indexOf('http://myHost') > -1) {
+ *    return {
+ *      url: url.replace('http', 'https'),
+ *      headers: { 'my-custom-header': true },
+ *      credentials: 'include'  // Include cookies for cross-origin requests
+ *    }
+ *   }
+ *  }
+ *
  */
 export type RequestParameters = {
     url: string,
@@ -62,10 +78,6 @@ class AJAXError extends Error {
         super(message);
         this.status = status;
         this.url = url;
-
-        // work around for https://github.com/Rich-Harris/buble/issues/40
-        this.name = this.constructor.name;
-        this.message = message;
     }
 
     toString() {
@@ -162,7 +174,9 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             }
             complete = true;
             callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
-        }).catch(err => callback(new Error(err.message)));
+        }).catch(err => {
+            if (!aborted) callback(new Error(err.message));
+        });
     };
 
     if (cacheIgnoringSearch) {
@@ -217,10 +231,9 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
 
 export const makeRequest = function(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
     // We're trying to use the Fetch API if possible. However, in some situations we can't use it:
-    // - IE11 doesn't support it at all. In this case, we dispatch the request to the main thread so
-    //   that we can get an accruate referrer header.
     // - Safari exposes window.AbortController, but it doesn't work actually abort any requests in
-    //   some versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2)
+    //   older versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2). In this case,
+    //   we dispatch the request to the main thread so that we can get an accurate referrer header.
     // - Requests for resources with the file:// URI scheme don't work with the Fetch API either. In
     //   this case we unconditionally use XHR on the current thread since referrers don't matter.
     if (!isFileURL(requestParameters.url)) {
@@ -228,7 +241,8 @@ export const makeRequest = function(requestParameters: RequestParameters, callba
             return makeFetchRequest(requestParameters, callback);
         }
         if (isWorker() && self.worker && self.worker.actor) {
-            return self.worker.actor.send('getResource', requestParameters, callback);
+            const queueOnMainThread = true;
+            return self.worker.actor.send('getResource', requestParameters, callback, undefined, queueOnMainThread);
         }
     }
     return makeXMLHttpRequest(requestParameters, callback);
@@ -246,6 +260,10 @@ export const postData = function(requestParameters: RequestParameters, callback:
     return makeRequest(extend(requestParameters, {method: 'POST'}), callback);
 };
 
+export const getData = function(requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
+    return makeRequest(extend(requestParameters, {method: 'GET'}), callback);
+};
+
 function sameOrigin(url) {
     const a: HTMLAnchorElement = window.document.createElement('a');
     a.href = url;
@@ -254,6 +272,32 @@ function sameOrigin(url) {
 
 const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
 
+function arrayBufferToImage(data: ArrayBuffer, callback: Callback<HTMLImageElement>) {
+    const img: HTMLImageElement = new window.Image();
+    const URL = window.URL;
+    img.onload = () => {
+        callback(null, img);
+        URL.revokeObjectURL(img.src);
+        // prevent image dataURI memory leak in Safari;
+        // but don't free the image immediately because it might be uploaded in the next frame
+        // https://github.com/mapbox/mapbox-gl-js/issues/10226
+        img.onload = null;
+        window.requestAnimationFrame(() => { img.src = transparentPngUrl; });
+    };
+    img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
+    const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
+    img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+}
+
+function arrayBufferToImageBitmap(data: ArrayBuffer, callback: Callback<ImageBitmap>) {
+    const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
+    window.createImageBitmap(blob).then((imgBitmap) => {
+        callback(null, imgBitmap);
+    }).catch((e) => {
+        callback(new Error(`Could not load image because of ${e.message}. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.`));
+    });
+}
+
 let imageQueue, numImageRequests;
 export const resetImageRequestQueue = () => {
     imageQueue = [];
@@ -261,7 +305,7 @@ export const resetImageRequestQueue = () => {
 };
 resetImageRequestQueue();
 
-export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
+export const getImage = function(requestParameters: RequestParameters, callback: ResponseCallback<HTMLImageElement | ImageBitmap>): Cancelable {
     if (webpSupported.supported) {
         if (!requestParameters.headers) {
             requestParameters.headers = {};
@@ -306,16 +350,11 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         if (err) {
             callback(err);
         } else if (data) {
-            const img: HTMLImageElement = new window.Image();
-            img.onload = () => {
-                callback(null, img);
-                window.URL.revokeObjectURL(img.src);
-            };
-            img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
-            const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
-            (img: any).cacheControl = cacheControl;
-            (img: any).expires = expires;
-            img.src = data.byteLength ? window.URL.createObjectURL(blob) : transparentPngUrl;
+            if (window.createImageBitmap) {
+                arrayBufferToImageBitmap(data, (err, imgBitmap) => callback(err, imgBitmap, cacheControl, expires));
+            } else {
+                arrayBufferToImage(data, (err, img) => callback(err, img, cacheControl, expires));
+            }
         }
     });
 

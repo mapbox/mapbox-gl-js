@@ -1,8 +1,8 @@
-import {test} from '../../util/test';
-import {createFunction} from '../../../src/style-spec/function';
-import Color from '../../../src/style-spec/util/color';
-import Formatted from '../../../src/style-spec/expression/types/formatted';
-import {equalWithPrecision} from '../../util';
+import {test} from '../../util/test.js';
+import {createFunction} from '../../../src/style-spec/function/index.js';
+import Color from '../../../src/style-spec/util/color.js';
+import Formatted from '../../../src/style-spec/expression/types/formatted.js';
+import {equalWithPrecision} from '../../util/index.js';
 
 test('binary search', (t) => {
     t.test('will eventually terminate.', (t) => {

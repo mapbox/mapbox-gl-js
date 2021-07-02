@@ -1,18 +1,18 @@
 // @flow
 
-import {getArrayBuffer, ResourceType} from '../util/ajax';
+import {getArrayBuffer, ResourceType} from '../util/ajax.js';
 
-import parseGlyphPBF from './parse_glyph_pbf';
+import parseGlyphPBF from './parse_glyph_pbf.js';
 
-import type {StyleGlyph} from './style_glyph';
-import type {RequestManager} from '../util/mapbox';
-import type {Callback} from '../types/callback';
+import type {StyleGlyph} from './style_glyph.js';
+import type {RequestManager} from '../util/mapbox.js';
+import type {Callback} from '../types/callback.js';
 
 export default function (fontstack: string,
                            range: number,
                            urlTemplate: string,
                            requestManager: RequestManager,
-                           callback: Callback<{[number]: StyleGlyph | null}>) {
+                           callback: Callback<{glyphs: {[number]: StyleGlyph | null}, ascender?: number, descender?: number}>) {
     const begin = range * 256;
     const end = begin + 255;
 
@@ -27,12 +27,11 @@ export default function (fontstack: string,
             callback(err);
         } else if (data) {
             const glyphs = {};
-
-            for (const glyph of parseGlyphPBF(data)) {
+            const glyphData = parseGlyphPBF(data);
+            for (const glyph of glyphData.glyphs) {
                 glyphs[glyph.id] = glyph;
             }
-
-            callback(null, glyphs);
+            callback(null, {glyphs, ascender: glyphData.ascender, descender: glyphData.descender});
         }
     });
 }

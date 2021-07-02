@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 
-import window from './window';
+import window from './window.js';
 import assert from 'assert';
 
 const DOM = {};
@@ -20,19 +20,8 @@ DOM.createNS = function (namespaceURI: string, tagName: string) {
     return el;
 };
 
-const docStyle = window.document.documentElement.style;
-
-function testProp(props) {
-    if (!docStyle) return props[0];
-    for (let i = 0; i < props.length; i++) {
-        if (props[i] in docStyle) {
-            return props[i];
-        }
-    }
-    return props[0];
-}
-
-const selectProp = testProp(['userSelect', 'MozUserSelect', 'WebkitUserSelect', 'msUserSelect']);
+const docStyle = window.document && window.document.documentElement.style;
+const selectProp = docStyle && docStyle.userSelect !== undefined ? 'userSelect' : 'WebkitUserSelect';
 let userSelect;
 
 DOM.disableDrag = function () {
@@ -48,12 +37,8 @@ DOM.enableDrag = function () {
     }
 };
 
-const transformProp = testProp(['transform', 'WebkitTransform']);
-
 DOM.setTransform = function(el: HTMLElement, value: string) {
-    // https://github.com/facebook/flow/issues/7754
-    // $FlowFixMe
-    el.style[transformProp] = value;
+    el.style.transform = value;
 };
 
 // Feature detection for {passive: false} support in add/removeEventListener.
@@ -103,24 +88,17 @@ DOM.suppressClick = function() {
     }, 0);
 };
 
-DOM.mousePos = function (el: HTMLElement, e: MouseEvent | window.TouchEvent | Touch) {
+DOM.mousePos = function (el: HTMLElement, e: MouseEvent | WheelEvent) {
     const rect = el.getBoundingClientRect();
-    const t = window.TouchEvent && (e instanceof window.TouchEvent) ? e.touches[0] : e;
-    return new Point(
-        t.clientX - rect.left - el.clientLeft,
-        t.clientY - rect.top - el.clientTop
-    );
+    return getScaledPoint(el, rect, e);
 };
 
-DOM.touchPos = function (el: HTMLElement, e: TouchEvent) {
+DOM.touchPos = function (el: HTMLElement, touches: TouchList) {
     const rect = el.getBoundingClientRect(),
         points = [];
-    const touches = (e.type === 'touchend') ? e.changedTouches : e.touches;
+
     for (let i = 0; i < touches.length; i++) {
-        points.push(new Point(
-            touches[i].clientX - rect.left - el.clientLeft,
-            touches[i].clientY - rect.top - el.clientTop
-        ));
+        points.push(getScaledPoint(el, rect, touches[i]));
     }
     return points;
 };
@@ -142,3 +120,15 @@ DOM.remove = function(node: HTMLElement) {
         node.parentNode.removeChild(node);
     }
 };
+
+function getScaledPoint(el: HTMLElement, rect: ClientRect, e: MouseEvent | WheelEvent | Touch) {
+    // Until we get support for pointer events (https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent)
+    // we use this dirty trick which would not work for the case of rotated transforms, but works well for
+    // the case of simple scaling.
+    // Note: `el.offsetWidth === rect.width` eliminates the `0/0` case.
+    const scaling = el.offsetWidth === rect.width ? 1 : el.offsetWidth / rect.width;
+    return new Point(
+        (e.clientX - rect.left) * scaling,
+        (e.clientY - rect.top) * scaling
+    );
+}

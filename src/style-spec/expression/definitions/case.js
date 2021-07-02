@@ -2,13 +2,12 @@
 
 import assert from 'assert';
 
-import {BooleanType} from '../types';
+import {BooleanType} from '../types.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Value} from '../values';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type} from '../types.js';
 
 type Branches = Array<[Expression, Expression]>;
 
@@ -64,7 +63,7 @@ class Case implements Expression {
         return this.otherwise.evaluate(ctx);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         for (const [test, expression] of this.branches) {
             fn(test);
             fn(expression);
@@ -72,10 +71,8 @@ class Case implements Expression {
         fn(this.otherwise);
     }
 
-    possibleOutputs(): Array<Value | void> {
-        return []
-            .concat(...this.branches.map(([_, out]) => out.possibleOutputs()))
-            .concat(this.otherwise.possibleOutputs());
+    outputDefined(): boolean {
+        return this.branches.every(([_, out]) => out.outputDefined()) && this.otherwise.outputDefined();
     }
 
     serialize() {

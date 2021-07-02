@@ -1,33 +1,62 @@
 // @flow
 
-import browser from '../util/browser';
+import browser from '../util/browser.js';
 
-import {Placement} from '../symbol/placement';
+import {Placement} from '../symbol/placement.js';
 
-import type Transform from '../geo/transform';
-import type StyleLayer from './style_layer';
-import type Tile from '../source/tile';
+import type Transform from '../geo/transform.js';
+import type StyleLayer from './style_layer.js';
+import type SymbolStyleLayer from './style_layer/symbol_style_layer.js';
+import type Tile from '../source/tile.js';
+import type {BucketPart} from '../symbol/placement.js';
+import type {FogState} from './fog_helpers.js';
 
 class LayerPlacement {
+    _sortAcrossTiles: boolean;
     _currentTileIndex: number;
-    _tiles: Array<Tile>;
+    _currentPartIndex: number;
     _seenCrossTileIDs: { [string | number]: boolean };
+    _bucketParts: Array<BucketPart>;
 
-    constructor() {
+    constructor(styleLayer: SymbolStyleLayer) {
+        this._sortAcrossTiles = styleLayer.layout.get('symbol-z-order') !== 'viewport-y' &&
+            styleLayer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
+
         this._currentTileIndex = 0;
+        this._currentPartIndex = 0;
         this._seenCrossTileIDs = {};
+        this._bucketParts = [];
     }
 
     continuePlacement(tiles: Array<Tile>, placement: Placement, showCollisionBoxes: boolean, styleLayer: StyleLayer, shouldPausePlacement: () => boolean) {
+
+        const bucketParts = this._bucketParts;
+
         while (this._currentTileIndex < tiles.length) {
             const tile = tiles[this._currentTileIndex];
-            placement.placeLayerTile(styleLayer, tile, showCollisionBoxes, this._seenCrossTileIDs);
+            placement.getBucketParts(bucketParts, styleLayer, tile, this._sortAcrossTiles);
 
             this._currentTileIndex++;
             if (shouldPausePlacement()) {
                 return true;
             }
         }
+
+        if (this._sortAcrossTiles) {
+            this._sortAcrossTiles = false;
+            bucketParts.sort((a, b) => ((a.sortKey: any): number) - ((b.sortKey: any): number));
+        }
+
+        while (this._currentPartIndex < bucketParts.length) {
+            const bucketPart = bucketParts[this._currentPartIndex];
+            placement.placeLayerBucketPart(bucketPart, this._seenCrossTileIDs, showCollisionBoxes);
+
+            this._currentPartIndex++;
+            if (shouldPausePlacement()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -44,9 +73,10 @@ class PauseablePlacement {
                 showCollisionBoxes: boolean,
                 fadeDuration: number,
                 crossSourceCollisions: boolean,
-                prevPlacement?: Placement) {
+                prevPlacement?: Placement,
+                fogState: ?FogState) {
 
-        this.placement = new Placement(transform, fadeDuration, crossSourceCollisions, prevPlacement);
+        this.placement = new Placement(transform, fadeDuration, crossSourceCollisions, prevPlacement, fogState);
         this._currentPlacementIndex = order.length - 1;
         this._forceFullPlacement = forceFullPlacement;
         this._showCollisionBoxes = showCollisionBoxes;
@@ -57,7 +87,7 @@ class PauseablePlacement {
         return this._done;
     }
 
-    continuePlacement(order: Array<string>, layers: {[string]: StyleLayer}, layerTiles: {[string]: Array<Tile>}) {
+    continuePlacement(order: Array<string>, layers: {[_: string]: StyleLayer}, layerTiles: {[_: string]: Array<Tile>}) {
         const startTime = browser.now();
 
         const shouldPausePlacement = () => {
@@ -74,7 +104,7 @@ class PauseablePlacement {
                 (!layer.maxzoom || layer.maxzoom > placementZoom)) {
 
                 if (!this._inProgressLayer) {
-                    this._inProgressLayer = new LayerPlacement();
+                    this._inProgressLayer = new LayerPlacement(((layer: any): SymbolStyleLayer));
                 }
 
                 const pausePlacement = this._inProgressLayer.continuePlacement(layerTiles[layer.source], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement);

@@ -1,7 +1,7 @@
 // @flow
 
-import {test} from '../../util/test';
-import Color from '../../../src/style-spec/util/color';
+import {test} from '../../util/test.js';
+import Color from '../../../src/style-spec/util/color.js';
 
 test('Color.parse', (t) => {
     t.deepEqual(Color.parse('red'), new Color(1, 0, 0, 1));

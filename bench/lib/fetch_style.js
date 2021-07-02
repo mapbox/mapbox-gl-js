@@ -1,7 +1,7 @@
 // @flow
 
-import type {StyleSpecification} from '../../src/style-spec/types';
-import {RequestManager} from '../../src/util/mapbox';
+import type {StyleSpecification} from '../../src/style-spec/types.js';
+import {RequestManager} from '../../src/util/mapbox.js';
 
 const requestManager = new RequestManager();
 

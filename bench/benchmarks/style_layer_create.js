@@ -1,10 +1,10 @@
 // @flow
 
-import type {StyleSpecification} from '../../src/style-spec/types';
-import Benchmark from '../lib/benchmark';
-import createStyleLayer from '../../src/style/create_style_layer';
-import deref from '../../src/style-spec/deref';
-import fetchStyle from '../lib/fetch_style';
+import type {StyleSpecification} from '../../src/style-spec/types.js';
+import Benchmark from '../lib/benchmark.js';
+import createStyleLayer from '../../src/style/create_style_layer.js';
+import deref from '../../src/style-spec/deref.js';
+import fetchStyle from '../lib/fetch_style.js';
 
 export default class StyleLayerCreate extends Benchmark {
     style: string | StyleSpecification;

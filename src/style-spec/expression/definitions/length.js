@@ -1,14 +1,14 @@
 // @flow
 
-import {NumberType, toString} from '../types';
+import {NumberType, toString} from '../types.js';
 
-import {typeOf} from '../values';
-import RuntimeError from '../runtime_error';
+import {typeOf} from '../values.js';
+import RuntimeError from '../runtime_error.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type} from '../types.js';
 
 class Length implements Expression {
     type: Type;
@@ -43,12 +43,12 @@ class Length implements Expression {
         }
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
     }
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize() {

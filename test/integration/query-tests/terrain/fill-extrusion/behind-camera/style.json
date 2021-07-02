@@ -1,0 +1,87 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "debug": true,
+      "width": 500,
+      "height": 400,
+      "queryGeometry": [10,10],
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "pitch": 63,
+  "center": [
+    -79.470044,
+    43.646928
+  ],
+  "zoom": 17.89,
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}-terrain-512.png"
+      ],
+      "tileSize": 512
+    },
+    "zones": {
+      "type": "geojson",
+			"data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "id": 0,
+            "properties": {
+              "id": 0,
+              "height": 3,
+              "position": "middle"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -79.47093486785889,
+                    43.645299102927474
+                  ],
+                  [
+                    -79.46913242340088,
+                    43.64540779419671
+                  ],
+                  [
+                    -79.46900367736816,
+                    43.64638600677007
+                  ],
+                  [
+                    -79.47097778320312,
+                    43.6464636420063
+                  ],
+                  [
+                    -79.47093486785889,
+                    43.645299102927474
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+		}
+	},
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "layers": [
+    {
+      "id": "zones",
+      "type": "fill-extrusion",
+      "source": "zones",
+      "paint": {
+        "fill-extrusion-color": ["rgb", ["number", ["feature-state", "hover-r"], 165], ["number", ["feature-state", "hover-g"], 165], ["number", ["feature-state", "hover-b"], 165]],
+        "fill-extrusion-height": ["get", "height"]
+      }
+    }
+  ]
+}

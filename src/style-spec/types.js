@@ -8,6 +8,8 @@ export type FormattedSpecification = string;
 
 export type ResolvedImageSpecification = string;
 
+export type PromoteIdSpecification = {[_: string]: string} | string;
+
 export type FilterSpecification =
     | ['has', string]
     | ['!has', string]
@@ -64,7 +66,9 @@ export type StyleSpecification = {|
     "bearing"?: number,
     "pitch"?: number,
     "light"?: LightSpecification,
-    "sources": {[string]: SourceSpecification},
+    "terrain"?: TerrainSpecification,
+    "fog"?: FogSpecification,
+    "sources": {[_: string]: SourceSpecification},
     "sprite"?: string,
     "glyphs"?: string,
     "transition"?: TransitionSpecification,
@@ -78,6 +82,17 @@ export type LightSpecification = {|
     "intensity"?: PropertyValueSpecification<number>
 |}
 
+export type TerrainSpecification = {|
+    "source": string,
+    "exaggeration"?: PropertyValueSpecification<number>
+|}
+
+export type FogSpecification = {|
+    "range"?: PropertyValueSpecification<[number, number]>,
+    "color"?: PropertyValueSpecification<ColorSpecification>,
+    "horizon-blend"?: PropertyValueSpecification<number>
+|}
+
 export type VectorSourceSpecification = {
     "type": "vector",
     "url"?: string,
@@ -86,7 +101,9 @@ export type VectorSourceSpecification = {
     "scheme"?: "xyz" | "tms",
     "minzoom"?: number,
     "maxzoom"?: number,
-    "attribution"?: string
+    "attribution"?: string,
+    "promoteId"?: PromoteIdSpecification,
+    "volatile"?: boolean
 }
 
 export type RasterSourceSpecification = {
@@ -98,7 +115,8 @@ export type RasterSourceSpecification = {
     "maxzoom"?: number,
     "tileSize"?: number,
     "scheme"?: "xyz" | "tms",
-    "attribution"?: string
+    "attribution"?: string,
+    "volatile"?: boolean
 }
 
 export type RasterDEMSourceSpecification = {
@@ -110,7 +128,8 @@ export type RasterDEMSourceSpecification = {
     "maxzoom"?: number,
     "tileSize"?: number,
     "attribution"?: string,
-    "encoding"?: "terrarium" | "mapbox"
+    "encoding"?: "terrarium" | "mapbox",
+    "volatile"?: boolean
 }
 
 export type GeoJSONSourceSpecification = {|
@@ -119,13 +138,16 @@ export type GeoJSONSourceSpecification = {|
     "maxzoom"?: number,
     "attribution"?: string,
     "buffer"?: number,
+    "filter"?: mixed,
     "tolerance"?: number,
     "cluster"?: boolean,
     "clusterRadius"?: number,
     "clusterMaxZoom"?: number,
+    "clusterMinPoints"?: number,
     "clusterProperties"?: mixed,
     "lineMetrics"?: boolean,
-    "generateId"?: boolean
+    "generateId"?: boolean,
+    "promoteId"?: PromoteIdSpecification
 |}
 
 export type VideoSourceSpecification = {|
@@ -182,7 +204,7 @@ export type LineLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "line-cap"?: PropertyValueSpecification<"butt" | "round" | "square">,
+        "line-cap"?: DataDrivenPropertyValueSpecification<"butt" | "round" | "square">,
         "line-join"?: DataDrivenPropertyValueSpecification<"bevel" | "round" | "miter">,
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
@@ -198,7 +220,7 @@ export type LineLayerSpecification = {|
         "line-gap-width"?: DataDrivenPropertyValueSpecification<number>,
         "line-offset"?: DataDrivenPropertyValueSpecification<number>,
         "line-blur"?: DataDrivenPropertyValueSpecification<number>,
-        "line-dasharray"?: PropertyValueSpecification<Array<number>>,
+        "line-dasharray"?: DataDrivenPropertyValueSpecification<Array<number>>,
         "line-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "line-gradient"?: ExpressionSpecification
     |}
@@ -239,7 +261,7 @@ export type SymbolLayerSpecification = {|
         "text-font"?: DataDrivenPropertyValueSpecification<Array<string>>,
         "text-size"?: DataDrivenPropertyValueSpecification<number>,
         "text-max-width"?: DataDrivenPropertyValueSpecification<number>,
-        "text-line-height"?: PropertyValueSpecification<number>,
+        "text-line-height"?: DataDrivenPropertyValueSpecification<number>,
         "text-letter-spacing"?: DataDrivenPropertyValueSpecification<number>,
         "text-justify"?: DataDrivenPropertyValueSpecification<"auto" | "left" | "center" | "right">,
         "text-radial-offset"?: DataDrivenPropertyValueSpecification<number>,
@@ -410,6 +432,28 @@ export type BackgroundLayerSpecification = {|
     |}
 |}
 
+export type SkyLayerSpecification = {|
+    "id": string,
+    "type": "sky",
+    "metadata"?: mixed,
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "layout"?: {|
+        "visibility"?: "visible" | "none"
+    |},
+    "paint"?: {|
+        "sky-type"?: PropertyValueSpecification<"gradient" | "atmosphere">,
+        "sky-atmosphere-sun"?: PropertyValueSpecification<[number, number]>,
+        "sky-atmosphere-sun-intensity"?: number,
+        "sky-gradient-center"?: PropertyValueSpecification<[number, number]>,
+        "sky-gradient-radius"?: PropertyValueSpecification<number>,
+        "sky-gradient"?: ExpressionSpecification,
+        "sky-atmosphere-halo-color"?: ColorSpecification,
+        "sky-atmosphere-color"?: ColorSpecification,
+        "sky-opacity"?: PropertyValueSpecification<number>
+    |}
+|}
+
 export type LayerSpecification =
     | FillLayerSpecification
     | LineLayerSpecification
@@ -419,5 +463,6 @@ export type LayerSpecification =
     | FillExtrusionLayerSpecification
     | RasterLayerSpecification
     | HillshadeLayerSpecification
-    | BackgroundLayerSpecification;
+    | BackgroundLayerSpecification
+    | SkyLayerSpecification;
 

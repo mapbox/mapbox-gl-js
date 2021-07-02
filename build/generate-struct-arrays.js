@@ -10,13 +10,11 @@
 
 'use strict'; // eslint-disable-line strict
 
-const fs = require('fs');
-
-const ejs = require('ejs');
-const util = require('../src/util/util');
-const {createLayout, viewTypes} = require('../src/util/struct_array');
-
-import type {ViewType, StructArrayLayout} from '../src/util/struct_array';
+import fs from 'fs';
+import ejs from 'ejs';
+import {extend} from '../src/util/util.js';
+import {createLayout, viewTypes} from '../src/util/struct_array.js';
+import type {ViewType, StructArrayLayout} from '../src/util/struct_array.js';
 
 const structArrayLayoutJs = ejs.compile(fs.readFileSync('src/util/struct_array_layout.js.ejs', 'utf8'), {strict: true});
 const structArrayJs = ejs.compile(fs.readFileSync('src/util/struct_array.js.ejs', 'utf8'), {strict: true});
@@ -41,7 +39,7 @@ function normalizeMembers(members, usedTypes) {
             usedTypes.add(member.type);
         }
 
-        return util.extend(member, {
+        return extend(member, {
             size: sizeOf(member.type),
             view: member.type.toLowerCase()
         });
@@ -84,7 +82,7 @@ function createStructArrayLayoutType({members, size, alignment}) {
     if (!alignment || alignment === 1) members = members.reduce((memo, member) => {
         if (memo.length > 0 && memo[memo.length - 1].type === member.type) {
             const last = memo[memo.length - 1];
-            return memo.slice(0, -1).concat(util.extend({}, last, {
+            return memo.slice(0, -1).concat(extend({}, last, {
                 components: last.components + member.components,
             }));
         }
@@ -93,6 +91,8 @@ function createStructArrayLayoutType({members, size, alignment}) {
 
     const key = `${members.map(m => `${m.components}${typeAbbreviations[m.type]}`).join('')}${size}`;
     const className = `StructArrayLayout${key}`;
+    // Layout alignment to 4 bytes boundaries can be an issue on some set of graphics cards. Particularly AMD.
+    if (size % 4 !== 0) { console.warn(`Warning: The layout ${className} is not aligned to 4-bytes boundaries.`); }
     if (!layoutCache[key]) {
         layoutCache[key] = {
             className,
@@ -117,17 +117,20 @@ function camelize (str) {
 
 global.camelize = camelize;
 
-const posAttributes = require('../src/data/pos_attributes').default;
-const rasterBoundsAttributes = require('../src/data/raster_bounds_attributes').default;
+import posAttributes from '../src/data/pos_attributes.js';
+import rasterBoundsAttributes from '../src/data/raster_bounds_attributes.js';
 
 createStructArrayType('pos', posAttributes);
 createStructArrayType('raster_bounds', rasterBoundsAttributes);
 
-const circleAttributes = require('../src/data/bucket/circle_attributes').default;
-const fillAttributes = require('../src/data/bucket/fill_attributes').default;
-const fillExtrusionAttributes = require('../src/data/bucket/fill_extrusion_attributes').default;
-const lineAttributes = require('../src/data/bucket/line_attributes').default;
-const patternAttributes = require('../src/data/bucket/pattern_attributes').default;
+import circleAttributes from '../src/data/bucket/circle_attributes.js';
+import fillAttributes from '../src/data/bucket/fill_attributes.js';
+import lineAttributes from '../src/data/bucket/line_attributes.js';
+import lineAttributesExt from '../src/data/bucket/line_attributes_ext.js';
+import patternAttributes from '../src/data/bucket/pattern_attributes.js';
+import dashAttributes from '../src/data/bucket/dash_attributes.js';
+import skyboxAttributes from '../src/render/skybox_attributes.js';
+import {fillExtrusionAttributes, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
 
 // layout vertex arrays
 const layoutAttributes = {
@@ -136,14 +139,16 @@ const layoutAttributes = {
     'fill-extrusion': fillExtrusionAttributes,
     heatmap: circleAttributes,
     line: lineAttributes,
-    pattern: patternAttributes
+    lineExt: lineAttributesExt,
+    pattern: patternAttributes,
+    dash: dashAttributes
 };
 for (const name in layoutAttributes) {
     createStructArrayType(`${name.replace(/-/g, '_')}_layout`, layoutAttributes[name]);
 }
 
 // symbol layer specific arrays
-const {
+import {
     symbolLayoutAttributes,
     dynamicLayoutAttributes,
     placementOpacityAttributes,
@@ -151,11 +156,13 @@ const {
     collisionBoxLayout,
     collisionCircleLayout,
     collisionVertexAttributes,
+    collisionVertexAttributesExt,
+    quadTriangle,
     placement,
     symbolInstance,
     glyphOffset,
     lineVertex
-} = require('../src/data/bucket/symbol_attributes');
+} from '../src/data/bucket/symbol_attributes.js';
 
 createStructArrayType(`symbol_layout`, symbolLayoutAttributes);
 createStructArrayType(`symbol_dynamic_layout`, dynamicLayoutAttributes);
@@ -164,6 +171,8 @@ createStructArrayType('collision_box', collisionBox, true);
 createStructArrayType(`collision_box_layout`, collisionBoxLayout);
 createStructArrayType(`collision_circle_layout`, collisionCircleLayout);
 createStructArrayType(`collision_vertex`, collisionVertexAttributes);
+createStructArrayType(`collision_vertex_ext`, collisionVertexAttributesExt);
+createStructArrayType(`quad_triangle`, quadTriangle);
 createStructArrayType('placed_symbol', placement, true);
 createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
@@ -176,7 +185,9 @@ createStructArrayType('feature_index', createLayout([
     // the source layer the feature appears in
     { type: 'Uint16', name: 'sourceLayerIndex' },
     // the bucket the feature appears in
-    { type: 'Uint16', name: 'bucketIndex' }
+    { type: 'Uint16', name: 'bucketIndex' },
+    // Offset into bucket.layoutVertexArray
+    { type: 'Uint16', name: 'layoutVertexArrayOffset' },
 ]), true);
 
 // triangle index array
@@ -193,6 +204,9 @@ createStructArrayType('line_index', createLayout([
 createStructArrayType('line_strip_index', createLayout([
     { type: 'Uint16', name: 'vertices', components: 1 }
 ]));
+
+// skybox vertex array
+createStructArrayType(`skybox_vertex`, skyboxAttributes);
 
 // paint vertex arrays
 
@@ -217,15 +231,19 @@ createStructArrayLayoutType(createLayout([{
     components: 4
 }], 4));
 
+// Fill extrusion specific array
+createStructArrayType(`fill_extrusion_centroid`, centroidAttributes, true);
+
 const layouts = Object.keys(layoutCache).map(k => layoutCache[k]);
 
 fs.writeFileSync('src/data/array_types.js',
     `// This file is generated. Edit build/generate-struct-arrays.js, then run \`yarn run codegen\`.
+/* eslint-disable camelcase */
 // @flow
 
 import assert from 'assert';
-import {Struct, StructArray} from '../util/struct_array';
-import {register} from '../util/web_worker_transfer';
+import {Struct, StructArray} from '../util/struct_array.js';
+import {register} from '../util/web_worker_transfer.js';
 import Point from '@mapbox/point-geometry';
 
 ${layouts.map(structArrayLayoutJs).join('\n')}

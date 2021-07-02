@@ -2,12 +2,12 @@
 
 export default drawCustom;
 
-import DepthMode from '../gl/depth_mode';
-import StencilMode from '../gl/stencil_mode';
+import DepthMode from '../gl/depth_mode.js';
+import StencilMode from '../gl/stencil_mode.js';
 
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type CustomStyleLayer from '../style/style_layer/custom_style_layer.js';
 
 function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomStyleLayer) {
 

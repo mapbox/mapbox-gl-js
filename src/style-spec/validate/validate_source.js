@@ -1,9 +1,15 @@
 
-import ValidationError from '../error/validation_error';
-import {unbundle} from '../util/unbundle_jsonlint';
-import validateObject from './validate_object';
-import validateEnum from './validate_enum';
-import validateExpression from './validate_expression';
+import ValidationError from '../error/validation_error.js';
+import {unbundle} from '../util/unbundle_jsonlint.js';
+import validateObject from './validate_object.js';
+import validateEnum from './validate_enum.js';
+import validateExpression from './validate_expression.js';
+import validateString from './validate_string.js';
+import getType from '../util/get_type.js';
+
+const objectElementValidators = {
+    promoteId: validatePromoteId
+};
 
 export default function validateSource(options) {
     const value = options.value;
@@ -27,7 +33,8 @@ export default function validateSource(options) {
             value,
             valueSpec: styleSpec[`source_${type.replace('-', '_')}`],
             style: options.style,
-            styleSpec
+            styleSpec,
+            objectElementValidators
         });
         return errors;
 
@@ -37,7 +44,8 @@ export default function validateSource(options) {
             value,
             valueSpec: styleSpec.source_geojson,
             style,
-            styleSpec
+            styleSpec,
+            objectElementValidators
         });
         if (value.cluster) {
             for (const prop in value.clusterProperties) {
@@ -87,5 +95,17 @@ export default function validateSource(options) {
             style,
             styleSpec
         });
+    }
+}
+
+function validatePromoteId({key, value}) {
+    if (getType(value) === 'string') {
+        return validateString({key, value});
+    } else {
+        const errors = [];
+        for (const prop in value) {
+            errors.push(...validateString({key: `${key}.${prop}`, value: value[prop]}));
+        }
+        return errors;
     }
 }

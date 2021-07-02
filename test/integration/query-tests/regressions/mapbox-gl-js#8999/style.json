@@ -1,0 +1,65 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "debug": true,
+      "width": 200,
+      "height": 200,
+      "queryGeometry": [
+          100,
+          40
+      ]
+    }
+  },
+  "pitch": 0,
+  "center": [
+      0,
+      0
+  ],
+  "zoom": 0,
+  "sources": {
+    "extrusion_three_points": {
+      "type": "geojson",
+        "data": {
+            "type": "Feature",
+            "properties": {
+                "layer": "extrusion_three_points"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -20,
+                            -40
+                        ],
+                        [
+                            -20,
+                            40
+                        ],
+                        [
+                            40,
+                            40
+                        ],
+                        [
+                            -20,
+                            -40
+                        ]
+                    ]
+                ]
+            }
+        }
+	}
+  },
+  "layers": [
+    {
+      "id": "extrusion_three_points",
+      "type": "fill-extrusion",
+      "source": "extrusion_three_points",
+      "paint": {
+        "fill-extrusion-color": "#ecc",
+        "fill-extrusion-height": 0
+      }
+    }
+  ]
+}

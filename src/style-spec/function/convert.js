@@ -1,7 +1,7 @@
 // @flow
 
 import assert from 'assert';
-import type {StylePropertySpecification} from '../style-spec';
+import type {StylePropertySpecification} from '../style-spec.js';
 
 export default convertFunction;
 
@@ -121,6 +121,21 @@ function coalesce(a, b) {
     if (b !== undefined) return b;
 }
 
+function getFallback(parameters, propertySpec) {
+    const defaultValue = convertLiteral(coalesce(parameters.default, propertySpec.default));
+
+    /*
+     * Some fields with type: resolvedImage have an undefined default.
+     * Because undefined is an invalid value for resolvedImage, set fallback to
+     * an empty string instead of undefined to ensure output
+     * passes validation.
+     */
+    if (defaultValue === undefined && propertySpec.type === 'resolvedImage') {
+        return '';
+    }
+    return defaultValue;
+}
+
 function convertPropertyFunction(parameters, propertySpec, stops) {
     const type = getFunctionType(parameters, propertySpec);
     const get = ['get', parameters.property];
@@ -130,14 +145,15 @@ function convertPropertyFunction(parameters, propertySpec, stops) {
         for (const stop of stops) {
             expression.push(['==', get, stop[0]], stop[1]);
         }
-        expression.push(convertLiteral(coalesce(parameters.default, propertySpec.default)));
+
+        expression.push(getFallback(parameters, propertySpec));
         return expression;
     } else if (type === 'categorical') {
         const expression = ['match', get];
         for (const stop of stops) {
             appendStopPair(expression, stop[0], stop[1], false);
         }
-        expression.push(convertLiteral(coalesce(parameters.default, propertySpec.default)));
+        expression.push(getFallback(parameters, propertySpec));
         return expression;
     } else if (type === 'interval') {
         const expression = ['step', ['number', get]];
@@ -153,7 +169,12 @@ function convertPropertyFunction(parameters, propertySpec, stops) {
         ];
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        const expression = [getInterpolateOperator(parameters), ['exponential', base], ['number', get]];
+        const expression = [
+            getInterpolateOperator(parameters),
+            base === 1 ? ["linear"] : ["exponential", base],
+            ["number", get]
+        ];
+
         for (const stop of stops) {
             appendStopPair(expression, stop[0], stop[1], false);
         }
@@ -177,7 +198,8 @@ function convertZoomFunction(parameters, propertySpec, stops, input = ['zoom']) 
         isStep = true;
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        expression = [getInterpolateOperator(parameters), ['exponential', base], input];
+        expression = [getInterpolateOperator(parameters), base === 1 ? ["linear"] : ["exponential", base], input];
+
     } else {
         throw new Error(`Unknown zoom function type "${type}"`);
     }

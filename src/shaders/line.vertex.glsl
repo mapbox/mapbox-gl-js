@@ -17,7 +17,6 @@ uniform lowp float u_device_pixel_ratio;
 varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_gamma_scale;
-varying highp float v_linesofar;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float blur
@@ -40,9 +39,6 @@ void main() {
 
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
-
-    v_linesofar = (floor(a_data.z / 4.0) + a_data.w * 64.0) * 2.0;
-
     vec2 pos = floor(a_pos_normal * 0.5);
 
     // x is 1 if it's a round cap, 0 otherwise
@@ -76,10 +72,17 @@ void main() {
     vec4 projected_extrude = u_matrix * vec4(dist / u_ratio, 0.0, 0.0);
     gl_Position = u_matrix * vec4(pos + offset2 / u_ratio, 0.0, 1.0) + projected_extrude;
 
+#ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude
     float extrude_length_without_perspective = length(dist);
     float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_units_to_pixels);
     v_gamma_scale = extrude_length_without_perspective / extrude_length_with_perspective;
-
+#else
+    v_gamma_scale = 1.0;
+#endif
     v_width2 = vec2(outset, inset);
+
+#ifdef FOG
+    v_fog_pos = fog_position(pos);
+#endif
 }

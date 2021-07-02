@@ -1,8 +1,8 @@
 // @flow
-import validateStyleMin from '../style-spec/validate_style.min';
-import {ErrorEvent} from '../util/evented';
+import validateStyleMin from '../style-spec/validate_style.min.js';
+import {ErrorEvent} from '../util/evented.js';
 
-import type {Evented} from '../util/evented';
+import type {Evented} from '../util/evented.js';
 
 type ValidationError = {
     message: string,
@@ -17,6 +17,8 @@ type ValidateStyle = {
     source: Validator,
     layer: Validator,
     light: Validator,
+    terrain: Validator,
+    fog: Validator,
     filter: Validator,
     paintProperty: Validator,
     layoutProperty: Validator
@@ -26,6 +28,8 @@ export const validateStyle = (validateStyleMin: ValidateStyle);
 
 export const validateSource = validateStyle.source;
 export const validateLight = validateStyle.light;
+export const validateTerrain = validateStyle.terrain;
+export const validateFog = validateStyle.fog;
 export const validateFilter = validateStyle.filter;
 export const validatePaintProperty = validateStyle.paintProperty;
 export const validateLayoutProperty = validateStyle.layoutProperty;

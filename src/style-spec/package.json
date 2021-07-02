@@ -1,7 +1,7 @@
 {
   "name": "@mapbox/mapbox-gl-style-spec",
   "description": "a specification for mapbox gl styles",
-  "version": "13.10.0-dev",
+  "version": "13.21.0-dev",
   "author": "Mapbox",
   "keywords": [
     "mapbox",
@@ -9,13 +9,23 @@
     "mapbox-gl-js"
   ],
   "license": "ISC",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.es.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.es.js"
+    },
+    "./": {
+      "import": "./"
+    }
+  },
   "scripts": {
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
-    "prepublish": "yarn copy-flow-typed && yarn build",
-    "postpublish": "rm -r flow-typed dist/index.js"
+    "prepublishOnly": "git clean -fdx && yarn copy-flow-typed && yarn build",
+    "postpublish": "rm -r flow-typed dist/index.cjs"
   },
   "repository": {
     "type": "git",
@@ -30,9 +40,10 @@
   "dependencies": {
     "@mapbox/jsonlint-lines-primitives": "~2.0.2",
     "@mapbox/unitbezier": "^0.0.0",
+    "@mapbox/point-geometry": "^0.1.0",
     "csscolorparser": "~1.0.2",
     "json-stringify-pretty-compact": "^2.0.0",
-    "minimist": "0.0.8",
+    "minimist": "^1.2.5",
     "rw": "^1.3.3",
     "sort-object": "^0.3.2"
   },

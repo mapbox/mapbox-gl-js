@@ -1,12 +1,15 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import fs from 'fs';
 import path from 'path';
 import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import Point from '@mapbox/point-geometry';
-import segment from '../../../src/data/segment';
-import FillBucket from '../../../src/data/bucket/fill_bucket';
-import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer';
+import segment from '../../../src/data/segment.js';
+import FillBucket from '../../../src/data/bucket/fill_bucket.js';
+import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer.js';
+
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 // Load a fill feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));

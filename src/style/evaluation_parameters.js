@@ -1,10 +1,10 @@
 // @flow
 
-import ZoomHistory from './zoom_history';
-import {isStringInSupportedScript} from '../util/script_detection';
-import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin';
+import ZoomHistory from './zoom_history.js';
+import {isStringInSupportedScript} from '../util/script_detection.js';
+import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin.js';
 
-import type {TransitionSpecification} from '../style-spec/types';
+import type {TransitionSpecification} from '../style-spec/types.js';
 
 export type CrossfadeParameters = {
     fromScale: number,

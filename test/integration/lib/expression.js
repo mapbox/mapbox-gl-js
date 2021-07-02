@@ -1,8 +1,11 @@
 import path from 'path';
 import * as diff from 'diff';
 import fs from 'fs';
-import harness from './harness';
+import harness from './harness.js';
 import compactStringify from 'json-stringify-pretty-compact';
+
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 // we have to handle this edge case here because we have test fixtures for this
 // edge case, and we don't want UPDATE=1 to mess with them

@@ -56,7 +56,7 @@
     "line": 83
   },
   {
-    "message": "layers[12].type: expected one of [fill, line, symbol, circle, heatmap, fill-extrusion, raster, hillshade, background], \"invalid\" found",
+    "message": "layers[12].type: expected one of [fill, line, symbol, circle, heatmap, fill-extrusion, raster, hillshade, background, sky], \"invalid\" found",
     "line": 90
   },
   {
@@ -76,11 +76,25 @@
     "line": 14
   },
   {
+    "message": "sources[2].type: Expected one of [vector, raster, raster-dem]",
+    "line": 13
+  },
+  {
+    "message": "sources[2].url: Expected a valid Mapbox tileset url"
+  },
+  {
     "message": "source.data: Unsupported property \"data\"",
     "line": 18
   },
   {
     "message": "source.lineMetrics: Unsupported property \"lineMetrics\"",
     "line": 19
+  },
+  {
+    "message": "sources[3].type: Expected one of [vector, raster, raster-dem]",
+    "line": 17
+  },
+  {
+    "message": "sources[3].url: Expected a valid Mapbox tileset url"
   }
 ]

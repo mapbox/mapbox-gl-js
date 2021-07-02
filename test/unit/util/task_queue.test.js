@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import TaskQueue from '../../../src/util/task_queue';
+import {test} from '../../util/test.js';
+import TaskQueue from '../../../src/util/task_queue.js';
 
 test('TaskQueue', (t) => {
     t.test('Calls callbacks, in order', (t) => {

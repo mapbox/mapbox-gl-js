@@ -4,23 +4,19 @@
 // there are also "special" normals that have a bigger length (of up to 126 in
 // this case).
 // #define scale 63.0
-#define scale 0.015873016
-
-// We scale the distance before adding it to the buffers so that we can store
-// long distances for long segments. Use this value to unscale the distance.
-#define LINE_DISTANCE_SCALE 2.0
+#define EXTRUDE_SCALE 0.015873016
 
 attribute vec2 a_pos_normal;
 attribute vec4 a_data;
+attribute float a_linesofar;
 
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
 uniform lowp float u_device_pixel_ratio;
-uniform vec2 u_patternscale_a;
-uniform float u_tex_y_a;
-uniform vec2 u_patternscale_b;
-uniform float u_tex_y_b;
 uniform vec2 u_units_to_pixels;
+
+uniform vec2 u_texsize;
+uniform mediump vec3 u_scale;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
@@ -35,6 +31,8 @@ varying float v_gamma_scale;
 #pragma mapbox: define lowp float offset
 #pragma mapbox: define mediump float width
 #pragma mapbox: define lowp float floorwidth
+#pragma mapbox: define lowp vec4 dash_from
+#pragma mapbox: define lowp vec4 dash_to
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -44,6 +42,8 @@ void main() {
     #pragma mapbox: initialize lowp float offset
     #pragma mapbox: initialize mediump float width
     #pragma mapbox: initialize lowp float floorwidth
+    #pragma mapbox: initialize mediump vec4 dash_from
+    #pragma mapbox: initialize mediump vec4 dash_to
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
@@ -51,7 +51,6 @@ void main() {
 
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
-    float a_linesofar = (floor(a_data.z / 4.0) + a_data.w * 64.0) * LINE_DISTANCE_SCALE;
 
     vec2 pos = floor(a_pos_normal * 0.5);
 
@@ -73,7 +72,7 @@ void main() {
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    mediump vec2 dist =outset * a_extrude * scale;
+    mediump vec2 dist = outset * a_extrude * EXTRUDE_SCALE;
 
     // Calculate the offset when drawing a line that is to the side of the actual line.
     // We do this by creating a vector that points towards the extrude, but rotate
@@ -81,18 +80,35 @@ void main() {
     // extrude vector points in another direction.
     mediump float u = 0.5 * a_direction;
     mediump float t = 1.0 - abs(u);
-    mediump vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
+    mediump vec2 offset2 = offset * a_extrude * EXTRUDE_SCALE * normal.y * mat2(t, -u, u, t);
 
     vec4 projected_extrude = u_matrix * vec4(dist / u_ratio, 0.0, 0.0);
     gl_Position = u_matrix * vec4(pos + offset2 / u_ratio, 0.0, 1.0) + projected_extrude;
 
+#ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude
     float extrude_length_without_perspective = length(dist);
     float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_units_to_pixels);
     v_gamma_scale = extrude_length_without_perspective / extrude_length_with_perspective;
+#else
+    v_gamma_scale = 1.0;
+#endif
 
-    v_tex_a = vec2(a_linesofar * u_patternscale_a.x / floorwidth, normal.y * u_patternscale_a.y + u_tex_y_a);
-    v_tex_b = vec2(a_linesofar * u_patternscale_b.x / floorwidth, normal.y * u_patternscale_b.y + u_tex_y_b);
+    float tileZoomRatio = u_scale.x;
+    float fromScale = u_scale.y;
+    float toScale = u_scale.z;
+
+    float scaleA = dash_from.z == 0.0 ? 0.0 : tileZoomRatio / (dash_from.z * fromScale);
+    float scaleB = dash_to.z == 0.0 ? 0.0 : tileZoomRatio / (dash_to.z * toScale);
+    float heightA = dash_from.y;
+    float heightB = dash_to.y;
+
+    v_tex_a = vec2(a_linesofar * scaleA / floorwidth, (-normal.y * heightA + dash_from.x + 0.5) / u_texsize.y);
+    v_tex_b = vec2(a_linesofar * scaleB / floorwidth, (-normal.y * heightB + dash_to.x + 0.5) / u_texsize.y);
 
     v_width2 = vec2(outset, inset);
+
+#ifdef FOG
+    v_fog_pos = fog_position(pos);
+#endif
 }

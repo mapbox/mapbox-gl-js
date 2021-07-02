@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
-  aws-cli: circleci/aws-cli@0.1.16
+  aws-cli: circleci/aws-cli@1.4.0
+  browser-tools: circleci/browser-tools@1.1.1
 
 workflows:
   version: 2
@@ -22,20 +23,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - check-size:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
-      - collect-stats:
-          requires:
-            - build
-          filters:
-            tags:
-              ignore: /.*/
-            branches:
-              only: master
       - test-flow:
           requires:
             - prepare
@@ -54,6 +41,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-render-prod:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
       - test-query:
           requires:
             - prepare
@@ -66,6 +59,26 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-browser:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - test-webpack:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+      - collect-stats:
+          requires:
+            - build
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only: main
       - deploy-benchmarks:
           requires:
             - lint
@@ -73,6 +86,7 @@ workflows:
             - test-flow
             - test-unit
             - test-render
+            - test-render-prod
             - test-query
             - test-expressions
           filters:
@@ -80,7 +94,7 @@ workflows:
               only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
             branches:
               only:
-                - master
+                - main
                 - /release-.*/
       - deploy-release:
           requires:
@@ -89,6 +103,7 @@ workflows:
             - test-flow
             - test-unit
             - test-render
+            - test-render-prod
             - test-query
             - test-expressions
           filters:
@@ -97,9 +112,10 @@ workflows:
             branches:
               ignore: /.*/
 
+
 defaults: &defaults
   docker:
-    - image: circleci/node:10.16-browsers
+    - image: cimg/node:14.15-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:
@@ -107,25 +123,35 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - run:
+          name: Install mbx-ci
+          command: |
+            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > ~/mbx-ci &&
+            chmod 755 ~/mbx-ci &&
+            ~/mbx-ci aws setup
       - restore_cache:
           keys:
-            - v3-yarn-{{ checksum "yarn.lock" }}
+            - v4-yarn-{{ checksum "yarn.lock" }}
       - run: yarn
       - save_cache:
-          key: v3-yarn-{{ checksum "yarn.lock" }}
+          key: v4-yarn-{{ checksum "yarn.lock" }}
           paths:
             - '~/.yarn'
             - 'node_modules'
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - .
+            - mapbox-gl-js
+            - .ssh
+            - .aws
+            - mbx-ci
+
 
   lint:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - restore_cache:
           keys:
             - v2-lint-{{ .Branch }}
@@ -142,7 +168,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
@@ -151,31 +177,90 @@ jobs:
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
       - run: yarn run test-build
+      - run:
+          name: Check bundle size
+          command: |
+            node build/check-bundle-size.js
       - store_artifacts:
           path: "dist"
       - store_artifacts:
           path: "test/release"
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - dist
+            - mapbox-gl-js/dist
 
-  check-size:
+  test-flow:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
+      - run: yarn run test-flow
+
+  test-unit:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: yarn run test-unit
+
+  test-render:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-chrome
+      - run: yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-prod:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-chrome
+      - run: yarn run test-render-prod
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-query:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-chrome
+      - run: yarn run test-query
+      - store_test_results:
+          path: test/integration/query-tests
+      - store_artifacts:
+          path: "test/integration/query-tests/index.html"
+
+  test-webpack:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
       - run:
-          name: Check bundle size
+          name: Build Webpack
           command: |
-            node build/check-bundle-size.js "dist/mapbox-gl.js" "JS"
-            node build/check-bundle-size.js "dist/mapbox-gl.css" "CSS"
+            cd ./test/build/transpilation &&
+            yarn &&
+            npm run build &&
+            rm -rf node_modules
+      - store_artifacts:
+          path: "test/build/transpilation"
 
   collect-stats:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
+      - browser-tools/install-chrome
       - run:
           name: Collect performance stats
           command: node bench/gl-stats.js
@@ -184,52 +269,39 @@ jobs:
           name: Upload performance stats
           command: aws s3 cp data.json.gz s3://mapbox-loading-dock/raw/gl_js.perf_metrics_staging/ci/`git show -s --date=short --format=%cd-%h HEAD`.json.gz
 
-  test-flow:
+  test-browser:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
-      - run: yarn run test-flow
-
-  test-unit:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run: yarn run test-unit
-
-  test-render:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run: yarn run test-render
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
-  test-query:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run: yarn run test-query
-      - store_test_results:
-          path: test/integration/query-tests
-      - store_artifacts:
-          path: "test/integration/query-tests/index.html"
+          at: ~/
+      - browser-tools/install-browser-tools
+      - run: yarn run build-dev
+      - run: yarn run build-token
+      - run:
+          name: Test Chrome
+          environment:
+            SELENIUM_BROWSER: chrome
+            TAP_COLORS: 1
+          command: yarn run test-browser
+      - run:
+          name: Test Firefox
+          environment:
+            SELENIUM_BROWSER: firefox
+            TAP_COLORS: 1
+          command: yarn run test-browser
 
   test-expressions:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-expressions
 
   deploy-benchmarks:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Build
           command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
@@ -245,27 +317,18 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - aws-cli/install
+      - run:
+          name: Check build file for correct SDK version
+          command: |
+            if grep -q "\"${CIRCLE_TAG:1}\"" ./dist/mapbox-gl.js; then
+              echo SDK version in mapbox-gl.js matches ${CIRCLE_TAG:1}
+            else
+              echo SDK version in mapbox-gl.js does not match ${CIRCLE_TAG:1}
+              exit 1
+            fi
       - run:
           name: Deploy release
           command: |
-            function upload {
-                aws s3 cp --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js/$CIRCLE_TAG/$1
-
-                AWS_ACCESS_KEY_ID=$AWSCN_ACCESS_KEY_ID \
-                AWS_SECRET_ACCESS_KEY=$AWSCN_SECRET_ACCESS_KEY \
-                aws s3 cp --region cn-north-1 --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js-cn-north-1/$CIRCLE_TAG/$1
-            }
-
-            upload mapbox-gl.js     application/javascript
-            upload mapbox-gl.js.map application/octet-stream
-            upload mapbox-gl-dev.js application/javascript
-            upload mapbox-gl.css    text/css
-
-            upload mapbox-gl-unminified.js     application/javascript
-            upload mapbox-gl-unminified.js.map application/octet-stream
-            upload mapbox-gl-csp.js            application/javascript
-            upload mapbox-gl-csp.js.map        application/octet-stream
-            upload mapbox-gl-csp-worker.js     application/javascript
-            upload mapbox-gl-csp-worker.js.map application/octet-stream
+            bash ./build/upload.sh

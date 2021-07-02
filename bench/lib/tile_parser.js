@@ -4,17 +4,17 @@ import Protobuf from 'pbf';
 import VT from '@mapbox/vector-tile';
 import assert from 'assert';
 
-import deref from '../../src/style-spec/deref';
-import Style from '../../src/style/style';
-import {Evented} from '../../src/util/evented';
-import {RequestManager} from '../../src/util/mapbox';
-import WorkerTile from '../../src/source/worker_tile';
-import StyleLayerIndex from '../../src/style/style_layer_index';
+import deref from '../../src/style-spec/deref.js';
+import Style from '../../src/style/style.js';
+import {Evented} from '../../src/util/evented.js';
+import {RequestManager} from '../../src/util/mapbox.js';
+import WorkerTile from '../../src/source/worker_tile.js';
+import StyleLayerIndex from '../../src/style/style_layer_index.js';
 
-import type {StyleSpecification} from '../../src/style-spec/types';
-import type {WorkerTileResult} from '../../src/source/worker_source';
-import type {OverscaledTileID} from '../../src/source/tile_id';
-import type {TileJSON} from '../../src/types/tilejson';
+import type {StyleSpecification} from '../../src/style-spec/types.js';
+import type {WorkerTileResult} from '../../src/source/worker_source.js';
+import type {OverscaledTileID} from '../../src/source/tile_id.js';
+import type {TileJSON} from '../../src/types/tilejson.js';
 
 class StubMap extends Evented {
     _requestManager: RequestManager;
@@ -116,12 +116,13 @@ export default class TileParser {
     parseTile(tile: {tileID: OverscaledTileID, buffer: ArrayBuffer}, returnDependencies?: boolean): Promise<?WorkerTileResult> {
         const workerTile = new WorkerTile({
             tileID: tile.tileID,
+            tileZoom: tile.tileID.overscaledZ,
             zoom: tile.tileID.overscaledZ,
             tileSize: 512,
             overscaling: 1,
             showCollisionBoxes: false,
             source: this.sourceID,
-            uid: '0',
+            uid: 0,
             maxZoom: 22,
             pixelRatio: 1,
             request: {url: ''},
@@ -129,7 +130,9 @@ export default class TileParser {
             pitch: 0,
             cameraToCenterDistance: 0,
             cameraToTileDistance: 0,
-            returnDependencies
+            returnDependencies,
+            promoteId: undefined,
+            isSymbolTile: false
         });
 
         const vectorTile = new VT.VectorTile(new Protobuf(tile.buffer));

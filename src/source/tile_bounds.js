@@ -1,9 +1,9 @@
 // @flow
 
-import LngLatBounds from '../geo/lng_lat_bounds';
-import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
+import LngLatBounds from '../geo/lng_lat_bounds.js';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 
-import type {CanonicalTileID} from './tile_id';
+import type {CanonicalTileID} from './tile_id.js';
 
 class TileBounds {
     bounds: LngLatBounds;

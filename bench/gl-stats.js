@@ -1,12 +1,11 @@
-/* eslint-disable import/no-commonjs */
+import puppeteer from 'puppeteer-core';
+import fs from 'fs';
+import zlib from 'zlib';
+import {execSync} from 'child_process';
 
-const puppeteer = require('puppeteer');
-const fs = require('fs');
-const zlib = require('zlib');
 const mapboxGLJSSrc = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 const mapboxGLCSSSrc = fs.readFileSync('dist/mapbox-gl.css', 'utf8');
 const benchSrc = fs.readFileSync('bench/gl-stats.html', 'utf8');
-const {execSync} = require('child_process');
 
 const benchHTML = benchSrc
     .replace(/<script src="..\/dist\/mapbox-gl.js"><\/script>/, `<script>${mapboxGLJSSrc}</script>`)
@@ -24,7 +23,8 @@ function waitForConsole(page) {
 
 (async () => {
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        executablePath: process.env.CI ? '/usr/bin/google-chrome' : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     });
     const page = await browser.newPage();
 

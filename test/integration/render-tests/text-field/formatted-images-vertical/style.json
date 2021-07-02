@@ -1,0 +1,46 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 168,
+      "width": 128
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 0,
+  "sources": {
+    "vertical": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 0 ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "vertical",
+      "type": "symbol",
+      "source": "vertical",
+      "layout": {
+        "text-writing-mode": ["vertical"],
+        "text-field": ["format", "London", ["image", "london-overground.london-underground.national-rail"],
+                                 "IH", ["image", "interstate_1"], ["image", "government_icon"], "ッ",{"font-scale": 1.8}],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

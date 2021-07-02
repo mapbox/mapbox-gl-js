@@ -1,6 +1,6 @@
 
-import ValidationError from '../error/validation_error';
-import {unbundle} from '../util/unbundle_jsonlint';
+import ValidationError from '../error/validation_error.js';
+import {unbundle} from '../util/unbundle_jsonlint.js';
 
 export default function validateEnum(options) {
     const key = options.key;

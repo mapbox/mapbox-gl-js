@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-import {register} from './web_worker_transfer';
+import {register} from './web_worker_transfer.js';
 
 export type Size = {
     width: number,
@@ -76,7 +76,6 @@ function copyImage(srcImg: *, dstImg: *, srcPt: Point, dstPt: Point, size: Size,
             dstData[dstOffset + i] = srcData[srcOffset + i];
         }
     }
-
     return dstImg;
 }
 

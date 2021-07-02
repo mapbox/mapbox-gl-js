@@ -9,6 +9,7 @@
     [{}, {"properties": {"i": 9, "arr": [9, 8, 7]}}],
     [{}, {"properties": {"i": "foo", "arr": ["baz", "bar", "hello", "foo", "world"]}}],
     [{}, {"properties": {"i": true, "arr": ["foo", 123, null, 456, false, {}, true]}}],
+    [{}, {"properties": {"i": null, "arr": ["foo", 123, null, 456, false, {}, true]}}],
     [{}, {"properties": {"i": 1, "arr": null}}]
   ],
   "expected": {
@@ -21,6 +22,7 @@
     "outputs": [
       false,
       false,
+      true,
       true,
       true,
       true,

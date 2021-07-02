@@ -1,9 +1,8 @@
 // @flow
 
-import type {Type} from './types';
-import type {Value} from './values';
-import type ParsingContext from './parsing_context';
-import type EvaluationContext from './evaluation_context';
+import type {Type} from './types.js';
+import type ParsingContext from './parsing_context.js';
+import type EvaluationContext from './evaluation_context.js';
 
 type SerializedExpression = Array<mixed> | string | number | boolean | null;
 
@@ -16,14 +15,13 @@ export interface Expression {
 
     /**
      * Statically analyze the expression, attempting to enumerate possible outputs. Returns
-     * an array of values plus the sentinel value `undefined`, used to indicate that the
-     * complete set of outputs is statically undecidable.
+     * false if the complete set of outputs is statically undecidable, otherwise true.
      */
-    possibleOutputs(): Array<Value | void>;
+    outputDefined(): boolean;
 
     serialize(): SerializedExpression;
 }
 
 export type ExpressionParser = (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Expression;
 export type ExpressionRegistration = Class<Expression> & { +parse: ExpressionParser };
-export type ExpressionRegistry = {[string]: ExpressionRegistration};
+export type ExpressionRegistry = {[_: string]: ExpressionRegistration};

@@ -1,9 +1,9 @@
 // @flow
 
-import type {Type} from '../types';
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext  from '../evaluation_context';
+import type {Type} from '../types.js';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext  from '../evaluation_context.js';
 
 class Var implements Expression {
     type: Type;
@@ -34,8 +34,8 @@ class Var implements Expression {
 
     eachChild() {}
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize() {

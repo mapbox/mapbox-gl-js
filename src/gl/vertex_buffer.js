@@ -5,10 +5,10 @@ import assert from 'assert';
 import type {
     StructArray,
     StructArrayMember
-} from '../util/struct_array';
+} from '../util/struct_array.js';
 
-import type Program from '../render/program';
-import type Context from '../gl/context';
+import type Program from '../render/program.js';
+import type Context from '../gl/context.js';
 
 /**
  * @enum {string} AttributeType
@@ -40,6 +40,7 @@ class VertexBuffer {
 
     /**
      * @param dynamicDraw Whether this buffer will be repeatedly updated.
+     * @private
      */
     constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean) {
         this.length = array.length;

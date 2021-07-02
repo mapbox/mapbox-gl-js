@@ -1,6 +1,6 @@
 
-import Benchmark from '../lib/benchmark';
-import createMap from '../lib/create_map';
+import Benchmark from '../lib/benchmark.js';
+import createMap from '../lib/create_map.js';
 
 export default class MapLoad extends Benchmark {
     bench() {

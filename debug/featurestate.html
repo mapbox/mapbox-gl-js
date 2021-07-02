@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 4,
+    center: [-96, 38],
+    style: {version: 8, layers: [], sources: {}}
+});
+
+map.on('load', () => {
+
+    map.addSource('counties', {
+        "type": "vector",
+        "url": "mapbox://mapbox.82pkq93d",
+        "promoteId": {"original": "COUNTY"}
+    });
+
+    map.addLayer({
+        "id": "counties",
+        "type": "fill",
+        "source": "counties",
+        "source-layer": "original",
+        "paint": {
+            "fill-outline-color": "black",
+            "fill-color": ["case", ["boolean", ["feature-state", "hover"], false], "red", "lightgrey"]
+        }
+    });
+
+    let selectedCounty = null;
+
+    function resetFeatureState() {
+        if (selectedCounty) {
+            map.setFeatureState({source: 'counties', sourceLayer: 'original', id: selectedCounty}, {hover: false});
+            selectedCounty = null;
+        }
+    }
+
+    map.on("mouseleave", "counties", () => {
+        resetFeatureState();
+    });
+
+    map.on("mousemove", "counties", (e) => {
+        const feature = e.features[0];
+
+        if (selectedCounty !== feature.id) {
+            resetFeatureState();
+            map.setFeatureState({source: 'counties', sourceLayer: 'original', id: feature.id}, {hover: true});
+            selectedCounty = feature.id;
+        }
+    });
+});
+
+</script>
+</body>
+</html>

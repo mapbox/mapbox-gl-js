@@ -1,8 +1,9 @@
-import {test} from '../../util/test';
-import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source';
-import window from '../../../src/util/window';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import {RequestManager} from '../../../src/util/mapbox';
+import {test} from '../../util/test.js';
+import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source.js';
+import window from '../../../src/util/window.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import {RequestManager} from '../../../src/util/mapbox.js';
+import {extend} from '../../../src/util/util.js';
 
 function createSource(options, transformCallback) {
     const source = new RasterDEMTileSource('id', options, {send() {}}, options.eventedParent);
@@ -28,6 +29,28 @@ test('RasterTileSource', (t) => {
     t.afterEach((callback) => {
         window.restore();
         callback();
+    });
+
+    t.test('create and serialize source', (t) => {
+        window.server.respondWith('/source.json', JSON.stringify({}));
+        const transformSpy = t.spy((url) => {
+            return {url};
+        });
+        const options = {
+            url: "/source.json",
+            minzoom: 0,
+            maxzoom: 22,
+            attribution: "Mapbox",
+            tiles: ["http://example.com/{z}/{x}/{y}.png"],
+            bounds: [-47, -7, -45, -5],
+            encoding: "terrarium",
+            tileSize: 512,
+            volatile: false
+        };
+        const source = createSource(options, transformSpy);
+        source.load();
+        t.deepEqual(source.serialize(), extend({type: "raster-dem"}, options));
+        t.end();
     });
 
     t.test('transforms request for TileJSON URL', (t) => {
@@ -79,7 +102,8 @@ test('RasterTileSource', (t) => {
         });
         window.server.respond();
     });
-    t.test('populates neighboringTiles', (t) => {
+
+    t.test('getNeighboringTiles', (t) => {
         window.server.respondWith('/source.json', JSON.stringify({
             minzoom: 0,
             maxzoom: 22,
@@ -87,67 +111,35 @@ test('RasterTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         }));
         const source = createSource({url: "/source.json"});
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                const tile = {
-                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-                    state: 'loading',
-                    loadVectorData () {},
-                    setExpiryData() {}
-                };
-                source.loadTile(tile, () => {});
 
-                t.deepEqual(Object.keys(tile.neighboringTiles), [
-                    new OverscaledTileID(10, 0, 10, 4, 4).key,
-                    new OverscaledTileID(10, 0, 10, 5, 4).key,
-                    new OverscaledTileID(10, 0, 10, 6, 4).key,
-                    new OverscaledTileID(10, 0, 10, 4, 5).key,
-                    new OverscaledTileID(10, 0, 10, 6, 5).key,
-                    new OverscaledTileID(10, 0, 10, 4, 6).key,
-                    new OverscaledTileID(10, 0, 10, 5, 6).key,
-                    new OverscaledTileID(10, 0, 10, 6, 6).key
-                ]);
-
-                t.end();
-
-            }
+        t.test('getNeighboringTiles', (t) => {
+            t.deepEqual(Uint32Array.from(Object.keys(source._getNeighboringTiles(new OverscaledTileID(10, 0, 10, 5, 5)))).sort(), Uint32Array.from([
+                new OverscaledTileID(10, 0, 10, 4, 5).key,
+                new OverscaledTileID(10, 0, 10, 6, 5).key,
+                new OverscaledTileID(10, 0, 10, 4, 4).key,
+                new OverscaledTileID(10, 0, 10, 5, 4).key,
+                new OverscaledTileID(10, 0, 10, 6, 4).key,
+                new OverscaledTileID(10, 0, 10, 4, 6).key,
+                new OverscaledTileID(10, 0, 10, 5, 6).key,
+                new OverscaledTileID(10, 0, 10, 6, 6).key
+            ]).sort());
+            t.end();
         });
-        window.server.respond();
-    });
 
-    t.test('populates neighboringTiles with wrapped tiles', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify({
-            minzoom: 0,
-            maxzoom: 22,
-            attribution: "Mapbox",
-            tiles: ["http://example.com/{z}/{x}/{y}.png"]
-        }));
-        const source = createSource({url: "/source.json"});
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                const tile = {
-                    tileID: new OverscaledTileID(5, 0, 5, 31, 5),
-                    state: 'loading',
-                    loadVectorData () {},
-                    setExpiryData() {}
-                };
-                source.loadTile(tile, () => {});
-
-                t.deepEqual(Object.keys(tile.neighboringTiles), [
-                    new OverscaledTileID(5, 0, 5, 30, 4).key,
-                    new OverscaledTileID(5, 0, 5, 31, 4).key,
-                    new OverscaledTileID(5, 0, 5, 30, 5).key,
-                    new OverscaledTileID(5, 0, 5, 30, 6).key,
-                    new OverscaledTileID(5, 0, 5, 31, 6).key,
-                    new OverscaledTileID(5, 1, 5, 0,  4).key,
-                    new OverscaledTileID(5, 1, 5, 0,  5).key,
-                    new OverscaledTileID(5, 1, 5, 0,  6).key
-                ]);
-                t.end();
-            }
+        t.test('getNeighboringTiles with wrapped tiles', (t) => {
+            t.deepEqual(Uint32Array.from(Object.keys(source._getNeighboringTiles(new OverscaledTileID(5, 0, 5, 31, 5)))).sort(), Uint32Array.from([
+                new OverscaledTileID(5, 0, 5, 30, 6).key,
+                new OverscaledTileID(5, 0, 5, 31, 6).key,
+                new OverscaledTileID(5, 0, 5, 30, 5).key,
+                new OverscaledTileID(5, 1, 5, 0,  5).key,
+                new OverscaledTileID(5, 0, 5, 30, 4).key,
+                new OverscaledTileID(5, 0, 5, 31, 4).key,
+                new OverscaledTileID(5, 1, 5, 0,  4).key,
+                new OverscaledTileID(5, 1, 5, 0,  6).key
+            ]).sort());
+            t.end();
         });
-        window.server.respond();
+        t.end();
     });
     t.end();
-
 });

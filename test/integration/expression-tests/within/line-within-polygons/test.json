@@ -1,0 +1,81 @@
+{
+  "expression": ["within", {
+        "type": "MultiPolygon",
+        "coordinates": [[[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]],
+                       [[[0, 0], [-3, 0], [-3, -3], [0, -3], [0, 0]]]]
+      }],
+  "inputs": [[{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [[3, 3], [4, 1]]
+        }
+      }], [{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [[3, 3], [-2, -2]]
+        }
+      }], [{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [[0, 0], [2, 2]]
+        }
+      }], [{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [[1, 3], [-2, -2]]
+        }
+      }], [{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [[-1, -1], [-2, -2]]
+        }
+      }]],
+  "expected": {
+    "compiled": {
+      "type": "boolean",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "result": "success"
+    },
+    "outputs": [true, false, false, false, true],
+    "serialized": ["within", {
+        "coordinates": [[[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]], [[[0, 0], [-3, 0], [-3, -3], [0, -3], [0, 0]]]],
+        "type": "MultiPolygon"
+      }]
+  }
+}

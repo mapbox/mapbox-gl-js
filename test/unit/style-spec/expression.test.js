@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
-import {createPropertyExpression} from '../../../src/style-spec/expression';
-import definitions from '../../../src/style-spec/expression/definitions';
-import v8 from '../../../src/style-spec/reference/v8';
+import {test} from '../../util/test.js';
+import {createPropertyExpression} from '../../../src/style-spec/expression/index.js';
+import definitions from '../../../src/style-spec/expression/definitions/index.js';
+import v8 from '../../../src/style-spec/reference/v8.json';
 
 // filter out interal "error" and "filter-*" expressions from definition list
 const filterExpressionRegex = /filter-/;
@@ -11,7 +11,11 @@ const definitionList = Object.keys(definitions).filter((expression) => {
 
 test('v8.json includes all definitions from style-spec', (t) => {
     const v8List = Object.keys(v8.expression_name.values);
-    t.deepEquals(definitionList, v8List.sort());
+    const v8SupportedList = v8List.filter((expression) => {
+        //filter out expressions that are not supported in GL-JS
+        return !!v8.expression_name.values[expression]["sdk-support"]["basic functionality"]["js"];
+    });
+    t.deepEquals(definitionList, v8SupportedList.sort());
     t.end();
 });
 

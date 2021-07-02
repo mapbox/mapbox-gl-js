@@ -1,12 +1,15 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import fs from 'fs';
 import path from 'path';
 import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import Point from '@mapbox/point-geometry';
-import segment from '../../../src/data/segment';
-import LineBucket from '../../../src/data/bucket/line_bucket';
-import LineStyleLayer from '../../../src/style/style_layer/line_style_layer';
+import segment from '../../../src/data/segment.js';
+import LineBucket from '../../../src/data/bucket/line_bucket.js';
+import LineStyleLayer from '../../../src/style/style_layer/line_style_layer.js';
+
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 // Load a line feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));

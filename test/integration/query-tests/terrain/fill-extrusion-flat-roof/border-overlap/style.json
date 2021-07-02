@@ -1,0 +1,53 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "height": 256,
+        "queryGeometry": [200, 58],
+        "operations": [
+          ["wait"]
+        ]
+      }
+    },
+    "sources": {
+      "rgbterrain": {
+        "type": "raster-dem",
+        "tiles": [
+          "local://tiles/{z}-{x}-{y}-terrain-512.png"
+        ],
+        "maxzoom": 14,
+        "tileSize": 512
+      },
+      "mapbox": {
+        "type": "vector",
+        "maxzoom": 16,
+        "tiles": [
+          "local://tiles/{z}-{x}-{y}.mvt"
+        ]
+      }
+    },
+    "terrain": {
+      "source": "rgbterrain"
+    },
+    "pitch": 65,
+    "bearing": 0,
+    "zoom": 17,
+    "center": [
+      -122.4645969,
+      37.7563455
+    ],
+    "layers": [
+      {
+        "id": "extrusion",
+        "type": "fill-extrusion",
+        "source": "mapbox",
+        "source-layer": "building",
+        "filter": ["==", "extrude", "true"],
+        "paint": {
+          "fill-extrusion-color": "gray",
+          "fill-extrusion-opacity": 0.7,
+          "fill-extrusion-height": ["get", "height"]
+        }
+      }
+    ]
+  }

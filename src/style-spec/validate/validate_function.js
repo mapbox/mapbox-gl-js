@@ -1,17 +1,17 @@
 
-import ValidationError from '../error/validation_error';
-import getType from '../util/get_type';
-import validate from './validate';
-import validateObject from './validate_object';
-import validateArray from './validate_array';
-import validateNumber from './validate_number';
-import {isExpression} from '../expression';
-import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
+import ValidationError from '../error/validation_error.js';
+import getType from '../util/get_type.js';
+import validate from './validate.js';
+import validateObject from './validate_object.js';
+import validateArray from './validate_array.js';
+import validateNumber from './validate_number.js';
+import {isExpression} from '../expression/index.js';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
 import {
     supportsPropertyExpression,
     supportsZoomExpression,
     supportsInterpolation
-} from '../util/properties';
+} from '../util/properties.js';
 
 export default function validateFunction(options) {
     const functionValueSpec = options.valueSpec;

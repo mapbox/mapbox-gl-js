@@ -1,5 +1,5 @@
 
-import deref from '../deref';
+import deref from '../deref.js';
 
 function eachLayer(style, callback) {
     for (const k in style.layers) {

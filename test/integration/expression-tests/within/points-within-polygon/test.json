@@ -1,0 +1,45 @@
+{
+    "expression": ["within", {
+        "type": "Polygon",
+        "coordinates": [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]]
+      }],
+    "inputs": [[{
+          "zoom": 3,
+          "canonicalID": {
+            "z": 3,
+            "x": 3,
+            "y": 3
+          }
+        }, {
+          "geometry": {
+            "type": "MultiPoint",
+            "coordinates": [[6, 6], [3, 4], [2, 2]]
+          }
+        }], [{
+          "zoom": 3,
+          "canonicalID": {
+            "z": 3,
+            "x": 3,
+            "y": 3
+          }
+        }, {
+          "geometry": {
+            "type": "MultiPoint",
+            "coordinates": [[2, 2], [3, 3]]
+          }
+        }]],
+    "expected": {
+      "compiled": {
+        "type": "boolean",
+        "isFeatureConstant": false,
+        "isZoomConstant": true,
+        "result": "success"
+      },
+      "outputs": [false, true],
+      "serialized": ["within", {
+          "coordinates": [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]],
+          "type": "Polygon"
+        }]
+    }
+  }
+  

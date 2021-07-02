@@ -1,0 +1,46 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "description": "Points over horizon should be no-op",
+      "height": 256,
+      "width": 512,
+      "operations": [
+        ["fitScreenCoordinates", {
+          "x": 250,
+          "y": 30
+        },
+        {
+          "x": 260,
+          "y": 40
+        },
+        0,
+        {
+          "duration":0
+        }],
+        ["wait", 100]
+      ]
+    }
+  },
+  "sources": {},
+  "zoom": 16,
+  "pitch": 85,
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [0, 90],
+        "sky-atmosphere-sun-intensity": 30
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    }
+  ]
+}

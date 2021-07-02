@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import {createSkuToken, SKU_ID} from '../../../src/util/sku_token';
+import {test} from '../../util/test.js';
+import {createSkuToken, SKU_ID} from '../../../src/util/sku_token.js';
 
 test('sku token generation', (t) => {
     const skuToken = createSkuToken().token;

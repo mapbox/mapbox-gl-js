@@ -1,8 +1,9 @@
 // @flow
 
-import WebWorker from './web_worker';
-import type {WorkerInterface} from './web_worker';
-import browser from './browser';
+import WebWorker from './web_worker.js';
+import type {WorkerInterface} from './web_worker.js';
+
+export const PRELOAD_POOL_ID = 'mapboxgl_preloaded_worker_pool';
 
 /**
  * Constructs a worker pool.
@@ -11,14 +12,14 @@ import browser from './browser';
 export default class WorkerPool {
     static workerCount: number;
 
-    active: {[number]: boolean};
+    active: {[_: number | string]: boolean};
     workers: Array<WorkerInterface>;
 
     constructor() {
         this.active = {};
     }
 
-    acquire(mapId: number): Array<WorkerInterface> {
+    acquire(mapId: number | string): Array<WorkerInterface> {
         if (!this.workers) {
             // Lazily look up the value of mapboxgl.workerCount so that
             // client code has had a chance to set it.
@@ -32,16 +33,25 @@ export default class WorkerPool {
         return this.workers.slice();
     }
 
-    release(mapId: number) {
+    release(mapId: number | string) {
         delete this.active[mapId];
-        if (Object.keys(this.active).length === 0) {
+        if (this.numActive() === 0) {
             this.workers.forEach((w) => {
                 w.terminate();
             });
             this.workers = (null: any);
         }
     }
+
+    isPreloaded(): boolean {
+        return !!this.active[PRELOAD_POOL_ID];
+    }
+
+    numActive(): number {
+        return Object.keys(this.active).length;
+    }
 }
 
-const availableLogicalProcessors = Math.floor(browser.hardwareConcurrency / 2);
-WorkerPool.workerCount = Math.max(Math.min(availableLogicalProcessors, 6), 1);
+// extensive benchmarking showed 2 to be the best default for both desktop and mobile devices;
+// we can't rely on hardwareConcurrency because of wild inconsistency of reported numbers between browsers
+WorkerPool.workerCount = 2;

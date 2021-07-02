@@ -11,15 +11,14 @@ import {
     checkSubtype,
     toString,
     array
-} from '../types';
-import RuntimeError from '../runtime_error';
-import {typeOf} from '../values';
+} from '../types.js';
+import RuntimeError from '../runtime_error.js';
+import {typeOf} from '../values.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Value} from '../values';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type} from '../types.js';
 
 const types = {
     string: StringType,
@@ -101,12 +100,12 @@ class Assertion implements Expression {
         return null;
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         this.args.forEach(fn);
     }
 
-    possibleOutputs(): Array<Value | void> {
-        return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
+    outputDefined(): boolean {
+        return this.args.every(arg => arg.outputDefined());
     }
 
     serialize(): Array<mixed> {

@@ -1,17 +1,17 @@
 // @flow
 
-import ImageSource from './image_source';
+import ImageSource from './image_source.js';
 
-import window from '../util/window';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import SegmentVector from '../data/segment';
-import Texture from '../render/texture';
-import {ErrorEvent} from '../util/evented';
-import ValidationError from '../style-spec/error/validation_error';
+import window from '../util/window.js';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import SegmentVector from '../data/segment.js';
+import Texture from '../render/texture.js';
+import {ErrorEvent} from '../util/evented.js';
+import ValidationError from '../style-spec/error/validation_error.js';
 
-import type Map from '../ui/map';
-import type Dispatcher from '../util/dispatcher';
-import type {Evented} from '../util/evented';
+import type Map from '../ui/map.js';
+import type Dispatcher from '../util/dispatcher.js';
+import type {Evented} from '../util/evented.js';
 
 export type CanvasSourceSpecification = {|
     "type": "canvas",
@@ -57,6 +57,7 @@ export type CanvasSourceSpecification = {|
  * ]);
  *
  * map.removeSource('some id');  // remove
+ * @see [Add a canvas source](https://docs.mapbox.com/mapbox-gl-js/example/canvas-source/)
  */
 class CanvasSource extends ImageSource {
     options: CanvasSourceSpecification;
@@ -173,6 +174,7 @@ class CanvasSource extends ImageSource {
      *   They do not have to represent a rectangle.
      * @returns {CanvasSource} this
      */
+
     // setCoordinates inherited from ImageSource
 
     prepare() {

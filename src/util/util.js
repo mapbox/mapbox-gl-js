@@ -3,9 +3,60 @@
 import UnitBezier from '@mapbox/unitbezier';
 
 import Point from '@mapbox/point-geometry';
-import window from './window';
+import window from './window.js';
+import assert from 'assert';
 
-import type {Callback} from '../types/callback';
+import type {Callback} from '../types/callback.js';
+
+// Number.MAX_SAFE_INTEGER not available in IE
+export const MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+
+const DEG_TO_RAD = Math.PI / 180;
+const RAD_TO_DEG = 180 / Math.PI;
+
+/**
+ * Converts an angle in degrees to radians
+ * copy all properties from the source objects into the destination.
+ * The last source object given overrides properties from previous
+ * source objects.
+ *
+ * @param a angle to convert
+ * @returns the angle in radians
+ * @private
+ */
+export function degToRad(a: number): number {
+    return a * DEG_TO_RAD;
+}
+
+/**
+ * Converts an angle in radians to degrees
+ * copy all properties from the source objects into the destination.
+ * The last source object given overrides properties from previous
+ * source objects.
+ *
+ * @param a angle to convert
+ * @returns the angle in degrees
+ * @private
+ */
+export function radToDeg(a: number): number {
+    return a * RAD_TO_DEG;
+}
+
+const TILE_CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]];
+
+/**
+ * Given a particular bearing, returns the corner of the tile thats farthest
+ * along the bearing.
+ *
+ * @param {number} bearing angle in degrees (-180, 180]
+ * @returns {QuadCorner}
+ * @private
+ */
+export function furthestTileCorner(bearing: number): [number, number] {
+    const alignedBearing = ((bearing + 45) + 360) % 360;
+    const cornerIdx = Math.round(alignedBearing / 90) % 4;
+    return TILE_CORNERS[cornerIdx];
+}
 
 /**
  * @module util
@@ -25,6 +76,102 @@ export function easeCubicInOut(t: number): number {
     const t2 = t * t,
         t3 = t2 * t;
     return 4 * (t < 0.5 ? t3 : 3 * (t - t2) + t3 - 0.75);
+}
+
+/**
+ * Computes an AABB for a set of points.
+ *
+ * @param {Point[]} points
+ * @returns {{ min: Point, max: Point}}
+ * @private
+ */
+export function getBounds(points: Point[]): { min: Point, max: Point} {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const p of points) {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+    }
+
+    return {
+        min: new Point(minX, minY),
+        max: new Point(maxX, maxY),
+    };
+}
+
+/**
+ * Returns the square of the 2D distance between an AABB defined by min and max and a point.
+ * If point is null or undefined, the AABB distance from the origin (0,0) is returned.
+ *
+ * @param {Point} min The minimum extent of the AABB.
+ * @param {Point} max The maximum extent of the AABB.
+ * @param {Point} [point] The point to compute the distance from, may be undefined.
+ * @returns {number} The square distance from the AABB, 0.0 if the AABB contains the point.
+ */
+export function getAABBPointSquareDist(min: Point, max: Point, point: ?Point): number {
+    let sqDist = 0.0;
+
+    for (let i = 0; i < 2; ++i) {
+        const v = point ? point[i] : 0.0;
+        assert(min[i] < max[i], 'Invalid aabb min and max inputs, min[i] must be < max[i].');
+        if (min[i] > v) sqDist += (min[i] - v) * (min[i] - v);
+        if (max[i] < v) sqDist += (v - max[i]) * (v - max[i]);
+    }
+
+    return sqDist;
+}
+
+/**
+ * Converts a AABB into a polygon with clockwise winding order.
+ *
+ * @param {Point} min The top left point.
+ * @param {Point} max The bottom right point.
+ * @param {number} [buffer=0] The buffer width.
+ * @param {boolean} [close=true] Whether to close the polygon or not.
+ * @returns {Point[]} The polygon.
+ */
+export function polygonizeBounds(min: Point, max: Point, buffer: number = 0, close: boolean = true): Point[] {
+    const offset = new Point(buffer, buffer);
+    const minBuf = min.sub(offset);
+    const maxBuf = max.add(offset);
+    const polygon = [minBuf, new Point(maxBuf.x, minBuf.y), maxBuf, new Point(minBuf.x, maxBuf.y)];
+
+    if (close) {
+        polygon.push(minBuf);
+    }
+    return polygon;
+}
+
+/**
+ * Takes a convex ring and expands it outward by applying a buffer around it.
+ * This function assumes that the ring is in clockwise winding order.
+ *
+ * @param {Point[]} ring The input ring.
+ * @param {number} buffer The buffer width.
+ * @returns {Point[]} The expanded ring.
+ */
+export function bufferConvexPolygon(ring: Point[], buffer: number): Point[] {
+    assert(ring.length > 2, 'bufferConvexPolygon requires the ring to have atleast 3 points');
+    const output = [];
+    for (let currIdx = 0; currIdx < ring.length; currIdx++) {
+        const prevIdx = wrap(currIdx - 1, -1, ring.length - 1);
+        const nextIdx = wrap(currIdx + 1, -1, ring.length - 1);
+        const prev = ring[prevIdx];
+        const curr = ring[currIdx];
+        const next = ring[nextIdx];
+        const p1 = prev.sub(curr).unit();
+        const p2 = next.sub(curr).unit();
+        const interiorAngle = p2.angleWithSep(p1.x, p1.y);
+        // Calcuate a vector that points in the direction of the angle bisector between two sides.
+        // Scale it based on a right angled triangle constructed at that corner.
+        const offset = p1.add(p2).unit().mult(-1 * buffer / Math.sin(interiorAngle / 2));
+        output.push(curr.add(offset));
+    }
+    return output;
 }
 
 /**
@@ -63,6 +210,20 @@ export const ease = bezier(0.25, 0.1, 0.25, 1);
  */
 export function clamp(n: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, n));
+}
+
+/**
+ * Equivalent to GLSL smoothstep.
+ *
+ * @param {number} e0 The lower edge of the sigmoid
+ * @param {number} e1 The upper edge of the sigmoid
+ * @param {number} x the value to be interpolated
+ * @returns {number} in the range [0, 1]
+ * @private
+ */
+export function smoothstep(e0: number, e1: number, x: number): number {
+    x = clamp((x - e0) / (e1 - e0), 0, 1);
+    return x * x * (3 - 2 * x);
 }
 
 /**
@@ -210,6 +371,32 @@ export function uuid(): string {
 }
 
 /**
+ * Return whether a given value is a power of two
+ * @private
+ */
+export function isPowerOfTwo(value: number): boolean {
+    return (Math.log(value) / Math.LN2) % 1 === 0;
+}
+
+/**
+ * Return the next power of two, or the input value if already a power of two
+ * @private
+ */
+export function nextPowerOfTwo(value: number): number {
+    if (value <= 1) return 1;
+    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+}
+
+/**
+ * Return the previous power of two, or the input value if already a power of two
+ * @private
+ */
+export function prevPowerOfTwo(value: number): number {
+    if (value <= 1) return 1;
+    return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
+}
+
+/**
  * Validate a string to match UUID(v4) of the
  * form: xxxxxxxx-xxxx-4xxx-[89ab]xxx-xxxxxxxxxxxx
  * @param str string to validate.
@@ -285,7 +472,7 @@ export function filterObject(input: Object, iterator: Function, context?: Object
     return output;
 }
 
-import deepEqual from '../style-spec/util/deep_equal';
+import deepEqual from '../style-spec/util/deep_equal.js';
 export {deepEqual};
 
 /**
@@ -385,33 +572,9 @@ export function isClosedPolygon(points: Array<Point>): boolean {
     return Math.abs(calculateSignedArea(points)) > 0.01;
 }
 
-/**
- * Converts spherical coordinates to cartesian coordinates.
- *
- * @private
- * @param spherical Spherical coordinates, in [radial, azimuthal, polar]
- * @return cartesian coordinates in [x, y, z]
- */
-
-export function sphericalToCartesian([r, azimuthal, polar]: [number, number, number]): {x: number, y: number, z: number} {
-    // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
-    // correct for that here
-    azimuthal += 90;
-
-    // Convert azimuthal and polar angles to radians
-    azimuthal *= Math.PI / 180;
-    polar *= Math.PI / 180;
-
-    return {
-        x: r * Math.cos(azimuthal) * Math.sin(polar),
-        y: r * Math.sin(azimuthal) * Math.sin(polar),
-        z: r * Math.cos(polar)
-    };
-}
-
 /* global self, WorkerGlobalScope */
 /**
- *  Retuns true if the when run in the web-worker context.
+ *  Returns true if run in the web-worker context.
  *
  * @private
  * @returns {boolean}
@@ -447,6 +610,30 @@ export function parseCacheControl(cacheControl: string): Object {
     }
 
     return header;
+}
+
+let _isSafari = null;
+
+/**
+ * Returns true when run in WebKit derived browsers.
+ * This is used as a workaround for a memory leak in Safari caused by using Transferable objects to
+ * transfer data between WebWorkers and the main thread.
+ * https://github.com/mapbox/mapbox-gl-js/issues/8771
+ *
+ * This should be removed once the underlying Safari issue is fixed.
+ *
+ * @private
+ * @param scope {WindowOrWorkerGlobalScope} Since this function is used both on the main thread and WebWorker context,
+ *      let the calling scope pass in the global scope object.
+ * @returns {boolean}
+ */
+export function isSafari(scope: any): boolean {
+    if (_isSafari == null) {
+        const userAgent = scope.navigator ? scope.navigator.userAgent : null;
+        _isSafari = !!scope.safari ||
+        !!(userAgent && (/\b(iPad|iPhone|iPod)\b/.test(userAgent) || (!!userAgent.match('Safari') && !userAgent.match('Chrome'))));
+    }
+    return _isSafari;
 }
 
 export function storageAvailable(type: string): boolean {

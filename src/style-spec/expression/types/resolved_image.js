@@ -18,11 +18,12 @@ export default class ResolvedImage {
         return this.name;
     }
 
-    static fromString(name: string): ResolvedImage {
+    static fromString(name: string): ResolvedImage | null {
+        if (!name) return null; // treat empty values as no image
         return new ResolvedImage({name, available: false});
     }
 
-    serialize(): Array<mixed> {
+    serialize(): Array<string> {
         return ["image", this.name];
     }
 }

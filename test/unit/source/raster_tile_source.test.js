@@ -1,8 +1,9 @@
-import {test} from '../../util/test';
-import RasterTileSource from '../../../src/source/raster_tile_source';
-import window from '../../../src/util/window';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import {RequestManager} from '../../../src/util/mapbox';
+import {test} from '../../util/test.js';
+import RasterTileSource from '../../../src/source/raster_tile_source.js';
+import window from '../../../src/util/window.js';
+import config from '../../../src/util/config.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import {RequestManager} from '../../../src/util/mapbox.js';
 
 function createSource(options, transformCallback) {
     const source = new RasterTileSource('id', options, {send() {}}, options.eventedParent);
@@ -130,6 +131,56 @@ test('RasterTileSource', (t) => {
             }
         });
         window.server.respond();
+    });
+
+    t.test('adds @2x to requests on hidpi devices', (t) => {
+        // helper function that makes a mock mapbox raster source and makes it load a tile
+        function makeMapboxSource(url, extension, loadCb, accessToken) {
+            window.devicePixelRatio = 2;
+            config.API_URL = 'http://path.png';
+            config.REQUIRE_ACCESS_TOKEN = !!accessToken;
+            if (accessToken) {
+                config.ACCESS_TOKEN = accessToken;
+            }
+
+            const source = createSource({url});
+            source.tiles = [`${url}/{z}/{x}/{y}.${extension}`];
+            const urlNormalizerSpy = t.spy(source.map._requestManager, 'normalizeTileURL');
+            const tile = {
+                tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                state: 'loading',
+                loadVectorData () {},
+                setExpiryData() {}
+            };
+            source.loadTile(tile, () => {});
+            loadCb(urlNormalizerSpy);
+        }
+
+        t.test('png extension', (t) => {
+            makeMapboxSource('mapbox://path.png', 'png', (spy) => {
+                t.ok(spy.calledOnce);
+                t.equal(spy.getCall(0).args[0], 'mapbox://path.png/10/5/5.png');
+                t.equal(spy.getCall(0).args[1], true);
+                t.end();
+            });
+        });
+        t.test('png32 extension', (t) => {
+            makeMapboxSource('mapbox://path.png', 'png32', (spy) => {
+                t.ok(spy.calledOnce);
+                t.equal(spy.getCall(0).args[0], 'mapbox://path.png/10/5/5.png32');
+                t.equal(spy.getCall(0).args[1], true);
+                t.end();
+            });
+        });
+        t.test('jpg70 extension', (t) => {
+            makeMapboxSource('mapbox://path.png', 'jpg70', (spy) => {
+                t.ok(spy.calledOnce);
+                t.equal(spy.getCall(0).args[0], 'mapbox://path.png/10/5/5.jpg70');
+                t.equal(spy.getCall(0).args[1], true);
+                t.end();
+            });
+        });
+        t.end();
     });
 
     t.test('cancels TileJSON request if removed', (t) => {

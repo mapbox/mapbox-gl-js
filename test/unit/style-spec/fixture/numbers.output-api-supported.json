@@ -1,0 +1,32 @@
+[
+  {
+    "message": "layers[2].paint.circle-radius: -1 is less than the minimum value 0",
+    "line": 42
+  },
+  {
+    "message": "layers[3].paint.circle-radius: number expected, null found"
+  },
+  {
+    "message": "layers[4].paint.circle-radius: missing required property \"stops\"",
+    "line": 58
+  },
+  {
+    "message": "layers[5].paint.circle-radius: number expected, array found",
+    "line": 66
+  },
+  {
+    "message": "layers[6].paint.circle-radius: number expected, boolean found",
+    "line": 74
+  },
+  {
+    "message": "source.data: Unsupported property \"data\"",
+    "line": 6
+  },
+  {
+    "message": "sources[0].type: Expected one of [vector, raster, raster-dem]",
+    "line": 5
+  },
+  {
+    "message": "sources[0].url: Expected a valid Mapbox tileset url"
+  }
+]

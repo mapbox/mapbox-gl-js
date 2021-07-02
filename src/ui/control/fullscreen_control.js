@@ -1,18 +1,19 @@
 // @flow
 
-import DOM from '../../util/dom';
+import DOM from '../../util/dom.js';
 
-import {bindAll, warnOnce} from '../../util/util';
-import window from '../../util/window';
+import {bindAll, warnOnce} from '../../util/util.js';
+import window from '../../util/window.js';
 
-import type Map from '../map';
+import type Map from '../map.js';
 
 type Options = {
     container?: HTMLElement
 };
 
 /**
- * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode.
+ * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode. See the `requestFullScreen` [compatibility table](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen#browser_compatibility) for supported browsers.
+ * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
  * @param {Object} [options]
@@ -46,12 +47,8 @@ class FullscreenControl {
         ], this);
         if ('onfullscreenchange' in window.document) {
             this._fullscreenchange = 'fullscreenchange';
-        } else if ('onmozfullscreenchange' in window.document) {
-            this._fullscreenchange = 'mozfullscreenchange';
         } else if ('onwebkitfullscreenchange' in window.document) {
             this._fullscreenchange = 'webkitfullscreenchange';
-        } else if ('onmsfullscreenchange' in window.document) {
-            this._fullscreenchange = 'MSFullscreenChange';
         }
     }
 
@@ -77,8 +74,6 @@ class FullscreenControl {
     _checkFullscreenSupport() {
         return !!(
             window.document.fullscreenEnabled ||
-            (window.document: any).mozFullScreenEnabled ||
-            (window.document: any).msFullscreenEnabled ||
             (window.document: any).webkitFullscreenEnabled
         );
     }
@@ -93,9 +88,13 @@ class FullscreenControl {
     }
 
     _updateTitle() {
-        const title = this._isFullscreen() ? "Exit fullscreen" : "Enter fullscreen";
+        const title = this._getTitle();
         this._fullscreenButton.setAttribute("aria-label", title);
         this._fullscreenButton.title = title;
+    }
+
+    _getTitle() {
+        return this._map._getUIString(this._isFullscreen() ? 'FullscreenControl.Exit' : 'FullscreenControl.Enter');
     }
 
     _isFullscreen() {
@@ -105,9 +104,7 @@ class FullscreenControl {
     _changeIcon() {
         const fullscreenElement =
             window.document.fullscreenElement ||
-            (window.document: any).mozFullScreenElement ||
-            (window.document: any).webkitFullscreenElement ||
-            (window.document: any).msFullscreenElement;
+            (window.document: any).webkitFullscreenElement;
 
         if ((fullscreenElement === this._container) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
@@ -121,19 +118,11 @@ class FullscreenControl {
         if (this._isFullscreen()) {
             if (window.document.exitFullscreen) {
                 (window.document: any).exitFullscreen();
-            } else if (window.document.mozCancelFullScreen) {
-                (window.document: any).mozCancelFullScreen();
-            } else if (window.document.msExitFullscreen) {
-                (window.document: any).msExitFullscreen();
             } else if (window.document.webkitCancelFullScreen) {
                 (window.document: any).webkitCancelFullScreen();
             }
         } else if (this._container.requestFullscreen) {
             this._container.requestFullscreen();
-        } else if ((this._container: any).mozRequestFullScreen) {
-            (this._container: any).mozRequestFullScreen();
-        } else if ((this._container: any).msRequestFullscreen) {
-            (this._container: any).msRequestFullscreen();
         } else if ((this._container: any).webkitRequestFullscreen) {
             (this._container: any).webkitRequestFullscreen();
         }

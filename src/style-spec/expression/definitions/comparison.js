@@ -1,14 +1,14 @@
 // @flow
 
-import {toString, ValueType, BooleanType, CollatorType} from '../types';
-import Assertion from './assertion';
-import {typeOf} from '../values';
-import RuntimeError from '../runtime_error';
+import {toString, ValueType, BooleanType, CollatorType} from '../types.js';
+import Assertion from './assertion.js';
+import {typeOf} from '../values.js';
+import RuntimeError from '../runtime_error.js';
 
-import type {Expression} from '../expression';
-import type EvaluationContext from '../evaluation_context';
-import type ParsingContext from '../parsing_context';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type ParsingContext from '../parsing_context.js';
+import type {Type} from '../types.js';
 
 type ComparisonOperator = '==' | '!=' | '<' | '>' | '<=' | '>=' ;
 
@@ -156,7 +156,7 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
                 compareBasic(ctx, lhs, rhs);
         }
 
-        eachChild(fn: (Expression) => void) {
+        eachChild(fn: (_: Expression) => void) {
             fn(this.lhs);
             fn(this.rhs);
             if (this.collator) {
@@ -164,8 +164,8 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
             }
         }
 
-        possibleOutputs() {
-            return [true, false];
+        outputDefined(): boolean {
+            return true;
         }
 
         serialize() {

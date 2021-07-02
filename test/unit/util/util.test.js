@@ -1,9 +1,21 @@
 // @flow
 
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 
-import {easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid} from '../../../src/util/util';
+import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util.js';
 import Point from '@mapbox/point-geometry';
+
+const EPSILON = 1e-8;
+
+function pointsetEqual(t, actual, expected) {
+    t.equal(actual.length, expected.length);
+    for (let i = 0; i < actual.length; i++) {
+        const p1 = actual[i];
+        const p2 = expected[i];
+        t.ok(Math.abs(p1.x - p2.x) < EPSILON);
+        t.ok(Math.abs(p1.y - p2.y) < EPSILON);
+    }
+}
 
 test('util', (t) => {
     t.equal(easeCubicInOut(0), 0, 'easeCubicInOut=0');
@@ -16,6 +28,37 @@ test('util', (t) => {
     t.deepEqual(pick({a:1, b:2, c:3}, ['a', 'c']), {a:1, c:3}, 'pick');
     t.deepEqual(pick({a:1, b:2, c:3}, ['a', 'c', 'd']), {a:1, c:3}, 'pick');
     t.ok(typeof uniqueId() === 'number', 'uniqueId');
+
+    t.equal(degToRad(radToDeg(Math.PI)), Math.PI);
+    t.equal(degToRad(radToDeg(-Math.PI)), -Math.PI);
+    t.equal(radToDeg(degToRad(65)), 65);
+    t.equal(radToDeg(degToRad(-34.2)), -34.2);
+
+    t.equal(smoothstep(30, 60, 29), 0);
+    t.equal(smoothstep(30, 60, 45), 0.5);
+    t.equal(smoothstep(30, 60, 61), 1);
+
+    t.deepEqual(furthestTileCorner(-200), [1, 1]);
+    t.deepEqual(furthestTileCorner(-95), [0, 1]);
+    t.deepEqual(furthestTileCorner(-30), [0, 0]);
+    t.deepEqual(furthestTileCorner(0), [1, 0]);
+    t.deepEqual(furthestTileCorner(30), [1, 0]);
+    t.deepEqual(furthestTileCorner(95), [1, 1]);
+    t.deepEqual(furthestTileCorner(130), [1, 1]);
+    t.deepEqual(furthestTileCorner(200), [0, 1]);
+    t.deepEqual(furthestTileCorner(275), [0, 0]);
+    t.deepEqual(furthestTileCorner(360), [1, 0]);
+    t.deepEqual(furthestTileCorner(390), [1, 0]);
+
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [1, 1]), 2);
+    t.deepEqual(getAABBPointSquareDist([0, 0], [3, 2], [1, 1]), 0);
+    t.deepEqual(getAABBPointSquareDist([-3, -2], [-2, -1], [1, 1]), 13);
+    t.deepEqual(getAABBPointSquareDist([-3, -2], [-2, -1], [-1, -1]), 1);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3]), 8);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [10, 3]), 8);
+    t.deepEqual(getAABBPointSquareDist([-2, -2], [2, 2]), 0);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [2.5, 0]), 4);
+    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [2.5, -2]), 16);
 
     t.test('bindAll', (t) => {
         function MyClass() {
@@ -71,6 +114,50 @@ test('util', (t) => {
             t.ifError(err);
             t.deepEqual(results, []);
         }));
+        t.end();
+    });
+
+    t.test('isPowerOfTwo', (t) => {
+        t.equal(isPowerOfTwo(1), true);
+        t.equal(isPowerOfTwo(2), true);
+        t.equal(isPowerOfTwo(256), true);
+        t.equal(isPowerOfTwo(-256), false);
+        t.equal(isPowerOfTwo(0), false);
+        t.equal(isPowerOfTwo(-42), false);
+        t.equal(isPowerOfTwo(42), false);
+        t.end();
+    });
+
+    t.test('nextPowerOfTwo', (t) => {
+        t.equal(nextPowerOfTwo(1), 1);
+        t.equal(nextPowerOfTwo(2), 2);
+        t.equal(nextPowerOfTwo(256), 256);
+        t.equal(nextPowerOfTwo(-256), 1);
+        t.equal(nextPowerOfTwo(0), 1);
+        t.equal(nextPowerOfTwo(-42), 1);
+        t.equal(nextPowerOfTwo(42), 64);
+        t.end();
+    });
+
+    t.test('prevPowerOfTwo', (t) => {
+        t.equal(prevPowerOfTwo(1), 1);
+        t.equal(prevPowerOfTwo(2), 2);
+        t.equal(prevPowerOfTwo(256), 256);
+        t.equal(prevPowerOfTwo(258), 256);
+        t.equal(prevPowerOfTwo(514), 512);
+        t.equal(prevPowerOfTwo(512), 512);
+        t.equal(prevPowerOfTwo(98), 64);
+        t.end();
+    });
+
+    t.test('nextPowerOfTwo', (t) => {
+        t.equal(isPowerOfTwo(nextPowerOfTwo(1)), true);
+        t.equal(isPowerOfTwo(nextPowerOfTwo(2)), true);
+        t.equal(isPowerOfTwo(nextPowerOfTwo(256)), true);
+        t.equal(isPowerOfTwo(nextPowerOfTwo(-256)), true);
+        t.equal(isPowerOfTwo(nextPowerOfTwo(0)), true);
+        t.equal(isPowerOfTwo(nextPowerOfTwo(-42)), true);
+        t.equal(isPowerOfTwo(nextPowerOfTwo(42)), true);
         t.end();
     });
 
@@ -267,6 +354,33 @@ test('util', (t) => {
             const polygon = [new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, 1), new Point(0, 0)];
 
             t.equal(isClosedPolygon(polygon), true);
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('bufferConvexPolygon', (t) => {
+        t.throws(() => {
+            bufferConvexPolygon([new Point(0, 0), new Point(1, 1)], 5);
+        });
+        t.throws(() => {
+            bufferConvexPolygon([new Point(0, 0)], 5);
+        });
+        t.ok(bufferConvexPolygon([new Point(0, 0), new Point(0, 1), new Point(1, 1)], 1));
+
+        t.test('numerical tests', (t) => {
+            t.test('box', (t) => {
+                const buffered = bufferConvexPolygon([new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, 1)], 1);
+                pointsetEqual(t, buffered, [new Point(-1, -1), new Point(2, -1), new Point(2, 2), new Point(-1, 2)]);
+                t.end();
+            });
+            t.test('triangle', (t) => {
+                const buffered = bufferConvexPolygon([new Point(0, 0), new Point(1, 0), new Point(0, 1)], 1);
+                pointsetEqual(t, buffered, [new Point(-1, -1), new Point(3.414213562373095, -1), new Point(-1, 3.414213562373095)]);
+                t.end();
+            });
+
             t.end();
         });
 

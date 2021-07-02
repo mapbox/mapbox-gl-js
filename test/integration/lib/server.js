@@ -1,11 +1,16 @@
-/* eslint-disable import/no-commonjs */
-const path = require('path');
-const fs = require('fs');
-const st = require('st');
-const {createServer} = require('http');
-const localizeURLs = require('./localize-urls');
+import path from 'path';
+import fs from 'fs';
+import st from 'st';
+import {createServer} from 'http';
+import localizeURLs from './localize-urls.js';
 
-module.exports = function () {
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
+import {createRequire} from 'module';
+const require = createRequire(import.meta.url);
+
+export default function () {
     const port = 2900;
     const integrationMount = st({path: path.join(__dirname, '..')});
     const mapboxGLStylesMount = st({path: path.dirname(require.resolve('mapbox-gl-styles')), url: 'mapbox-gl-styles'});
@@ -20,7 +25,12 @@ module.exports = function () {
 
                 //Write data to disk
                 const {filePath, data} = JSON.parse(body);
-                fs.writeFile(path.join(process.cwd(), filePath), data, 'base64', () => {
+
+                let encoding;
+                if (filePath.split('.')[1] !== 'json') {
+                    encoding = 'base64';
+                }
+                fs.writeFile(path.join(process.cwd(), filePath), data, encoding, () => {
                     res.writeHead(200, {'Content-Type': 'text/html'});
                     res.end('ok');
                 });
@@ -47,4 +57,4 @@ module.exports = function () {
             return localizeURLs(style, port);
         }
     };
-};
+}

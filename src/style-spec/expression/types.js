@@ -34,6 +34,8 @@ export type ArrayType = {
     N: ?number
 }
 
+export type NativeType = 'number' | 'string' | 'boolean' | 'null' | 'array' | 'object'
+
 export const NullType = {kind: 'null'};
 export const NumberType = {kind: 'number'};
 export const StringType = {kind: 'string'};
@@ -103,4 +105,22 @@ export function checkSubtype(expected: Type, t: Type): ?string {
     }
 
     return `Expected ${toString(expected)} but found ${toString(t)} instead.`;
+}
+
+export function isValidType(provided: Type, allowedTypes: Array<Type>): boolean {
+    return allowedTypes.some(t => t.kind === provided.kind);
+}
+
+export function isValidNativeType(provided: any, allowedTypes: Array<NativeType>): boolean {
+    return allowedTypes.some(t => {
+        if (t === 'null') {
+            return provided === null;
+        } else if (t === 'array') {
+            return Array.isArray(provided);
+        } else if (t === 'object') {
+            return provided && !Array.isArray(provided) && typeof provided === 'object';
+        } else {
+            return t === typeof provided;
+        }
+    });
 }

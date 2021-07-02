@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id='map'></div>
+
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+    <script>
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/satellite-v9',
+            zoom: 17,
+            center: [-122.019807, 45.632433],
+            pitch: 75
+        });
+
+        map.on('style.load', function () {
+            map.addSource('mapbox-dem', {
+                "type": "raster-dem",
+                "url": "mapbox://mapbox.terrain-rgb",
+                "tileSize": 512,
+                "maxzoom": 14
+            });
+
+            map.addLayer({
+                'id': 'sky',
+                'type': 'sky',
+                'paint': {
+                    'sky-type': 'atmosphere',
+                    'sky-atmosphere-sun': [0, 90],
+                    'sky-opacity': [
+                        'interpolate',
+                        ['exponential', 0.1],
+                        ['zoom'],
+                        5,
+                        0,
+                        22,
+                        1
+                    ]
+                }
+            });
+
+            map.setTerrain({"source": "mapbox-dem"});
+
+            // eslint-disable-next-line no-undef
+            d3.json(
+                'https://docs.mapbox.com/mapbox-gl-js/assets/hike.geojson',
+                function (err, data) {
+                    if (err) throw err;
+
+                    // save full coordinate list for later
+                    var coordinates = data.features[0].geometry.coordinates;
+
+                    // add it to the map
+                    map.addSource('trace', {type: 'geojson', data, 'lineMetrics': true});
+                    map.addLayer({
+                        type: 'line',
+                        source: 'trace',
+                        id: 'line',
+                        paint: {
+                            'line-color': 'orange',
+                            'line-width': 5,
+                            'line-gradient': [
+                                'step',
+                                ['line-progress'],
+                                'orange',
+                                0.0, 'rgba(0, 0, 0, 0)',
+                            ]
+                        },
+                        layout: {
+                            'line-cap': 'round',
+                            'line-join': 'round'
+                        }
+                    });
+
+                    map.setPitch(80);
+
+                    let t = 0.0;
+                    const tick = 1000.0 / 30.0;
+                    const duration = 260;
+                    setInterval(() => {
+                        map.setPaintProperty('line', 'line-gradient',  [
+                            'step',
+                            ['line-progress'],
+                            'orange',
+                            t, 'rgba(0, 0, 0, 0)'
+                        ]);
+                        t += 1.0 / ((duration * 1000.0) / tick);
+                    }, tick);
+                    const cameraTick = 3000.0;
+                    setInterval(() => {
+                        map.flyTo({'center': coordinates[Math.floor(t * coordinates.length)], 'zoom': 16, 'speed': 0.05});
+                    }, cameraTick);
+                }
+            );
+        });
+    </script>
+
+</body>
+
+</html>

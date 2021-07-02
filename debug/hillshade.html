@@ -8,6 +8,12 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
     </style>
 </head>
 
@@ -21,7 +27,7 @@
         top: 10px;
         right: 10px;
         border-radius: 3px;
-        width: 120px;
+        width: 140px;
         border: 1px solid rgba(0,0,0,0.4);
         font-family: 'Open Sans', sans-serif;
     }
@@ -59,6 +65,9 @@
 
 <nav id="menu"></nav>
 <div id='map'></div>
+<div id='checkboxes'>
+    <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
+</div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -76,7 +85,13 @@ map.on('load', function () {
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
         "url": "mapbox://mapbox.terrain-rgb",
-        "tileSize": 256
+        "tileSize": 256,
+    });
+    map.addSource('mapbox-terrain', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
     });
     map.addLayer({
         "id": "Mapbox data",
@@ -106,9 +121,26 @@ map.on('load', function () {
     // where hillshading sits in the Mapbox Outdoors style
     }, 'waterway-river-canal-shadow');
 
+    // Add variant of Hillshade that overzooms beyond zoom 7.
+    // Note: source tiles are 512, so the following only goes up to native zoom 7.
+    map.addSource('mapbox-dem-z8', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 256,
+        "maxzoom": 8
+    });
+    map.addLayer({
+        "id": "Mapbox data to Z8",
+        "source": "mapbox-dem-z8",
+        "type": "hillshade",
+        "layout": {
+            "visibility": "none"
+        }
+    }, 'waterway-river-canal-shadow');
+    document.getElementById('terrain-checkbox').onclick();
 });
 
-var toggleableLayerIds = ['Mapbox data', 'Terrarium data'];
+var toggleableLayerIds = ['Mapbox data', 'Terrarium data', 'Mapbox data to Z8'];
 
 for (var i = 0; i < toggleableLayerIds.length; i++) {
     var id = toggleableLayerIds[i];
@@ -135,6 +167,10 @@ for (var i = 0; i < toggleableLayerIds.length; i++) {
     var layers = document.getElementById('menu');
     layers.appendChild(link);
 }
+
+document.getElementById('terrain-checkbox').onclick = function() {
+    map.setTerrain(this.checked ? {"source": 'mapbox-terrain'} : null);
+};
 
 </script>
 </body>

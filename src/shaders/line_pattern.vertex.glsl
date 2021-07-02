@@ -6,12 +6,9 @@
 // #define scale 63.0
 #define scale 0.015873016
 
-// We scale the distance before adding it to the buffers so that we can store
-// long distances for long segments. Use this value to unscale the distance.
-#define LINE_DISTANCE_SCALE 2.0
-
 attribute vec2 a_pos_normal;
 attribute vec4 a_data;
+attribute float a_linesofar;
 
 uniform mat4 u_matrix;
 uniform vec2 u_units_to_pixels;
@@ -22,14 +19,18 @@ varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_linesofar;
 varying float v_gamma_scale;
+varying float v_width;
 
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float offset
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define mediump float width
+#pragma mapbox: define lowp float floorwidth
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
+#pragma mapbox: define lowp float pixel_ratio_from
+#pragma mapbox: define lowp float pixel_ratio_to
 
 void main() {
     #pragma mapbox: initialize lowp float blur
@@ -37,8 +38,11 @@ void main() {
     #pragma mapbox: initialize lowp float offset
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize mediump float width
+    #pragma mapbox: initialize lowp float floorwidth
     #pragma mapbox: initialize mediump vec4 pattern_from
     #pragma mapbox: initialize mediump vec4 pattern_to
+    #pragma mapbox: initialize lowp float pixel_ratio_from
+    #pragma mapbox: initialize lowp float pixel_ratio_to
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
@@ -46,8 +50,8 @@ void main() {
 
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
-    float a_linesofar = (floor(a_data.z / 4.0) + a_data.w * 64.0) * LINE_DISTANCE_SCALE;
-    // float tileRatio = u_scale.y;
+
+    // float tileRatio = u_scale.x;
     vec2 pos = floor(a_pos_normal * 0.5);
 
     // x is 1 if it's a round cap, 0 otherwise
@@ -81,11 +85,19 @@ void main() {
     vec4 projected_extrude = u_matrix * vec4(dist / u_ratio, 0.0, 0.0);
     gl_Position = u_matrix * vec4(pos + offset2 / u_ratio, 0.0, 1.0) + projected_extrude;
 
+#ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude
     float extrude_length_without_perspective = length(dist);
     float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_units_to_pixels);
     v_gamma_scale = extrude_length_without_perspective / extrude_length_with_perspective;
-
+#else
+    v_gamma_scale = 1.0;
+#endif
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
+    v_width = floorwidth;
+
+#ifdef FOG
+    v_fog_pos = fog_position(pos);
+#endif
 }

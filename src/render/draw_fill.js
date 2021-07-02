@@ -1,20 +1,20 @@
 // @flow
 
-import Color from '../style-spec/util/color';
-import DepthMode from '../gl/depth_mode';
-import CullFaceMode from '../gl/cull_face_mode';
+import Color from '../style-spec/util/color.js';
+import DepthMode from '../gl/depth_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
 import {
     fillUniformValues,
     fillPatternUniformValues,
     fillOutlineUniformValues,
     fillOutlinePatternUniformValues
-} from './program/fill_program';
+} from './program/fill_program.js';
 
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type FillStyleLayer from '../style/style_layer/fill_style_layer';
-import type FillBucket from '../data/bucket/fill_bucket';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type FillStyleLayer from '../style/style_layer/fill_style_layer.js';
+import type FillBucket from '../data/bucket/fill_bucket.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
 
 export default drawFill;
 
@@ -80,6 +80,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
 
         const bucket: ?FillBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
+        painter.prepareDrawTile(coord);
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram(programName, programConfiguration);
@@ -87,7 +88,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePatternPaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers(crossfade);
         }
 
         const constantPattern = patternProperty.constantOr(null);
@@ -98,7 +99,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        const tileMatrix = painter.translatePosMatrix(coord.posMatrix, tile,
+        const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
         if (!isOutline) {
@@ -110,11 +111,13 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         } else {
             indexBuffer = bucket.indexBuffer2;
             segments = bucket.segments2;
-            const drawingBufferSize = [gl.drawingBufferWidth, gl.drawingBufferHeight];
+            const drawingBufferSize = (painter.terrain && painter.terrain.renderingToTexture) ? painter.terrain.drapeBufferSize : [gl.drawingBufferWidth, gl.drawingBufferHeight];
             uniformValues = (programName === 'fillOutlinePattern' && image) ?
                 fillOutlinePatternUniformValues(tileMatrix, painter, crossfade, tile, drawingBufferSize) :
                 fillOutlineUniformValues(tileMatrix, drawingBufferSize);
         }
+
+        painter.prepareDrawProgram(painter.context, program, coord.toUnwrapped());
 
         program.draw(painter.context, drawMode, depthMode,
             painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,

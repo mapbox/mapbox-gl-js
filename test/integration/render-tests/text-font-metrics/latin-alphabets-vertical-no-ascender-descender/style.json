@@ -1,0 +1,63 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 170,
+      "width": 120
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 1,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            2
+          ]
+        }
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "mixed-fonts",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-max-width": 20,
+        "text-font": [
+          "literal",
+          [
+            "NotoCJK"
+          ]
+        ],
+        "text-field": [
+          "format",
+          "pgル",
+          {"font-scale": 1.5},
+          "pqgjy"
+        ],
+        "text-writing-mode": ["vertical"],
+        "symbol-placement": "point"
+      }
+    }
+  ]
+}

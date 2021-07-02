@@ -1,12 +1,13 @@
-import {test} from '../../../util/test';
-import browser from '../../../../src/util/browser';
-import window from '../../../../src/util/window';
-import Map from '../../../../src/ui/map';
-import DOM from '../../../../src/util/dom';
-import simulate from '../../../util/simulate_interaction';
+import {test} from '../../../util/test.js';
+import browser from '../../../../src/util/browser.js';
+import window from '../../../../src/util/window.js';
+import Map from '../../../../src/ui/map.js';
+import DOM from '../../../../src/util/dom.js';
+import simulate from '../../../util/simulate_interaction.js';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
+    t.stub(Map.prototype, '_authenticate');
     return new Map({container: DOM.create('div', '', window.document.body)});
 }
 
@@ -53,7 +54,9 @@ test('Map#isZooming returns true when scroll zooming', (t) => {
     map._renderTaskQueue.run();
 
     now += 400;
-    map._renderTaskQueue.run();
+    setTimeout(() => {
+        map._renderTaskQueue.run();
+    }, 400);
 });
 
 test('Map#isZooming returns true when double-click zooming', (t) => {

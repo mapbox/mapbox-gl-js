@@ -1,39 +1,39 @@
 // @flow strict
 
-import window from './window';
-import type {Cancelable} from '../types/cancelable';
-
-const now = window.performance && window.performance.now ?
-    window.performance.now.bind(window.performance) :
-    Date.now.bind(Date);
-
-const raf = window.requestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.msRequestAnimationFrame;
-
-const cancel = window.cancelAnimationFrame ||
-    window.mozCancelAnimationFrame ||
-    window.webkitCancelAnimationFrame ||
-    window.msCancelAnimationFrame;
+import window from './window.js';
+import type {Cancelable} from '../types/cancelable.js';
 
 let linkEl;
 
 let reducedMotionQuery: MediaQueryList;
+
+let stubTime;
 
 /**
  * @private
  */
 const exported = {
     /**
-     * Provides a function that outputs milliseconds: either performance.now()
-     * or a fallback to Date.now()
+     * Returns either performance.now() or a value set by setNow.
+     * @returns Time value in milliseconds.
      */
-    now,
+    now(): number {
+        if (stubTime !== undefined) {
+            return stubTime;
+        }
+        return window.performance.now();
+    },
+    setNow(time: number) {
+        stubTime = time;
+    },
 
-    frame(fn: () => void): Cancelable {
-        const frame = raf(fn);
-        return {cancel: () => cancel(frame)};
+    restoreNow() {
+        stubTime = undefined;
+    },
+
+    frame(fn: (paintStartTimestamp: number) => void): Cancelable {
+        const frame = window.requestAnimationFrame(fn);
+        return {cancel: () => window.cancelAnimationFrame(frame)};
     },
 
     getImageData(img: CanvasImageSource, padding?: number = 0): ImageData {
@@ -53,8 +53,6 @@ const exported = {
         linkEl.href = path;
         return linkEl.href;
     },
-
-    hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
 
     get devicePixelRatio() { return window.devicePixelRatio; },
     get prefersReducedMotion(): boolean {

@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import deref from '../../../src/style-spec/deref';
+import {test} from '../../util/test.js';
+import deref from '../../../src/style-spec/deref.js';
 
 test('derefs a ref layer which follows its parent', (t) => {
     t.deepEqual(deref([

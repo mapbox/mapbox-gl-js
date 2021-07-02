@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import format from '../../../src/style-spec/format';
+import {test} from '../../util/test.js';
+import format from '../../../src/style-spec/format.js';
 
 function roundtrip(style) {
     return JSON.parse(format(style));

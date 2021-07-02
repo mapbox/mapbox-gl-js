@@ -1,0 +1,33 @@
+[
+  {
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -19.9951171875,
+            -40.01078714046552
+          ],
+          [
+            -19.9951171875,
+            40.01078714046551
+          ],
+          [
+            39.990234375,
+            40.01078714046551
+          ],
+          [
+            -19.9951171875,
+            -40.01078714046552
+          ]
+        ]
+      ]
+    },
+    "type": "Feature",
+    "properties": {
+      "layer": "extrusion_three_points"
+    },
+    "source": "extrusion_three_points",
+    "state": {}
+  }
+]

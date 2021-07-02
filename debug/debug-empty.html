@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        body { margin: 0; padding: 0 }
+        html, body, #map { height: 100%; }
+
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id='map'></div>
+<div id='checkboxes'>
+    <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
+    <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
+    <label><input id='freeze-tile-coverage-checkbox' type='checkbox'> freeze tile coverage </label><br />
+</div>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    style: {
+        'version': 8,
+        'name': "Blank",
+        'sources': {},
+        'layers': [{
+            'id': "background",
+            'type': "background",
+            'paint': {
+                'background-color': "beige"
+            }
+        }],
+        'glyphs': 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
+        'id': 'blank'
+    },
+    center: [0, 0],
+    pitch: 0,
+    bearing: 0,
+    zoom: 0
+});
+
+map.repaint = true;
+map.on('load', function () {
+    map.addSource('geojson', {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [ 0, 0 ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [ 0, 0 ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [ 0, 0 ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [ 0, 0 ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [ 0, 0 ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [ 0, 0 ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [ 0, 0 ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [ 0, 0 ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [ 0, 0 ]
+                    }
+                }
+            ]
+        }
+    });
+    map.addLayer({
+        "id": "symbol",
+        "type": "symbol",
+        "source": "geojson",
+        "layout": {
+            "text-field": "x",
+            "text-size": 20,
+            "text-justify": "auto",
+            "text-variable-anchor": [
+                "center",
+                "top",
+                "bottom",
+                "left",
+                "right",
+                "top-left",
+                "top-right",
+                "bottom-left",
+                "bottom-right"
+            ],
+            "text-offset": [2, 1.5],
+            "text-font": [
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+            ]
+        }
+    });
+});
+
+document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
+    map.showTileBoundaries = !!this.checked;
+};
+
+document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
+    map.showCollisionBoxes = !!this.checked;
+};
+
+document.getElementById('freeze-tile-coverage-checkbox').onclick = function() {
+    map.transform.freezeTileCoverage = !!this.checked;
+    map._update();
+};
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
-import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
-import FormatSectionOverride from '../../../src/style-spec/expression/definitions/format_section_override';
-import properties from '../../../src/style/style_layer/symbol_style_layer_properties';
+import {test} from '../../util/test.js';
+import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer.js';
+import FormatSectionOverride from '../../../src/style/format_section_override.js';
+import properties from '../../../src/style/style_layer/symbol_style_layer_properties.js';
 
 function createSymbolLayer(layerProperties) {
     const layer = new SymbolStyleLayer(layerProperties);
@@ -48,35 +48,35 @@ test('setPaintOverrides', (t) => {
 test('hasPaintOverrides', (t) => {
     t.test('undefined', (t) => {
         const layer = createSymbolLayer({});
-        t.equal(SymbolStyleLayer.hasPaintOverrides(layer.layout), false);
+        t.equal(SymbolStyleLayer.hasPaintOverride(layer.layout, 'text-color'), false);
         t.end();
     });
 
     t.test('constant, Formatted type, overriden text-color', (t) => {
         const props = {layout: {'text-field': ["format", "text", {"text-color": "red"}]}};
         const layer = createSymbolLayer(props);
-        t.equal(SymbolStyleLayer.hasPaintOverrides(layer.layout), true);
+        t.equal(SymbolStyleLayer.hasPaintOverride(layer.layout, 'text-color'), true);
         t.end();
     });
 
     t.test('constant, Formatted type, no overrides', (t) => {
         const props = {layout: {'text-field': ["format", "text", {"font-scale": 0.8}]}};
         const layer = createSymbolLayer(props);
-        t.equal(SymbolStyleLayer.hasPaintOverrides(layer.layout), false);
+        t.equal(SymbolStyleLayer.hasPaintOverride(layer.layout, 'text-color'), false);
         t.end();
     });
 
     t.test('format expression, overriden text-color', (t) => {
         const props = {layout: {'text-field': ["format", ["get", "name"], {"text-color":"red"}]}};
         const layer = createSymbolLayer(props);
-        t.equal(SymbolStyleLayer.hasPaintOverrides(layer.layout), true);
+        t.equal(SymbolStyleLayer.hasPaintOverride(layer.layout, 'text-color'), true);
         t.end();
     });
 
     t.test('format expression, no overrides', (t) => {
         const props = {layout: {'text-field': ["format", ["get", "name"], {}]}};
         const layer = createSymbolLayer(props);
-        t.equal(SymbolStyleLayer.hasPaintOverrides(layer.layout), false);
+        t.equal(SymbolStyleLayer.hasPaintOverride(layer.layout, 'text-color'), false);
         t.end();
     });
 
@@ -86,7 +86,7 @@ test('hasPaintOverrides', (t) => {
             "default"];
         const props = {layout: {'text-field': matchExpr}};
         const layer = createSymbolLayer(props);
-        t.equal(SymbolStyleLayer.hasPaintOverrides(layer.layout), true);
+        t.equal(SymbolStyleLayer.hasPaintOverride(layer.layout, 'text-color'), true);
         t.end();
     });
 
@@ -96,7 +96,7 @@ test('hasPaintOverrides', (t) => {
             "default"];
         const props = {layout: {'text-field': matchExpr}};
         const layer = createSymbolLayer(props);
-        t.equal(SymbolStyleLayer.hasPaintOverrides(layer.layout), false);
+        t.equal(SymbolStyleLayer.hasPaintOverride(layer.layout, 'text-color'), false);
         t.end();
     });
 

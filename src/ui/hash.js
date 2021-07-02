@@ -1,10 +1,10 @@
 // @flow
 
-import {bindAll} from '../util/util';
-import window from '../util/window';
-import throttle from '../util/throttle';
+import {bindAll} from '../util/util.js';
+import window from '../util/window.js';
+import throttle from '../util/throttle.js';
 
-import type Map from './map';
+import type Map from './map.js';
 
 /*
  * Adds the map's position to its page's location hash.
@@ -103,9 +103,14 @@ class Hash {
         const hash = window.location.hash.replace('#', '');
         if (this._hashName) {
             // Split the parameter-styled hash into parts and find the value we need
-            const keyval = hash.split('&').map(
+            let keyval;
+            hash.split('&').map(
                 part => part.split('=')
-            ).find(part => part[0] === this._hashName);
+            ).forEach(part => {
+                if (part[0] === this._hashName) {
+                    keyval = part;
+                }
+            });
             return (keyval ? keyval[1] || '' : '').split('/');
         }
         return hash.split('/');
@@ -114,10 +119,11 @@ class Hash {
     _onHashChange() {
         const loc = this._getCurrentHash();
         if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
+            const bearing = this._map.dragRotate.isEnabled() && this._map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : this._map.getBearing();
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
-                bearing: +(loc[3] || 0),
+                bearing,
                 pitch: +(loc[4] || 0)
             });
             return true;
@@ -126,14 +132,9 @@ class Hash {
     }
 
     _updateHashUnthrottled() {
-        const hash = this.getHashString();
-        try {
-            window.history.replaceState(window.history.state, '', hash);
-        } catch (SecurityError) {
-            // IE11 does not allow this if the page is within an iframe created
-            // with iframe.contentWindow.document.write(...).
-            // https://github.com/mapbox/mapbox-gl-js/issues/7410
-        }
+        // Replace if already present, else append the updated hash string
+        const location = window.location.href.replace(/(#.+)?$/, this.getHashString());
+        window.history.replaceState(window.history.state, null, location);
     }
 
 }

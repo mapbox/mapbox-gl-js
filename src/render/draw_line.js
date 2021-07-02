@@ -1,20 +1,23 @@
 // @flow
 
-import DepthMode from '../gl/depth_mode';
-import CullFaceMode from '../gl/cull_face_mode';
-import Texture from './texture';
+import DepthMode from '../gl/depth_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
+import Texture from './texture.js';
 import {
     lineUniformValues,
     linePatternUniformValues,
     lineSDFUniformValues,
     lineGradientUniformValues
-} from './program/line_program';
+} from './program/line_program.js';
 
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type LineStyleLayer from '../style/style_layer/line_style_layer';
-import type LineBucket from '../data/bucket/line_bucket';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type LineStyleLayer from '../style/style_layer/line_style_layer.js';
+import type LineBucket from '../data/bucket/line_bucket.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
+import {clamp, nextPowerOfTwo} from '../util/util.js';
+import {renderColorRamp} from '../util/color_ramp.js';
+import EXTENT from '../data/extent.js';
 
 export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
@@ -26,7 +29,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const colorMode = painter.colorModeForRenderPass();
 
-    const dasharray = layer.paint.get('line-dasharray');
+    const dasharrayProperty = layer.paint.get('line-dasharray');
+    const dasharray = dasharrayProperty.constantOr((1: any));
+    const capProperty = layer.layout.get('line-cap');
     const patternProperty = layer.paint.get('line-pattern');
     const image = patternProperty.constantOr((1: any));
 
@@ -34,36 +39,23 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const crossfade = layer.getCrossfadeParameters();
 
     const programId =
-        dasharray ? 'lineSDF' :
         image ? 'linePattern' :
+        dasharray ? 'lineSDF' :
         gradient ? 'lineGradient' : 'line';
 
     const context = painter.context;
     const gl = context.gl;
 
-    let firstTile = true;
-
-    if (gradient) {
-        context.activeTexture.set(gl.TEXTURE0);
-
-        let gradientTexture = layer.gradientTexture;
-        if (!layer.gradient) return;
-        if (!gradientTexture) gradientTexture = layer.gradientTexture = new Texture(context, layer.gradient, gl.RGBA);
-        gradientTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-    }
-
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-
         if (image && !tile.patternsLoaded()) continue;
 
         const bucket: ?LineBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
+        painter.prepareDrawTile(coord);
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const prevProgram = painter.context.program.get();
         const program = painter.useProgram(programId, programConfiguration);
-        const programChanged = firstTile || program.program !== prevProgram;
 
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
@@ -73,26 +65,70 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        const uniformValues = dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray, crossfade) :
-            image ? linePatternUniformValues(painter, tile, layer, crossfade) :
-            gradient ? lineGradientUniformValues(painter, tile, layer) :
-            lineUniformValues(painter, tile, layer);
+        const constantDash = dasharrayProperty.constantOr(null);
+        const constantCap = capProperty.constantOr((null: any));
 
-        if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
-            context.activeTexture.set(gl.TEXTURE0);
-            painter.lineAtlas.bind(context);
-        } else if (image) {
+        if (!image && constantDash && constantCap && tile.lineAtlas) {
+            const atlas = tile.lineAtlas;
+            const posTo = atlas.getDash(constantDash.to, constantCap);
+            const posFrom = atlas.getDash(constantDash.from, constantCap);
+            if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
+        }
+
+        const matrix = painter.terrain ? coord.projMatrix : null;
+        const uniformValues = image ? linePatternUniformValues(painter, tile, layer, crossfade, matrix) :
+            dasharray ? lineSDFUniformValues(painter, tile, layer, crossfade, matrix) :
+            gradient ? lineGradientUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length) :
+            lineUniformValues(painter, tile, layer, matrix);
+
+        if (image) {
             context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePatternPaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers(crossfade);
+        } else if (dasharray) {
+            context.activeTexture.set(gl.TEXTURE0);
+            tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
+            programConfiguration.updatePaintBuffers(crossfade);
+        } else if (gradient) {
+            const layerGradient = bucket.gradients[layer.id];
+            let gradientTexture = layerGradient.texture;
+            if (layer.gradientVersion !== layerGradient.version) {
+                let textureResolution = 256;
+                if (layer.stepInterpolant) {
+                    const sourceMaxZoom = sourceCache.getSource().maxzoom;
+                    const potentialOverzoom = coord.canonical.z === sourceMaxZoom ?
+                        Math.ceil(1 << (painter.transform.maxZoom - coord.canonical.z)) : 1;
+                    const lineLength = bucket.maxLineLength / EXTENT;
+                    // Logical pixel tile size is 512px, and 1024px right before current zoom + 1
+                    const maxTilePixelSize = 1024;
+                    // Maximum possible texture coverage heuristic, bound by hardware max texture size
+                    const maxTextureCoverage = lineLength * maxTilePixelSize * potentialOverzoom;
+                    textureResolution = clamp(nextPowerOfTwo(maxTextureCoverage), 256, context.maxTextureSize);
+                }
+                layerGradient.gradient = renderColorRamp({
+                    expression: layer.gradientExpression(),
+                    evaluationKey: 'lineProgress',
+                    resolution: textureResolution,
+                    image: layerGradient.gradient || undefined,
+                    clips: bucket.lineClipsArray
+                });
+                if (layerGradient.texture) {
+                    layerGradient.texture.update(layerGradient.gradient);
+                } else {
+                    layerGradient.texture = new Texture(context, layerGradient.gradient, gl.RGBA);
+                }
+                layerGradient.version = layer.gradientVersion;
+                gradientTexture = layerGradient.texture;
+            }
+            context.activeTexture.set(gl.TEXTURE0);
+            gradientTexture.bind(layer.stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);
         }
+
+        painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
         program.draw(context, gl.TRIANGLES, depthMode,
             painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-            layer.paint, painter.transform.zoom, programConfiguration);
-
-        firstTile = false;
-        // once refactored so that bound texture state is managed, we'll also be able to remove this firstTile/programChanged logic
+            layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
     }
 }

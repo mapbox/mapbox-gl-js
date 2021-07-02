@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+
+        #checkboxes {
+            position: absolute;
+            background: #fff;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='checkboxes'>
+    <button id="cycle-anim-button" type="button">Cycle animation</button>
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 11.53,
+    center: [138.7189, 35.1691],
+    pitch: 76,
+    bearing: -177.2,
+    style: 'mapbox://styles/mapbox/satellite-v9',
+    hash: true,
+    interactive: false
+});
+
+let animationIndex = 0;
+let animationTime = 0.0;
+
+map.on('style.load', function() {
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
+    map.setTerrain({"source": "mapbox-dem", "exaggeration": 1.5});
+
+    map.addLayer({
+        'id': 'sky',
+        'type': 'sky',
+        'paint': {
+            'sky-type': 'atmosphere',
+            'sky-atmosphere-sun': [0.0, 90.0],
+            'sky-atmosphere-sun-intensity': 15,
+        }
+    });
+    map.on('idle', function() {
+        const lerp = (a, b, t) => {
+            if (Array.isArray(a) && Array.isArray(b)) {
+                const result = [];
+                for (let i = 0; i < Math.min(a.length, b.length); i++)
+                    result[i] = a[i] * (1.0 - t) + b[i] * t;
+                return result;
+            } else {
+                return a * (1.0 - t) + b * t;
+            }
+        };
+
+        const easeInOutQuad = (t) => t < 0.5 ? 2.0 * t * t : (4.0 - 2.0 * t) * t - 1.0;
+        const easeInCubic = (t) => t * t * t;
+
+        const animations = [{
+            duration: 500.0,
+            animate: (phase) => {
+                const start = [138.73375, 35.41914];
+                const end = [138.72649, 35.33974];
+                const alt = [7000.0, 6000.0];
+                const target = [138.73036, 35.36197];
+
+                // interpolate camera position while keeping focus on the target lat, lng
+                const camera = map.getFreeCameraOptions();
+
+                const position = lerp(start, end, phase);
+                const altitude = lerp(alt[0], alt[1], phase);
+                camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+                camera.lookAtPoint(target);
+
+                map.setFreeCameraOptions(camera);
+            }
+        }, {
+            duration: 200.0,
+            animate: (phase) => {
+                const start = [138.72649, 35.33974];
+                const end = [138.72623, 35.31977];
+                const alt = [6000.0, 6000.0];
+                const target1 = [138.73036, 35.36197];
+                const target2 = [138.74831, 35.34784];
+
+                // interpolate camera position and target
+                const camera = map.getFreeCameraOptions();
+
+                const position = lerp(start, end, phase);
+                const altitude = lerp(alt[0], alt[1], phase);
+                const target = lerp(target1, target2, phase);
+                camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+                camera.lookAtPoint(target);
+
+                map.setFreeCameraOptions(camera);
+            }
+        }, {
+            duration: 200.0,
+            animate: (phase) => {
+                const start = [138.72623, 35.31977];
+                const end = [138.73375, 35.41914];
+                const alt = [6000.0, 7000.0];
+                const target1 = [138.74831, 35.34784];
+                const target2 = [138.73036, 35.36197];
+
+                const camera = map.getFreeCameraOptions();
+                const position = lerp(start, end, easeInOutQuad(phase));
+                const altitude = lerp(alt[0], alt[1], phase);
+
+                const target = lerp(target1, target2, phase);
+                camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+                camera.lookAtPoint(target);
+
+                map.setFreeCameraOptions(camera);
+            }
+        }];
+
+        setInterval(() => {
+            animationIndex %= animations.length;
+            const current = animations[animationIndex];
+
+            if (animationTime < current.duration) {
+                current.animate(animationTime / current.duration);
+            }
+
+            animationTime += 1.0 / 60;
+
+            if (animationTime > current.duration) {
+                animationIndex++;
+                animationTime = 0.0;
+            }
+        }, 1000.0 / 60.0);
+    });
+});
+
+document.getElementById('cycle-anim-button').onclick = function() {
+    animationIndex++;
+    animationTime = 0;
+};
+
+</script>
+</body>
+</html>

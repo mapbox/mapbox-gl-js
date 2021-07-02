@@ -1,0 +1,14 @@
+[
+  {
+    "message": "range[0]: -100 is less than the minimum value -20",
+    "line": 11
+  },
+  {
+    "message": "range[1]: -80 is less than the minimum value -20",
+    "line": 11
+  },
+  {
+    "message": "horizon-blend: -4 is less than the minimum value 0",
+    "line": 12
+  }
+]

@@ -1,19 +1,21 @@
 // @flow
 
-import {getImage, ResourceType} from '../util/ajax';
-import {extend} from '../util/util';
-import {Evented} from '../util/evented';
-import browser from '../util/browser';
-import {OverscaledTileID} from './tile_id';
-import RasterTileSource from './raster_tile_source';
+import {getImage, ResourceType} from '../util/ajax.js';
+import {extend, prevPowerOfTwo} from '../util/util.js';
+import {Evented} from '../util/evented.js';
+import browser from '../util/browser.js';
+import window from '../util/window.js';
+import offscreenCanvasSupported from '../util/offscreen_canvas_supported.js';
+import {OverscaledTileID} from './tile_id.js';
+import RasterTileSource from './raster_tile_source.js';
 // ensure DEMData is registered for worker transfer on main thread:
-import '../data/dem_data';
+import '../data/dem_data.js';
 
-import type {Source} from './source';
-import type Dispatcher from '../util/dispatcher';
-import type Tile from './tile';
-import type {Callback} from '../types/callback';
-import type {RasterDEMSourceSpecification} from '../style-spec/types';
+import type {Source} from './source.js';
+import type Dispatcher from '../util/dispatcher.js';
+import type Tile from './tile.js';
+import type {Callback} from '../types/callback.js';
+import type {RasterDEMSourceSpecification} from '../style-spec/types.js';
 
 class RasterDEMTileSource extends RasterTileSource implements Source {
     encoding: "mapbox" | "terrarium";
@@ -26,23 +28,11 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         this.encoding = options.encoding || "mapbox";
     }
 
-    serialize() {
-        return {
-            type: 'raster-dem',
-            url: this.url,
-            tileSize: this.tileSize,
-            tiles: this.tiles,
-            bounds: this.bounds,
-            encoding: this.encoding
-        };
-    }
-
     loadTile(tile: Tile, callback: Callback<void>) {
-        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url, this.tileSize);
+        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
-        tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
-        function imageLoaded(err, img) {
+        function imageLoaded(err, img, cacheControl, expires) {
             delete tile.request;
             if (tile.aborted) {
                 tile.state = 'unloaded';
@@ -51,21 +41,30 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 tile.state = 'errored';
                 callback(err);
             } else if (img) {
-                if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
-                delete (img: any).cacheControl;
-                delete (img: any).expires;
-                const rawImageData = browser.getImageData(img, 1);
+                if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
+                const transfer = window.ImageBitmap && img instanceof window.ImageBitmap && offscreenCanvasSupported();
+                // DEMData uses 1px padding. Handle cases with image buffer of 1 and 2 pxs, the rest assume default buffer 0
+                // in order to keep the previous implementation working (no validation against tileSize).
+                const buffer = (img.width - prevPowerOfTwo(img.width)) / 2;
+                // padding is used in getImageData. As DEMData has 1px padding, if DEM tile buffer is 2px, discard outermost pixels.
+                const padding = 1 - buffer;
+                const borderReady = padding < 1;
+                if (!borderReady && !tile.neighboringTiles) {
+                    tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
+                }
+                const rawImageData = transfer ? img : browser.getImageData(img, padding);
                 const params = {
                     uid: tile.uid,
                     coord: tile.tileID,
                     source: this.id,
                     rawImageData,
-                    encoding: this.encoding
+                    encoding: this.encoding,
+                    padding
                 };
 
                 if (!tile.actor || tile.state === 'expired') {
                     tile.actor = this.dispatcher.getActor();
-                    tile.actor.send('loadDEMTile', params, done.bind(this));
+                    tile.actor.send('loadDEMTile', params, done.bind(this), undefined, true);
                 }
             }
         }
@@ -78,7 +77,9 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
             if (dem) {
                 tile.dem = dem;
+                tile.dem.onDeserialize();
                 tile.needsHillshadePrepare = true;
+                tile.needsDEMTextureUpload = true;
                 tile.state = 'loaded';
                 callback(null);
             }
@@ -123,12 +124,8 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         }
         if (tile.dem) delete tile.dem;
         delete tile.neighboringTiles;
-        tile.clearMask();
 
         tile.state = 'unloaded';
-        if (tile.actor) {
-            tile.actor.send('removeDEMTile', {uid: tile.uid, source: this.id});
-        }
     }
 
 }

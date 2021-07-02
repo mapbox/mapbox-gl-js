@@ -2,6 +2,7 @@
 // Disable Flow annotations here because Flow doesn't support importing GLSL files
 /* eslint-disable flowtype/require-valid-file-annotation */
 
+import preludeCommon from './_prelude.glsl';
 import preludeFrag from './_prelude.fragment.glsl';
 import preludeVert from './_prelude.vertex.glsl';
 import backgroundFrag from './background.fragment.glsl';
@@ -52,41 +53,92 @@ import symbolIconFrag from './symbol_icon.fragment.glsl';
 import symbolIconVert from './symbol_icon.vertex.glsl';
 import symbolSDFFrag from './symbol_sdf.fragment.glsl';
 import symbolSDFVert from './symbol_sdf.vertex.glsl';
+import symbolTextAndIconFrag from './symbol_text_and_icon.fragment.glsl';
+import symbolTextAndIconVert from './symbol_text_and_icon.vertex.glsl';
+import skyboxFrag from './skybox.fragment.glsl';
+import skyboxGradientFrag from './skybox_gradient.fragment.glsl';
+import skyboxVert from './skybox.vertex.glsl';
+import terrainRasterFrag from './terrain_raster.fragment.glsl';
+import terrainRasterVert from './terrain_raster.vertex.glsl';
+import terrainDepthFrag from './terrain_depth.fragment.glsl';
+import terrainDepthVert from './terrain_depth.vertex.glsl';
+import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
+import preludeFogVert from './_prelude_fog.vertex.glsl';
+import preludeFogFrag from './_prelude_fog.fragment.glsl';
+import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
+import skyboxCaptureVert from './skybox_capture.vertex.glsl';
+
+export let preludeTerrain = {};
+export let preludeFog = {};
+
+preludeTerrain = compile('', preludeTerrainVert, true);
+preludeFog = compile(preludeFogFrag, preludeFogVert, true);
 
 export const prelude = compile(preludeFrag, preludeVert);
-export const background = compile(backgroundFrag, backgroundVert);
-export const backgroundPattern = compile(backgroundPatternFrag, backgroundPatternVert);
-export const circle = compile(circleFrag, circleVert);
-export const clippingMask = compile(clippingMaskFrag, clippingMaskVert);
-export const heatmap = compile(heatmapFrag, heatmapVert);
-export const heatmapTexture = compile(heatmapTextureFrag, heatmapTextureVert);
-export const collisionBox = compile(collisionBoxFrag, collisionBoxVert);
-export const collisionCircle = compile(collisionCircleFrag, collisionCircleVert);
-export const debug = compile(debugFrag, debugVert);
-export const fill = compile(fillFrag, fillVert);
-export const fillOutline = compile(fillOutlineFrag, fillOutlineVert);
-export const fillOutlinePattern = compile(fillOutlinePatternFrag, fillOutlinePatternVert);
-export const fillPattern = compile(fillPatternFrag, fillPatternVert);
-export const fillExtrusion = compile(fillExtrusionFrag, fillExtrusionVert);
-export const fillExtrusionPattern = compile(fillExtrusionPatternFrag, fillExtrusionPatternVert);
-export const hillshadePrepare = compile(hillshadePrepareFrag, hillshadePrepareVert);
-export const hillshade = compile(hillshadeFrag, hillshadeVert);
-export const line = compile(lineFrag, lineVert);
-export const lineGradient = compile(lineGradientFrag, lineGradientVert);
-export const linePattern = compile(linePatternFrag, linePatternVert);
-export const lineSDF = compile(lineSDFFrag, lineSDFVert);
-export const raster = compile(rasterFrag, rasterVert);
-export const symbolIcon = compile(symbolIconFrag, symbolIconVert);
-export const symbolSDF = compile(symbolSDFFrag, symbolSDFVert);
+export const preludeCommonSource = preludeCommon;
+
+export default {
+    background: compile(backgroundFrag, backgroundVert),
+    backgroundPattern: compile(backgroundPatternFrag, backgroundPatternVert),
+    circle: compile(circleFrag, circleVert),
+    clippingMask: compile(clippingMaskFrag, clippingMaskVert),
+    heatmap: compile(heatmapFrag, heatmapVert),
+    heatmapTexture: compile(heatmapTextureFrag, heatmapTextureVert),
+    collisionBox: compile(collisionBoxFrag, collisionBoxVert),
+    collisionCircle: compile(collisionCircleFrag, collisionCircleVert),
+    debug: compile(debugFrag, debugVert),
+    fill: compile(fillFrag, fillVert),
+    fillOutline: compile(fillOutlineFrag, fillOutlineVert),
+    fillOutlinePattern: compile(fillOutlinePatternFrag, fillOutlinePatternVert),
+    fillPattern: compile(fillPatternFrag, fillPatternVert),
+    fillExtrusion: compile(fillExtrusionFrag, fillExtrusionVert),
+    fillExtrusionPattern: compile(fillExtrusionPatternFrag, fillExtrusionPatternVert),
+    hillshadePrepare: compile(hillshadePrepareFrag, hillshadePrepareVert),
+    hillshade: compile(hillshadeFrag, hillshadeVert),
+    line: compile(lineFrag, lineVert),
+    lineGradient: compile(lineGradientFrag, lineGradientVert),
+    linePattern: compile(linePatternFrag, linePatternVert),
+    lineSDF: compile(lineSDFFrag, lineSDFVert),
+    raster: compile(rasterFrag, rasterVert),
+    symbolIcon: compile(symbolIconFrag, symbolIconVert),
+    symbolSDF: compile(symbolSDFFrag, symbolSDFVert),
+    symbolTextAndIcon: compile(symbolTextAndIconFrag, symbolTextAndIconVert),
+    terrainRaster: compile(terrainRasterFrag, terrainRasterVert),
+    terrainDepth: compile(terrainDepthFrag, terrainDepthVert),
+    skybox: compile(skyboxFrag, skyboxVert),
+    skyboxGradient: compile(skyboxGradientFrag, skyboxVert),
+    skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert)
+};
 
 // Expand #pragmas to #ifdefs.
+function compile(fragmentSource, vertexSource, isGlobalPrelude) {
+    const pragmaRegex = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
+    const uniformRegex = /uniform (highp |mediump |lowp )?([\w]+) ([\w]+)([\s]*)([\w]*)/g;
+    const attributeRegex = /attribute (highp |mediump |lowp )?([\w]+) ([\w]+)/g;
 
-function compile(fragmentSource, vertexSource) {
-    const re = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
+    const staticAttributes = vertexSource.match(attributeRegex);
+    const fragmentUniforms = fragmentSource.match(uniformRegex);
+    const vertexUniforms = vertexSource.match(uniformRegex);
+    const commonUniforms = preludeCommon.match(uniformRegex);
+
+    let staticUniforms = vertexUniforms ? vertexUniforms.concat(fragmentUniforms) : fragmentUniforms;
+
+    if (!isGlobalPrelude) {
+        if (preludeTerrain.staticUniforms) {
+            staticUniforms = preludeTerrain.staticUniforms.concat(staticUniforms);
+        }
+        if (preludeFog.staticUniforms) {
+            staticUniforms = preludeFog.staticUniforms.concat(staticUniforms);
+        }
+    }
+
+    if (staticUniforms) {
+        staticUniforms = staticUniforms.concat(commonUniforms);
+    }
 
     const fragmentPragmas = {};
 
-    fragmentSource = fragmentSource.replace(re, (match, operation, precision, type, name) => {
+    fragmentSource = fragmentSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
         fragmentPragmas[name] = true;
         if (operation === 'define') {
             return `
@@ -105,7 +157,7 @@ uniform ${precision} ${type} u_${name};
         }
     });
 
-    vertexSource = vertexSource.replace(re, (match, operation, precision, type, name) => {
+    vertexSource = vertexSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
         const attrType = type === 'float' ? 'vec2' : 'vec4';
         const unpackType = name.match(/color/) ? 'color' : attrType;
 
@@ -173,5 +225,5 @@ uniform ${precision} ${type} u_${name};
         }
     });
 
-    return {fragmentSource, vertexSource};
+    return {fragmentSource, vertexSource, staticAttributes, staticUniforms};
 }

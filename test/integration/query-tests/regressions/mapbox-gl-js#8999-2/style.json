@@ -1,0 +1,70 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "debug": true,
+      "width": 200,
+      "height": 200,
+      "queryGeometry": [
+          100,
+          40
+      ]
+    }
+  },
+  "pitch": 0,
+  "center": [
+      0,
+      0
+  ],
+  "zoom": 0,
+  "sources": {
+    "extrusion_colinear_points": {
+      "type": "geojson",
+        "tolerance": 0,
+        "data": {
+            "type": "Feature",
+            "properties": {
+                "layer": "extrusion_colinear_points"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -20,
+                            -40
+                        ],
+                        [
+                            -20,
+                            40
+                        ],
+                        [
+                            -20,
+                            60
+                        ],
+                        [
+                            20,
+                            20
+                        ],
+                        [
+                            -20,
+                            -40
+                        ]
+                    ]
+                ]
+            }
+        }
+	}
+  },
+  "layers": [
+    {
+      "id": "extrusion_colinear_points",
+      "type": "fill-extrusion",
+      "source": "extrusion_colinear_points",
+      "paint": {
+        "fill-extrusion-color": "#ecc",
+        "fill-extrusion-height": 0
+      }
+    }
+  ]
+}

@@ -1,14 +1,14 @@
 // @flow
 
-import {toString} from './types';
+import {toString} from './types.js';
 
-import ParsingContext from './parsing_context';
-import EvaluationContext from './evaluation_context';
+import ParsingContext from './parsing_context.js';
+import EvaluationContext from './evaluation_context.js';
 import assert from 'assert';
 
-import type {Expression, ExpressionRegistry} from './expression';
-import type {Type} from './types';
-import type {Value} from './values';
+import type {Expression, ExpressionRegistry} from './expression.js';
+import type {Type} from './types.js';
+import type {Value} from './values.js';
 
 export type Varargs = {| type: Type |};
 type Signature = Array<Type> | Varargs;
@@ -22,7 +22,7 @@ class CompoundExpression implements Expression {
     _evaluate: Evaluate;
     args: Array<Expression>;
 
-    static definitions: { [string]: Definition };
+    static definitions: {[_: string]: Definition };
 
     constructor(name: string, type: Type, evaluate: Evaluate, args: Array<Expression>) {
         this.name = name;
@@ -35,12 +35,12 @@ class CompoundExpression implements Expression {
         return this._evaluate(ctx, this.args);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         this.args.forEach(fn);
     }
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize(): Array<mixed> {
@@ -141,7 +141,7 @@ class CompoundExpression implements Expression {
 
     static register(
         registry: ExpressionRegistry,
-        definitions: { [string]: Definition }
+        definitions: {[_: string]: Definition }
     ) {
         assert(!CompoundExpression.definitions);
         CompoundExpression.definitions = definitions;

@@ -1,153 +1,159 @@
-import path from 'path';
-import fs from 'fs';
-import * as diff from 'diff';
-import {PNG} from 'pngjs';
-import harness from './harness';
+/* eslint-env browser */
+/* global tape:readonly, mapboxgl:readonly */
+/* eslint-disable import/no-unresolved */
+// query-fixtures.json is automatically generated before this file gets built
+// refer testem.js#before_tests()
+import fixtures from '../dist/query-fixtures.json';
+import ignores from '../../ignores.json';
+import {applyOperations} from './operation-handlers.js';
+import {deepEqual, generateDiffLog} from './json-diff.js';
+import {setupHTML, updateHTML} from '../../util/html_generator.js';
 
-function deepEqual(a, b) {
-    if (typeof a !== typeof b)
-        return false;
-    if (typeof a === 'number')
-        return Math.abs(a - b) < 1e-10;
-    if (a === null || typeof a !== 'object')
-        return a === b;
+window._suiteName = 'query-tests';
+setupHTML();
 
-    const ka = Object.keys(a);
-    const kb = Object.keys(b);
+const browserWriteFile = new Worker('../util/browser_write_file.js');
 
-    if (ka.length !== kb.length)
-        return false;
+//1. Create and position the container, floating at the bottom right
+const container = document.createElement('div');
+container.style.position = 'fixed';
+container.style.bottom = '10px';
+container.style.right = '10px';
+document.body.appendChild(container);
+let map;
 
-    ka.sort();
-    kb.sort();
+tape.onFinish(() => {
+    document.body.removeChild(container);
+});
 
-    for (let i = 0; i < ka.length; i++)
-        if (ka[i] !== kb[i] || !deepEqual(a[ka[i]], b[ka[i]]))
-            return false;
-
-    return true;
+for (const testName in fixtures) {
+    tape(testName, {timeout: 20000}, ensureTeardown);
 }
 
-/**
- * Run the query suite.
- *
- * @param {string} implementation - identify the implementation under test; used to
- * deal with implementation-specific test exclusions and fudge-factors
- * @param {Object} options
- * @param {Array<string>} [options.tests] - array of test names to run; tests not in the
- * array will be skipped
- * @param {queryFn} query - a function that performs the query
- * @returns {undefined} terminates the process when testing is complete
- */
-export function run(implementation, options, query) {
-    const directory = path.join(__dirname, '../query-tests');
-    harness(directory, implementation, options, (style, params, done) => {
-        query(style, params, (err, data, results) => {
-            if (err) return done(err);
+function ensureTeardown(t) {
+    const testName = t.name;
+    const options = {timeout: 5000};
+    if (testName in ignores) {
+        const ignoreType = ignores[testName];
+        if (/^skip/.test(ignoreType)) {
+            options.skip = true;
+        } else {
+            options.todo = true;
+        }
+    }
+    t.test(testName, options, runTest);
 
-            const dir = path.join(directory, params.id);
+    //Teardown all global resources
+    //Cleanup WebGL context and map
+    if (map) {
+        map.remove();
+        delete map.painter.context.gl;
+        map = null;
+    }
+    t.end();
+}
 
-            if (process.env.UPDATE) {
-                fs.writeFile(path.join(dir, 'expected.json'), JSON.stringify(results, null, 2), done);
-                return;
-            }
+async function runTest(t) {
+    let style, expected, options;
+    // This needs to be read from the `t` object because this function runs async in a closure.
+    const currentTestName = t.name;
+    const writeFileBasePath = `test/integration/${currentTestName}`;
+    try {
+        style = fixtures[currentTestName].style;
+        if (!style) {
+            throw new Error('style.json is missing');
+        }
 
-            const expected = require(path.join(dir, 'expected.json'));
+        if (style.PARSE_ERROR) {
+            throw new Error(`Error occured while parsing style.json: ${style.message}`);
+        }
 
-            params.ok = deepEqual(results, expected);
+        expected = fixtures[currentTestName].expected;
+        if (expected.PARSE_ERROR) {
+            throw new Error(`Error occured while parsing expected.json: ${style.message}`);
+        }
 
-            if (!params.ok) {
-                const msg = diff.diffJson(expected, results)
-                    .map((hunk) => {
-                        if (hunk.added) {
-                            return `+ ${hunk.value}`;
-                        } else if (hunk.removed) {
-                            return `- ${hunk.value}`;
-                        } else {
-                            return `  ${hunk.value}`;
-                        }
-                    })
-                    .join('');
+        options = style.metadata.test;
+        const skipLayerDelete = style.metadata.skipLayerDelete;
 
-                params.difference = msg;
-                console.log(msg);
-            }
+        window.devicePixelRatio = options.pixelRatio;
 
-            const width = params.width * params.pixelRatio;
-            const height = params.height * params.pixelRatio;
+        container.style.width = `${options.width}px`;
+        container.style.height = `${options.height}px`;
 
-            const color = [255, 0, 0, 255];
-
-            function scaleByPixelRatio(x) {
-                return x * params.pixelRatio;
-            }
-
-            if (!Array.isArray(params.queryGeometry[0])) {
-                const p = params.queryGeometry.map(scaleByPixelRatio);
-                const d = 30;
-                drawAxisAlignedLine([p[0] - d, p[1]], [p[0] + d, p[1]], data, width, height, color);
-                drawAxisAlignedLine([p[0], p[1] - d], [p[0], p[1] + d], data, width, height, color);
-            } else {
-                const a = params.queryGeometry[0].map(scaleByPixelRatio);
-                const b = params.queryGeometry[1].map(scaleByPixelRatio);
-                drawAxisAlignedLine([a[0], a[1]], [a[0], b[1]], data, width, height, color);
-                drawAxisAlignedLine([a[0], b[1]], [b[0], b[1]], data, width, height, color);
-                drawAxisAlignedLine([b[0], b[1]], [b[0], a[1]], data, width, height, color);
-                drawAxisAlignedLine([b[0], a[1]], [a[0], a[1]], data, width, height, color);
-            }
-
-            const actualJSON = path.join(dir, 'actual.json');
-            fs.writeFile(actualJSON, JSON.stringify(results, null, 2), () => {});
-
-            const actualPNG = path.join(dir, 'actual.png');
-
-            const png = new PNG({
-                width: params.width * params.pixelRatio,
-                height: params.height * params.pixelRatio
-            });
-
-            png.data = data;
-
-            png.pack()
-                .pipe(fs.createWriteStream(actualPNG))
-                .on('finish', () => {
-                    params.actual = fs.readFileSync(actualPNG).toString('base64');
-                    done();
-                });
+        //2. Initialize the Map
+        map = new mapboxgl.Map({
+            container,
+            style,
+            classes: options.classes,
+            interactive: false,
+            attributionControl: false,
+            preserveDrawingBuffer: true,
+            axonometric: options.axonometric || false,
+            skew: options.skew || [0, 0],
+            fadeDuration: options.fadeDuration || 0,
+            localIdeographFontFamily: options.localIdeographFontFamily || false,
+            crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions
         });
-    });
-}
 
-function drawAxisAlignedLine(a, b, pixels, width, height, color) {
-    const fromX = clamp(Math.min(a[0], b[0]), 0, width);
-    const toX = clamp(Math.max(a[0], b[0]), 0, width);
-    const fromY = clamp(Math.min(a[1], b[1]), 0, height);
-    const toY = clamp(Math.max(a[1], b[1]), 0, height);
+        map.repaint = true;
+        await map.once('load');
+        //3. Run the operations on the map
+        await applyOperations(map, options);
 
-    let index;
-    if (fromX === toX) {
-        for (let y = fromY; y <= toY; y++) {
-            index = getIndex(fromX, y);
-            pixels[index + 0] = color[0];
-            pixels[index + 1] = color[1];
-            pixels[index + 2] = color[2];
-            pixels[index + 3] = color[3];
+        //4. Perform query operation and compare results from expected values
+        const results = options.queryGeometry ?
+            map.queryRenderedFeatures(options.queryGeometry, options.queryOptions || {}) :
+            [];
+
+        const actual = results.map((feature) => {
+            const featureJson = JSON.parse(JSON.stringify(feature.toJSON()));
+            if (!skipLayerDelete) delete featureJson.layer;
+            return featureJson;
+        });
+
+        const testMetaData = {
+            name: t.name,
+            actual: map.getCanvas().toDataURL()
+        };
+        const success = deepEqual(actual, expected);
+        const jsonDiff = generateDiffLog(expected, actual);
+
+        if (!success) {
+            testMetaData['jsonDiff'] = jsonDiff;
         }
-    } else {
-        for (let x = fromX; x <= toX; x++) {
-            index = getIndex(x, fromY);
-            pixels[index + 0] = color[0];
-            pixels[index + 1] = color[1];
-            pixels[index + 2] = color[2];
-            pixels[index + 3] = color[3];
+        t.ok(success || t._todo, t.name);
+        testMetaData.status = t._todo ? 'todo' : success ? 'passed' : 'failed';
+
+        updateHTML(testMetaData);
+
+        let fileInfo;
+
+        if (process.env.UPDATE) {
+            fileInfo = [
+                {
+                    path: `${writeFileBasePath}/expected.json`,
+                    data: jsonDiff.replace('+', '').trim()
+                }
+            ];
+        } else {
+            fileInfo = [
+                {
+                    path: `${writeFileBasePath}/actual.png`,
+                    data: testMetaData.actual.split(',')[1]
+                },
+                {
+                    path: `${writeFileBasePath}/actual.json`,
+                    data: jsonDiff.trim()
+                }
+            ];
         }
-    }
 
-    function getIndex(x, y) {
-        return (y * width + x) * 4;
-    }
-}
+        browserWriteFile.postMessage(fileInfo);
 
-function clamp(x, a, b) {
-    return Math.max(a, Math.min(b, x));
+    } catch (e) {
+        t.error(e);
+        updateHTML({name: t.name, status:'failed', jsonDiff: e.message});
+    }
+    t.end();
 }

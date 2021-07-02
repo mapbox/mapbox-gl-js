@@ -1,14 +1,14 @@
 // @flow
 
-import EXTENT from '../data/extent';
+import EXTENT from '../data/extent.js';
 
-import {SymbolInstanceArray} from '../data/array_types';
+import {SymbolInstanceArray} from '../data/array_types.js';
 
-import type {SymbolInstance} from '../data/array_types';
-import type {OverscaledTileID} from '../source/tile_id';
-import type SymbolBucket from '../data/bucket/symbol_bucket';
-import type StyleLayer from '../style/style_layer';
-import type Tile from '../source/tile';
+import type {SymbolInstance} from '../data/array_types.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
+import type SymbolBucket from '../data/bucket/symbol_bucket.js';
+import type StyleLayer from '../style/style_layer.js';
+import type Tile from '../source/tile.js';
 
 /*
     The CrossTileSymbolIndex generally works on the assumption that
@@ -29,7 +29,7 @@ const roundingFactor = 512 / EXTENT / 2;
 
 class TileLayerIndex {
     tileID: OverscaledTileID;
-    indexedSymbolInstances: {[number]: Array<{
+    indexedSymbolInstances: {[_: number]: Array<{
         crossTileID: number,
         coord: {
             x: number,
@@ -243,7 +243,7 @@ class CrossTileSymbolIndex {
     layerIndexes: {[layerId: string]: CrossTileSymbolLayerIndex};
     crossTileIDs: CrossTileIDs;
     maxBucketInstanceId: number;
-    bucketsInCurrentPlacement: {[number]: boolean};
+    bucketsInCurrentPlacement: {[_: number]: boolean};
 
     constructor() {
         this.layerIndexes = {};

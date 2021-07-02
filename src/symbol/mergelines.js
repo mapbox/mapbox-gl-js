@@ -1,10 +1,10 @@
 // @flow
 
-import type {SymbolFeature} from '../data/bucket/symbol_bucket';
+import type {SymbolFeature} from '../data/bucket/symbol_bucket.js';
 
 export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
-    const leftIndex: {[string]: number} = {};
-    const rightIndex: {[string]: number} = {};
+    const leftIndex: {[_: string]: number} = {};
+    const rightIndex: {[_: string]: number} = {};
     const mergedFeatures = [];
     let mergedIndex = 0;
 

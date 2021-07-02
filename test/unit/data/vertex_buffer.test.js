@@ -1,7 +1,8 @@
-import {test} from '../../util/test';
-import VertexBuffer from '../../../src/gl/vertex_buffer';
-import {StructArrayLayout3i6} from '../../../src/data/array_types';
-import Context from '../../../src/gl/context';
+import {test} from '../../util/test.js';
+import VertexBuffer from '../../../src/gl/vertex_buffer.js';
+import {StructArrayLayout3i6} from '../../../src/data/array_types.js';
+import Context from '../../../src/gl/context.js';
+import headlessGL from 'gl';
 
 test('VertexBuffer', (t) => {
     class TestArray extends StructArrayLayout3i6 {}
@@ -11,7 +12,7 @@ test('VertexBuffer', (t) => {
     ];
 
     t.test('constructs itself', (t) => {
-        const context = new Context(require('gl')(10, 10));
+        const context = new Context(headlessGL(10, 10));
         const array = new TestArray();
         array.emplaceBack(1, 1, 1);
         array.emplaceBack(1, 1, 1);
@@ -29,7 +30,7 @@ test('VertexBuffer', (t) => {
     });
 
     t.test('enableAttributes', (t) => {
-        const context = new Context(require('gl')(10, 10));
+        const context = new Context(headlessGL(10, 10));
         const array = new TestArray();
         const buffer = new VertexBuffer(context, array, attributes);
         t.stub(context.gl, 'enableVertexAttribArray').callsFake(() => {});
@@ -39,7 +40,7 @@ test('VertexBuffer', (t) => {
     });
 
     t.test('setVertexAttribPointers', (t) => {
-        const context = new Context(require('gl')(10, 10));
+        const context = new Context(headlessGL(10, 10));
         const array = new TestArray();
         const buffer = new VertexBuffer(context, array, attributes);
         t.stub(context.gl, 'vertexAttribPointer').callsFake(() => {});

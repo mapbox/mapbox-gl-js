@@ -1,14 +1,17 @@
 // @flow
 
-import Actor from '../util/actor';
+import Actor from '../util/actor.js';
 
-import StyleLayerIndex from '../style/style_layer_index';
-import VectorTileWorkerSource from './vector_tile_worker_source';
-import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source';
-import GeoJSONWorkerSource from './geojson_worker_source';
+import StyleLayerIndex from '../style/style_layer_index.js';
+import VectorTileWorkerSource from './vector_tile_worker_source.js';
+import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source.js';
+import GeoJSONWorkerSource from './geojson_worker_source.js';
 import assert from 'assert';
-import {plugin as globalRTLTextPlugin} from './rtl_text_plugin';
-import {enforceCacheSizeLimit} from '../util/tile_request_cache';
+import {plugin as globalRTLTextPlugin} from './rtl_text_plugin.js';
+import {enforceCacheSizeLimit} from '../util/tile_request_cache.js';
+import {extend} from '../util/util.js';
+import {PerformanceUtils} from '../util/performance.js';
+import {Event} from '../util/evented.js';
 
 import type {
     WorkerSource,
@@ -17,12 +20,12 @@ import type {
     WorkerTileCallback,
     WorkerDEMTileCallback,
     TileParameters
-} from '../source/worker_source';
+} from '../source/worker_source.js';
 
-import type {WorkerGlobalScopeInterface} from '../util/web_worker';
-import type {Callback} from '../types/callback';
-import type {LayerSpecification} from '../style-spec/types';
-import type {PluginState} from './rtl_text_plugin';
+import type {WorkerGlobalScopeInterface} from '../util/web_worker.js';
+import type {Callback} from '../types/callback.js';
+import type {LayerSpecification} from '../style-spec/types.js';
+import type {PluginState} from './rtl_text_plugin.js';
 
 /**
  * @private
@@ -30,19 +33,23 @@ import type {PluginState} from './rtl_text_plugin';
 export default class Worker {
     self: WorkerGlobalScopeInterface;
     actor: Actor;
-    layerIndexes: { [string]: StyleLayerIndex };
-    availableImages: { [string]: Array<string> };
-    workerSourceTypes: { [string]: Class<WorkerSource> };
-    workerSources: { [string]: { [string]: { [string]: WorkerSource } } };
-    demWorkerSources: { [string]: { [string]: RasterDEMTileWorkerSource } };
+    layerIndexes: {[_: string]: StyleLayerIndex };
+    availableImages: {[_: string]: Array<string> };
+    workerSourceTypes: {[_: string]: Class<WorkerSource> };
+    workerSources: {[_: string]: {[_: string]: {[_: string]: WorkerSource } } };
+    demWorkerSources: {[_: string]: {[_: string]: RasterDEMTileWorkerSource } };
+    isSpriteLoaded: boolean;
     referrer: ?string;
+    terrain: ?boolean;
 
     constructor(self: WorkerGlobalScopeInterface) {
+        PerformanceUtils.measure('workerEvaluateScript');
         this.self = self;
         this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
         this.availableImages = {};
+        this.isSpriteLoaded = false;
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
@@ -71,12 +78,41 @@ export default class Worker {
         };
     }
 
+    checkIfReady(mapID: string, unused: mixed, callback: WorkerTileCallback) {
+        // noop, used to check if a worker is fully set up and ready to receive messages
+        callback();
+    }
+
     setReferrer(mapID: string, referrer: string) {
         this.referrer = referrer;
     }
 
+    spriteLoaded(mapId: string, bool: boolean) {
+        this.isSpriteLoaded = bool;
+        for (const workerSource in this.workerSources[mapId]) {
+            const ws = this.workerSources[mapId][workerSource];
+            for (const source in ws) {
+                if (ws[source] instanceof VectorTileWorkerSource) {
+                    ws[source].isSpriteLoaded = bool;
+                    ws[source].fire(new Event('isSpriteLoaded'));
+                }
+            }
+        }
+    }
+
     setImages(mapId: string, images: Array<string>, callback: WorkerTileCallback) {
         this.availableImages[mapId] = images;
+        for (const workerSource in this.workerSources[mapId]) {
+            const ws = this.workerSources[mapId][workerSource];
+            for (const source in ws) {
+                ws[source].availableImages = images;
+            }
+        }
+        callback();
+    }
+
+    enableTerrain(mapId: string, enable: boolean, callback: WorkerTileCallback) {
+        this.terrain = enable;
         callback();
     }
 
@@ -92,16 +128,19 @@ export default class Worker {
 
     loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        this.getWorkerSource(mapId, params.type, params.source).loadTile(params, callback);
+        const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
+        this.getWorkerSource(mapId, params.type, params.source).loadTile(p, callback);
     }
 
     loadDEMTile(mapId: string, params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
-        this.getDEMWorkerSource(mapId, params.source).loadTile(params, callback);
+        const p = this.enableTerrain ? extend({buildQuadTree: this.terrain}, params) : params;
+        this.getDEMWorkerSource(mapId, params.source).loadTile(p, callback);
     }
 
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        this.getWorkerSource(mapId, params.type, params.source).reloadTile(params, callback);
+        const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
+        this.getWorkerSource(mapId, params.type, params.source).reloadTile(p, callback);
     }
 
     abortTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
@@ -112,10 +151,6 @@ export default class Worker {
     removeTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source).removeTile(params, callback);
-    }
-
-    removeDEMTile(mapId: string, params: TileParameters) {
-        this.getDEMWorkerSource(mapId, params.source).removeTile(params);
     }
 
     removeSource(mapId: string, params: {source: string} & {type: string}, callback: WorkerTileCallback) {
@@ -156,15 +191,15 @@ export default class Worker {
     syncRTLPluginState(map: string, state: PluginState, callback: Callback<boolean>) {
         try {
             globalRTLTextPlugin.setState(state);
-            const {blob, host} = globalRTLTextPlugin.getURLs();
+            const pluginURL = globalRTLTextPlugin.getPluginURL();
             if (
                 globalRTLTextPlugin.isLoaded() &&
                 !globalRTLTextPlugin.isParsed() &&
-                blob != null && host != null // Not possible when `isLoaded` is true, but keeps flow happy
+                pluginURL != null // Not possible when `isLoaded` is true, but keeps flow happy
             ) {
-                this.self.importScripts(blob);
+                this.self.importScripts(pluginURL);
                 const complete = globalRTLTextPlugin.isParsed();
-                const error = complete ? undefined : new Error(`RTL Text Plugin failed to import scripts from ${host}`);
+                const error = complete ? undefined : new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`);
                 callback(error, complete);
             }
         } catch (e) {
@@ -200,11 +235,12 @@ export default class Worker {
             // use a wrapped actor so that we can attach a target mapId param
             // to any messages invoked by the WorkerSource
             const actor = {
-                send: (type, data, callback) => {
-                    this.actor.send(type, data, callback, mapId);
-                }
+                send: (type, data, callback, _, mustQueue, metadata) => {
+                    this.actor.send(type, data, callback, mapId, mustQueue, metadata);
+                },
+                scheduler: this.actor.scheduler
             };
-            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId), this.getAvailableImages(mapId));
+            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId), this.getAvailableImages(mapId), this.isSpriteLoaded);
         }
 
         return this.workerSources[mapId][type][source];
@@ -223,6 +259,10 @@ export default class Worker {
 
     enforceCacheSizeLimit(mapId: string, limit: number) {
         enforceCacheSizeLimit(limit);
+    }
+
+    getWorkerPerformanceMetrics(mapId: string, params: any, callback: (error: ?Error, result: ?Object) => void) {
+        callback(undefined, PerformanceUtils.getWorkerPerformanceMetrics());
     }
 }
 

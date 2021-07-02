@@ -1,7 +1,7 @@
 
-import ValidationError from '../error/validation_error';
-import getType from '../util/get_type';
-import validate from './validate';
+import ValidationError from '../error/validation_error.js';
+import getType from '../util/get_type.js';
+import validate from './validate.js';
 
 export default function validateLight(options) {
     const light = options.value;

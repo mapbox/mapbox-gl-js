@@ -1,21 +1,21 @@
 // @flow
 
-import Texture from './texture';
-import Color from '../style-spec/util/color';
-import DepthMode from '../gl/depth_mode';
-import StencilMode from '../gl/stencil_mode';
-import ColorMode from '../gl/color_mode';
-import CullFaceMode from '../gl/cull_face_mode';
+import Texture from './texture.js';
+import Color from '../style-spec/util/color.js';
+import DepthMode from '../gl/depth_mode.js';
+import StencilMode from '../gl/stencil_mode.js';
+import ColorMode from '../gl/color_mode.js';
+import CullFaceMode from '../gl/cull_face_mode.js';
 import {
     heatmapUniformValues,
     heatmapTextureUniformValues
-} from './program/heatmap_program';
+} from './program/heatmap_program.js';
 
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type HeatmapStyleLayer from '../style/style_layer/heatmap_style_layer';
-import type HeatmapBucket from '../data/bucket/heatmap_bucket';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type HeatmapStyleLayer from '../style/style_layer/heatmap_style_layer.js';
+import type HeatmapBucket from '../data/bucket/heatmap_bucket.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
 
 export default drawHeatmap;
 
@@ -28,7 +28,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const context = painter.context;
         const gl = context.gl;
 
-        const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
         // Allow kernels to be drawn across boundaries, so that
         // large kernels are not clipped to tiles
         const stencilMode = StencilMode.disabled;
@@ -54,9 +53,12 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const programConfiguration = bucket.programConfigurations.get(layer.id);
             const program = painter.useProgram('heatmap', programConfiguration);
             const {zoom} = painter.transform;
+            if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 
-            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                heatmapUniformValues(coord.posMatrix,
+            painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+
+            program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
+                heatmapUniformValues(coord.projMatrix,
                     tile, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
                 bucket.segments, layer.paint, painter.transform.zoom,
@@ -88,7 +90,7 @@ function bindFramebuffer(context, painter, layer) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        fbo = layer.heatmapFbo = context.createFramebuffer(painter.width / 4, painter.height / 4);
+        fbo = layer.heatmapFbo = context.createFramebuffer(painter.width / 4, painter.height / 4, false);
 
         bindTextureToFramebuffer(context, painter, texture, fbo);
 
@@ -101,17 +103,10 @@ function bindFramebuffer(context, painter, layer) {
 function bindTextureToFramebuffer(context, painter, texture, fbo) {
     const gl = context.gl;
     // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA,
-        context.extTextureHalfFloat ? context.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE, null);
-
+    // Otherwise, fall back to a low precision texture
+    const internalFormat = context.extRenderToTextureHalfFloat ? context.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE;
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA, internalFormat, null);
     fbo.colorAttachment.set(texture);
-
-    // If using half-float texture as a render target is not supported, fall back to a low precision texture
-    if (context.extTextureHalfFloat && gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
-        context.extTextureHalfFloat = null;
-        fbo.colorAttachment.setDirty();
-        bindTextureToFramebuffer(context, painter, texture, fbo);
-    }
 }
 
 function renderTextureToMap(painter, layer) {

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapbox GL JS Sky Demo</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link href='main.css' rel='stylesheet' type="text/css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+
+        #inputs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <div id='map'></div>
+    <div id='inputs'>
+        <input type="button" id="sunriseEnd" value="sunrise">
+        <input type="button" id="goldenHourEnd" value="morning">
+        <input type="button" id="solarNoon" value="afternoon">
+        <input type="button" id="goldenHour" value="evening">
+        <input type="button" id="sunsetStart" value="sunset">
+        <input type="button" id="getlocal" value="local time">
+        <input type="button" id="next30mins" value="+30 mins">
+        <input type="button" id="prev30mins" value="-30 mins">
+        <input type="button" id="next30days" value="+30 days">
+        <input type="button" id="prev30days" value="-30 days">
+    </div>
+    <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js'></script>
+    <script>
+        var map = window.map = new mapboxgl.Map({
+            container: 'map',
+            zoom: 14.1,
+            center: [-114.34411, 32.6141],
+            pitch: 85,
+            bearing: 70,
+            style: 'mapbox://styles/mapbox/satellite-v9',
+            hash: true,
+        });
+        let date = new Date(Date.now());
+
+        const sunTimeLabels = ['sunriseEnd', 'goldenHourEnd', 'solarNoon', 'goldenHour', 'sunsetStart'];
+        sunTimeLabels.forEach((btnId) => {
+            document.getElementById(btnId).addEventListener('click', () => {
+                // eslint-disable-next-line no-undef
+                const sunTimes = SunCalc.getTimes(Date.now(), map.getCenter().lat, map.getCenter().lng);
+                map.setPaintProperty('sky', 'sky-atmosphere-sun', getSunPosition(sunTimes[btnId]));
+            });
+        });
+
+        document.getElementById('next30mins').addEventListener('click', () => {
+            date.setTime(date.getTime() + 30 * 60 * 1000);
+            map.setPaintProperty('sky', 'sky-atmosphere-sun', getSunPosition(date));
+        });
+        document.getElementById('prev30mins').addEventListener('click', () => {
+            date.setTime(date.getTime() - 30 * 60 * 1000);
+            map.setPaintProperty('sky', 'sky-atmosphere-sun', getSunPosition(date));
+        });
+        document.getElementById('next30days').addEventListener('click', () => {
+            date.setMonth(date.getMonth() + 1);
+            map.setPaintProperty('sky', 'sky-atmosphere-sun', getSunPosition(date));
+        });
+        document.getElementById('prev30days').addEventListener('click', () => {
+            date.setMonth(date.getMonth() - 1);
+            map.setPaintProperty('sky', 'sky-atmosphere-sun', getSunPosition(date));
+        });
+        document.getElementById('getlocal').addEventListener('click', () => {
+            date = new Date(Date.now());
+            map.setPaintProperty('sky', 'sky-atmosphere-sun', getSunPosition());
+        });
+
+        map.on('style.load', function () {
+            map.addSource('mapbox-dem', {
+                "type": "raster-dem",
+                "url": "mapbox://mapbox.terrain-rgb",
+                "tileSize": 512,
+                "maxzoom": 14
+            });
+            map.setTerrain({"source": "mapbox-dem", "exaggeration": 1.5});
+            map.addLayer({
+                'id': 'sky',
+                'type': 'sky',
+                'paint': {
+                    'sky-opacity': ['interpolate', ['linear'],
+                        ['zoom'],
+                        0, 0,
+                        5, 0.3,
+                        8, 1],
+                    'sky-type': 'atmosphere',
+                    'sky-atmosphere-sun': getSunPosition(),
+                    'sky-atmosphere-sun-intensity': 5,
+                }
+            });
+        });
+
+        function getSunPosition(date) {
+            const center = map.getCenter();
+            // eslint-disable-next-line no-undef
+            var sunPos = SunCalc.getPosition(date || Date.now(), center.lat, center.lng);
+            var sunAzimuth = 180 + sunPos.azimuth * 180 / Math.PI;
+            var sunAltitude = 90 - sunPos.altitude * 180 / Math.PI;
+            return [sunAzimuth, sunAltitude];
+        }
+    </script>
+</body>
+
+</html>

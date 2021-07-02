@@ -1,24 +1,23 @@
 // @flow
 
-import {patternUniformValues} from './pattern';
+import {patternUniformValues} from './pattern.js';
 import {
     Uniform1i,
     Uniform1f,
     Uniform2f,
     Uniform3f,
-    Uniform4f,
     UniformMatrix4f
-} from '../uniform_binding';
+} from '../uniform_binding.js';
 
 import {mat3, vec3} from 'gl-matrix';
-import {extend} from '../../util/util';
+import {extend} from '../../util/util.js';
 
-import type Context from '../../gl/context';
-import type Painter from '../painter';
-import type {OverscaledTileID} from '../../source/tile_id';
-import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type {CrossfadeParameters} from '../../style/evaluation_parameters';
-import type Tile from '../../source/tile';
+import type Context from '../../gl/context.js';
+import type Painter from '../painter.js';
+import type {OverscaledTileID} from '../../source/tile_id.js';
+import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
+import type Tile from '../../source/tile.js';
 
 export type FillExtrusionUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -41,7 +40,7 @@ export type FillExtrusionPatternUniformsType = {|
     'u_image': Uniform1i,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f,
-    'u_scale': Uniform4f,
+    'u_scale': Uniform3f,
     'u_fade': Uniform1f,
     'u_opacity': Uniform1f
 |};
@@ -67,7 +66,7 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_pixel_coord_upper': new Uniform2f(context, locations.u_pixel_coord_upper),
     'u_pixel_coord_lower': new Uniform2f(context, locations.u_pixel_coord_lower),
-    'u_scale': new Uniform4f(context, locations.u_scale),
+    'u_scale': new Uniform3f(context, locations.u_scale),
     'u_fade': new Uniform1f(context, locations.u_fade),
     'u_opacity': new Uniform1f(context, locations.u_opacity)
 });
@@ -82,10 +81,11 @@ const fillExtrusionUniformValues = (
     const _lp = light.properties.get('position');
     const lightPos = [_lp.x, _lp.y, _lp.z];
     const lightMat = mat3.create();
-    if (light.properties.get('anchor') === 'viewport') {
+    const anchor = light.properties.get('anchor');
+    if (anchor === 'viewport') {
         mat3.fromRotation(lightMat, -painter.transform.angle);
+        vec3.transformMat3(lightPos, lightPos, lightMat);
     }
-    vec3.transformMat3(lightPos, lightPos, lightMat);
 
     const lightColor = light.properties.get('color');
 

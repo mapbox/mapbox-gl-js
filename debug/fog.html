@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0 }
+        html, body, #map { height: 100%; }
+
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='access_token_generated.js'></script>
+<script>
+
+var GUIParams = function() {
+    this.enableFog = true;
+    this.enableTerrain = true;
+    this.freezeTileCoverage = false;
+    this.enableSky = true;
+    this.terrainExaggeration = 1.5;
+    this.style = 'satellite-streets-v11';
+    this.start = 2;
+    this.end = 12;
+    this.color = [255, 255, 255];
+    this.opacity = 1.0;
+    this.horizonBlend = 0.1;
+    this.showTileBoundaries = false;
+    this.showCollisionBoxes = false;
+    this.fov = 36.86989764584402;
+};
+
+var guiParams = new GUIParams();
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 10,
+    center: [78.7193, 36.2927],
+    pitch: 75,
+    bearing: -10,
+    style: 'mapbox://styles/mapbox/satellite-streets-v11',
+    hash: true
+});
+
+window.onload = function() {
+    var gui = new dat.GUI(); // eslint-disable-line
+
+    var style = gui.add(guiParams, 'style', [
+        'mapbox/streets-v11',
+        'mapbox/satellite-streets-v11',
+        'mapbox/light-v10',
+        'mapbox/dark-v10',
+        'mapbox/outdoors-v11',
+        'mapbox/satellite-v9',
+    ]);
+
+    style.onFinishChange((value) => {
+        map.setStyle('mapbox://styles/' + value);
+    });
+
+    var showTileBoundaries = gui.add(guiParams, 'showTileBoundaries');
+    showTileBoundaries.onFinishChange((value) => {
+        map.showTileBoundaries = value;
+    });
+    var showCollisionBoxes = gui.add(guiParams, 'showCollisionBoxes');
+    showCollisionBoxes.onFinishChange((value) => {
+        map.showCollisionBoxes = value;
+    });
+    var freezeTileCoverage = gui.add(guiParams, 'freezeTileCoverage');
+    freezeTileCoverage.onFinishChange((value) => {
+        map.transform.freezeTileCoverage = value;
+    });
+    var enableSky = gui.add(guiParams, 'enableSky');
+    enableSky.onFinishChange((value) => {
+        map.setLayoutProperty('sky', 'visibility', value ? 'visible' : 'none');
+    });
+    var fov = gui.add(guiParams, 'fov', 5, 60);
+    fov.onChange((value) => {
+        map.transform.fov = value;
+        map.resize();
+    });
+
+    var terrain = gui.addFolder('Terrain');
+    var enableTerrain = terrain.add(guiParams, 'enableTerrain');
+    enableTerrain.onFinishChange((value) => {
+        map.setTerrain(value ? {"source": "mapbox-dem", "exaggeration": guiParams.terrainExaggeration} : null);
+    });
+
+    var terrainExaggeration = terrain.add(guiParams, 'terrainExaggeration', 0.0, 4);
+    terrainExaggeration.onFinishChange((value) => {
+        if (guiParams.enableTerrain) {
+            map.setTerrain({"source": "mapbox-dem", "exaggeration": value});
+        }
+    });
+
+    var fog = gui.addFolder('Fog');
+    var enableFog = fog.add(guiParams, 'enableFog');
+    enableFog.onFinishChange((value) => {
+        map.setFog(value ? {
+            "range": [guiParams.start, guiParams.end],
+            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
+            "horizon-blend": guiParams.horizonBlend
+        } : null);
+    });
+
+    var start = fog.add(guiParams, 'start', -20, 20);
+    start.onChange((value) => {
+        map.setFog({
+            "range": [value, guiParams.end],
+        });
+    });
+
+    var end = fog.add(guiParams, 'end', -20, 20);
+    end.onChange((value) => {
+        map.setFog({
+            "range": [guiParams.start, value],
+        });
+    });
+
+    var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 1.0);
+    horizonBlend.onChange((value) => {
+        map.setFog({
+            "horizon-blend": value,
+        });
+    });
+
+    var opacity = fog.add(guiParams, 'opacity', 0.0, 1.0);
+    opacity.onChange((value) => {
+        map.setFog({
+            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + value + ')'
+        });
+    });
+
+    var color = fog.addColor(guiParams, 'color');
+    color.onChange((value) => {
+        map.setFog({
+            "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.opacity + ')'
+        });
+    });
+};
+
+var popup = new mapboxgl.Popup().setHTML('Pitch Alignment: auto<br>Rotation Alignment: auto');
+
+var marker = new mapboxgl.Marker({
+    color: `rgb(200, 0, 0)`,
+    scale: 1,
+    draggable: true,
+    pitchAlignment: 'auto',
+    rotationAlignment: 'auto'
+})
+    .setLngLat(map.getCenter())
+    .setPopup(popup)
+    .addTo(map);
+
+marker.togglePopup();
+
+map.on('style.load', function() {
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
+
+    map.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'paint': {
+            'fill-extrusion-color': '#DDD',
+            'fill-extrusion-height': ['*', ['get', 'height'], 2],
+            'fill-extrusion-opacity': 0.7
+        }
+    });
+
+    map.addLayer({
+        'id': 'sky',
+        'type': 'sky',
+        'paint': {
+            'sky-type': 'atmosphere',
+            'sky-gradient-center': [90, 3],
+            'sky-opacity': [
+                'interpolate',
+                ['exponential', 0.1],
+                ['zoom'],
+                5,
+                0,
+                22,
+                1
+            ]
+        }
+    });
+
+    map.setFog(guiParams.enableFog ? {
+        "range": [guiParams.start, guiParams.end],
+        "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
+        "horizon-blend": guiParams.horizonBlend
+    } : null);
+
+    map.setTerrain(guiParams.enableTerrain ? {
+        "source": "mapbox-dem",
+        "exaggeration": guiParams.terrainExaggeration
+    } : null);
+
+    map.showTileBoundaries = guiParams.showTileBoundaries;
+});
+
+</script>
+</body>
+</html>

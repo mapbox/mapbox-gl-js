@@ -1,17 +1,18 @@
 // @flow
 
-import StyleLayer from '../style_layer';
+import StyleLayer from '../style_layer.js';
 
-import HeatmapBucket from '../../data/bucket/heatmap_bucket';
-import {RGBAImage} from '../../util/image';
-import properties from './heatmap_style_layer_properties';
-import renderColorRamp from '../../util/color_ramp';
-import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
+import HeatmapBucket from '../../data/bucket/heatmap_bucket.js';
+import {RGBAImage} from '../../util/image.js';
+import properties from './heatmap_style_layer_properties.js';
+import {renderColorRamp} from '../../util/color_ramp.js';
+import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
 
-import type Texture from '../../render/texture';
-import type Framebuffer from '../../gl/framebuffer';
-import type {PaintProps} from './heatmap_style_layer_properties';
-import type {LayerSpecification} from '../../style-spec/types';
+import type Texture from '../../render/texture.js';
+import type Framebuffer from '../../gl/framebuffer.js';
+import type {PaintProps} from './heatmap_style_layer_properties.js';
+import type {LayerSpecification} from '../../style-spec/types.js';
+import ProgramConfiguration from '../../data/program_configuration.js';
 
 class HeatmapStyleLayer extends StyleLayer {
 
@@ -42,7 +43,11 @@ class HeatmapStyleLayer extends StyleLayer {
 
     _updateColorRamp() {
         const expression = this._transitionablePaint._values['heatmap-color'].value.expression;
-        this.colorRamp = renderColorRamp(expression, 'heatmapDensity');
+        this.colorRamp = renderColorRamp({
+            expression,
+            evaluationKey: 'heatmapDensity',
+            image: this.colorRamp
+        });
         this.colorRampTexture = null;
     }
 
@@ -63,6 +68,14 @@ class HeatmapStyleLayer extends StyleLayer {
 
     hasOffscreenPass() {
         return this.paint.get('heatmap-opacity') !== 0 && this.visibility !== 'none';
+    }
+
+    getProgramIds() {
+        return ['heatmap', 'heatmapTexture'];
+    }
+
+    getProgramConfiguration(zoom: number): ProgramConfiguration {
+        return new ProgramConfiguration(this, zoom);
     }
 }
 

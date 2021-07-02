@@ -1,6 +1,6 @@
 
 import URL from 'url';
-import {eachSource, eachLayer, eachProperty} from '../visit';
+import {eachSource, eachLayer, eachProperty} from '../visit.js';
 
 function eachLayout(layer, callback) {
     for (const k in layer) {

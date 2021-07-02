@@ -1,33 +1,13 @@
 // @flow
 
-import {ValueType, BooleanType, toString} from '../types';
-import RuntimeError from '../runtime_error';
-import {typeOf} from '../values';
+import {BooleanType, StringType, ValueType, NullType, toString, NumberType, isValidType, isValidNativeType} from '../types.js';
+import RuntimeError from '../runtime_error.js';
+import {typeOf} from '../values.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Type} from '../types';
-import type {Value} from '../values';
-
-function isComparableType(type: Type) {
-    return type.kind === 'boolean' ||
-           type.kind === 'string' ||
-           type.kind === 'number' ||
-           type.kind === 'null' ||
-           type.kind === 'value';
-}
-
-function isComparableRuntimeValue(needle: boolean | string | number | null) {
-    return typeof needle === 'boolean' ||
-           typeof needle === 'string' ||
-           typeof needle === 'number';
-}
-
-function isSearchableRuntimeValue(haystack: Array<Value> | string) {
-    return Array.isArray(haystack) ||
-           typeof haystack === 'string';
-}
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type} from '../types.js';
 
 class In implements Expression {
     type: Type;
@@ -51,7 +31,7 @@ class In implements Expression {
 
         if (!needle || !haystack) return null;
 
-        if (!isComparableType(needle.type)) {
+        if (!isValidType(needle.type, [BooleanType, StringType, NumberType, NullType, ValueType])) {
             return context.error(`Expected first argument to be of type boolean, string, number or null, but found ${toString(needle.type)} instead`);
         }
 
@@ -62,26 +42,26 @@ class In implements Expression {
         const needle = (this.needle.evaluate(ctx): any);
         const haystack = (this.haystack.evaluate(ctx): any);
 
-        if (!needle || !haystack) return false;
+        if (!haystack) return false;
 
-        if (!isComparableRuntimeValue(needle)) {
-            throw new RuntimeError(`Expected first argument to be of type boolean, string or number, but found ${toString(typeOf(needle))} instead.`);
+        if (!isValidNativeType(needle, ['boolean', 'string', 'number', 'null'])) {
+            throw new RuntimeError(`Expected first argument to be of type boolean, string, number or null, but found ${toString(typeOf(needle))} instead.`);
         }
 
-        if (!isSearchableRuntimeValue(haystack)) {
+        if (!isValidNativeType(haystack, ['string', 'array'])) {
             throw new RuntimeError(`Expected second argument to be of type array or string, but found ${toString(typeOf(haystack))} instead.`);
         }
 
         return haystack.indexOf(needle) >= 0;
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.needle);
         fn(this.haystack);
     }
 
-    possibleOutputs() {
-        return [true, false];
+    outputDefined() {
+        return true;
     }
 
     serialize() {

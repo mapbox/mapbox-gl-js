@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import resolveTokens from '../../../src/util/resolve_tokens';
+import {test} from '../../util/test.js';
+import resolveTokens from '../../../src/util/resolve_tokens.js';
 
 test('resolveToken', (t) => {
     t.equal('3 Fine Fields', resolveTokens({a:3, b:'Fine', c:'Fields'}, '{a} {b} {c}'));

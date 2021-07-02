@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import browser from '../../../src/util/browser';
+import {test} from '../../util/test.js';
+import browser from '../../../src/util/browser.js';
 
 test('browser', (t) => {
     t.test('frame', (t) => {
@@ -25,11 +25,6 @@ test('browser', (t) => {
 
     t.test('devicePixelRatio', (t) => {
         t.equal(typeof browser.devicePixelRatio, 'number');
-        t.end();
-    });
-
-    t.test('hardwareConcurrency', (t) => {
-        t.equal(typeof browser.hardwareConcurrency, 'number');
         t.end();
     });
 

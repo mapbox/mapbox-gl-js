@@ -4,14 +4,14 @@
 // It implements a JSDOM window object for use in Node environments
 // In a browser environment, this file is replaced with ./src/util/browser/window.js
 // when Rollup builds the main bundle
-// See https://github.com/mapbox/mapbox-gl-js/blob/master/package.json#L104-L108
+// See package.json#browser
 
 import jsdom from 'jsdom';
 
 import gl from 'gl';
 import sinon from 'sinon';
 
-import type {Window} from '../types/window';
+import type {Window} from '../types/window.js';
 
 const {window: _window} = new jsdom.JSDOM('', {
     virtualConsole: new jsdom.VirtualConsole().sendTo(console)
@@ -86,6 +86,12 @@ function restore(): Window {
     };
 
     window.restore = restore;
+
+    window.performance.getEntriesByName = function() {};
+    window.performance.mark = function() {};
+    window.performance.measure = function() {};
+    window.performance.clearMarks = function() {};
+    window.performance.clearMeasures = function() {};
 
     window.ImageData = window.ImageData || function() { return false; };
     window.ImageBitmap = window.ImageBitmap || function() { return false; };

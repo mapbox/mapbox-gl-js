@@ -1,10 +1,10 @@
 // @flow
 
-import {isExpressionFilter} from './index';
+import {isExpressionFilter} from './index.js';
 
-import type {FilterSpecification} from '../types';
+import type {FilterSpecification} from '../types.js';
 
-type ExpectedTypes = {[string]: 'string' | 'number' | 'boolean'};
+type ExpectedTypes = {[_: string]: 'string' | 'number' | 'boolean'};
 
 /**
  * Convert the given legacy filter to (the JSON representation of) an

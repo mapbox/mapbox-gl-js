@@ -1,9 +1,9 @@
-import {test} from '../../../util/test';
-import {createMap as globalCreateMap} from '../../../util';
-import VectorTileSource from '../../../../src/source/vector_tile_source';
+import {test} from '../../../util/test.js';
+import {createMap as globalCreateMap} from '../../../util/index.js';
+import VectorTileSource from '../../../../src/source/vector_tile_source.js';
 
-function createMap(t, logoPosition, logoRequired) {
-    return globalCreateMap(t, {
+function createMap(t, logoPosition, logoRequired, deleteStyle) {
+    const options = {
         style: {
             version: 8,
             sources: {
@@ -18,14 +18,21 @@ function createMap(t, logoPosition, logoRequired) {
             },
             layers: []
         },
-        logoPosition: logoPosition || undefined
-    });
+        logoPosition: logoPosition || undefined,
+        deleteStyle: deleteStyle || undefined
+    };
+
+    if (deleteStyle) delete options.style;
+    return globalCreateMap(t, options);
 }
 
 function createSource(options, logoRequired) {
     const source = new VectorTileSource('id', options, {send () {}});
     source.onAdd({
-        _requestManager: {_skuToken: '1234567890123'},
+        _requestManager: {
+            _skuToken: '1234567890123',
+            canonicalizeTileset: tileJSON => tileJSON.tiles
+        },
         transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
         _getMapId: () => 1
     });
@@ -36,6 +43,7 @@ function createSource(options, logoRequired) {
     source[logoFlag] = logoRequired === undefined ? true : logoRequired;
     return source;
 }
+
 test('LogoControl appears in bottom-left by default', (t) => {
     const map = createMap(t);
     map.on('load', () => {
@@ -56,6 +64,12 @@ test('LogoControl appears in the position specified by the position option', (t)
     });
 });
 
+test('LogoControl is displayed when no style is supplied', (t) => {
+    const map = createMap(t, 'bottom-left', false, true, true);
+    t.equal(map.getContainer().querySelector('.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl').style.display, 'block');
+    t.end();
+});
+
 test('LogoControl is not displayed when the mapbox_logo property is false', (t) => {
     const map = createMap(t, 'top-left', false);
     map.on('load', () => {
@@ -63,6 +77,7 @@ test('LogoControl is not displayed when the mapbox_logo property is false', (t) 
         t.end();
     });
 });
+
 test('LogoControl is not added more than once', (t) => {
     const map = createMap(t);
     const source = createSource({

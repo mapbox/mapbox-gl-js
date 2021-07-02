@@ -9,11 +9,13 @@ if (!shared) {
 } else if (!worker) {
     worker = chunk;
 } else {
-    var workerBundleString = 'var sharedChunk = {}; (' + shared + ')(sharedChunk); (' + worker + ')(sharedChunk);'
+    var workerBundleString = "self.onerror = function() { console.error('An error occurred while parsing the WebWorker bundle. This is most likely due to improper transpilation by Babel; please see https://docs.mapbox.com/mapbox-gl-js/api/#transpiling-v2'); }; var sharedChunk = {}; (" + shared + ")(sharedChunk); (" + worker + ")(sharedChunk); self.onerror = null;"
 
     var sharedChunk = {};
     shared(sharedChunk);
     mapboxgl = chunk(sharedChunk);
-    mapboxgl.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
+    if (typeof window !== 'undefined') {
+        mapboxgl.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
+    }
 }
 }

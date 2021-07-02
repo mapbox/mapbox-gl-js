@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='mapbox-gl.css' />
+    <link href='main.css' rel='stylesheet' type="text/css"/>
+    <style>
+        body { margin: 0; padding: 0 }
+        html, body, #map { height: 100%; }
+
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+        .dg.a {
+            float: left !important;
+        }
+
+        #elevationDebug {
+            background-color: azure;
+            position: absolute;
+            top:30px;
+            right:30px;
+            padding:5px;
+            z-index: 99;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'><div id='elevationDebug'></div></div>
+
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var Demo3D = function() {
+    this.enableTerrain = true;
+    this.terrainExaggeration = 1.5;
+    this.animateCamera = false;
+    this.style = 'streets-v11';
+    this.sunAltitude = 2;
+    this.sunAzimuth = 90;
+    this.sunHaloIntensity = 1.0;
+    this.sunAtmosphereIntensity = 1.0;
+    this.animateSky = false;
+    this.sunHaloColor = [ 255, 255, 255 ];
+    this.skyColor = [ 255, 255, 255 ];
+    this.sunIntensity = 30.0;
+};
+
+var demo3d = new Demo3D();
+
+window.onload = function() {
+    var gui = new dat.GUI(); // eslint-disable-line
+
+    var style = gui.add(demo3d, 'style', [
+        'mapbox/streets-v11',
+        'mapbox/satellite-streets-v11',
+        'mapbox/light-v10',
+        'mapbox/dark-v10',
+        'mapbox/outdoors-v11',
+        'mapbox/satellite-v9',
+        'mapbox/cjerxnqt3cgvp2rmyuxbeqme7',
+        'mapbox-map-design/ckhqrdj3q0q1y19ko8t70qtqu',
+        'mapbox-map-design/ckhqrf2tz0dt119ny6azh975y',
+        'mapbox-map-design/ckhqrbxlc1awj19svtb92m0bd'
+    ]);
+    style.onFinishChange((value) => {
+        map.setStyle('mapbox://styles/' + value);
+    });
+
+    var terrain = gui.addFolder('Terrain');
+    var enableTerrain = terrain.add(demo3d, 'enableTerrain');
+    enableTerrain.onFinishChange((value) => {
+        map.setTerrain(value ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
+    });
+    var terrainExaggeration = terrain.add(demo3d, 'terrainExaggeration', 0.5, 2);
+    terrainExaggeration.onFinishChange((value) => {
+        if (demo3d.enableTerrain) {
+            map.setTerrain({"source": "mapbox-dem", "exaggeration": value});
+        }
+    });
+
+    var camera = gui.addFolder('Camera');
+    camera.add(demo3d, 'animateCamera');
+
+    var sky = gui.addFolder('Sky');
+    sky.add(demo3d, 'animateSky');
+    var sunAltitude = sky.add(demo3d, 'sunAltitude', 0.0, 90.0);
+    sunAltitude.onFinishChange((value) => {
+        map.setLight({'position': [1, demo3d.sunAzimuth, value], 'anchor': 'map'});
+    });
+    var sunAzimuth = sky.add(demo3d, 'sunAzimuth', 0.0, 360.0);
+    sunAzimuth.onFinishChange((value) => {
+        map.setLight({'position': [1, value, demo3d.sunAltitude], 'anchor': 'map'});
+    });
+    var sunIntensity = sky.add(demo3d, 'sunIntensity', 0.0, 100.0);
+    sunIntensity.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-sun-intensity', value);
+    });
+    var sunHaloIntensity = sky.add(demo3d, 'sunHaloIntensity', 0.0, 1.0);
+    sunHaloIntensity.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-halo-color',
+            'rgba(' + demo3d.sunHaloColor[0] + ', ' + demo3d.sunHaloColor[1] + ', ' + demo3d.sunHaloColor[2] + ', ' + value + ')');
+    });
+    var sunHaloColor = sky.addColor(demo3d, 'sunHaloColor');
+    sunHaloColor.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-halo-color',
+            'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + demo3d.sunHaloIntensity + ')');
+    });
+    var sunAtmosphereIntensity = sky.add(demo3d, 'sunAtmosphereIntensity', 0.0, 1.0);
+    sunAtmosphereIntensity.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-color',
+            'rgba(' + demo3d.skyColor[0] + ', ' + demo3d.skyColor[1] + ', ' + demo3d.skyColor[2] + ', ' + value + ')');
+    });
+    var skyColor = sky.addColor(demo3d, 'skyColor');
+    skyColor.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-color',
+            'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + demo3d.sunAtmosphereIntensity + ')');
+    });
+};
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 13.5,
+    center: [-122.45814, 37.76159],
+    pitch: 85,
+    bearing: 60,
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true,
+});
+
+const r = 255 * 0.75;
+
+let animationIndex = 0;
+let cameraAnimationTime = 0.0;
+let skyAnimationTime = 0.0;
+let first = true;
+
+map.on('style.load', function() {
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
+    map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
+
+    map.addLayer({
+        'id': "extrusion",
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+            'fill-extrusion-color': ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+            'fill-extrusion-height': ["get", "height"],
+            'fill-extrusion-opacity': 0.7
+        }
+    }, 'waterway-label');
+
+    map.addLayer({
+        'id': 'sky',
+        'type': 'sky',
+        'paint': {
+            'sky-type': 'atmosphere',
+            'sky-opacity': [
+                'interpolate',
+                ['exponential', 0.1],
+                ['zoom'],
+                5,
+                0,
+                22,
+                1
+            ]
+        }
+    });
+    var elevationDebug = document.getElementById('elevationDebug');
+    map.on('mousemove', (e) => {
+        const elevation = map.queryTerrainElevation(map.unproject(e.point));
+        const elevation2 = map.queryTerrainElevation(map.unproject(e.point), {exaggerated: false});
+        elevationDebug.innerHTML = 'Exaggerated: ' + (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + 'Unexaggerated: ' + (elevation2 ? elevation2.toFixed(3) + 'm ' : 'Unavailable');
+    });
+
+    const lerp = (a, b, t) => {
+        if (Array.isArray(a) && Array.isArray(b)) {
+            const result = [];
+            for (let i = 0; i < Math.min(a.length, b.length); i++)
+                result[i] = a[i] * (1.0 - t) + b[i] * t;
+            return result;
+        } else {
+            return a * (1.0 - t) + b * t;
+        }
+    };
+
+    if (!first) { return; }
+
+    const easeInOutQuad = (t) => t < 0.5 ? 2.0 * t * t : (4.0 - 2.0 * t) * t - 1.0;
+    const easeInCubic = (t) => t * t * t;
+
+    const animations = [{
+        duration: 8.0,
+        animate: (phase) => {
+            const start = [-122.44418, 37.83254];
+            const end = [-122.41307, 37.81518];
+            const alt = [1500.0, 1000.0];
+            const target = [-122.42204, 37.82666];
+
+            // interpolate camera position while keeping focus on the Alcatraz island
+            const camera = map.getFreeCameraOptions();
+
+            const position = lerp(start, end, phase);
+            const altitude = lerp(alt[0], alt[1], phase);
+            camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+            camera.lookAtPoint(target);
+
+            map.setFreeCameraOptions(camera);
+        }
+    }, {
+        duration: 5.0,
+        animate: (phase) => {
+            const position = [-122.45569, 37.75853];
+            const alt = [10000.0, 20000.0];
+
+            // Ease out
+            const camera = map.getFreeCameraOptions();
+            const altitude = lerp(alt[0], alt[1], easeInOutQuad(phase));
+            camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+            camera.orientation = [0, 0, 0, 1];
+
+            map.setFreeCameraOptions(camera);
+        }
+    }, {
+        duration: 8.0,
+        animate: (phase) => {
+            const start = [-122.53816, 37.76712];
+            const end = [-122.49277, 37.77004];
+            const alt = [2000.0, 4000.0];
+
+            const camera = map.getFreeCameraOptions();
+            const position = lerp(start, end, easeInOutQuad(phase));
+            const altitude = lerp(alt[0], alt[1], easeInCubic(1.0 - phase));
+            camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+            camera.lookAtPoint([position[0] + 0.02 + phase * 0.08, position[1]]);
+
+            map.setFreeCameraOptions(camera);
+        }
+    }, {
+        duration: 0.0,
+        animate: (phase) => {
+
+        }
+    }];
+
+    setInterval(() => {
+        if (demo3d.animateCamera) {
+            animationIndex %= animations.length - 1;
+            const current = animations[animationIndex];
+
+            if (cameraAnimationTime < current.duration) {
+                current.animate(cameraAnimationTime / current.duration);
+            }
+
+            cameraAnimationTime += 1.0 / 60;
+
+            if (cameraAnimationTime > current.duration) {
+                animationIndex++;
+                cameraAnimationTime = 0.0;
+            }
+        }
+        if (demo3d.animateSky) {
+            const altitude = Math.cos(skyAnimationTime + Math.PI) * 0.5 + 0.5;
+            map.setLight({'position': [1, demo3d.sunAzimuth, easeInCubic(altitude) * 90.0], 'anchor': 'map'});
+            skyAnimationTime += 1.0 / 60;
+        }
+    }, 1000.0 / 60.0);
+
+    first = false;
+});
+
+</script>
+</body>
+</html>

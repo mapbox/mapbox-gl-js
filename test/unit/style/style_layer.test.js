@@ -1,8 +1,8 @@
-import {test} from '../../util/test';
-import createStyleLayer from '../../../src/style/create_style_layer';
-import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer';
-import {extend} from '../../../src/util/util';
-import Color from '../../../src/style-spec/util/color';
+import {test} from '../../util/test.js';
+import createStyleLayer from '../../../src/style/create_style_layer.js';
+import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer.js';
+import {extend} from '../../../src/util/util.js';
+import Color from '../../../src/style-spec/util/color.js';
 
 test('StyleLayer', (t) => {
     t.test('instantiates the correct subclass', (t) => {
@@ -400,6 +400,13 @@ test('StyleLayer#serialize', (t) => {
         t.equal(layer.serialize().layout['text-transform'], 'uppercase');
         t.equal(layer.serialize().layout['text-size'], 20);
 
+        t.end();
+    });
+
+    t.test('layer.paint is never undefined', (t) => {
+        const layer = createStyleLayer({type: 'fill'});
+        // paint is never undefined
+        t.ok(layer.paint);
         t.end();
     });
 

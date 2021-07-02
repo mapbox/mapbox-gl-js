@@ -1,10 +1,10 @@
 // @flow
 
-import DOM from '../../util/dom';
-import {bindAll} from '../../util/util';
-import config from '../../util/config';
+import DOM from '../../util/dom.js';
+import {bindAll} from '../../util/util.js';
+import config from '../../util/config.js';
 
-import type Map from '../map';
+import type Map from '../map.js';
 
 type Options = {
     compact?: boolean,
@@ -12,16 +12,17 @@ type Options = {
 };
 
 /**
- * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
+ * An `AttributionControl` control presents the map's [attribution information](https://docs.mapbox.com/help/how-mapbox-works/attribution/).
+ * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
  * @param {Object} [options]
- * @param {boolean} [options.compact] If `true` force a compact attribution that shows the full attribution on mouse hover, or if `false` force the full attribution control. The default is a responsive attribution that collapses when the map is less than 640 pixels wide.
- * @param {string | Array<string>} [options.customAttribution] String or strings to show in addition to any other attributions.
+ * @param {boolean} [options.compact] If `true`, force a compact attribution that shows the full attribution on mouse hover. If `false`, force the full attribution control. The default is a responsive attribution that collapses when the map is less than 640 pixels wide. **Attribution should not be collapsed if it can comfortably fit on the map. `compact` should only be used to modify default attribution when map size makes it impossible to fit [default attribution](https://docs.mapbox.com/help/how-mapbox-works/attribution/) and when the automatic compact resizing for default settings are not sufficient.**
+ * @param {string | Array<string>} [options.customAttribution] String or strings to show in addition to any other attributions. You can also set a custom attribution when initializing your map with {@link https://docs.mapbox.com/mapbox-gl-js/api/map/#map-parameters the customAttribution option}.
  * @example
  * var map = new mapboxgl.Map({attributionControl: false})
  *     .addControl(new mapboxgl.AttributionControl({
- *         compact: true
+ *         customAttribution: 'Map design by me'
  *     }));
  */
 class AttributionControl {
@@ -29,6 +30,7 @@ class AttributionControl {
     _map: Map;
     _container: HTMLElement;
     _innerContainer: HTMLElement;
+    _compactButton: HTMLButtonElement;
     _editLink: ?HTMLAnchorElement;
     _attribHTML: string;
     styleId: string;
@@ -38,6 +40,7 @@ class AttributionControl {
         this.options = options;
 
         bindAll([
+            '_toggleAttribution',
             '_updateEditLink',
             '_updateData',
             '_updateCompact'
@@ -53,7 +56,12 @@ class AttributionControl {
 
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
+        this._compactButton = DOM.create('button', 'mapboxgl-ctrl-attrib-button', this._container);
+        this._compactButton.type = 'button';
+        this._compactButton.addEventListener('click', this._toggleAttribution);
+        this._setElementTitle(this._compactButton, 'ToggleAttribution');
         this._innerContainer = DOM.create('div', 'mapboxgl-ctrl-attrib-inner', this._container);
+        this._innerContainer.setAttribute('role', 'list');
 
         if (compact) {
             this._container.classList.add('mapboxgl-compact');
@@ -83,6 +91,23 @@ class AttributionControl {
         this._map.off('resize', this._updateCompact);
 
         this._map = (undefined: any);
+        this._attribHTML = (undefined: any);
+    }
+
+    _setElementTitle(element: HTMLElement, title: string) {
+        const str = this._map._getUIString(`AttributionControl.${title}`);
+        element.title = str;
+        element.setAttribute('aria-label', str);
+    }
+
+    _toggleAttribution() {
+        if (this._container.classList.contains('mapboxgl-compact-show')) {
+            this._container.classList.remove('mapboxgl-compact-show');
+            this._compactButton.setAttribute('aria-pressed', 'false');
+        } else {
+            this._container.classList.add('mapboxgl-compact-show');
+            this._compactButton.setAttribute('aria-pressed', 'true');
+        }
     }
 
     _updateEditLink() {
@@ -92,9 +117,9 @@ class AttributionControl {
         }
 
         const params = [
-            {key: "owner", value: this.styleOwner},
-            {key: "id", value: this.styleId},
-            {key: "access_token", value: this._map._requestManager._customAccessToken || config.ACCESS_TOKEN}
+            {key: 'owner', value: this.styleOwner},
+            {key: 'id', value: this.styleId},
+            {key: 'access_token', value: this._map._requestManager._customAccessToken || config.ACCESS_TOKEN}
         ];
 
         if (editLink) {
@@ -105,12 +130,13 @@ class AttributionControl {
                 return acc;
             }, `?`);
             editLink.href = `${config.FEEDBACK_URL}/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
-            editLink.rel = "noopener nofollow";
+            editLink.rel = 'noopener nofollow';
+            this._setElementTitle(editLink, 'MapFeedback');
         }
     }
 
     _updateData(e: any) {
-        if (e && (e.sourceDataType === 'metadata' || e.dataType === 'style')) {
+        if (e && (e.sourceDataType === 'metadata' || e.sourceDataType === 'visibility' || e.dataType === 'style')) {
             this._updateAttributions();
             this._updateEditLink();
         }
@@ -138,7 +164,7 @@ class AttributionControl {
             this.styleId = stylesheet.id;
         }
 
-        const sourceCaches = this._map.style.sourceCaches;
+        const sourceCaches = this._map.style._sourceCaches;
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (sourceCache.used) {
@@ -179,7 +205,7 @@ class AttributionControl {
         if (this._map.getCanvasContainer().offsetWidth <= 640) {
             this._container.classList.add('mapboxgl-compact');
         } else {
-            this._container.classList.remove('mapboxgl-compact');
+            this._container.classList.remove('mapboxgl-compact', 'mapboxgl-compact-show');
         }
     }
 

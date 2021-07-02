@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #getBounds { position: absolute; top: 0; left; 0; }
+        #setBounds { position: absolute; top: 0; left: 78px; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<button id="getBounds">getBounds</button>
+<button id="setBounds">setBounds</button>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    style: 'mapbox://styles/mapbox/streets-v10',
+    hash: true
+});
+
+map.setPadding({
+    left: 400,
+    top: 50,
+    right: 50,
+    bottom: 50
+});
+map.showPadding = true;
+
+map.on('load', function () {
+    map.addSource('bounds', {
+        type: 'geojson',
+        data: {
+            type: 'FeatureCollection',
+            features: []
+        }
+    });
+    map.addLayer({
+        type: 'line',
+        id: 'bounds',
+        source: 'bounds',
+        paint: {
+            'line-width': 10
+        }
+    });
+});
+
+var bounds;
+document.getElementById('getBounds').addEventListener('click', function () {
+    bounds = map.getBounds();
+    map.getSource('bounds').setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+            type: 'Polygon',
+            coordinates: [[
+                bounds.getNorthEast().toArray(),
+                bounds.getSouthEast().toArray(),
+                bounds.getSouthWest().toArray(),
+                bounds.getNorthWest().toArray(),
+                bounds.getNorthEast().toArray()
+            ]]
+        }
+    });
+});
+document.getElementById('setBounds').addEventListener('click', function () {
+    map.fitBounds(bounds, {
+        duration: 0
+    });
+});
+</script>
+</body>
+</html>

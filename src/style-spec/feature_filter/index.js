@@ -1,9 +1,11 @@
 // @flow
 
-import {createExpression} from '../expression';
+import {createExpression} from '../expression/index.js';
+import type {GlobalProperties, Feature} from '../expression/index.js';
+import type {CanonicalTileID} from '../../source/tile_id.js';
 
-import type {GlobalProperties} from '../expression';
-export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature) => boolean;
+type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
+export type FeatureFilter ={filter: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
 export {isExpressionFilter};
@@ -21,7 +23,8 @@ function isExpressionFilter(filter: any) {
         return filter.length >= 2 && filter[1] !== '$id' && filter[1] !== '$type';
 
     case 'in':
-        return filter.length >= 3 && Array.isArray(filter[2]);
+        return filter.length >= 3 && (typeof filter[1] !== 'string' || Array.isArray(filter[2]));
+
     case '!in':
     case '!has':
     case 'none':
@@ -71,7 +74,7 @@ const filterSpec = {
  */
 function createFilter(filter: any): FeatureFilter {
     if (filter === null || filter === undefined) {
-        return () => true;
+        return {filter: () => true, needGeometry: false};
     }
 
     if (!isExpressionFilter(filter)) {
@@ -82,13 +85,24 @@ function createFilter(filter: any): FeatureFilter {
     if (compiled.result === 'error') {
         throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
-        return (globalProperties: GlobalProperties, feature: VectorTileFeature) => compiled.value.evaluate(globalProperties, feature);
+        const needGeometry = geometryNeeded(filter);
+        return {filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiled.value.evaluate(globalProperties, feature, {}, canonical),
+            needGeometry};
     }
 }
 
 // Comparison function to sort numbers and strings
 function compare(a, b) {
     return a < b ? -1 : a > b ? 1 : 0;
+}
+
+function geometryNeeded(filter) {
+    if (!Array.isArray(filter)) return false;
+    if (filter[0] === 'within') return true;
+    for (let index = 1; index < filter.length; index++) {
+        if (geometryNeeded(filter[index])) return true;
+    }
+    return false;
 }
 
 function convertFilter(filter: ?Array<any>): mixed {
@@ -109,6 +123,7 @@ function convertFilter(filter: ?Array<any>): mixed {
         op === '!in' ? convertNegation(convertInOp(filter[1], filter.slice(2))) :
         op === 'has' ? convertHasOp(filter[1]) :
         op === '!has' ? convertNegation(convertHasOp(filter[1])) :
+        op === 'within' ? filter :
         true;
     return converted;
 }

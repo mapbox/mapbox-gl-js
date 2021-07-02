@@ -1,6 +1,8 @@
-const spec = require('../src/style-spec/reference/v8.json');
-const properties = require('../src/style-spec/util/properties');
-const fs = require('fs');
+
+import fs from 'fs';
+import path from 'path';
+import {supportsPropertyExpression, supportsZoomExpression} from '../src/style-spec/util/properties.js';
+import spec from '../src/style-spec/reference/v8.json';
 
 function flowEnum(values) {
     if (Array.isArray(values)) {
@@ -32,8 +34,12 @@ function flowType(property) {
                 }
             case 'light':
                 return 'LightSpecification';
+            case 'terrain':
+                return 'TerrainSpecification';
+            case 'fog':
+                return 'FogSpecification';
             case 'sources':
-                return '{[string]: SourceSpecification}';
+                return '{[_: string]: SourceSpecification}';
             case '*':
                 return 'mixed';
             default:
@@ -41,9 +47,9 @@ function flowType(property) {
         }
     })();
 
-    if (properties.supportsPropertyExpression(property)) {
+    if (supportsPropertyExpression(property)) {
         return `DataDrivenPropertyValueSpecification<${baseType}>`;
-    } else if (properties.supportsZoomExpression(property)) {
+    } else if (supportsZoomExpression(property)) {
         return `PropertyValueSpecification<${baseType}>`;
     } else if (property.expression) {
         return `ExpressionSpecification`;
@@ -99,7 +105,7 @@ function flowLayer(key) {
         return flowObject(spec[`layout_${key}`], '    ', '|');
     };
 
-    if (key === 'background') {
+    if (key === 'background' || key === 'sky') {
         delete layer.source;
         delete layer['source-layer'];
         delete layer.filter;
@@ -121,6 +127,8 @@ export type ColorSpecification = string;
 export type FormattedSpecification = string;
 
 export type ResolvedImageSpecification = string;
+
+export type PromoteIdSpecification = {[_: string]: string} | string;
 
 export type FilterSpecification =
     | ['has', string]
@@ -172,6 +180,10 @@ export type DataDrivenPropertyValueSpecification<T> =
 ${flowObjectDeclaration('StyleSpecification', spec.$root)}
 
 ${flowObjectDeclaration('LightSpecification', spec.light)}
+
+${flowObjectDeclaration('TerrainSpecification', spec.terrain)}
+
+${flowObjectDeclaration('FogSpecification', spec.fog)}
 
 ${spec.source.map(key => flowObjectDeclaration(flowSourceTypeName(key), spec[key])).join('\n\n')}
 

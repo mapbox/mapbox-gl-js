@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v10',
+    hash: true
+});
+
+const border = 16;
+
+map.on('styleimagemissing', function(e) {
+    var id = e.id; // id of the missing image
+
+    // check if this missing icon is one this function can generate
+    var prefix = 'stretchable-';
+    if (id.indexOf(prefix) !== 0) return;
+
+    // extract the color from the id
+    var rgb1 = id.replace(prefix, '').split(',').map(Number);
+
+    var width = 64; // The image will be 64 pixels square
+    var bytesPerPixel = 4; // Each pixel is represented by 4 bytes: red, green, blue, and alpha.
+    var data = new Uint8Array(width * width * bytesPerPixel);
+
+    const rgb2 = [rgb1[2], rgb1[1], rgb1[0]];
+
+    for (var x = 0; x < width; x++) {
+        for (var y = 0; y < width; y++) {
+            var offset = (y * width + x) * bytesPerPixel;
+
+            let rgb =
+                x < border || x + border > width - 1 ||
+                y < border || y + border > width - 1 ?
+                    rgb2 :
+                    rgb1;
+
+            const half = width / 2;
+            if (Math.abs(x - half) + Math.abs(y - half) < border / 2) {
+                rgb = [255, 255, 255];
+            }
+
+            data[offset + 0] = rgb[0]; // red
+            data[offset + 1] = rgb[1]; // green
+            data[offset + 2] = rgb[2]; // blue
+            data[offset + 3] = 255;    // alpha
+        }
+    }
+
+    map.addImage(id, {width, height: width, data}, {
+        content: [border, border, width - border, width - border],
+        stretchX: [[border, (width - border) / 2], [(width + border) / 2, width - border]],
+        stretchY: [[border, (width - border) / 2], [(width + border) / 2, width - border]]
+    });
+});
+
+map.on('load', function () {
+    map.addLayer({
+        "id": "points",
+        "type": "symbol",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [0, 0]
+                    },
+                    "properties": {
+                        "text": "ASDF",
+                        "size": 36,
+                        "color": "255,0,0"
+                    }
+                }, {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [50, 0]
+                    },
+                    "properties": {
+                        "text": "ASDF \n - \nqwer",
+                        "size": 24,
+                        "color": "255,209,28"
+                    }
+                }, {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [-50, 0]
+                    },
+                    "properties": {
+                        "text": "ASDF",
+                        "size": 18,
+                        "color": "242,127,32"
+                    }
+                }]
+            }
+        },
+        "layout": {
+            "text-field": ["get", "text"],
+            "icon-text-fit": "both",
+            "text-size": ["get", "size"],
+            "icon-image": ["concat", "stretchable-", ["get", "color"]]
+        }
+    });
+});
+
+</script>
+</body>
+</html>

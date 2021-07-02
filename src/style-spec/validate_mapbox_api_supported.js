@@ -1,10 +1,10 @@
 // @flow
 
-import validateStyle from './validate_style.min';
-import {v8} from './style-spec';
-import readStyle from './read_style';
-import ValidationError from './error/validation_error';
-import getType from './util/get_type';
+import validateStyle from './validate_style.min.js';
+import {v8} from './style-spec.js';
+import readStyle from './read_style.js';
+import ValidationError from './error/validation_error.js';
+import getType from './util/get_type.js';
 
 const SUPPORTED_SPEC_VERSION = 8;
 const MAX_SOURCES_IN_STYLE = 15;
@@ -34,6 +34,7 @@ function getAllowedKeyErrors(obj: Object, keys: Array<*>, path: ?string): Array<
     return errors;
 }
 
+const acceptedSourceTypes = new Set(["vector", "raster", "raster-dem"]);
 function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     const errors = [];
 
@@ -45,14 +46,21 @@ function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     errors.push(...getAllowedKeyErrors(source, sourceKeys, 'source'));
 
     /*
-     * "sprite" is optional. If present, valid examples:
+     * "type" is required and must be one of "vector", "raster", "raster-dem"
+     */
+    if (!acceptedSourceTypes.has(String(source.type))) {
+        errors.push(new ValidationError(`sources[${i}].type`, source.type, `Expected one of [${Array.from(acceptedSourceTypes).join(", ")}]`));
+    }
+
+    /*
+     * "source" is required. Valid examples:
      * mapbox://mapbox.abcd1234
      * mapbox://penny.abcd1234
      * mapbox://mapbox.abcd1234,penny.abcd1234
      */
     const sourceUrlPattern = /^mapbox:\/\/([^/]*)$/;
-    if (!isValid(source.url, sourceUrlPattern)) {
-        errors.push(new ValidationError(`sources[${i}]`, source.url, 'Style must reference sources hosted by Mapbox'));
+    if (!source.url || !isValid(source.url, sourceUrlPattern)) {
+        errors.push(new ValidationError(`sources[${i}].url`, source.url, 'Expected a valid Mapbox tileset url'));
     }
 
     return errors;
@@ -105,7 +113,7 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationEr
     errors.push(...allowedKeyErrors);
 
     if (style.version > SUPPORTED_SPEC_VERSION || style.version < SUPPORTED_SPEC_VERSION) {
-        errors.push(new ValidationError('version', style.version, `style version must be ${SUPPORTED_SPEC_VERSION}`));
+        errors.push(new ValidationError('version', style.version, `Style version must be ${SUPPORTED_SPEC_VERSION}`));
     }
 
     /*

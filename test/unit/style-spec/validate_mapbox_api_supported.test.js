@@ -1,8 +1,11 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import glob from 'glob';
 import fs from 'fs';
 import path from 'path';
-import validateMapboxApiSupported from '../../../src/style-spec/validate_mapbox_api_supported';
+import validateMapboxApiSupported from '../../../src/style-spec/validate_mapbox_api_supported.js';
+
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const UPDATE = !!process.env.UPDATE;
 

@@ -8,11 +8,21 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        #checkbox {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 10px;
+            background: #fff;
+        }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
+<div id='checkbox'>
+    <label><input id='terrain' type='checkbox' checked> terrain</label>
+</div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -25,6 +35,19 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/satellite-v9',
     hash: true
 });
+map.on('load', function () {
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
+    document.getElementById('terrain').onclick();
+});
+
+document.getElementById('terrain').onclick = function() {
+    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : undefined);
+};
 
 </script>
 </body>

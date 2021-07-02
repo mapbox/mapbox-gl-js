@@ -1,12 +1,12 @@
 // @flow
-import type FillStyleLayer from '../../style/style_layer/fill_style_layer';
-import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
-import type LineStyleLayer from '../../style/style_layer/line_style_layer';
+import type FillStyleLayer from '../../style/style_layer/fill_style_layer.js';
+import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer.js';
+import type LineStyleLayer from '../../style/style_layer/line_style_layer.js';
 
 import type {
     BucketFeature,
     PopulateParameters
-} from '../bucket';
+} from '../bucket.js';
 
 type PatternStyleLayers =
     Array<LineStyleLayer> |

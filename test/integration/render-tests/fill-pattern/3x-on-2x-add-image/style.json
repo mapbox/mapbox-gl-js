@@ -1,0 +1,80 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "allowed": 0.001,
+      "pixelRatio": 2,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "addImage",
+          "pattern",
+          "./image/marker.png",
+          {
+            "pixelRatio": 3
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "addSource",
+          "geojson",
+          {
+            "type": "geojson",
+            "data": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -10,
+                    -10
+                  ],
+                  [
+                    -10,
+                    10
+                  ],
+                  [
+                    10,
+                    10
+                  ],
+                  [
+                    10,
+                    -10
+                  ],
+                  [
+                    -10,
+                    -10
+                  ]
+                ]
+              ]
+            }
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "fill",
+            "type": "fill",
+            "source": "geojson",
+            "paint": {
+              "fill-pattern": "pattern"
+            }
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}

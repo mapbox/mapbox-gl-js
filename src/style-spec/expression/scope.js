@@ -1,6 +1,6 @@
 // @flow
 
-import type {Expression} from './expression';
+import type {Expression} from './expression.js';
 
 /**
  * Tracks `let` bindings during expression parsing.
@@ -8,7 +8,7 @@ import type {Expression} from './expression';
  */
 class Scope {
     parent: ?Scope;
-    bindings: {[string]: Expression};
+    bindings: {[_: string]: Expression};
     constructor(parent?: Scope, bindings: Array<[string, Expression]> = []) {
         this.parent = parent;
         this.bindings = {};

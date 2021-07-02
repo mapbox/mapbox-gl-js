@@ -1,0 +1,32 @@
+{
+  "expression": ["index-of", ["get", "substr"], ["get", "str"]],
+  "inputs": [
+    [{}, { "properties": { "substr": null, "str": "helloworld" } }],
+    [{}, { "properties": { "substr": "foo", "str": "helloworld" } }],
+    [{}, { "properties": { "substr": "low", "str": "helloworld" } }],
+    [{}, { "properties": { "substr": true, "str": "falsetrue" } }],
+    [{}, { "properties": { "substr": false, "str": "falsetrue" } }],
+    [{}, { "properties": { "substr": 123, "str": "hello123world" } }],
+    [{}, { "properties": { "substr": "low", "str": null } }]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      -1,
+      -1,
+      3,
+      5,
+      0,
+      5,
+      {
+        "error": "Expected second argument to be of type array or string, but found null instead."
+      }
+    ],
+    "serialized": ["index-of", ["get", "substr"], ["get", "str"]]
+  }
+}

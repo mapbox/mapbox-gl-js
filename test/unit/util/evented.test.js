@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import {Event, Evented} from '../../../src/util/evented';
+import {test} from '../../util/test.js';
+import {Event, Evented} from '../../../src/util/evented.js';
 
 test('Evented', (t) => {
 
@@ -22,6 +22,12 @@ test('Evented', (t) => {
         t.ok(listener.calledOnce);
         t.notOk(evented.listens('a'));
         t.end();
+    });
+
+    t.test('"once" returns a promise if no listener provided', (t) => {
+        const evented = new Evented();
+        evented.once('a').then(() => t.end());
+        evented.fire(new Event('a'));
     });
 
     t.test('passes data to listeners', (t) => {
@@ -87,7 +93,7 @@ test('Evented', (t) => {
         const evented = new Evented();
         evented.on('a', () => {});
         t.ok(evented.listens('a'));
-        t.notOk(evented.listens('b'));
+        t.equals(evented.listens('b'), false);
         t.end();
     });
 

@@ -1,11 +1,15 @@
 // @flow
 
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import fs from 'fs';
 import path from 'path';
-import window from '../../../src/util/window';
-import {RequestManager} from '../../../src/util/mapbox';
-import loadGlyphRange from '../../../src/style/load_glyph_range';
+import window from '../../../src/util/window.js';
+import {RequestManager} from '../../../src/util/mapbox.js';
+import loadGlyphRange from '../../../src/style/load_glyph_range.js';
+
+import {fileURLToPath} from 'url';
+// $FlowFixMe https://github.com/facebook/flow/issues/6913
+const __dirname = fileURLToPath(new URL('.', import/*:: ("")*/.meta.url));
 
 test('loadGlyphRange', (t) => {
     window.useFakeXMLHttpRequest();
@@ -26,11 +30,14 @@ test('loadGlyphRange', (t) => {
         t.deepEqual(transform.getCall(0).args, ['https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf', 'Glyphs']);
 
         if (!result) return t.fail(); // appease flow
-
-        t.equal(Object.keys(result).length, 223);
-        for (const key in result) {
+        t.equal(typeof result.ascender, 'undefined');
+        t.equal(typeof result.descender, 'undefined');
+        t.equal(result.ascender, undefined);
+        t.equal(result.descender, undefined);
+        t.equal(Object.keys(result.glyphs).length, 223);
+        for (const key in result.glyphs) {
             const id = Number(key);
-            const glyph = result[id];
+            const glyph = result.glyphs[id];
             if (!glyph) return t.fail(); // appease flow
             t.equal(glyph.id, Number(id));
             t.ok(glyph.metrics);
@@ -46,6 +53,7 @@ test('loadGlyphRange', (t) => {
 
     t.equal(request.url, 'https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf');
     request.setStatus(200);
+    // $FlowFixMe https://github.com/facebook/flow/pull/8465
     request.response = fs.readFileSync(path.join(__dirname, '../../fixtures/0-255.pbf'));
     request.onload();
 

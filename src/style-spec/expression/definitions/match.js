@@ -2,13 +2,12 @@
 
 import assert from 'assert';
 
-import {typeOf} from '../values';
-import {ValueType, type Type} from '../types';
+import {typeOf} from '../values.js';
+import {ValueType, type Type} from '../types.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Value} from '../values';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
 
 // Map input label values to output expression index
 type Cases = {[number | string]: number};
@@ -106,16 +105,14 @@ class Match implements Expression {
         return output.evaluate(ctx);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
         this.outputs.forEach(fn);
         fn(this.otherwise);
     }
 
-    possibleOutputs(): Array<Value | void> {
-        return []
-            .concat(...this.outputs.map((out) => out.possibleOutputs()))
-            .concat(this.otherwise.possibleOutputs());
+    outputDefined(): boolean {
+        return this.outputs.every(out => out.outputDefined()) && this.otherwise.outputDefined();
     }
 
     serialize(): Array<mixed> {

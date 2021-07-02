@@ -1,0 +1,18 @@
+[
+  {
+    "message": "layers[1].paint.sky-atmosphere-sun[0]: -1 is less than the minimum value 0",
+    "line": 23
+  },
+  {
+    "message": "layers[1].paint.sky-atmosphere-sun[1]: 181 is greater than the maximum value 180",
+    "line": 23
+  },
+  {
+    "message": "layers[3].paint.sky-gradient-center[0]: 361 is greater than the maximum value 360",
+    "line": 39
+  },
+  {
+    "message": "layers[3].paint.sky-gradient-center[1]: -1 is less than the minimum value 0",
+    "line": 39
+  }
+]

@@ -1,5 +1,5 @@
 
-import ValidationError from '../error/validation_error';
+import ValidationError from '../error/validation_error.js';
 
 export default function validateConstants(options) {
     const key = options.key;

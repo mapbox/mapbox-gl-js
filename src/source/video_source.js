@@ -1,18 +1,18 @@
 // @flow
 
-import {getVideo, ResourceType} from '../util/ajax';
+import {getVideo, ResourceType} from '../util/ajax.js';
 
-import ImageSource from './image_source';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import SegmentVector from '../data/segment';
-import Texture from '../render/texture';
-import {ErrorEvent} from '../util/evented';
-import ValidationError from '../style-spec/error/validation_error';
+import ImageSource from './image_source.js';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import SegmentVector from '../data/segment.js';
+import Texture from '../render/texture.js';
+import {ErrorEvent} from '../util/evented.js';
+import ValidationError from '../style-spec/error/validation_error.js';
 
-import type Map from '../ui/map';
-import type Dispatcher from '../util/dispatcher';
-import type {Evented} from '../util/evented';
-import type {VideoSourceSpecification} from '../style-spec/types';
+import type Map from '../ui/map.js';
+import type Dispatcher from '../util/dispatcher.js';
+import type {Evented} from '../util/evented.js';
+import type {VideoSourceSpecification} from '../style-spec/types.js';
 
 /**
  * A data source containing video.
@@ -114,12 +114,13 @@ class VideoSource extends ImageSource {
 
     /**
      * Sets playback to a timestamp, in seconds.
+     * @private
      */
     seek(seconds: number) {
         if (this.video) {
             const seekableRange = this.video.seekable;
             if (seconds < seekableRange.start(0) || seconds > seekableRange.end(0)) {
-                this.fire(new ErrorEvent(new ValidationError(`Playback for this video can be set only between the ${seekableRange.start(0)} and ${seekableRange.end(0)}-second mark.`)));
+                this.fire(new ErrorEvent(new ValidationError(`sources.${this.id}`, null, `Playback for this video can be set only between the ${seekableRange.start(0)} and ${seekableRange.end(0)}-second mark.`)));
             } else this.video.currentTime = seconds;
         }
     }
@@ -149,10 +150,6 @@ class VideoSource extends ImageSource {
      * @method setCoordinates
      * @instance
      * @memberof VideoSource
-     * @param {Array<Array<number>>} coordinates Four geographical coordinates,
-     *   represented as arrays of longitude and latitude numbers, which define the corners of the video.
-     *   The coordinates start at the top left corner of the video and proceed in clockwise order.
-     *   They do not have to represent a rectangle.
      * @returns {VideoSource} this
      */
     // setCoordinates inherited from ImageSource

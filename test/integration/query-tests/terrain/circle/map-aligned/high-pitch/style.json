@@ -1,0 +1,67 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 400,
+      "width": 400,
+      "queryGeometry": [
+        202,
+        376
+      ]
+    }
+  },
+  "center": [
+    -122.456,
+    37.7578
+  ],
+  "zoom": 18,
+  "pitch": 80,
+  "bearing": 0,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          -122.45599994435906,
+          37.75724003196146
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": {
+          "base": 1.75,
+          "stops": [
+            [
+              12,
+              2
+            ],
+            [
+              22,
+              180
+            ]
+          ]
+        },
+        "circle-color": "#ff0000",
+        "circle-pitch-alignment": "map"
+      }
+    }
+  ]
+}

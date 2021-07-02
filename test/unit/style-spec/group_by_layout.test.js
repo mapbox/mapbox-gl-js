@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import group from '../../../src/style-spec/group_by_layout';
+import {test} from '../../util/test.js';
+import group from '../../../src/style-spec/group_by_layout.js';
 
 test('group layers whose ref properties are identical', (t) => {
     const a = {

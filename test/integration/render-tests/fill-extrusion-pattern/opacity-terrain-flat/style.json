@@ -1,0 +1,120 @@
+{
+  "version": 8,
+  "metadata": {
+    "description": "Flat roof centroid attribute array is uploaded after terrain gets enabled.",
+    "test": {
+      "height": 256,
+      "operations": [
+        ["wait"],
+        ["setTerrain", {
+          "source": "rgbterrain",
+          "exaggeration": 0.05
+        }],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/12-759-1609.terrain.png"
+      ],
+      "maxzoom": 11,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "buffer": 0,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 20
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -0.0004,
+                    -0.0002
+                  ],
+                  [
+                    -0.0002,
+                    0
+                  ],
+                  [
+                    0,
+                    -0.0002
+                  ],
+                  [
+                    -0.0002,
+                    -0.0004
+                  ],
+                  [
+                    -0.0004,
+                    -0.0002
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 20
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.0001,
+                    0.0001
+                  ],
+                  [
+                    0.0001,
+                    0.0005
+                  ],
+                  [
+                    0.0004,
+                    0.0005
+                  ],
+                  [
+                    0.0004,
+                    0.0001
+                  ],
+                  [
+                    0.0001,
+                    0.0001
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "pitch": 66,
+  "bearing": -60,
+  "zoom": 18,
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-pattern": "generic_icon",
+        "fill-extrusion-opacity": 0.5,
+        "fill-extrusion-height": 10
+      }
+    }
+  ]
+}

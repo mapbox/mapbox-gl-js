@@ -8,5 +8,7 @@
  - [ ] document any changes to public APIs
  - [ ] post benchmark scores
  - [ ] manually test the debug page
- - [ ] tagged `@mapbox/studio` and/or `@mapbox/maps-design` if this PR includes style spec or visual changes
+ - [ ] tagged `@mapbox/map-design-team` `@mapbox/static-apis` if this PR includes style spec API or visual changes
  - [ ] tagged `@mapbox/gl-native` if this PR includes shader changes or needs a native port
+ - [ ] apply changelog label ('bug', 'feature', 'docs', etc) or use the label 'skip changelog'
+ - [ ] add an entry inside this element for inclusion in the `mapbox-gl-js` changelog: `<changelog></changelog>`

@@ -2,13 +2,13 @@
 
 import assert from 'assert';
 
-import {checkSubtype, ValueType} from '../types';
+import {checkSubtype, ValueType} from '../types.js';
+import ResolvedImage from '../types/resolved_image.js';
 
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {Value} from '../values';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type ParsingContext from '../parsing_context.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type {Type} from '../types.js';
 
 class Coalesce implements Expression {
     type: Type;
@@ -60,8 +60,10 @@ class Coalesce implements Expression {
             result = arg.evaluate(ctx);
             // we need to keep track of the first requested image in a coalesce statement
             // if coalesce can't find a valid image, we return the first image name so styleimagemissing can fire
-            if (arg.type.kind === 'resolvedImage' && !result.available) {
-                if (!requestedImageName) requestedImageName = arg.evaluate(ctx).name;
+            if (result && result instanceof ResolvedImage && !result.available) {
+                if (!requestedImageName) {
+                    requestedImageName = result.name;
+                }
                 result = null;
                 if (argCount === this.args.length) {
                     result = requestedImageName;
@@ -73,12 +75,12 @@ class Coalesce implements Expression {
         return result;
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         this.args.forEach(fn);
     }
 
-    possibleOutputs(): Array<Value | void> {
-        return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
+    outputDefined(): boolean {
+        return this.args.every(arg => arg.outputDefined());
     }
 
     serialize() {

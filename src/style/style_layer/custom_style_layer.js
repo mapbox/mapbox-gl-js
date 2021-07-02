@@ -1,7 +1,7 @@
 // @flow
 
-import StyleLayer from '../style_layer';
-import type Map from '../../ui/map';
+import StyleLayer from '../style_layer.js';
+import type Map from '../../ui/map.js';
 import assert from 'assert';
 
 type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => void;
@@ -73,6 +73,8 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * map.on('load', function() {
  *     map.addLayer(new NullIslandLayer());
  * });
+ * @see [Add a custom style layer](https://docs.mapbox.com/mapbox-gl-js/example/custom-style-layer/)
+ * @see [Add a 3D model](https://docs.mapbox.com/mapbox-gl-js/example/add-3d-model/)
  */
 
 /**
@@ -113,7 +115,7 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * coordinates to gl coordinates. The mercator coordinate `[0, 0]` represents the
  * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. When
  * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
- * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLatLng
+ * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLngLat
  * can be used to project a `LngLat` to a mercator coordinate.
  */
 
@@ -142,7 +144,7 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * coordinates to gl coordinates. The spherical mercator coordinate `[0, 0]` represents the
  * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. When
  * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
- * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLatLng
+ * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLngLat
  * can be used to project a `LngLat` to a mercator coordinate.
  */
 export type CustomLayerInterface = {

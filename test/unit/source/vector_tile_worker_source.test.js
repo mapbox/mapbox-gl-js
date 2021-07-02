@@ -2,15 +2,18 @@ import fs from 'fs';
 import path from 'path';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
-import {test} from '../../util/test';
-import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
-import StyleLayerIndex from '../../../src/style/style_layer_index';
-import perf from '../../../src/util/performance';
+import {test} from '../../util/test.js';
+import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source.js';
+import StyleLayerIndex from '../../../src/style/style_layer_index.js';
+import perf from '../../../src/util/performance.js';
+
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const actor = {send: () => {}};
 
 test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
 
     source.loadTile({
         source: 'source',
@@ -34,8 +37,26 @@ test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
     t.end();
 });
 
+test('VectorTileWorkerSource#abortTile aborts pending async request', (t) => {
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true, (params, cb) => {
+        setTimeout(() => {
+            cb(null, {});
+        }, 0);
+    });
+
+    source.loadTile({
+        uid: 0,
+        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}}
+    }, (err, res) => {
+        t.false(err);
+        t.false(res);
+        t.end();
+    });
+    source.abortTile({uid: 0}, () => {});
+});
+
 test('VectorTileWorkerSource#removeTile removes loaded tile', (t) => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
 
     source.loaded = {
         '0': {}
@@ -54,7 +75,7 @@ test('VectorTileWorkerSource#removeTile removes loaded tile', (t) => {
 });
 
 test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
     const parse = t.spy();
 
     source.loaded = {
@@ -76,7 +97,7 @@ test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) =
 });
 
 test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progress', (t) => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
     const parse = t.spy();
 
     source.loaded = {
@@ -110,7 +131,7 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
 
 test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) => {
     // https://github.com/mapbox/mapbox-gl-js/issues/6308
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
     const parse = t.spy();
 
     source.loaded = {
@@ -158,7 +179,7 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
 });
 
 test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTile data but does call callback', (t) => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
     const parse = t.spy();
 
     source.loaded = {
@@ -217,7 +238,7 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
         type: 'fill'
     }]);
 
-    const source = new VectorTileWorkerSource(actor, layerIndex, [], loadVectorData);
+    const source = new VectorTileWorkerSource(actor, layerIndex, [], true, loadVectorData);
 
     t.stub(perf, 'getEntriesByName').callsFake(() => { return [ exampleResourceTiming ]; });
 
@@ -229,60 +250,6 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
     }, (err, res) => {
         t.false(err);
         t.deepEquals(res.resourceTiming[0], exampleResourceTiming, 'resourceTiming resp is expected');
-        t.end();
-    });
-});
-
-test('VectorTileWorkerSource provides resource timing information (fallback method)', (t) => {
-    const rawTileData = fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));
-
-    function loadVectorData(params, callback) {
-        return callback(null, {
-            vectorTile: new vt.VectorTile(new Protobuf(rawTileData)),
-            rawData: rawTileData,
-            cacheControl: null,
-            expires: null
-        });
-    }
-
-    const layerIndex = new StyleLayerIndex([{
-        id: 'test',
-        source: 'source',
-        'source-layer': 'test',
-        type: 'fill'
-    }]);
-
-    const source = new VectorTileWorkerSource(actor, layerIndex, [], loadVectorData);
-
-    const sampleMarks = [100, 350];
-    const marks = {};
-    const measures = {};
-    t.stub(perf, 'getEntriesByName').callsFake((name) => { return measures[name] || []; });
-    t.stub(perf, 'mark').callsFake((name) => {
-        marks[name] = sampleMarks.shift();
-        return null;
-    });
-    t.stub(perf, 'measure').callsFake((name, start, end) => {
-        measures[name] = measures[name] || [];
-        measures[name].push({
-            duration: marks[end] - marks[start],
-            entryType: 'measure',
-            name,
-            startTime: marks[start]
-        });
-        return null;
-    });
-    t.stub(perf, 'clearMarks').callsFake(() => { return null; });
-    t.stub(perf, 'clearMeasures').callsFake(() => { return null; });
-
-    source.loadTile({
-        source: 'source',
-        uid: 0,
-        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
-        request: {url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true}
-    }, (err, res) => {
-        t.false(err);
-        t.deepEquals(res.resourceTiming[0], {"duration": 250, "entryType": "measure", "name": "http://localhost:2900/faketile.pbf", "startTime": 100}, 'resourceTiming resp is expected');
         t.end();
     });
 });

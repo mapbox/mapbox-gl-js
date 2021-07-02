@@ -1,8 +1,7 @@
-import {test} from '../../util/test';
-import Light from '../../../src/style/light';
-import styleSpec from '../../../src/style-spec/reference/latest';
-import Color from '../../../src/style-spec/util/color';
-import {sphericalToCartesian} from '../../../src/util/util';
+import {test} from '../../util/test.js';
+import Light, {sphericalToCartesian} from '../../../src/style/light.js';
+import styleSpec from '../../../src/style-spec/reference/latest.js';
+import Color from '../../../src/style-spec/util/color.js';
 
 const spec = styleSpec.light;
 

@@ -1,37 +1,23 @@
+import path from 'path';
+import isBuiltin from 'is-builtin-module';
+import {rollup} from 'rollup';
 
-/* eslint-disable import/no-commonjs */
+import {test} from '../util/test.js';
+import rollupConfig from '../../src/style-spec/rollup.config.js';
 
-const fs = require('fs');
-const path = require('path');
-const isBuiltin = require('is-builtin-module');
+import {createRequire} from 'module';
+const require = createRequire(import.meta.url);
 
-const Linter = require('eslint').Linter;
-const rollup = require('rollup');
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
-import {test} from '../util/test';
-import rollupConfig from '../../src/style-spec/rollup.config';
-
-// some paths
 const styleSpecDirectory = path.join(__dirname, '../../src/style-spec');
-const styleSpecPackage = require('../../src/style-spec/package.json');
-const styleSpecDistBundle = fs.readFileSync(path.join(__dirname, '../../dist/style-spec/index.js'), 'utf-8');
+import styleSpecPackage from '../../src/style-spec/package.json';
 
 test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
-    t.test('build plain ES5 bundle in prepublish', (t) => {
-        const linter = new Linter();
-        const messages = linter.verify(styleSpecDistBundle, {
-            parserOptions: {
-                ecmaVersion: 5
-            },
-            rules: {},
-            env: {
-                node: true
-            }
-        }).map(message => `${message.line}:${message.column}: ${message.message}`);
-        t.deepEqual(messages, [], 'distributed bundle is plain ES5 code');
-
+    t.test('builds self-contained bundle without undeclared dependencies', (t) => {
         t.stub(console, 'warn');
-        rollup.rollup({
+        rollup({
             input: `${styleSpecDirectory}/style-spec.js`,
             plugins: [{
                 resolveId: (id, importer) => {
@@ -55,7 +41,7 @@ test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
     });
 
     t.test('exports components directly, not behind `default` - https://github.com/mapbox/mapbox-gl-js/issues/6601', (t) => {
-        const spec = require('../../dist/style-spec/index.js');
+        const spec = require('../../dist/style-spec/index.cjs');
         t.ok(spec.validate);
         t.notOk(spec.default && spec.default.validate);
         t.end();

@@ -1,12 +1,14 @@
 // @flow
 
-import type {CollisionBoxArray} from './array_types';
-import type Style from '../style/style';
-import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
-import type FeatureIndex from './feature_index';
-import type Context from '../gl/context';
-import type {FeatureStates} from '../source/source_state';
-import type {ImagePosition} from '../render/image_atlas';
+import type {CollisionBoxArray} from './array_types.js';
+import type Style from '../style/style.js';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer.js';
+import type FeatureIndex from './feature_index.js';
+import type Context from '../gl/context.js';
+import type {FeatureStates} from '../source/source_state.js';
+import type {ImagePosition} from '../render/image_atlas.js';
+import type LineAtlas from '../render/line_atlas.js';
+import type {CanonicalTileID} from '../source/tile_id.js';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
@@ -16,7 +18,8 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
     overscaling: number,
     collisionBoxArray: CollisionBoxArray,
     sourceLayerIndex: number,
-    sourceID: string
+    sourceID: string,
+    enableTerrain: boolean
 }
 
 export type PopulateParameters = {
@@ -24,11 +27,13 @@ export type PopulateParameters = {
     iconDependencies: {},
     patternDependencies: {},
     glyphDependencies: {},
-    availableImages: Array<string>
+    availableImages: Array<string>,
+    lineAtlas: LineAtlas
 }
 
 export type IndexedFeature = {
     feature: VectorTileFeature,
+    id: number | string,
     index: number,
     sourceLayerIndex: number,
 }
@@ -40,7 +45,7 @@ export type BucketFeature = {|
     properties: Object,
     type: 1 | 2 | 3,
     id?: any,
-    +patterns: {[string]: {"min": string, "mid": string, "max": string}},
+    +patterns: {[_: string]: {"min": string, "mid": string, "max": string}},
     sortKey?: number
 |};
 
@@ -73,8 +78,8 @@ export interface Bucket {
     +layers: Array<any>;
     +stateDependentLayers: Array<any>;
     +stateDependentLayerIds: Array<string>;
-    populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
-    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[string]: ImagePosition}): void;
+    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID): void;
+    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}): void;
     isEmpty(): boolean;
 
     upload(context: Context): void;
@@ -90,7 +95,7 @@ export interface Bucket {
     destroy(): void;
 }
 
-export function deserialize(input: Array<Bucket>, style: Style): {[string]: Bucket} {
+export function deserialize(input: Array<Bucket>, style: Style): {[_: string]: Bucket} {
     const output = {};
 
     // Guard against the case where the map's style has been set to null while

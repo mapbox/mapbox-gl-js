@@ -1,5 +1,5 @@
-import {test} from '../../../util/test';
-import migrate from '../../../../src/style-spec/migrate/v9';
+import {test} from '../../../util/test.js';
+import migrate from '../../../../src/style-spec/migrate/v9.js';
 
 test('deref layers', (t) => {
     const input = {

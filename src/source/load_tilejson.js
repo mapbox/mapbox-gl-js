@@ -1,14 +1,14 @@
 // @flow
 
-import {pick, extend} from '../util/util';
+import {pick, extend} from '../util/util.js';
 
-import {getJSON, ResourceType} from '../util/ajax';
-import browser from '../util/browser';
+import {getJSON, ResourceType} from '../util/ajax.js';
+import browser from '../util/browser.js';
 
-import type {RequestManager} from '../util/mapbox';
-import type {Callback} from '../types/callback';
-import type {TileJSON} from '../types/tilejson';
-import type {Cancelable} from '../types/cancelable';
+import type {RequestManager} from '../util/mapbox.js';
+import type {Callback} from '../types/callback.js';
+import type {TileJSON} from '../types/tilejson.js';
+import type {Cancelable} from '../types/cancelable.js';
 
 export default function(options: any, requestManager: RequestManager, callback: Callback<TileJSON>): Cancelable {
     const loaded = function(err: ?Error, tileJSON: ?Object) {
@@ -26,10 +26,7 @@ export default function(options: any, requestManager: RequestManager, callback: 
                 result.vectorLayerIds = result.vectorLayers.map((layer) => { return layer.id; });
             }
 
-            // only canonicalize tile tileset if source is declared using a tilejson url
-            if (options.url) {
-                result.tiles = requestManager.canonicalizeTileset(result, options.url);
-            }
+            result.tiles = requestManager.canonicalizeTileset(result, options.url);
             callback(null, result);
         }
     };

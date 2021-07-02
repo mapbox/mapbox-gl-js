@@ -12,7 +12,7 @@
         [
           "updateImage",
           "generic_icon",
-          "./image/marker.png"
+          "./image/marker_18x18.png"
         ],
         [
           "wait"

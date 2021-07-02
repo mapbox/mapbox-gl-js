@@ -4,7 +4,7 @@ import {
     LineIndexArray,
     TriangleIndexArray,
     LineStripIndexArray
-} from './array_types';
+} from './array_types.js';
 
 /**
  * An index array stores Uint16 indices of vertexes in a corresponding vertex array. We use

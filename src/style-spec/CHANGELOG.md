@@ -1,3 +1,108 @@
+## 13.20.1
+
+### 🐞 Bug fixes
+
+* Increase strictness of the style API validation for source types ([#10779](https://github.com/mapbox/mapbox-gl-js/pull/10779))
+* Remove strictly-increasing requirement for fog range validation ([#10772](https://github.com/mapbox/mapbox-gl-js/pull/10772))
+
+## 13.20.0
+
+### ✨ Features and improvements
+
+* Add configurable fog as a root style specification ([#10564](https://github.com/mapbox/mapbox-gl-js/pull/10564))
+* Add support for data-driven expressions in `line-dasharray` and `line-cap` properties. ([#10591](https://github.com/mapbox/mapbox-gl-js/pull/10591))
+* Add support for data-driven `text-line-height` ([#10612](https://github.com/mapbox/mapbox-gl-js/pull/10612))
+
+## 13.19.0
+
+### ✨ Features and improvements
+
+* Added array support to minimums and maximums, allowing for validation of multi-dimensional style-spec value constraints. ([#10272](https://github.com/mapbox/mapbox-gl-js/pull/10272))
+
+## 13.18.1
+
+### 🐞 Bug fixes
+* Fixed a bug where `map.setStyle` couldn't be used to enable terrain. ([#10177](https://github.com/mapbox/mapbox-gl-js/pull/10177))
+
+## 13.18.0
+
+### ✨ Features and improvements
+
+* Add 3D terrain feature. All layer types and markers can now be extruded using the new `terrain` root level style-spec property or with the function `map.setTerrain()`. ([#1489](https://github.com/mapbox/mapbox-gl-js/issues/1489))
+* Add support for unlocked pitch up to 85° (previously 60°). ([#3731](https://github.com/mapbox/mapbox-gl-js/issues/3731))
+* Add a new sky layer acting as an infinite background above the horizon line. This layer can be used from the style-spec and has two types: `atmospheric` and `gradient`.
+
+## 13.17.0
+
+### ✨ Features and improvements
+* Add a `filter` option for GeoJSON sources to filter out features prior to processing (e.g. before clustering). [#9864](https://github.com/mapbox/mapbox-gl-js/pull/9864)
+
+## 13.16.0
+
+### ✨ Features and improvements
+* Added `volatile` source property to control storing the tiles in local storage. ([9702](https://github.com/mapbox/mapbox-gl-js/pull/9702))
+
+* Added `clusterMinPoints` option for clustered GeoJSON sources that defines the minimum number of points to form a cluster. ([#9748](https://github.com/mapbox/mapbox-gl-js/pull/9748))
+
+## 13.15.0
+
+### ✨ Features and improvements
+* Add `distance` expression to `style-spec`. This expression returns the shortest distance between a feature and an input geometry ([#9655](https://github.com/mapbox/mapbox-gl-js/pull/9655))
+
+## 13.14.0
+
+### ✨ Features and improvements
+* Add `index-of` and `slice` expressions to search arrays and strings for the first occurrence of a specified value and return a section of the original array or string ([#9450](https://github.com/mapbox/mapbox-gl-js/pull/9450)) (h/t [lbutler](https://github.com/lbutler))
+
+## 13.13.1
+
+### ✨ Features and improvements
+* Expose `expression.isExpressionFilter(..)` from the bundle. ([#9530](https://github.com/mapbox/mapbox-gl-js/pull/9530))
+
+### 🐛 Bug fixes
+* Fix a broken module import where the `style-spec` package was importing files from `mapbox-gl-js`, it's parent repo, causing downstream build systems to break. ([#9522](https://github.com/mapbox/mapbox-gl-js/pull/9522))
+
+## 13.13.0
+
+### ✨ Features and improvements
+* Add `within` expression for testing whether an evaluated feature lies within a given GeoJSON object ([#9352](https://github.com/mapbox/mapbox-gl-js/pull/9352)). For example:<br>
+`"icon-opacity": ["case", ["==", ["within", "some-polygon"], true], 1,
+["==", ["within", "some-polygon"], false], 0]`
+* Improve scaling of patterns used in `line-pattern` on all device resolutions and pixel ratios ([#9266](https://github.com/mapbox/mapbox-gl-js/pull/9266))
+
+### 🐛 Bug fixes
+* Allow needle argument to `in` expression to be false ([#9295](https://github.com/mapbox/mapbox-gl-js/pull/9295))
+* Fix a bug where `icon-image` expression that evaluates to an empty string (`''`) produced a warning ([#9380](https://github.com/mapbox/mapbox-gl-js/pull/9380))
+* Prevent exception resulting from `line-dash-array` of empty length ([#9385](https://github.com/mapbox/mapbox-gl-js/pull/9385))
+
+## 13.12.0
+
+* Update `image` expression SDK support table ([#9228](https://github.com/mapbox/mapbox-gl-js/pull/9228))
+* Fix `promoteId` for line layers ([#9210](https://github.com/mapbox/mapbox-gl-js/pull/9210), [#9212](https://github.com/mapbox/mapbox-gl-js/pull/9212))
+
+## 13.11.0
+
+### ✨ Features and improvements
+* Add `promoteId` option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
+* Update `symbol-avoid-edges` documentation regarding global collision detection ([#9157](https://github.com/mapbox/mapbox-gl-js/pull/9157))
+* Remove reference to `in` function which has been replaced by the `in` expression ([#9102](https://github.com/mapbox/mapbox-gl-js/pull/9102))
+
+### 🐛 Bug fixes
+* Fix bug where `symbol-sort-key` was not used for collisions that crossed tile boundaries ([#9054](https://github.com/mapbox/mapbox-gl-js/pull/9054))
+
+## 13.10.2
+
+### 🐛 Bug fixes
+* Fix style validation error messages not being displayed ([#9073](https://github.com/mapbox/mapbox-gl-js/pull/9073))
+
+## 13.10.0
+
+### ✨ Features and improvements
+* Add ability to insert images into text labels using an `image` expression within a `format` expression: `"text-field": ["format", "Some text", ["image", "my-image"], "some more text"]` ([#8904](https://github.com/mapbox/mapbox-gl-js/pull/8904))
+* Add `in` expression. It can check if a value is in an array (`["in", value, array]`) or a substring is in a string (`["in", substring, string]`) ([#8876](https://github.com/mapbox/mapbox-gl-js/pull/8876))
+* Add support for stretchable images (aka nine-part or nine-patch images). Stretchable images can be used with `icon-text-fit` to draw resized images with unstretched corners and borders. ([#8997](https://github.com/mapbox/mapbox-gl-js/pull/8997))
+* Add an es modules build of for mapbox-gl-style-spec in dist/ ([#8247](https://github.com/mapbox/mapbox-gl-js/pull/8247)) (h/t [ahocevar](https://github.com/ahocevar))
+
 ## 13.9.1
 
 ### ✨ Improvement

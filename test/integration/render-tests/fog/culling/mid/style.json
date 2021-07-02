@@ -1,0 +1,60 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "debug": true,
+      "height": 512,
+      "width": 64
+    }
+  },
+  "center": [
+    0.1,
+    0.1
+  ],
+  "pitch": 70,
+  "bearing": 90,
+  "zoom": 15,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+          "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -180,
+              0
+            ],
+            [
+              180,
+              0.0
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "fog": {
+    "range": [0.2, 0.5],
+    "color": "blue"
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }
+    },
+    {
+      "id": "dash",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-color": "green",
+        "line-width": 30
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "mapMode":"tile",
+            "debug": "true",
+            "allowed": 0.0005,
+            "operations": [
+                [ "setStyle",  "mapbox://styles/mapbox/streets-v11"]
+            ],
+            "pixelRatio": 2
+        }
+    },
+    "center": [-73.9959, 40.7106],
+    "zoom": 13
+}

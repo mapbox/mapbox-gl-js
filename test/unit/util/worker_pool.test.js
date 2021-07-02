@@ -1,5 +1,5 @@
-import {test} from '../../util/test';
-import WorkerPool from '../../../src/util/worker_pool';
+import {test} from '../../util/test.js';
+import WorkerPool from '../../../src/util/worker_pool.js';
 
 test('WorkerPool', (t) => {
     t.test('#acquire', (t) => {

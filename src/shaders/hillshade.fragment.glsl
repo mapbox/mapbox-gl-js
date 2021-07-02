@@ -7,8 +7,6 @@ uniform vec4 u_shadow;
 uniform vec4 u_highlight;
 uniform vec4 u_accent;
 
-#define PI 3.141592653589793
-
 void main() {
     vec4 pixel = texture2D(u_image, v_pos);
 
@@ -29,7 +27,7 @@ void main() {
 
     // We scale the slope exponentially based on intensity, using a calculation similar to
     // the exponential interpolation function in the style spec:
-    // https://github.com/mapbox/mapbox-gl-js/blob/master/src/style-spec/expression/definitions/interpolate.js#L217-L228
+    // src/style-spec/expression/definitions/interpolate.js#L217-L228
     // so that higher intensity values create more opaque hillshading.
     float base = 1.875 - intensity * 1.75;
     float maxValue = 0.5 * PI;
@@ -45,6 +43,10 @@ void main() {
     float shade = abs(mod((aspect + azimuth) / PI + 0.5, 2.0) - 1.0);
     vec4 shade_color = mix(u_shadow, u_highlight, shade) * sin(scaledSlope) * clamp(intensity * 2.0, 0.0, 1.0);
     gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
+
+#ifdef FOG
+    gl_FragColor = fog_dither(fog_apply_premultiplied(gl_FragColor, v_fog_pos));
+#endif
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

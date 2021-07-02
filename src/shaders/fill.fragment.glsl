@@ -5,7 +5,13 @@ void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float opacity
 
-    gl_FragColor = color * opacity;
+    vec4 out_color = color;
+
+#ifdef FOG
+    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
+#endif
+
+    gl_FragColor = out_color * opacity;
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

@@ -1,0 +1,33 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "description": "Verify behavior on tile borders"
+    }
+  },
+  "center": [-113.2935, 35.9529],
+  "zoom": 11.2,
+  "pitch": 30,
+  "sources": {
+    "hillshade": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/terrain-buffer-1/{z}-{x}-{y}-1.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "hillshade-translucent",
+      "type": "hillshade",
+      "source": "hillshade",
+      "paint": {
+        "hillshade-exaggeration": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+    "version": 8,
+    "sources": {
+        "mapbox-dem": {
+            "type": "raster-dem",
+            "url": "mapbox://mapbox.terrain-rgb"
+        }
+    },
+    "terrain": {
+        "source": "mapbox-dem",
+        "exaggeration": "blah"
+    },
+    "layers": []
+}

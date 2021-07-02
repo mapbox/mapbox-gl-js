@@ -1,10 +1,10 @@
 // @flow
 
-import window from '../window';
-import mapboxgl from '../../';
+import window from '../window.js';
+import mapboxgl from '../../index.js';
 
-import type {WorkerInterface} from '../web_worker';
+import type {WorkerInterface} from '../web_worker.js';
 
 export default function (): WorkerInterface {
-    return (new window.Worker(mapboxgl.workerUrl): any);
+    return (mapboxgl.workerClass != null) ? new mapboxgl.workerClass() : (new window.Worker(mapboxgl.workerUrl): any); // eslint-disable-line new-cap
 }

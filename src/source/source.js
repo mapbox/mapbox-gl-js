@@ -1,14 +1,14 @@
 // @flow
 
-import {bindAll} from '../util/util';
+import {bindAll} from '../util/util.js';
 
-import type Dispatcher from '../util/dispatcher';
-import type {Event, Evented} from '../util/evented';
-import type Map from '../ui/map';
-import type Tile from './tile';
-import type {OverscaledTileID} from './tile_id';
-import type {Callback} from '../types/callback';
-import {CanonicalTileID} from './tile_id';
+import type Dispatcher from '../util/dispatcher.js';
+import type {Event, Evented} from '../util/evented.js';
+import type Map from '../ui/map.js';
+import type Tile from './tile.js';
+import type {OverscaledTileID} from './tile_id.js';
+import type {Callback} from '../types/callback.js';
+import {CanonicalTileID} from './tile_id.js';
 
 /**
  * The `Source` interface must be implemented by each source type, including "core" types (`vector`, `raster`,
@@ -53,11 +53,12 @@ export interface Source {
     loaded(): boolean;
 
     fire(event: Event): mixed;
+    on(type: *, listener: (Object) => any): Evented;
 
     +onAdd?: (map: Map) => void;
     +onRemove?: (map: Map) => void;
 
-    loadTile(tile: Tile, callback: Callback<void>): void;
+    loadTile(tile: Tile, callback: Callback<void>, tileWorkers?: {[string]: Actor}): void;
     +hasTile?: (tileID: OverscaledTileID) => boolean;
     +abortTile?: (tile: Tile, callback: Callback<void>) => void;
     +unloadTile?: (tile: Tile, callback: Callback<void>) => void;
@@ -71,6 +72,8 @@ export interface Source {
     serialize(): Object;
 
     +prepare?: () => void;
+
+    +afterUpdate?: () => void;
 }
 
 type SourceStatics = {
@@ -83,15 +86,15 @@ type SourceStatics = {
 
 export type SourceClass = Class<Source> & SourceStatics;
 
-import vector from '../source/vector_tile_source';
-import raster from '../source/raster_tile_source';
-import rasterDem from '../source/raster_dem_tile_source';
-import geojson from '../source/geojson_source';
-import video from '../source/video_source';
-import image from '../source/image_source';
-import canvas from '../source/canvas_source';
+import vector from '../source/vector_tile_source.js';
+import raster from '../source/raster_tile_source.js';
+import rasterDem from '../source/raster_dem_tile_source.js';
+import geojson from '../source/geojson_source.js';
+import video from '../source/video_source.js';
+import image from '../source/image_source.js';
+import canvas from '../source/canvas_source.js';
 
-import type {SourceSpecification} from '../style-spec/types';
+import type {SourceSpecification} from '../style-spec/types.js';
 
 const sourceTypes = {
     vector,

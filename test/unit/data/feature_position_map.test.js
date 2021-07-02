@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 
-import FeatureMap from '../../../src/data/feature_position_map';
-import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
+import FeatureMap from '../../../src/data/feature_position_map.js';
+import {serialize, deserialize} from '../../../src/util/web_worker_transfer.js';
 
 test('FeaturePositionMap', (t) => {
 

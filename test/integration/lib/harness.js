@@ -3,11 +3,17 @@
 import path from 'path';
 import fs from 'fs';
 import glob from 'glob';
-import {shuffle} from 'shuffle-seed';
+import shuffleSeed from 'shuffle-seed';
 import {queue} from 'd3-queue';
 import colors from 'chalk';
 import template from 'lodash.template';
-import createServer from './server';
+import createServer from './server.js';
+
+import {fileURLToPath} from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
+import {createRequire} from 'module';
+const require = createRequire(import.meta.url);
 
 export default function (directory, implementation, options, run) {
     const q = queue(1);
@@ -58,7 +64,7 @@ export default function (directory, implementation, options, run) {
 
     if (options.shuffle) {
         console.log(colors.white(`* shuffle seed: `) + colors.bold(`${options.seed}`));
-        sequence = shuffle(sequence, options.seed);
+        sequence = shuffleSeed.shuffle(sequence, options.seed);
     }
 
     q.defer(server.listen);

@@ -1,0 +1,10 @@
+[
+  {
+    "message": "layers[0].paint.line-dasharray[1]: -2 is less than the minimum value 0",
+    "line": 16
+  },
+  {
+    "message": "layers[0].paint.line-dasharray[2]: -1 is less than the minimum value 0",
+    "line": 16
+  }
+]

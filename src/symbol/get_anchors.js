@@ -1,12 +1,12 @@
 // @flow
 
-import {number as interpolate} from '../style-spec/util/interpolate';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
 
-import Anchor from '../symbol/anchor';
-import checkMaxAngle from './check_max_angle';
+import Anchor from '../symbol/anchor.js';
+import checkMaxAngle from './check_max_angle.js';
 
 import type Point from '@mapbox/point-geometry';
-import type {Shaping, PositionedIcon} from './shaping';
+import type {Shaping, PositionedIcon} from './shaping.js';
 
 export {getAnchors, getCenterAnchor};
 
@@ -58,7 +58,6 @@ function getCenterAnchor(line: Array<Point>,
                 y = interpolate(a.y, b.y, t);
 
             const anchor = new Anchor(x, y, b.angleTo(a), i);
-            anchor._round();
             if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
                 return anchor;
             } else {

@@ -1,15 +1,16 @@
 // @flow
 
-import DOM from '../../util/dom';
+import DOM from '../../util/dom.js';
 
-import {bindAll} from '../../util/util';
+import {bindAll} from '../../util/util.js';
 
-import type Map from '../map';
+import type Map from '../map.js';
 
 /**
  * A `LogoControl` is a control that adds the Mapbox watermark
  * to the map as required by the [terms of service](https://www.mapbox.com/tos/) for Mapbox
  * vector tiles and core styles.
+ * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
  * @private
@@ -31,7 +32,7 @@ class LogoControl {
         anchor.target = "_blank";
         anchor.rel = "noopener nofollow";
         anchor.href = "https://www.mapbox.com/";
-        anchor.setAttribute("aria-label", "Mapbox logo");
+        anchor.setAttribute("aria-label", this._map._getUIString('LogoControl.Title'));
         anchor.setAttribute("rel", "noopener nofollow");
         this._container.appendChild(anchor);
         this._container.style.display = 'none';
@@ -62,17 +63,17 @@ class LogoControl {
     }
 
     _logoRequired() {
-        if (!this._map.style) return;
-
-        const sourceCaches = this._map.style.sourceCaches;
+        if (!this._map.style) return true;
+        const sourceCaches = this._map.style._sourceCaches;
+        if (Object.entries(sourceCaches).length === 0) return true;
         for (const id in sourceCaches) {
             const source = sourceCaches[id].getSource();
-            if (source.mapbox_logo) {
-                return true;
+            if (source.hasOwnProperty('mapbox_logo') && !source.mapbox_logo) {
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 
     _updateCompact() {

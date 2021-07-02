@@ -1,6 +1,6 @@
 // @flow
-import validateExpression from './validate_expression';
-import validateString from './validate_string';
+import validateExpression from './validate_expression.js';
+import validateString from './validate_string.js';
 
 export default function validateFormatted(options: any) {
     if (validateString(options).length === 0) {

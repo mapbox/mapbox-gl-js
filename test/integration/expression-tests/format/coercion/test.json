@@ -21,18 +21,21 @@
         "sections": [
           {
             "text": "a",
+            "image": null,
             "scale": null,
             "fontStack": null,
             "textColor": null
           },
           {
             "text": "1",
+            "image": null,
             "scale": null,
             "fontStack": null,
             "textColor": null
           },
           {
             "text": "true",
+            "image": null,
             "scale": null,
             "fontStack": null,
             "textColor": null

@@ -1,19 +1,20 @@
 // @flow
 
-import Scope from './scope';
-import {checkSubtype} from './types';
-import ParsingError from './parsing_error';
-import Literal from './definitions/literal';
-import Assertion from './definitions/assertion';
-import Coercion from './definitions/coercion';
-import EvaluationContext from './evaluation_context';
-import CompoundExpression from './compound_expression';
-import CollatorExpression from './definitions/collator';
-import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant';
-import Var from './definitions/var';
+import Scope from './scope.js';
+import {checkSubtype} from './types.js';
+import ParsingError from './parsing_error.js';
+import Literal from './definitions/literal.js';
+import Assertion from './definitions/assertion.js';
+import Coercion from './definitions/coercion.js';
+import EvaluationContext from './evaluation_context.js';
+import CompoundExpression from './compound_expression.js';
+import CollatorExpression from './definitions/collator.js';
+import Within from './definitions/within.js';
+import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant.js';
+import Var from './definitions/var.js';
 
-import type {Expression, ExpressionRegistry} from './expression';
-import type {Type} from './types';
+import type {Expression, ExpressionRegistry} from './expression.js';
+import type {Type} from './types.js';
 
 /**
  * State associated parsing at a given point in an expression tree.
@@ -201,6 +202,8 @@ function isConstant(expression: Expression) {
         // generally shouldn't change between executions, we can't serialize them
         // as constant expressions because results change based on environment.
         return false;
+    } else if (expression instanceof Within) {
+        return false;
     }
 
     const isTypeAnnotation = expression instanceof Coercion ||
@@ -226,5 +229,5 @@ function isConstant(expression: Expression) {
     }
 
     return isFeatureConstant(expression) &&
-        isGlobalPropertyConstant(expression, ['zoom', 'heatmap-density', 'line-progress', 'accumulated', 'is-supported-script']);
+        isGlobalPropertyConstant(expression, ['zoom', 'heatmap-density', 'line-progress', 'sky-radial-progress', 'accumulated', 'is-supported-script']);
 }

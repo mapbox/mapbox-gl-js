@@ -1,10 +1,10 @@
 // @flow
 
-import {uniqueId, asyncAll} from './util';
-import Actor from './actor';
+import {uniqueId, asyncAll} from './util.js';
+import Actor from './actor.js';
 import assert from 'assert';
 
-import type WorkerPool from './worker_pool';
+import type WorkerPool from './worker_pool.js';
 
 /**
  * Responsible for sending messages from a {@link Source} to an associated
@@ -17,6 +17,7 @@ class Dispatcher {
     actors: Array<Actor>;
     currentActor: number;
     id: number;
+    ready: boolean;
 
     // exposed to allow stubbing in unit tests
     static Actor: Class<Actor>;
@@ -34,10 +35,16 @@ class Dispatcher {
             this.actors.push(actor);
         }
         assert(this.actors.length);
+
+        // track whether all workers are instantiated and ready to receive messages;
+        // used for optimizations on initial map load
+        this.ready = false;
+        this.broadcast('checkIfReady', null, () => { this.ready = true; });
     }
 
     /**
      * Broadcast a message to all Workers.
+     * @private
      */
     broadcast(type: string, data: mixed, cb?: Function) {
         assert(this.actors.length);

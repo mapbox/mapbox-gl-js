@@ -1,5 +1,5 @@
-import {test} from '../util/test';
-import mapboxgl from '../../src';
+import {test} from '../util/test.js';
+import mapboxgl from '../../src/index.js';
 
 test('mapboxgl', (t) => {
     t.test('version', (t) => {

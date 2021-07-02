@@ -1,11 +1,11 @@
 // @flow
 
-import {StringType, NumberType} from '../types';
+import {StringType, NumberType} from '../types.js';
 
-import type {Expression} from '../expression';
-import type EvaluationContext from '../evaluation_context';
-import type ParsingContext from '../parsing_context';
-import type {Type} from '../types';
+import type {Expression} from '../expression.js';
+import type EvaluationContext from '../evaluation_context.js';
+import type ParsingContext from '../parsing_context.js';
+import type {Type} from '../types.js';
 
 declare var Intl: {
     NumberFormat: Class<Intl$NumberFormat>
@@ -103,7 +103,7 @@ export default class NumberFormat implements Expression {
             }).format(this.number.evaluate(ctx));
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.number);
         if (this.locale) {
             fn(this.locale);
@@ -119,8 +119,8 @@ export default class NumberFormat implements Expression {
         }
     }
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize() {

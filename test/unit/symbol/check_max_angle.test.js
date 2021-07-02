@@ -1,7 +1,7 @@
-import {test} from '../../util/test';
+import {test} from '../../util/test.js';
 import Point from '@mapbox/point-geometry';
-import checkMaxAngle from '../../../src/symbol/check_max_angle';
-import Anchor from '../../../src/symbol/anchor';
+import checkMaxAngle from '../../../src/symbol/check_max_angle.js';
+import Anchor from '../../../src/symbol/anchor.js';
 
 test('line with no sharp angles', (t) => {
     const line = [ new Point(0, 0), new Point(20, -1), new Point(40, 1), new Point(60, 0) ];

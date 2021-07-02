@@ -1,14 +1,15 @@
 
-import Benchmark from '../lib/benchmark';
-import createMap from '../lib/create_map';
+import Benchmark from '../lib/benchmark.js';
+import createMap from '../lib/create_map.js';
 import style from '../data/empty.json';
 
 const width = 1024;
 const height = 768;
+const layerCount = 50;
 
 function generateLayers(layer) {
     const generated = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < layerCount; i++) {
         const id = layer.id + i;
         generated.push(Object.assign({}, layer, {id}));
     }
@@ -215,6 +216,82 @@ export class LayerSymbol extends LayerBenchmark {
                 'layout': {
                     'icon-image': 'dot-11',
                     'text-field': '{name_en}'
+                }
+            })
+        });
+    }
+}
+
+export class LayerSymbolWithIcons extends LayerBenchmark {
+    constructor() {
+        super();
+
+        this.layerStyle = Object.assign({}, style, {
+            layers: generateLayers({
+                'id': 'symbollayer',
+                'type': 'symbol',
+                'source': 'composite',
+                'source-layer': 'poi_label',
+                'layout': {
+                    'icon-image': 'dot-11',
+                    'text-field': ['format', ['get', 'name_en'], ['image', 'dot-11']]
+                }
+            })
+        });
+    }
+}
+
+export class LayerSymbolWithSortKey extends LayerBenchmark {
+    constructor() {
+        super();
+
+        this.layerStyle = Object.assign({}, style, {
+            layers: this.generateSortKeyLayers()
+        });
+    }
+
+    generateSortKeyLayers() {
+        const generated = [];
+        for (let i = 0; i < layerCount; i++) {
+            generated.push({
+                'id': `symbollayer${i}`,
+                'type': 'symbol',
+                'source': 'composite',
+                'source-layer': 'poi_label',
+                'layout': {
+                    'symbol-sort-key': i,
+                    'text-field': '{name_en}'
+                }
+            });
+        }
+        return generated;
+    }
+}
+
+export class LayerTextWithVariableAnchor extends LayerBenchmark {
+    constructor() {
+        super();
+
+        this.layerStyle = Object.assign({}, style, {
+            layers: generateLayers({
+                'id': 'symbollayer',
+                'type': 'symbol',
+                'source': 'composite',
+                'source-layer': 'poi_label',
+                'layout': {
+                    'text-field': 'Test Test Test',
+                    'text-justify': 'auto',
+                    'text-variable-anchor': [
+                        'center',
+                        'top',
+                        'bottom',
+                        'left',
+                        'right',
+                        'top-left',
+                        'top-right',
+                        'bottom-left',
+                        'bottom-right'
+                    ]
                 }
             })
         });

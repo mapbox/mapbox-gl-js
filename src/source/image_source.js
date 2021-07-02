@@ -1,26 +1,27 @@
 // @flow
 
-import {CanonicalTileID} from './tile_id';
-import {Event, ErrorEvent, Evented} from '../util/evented';
-import {getImage, ResourceType} from '../util/ajax';
-import EXTENT from '../data/extent';
-import {RasterBoundsArray} from '../data/array_types';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import SegmentVector from '../data/segment';
-import Texture from '../render/texture';
-import MercatorCoordinate from '../geo/mercator_coordinate';
+import {CanonicalTileID} from './tile_id.js';
+import {Event, ErrorEvent, Evented} from '../util/evented.js';
+import {getImage, ResourceType} from '../util/ajax.js';
+import EXTENT from '../data/extent.js';
+import {RasterBoundsArray} from '../data/array_types.js';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import SegmentVector from '../data/segment.js';
+import Texture from '../render/texture.js';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import browser from '../util/browser.js';
 
-import type {Source} from './source';
-import type {CanvasSourceSpecification} from './canvas_source';
-import type Map from '../ui/map';
-import type Dispatcher from '../util/dispatcher';
-import type Tile from './tile';
-import type {Callback} from '../types/callback';
-import type VertexBuffer from '../gl/vertex_buffer';
+import type {Source} from './source.js';
+import type {CanvasSourceSpecification} from './canvas_source.js';
+import type Map from '../ui/map.js';
+import type Dispatcher from '../util/dispatcher.js';
+import type Tile from './tile.js';
+import type {Callback} from '../types/callback.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
 import type {
     ImageSourceSpecification,
     VideoSourceSpecification
-} from '../style-spec/types';
+} from '../style-spec/types.js';
 
 type Coordinates = [[number, number], [number, number], [number, number], [number, number]];
 
@@ -73,12 +74,12 @@ class ImageSource extends Evented implements Source {
     url: string;
 
     coordinates: Coordinates;
-    tiles: {[string]: Tile};
+    tiles: {[_: string]: Tile};
     options: any;
     dispatcher: Dispatcher;
     map: Map;
     texture: Texture | null;
-    image: HTMLImageElement;
+    image: ImageData;
     tileID: CanonicalTileID;
     _boundsArray: RasterBoundsArray;
     boundsBuffer: VertexBuffer;
@@ -117,7 +118,7 @@ class ImageSource extends Evented implements Source {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
-                this.image = image;
+                this.image = browser.getImageData(image);
                 if (newCoordinates) {
                     this.coordinates = newCoordinates;
                 }
@@ -137,7 +138,7 @@ class ImageSource extends Evented implements Source {
      * Updates the image URL and, optionally, the coordinates. To avoid having the image flash after changing,
      * set the `raster-fade-duration` paint property on the raster layer to 0.
      *
-     * @param {Object} options
+     * @param {Object} options Options object.
      * @param {string} [options.url] Required image URL.
      * @param {Array<Array<number>>} [options.coordinates] Four geographical coordinates,
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.

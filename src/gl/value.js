@@ -1,8 +1,9 @@
 // @flow
 
-import Color from '../style-spec/util/color';
+import Color from '../style-spec/util/color.js';
+import assert from 'assert';
 
-import type Context from './context';
+import type Context from './context.js';
 import type {
     BlendFuncType,
     BlendEquationType,
@@ -16,7 +17,7 @@ import type {
     ViewportType,
     CullFaceModeType,
     FrontFaceType,
-} from './types';
+} from './types.js';
 
 export interface Value<T> {
     current: T;
@@ -140,6 +141,9 @@ export class StencilFunc extends BaseValue<StencilFuncType> {
     set(v: StencilFuncType): void {
         const c = this.current;
         if (v.func === c.func && v.ref === c.ref && v.mask === c.mask && !this.dirty) return;
+        // Assume UNSIGNED_INT_24_8 storage, with 8 bits dedicated to stencil.
+        // Please revise your stencil values if this threshold is triggered.
+        assert(v.ref >= 0 && v.ref <= 255);
         this.gl.stencilFunc(v.func, v.ref, v.mask);
         this.current = v;
         this.dirty = false;
@@ -507,14 +511,19 @@ export class ColorAttachment extends FramebufferAttachment<WebGLTexture> {
 }
 
 export class DepthAttachment extends FramebufferAttachment<WebGLRenderbuffer> {
+    attachment(): number { return this.gl.DEPTH_ATTACHMENT; }
     set(v: ?WebGLRenderbuffer): void {
         if (v === this.current && !this.dirty) return;
         this.context.bindFramebuffer.set(this.parent);
         // note: it's possible to attach a texture to the depth attachment
         // point, but thus far MBGL only uses renderbuffers for depth
         const gl = this.gl;
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, v);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, this.attachment(), gl.RENDERBUFFER, v);
         this.current = v;
         this.dirty = false;
     }
+}
+
+export class DepthStencilAttachment extends DepthAttachment {
+    attachment(): number { return this.gl.DEPTH_STENCIL_ATTACHMENT; }
 }
