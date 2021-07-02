@@ -889,6 +889,7 @@ class Transform {
 
     /**
      * Given a location, return the point in map-pixel coordinates. 
+     * Use {@see locationPoint} for screen coordinates.
      * @param {LngLat} lnglat location
      * @returns {Point} point in map-pixel coordinates
      * @private
