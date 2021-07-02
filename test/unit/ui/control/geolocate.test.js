@@ -557,7 +557,7 @@ test('GeolocateControl shown even if trackUserLocation = false', (t) => {
 });
 
 test('GeolocateControl watching device orientation event', (t) => {
-    t.plan(5);
+    t.plan(7);
     const map = createMap(t);
     const geolocate = new GeolocateControl({
         fitBoundsOptions: {
@@ -572,22 +572,35 @@ test('GeolocateControl watching device orientation event', (t) => {
 
     const click = new window.Event('click');
 
+    const DeviceOrientationEventLike = (alpha) => {
+        const instance = new window.Event('deviceorientation');
+        instance.alpha = alpha;
+        return instance;
+    }
+
+    t.notOk(geolocate._dotElement.classList.contains('mapboxgl-user-location-show-heading'), 'userLocation should not have heading');
+
     let moveendCount = 0;
     map.once('moveend', () => {
         // moveend was being called a second time, this ensures that we don't run the tests a second time
         if (moveendCount > 0) return;
         moveendCount++;
-        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location after 1st update');
+        t.same(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location after 1st update');
         t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot marker on map');
-        t.false(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation does not have stale class');
+        t.notOk(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation does not have stale class');
         geolocate.once('trackuserlocationend', () => {
-            t.ok(geolocate._userLocationDotMarker._rotation, 15, 'userLocation rotation is not rotated by 15 degrees')
-            window.dispatchEvent(new window.Event('deviceorientation', {
-                alpha: 359,
-            }));
+            const event = DeviceOrientationEventLike(359)
+            window.dispatchEvent(event);
             setImmediate(() => {
-                t.ok(geolocate._userLocationDotMarker._rotation, 359, 'userLocation rotation is not rotated by 359 degrees')
-                t.end();
+                t.ok(geolocate._dotElement.classList.contains('mapboxgl-user-location-show-heading'), 'userLocation should have heading');
+                t.equal(geolocate._userLocationDotMarker._rotation, 359, 'userLocation rotation is not rotated by 359 degrees')
+
+                const event = DeviceOrientationEventLike(15)
+                window.dispatchEvent(event);
+                setImmediate(() => {
+                    t.equal(geolocate._userLocationDotMarker._rotation, 15, 'userLocation rotation is not rotated by 15 degrees')
+                    t.end();
+                });
             });
         });
         // manually pan the map away from the geolocation position which should trigger the 'trackuserlocationend' event above
@@ -597,7 +610,4 @@ test('GeolocateControl watching device orientation event', (t) => {
     });
     geolocate._geolocateButton.dispatchEvent(click);
     geolocation.send({latitude: 10, longitude: 20, accuracy: 30});
-    window.dispatchEvent(new window.Event('deviceorientation', {
-        alpha: 15,
-    }));
 });
