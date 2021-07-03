@@ -614,7 +614,6 @@ class GeolocateControl extends Evented {
     _clearWatch() {
         window.navigator.geolocation.clearWatch(this._geolocationWatchID);
 
-        window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientation);
         window.removeEventListener('deviceorientation', this._onDeviceOrientation);
 
         this._geolocationWatchID = (undefined: any);
