@@ -486,7 +486,7 @@ class GeolocateControl extends Evented {
     * map.on('load', function() {
     *   geolocate.trigger();
     * });
-    * Called on a deviceorientationabsolute or deviceorientation event.
+    * Called on a deviceorientation event.
     *
     * @param deviceOrientationEvent {DeviceOrientationEvent}
     * @private
