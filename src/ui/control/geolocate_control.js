@@ -124,6 +124,7 @@ class GeolocateControl extends Evented {
     _setup: boolean; // set to true once the control has been setup
     _heading: ?number;
     _updateMarkerRotationThrottled: Function;
+    _onDeviceOrientationListener: Function;
 
     constructor(options: Options) {
         super();
@@ -140,6 +141,8 @@ class GeolocateControl extends Evented {
             '_updateMarkerRotation'
         ], this);
 
+        // by referencing the function with .bind(), we can correctly remove from window's event listeners
+        this._onDeviceOrientationListener = this._onDeviceOrientation.bind(this)
         this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20);
     }
 
@@ -595,7 +598,7 @@ class GeolocateControl extends Evented {
                     this._onSuccess, this._onError, positionOptions);
 
                 if (this.options.showUserHeading) {
-                    window.addEventListener('deviceorientation', this._onDeviceOrientation.bind(this));
+                    window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
                 }
             }
         } else {
@@ -613,7 +616,7 @@ class GeolocateControl extends Evented {
     _clearWatch() {
         window.navigator.geolocation.clearWatch(this._geolocationWatchID);
 
-        window.removeEventListener('deviceorientation', this._onDeviceOrientation);
+        window.removeEventListener('deviceorientation', this._onDeviceOrientationListener);
 
         this._geolocationWatchID = (undefined: any);
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
