@@ -473,19 +473,6 @@ class GeolocateControl extends Evented {
     * Programmatically request and move the map to the user's location.
     *
     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
-    * @example
-    * // Initialize the geolocate control.
-    * var geolocate = new mapboxgl.GeolocateControl({
-    *  positionOptions: {
-    *    enableHighAccuracy: true
-    *  },
-    *  trackUserLocation: true
-    * });
-    * // Add the control to the map.
-    * map.addControl(geolocate);
-    * map.on('load', function() {
-    *   geolocate.trigger();
-    * });
     * Called on a deviceorientation event.
     *
     * @param deviceOrientationEvent {DeviceOrientationEvent}
@@ -501,7 +488,19 @@ class GeolocateControl extends Evented {
 
     /**
      * Trigger a geolocation
-     *
+     * @example
+     * // Initialize the geolocate control.
+     * var geolocate = new mapboxgl.GeolocateControl({
+     *  positionOptions: {
+     *    enableHighAccuracy: true
+     *  },
+     *  trackUserLocation: true
+     * });
+     * // Add the control to the map.
+     * map.addControl(geolocate);
+     * map.on('load', function() {
+     *   geolocate.trigger();
+     * });
      * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
      */
     trigger() {
