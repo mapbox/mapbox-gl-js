@@ -142,7 +142,7 @@ class GeolocateControl extends Evented {
         ], this);
 
         // by referencing the function with .bind(), we can correctly remove from window's event listeners
-        this._onDeviceOrientationListener = this._onDeviceOrientation.bind(this)
+        this._onDeviceOrientationListener = this._onDeviceOrientation.bind(this);
         this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20);
     }
 
