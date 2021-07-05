@@ -707,20 +707,21 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     height: 0;
 }
 
-.mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::before {
+.mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::before,
+.mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::after {
     content: "";
-    border-left: 7.5px solid transparent;
     border-bottom: 7.5px solid #4aa1eb;
-    transform: translate(0, -28px) skewY(-20deg);
     position: absolute;
 }
 
+.mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::before {
+    border-left: 7.5px solid transparent;
+    transform: translate(0, -28px) skewY(-20deg);
+}
+
 .mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::after {
-    content: "";
     border-right: 7.5px solid transparent;
-    border-bottom: 7.5px solid #4aa1eb;
     transform: translate(7.5px, -28px) skewY(20deg);
-    position: absolute;
 }
 
 @keyframes mapboxgl-user-location-dot-pulse {
