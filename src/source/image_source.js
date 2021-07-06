@@ -111,23 +111,25 @@ class ImageSource extends Evented implements Source {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
-        this.url = this.options.url;
+        if (this.options.url) {
+            this.url = this.options.url;
 
-        getImage(this.map._requestManager.transformRequest(this.url, ResourceType.Image), (err, image) => {
-            this._loaded = true;
-            if (err) {
-                this.fire(new ErrorEvent(err));
-            } else if (image) {
-                this.image = browser.getImageData(image);
-                if (newCoordinates) {
-                    this.coordinates = newCoordinates;
+            getImage(this.map._requestManager.transformRequest(this.url, ResourceType.Image), (err, image) => {
+                this._loaded = true;
+                if (err) {
+                    this.fire(new ErrorEvent(err));
+                } else if (image) {
+                    this.image = browser.getImageData(image);
+                    if (newCoordinates) {
+                        this.coordinates = newCoordinates;
+                    }
+                    if (successCallback) {
+                        successCallback();
+                    }
+                    this._finishLoading();
                 }
-                if (successCallback) {
-                    successCallback();
-                }
-                this._finishLoading();
-            }
-        });
+            });
+        }
     }
 
     loaded(): boolean {
@@ -147,7 +149,8 @@ class ImageSource extends Evented implements Source {
      * @returns {ImageSource} this
      */
     updateImage(options: {url: string, coordinates?: Coordinates}) {
-        if (!this.image || !options.url) {
+        console.log('options: ', options);
+        if (!options.url) {
             return this;
         }
         this.options.url = options.url;

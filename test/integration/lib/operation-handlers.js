@@ -97,6 +97,10 @@ export const operationHandlers = {
             doneCb();
         });
     },
+    updateImageSource(map, params, doneCb) {
+        map.getSource(params[0]).updateImage({url: params[1]});
+        doneCb();
+    },
     forceRenderCached(map, params, doneCb) {
         // No-op in gl-js
         doneCb();

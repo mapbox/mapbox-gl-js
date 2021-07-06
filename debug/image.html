@@ -29,16 +29,6 @@
 var imageStyle = {
     "version": 8,
     "sources": {
-        "image": {
-            "type": "image",
-            "url": "/test/integration/image/0.png",
-            "coordinates": [
-                [-122.51596391201019, 37.56238816766053],
-                [-122.51467645168304, 37.56410183312965],
-                [-122.51309394836426, 37.563391708549425],
-                [-122.51423120498657, 37.56161849366671]
-            ]
-        },
         'mapbox-dem': {
             "type": "raster-dem",
             "url": "mapbox://mapbox.terrain-rgb",
@@ -51,13 +41,6 @@ var imageStyle = {
         "type": "background",
         "paint": {
             "background-color": "rgb(128,128,128)"
-        }
-    }, {
-        "id": "image",
-        "type": "raster",
-        "source": "image",
-        "paint": {
-            "raster-resampling": "nearest"
         }
     }]
 };
@@ -75,6 +58,31 @@ var map = new mapboxgl.Map({
 document.getElementById('terrain-checkbox').onclick = function() {
     map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
 };
+
+map.on('load', function () {
+    map.addSource('image', {
+        "type": "image",
+        "coordinates": [
+            [-122.51596391201019, 37.56238816766053],
+            [-122.51467645168304, 37.56410183312965],
+            [-122.51309394836426, 37.563391708549425],
+            [-122.51423120498657, 37.56161849366671]
+        ]
+    });
+
+    map.addLayer({
+        "id": "image",
+        "type": "raster",
+        "source": "image",
+        "paint": {
+            "raster-resampling": "nearest"
+        }
+    });
+
+    setTimeout(function () {
+        map.getSource('image').updateImage({url: "/test/integration/image/0.png"});
+    }, 1000);
+});
 
 </script>
 </body>

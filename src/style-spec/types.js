@@ -158,7 +158,7 @@ export type VideoSourceSpecification = {|
 
 export type ImageSourceSpecification = {|
     "type": "image",
-    "url": string,
+    "url"?: string,
     "coordinates": [[number, number], [number, number], [number, number], [number, number]]
 |}
 
