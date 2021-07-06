@@ -1971,13 +1971,13 @@ class Map extends Camera {
         return this._update(true);
     }
 
-    // eslint-disable-next-line jsdoc/require-returns
     /**
      * Removes the layer with the given ID from the map's style.
      *
      * If no such layer exists, an `error` event is fired.
      *
      * @param {string} id id of the layer to remove
+     * @returns {Map} `this`
      * @fires error
      *
      * @example

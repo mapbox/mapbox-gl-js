@@ -77,7 +77,7 @@ export default class TouchZoomRotateHandler {
     /**
      * Returns true if the handler is enabled and has detected the start of a zoom/rotate gesture.
      *
-     * @returns {boolean}
+     * @returns {boolean} `true` if enabled and a zoom/rotate gesture was detected.
      */
     isActive() {
         return this._touchZoom.isActive() || this._touchRotate.isActive() || this._tapDragZoom.isActive();
