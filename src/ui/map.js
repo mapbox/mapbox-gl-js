@@ -187,7 +187,7 @@ const defaultOptions = {
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
  * @param {number} [options.minPitch=0] The minimum pitch of the map (0-85).
  * @param {number} [options.maxPitch=85] The maximum pitch of the map (0-85).
- * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
+ * @param {Object|string} [options.style=null] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
  *
