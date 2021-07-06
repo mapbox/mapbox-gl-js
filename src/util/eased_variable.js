@@ -22,7 +22,7 @@ class EasedVariable {
      *
      * @param timeStamp {number} time at which to evaluate
      *
-     * @return {number} evaluated value
+     * @returns {number} evaluated value
      */
     getValue(timeStamp: number): number {
         if (timeStamp <= this._startTime) return this._start;
