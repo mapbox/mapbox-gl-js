@@ -208,10 +208,12 @@ const exported = {
 Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics, getPerformanceMetricsAsync: WorkerPerformanceUtils.getPerformanceMetricsAsync});
 
 /**
- * The version of Mapbox GL JS in use as specified in `package.json`,
+ * Gets the version of Mapbox GL JS in use as specified in `package.json`,
  * `CHANGELOG.md`, and the GitHub release.
- *
  * @var {string} version
+ * @example
+ * //Log the currently loaded version
+ * console.log(`Mapbox GL JS v${mapboxgl.version}`);
  */
 
 /**
