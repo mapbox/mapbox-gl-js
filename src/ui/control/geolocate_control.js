@@ -598,7 +598,7 @@ class GeolocateControl extends Evented {
                     this._onSuccess, this._onError, positionOptions);
 
                 if (this.options.showUserHeading) {
-                    window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
+                    this._addDeviceOrientationListener()
                 }
             }
         } else {
@@ -611,6 +611,21 @@ class GeolocateControl extends Evented {
         }
 
         return true;
+    }
+
+    _addDeviceOrientationListener() {
+        if (typeof DeviceMotionEvent !== "undefined" &&
+            typeof DeviceMotionEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission()
+                .then(response => {
+                    if (response == 'granted') {
+                        window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
+                    }
+                })
+                .catch(console.error)
+        } else {
+            window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
+        }
     }
 
     _clearWatch() {

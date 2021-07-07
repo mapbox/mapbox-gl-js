@@ -557,7 +557,7 @@ test('GeolocateControl shown even if trackUserLocation = false', (t) => {
 });
 
 test('GeolocateControl watching device orientation event', (t) => {
-    t.plan(7);
+    t.plan(8);
     const map = createMap(t);
     const geolocate = new GeolocateControl({
         fitBoundsOptions: {
@@ -581,6 +581,8 @@ test('GeolocateControl watching device orientation event', (t) => {
 
     t.notOk(geolocate._dotElement.classList.contains('mapboxgl-user-location-show-heading'), 'userLocation should not have heading');
 
+    const eventListenerSpy = t.spy(window, 'addEventListener')
+
     let moveendCount = 0;
     map.once('moveend', () => {
         // moveend was being called a second time, this ensures that we don't run the tests a second time
@@ -590,6 +592,8 @@ test('GeolocateControl watching device orientation event', (t) => {
         t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot marker on map');
         t.notOk(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation does not have stale class');
         geolocate.once('trackuserlocationend', () => {
+            t.equal(eventListenerSpy.getCall(0).args[0], 'deviceorientation');
+
             const event = deviceOrientationEventLike(-359);
             window.dispatchEvent(event);
             setImmediate(() => {
