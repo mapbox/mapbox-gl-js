@@ -482,9 +482,15 @@ class GeolocateControl extends Evented {
     * @private
     */
     _onDeviceOrientation(deviceOrientationEvent: DeviceOrientationEvent) {
+        // absolute is true if the orientation data is provided as the difference between the Earth's coordinate frame and the device's coordinate frame, or false if the orientation data is being provided in reference to some arbitrary, device-determined coordinate frame.
         if (this._userLocationDotMarker) {
-            // alpha increases counter clockwise around the z axis
-            this._heading = deviceOrientationEvent.alpha * -1;
+            if (deviceOrientationEvent.webkitCompassHeading) {
+                // Safari
+                this._heading = deviceOrientationEvent.webkitCompassHeading;
+            } else if (deviceOrientationEvent.absolute === true) {
+                // non-Safari alpha increases counter clockwise around the z axis
+                this._heading = deviceOrientationEvent.alpha * -1;
+            }
             this._updateMarkerRotationThrottled();
         }
     }
@@ -614,17 +620,25 @@ class GeolocateControl extends Evented {
     }
 
     _addDeviceOrientationListener() {
+        const addListener = () => {
+            if ('ondeviceorientationabsolute' in window) {
+                window.addEventListener('deviceorientationabsolute', this._onDeviceOrientationListener);
+            } else {
+                window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
+            }
+        };
+
         if (typeof window.DeviceMotionEvent !== "undefined" &&
             typeof window.DeviceMotionEvent.requestPermission === 'function') {
             DeviceOrientationEvent.requestPermission()
                 .then(response => {
                     if (response === 'granted') {
-                        window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
+                        addListener();
                     }
                 })
                 .catch(console.error);
         } else {
-            window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
+            addListener();
         }
     }
 
@@ -632,6 +646,7 @@ class GeolocateControl extends Evented {
         window.navigator.geolocation.clearWatch(this._geolocationWatchID);
 
         window.removeEventListener('deviceorientation', this._onDeviceOrientationListener);
+        window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientationListener);
 
         this._geolocationWatchID = (undefined: any);
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');

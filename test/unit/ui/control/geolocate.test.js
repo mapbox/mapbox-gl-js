@@ -576,6 +576,7 @@ test('GeolocateControl watching device orientation event', (t) => {
     const deviceOrientationEventLike = (alpha) => {
         const instance = new window.Event('deviceorientation');
         instance.alpha = alpha;
+        instance.absolute = true;
         return instance;
     };
 
