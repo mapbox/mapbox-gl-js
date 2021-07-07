@@ -22,10 +22,12 @@ type Options = {
 };
 
 type DeviceOrientationEvent = {
-    absolute: Boolean,
+    absolute: boolean,
     alpha: number,
     beta: number,
-    gamma: number
+    gamma: number,
+    requestPermission: Promise<String>,
+    webkitCompassHeading?: number,
 }
 
 const defaultOptions: Options = {
@@ -630,6 +632,7 @@ class GeolocateControl extends Evented {
 
         if (typeof window.DeviceMotionEvent !== "undefined" &&
             typeof window.DeviceMotionEvent.requestPermission === 'function') {
+            //$FlowFixMe[incompatible-type]
             DeviceOrientationEvent.requestPermission()
                 .then(response => {
                     if (response === 'granted') {
