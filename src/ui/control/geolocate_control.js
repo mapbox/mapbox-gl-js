@@ -598,7 +598,7 @@ class GeolocateControl extends Evented {
                     this._onSuccess, this._onError, positionOptions);
 
                 if (this.options.showUserHeading) {
-                    this._addDeviceOrientationListener()
+                    this._addDeviceOrientationListener();
                 }
             }
         } else {
@@ -614,15 +614,15 @@ class GeolocateControl extends Evented {
     }
 
     _addDeviceOrientationListener() {
-        if (typeof DeviceMotionEvent !== "undefined" &&
-            typeof DeviceMotionEvent.requestPermission === 'function') {
+        if (typeof window.DeviceMotionEvent !== "undefined" &&
+            typeof window.DeviceMotionEvent.requestPermission === 'function') {
             DeviceOrientationEvent.requestPermission()
                 .then(response => {
-                    if (response == 'granted') {
+                    if (response === 'granted') {
                         window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
                     }
                 })
-                .catch(console.error)
+                .catch(console.error);
         } else {
             window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
         }

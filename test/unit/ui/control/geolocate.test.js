@@ -581,7 +581,7 @@ test('GeolocateControl watching device orientation event', (t) => {
 
     t.notOk(geolocate._dotElement.classList.contains('mapboxgl-user-location-show-heading'), 'userLocation should not have heading');
 
-    const eventListenerSpy = t.spy(window, 'addEventListener')
+    const eventListenerSpy = t.spy(window, 'addEventListener');
 
     let moveendCount = 0;
     map.once('moveend', () => {
