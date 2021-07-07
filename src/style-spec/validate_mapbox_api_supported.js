@@ -34,6 +34,7 @@ function getAllowedKeyErrors(obj: Object, keys: Array<*>, path: ?string): Array<
     return errors;
 }
 
+const acceptedSourceTypes = new Set(["vector", "raster", "raster-dem"]);
 function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     const errors = [];
 
@@ -45,14 +46,21 @@ function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     errors.push(...getAllowedKeyErrors(source, sourceKeys, 'source'));
 
     /*
+     * "type" is required and must be one of "vector", "raster", "raster-dem"
+     */
+    if (!acceptedSourceTypes.has(String(source.type))) {
+        errors.push(new ValidationError(`sources[${i}].type`, source.type, `Expected one of [${Array.from(acceptedSourceTypes).join(", ")}]`));
+    }
+
+    /*
      * "source" is required. Valid examples:
      * mapbox://mapbox.abcd1234
      * mapbox://penny.abcd1234
      * mapbox://mapbox.abcd1234,penny.abcd1234
      */
     const sourceUrlPattern = /^mapbox:\/\/([^/]*)$/;
-    if (!isValid(source.url, sourceUrlPattern)) {
-        errors.push(new ValidationError(`sources[${i}]`, source.url, 'Source url must be a valid Mapbox tileset url'));
+    if (!source.url || !isValid(source.url, sourceUrlPattern)) {
+        errors.push(new ValidationError(`sources[${i}].url`, source.url, 'Expected a valid Mapbox tileset url'));
     }
 
     return errors;

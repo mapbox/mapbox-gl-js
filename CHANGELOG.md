@@ -1,3 +1,10 @@
+## 2.3.1
+
+### 🐞 Bug fixes
+
+* Fix fog flickering when the map option `optimizeForTerrain` is set to false ([#10763](https://github.com/mapbox/mapbox-gl-js/pull/10767))
+* Fix collision boxes which were not correctly updated for symbols with `text-variable-anchor` ([#10709](https://github.com/mapbox/mapbox-gl-js/pull/10709))
+
 ## 2.3.0
 
 ### ✨ Features and improvements

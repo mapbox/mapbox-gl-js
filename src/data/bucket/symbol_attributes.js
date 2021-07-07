@@ -64,8 +64,8 @@ export const quadTriangle = createLayout([
 ]);
 
 export const placement = createLayout([
-    {type: 'Int16', name: 'anchorX'},
-    {type: 'Int16', name: 'anchorY'},
+    {type: 'Float32', name: 'anchorX'},
+    {type: 'Float32', name: 'anchorY'},
     {type: 'Uint16', name: 'glyphStartIndex'},
     {type: 'Uint16', name: 'numGlyphs'},
     {type: 'Uint32', name: 'vertexStartIndex'},
@@ -85,8 +85,8 @@ export const placement = createLayout([
 ]);
 
 export const symbolInstance = createLayout([
-    {type: 'Int16', name: 'anchorX'},
-    {type: 'Int16', name: 'anchorY'},
+    {type: 'Float32', name: 'anchorX'},
+    {type: 'Float32', name: 'anchorY'},
     {type: 'Int16', name: 'rightJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'centerJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'leftJustifiedTextSymbolIndex'},

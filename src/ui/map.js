@@ -76,10 +76,10 @@ type IControl = {
 }
 /* eslint-enable no-use-before-define */
 
-const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
-const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
-const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
-const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
+export const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
+export const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
+export const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
+export const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
 
 type MapOptions = {
     hash?: boolean | string,
@@ -1970,13 +1970,13 @@ class Map extends Camera {
         return this._update(true);
     }
 
-    // eslint-disable-next-line jsdoc/require-returns
     /**
      * Removes the layer with the given ID from the map's style.
      *
      * If no such layer exists, an `error` event is fired.
      *
      * @param {string} id id of the layer to remove
+     * @returns {Map} `this`
      * @fires error
      *
      * @example
@@ -2169,7 +2169,7 @@ class Map extends Camera {
     /**
      * Sets the terrain property of the style.
      *
-     * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#terrain).
+     * @param terrain Terrain properties to set. Must conform to the [Terrain Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/terrain/).
      * If `null` or `undefined` is provided, function removes terrain.
      * @returns {Map} `this`
      * @example
@@ -2200,7 +2200,7 @@ class Map extends Camera {
 
     /**
      * Sets the fog property of the style.
-     * @param fog The fog properties to set. Must conform the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#fog).
+     * @param fog The fog properties to set. Must conform the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
      * If `null` or `undefined` is provided, this function call removes the fog from the map.
      * @returns {Map} `this`
      * @example
@@ -2846,7 +2846,12 @@ class Map extends Camera {
             const elevationChange = Math.abs(currentElevation - newElevation);
 
             if (elevationChange > AVERAGE_ELEVATION_EASE_THRESHOLD) {
-                this._averageElevation.easeTo(newElevation, timeStamp, AVERAGE_ELEVATION_EASE_TIME);
+                if (this._isInitialLoad) {
+                    this._averageElevation.jumpTo(newElevation);
+                    return applyUpdate(newElevation);
+                } else {
+                    this._averageElevation.easeTo(newElevation, timeStamp, AVERAGE_ELEVATION_EASE_TIME);
+                }
             } else if (elevationChange > AVERAGE_ELEVATION_CHANGE_THRESHOLD) {
                 this._averageElevation.jumpTo(newElevation);
                 return applyUpdate(newElevation);

@@ -16,6 +16,8 @@ import LngLat from '../../../src/geo/lng_lat.js';
 import Marker from '../../../src/ui/marker.js';
 import Popup from '../../../src/ui/popup.js';
 import simulate from '../../util/simulate_interaction.js';
+import browser from '../../../src/util/browser.js';
+import {AVERAGE_ELEVATION_SAMPLING_INTERVAL, AVERAGE_ELEVATION_EASE_TIME} from '../../../src/ui/map.js';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock.js';
 
 function createStyle() {
@@ -263,6 +265,96 @@ test('Elevation', (t) => {
         });
     });
 
+    t.test('map._updateAverageElevation', t => {
+        const map = createMap(t, {
+            style: extend(createStyle(), {
+                layers: [{
+                    "id": "background",
+                    "type": "background",
+                    "paint": {
+                        "background-color": "black"
+                    }
+                }]
+            })
+        });
+        map.setPitch(85);
+        map.setZoom(13);
+
+        map.once('style.load', () => {
+            map.addSource('mapbox-dem', {
+                "type": "raster-dem",
+                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                "tileSize": TILE_SIZE,
+                "maxzoom": 14
+            });
+            const cache = map.style._getSourceCache('mapbox-dem');
+            cache.used = cache._sourceLoaded = true;
+            cache._loadTile = (tile, callback) => {
+                // Elevate tiles above center.
+                tile.dem = createGradientDEM();
+                tile.state = 'loaded';
+                callback(null);
+            };
+            map.setTerrain({"source": "mapbox-dem"});
+            t.equal(map.transform.averageElevation, 0);
+
+            map.once('render', () => {
+                map._updateTerrain();
+                map._isInitialLoad = false;
+
+                t.false(map.painter.averageElevationNeedsEasing());
+
+                map.setFog({});
+                map.setPitch(85);
+                t.true(map.painter.averageElevationNeedsEasing());
+
+                let changed;
+                let timestamp;
+
+                timestamp = browser.now();
+                changed = map._updateAverageElevation(timestamp);
+                t.false(changed);
+                t.false(map._averageElevation.isEasing(timestamp));
+                t.equal(map.transform.averageElevation, 0);
+
+                timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
+                changed = map._updateAverageElevation(timestamp);
+                t.false(changed);
+                t.false(map._averageElevation.isEasing(timestamp));
+                t.equal(map.transform.averageElevation, 0);
+
+                map.setZoom(14);
+                map.setCenter([map.getCenter().lng + 0.01, map.getCenter().lat]);
+
+                timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
+                changed = map._updateAverageElevation(timestamp);
+                t.true(changed);
+                t.true(map._averageElevation.isEasing(timestamp));
+                t.equal(map.transform.averageElevation, 0);
+
+                timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
+                changed = map._updateAverageElevation(timestamp);
+                t.true(changed);
+                t.true(map._averageElevation.isEasing(timestamp));
+                t.equal(map.transform.averageElevation, 152.33102130398143);
+
+                timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
+                changed = map._updateAverageElevation(timestamp);
+                t.true(changed);
+                t.true(map._averageElevation.isEasing(timestamp));
+                t.equal(map.transform.averageElevation, 304.66204260796286);
+
+                timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
+                changed = map._updateAverageElevation(timestamp);
+                t.false(changed);
+                t.false(map._averageElevation.isEasing(timestamp));
+                t.equal(map.transform.averageElevation, 304.66204260796286);
+
+                t.end();
+            });
+        });
+    });
+
     t.test('mapbox-gl-js-internal#91', t => {
         const data = {
             "type": "FeatureCollection",
@@ -459,7 +551,6 @@ test('Elevation', (t) => {
             map.addLayer(customLayer);
             map.setTerrain({"source": "mapbox-dem"});
             map.once('render', () => {
-                map.painter.terrain.renderCached = true;
                 t.false(map.painter.terrain._shouldDisableRenderCache());
                 t.end();
             });
