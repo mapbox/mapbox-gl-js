@@ -1105,8 +1105,8 @@ class Map extends Camera {
      * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
-    on(type: MapEvent, layerId?: any, listener: any) {
-        if (listener === undefined && typeof layerId === 'function') {
+    on(type: MapEvent, layerId: any, listener: any) {
+        if (listener === undefined) {
             return super.on(type, layerId);
         }
 
@@ -1156,8 +1156,9 @@ class Map extends Camera {
      * @see [Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-    once(type: MapEvent, layerId?: any, listener: any) {
-        if (listener === undefined && typeof layerId === 'function') {
+    once(type: MapEvent, layerId: any, listener: any) {
+
+        if (listener === undefined) {
             return super.once(type, layerId);
         }
 
@@ -1195,8 +1196,8 @@ class Map extends Camera {
      * });
      * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    off(type: MapEvent, layerId?: any, listener: any) {
-        if (listener === undefined && typeof layerId === 'function') {
+    off(type: MapEvent, layerId: any, listener: any) {
+        if (listener === undefined) {
             return super.off(type, layerId);
         }
 
