@@ -5,8 +5,9 @@ import DOM from '../../util/dom.js';
 import window from '../../util/window.js';
 import {extend, bindAll, warnOnce} from '../../util/util.js';
 import assert from 'assert';
-import LngLat from '../../geo/lng_lat.js';
 import Marker from '../marker.js';
+import LngLat from '../../geo/lng_lat.js';
+import throttle from '../../util/throttle.js';
 
 import type Map from '../map.js';
 import type {AnimationOptions, CameraOptions} from '../camera.js';
@@ -16,8 +17,18 @@ type Options = {
     fitBoundsOptions?: AnimationOptions & CameraOptions,
     trackUserLocation?: boolean,
     showAccuracyCircle?: boolean,
-    showUserLocation?: boolean
+    showUserLocation?: boolean,
+    showUserHeading?: boolean
 };
+
+type DeviceOrientationEvent = {
+    absolute: boolean,
+    alpha: number,
+    beta: number,
+    gamma: number,
+    requestPermission: Promise<String>,
+    webkitCompassHeading?: number,
+}
 
 const defaultOptions: Options = {
     positionOptions: {
@@ -30,7 +41,8 @@ const defaultOptions: Options = {
     },
     trackUserLocation: false,
     showAccuracyCircle: true,
-    showUserLocation: true
+    showUserLocation: true,
+    showUserHeading: false
 };
 
 let supportsGeolocation;
@@ -85,13 +97,15 @@ let noTimeout = false;
  * @param {Object} [options.trackUserLocation=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the user's location as it changes.
  * @param {Object} [options.showAccuracyCircle=true] By default, if showUserLocation is `true`, a transparent circle will be drawn around the user location indicating the accuracy (95% confidence level) of the user's location. Set to `false` to disable. Always disabled when showUserLocation is `false`.
  * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
+ * @param {Object} [options.showUserHeading=false] If `true` an arrow will be drawn next to the user location dot indicating the device's heading. This only has affect when `trackUserLocation` is `true`.
  *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
  *     positionOptions: {
  *         enableHighAccuracy: true
  *     },
- *     trackUserLocation: true
+ *     trackUserLocation: true,
+ *     showUserHeading: true
  * }));
  * @see [Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
  */
@@ -110,6 +124,9 @@ class GeolocateControl extends Evented {
     _accuracyCircleMarker: Marker;
     _accuracy: number;
     _setup: boolean; // set to true once the control has been setup
+    _heading: ?number;
+    _updateMarkerRotationThrottled: Function;
+    _onDeviceOrientationListener: Function;
 
     constructor(options: Options) {
         super();
@@ -122,8 +139,13 @@ class GeolocateControl extends Evented {
             '_finish',
             '_setupUI',
             '_updateCamera',
-            '_updateMarker'
+            '_updateMarker',
+            '_updateMarkerRotation'
         ], this);
+
+        // by referencing the function with .bind(), we can correctly remove from window's event listeners
+        this._onDeviceOrientationListener = this._onDeviceOrientation.bind(this);
+        this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20);
     }
 
     onAdd(map: Map) {
@@ -325,6 +347,21 @@ class GeolocateControl extends Evented {
         }
     }
 
+    /**
+     * Update the user location dot Marker rotation to the current heading
+     *
+     * @private
+     */
+    _updateMarkerRotation() {
+        if (this._userLocationDotMarker && typeof this._heading === 'number') {
+            this._userLocationDotMarker.setRotation(this._heading);
+            this._dotElement.classList.add('mapboxgl-user-location-show-heading');
+        } else {
+            this._dotElement.classList.remove('mapboxgl-user-location-show-heading');
+            this._userLocationDotMarker.setRotation(0);
+        }
+    }
+
     _onError(error: PositionError) {
         if (!this._map) {
             // control has since been removed
@@ -398,9 +435,15 @@ class GeolocateControl extends Evented {
 
         // when showUserLocation is enabled, keep the Geolocate button disabled until the device location marker is setup on the map
         if (this.options.showUserLocation) {
-            this._dotElement = DOM.create('div', 'mapboxgl-user-location-dot');
+            this._dotElement = DOM.create('div', 'mapboxgl-user-location');
+            this._dotElement.appendChild(DOM.create('div', 'mapboxgl-user-location-dot'));
+            this._dotElement.appendChild(DOM.create('div', 'mapboxgl-user-location-heading'));
 
-            this._userLocationDotMarker = new Marker(this._dotElement);
+            this._userLocationDotMarker = new Marker({
+                element: this._dotElement,
+                rotationAlignment: 'map',
+                pitchAlignment: 'map'
+            });
 
             this._circleElement = DOM.create('div', 'mapboxgl-user-location-accuracy-circle');
             this._accuracyCircleMarker = new Marker({element: this._circleElement, pitchAlignment: 'map'});
@@ -435,20 +478,42 @@ class GeolocateControl extends Evented {
     * Programmatically request and move the map to the user's location.
     *
     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
-    * @example
-    * // Initialize the geolocate control.
-    * var geolocate = new mapboxgl.GeolocateControl({
-    *  positionOptions: {
-    *    enableHighAccuracy: true
-    *  },
-    *  trackUserLocation: true
-    * });
-    * // Add the control to the map.
-    * map.addControl(geolocate);
-    * map.on('load', function() {
-    *   geolocate.trigger();
-    * });
+    * Called on a deviceorientation event.
+    *
+    * @param deviceOrientationEvent {DeviceOrientationEvent}
+    * @private
     */
+    _onDeviceOrientation(deviceOrientationEvent: DeviceOrientationEvent) {
+        // absolute is true if the orientation data is provided as the difference between the Earth's coordinate frame and the device's coordinate frame, or false if the orientation data is being provided in reference to some arbitrary, device-determined coordinate frame.
+        if (this._userLocationDotMarker) {
+            if (deviceOrientationEvent.webkitCompassHeading) {
+                // Safari
+                this._heading = deviceOrientationEvent.webkitCompassHeading;
+            } else if (deviceOrientationEvent.absolute === true) {
+                // non-Safari alpha increases counter clockwise around the z axis
+                this._heading = deviceOrientationEvent.alpha * -1;
+            }
+            this._updateMarkerRotationThrottled();
+        }
+    }
+
+    /**
+     * Trigger a geolocation
+     * @example
+     * // Initialize the geolocate control.
+     * var geolocate = new mapboxgl.GeolocateControl({
+     *  positionOptions: {
+     *    enableHighAccuracy: true
+     *  },
+     *  trackUserLocation: true
+     * });
+     * // Add the control to the map.
+     * map.addControl(geolocate);
+     * map.on('load', function() {
+     *   geolocate.trigger();
+     * });
+     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
+     */
     trigger() {
         if (!this._setup) {
             warnOnce('Geolocate control triggered before added to a map');
@@ -539,6 +604,10 @@ class GeolocateControl extends Evented {
 
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
+
+                if (this.options.showUserHeading) {
+                    this._addDeviceOrientationListener();
+                }
             }
         } else {
             window.navigator.geolocation.getCurrentPosition(
@@ -552,8 +621,35 @@ class GeolocateControl extends Evented {
         return true;
     }
 
+    _addDeviceOrientationListener() {
+        const addListener = () => {
+            if ('ondeviceorientationabsolute' in window) {
+                window.addEventListener('deviceorientationabsolute', this._onDeviceOrientationListener);
+            } else {
+                window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
+            }
+        };
+
+        if (typeof window.DeviceMotionEvent !== "undefined" &&
+            typeof window.DeviceMotionEvent.requestPermission === 'function') {
+            //$FlowFixMe[incompatible-type]
+            DeviceOrientationEvent.requestPermission()
+                .then(response => {
+                    if (response === 'granted') {
+                        addListener();
+                    }
+                })
+                .catch(console.error);
+        } else {
+            addListener();
+        }
+    }
+
     _clearWatch() {
         window.navigator.geolocation.clearWatch(this._geolocationWatchID);
+
+        window.removeEventListener('deviceorientation', this._onDeviceOrientationListener);
+        window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientationListener);
 
         this._geolocationWatchID = (undefined: any);
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
