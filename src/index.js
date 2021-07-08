@@ -175,7 +175,7 @@ const exported = {
     },
     /**
      * Provides an interface for loading mapbox-gl's WebWorker bundle from a self hosted URL.
-     * This needs to be set only once and before any call to `new mapboxgl.Map(..)` takes place.
+     * This needs to be set only once, and before any call to `new mapboxgl.Map(..)` takes place.
      * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
      * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behaviour.
      *
