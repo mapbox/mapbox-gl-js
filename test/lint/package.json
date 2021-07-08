@@ -1,0 +1,6 @@
+{
+  "name": "eslint-plugin-jsdoc-custom",
+  "version": "1.0.0",
+  "description": "Custom JSDoc rules for Mapbox GL JS",
+  "main": "index.js"
+}
