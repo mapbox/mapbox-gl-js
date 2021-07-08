@@ -173,7 +173,23 @@ const exported = {
     clearStorage(callback?: (err: ?Error) => void) {
         clearTileCache(callback);
     },
-
+    /**
+     * Provides an interface for loading mapbox-gl's WebWorker bundle from a self-hosted URL.
+     * This needs to be set only once, and before any call to `new mapboxgl.Map(..)` takes place.
+     * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
+     * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
+     *
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     *
+     * @var {string} workerUrl
+     * @returns {string} A URL hosting a JavaScript bundle for mapbox-gl's WebWorker.
+     * @example
+     * <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp.js'></script>
+     * <script>
+     * mapboxgl.workerUrl = "https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp-worker.js";
+     * ...
+     * </script>
+     */
     workerUrl: '',
 
     /**
