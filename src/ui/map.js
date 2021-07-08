@@ -1061,12 +1061,7 @@ class Map extends Camera {
      * | [`sourcedataloading`](#map.event:sourcedataloading)       |                           |
      * | [`styleimagemissing`](#map.event:styleimagemissing)       |                           |
      *
-     * @param {string} [layerId] The ID of a style layer. If you provide a `layerId`,
-the listener will be triggered only if its location is within a visible feature in this layer,
-and the event will have a `features` property containing an array of the matching features.
-If you do not provide a `layerId`, the listener will be triggered by a corresponding event
-happening anywhere on the map, and the event will not have a `features` property.
-Note that many event types are not compatible with the optional `layerId` parameter.
+     * @param {string} layerId (optional) The ID of a style layer. If you provide a `layerId`,
      * the listener will be triggered only if its location is within a visible feature in this layer,
      * and the event will have a `features` property containing an array of the matching features.
      * If you do not provide a `layerId`, the listener will be triggered by a corresponding event
@@ -1138,12 +1133,7 @@ Note that many event types are not compatible with the optional `layerId` parame
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
      * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
-     * @param {string} [layerId] The ID of a style layer. If you provide a `layerId`,
-the listener will be triggered only if its location is within a visible feature in this layer,
-and the event will have a `features` property containing an array of the matching features.
-If you do not provide a `layerId`, the listener will be triggered by a corresponding event
-happening anywhere on the map, and the event will not have a `features` property.
-Note that many event types are not compatible with the optional `layerId` parameter.
+     * @param {string} layerId (optional) The ID of a style layer. If you provide a `layerId`,
      * the listener will be triggered only if its location is within a visible feature in this layer,
      * and the event will have a `features` property containing an array of the matching features.
      * If you do not provide a `layerId`, the listener will be triggered by a corresponding event
@@ -1186,7 +1176,7 @@ Note that many event types are not compatible with the optional `layerId` parame
      * optionally limited to layer-specific events.
      *
      * @param {string} type The event type previously used to install the listener.
-     * @param {string} [layerId] The layer ID previously used to install the listener.
+     * @param {string} layerId (optional) The layer ID previously used to install the listener.
      * @param {Function} listener The function previously installed as a listener.
      * @returns {Map} `this`
      * @example
@@ -1869,47 +1859,30 @@ Note that many event types are not compatible with the optional `layerId` parame
      * Reference a source that has _already been defined_ using the source's unique id.
      * Reference a _new source_ using a source object (as defined in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/)) directly.
      * This is **required** for all `layer.type` options _except_ for `custom` and `background`.
-     * @param {string} layer.sourceLayer The name of the [source layer](https://docs.mapbox.com/help/glossary/source-layer/) within the specified `layer.source` to use for this style layer.
-This is only applicable for vector tile sources and is **required** when `layer.source` is of the type `vector`.
+     * @param {string} [layer.sourceLayer] (optional) The name of the [source layer](https://docs.mapbox.com/help/glossary/source-layer/) within the specified `layer.source` to use for this style layer.
      * This is only applicable for vector tile sources and is **required** when `layer.source` is of the type `vector`.
-     * @param {array} layer.filter An expression specifying conditions on source features.
-Only features that match the filter are displayed.
-The Mapbox Style Specification includes more information on the limitations of the [`filter`](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter) parameter
-and a complete list of available [expressions](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/).
-If no filter is provided, all features in the source (or source layer for vector tilesets) will be displayed.
+     * @param {array} [layer.filter] (optional) An expression specifying conditions on source features.
      * Only features that match the filter are displayed.
      * The Mapbox Style Specification includes more information on the limitations of the [`filter`](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter) parameter
      * and a complete list of available [expressions](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/).
      * If no filter is provided, all features in the source (or source layer for vector tilesets) will be displayed.
-     * @param {Object} layer.paint Paint properties for the layer.
-Available paint properties vary by `layer.type`.
-A full list of paint properties for each layer type is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/).
-If no paint properties are specified, default values will be used.
+     * @param {Object} [layer.paint] (optional) Paint properties for the layer.
      * Available paint properties vary by `layer.type`.
      * A full list of paint properties for each layer type is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/).
      * If no paint properties are specified, default values will be used.
-     * @param {Object} layer.layout Layout properties for the layer.
-Available layout properties vary by `layer.type`.
-A full list of layout properties for each layer type is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/).
-If no layout properties are specified, default values will be used.
+     * @param {Object} [layer.layout] (optional) Layout properties for the layer.
      * Available layout properties vary by `layer.type`.
      * A full list of layout properties for each layer type is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/).
      * If no layout properties are specified, default values will be used.
-     * @param {number} layer.maxzoom The maximum zoom level for the layer.
-At zoom levels equal to or greater than the maxzoom, the layer will be hidden.
-The value can be any number between `0` and `24` (inclusive).
-If no maxzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
+     * @param {number} [layer.maxzoom] (optional) The maximum zoom level for the layer.
      * At zoom levels equal to or greater than the maxzoom, the layer will be hidden.
      * The value can be any number between `0` and `24` (inclusive).
      * If no maxzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
-     * @param {number} layer.minzoom The minimum zoom level for the layer.
-At zoom levels less than the minzoom, the layer will be hidden.
-The value can be any number between `0` and `24` (inclusive).
-If no minzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
+     * @param {number} [layer.minzoom] (optional) The minimum zoom level for the layer.
      * At zoom levels less than the minzoom, the layer will be hidden.
      * The value can be any number between `0` and `24` (inclusive).
      * If no minzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
-     * @param {Object} layer.metadata Arbitrary properties useful to track with the layer, but do not influence rendering.
+     * @param {Object} [layer.metadata] (optional) Arbitrary properties useful to track with the layer, but do not influence rendering.
      * @param {string} [layer.renderingMode] This is only applicable for layers with the type `custom`.
      * See {@link CustomLayerInterface} for more information.
      * @param {string} [beforeId] The ID of an existing layer to insert the new layer before,
@@ -2312,7 +2285,7 @@ If no minzoom is provided, the layer will be visible at all zoom levels for whic
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
-     * @param {string} feature.sourceLayer *For vector tile sources, `sourceLayer` is required.*
+     * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
      * @returns {Map} The map object.
      * @example
@@ -2350,9 +2323,8 @@ If no minzoom is provided, the layer will be visible at all zoom levels for whic
      * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
-     * @param {string} feature.sourceLayer *For vector tile sources, `sourceLayer` is required.*
-     * @param {string} [key] The key in the feature state to reset.
-
+     * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
+     * @param {string} key (optional) The key in the feature state to reset.
      *
      * @example
      * // Reset the entire state object for all features
@@ -2402,8 +2374,7 @@ If no minzoom is provided, the layer will be visible at all zoom levels for whic
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
-     * @param {string} feature.sourceLayer *For vector tile sources, `sourceLayer` is required.*
-
+     * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      *
      * @returns {Object} The state of the feature: a set of key-value pairs that was assigned to the feature at runtime.
      *
