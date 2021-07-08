@@ -64,9 +64,9 @@ const exported = {
      * `mapboxgl.clearPrewarmedResources()`. This is only necessary if your web page remains
      * active but stops using maps altogether.
      *
-     * This is primarily useful when using GL-JS maps in a single page app, wherein a user
-     * would navigate between various views that can cause Map instances to constantly be
-     * created and destroyed.
+     * This is primarily useful when using Mapbox GL JS maps in a single page app, wherein
+     * a user would navigate between various views that can cause Map instances to constantly
+     * be created and destroyed.
      *
      * @function prewarm
      * @example
@@ -119,7 +119,7 @@ const exported = {
     },
 
     /**
-     * Gets and sets the number of web workers instantiated on a page with GL JS maps.
+     * Gets and sets the number of web workers instantiated on a page with Mapbox GL JS maps.
      * By default, it is set to 2.
      * Make sure to set this property before creating any map instances for it to have effect.
      *
@@ -193,7 +193,7 @@ const exported = {
     workerClass: null,
 
     /**
-     * Sets the time used by GL JS internally for all animations. Useful for generating videos from GL JS.
+     * Sets the time used by Mapbox GL JS internally for all animations. Useful for generating videos from Mapbox GL JS.
      * @var {number} time
      */
     setNow: browser.setNow,

@@ -15,7 +15,8 @@
   "plugins": [
     "flowtype",
     "import",
-    "jsdoc"
+    "jsdoc",
+    "jsdoc-custom"
   ],
   "rules": {
     // no-duplicate-imports doesn't play well with Flow
@@ -86,7 +87,8 @@
     "jsdoc/require-param-description": "warn",
     "jsdoc/require-param-name": "warn",
     "jsdoc/require-returns": "warn",
-    "jsdoc/require-returns-description": "warn"
+    "jsdoc/require-returns-description": "warn",
+    "jsdoc-custom/format-mapbox-gl-js": "warn"
   },
   "settings": {
     "jsdoc":{
@@ -104,6 +106,12 @@
         "jsdoc/require-param-name": "off",
         "jsdoc/require-returns": "off",
         "jsdoc/require-returns-description": "off"
+      }
+    },
+    {
+      "files": ["test/lint/**"],
+      "rules": {
+        "import/no-commonjs": "off"
       }
     }
   ],
