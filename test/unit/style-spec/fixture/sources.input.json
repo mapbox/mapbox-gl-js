@@ -49,6 +49,9 @@
         "zoom": ["+", ["zoom"]],
         "state": ["+", ["feature-state", "foo"]]
       }
+    },
+    "missing-url": {
+      "type": "vector"
     }
   },
   "layers": []

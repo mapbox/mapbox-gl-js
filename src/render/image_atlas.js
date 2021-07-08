@@ -49,10 +49,6 @@ export class ImagePosition {
         ];
     }
 
-    get tlbr(): Array<number> {
-        return this.tl.concat(this.br);
-    }
-
     get displaySize(): [number, number] {
         return [
             (this.paddedRect.w - IMAGE_PADDING * 2) / this.pixelRatio,

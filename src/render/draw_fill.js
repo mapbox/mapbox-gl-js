@@ -99,7 +99,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        const tileMatrix = painter.translatePosMatrix(coord.posMatrix, tile,
+        const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
         if (!isOutline) {
@@ -116,6 +116,8 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
                 fillOutlinePatternUniformValues(tileMatrix, painter, crossfade, tile, drawingBufferSize) :
                 fillOutlineUniformValues(tileMatrix, drawingBufferSize);
         }
+
+        painter.prepareDrawProgram(painter.context, program, coord.toUnwrapped());
 
         program.draw(painter.context, drawMode, depthMode,
             painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,

@@ -28,7 +28,7 @@
     "line": 75
   },
   {
-    "message": "layers[6].paint.line-dasharray.stops[0][0]: number expected, string found",
+    "message": "layers[6].paint.line-dasharray.stops[0][0]: number expected, string found\nIf you intended to use a categorical function, specify `\"type\": \"categorical\"`.",
     "line": 89
   },
   {

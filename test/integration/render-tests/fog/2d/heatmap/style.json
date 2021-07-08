@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "pitch": 70,
+  "zoom": 14,
+  "fog": {
+    "range": [-0.25, 0.25],
+    "color": "white"
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "poi_label",
+      "type": "heatmap",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "paint": {}
+    }
+  ]
+}

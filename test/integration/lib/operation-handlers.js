@@ -98,10 +98,7 @@ export const operationHandlers = {
         });
     },
     forceRenderCached(map, params, doneCb) {
-        const terrain = map.painter.terrain;
-        if (terrain) {
-            terrain.forceRenderCached = params[0];
-        }
+        // No-op in gl-js
         doneCb();
     }
 };

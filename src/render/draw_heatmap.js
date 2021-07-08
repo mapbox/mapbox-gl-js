@@ -55,8 +55,10 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const {zoom} = painter.transform;
             if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 
+            painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+
             program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
-                heatmapUniformValues(coord.posMatrix,
+                heatmapUniformValues(coord.projMatrix,
                     tile, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
                 bucket.segments, layer.paint, painter.transform.zoom,

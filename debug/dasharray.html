@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 4,
+    center: [0, 0],
+    style: {sources: {}, version: 8, layers: []}
+});
+
+map.on('load', () => {
+    map.addSource('geojson', {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {"property": 1},
+                "geometry": {"type": "LineString", "coordinates": [[-10, -5], [10, -5]]}
+            }, {
+                "type": "Feature",
+                "properties": {"property": 2},
+                "geometry": {"type": "LineString", "coordinates": [[-10, 0], [10, 0]]}
+            }, {
+                "type": "Feature",
+                "properties": {"property": 3},
+                "geometry": {"type": "LineString", "coordinates": [[-10, 5], [10, 5]]}
+            }]
+        }
+    });
+
+    map.addLayer({
+        "id": "dash-dds",
+        "type": "line",
+        "source": "geojson",
+        "paint": {
+            "line-width": 10,
+            // "line-dasharray": [1, 2],
+            "line-dasharray": [
+                "match", ["get", "property"],
+                1, ["literal", [1, 2]],
+                2, ["literal", [2, 2]],
+                3, ["literal", [3, 2]],
+                ["literal", [1, 1]]
+            ]
+        },
+        "layout": {
+            "line-cap": ["match", ["get", "property"], 2, "round", "butt"]
+        }
+    });
+});
+
+</script>
+</body>
+</html>

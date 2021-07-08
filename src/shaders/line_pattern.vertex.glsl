@@ -96,4 +96,8 @@ void main() {
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
     v_width = floorwidth;
+
+#ifdef FOG
+    v_fog_pos = fog_position(pos);
+#endif
 }

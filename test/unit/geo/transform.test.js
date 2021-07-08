@@ -397,6 +397,73 @@ test('transform', (t) => {
         t.end();
     });
 
+    test('coveringTiles with fog culling enabled', (t) => {
+        const options = {
+            minzoom: 1,
+            maxzoom: 10,
+            tileSize: 512
+        };
+
+        const transform = new Transform();
+        transform.resize(200, 200);
+        transform.center = {lng: -0.01, lat: 0.01};
+        transform.zoom = 0;
+        transform.fogCullDistSq = 1.5;
+        transform.pitch = 85.0;
+        t.deepEqual(transform.coveringTiles(options), []);
+
+        transform.zoom = 1;
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(1, 0, 1, 0, 1),
+            new OverscaledTileID(1, 0, 1, 1, 1)]);
+
+        transform.zoom = 2.4;
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(2, 0, 2, 1, 2),
+            new OverscaledTileID(2, 0, 2, 2, 2)]);
+
+        transform.zoom = 10;
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(10, 0, 10, 511, 512),
+            new OverscaledTileID(10, 0, 10, 512, 512)]);
+
+        transform.zoom = 11;
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(10, 0, 10, 511, 511),
+            new OverscaledTileID(10, 0, 10, 512, 511),
+            new OverscaledTileID(10, 0, 10, 511, 512),
+            new OverscaledTileID(10, 0, 10, 512, 512)]);
+
+        transform.zoom = 5.1;
+        transform.bearing = 32.0;
+        transform.center = new LngLat(56.90, 48.20);
+        transform.resize(1024, 768);
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(5, 0, 5, 21, 11),
+            new OverscaledTileID(5, 0, 5, 20, 11),
+            new OverscaledTileID(5, 0, 5, 20, 10),
+            new OverscaledTileID(5, 0, 5, 21, 12),
+            new OverscaledTileID(5, 0, 5, 20, 12)
+        ]);
+
+        transform.zoom = 8;
+        transform.pitch = 60;
+        transform.bearing = 45.0;
+        transform.center = new LngLat(25.02, 60.15);
+        transform.resize(300, 50);
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(8, 0, 8, 145, 74)
+        ]);
+
+        transform.resize(50, 300);
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(8, 0, 8, 145, 74),
+            new OverscaledTileID(8, 0, 8, 145, 73)
+        ]);
+
+        t.end();
+    });
+
     const createCollisionElevation = (elevation) => {
         return {
             getAtPointOrZero(p) {

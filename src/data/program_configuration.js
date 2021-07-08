@@ -5,9 +5,10 @@ import Color from '../style-spec/util/color.js';
 import {supportsPropertyExpression} from '../style-spec/util/properties.js';
 import {register} from '../util/web_worker_transfer.js';
 import {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
-import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray} from './array_types.js';
+import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray, DashLayoutArray} from './array_types.js';
 import {clamp} from '../util/util.js';
 import patternAttributes from './bucket/pattern_attributes.js';
+import dashAttributes from './bucket/dash_attributes.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import FeaturePositionMap from './feature_position_map.js';
 import {
@@ -131,21 +132,21 @@ class CrossFadedConstantBinder implements UniformBinder {
     setConstantPatternPositions(posTo: ImagePosition, posFrom: ImagePosition) {
         this.pixelRatioFrom = posFrom.pixelRatio;
         this.pixelRatioTo = posTo.pixelRatio;
-        this.patternFrom = posFrom.tlbr;
-        this.patternTo = posTo.tlbr;
+        this.patternFrom = posFrom.tl.concat(posFrom.br);
+        this.patternTo = posTo.tl.concat(posTo.br);
     }
 
     setUniform(uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string) {
         const pos =
-            uniformName === 'u_pattern_to' ? this.patternTo :
-            uniformName === 'u_pattern_from' ? this.patternFrom :
+            uniformName === 'u_pattern_to' || uniformName === 'u_dash_to' ? this.patternTo :
+            uniformName === 'u_pattern_from' || uniformName === 'u_dash_from' ? this.patternFrom :
             uniformName === 'u_pixel_ratio_to' ? this.pixelRatioTo :
             uniformName === 'u_pixel_ratio_from' ? this.pixelRatioFrom : null;
         if (pos) uniform.set(pos);
     }
 
     getBinding(context: Context, location: WebGLUniformLocation, name: string): $Shape<Uniform<any>> {
-        return name.substr(0, 9) === 'u_pattern' ?
+        return name === 'u_pattern_from' || name === 'u_pattern_to' || name === 'u_dash_from' || name === 'u_dash_to' ?
             new Uniform4f(context, location) :
             new Uniform1f(context, location);
     }
@@ -320,8 +321,9 @@ class CrossFadedCompositeBinder implements AttributeBinder {
         this.zoom = zoom;
         this.layerId = layerId;
 
+        this.paintVertexAttributes = (type === 'array' ? dashAttributes : patternAttributes).members;
         for (let i = 0; i < names.length; ++i) {
-            assert(`a_${names[i]}` === patternAttributes.members[i].name);
+            assert(`a_${names[i]}` === this.paintVertexAttributes[i].name);
         }
 
         this.zoomInPaintVertexArray = new PaintVertexArray();
@@ -352,25 +354,23 @@ class CrossFadedCompositeBinder implements AttributeBinder {
         // we're cross-fading to at layout time. In order to keep vertex attributes to a minimum and not pass
         // unnecessary vertex data to the shaders, we determine which to upload at draw time.
         for (let i = start; i < end; i++) {
-            this.zoomInPaintVertexArray.emplace(i,
-                imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
-                imageMin.tl[0], imageMin.tl[1], imageMin.br[0], imageMin.br[1],
-                imageMid.pixelRatio,
-                imageMin.pixelRatio,
-            );
-            this.zoomOutPaintVertexArray.emplace(i,
-                imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
-                imageMax.tl[0], imageMax.tl[1], imageMax.br[0], imageMax.br[1],
-                imageMid.pixelRatio,
-                imageMax.pixelRatio,
-            );
+            this._setPaintValue(this.zoomInPaintVertexArray, i, imageMid, imageMin);
+            this._setPaintValue(this.zoomOutPaintVertexArray, i, imageMid, imageMax);
         }
+    }
+
+    _setPaintValue(array, i, posA, posB) {
+        array.emplace(i,
+            posA.tl[0], posA.tl[1], posA.br[0], posA.br[1],
+            posB.tl[0], posB.tl[1], posB.br[0], posB.br[1],
+            posA.pixelRatio, posB.pixelRatio
+        );
     }
 
     upload(context: Context) {
         if (this.zoomInPaintVertexArray && this.zoomInPaintVertexArray.arrayBuffer && this.zoomOutPaintVertexArray && this.zoomOutPaintVertexArray.arrayBuffer) {
-            this.zoomInPaintVertexBuffer = context.createVertexBuffer(this.zoomInPaintVertexArray, patternAttributes.members, this.expression.isStateDependent);
-            this.zoomOutPaintVertexBuffer = context.createVertexBuffer(this.zoomOutPaintVertexArray, patternAttributes.members, this.expression.isStateDependent);
+            this.zoomInPaintVertexBuffer = context.createVertexBuffer(this.zoomInPaintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+            this.zoomOutPaintVertexBuffer = context.createVertexBuffer(this.zoomOutPaintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
         }
     }
 
@@ -425,13 +425,15 @@ export default class ProgramConfiguration {
             const propType = value.property.specification['property-type'];
             const isCrossFaded = propType === 'cross-faded' || propType === 'cross-faded-data-driven';
 
-            if (expression.kind === 'constant') {
+            const sourceException = String(property) === 'line-dasharray' && (layer.layout: any).get('line-cap').value.kind !== 'constant';
+
+            if (expression.kind === 'constant' && !sourceException) {
                 this.binders[property] = isCrossFaded ?
                     new CrossFadedConstantBinder(expression.value, names) :
                     new ConstantBinder(expression.value, names, type);
                 keys.push(`/u_${property}`);
 
-            } else if (expression.kind === 'source' || isCrossFaded) {
+            } else if (expression.kind === 'source' || sourceException || isCrossFaded) {
                 const StructArrayLayout = layoutType(property, type, 'source');
                 this.binders[property] = isCrossFaded ?
                     new CrossFadedCompositeBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout, layer.id) :
@@ -507,13 +509,9 @@ export default class ProgramConfiguration {
         const result = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder) {
+            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof CrossFadedCompositeBinder) {
                 for (let i = 0; i < binder.paintVertexAttributes.length; i++) {
                     result.push(binder.paintVertexAttributes[i].name);
-                }
-            } else if (binder instanceof CrossFadedCompositeBinder) {
-                for (let i = 0; i < patternAttributes.members.length; i++) {
-                    result.push(patternAttributes.members[i].name);
                 }
             }
         }
@@ -648,59 +646,60 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     }
 }
 
-function paintAttributeNames(property, type) {
-    const attributeNameExceptions = {
-        'text-opacity': ['opacity'],
-        'icon-opacity': ['opacity'],
-        'text-color': ['fill_color'],
-        'icon-color': ['fill_color'],
-        'text-halo-color': ['halo_color'],
-        'icon-halo-color': ['halo_color'],
-        'text-halo-blur': ['halo_blur'],
-        'icon-halo-blur': ['halo_blur'],
-        'text-halo-width': ['halo_width'],
-        'icon-halo-width': ['halo_width'],
-        'line-gap-width': ['gapwidth'],
-        'line-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
-        'fill-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
-        'fill-extrusion-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
-    };
+const attributeNameExceptions = {
+    'text-opacity': ['opacity'],
+    'icon-opacity': ['opacity'],
+    'text-color': ['fill_color'],
+    'icon-color': ['fill_color'],
+    'text-halo-color': ['halo_color'],
+    'icon-halo-color': ['halo_color'],
+    'text-halo-blur': ['halo_blur'],
+    'icon-halo-blur': ['halo_blur'],
+    'text-halo-width': ['halo_width'],
+    'icon-halo-width': ['halo_width'],
+    'line-gap-width': ['gapwidth'],
+    'line-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
+    'fill-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
+    'fill-extrusion-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
+    'line-dasharray': ['dash_to', 'dash_from']
+};
 
+function paintAttributeNames(property, type) {
     return attributeNameExceptions[property] || [property.replace(`${type}-`, '').replace(/-/g, '_')];
 }
 
-function getLayoutException(property) {
-    const propertyExceptions = {
-        'line-pattern':{
-            'source': PatternLayoutArray,
-            'composite': PatternLayoutArray
-        },
-        'fill-pattern': {
-            'source': PatternLayoutArray,
-            'composite': PatternLayoutArray
-        },
-        'fill-extrusion-pattern':{
-            'source': PatternLayoutArray,
-            'composite': PatternLayoutArray
-        }
-    };
+const propertyExceptions = {
+    'line-pattern': {
+        'source': PatternLayoutArray,
+        'composite': PatternLayoutArray
+    },
+    'fill-pattern': {
+        'source': PatternLayoutArray,
+        'composite': PatternLayoutArray
+    },
+    'fill-extrusion-pattern':{
+        'source': PatternLayoutArray,
+        'composite': PatternLayoutArray
+    },
+    'line-dasharray': { // temporary layout
+        'source': DashLayoutArray,
+        'composite': DashLayoutArray
+    }
+};
 
-    return propertyExceptions[property];
-}
+const defaultLayouts = {
+    'color': {
+        'source': StructArrayLayout2f8,
+        'composite': StructArrayLayout4f16
+    },
+    'number': {
+        'source': StructArrayLayout1f4,
+        'composite': StructArrayLayout2f8
+    }
+};
 
 function layoutType(property, type, binderType) {
-    const defaultLayouts = {
-        'color': {
-            'source': StructArrayLayout2f8,
-            'composite': StructArrayLayout4f16
-        },
-        'number': {
-            'source': StructArrayLayout1f4,
-            'composite': StructArrayLayout2f8
-        }
-    };
-
-    const layoutException = getLayoutException(property);
+    const layoutException = propertyExceptions[property];
     return  layoutException && layoutException[binderType] || defaultLayouts[type][binderType];
 }
 

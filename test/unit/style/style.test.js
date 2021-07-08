@@ -49,6 +49,7 @@ class StubMap extends Evented {
         super();
         this.transform = new Transform();
         this._requestManager = new RequestManager();
+        this._markers = [];
     }
 
     _getMapId() {
@@ -2347,6 +2348,49 @@ test('Style#getTerrain', (t) => {
             });
             t.ok(style.getTerrain());
             t.deepEqual(style.getTerrain(), {"source": "terrain-dem-src"});
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#setFog', (t) => {
+    t.test('setFog(undefined) removes fog', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "fog": {"range": [1, 2], "color": "white", "horizon-blend": 0.05},
+            "sources": {},
+            "layers": []
+        });
+
+        style.on('style.load', () => {
+            style.setFog(undefined);
+            t.ok(style.fog == null);
+            const serialized = style.serialize();
+            t.ok(serialized.fog == null);
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#getFog', (t) => {
+    t.test('rolls up inline source into style', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "fog": {"range": [1, 2], "color": "white", "horizon-blend": 0.05},
+            "sources": {},
+            "layers": []
+        });
+
+        style.on('style.load', () => {
+            style.setFog({"range": [0, 1], "color": "white", "horizon-blend": 0.0});
+            t.ok(style.getFog());
+            t.deepEqual(style.getFog(), {"range": [0, 1], "color": "white", "horizon-blend": 0.0});
             t.end();
         });
     });

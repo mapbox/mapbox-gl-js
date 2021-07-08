@@ -20,7 +20,7 @@ import type Formatted from '../../style-spec/expression/types/formatted.js';
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 
 export type LayoutProps = {|
-    "line-cap": DataConstantProperty<"butt" | "round" | "square">,
+    "line-cap": DataDrivenProperty<"butt" | "round" | "square">,
     "line-join": DataDrivenProperty<"bevel" | "round" | "miter">,
     "line-miter-limit": DataConstantProperty<number>,
     "line-round-limit": DataConstantProperty<number>,
@@ -28,7 +28,7 @@ export type LayoutProps = {|
 |};
 
 const layout: Properties<LayoutProps> = new Properties({
-    "line-cap": new DataConstantProperty(styleSpec["layout_line"]["line-cap"]),
+    "line-cap": new DataDrivenProperty(styleSpec["layout_line"]["line-cap"]),
     "line-join": new DataDrivenProperty(styleSpec["layout_line"]["line-join"]),
     "line-miter-limit": new DataConstantProperty(styleSpec["layout_line"]["line-miter-limit"]),
     "line-round-limit": new DataConstantProperty(styleSpec["layout_line"]["line-round-limit"]),
@@ -44,7 +44,7 @@ export type PaintProps = {|
     "line-gap-width": DataDrivenProperty<number>,
     "line-offset": DataDrivenProperty<number>,
     "line-blur": DataDrivenProperty<number>,
-    "line-dasharray": CrossFadedProperty<Array<number>>,
+    "line-dasharray": CrossFadedDataDrivenProperty<Array<number>>,
     "line-pattern": CrossFadedDataDrivenProperty<ResolvedImage>,
     "line-gradient": ColorRampProperty,
 |};
@@ -58,7 +58,7 @@ const paint: Properties<PaintProps> = new Properties({
     "line-gap-width": new DataDrivenProperty(styleSpec["paint_line"]["line-gap-width"]),
     "line-offset": new DataDrivenProperty(styleSpec["paint_line"]["line-offset"]),
     "line-blur": new DataDrivenProperty(styleSpec["paint_line"]["line-blur"]),
-    "line-dasharray": new CrossFadedProperty(styleSpec["paint_line"]["line-dasharray"]),
+    "line-dasharray": new CrossFadedDataDrivenProperty(styleSpec["paint_line"]["line-dasharray"]),
     "line-pattern": new CrossFadedDataDrivenProperty(styleSpec["paint_line"]["line-pattern"]),
     "line-gradient": new ColorRampProperty(styleSpec["paint_line"]["line-gradient"]),
 });

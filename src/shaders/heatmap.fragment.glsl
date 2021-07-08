@@ -16,6 +16,13 @@ void main() {
 
     gl_FragColor = vec4(val, 1.0, 1.0, 1.0);
 
+#ifdef FOG
+    // Heatmaps work differently than other layers, so we operate on the accumulated
+    // density rather than a final color. The power is chosen so that the density
+    // fades into the fog at a reasonable rate.
+    gl_FragColor.r *= pow(1.0 - fog_opacity(v_fog_pos), 2.0);
+#endif
+
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
 #endif

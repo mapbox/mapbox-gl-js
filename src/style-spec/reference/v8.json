@@ -61,6 +61,10 @@
       "type": "terrain",
       "doc": "A global modifier that elevates layers and markers based on a DEM data source."
     },
+    "fog": {
+      "type": "fog",
+      "doc": "A global effect that fades layers and markers based on their distance to the camera. The fog can be used to approximate the effect of atmosphere on distant objects and enhance the depth perception of the map when used with terrain or 3D features."
+    },
     "sources": {
       "required": true,
       "type": "sources",
@@ -884,15 +888,19 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "2.3.0"
         }
       },
       "expression": {
         "interpolated": false,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature"
         ]
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "line-join": {
       "type": "enum",
@@ -1862,15 +1870,19 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "2.3.0"
         }
       },
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature"
         ]
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "text-letter-spacing": {
       "type": "number",
@@ -2138,20 +2150,15 @@
       "value": "enum",
       "values": {
         "horizontal": {
-          "doc": "If a text's language supports horizontal writing mode, symbols with point placement would be laid out horizontally."
+          "doc": "If a text's language supports horizontal writing mode, symbols would be laid out horizontally."
         },
         "vertical": {
-          "doc": "If a text's language supports vertical writing mode, symbols with point placement would be laid out vertically."
+          "doc": "If a text's language supports vertical writing mode, symbols would be laid out vertically."
         }
       },
-      "doc": "The property allows control over a symbol's orientation. Note that the property values act as a hint, so that a symbol whose language doesn’t support the provided orientation will be laid out in its natural orientation. Example: English point symbol will be rendered horizontally even if array value contains single 'vertical' enum value. The order of elements in an array define priority order for the placement of an orientation variant.",
+      "doc": "The property allows control over a symbol's orientation. Note that the property values act as a hint, so that a symbol whose language doesn’t support the provided orientation will be laid out in its natural orientation. Example: English point symbol will be rendered horizontally even if array value contains single 'vertical' enum value. For symbol with point placement, the order of elements in an array define priority order for the placement of an orientation variant. For symbol with line placement, the default text writing mode is either ['horizontal', 'vertical'] or ['vertical', 'horizontal'], the order doesn't affect the placement.",
       "requires": [
-        "text-field",
-        {
-          "symbol-placement": [
-            "point"
-          ]
-        }
+        "text-field"
       ],
       "sdk-support": {
         "basic functionality": {
@@ -3673,6 +3680,75 @@
       }
     }
   },
+  "fog": {
+    "range": {
+      "type": "array",
+      "default": [
+        0.5,
+        10
+      ],
+      "minimum": -20,
+      "maximum": 20,
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "doc": "The start and end distance range in which fog fades from fully transparent to fully opaque. The distance to the point at the center of the map is defined as zero, so that negative range values are closer to the camera, and positive values are farther away.",
+      "example": [
+        0.5,
+        10
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0"
+        }
+      }
+    },
+    "color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "The color of the fog. Using opacity is recommended only for smoothly transitioning fog on/off as anything less than 100% opacity results in more tiles loaded and drawn.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0"
+        }
+      }
+    },
+    "horizon-blend": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0.1,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "Horizon blend applies a smooth fade from the color of the fog to the color of the sky. A value of zero leaves a sharp transition from fog to sky. Increasing the value blends the color of fog into increasingly high angles of the sky.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0"
+        }
+      }
+    }
+  },
   "light": {
     "anchor": {
       "type": "enum",
@@ -4528,15 +4604,18 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "2.3.0"
+        }
       },
       "expression": {
         "interpolated": false,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature"
         ]
       },
-      "property-type": "cross-faded"
+      "property-type": "cross-faded-data-driven"
     },
     "line-pattern": {
       "type": "resolvedImage",

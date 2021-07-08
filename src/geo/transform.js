@@ -4,7 +4,7 @@ import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, radToDeg, degToRad} from '../util/util.js';
+import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
@@ -34,25 +34,62 @@ class Transform {
     lngRange: ?[number, number];
     latRange: ?[number, number];
     maxValidLatitude: number;
+
+    // 2^zoom (worldSize = tileSize * scale)
     scale: number;
+
+    // Map viewport size (not including the pixel ratio)
     width: number;
     height: number;
+
+    // Bearing, radians, in [-pi, pi]
     angle: number;
+
+    // 2D rotation matrix in the horizontal plane, as a function of bearing
     rotationMatrix: Float64Array;
+
+    // Zoom, modulo 1
     zoomFraction: number;
+
+    // The scale factor component of the conversion from pixels ([0, w] x [h, 0]) to GL
+    // NDC ([1, -1] x [1, -1]) (note flipped y)
     pixelsToGLUnits: [number, number];
+
+    // Distance from camera to the center, in screen pixel units, independent of zoom
     cameraToCenterDistance: number;
+
+    // Projection from mercator coordinates ([0, 0] nw, [1, 1] se) to GL clip coordinates
     mercatorMatrix: Array<number>;
-    projMatrix: Float64Array;
+
+    // Translate points in mercator coordinates to be centered about the camera, with units chosen
+    // for screen-height-independent scaling of fog. Not affected by orientation of camera.
+    mercatorFogMatrix: Array<number>;
+
+    // Projection from world coordinates (mercator scaled by worldSize) to clip coordinates
+    projMatrix: Array<number>;
     invProjMatrix: Float64Array;
+
+    // Same as projMatrix, pixel-aligned to avoid fractional pixels for raster tiles
     alignedProjMatrix: Float64Array;
+
+    // From world coordinates to screen pixel coordinates (projMatrix premultiplied by labelPlaneMatrix)
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
+
+    worldToFogMatrix: Float64Array;
     skyboxMatrix: Float32Array;
+
+    // Transform from screen coordinates to GL NDC, [0, w] x [h, 0] --> [-1, 1] x [-1, 1]
+    // Roughly speaking, applies pixelsToGLUnits scaling with a translation
     glCoordMatrix: Float32Array;
+
+    // Inverse of glCoordMatrix, from NDC to screen coordinates, [-1, 1] x [-1, 1] --> [0, w] x [h, 0]
     labelPlaneMatrix: Float32Array;
+
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
+    fogCullDistSq: ?number;
+    _averageElevation: number;
     _elevation: ?Elevation;
     _fov: number;
     _pitch: number;
@@ -67,8 +104,9 @@ class Transform {
     _center: LngLat;
     _edgeInsets: EdgeInsets;
     _constraining: boolean;
-    _posMatrixCache: {[_: number]: Float32Array};
-    _alignedPosMatrixCache: {[_: number]: Float32Array};
+    _projMatrixCache: {[_: number]: Float32Array};
+    _alignedProjMatrixCache: {[_: number]: Float32Array};
+    _fogTileMatrixCache: {[_: number]: Float32Array};
     _camera: FreeCamera;
     _centerAltitude: number;
     _horizonShift: number;
@@ -95,10 +133,12 @@ class Transform {
         this._pitch = 0;
         this._unmodified = true;
         this._edgeInsets = new EdgeInsets();
-        this._posMatrixCache = {};
-        this._alignedPosMatrixCache = {};
+        this._projMatrixCache = {};
+        this._alignedProjMatrixCache = {};
+        this._fogTileMatrixCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
+        this._averageElevation = 0;
         this.cameraElevationReference = "ground";
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
@@ -120,6 +160,7 @@ class Transform {
         clone.angle = this.angle;
         clone._fov = this._fov;
         clone._pitch = this._pitch;
+        clone._averageElevation = this._averageElevation;
         clone._unmodified = this._unmodified;
         clone._edgeInsets = this._edgeInsets.clone();
         clone._camera = this._camera.clone();
@@ -195,6 +236,19 @@ class Transform {
         return this.tileSize * this.scale;
     }
 
+    get cameraWorldSize(): number {
+        const distance = Math.max(this._camera.getDistanceToElevation(this._averageElevation), Number.EPSILON);
+        return this._worldSizeFromZoom(this._zoomFromMercatorZ(distance));
+    }
+
+    get pixelsPerMeter(): number {
+        return mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
+    }
+
+    get cameraPixelsPerMeter(): number {
+        return mercatorZfromAltitude(1, this.center.lat) * this.cameraWorldSize;
+    }
+
     get centerOffset(): Point {
         return this.centerPoint._sub(this.size._div(2));
     }
@@ -238,6 +292,14 @@ class Transform {
         this._unmodified = false;
         this._fov = fov / 180 * Math.PI;
         this._calcMatrices();
+    }
+
+    get averageElevation(): number {
+        return this._averageElevation;
+    }
+    set averageElevation(averageElevation: number) {
+        this._averageElevation = averageElevation;
+        this._calcFogMatrices();
     }
 
     get zoom(): number { return this._zoom; }
@@ -286,6 +348,40 @@ class Transform {
         const terrainElevation = mercatorZfromAltitude(this._centerAltitude, this.center.lat);
 
         this._cameraZoom = this._zoomFromMercatorZ(terrainElevation + height);
+    }
+
+    sampleAverageElevation(): number {
+        if (!this._elevation) return 0;
+        const elevation: Elevation = this._elevation;
+
+        const elevationSamplePoints = [
+            [0.5, 0.2],
+            [0.3, 0.5],
+            [0.5, 0.5],
+            [0.7, 0.5],
+            [0.5, 0.8]
+        ];
+
+        const horizon = this.horizonLineFromTop();
+
+        let elevationSum = 0.0;
+        let weightSum = 0.0;
+        for (let i = 0; i < elevationSamplePoints.length; i++) {
+            const pt = new Point(
+                elevationSamplePoints[i][0] * this.width,
+                horizon + elevationSamplePoints[i][1] * (this.height - horizon)
+            );
+            const hit = elevation.pointCoordinate(pt);
+            if (!hit) continue;
+
+            const distanceToHit = Math.hypot(hit[0] - this._camera.position[0], hit[1] - this._camera.position[1]);
+            const weight = 1 / distanceToHit;
+            elevationSum += hit[3] * weight;
+            weightSum += weight;
+        }
+
+        if (weightSum === 0) return NaN;
+        return elevationSum / weightSum;
     }
 
     get center(): LngLat { return this._center; }
@@ -720,6 +816,56 @@ class Transform {
                 stack.push(child);
             }
         }
+
+        if (this.fogCullDistSq) {
+            const fogCullDistSq = this.fogCullDistSq;
+            result.splice(0, result.length, ...result.filter(entry => {
+                const min = [0, 0, 0, 1];
+                const max = [EXTENT, EXTENT, 0, 1];
+
+                const fogTileMatrix = this.calculateFogTileMatrix(entry.tileID.toUnwrapped());
+
+                vec4.transformMat4(min, min, fogTileMatrix);
+                vec4.transformMat4(max, max, fogTileMatrix);
+
+                const sqDist = getAABBPointSquareDist(min, max);
+
+                if (sqDist === 0) { return true; }
+
+                let overHorizonLine = false;
+                const horizonLineFromTop = this.horizonLineFromTop();
+                if (sqDist > fogCullDistSq && horizonLineFromTop !== 0) {
+                    const projMatrix = this.calculateProjMatrix(entry.tileID.toUnwrapped());
+
+                    let minmax;
+                    if (useElevationData && this._elevation) {
+                        minmax = this._elevation.getMinMaxForTile(entry.tileID);
+                    }
+
+                    if (!minmax) { minmax = {min: minRange, max: maxRange}; }
+
+                    const cornerFar = furthestTileCorner(this.bearing);
+
+                    const farX = cornerFar[0] * EXTENT;
+                    const farY = cornerFar[1] * EXTENT;
+
+                    const worldFar = [farX, farY, minmax.max];
+
+                    // World to NDC
+                    vec3.transformMat4(worldFar, worldFar, projMatrix);
+
+                    // NDC to Screen
+                    const screenCoordY = (1 - worldFar[1]) * this.height * 0.5;
+
+                    // Prevent cutting tiles crossing over the horizon lines to
+                    // prevent pop-in and out within the fog culling range
+                    overHorizonLine = screenCoordY < horizonLineFromTop;
+                }
+
+                return sqDist < fogCullDistSq || overHorizonLine;
+            }));
+        }
+
         const cover = result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
         // Relax the assertion on terrain, on high zoom we use distance to center of tile
         // while camera might be closer to selected center of map.
@@ -961,6 +1107,8 @@ class Transform {
 
     /**
      * Returns true if a screenspace Point p, is above the horizon.
+     * This approximates the map as an infinite plane and does not account for z0-z3
+     * wherein the map is small quad with whitespace above the north pole and below the south pole.
      *
      * @param {Point} p
      * @returns {boolean}
@@ -1071,29 +1219,58 @@ class Transform {
         }
     }
 
-    /**
-     * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
-     * @param {UnwrappedTileID} unwrappedTileID;
-     * @private
-     */
-    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
-        const posMatrixKey = unwrappedTileID.key;
-        const cache = aligned ? this._alignedPosMatrixCache : this._posMatrixCache;
-        if (cache[posMatrixKey]) {
-            return cache[posMatrixKey];
-        }
-
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
         const canonical = unwrappedTileID.canonical;
-        const scale = this.worldSize / this.zoomScale(canonical.z);
+        const scale = worldSize / this.zoomScale(canonical.z);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
 
         const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
+
+        return posMatrix;
+    }
+
+    /**
+     * Calculate the fogTileMatrix that, given a tile coordinate, can be used to
+     * calculate its position relative to the camera in units of pixels divided
+     * by the map height. Used with fog for consistent computation of distance
+     * from camera.
+     *
+     * @param {UnwrappedTileID} unwrappedTileID;
+     * @private
+     */
+    calculateFogTileMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+        const fogTileMatrixKey = unwrappedTileID.key;
+        const cache = this._fogTileMatrixCache;
+        if (cache[fogTileMatrixKey]) {
+            return cache[fogTileMatrixKey];
+        }
+
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
+        mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
+
+        cache[fogTileMatrixKey] = new Float32Array(posMatrix);
+        return cache[fogTileMatrixKey];
+    }
+
+    /**
+     * Calculate the projMatrix that, given a tile coordinate, would be used to display the tile on the screen.
+     * @param {UnwrappedTileID} unwrappedTileID;
+     * @private
+     */
+    calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
+        const projMatrixKey = unwrappedTileID.key;
+        const cache = aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
+        if (cache[projMatrixKey]) {
+            return cache[projMatrixKey];
+        }
+
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
         mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
 
-        cache[posMatrixKey] = new Float32Array(posMatrix);
-        return cache[posMatrixKey];
+        cache[projMatrixKey] = new Float32Array(posMatrix);
+        return cache[projMatrixKey];
     }
 
     customLayerMatrix(): Array<number> {
@@ -1111,7 +1288,7 @@ class Transform {
         const start = this._camera.position;
         const dir = this._camera.forward();
 
-        if (start.z <= 0 || dir[2] >= 0)
+        if (start[2] <= 0 || dir[2] >= 0)
             return;
 
         // The raycast function expects z-component to be in meters
@@ -1285,7 +1462,7 @@ class Transform {
         const halfFov = this._fov / 2;
         const offset = this.centerOffset;
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height;
-        const pixelsPerMeter = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
+        const pixelsPerMeter = this.pixelsPerMeter;
 
         this._updateCameraState();
 
@@ -1337,6 +1514,7 @@ class Transform {
         this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter]);
 
         this.projMatrix = m;
+
         // For tile cover calculation, use inverted of base (non elevated) matrix
         // as tile elevations are in tile coordinates and relative to center elevation.
         this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
@@ -1383,13 +1561,44 @@ class Transform {
         // matrix for conversion from location to screen coordinates
         this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
+        this._calcFogMatrices();
+
         // inverse matrix for conversion from screen coordinates to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
-        this._posMatrixCache = {};
-        this._alignedPosMatrixCache = {};
+        this._projMatrixCache = {};
+        this._alignedProjMatrixCache = {};
+    }
+
+    _calcFogMatrices() {
+        this._fogTileMatrixCache = {};
+
+        const cameraWorldSize = this.cameraWorldSize;
+        const cameraPixelsPerMeter = this.cameraPixelsPerMeter;
+        const cameraPos = this._camera.position;
+
+        // The mercator fog matrix encodes transformation necessary to transform a position to camera fog space (in meters):
+        // translates p to camera origin and transforms it from pixels to meters. The windowScaleFactor is used to have a
+        // consistent transformation across different window sizes.
+        // - p = p - cameraOrigin
+        // - p.xy = p.xy * cameraWorldSize * windowScaleFactor
+        // - p.z  = p.z  * cameraPixelsPerMeter * windowScaleFactor
+        const windowScaleFactor = 1 / this.height;
+        const metersToPixel = [cameraWorldSize, cameraWorldSize, cameraPixelsPerMeter];
+        vec3.scale(metersToPixel, metersToPixel, windowScaleFactor);
+        vec3.scale(cameraPos, cameraPos, -1);
+        vec3.multiply(cameraPos, cameraPos, metersToPixel);
+
+        const m = mat4.create();
+        mat4.translate(m, m, cameraPos);
+        mat4.scale(m, m, metersToPixel);
+        this.mercatorFogMatrix = m;
+
+        // The worldToFogMatrix can be used for conversion from world coordinates to relative camera position in
+        // units of fractions of the map height. Later composed with tile position to construct the fog tile matrix.
+        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
     }
 
     _updateCameraState() {

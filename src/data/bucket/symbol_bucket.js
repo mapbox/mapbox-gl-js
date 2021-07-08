@@ -44,7 +44,7 @@ import ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin.js';
 import {mat4} from 'gl-matrix';
 
-import type {CanonicalTileID} from '../../source/tile_id.js';
+import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
@@ -61,7 +61,6 @@ import type {SymbolQuad} from '../../symbol/quads.js';
 import type {SizeData} from '../../symbol/symbol_size.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
-
 export type SingleCollisionBox = {
     x1: number;
     y1: number;
@@ -71,6 +70,7 @@ export type SingleCollisionBox = {
     anchorPointX: number;
     anchorPointY: number;
     elevation?: number;
+    tileID?: OverscaledTileID;
 };
 
 export type CollisionArrays = {
@@ -387,9 +387,7 @@ class SymbolBucket implements Bucket {
         const zOrderByViewportY = zOrder === 'viewport-y' || (zOrder === 'auto' && !this.sortFeaturesByKey);
         this.sortFeaturesByY = zOrderByViewportY && this.canOverlap;
 
-        if (layout.get('symbol-placement') === 'point') {
-            this.writingModes = layout.get('text-writing-mode').map(wm => WritingMode[wm]);
-        }
+        this.writingModes = layout.get('text-writing-mode').map(wm => WritingMode[wm]);
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
 
@@ -408,7 +406,7 @@ class SymbolBucket implements Bucket {
     calculateGlyphDependencies(text: string, stack: {[_: number]: boolean}, textAlongLine: boolean, allowVerticalPlacement: boolean, doesAllowVerticalWritingMode: boolean) {
         for (let i = 0; i < text.length; i++) {
             stack[text.charCodeAt(i)] = true;
-            if ((textAlongLine || allowVerticalPlacement) && doesAllowVerticalWritingMode) {
+            if (allowVerticalPlacement && doesAllowVerticalWritingMode) {
                 const verticalChar = verticalizedCharacterMap[text.charAt(i)];
                 if (verticalChar) {
                     stack[verticalChar.charCodeAt(0)] = true;
@@ -673,7 +671,9 @@ class SymbolBucket implements Bucket {
             (false: any),
             // The crossTileID is only filled/used on the foreground for dynamic text anchors
             0,
-            associatedIconIndex
+            associatedIconIndex,
+            // flipState is unknown initially; will be updated to flipRequired(1)/flipNotRequired(2) during line label reprojection
+            0
         );
     }
 

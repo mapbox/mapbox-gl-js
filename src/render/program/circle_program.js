@@ -50,7 +50,7 @@ const circleUniformValues = (
     return {
         'u_camera_to_center_distance': transform.cameraToCenterDistance,
         'u_matrix': painter.translatePosMatrix(
-            coord.posMatrix,
+            coord.projMatrix,
             tile,
             layer.paint.get('circle-translate'),
             layer.paint.get('circle-translate-anchor')),

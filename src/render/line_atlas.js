@@ -1,8 +1,8 @@
 // @flow
 
-import {warnOnce} from '../util/util.js';
-
-import type Context from '../gl/context.js';
+import {warnOnce, nextPowerOfTwo} from '../util/util.js';
+import {AlphaImage} from '../util/image.js';
+import {register} from '../util/web_worker_transfer.js';
 
 /**
  * A LineAtlas lets us reuse rendered dashed lines
@@ -17,37 +17,40 @@ class LineAtlas {
     width: number;
     height: number;
     nextRow: number;
-    bytes: number;
-    data: Uint8Array;
-    dashEntry: {[_: string]: any};
-    dirty: boolean;
-    texture: WebGLTexture;
+    image: AlphaImage;
+    positions: {[_: string]: any};
+    uploaded: boolean;
 
     constructor(width: number, height: number) {
         this.width = width;
         this.height = height;
         this.nextRow = 0;
-
-        this.data = new Uint8Array(this.width * this.height);
-
-        this.dashEntry = {};
+        this.image = new AlphaImage({width, height});
+        this.positions = {};
+        this.uploaded = false;
     }
 
     /**
-     * Get or create a dash line pattern.
+     * Get a dash line pattern.
      *
      * @param {Array<number>} dasharray
-     * @param {boolean} round whether to add circle caps in between dash segments
+     * @param {string} lineCap the type of line caps to be added to dashes
      * @returns {Object} position of dash texture in { y, height, width }
      * @private
      */
-    getDash(dasharray: Array<number>, round: boolean) {
-        const key = dasharray.join(",") + String(round);
+    getDash(dasharray: Array<number>, lineCap: string) {
+        const key = this.getKey(dasharray, lineCap);
+        return this.positions[key];
+    }
 
-        if (!this.dashEntry[key]) {
-            this.dashEntry[key] = this.addDash(dasharray, round);
-        }
-        return this.dashEntry[key];
+    trim() {
+        const width = this.width;
+        const height = this.height = nextPowerOfTwo(this.nextRow);
+        this.image.resize({width, height});
+    }
+
+    getKey(dasharray: Array<number>, lineCap: string): string {
+        return dasharray.join(',') + lineCap;
     }
 
     getDashRanges(dasharray: Array<number>, lineAtlasWidth: number, stretch: number) {
@@ -103,12 +106,12 @@ class LineAtlas {
                     signedDistance = halfStretch - Math.sqrt(minDist * minDist + distMiddle * distMiddle);
                 }
 
-                this.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
+                this.image.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
             }
         }
     }
 
-    addRegularDash(ranges: Object) {
+    addRegularDash(ranges: Object, capLength: number) {
 
         // Collapse any zero-length range
         // Collapse neighbouring same-type parts into a single part
@@ -144,13 +147,17 @@ class LineAtlas {
             const distRight = Math.abs(x - range.right);
 
             const minDist = Math.min(distLeft, distRight);
-            const signedDistance = range.isDash ? minDist : -minDist;
+            const signedDistance = (range.isDash ? minDist : -minDist) + capLength;
 
-            this.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
+            this.image.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
         }
     }
 
-    addDash(dasharray: Array<number>, round: boolean) {
+    addDash(dasharray: Array<number>, lineCap: string) {
+        const key = this.getKey(dasharray, lineCap);
+        if (this.positions[key]) return this.positions[key];
+
+        const round = lineCap === 'round';
         const n = round ? 7 : 0;
         const height = 2 * n + 1;
 
@@ -181,42 +188,24 @@ class LineAtlas {
             if (round) {
                 this.addRoundDash(ranges, stretch, n);
             } else {
-                this.addRegularDash(ranges);
+                const capLength = lineCap === 'square' ? 0.5 * stretch : 0;
+                this.addRegularDash(ranges, capLength);
             }
         }
 
-        const dashEntry = {
-            y: (this.nextRow + n + 0.5) / this.height,
-            height: 2 * n / this.height,
-            width: length
-        };
+        const y = this.nextRow + n;
 
         this.nextRow += height;
-        this.dirty = true;
 
-        return dashEntry;
-    }
-
-    bind(context: Context) {
-        const gl = context.gl;
-        if (!this.texture) {
-            this.texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, this.width, this.height, 0, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
-
-        } else {
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-
-            if (this.dirty) {
-                this.dirty = false;
-                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
-            }
-        }
+        const pos = {
+            tl: [y, n],
+            br: [length, 0]
+        };
+        this.positions[key] = pos;
+        return pos;
     }
 }
+
+register('LineAtlas', LineAtlas);
 
 export default LineAtlas;

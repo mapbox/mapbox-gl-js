@@ -26,6 +26,7 @@ import type Actor from '../util/actor.js';
 import type DEMData from '../data/dem_data.js';
 import type {AlphaImage} from '../util/image.js';
 import type ImageAtlas from '../render/image_atlas.js';
+import type LineAtlas from '../render/line_atlas.js';
 import type ImageManager from '../render/image_manager.js';
 import type Context from '../gl/context.js';
 import type {OverscaledTileID} from './tile_id.js';
@@ -62,6 +63,8 @@ class Tile {
     latestRawTileData: ?ArrayBuffer;
     imageAtlas: ?ImageAtlas;
     imageAtlasTexture: Texture;
+    lineAtlas: ?LineAtlas;
+    lineAtlasTexture: Texture;
     glyphAtlasImage: ?AlphaImage;
     glyphAtlasTexture: Texture;
     expirationTime: any;
@@ -215,6 +218,9 @@ class Tile {
         if (data.glyphAtlasImage) {
             this.glyphAtlasImage = data.glyphAtlasImage;
         }
+        if (data.lineAtlas) {
+            this.lineAtlas = data.lineAtlas;
+        }
     }
 
     /**
@@ -228,17 +234,26 @@ class Tile {
         }
         this.buckets = {};
 
-        if (this.imageAtlasTexture) {
-            this.imageAtlasTexture.destroy();
-        }
-
         if (this.imageAtlas) {
             this.imageAtlas = null;
+        }
+
+        if (this.lineAtlas) {
+            this.lineAtlas = null;
+        }
+
+        if (this.imageAtlasTexture) {
+            this.imageAtlasTexture.destroy();
         }
 
         if (this.glyphAtlasTexture) {
             this.glyphAtlasTexture.destroy();
         }
+
+        if (this.lineAtlasTexture) {
+            this.lineAtlasTexture.destroy();
+        }
+
         Debug.run(() => {
             if (this.queryGeometryDebugViz) {
                 this.queryGeometryDebugViz.unload();
@@ -274,6 +289,11 @@ class Tile {
         if (this.glyphAtlasImage) {
             this.glyphAtlasTexture = new Texture(context, this.glyphAtlasImage, gl.ALPHA);
             this.glyphAtlasImage = null;
+        }
+
+        if (this.lineAtlas && !this.lineAtlas.uploaded) {
+            this.lineAtlasTexture = new Texture(context, this.lineAtlas.image, gl.ALPHA);
+            this.lineAtlas.uploaded = true;
         }
     }
 

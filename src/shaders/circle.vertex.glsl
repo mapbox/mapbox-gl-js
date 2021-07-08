@@ -137,4 +137,8 @@ void main(void) {
     lowp float antialiasblur = 1.0 / u_device_pixel_ratio / (radius + stroke_width);
 
     v_data = vec3(extrude.x, extrude.y, antialiasblur);
+
+#ifdef FOG
+    v_fog_pos = fog_position(world_center.xyz);
+#endif
 }

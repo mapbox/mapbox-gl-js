@@ -58,7 +58,6 @@ function getCenterAnchor(line: Array<Point>,
                 y = interpolate(a.y, b.y, t);
 
             const anchor = new Anchor(x, y, b.angleTo(a), i);
-            anchor._round();
             if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
                 return anchor;
             } else {

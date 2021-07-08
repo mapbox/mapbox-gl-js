@@ -18,6 +18,14 @@ import {WritingMode} from '../symbol/shaping.js';
 
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
+const FlipState = {
+    unknown: 0,
+    flipRequired: 1,
+    flipNotRequired: 2
+};
+
+const maxTangent = Math.tan(85 * Math.PI / 180);
+
 /*
  * # Overview of coordinate spaces
  *
@@ -167,6 +175,15 @@ function updateLineLabels(bucket: SymbolBucket,
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol: any = placedSymbols.get(s);
 
+        // Normally, the 'Horizontal|Vertical' writing mode is followed by a 'Vertical' counterpart, this
+        // is not true for 'Vertical' only line labels. For this case, we'll have to overwrite the 'useVertical'
+        // status before further checks.
+        if (symbol.writingMode === WritingMode.vertical && !useVertical) {
+            if (s === 0 || placedSymbols.get(s - 1).writingMode !== WritingMode.horizontal) {
+                useVertical = true;
+            }
+        }
+
         // Don't do calculations for vertical glyphs unless the previous symbol was horizontal
         // and we determined that vertical glyphs were necessary.
         // Also don't do calculations for symbols that are collided and fully faded out
@@ -248,8 +265,20 @@ function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffset
     return {first: firstPlacedGlyph, last: lastPlacedGlyph};
 }
 
-function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRatio) {
-    if (writingMode === WritingMode.horizontal) {
+// Check in the glCoordinate space, the rough estimation of angle between the text line and the Y axis.
+// If the angle if less or equal to 5 degree, then keep the text glyphs unflipped even if it is required.
+function isInFlipRetainRange(firstPoint, lastPoint, aspectRatio) {
+    const deltaY = lastPoint.y - firstPoint.y;
+    const deltaX = (lastPoint.x - firstPoint.x) * aspectRatio;
+    if (deltaX === 0.0) {
+        return true;
+    }
+    const absTangent = Math.abs(deltaY / deltaX);
+    return (absTangent > maxTangent);
+}
+
+function requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio) {
+    if (symbol.writingMode === WritingMode.horizontal) {
         // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
         // vertical glyphs. We can't just filter out vertical glyphs in the horizontal range because the horizontal
         // and vertical versions can have slightly different projections which could lead to angles where both or
@@ -260,13 +289,19 @@ function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRat
             return {useVertical: true};
         }
     }
-
-    if (writingMode === WritingMode.vertical ? firstPoint.y < lastPoint.y : firstPoint.x > lastPoint.x) {
-        // Includes "horizontalOnly" case for labels without vertical glyphs
-        return {needsFlipping: true};
+    // Check if flipping is required for "verticalOnly" case.
+    if (symbol.writingMode === WritingMode.vertical) {
+        return (firstPoint.y < lastPoint.y) ? {needsFlipping: true} : null;
     }
 
-    return null;
+    // symbol's flipState stores the flip decision from the previous frame, and that
+    // decision is reused when the symbol is in the retain range.
+    if (symbol.flipState !== FlipState.unknown && isInFlipRetainRange(firstPoint, lastPoint, aspectRatio)) {
+        return (symbol.flipState === FlipState.flipRequired) ? {needsFlipping: true} : null;
+    }
+
+    // Check if flipping is required for "horizontal" case.
+    return (firstPoint.x > lastPoint.x) ? {needsFlipping: true} : null;
 }
 
 function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation) {
@@ -290,7 +325,8 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         const lastPoint = project(firstAndLastGlyph.last.point, glCoordMatrix).point;
 
         if (keepUpright && !flip) {
-            const orientationChange = requiresOrientationChange(symbol.writingMode, firstPoint, lastPoint, aspectRatio);
+            const orientationChange = requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio);
+            symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
             }
@@ -320,7 +356,8 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
                 projectedVertex.point :
                 projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix);
 
-            const orientationChange = requiresOrientationChange(symbol.writingMode, a, b, aspectRatio);
+            const orientationChange = requiresOrientationChange(symbol, a, b, aspectRatio);
+            symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
             }

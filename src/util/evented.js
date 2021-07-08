@@ -44,7 +44,11 @@ export class ErrorEvent extends Event {
 }
 
 /**
- * Methods mixed in to other classes for event capabilities.
+ * `Evented` mixes methods into other classes for event capabilities.
+ *
+ * Unless you are developing a plugin you will most likely use these methods through classes like `Map` or `Popup`.
+ *
+ * For lists of events you can listen for, see API documentation for specific classes: [`Map`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Marker`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), [`Popup`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events), and [`GeolocationControl`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events).
  *
  * @mixin Evented
  */

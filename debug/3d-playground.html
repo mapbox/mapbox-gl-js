@@ -19,11 +19,20 @@
         .dg.a {
             float: left !important;
         }
+
+        #elevationDebug {
+            background-color: azure;
+            position: absolute;
+            top:30px;
+            right:30px;
+            padding:5px;
+            z-index: 99;
+        }
     </style>
 </head>
 
 <body>
-<div id='map'></div>
+<div id='map'><div id='elevationDebug'></div></div>
 
 <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -172,6 +181,12 @@ map.on('style.load', function() {
                 1
             ]
         }
+    });
+    var elevationDebug = document.getElementById('elevationDebug');
+    map.on('mousemove', (e) => {
+        const elevation = map.queryTerrainElevation(map.unproject(e.point));
+        const elevation2 = map.queryTerrainElevation(map.unproject(e.point), {exaggerated: false});
+        elevationDebug.innerHTML = 'Exaggerated: ' + (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + 'Unexaggerated: ' + (elevation2 ? elevation2.toFixed(3) + 'm ' : 'Unavailable');
     });
 
     const lerp = (a, b, t) => {

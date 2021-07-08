@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 100,
+      "width": 512
+    }
+  },
+  "sources": {},
+  "zoom": 16,
+  "pitch": 85,
+  "fog": {
+    "range": [0.5, 10.5],
+    "color": "white",
+    "horizon-blend": 0.2
+  },
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "gradient",
+        "sky-gradient-center": [0, 0],
+        "sky-gradient-radius": 90,
+        "sky-gradient": [
+          "interpolate",
+          ["linear"],
+          ["sky-radial-progress"],
+          0.0,
+          "#87ceeb",
+          1.0,
+          "#87ceeb"
+      ]
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }
+    }
+  ]
+}

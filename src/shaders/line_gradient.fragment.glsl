@@ -26,6 +26,10 @@ void main() {
     // entire line, the gradient ramp is stored in a texture.
     vec4 color = texture2D(u_image, v_uv);
 
+#ifdef FOG
+    color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
+#endif
+
     gl_FragColor = color * (alpha * opacity);
 
 #ifdef OVERDRAW_INSPECTOR

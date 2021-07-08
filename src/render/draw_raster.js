@@ -42,11 +42,12 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const depthMode = renderingToTexture ? DepthMode.disabled : painter.depthModeForSublayer(coord.overscaledZ - minTileZ,
             layer.paint.get('raster-opacity') === 1 ? DepthMode.ReadWrite : DepthMode.ReadOnly, gl.LESS);
 
+        const unwrappedTileID = coord.toUnwrapped();
         const tile = sourceCache.getTile(coord);
         if (renderingToTexture && !(tile && tile.hasData())) continue;
 
-        const posMatrix = (renderingToTexture) ? coord.posMatrix :
-            painter.transform.calculatePosMatrix(coord.toUnwrapped(), align);
+        const projMatrix = (renderingToTexture) ? coord.projMatrix :
+            painter.transform.calculateProjMatrix(unwrappedTileID, align);
 
         const stencilMode = painter.terrain && renderingToTexture ?
             painter.terrain.stencilModeForRTTOverlap(coord) :
@@ -77,7 +78,9 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
         }
 
-        const uniformValues = rasterUniformValues(posMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
+        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
+
+        painter.prepareDrawProgram(context, program, unwrappedTileID);
 
         if (source instanceof ImageSource) {
             program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,

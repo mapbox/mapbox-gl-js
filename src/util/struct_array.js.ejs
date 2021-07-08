@@ -51,7 +51,7 @@ for (const {name, member, component} of components) {
     get <%=name%>() { return <%=componentAccess%>; }
 <%
 // generate setters for properties that are updated during runtime symbol placement; others are read-only
-if (name === 'crossTileID' || name === 'placedOrientation' || name === 'hidden') {
+if (name === 'crossTileID' || name === 'placedOrientation' || name === 'hidden' || name === 'flipState') {
 -%>
     set <%=name%>(x: number) { <%=componentAccess%> = x; }
 <%

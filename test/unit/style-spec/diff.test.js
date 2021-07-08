@@ -411,5 +411,41 @@ test('diff', (t) => {
         {command: 'setTransition', args: ['transition']}
     ], 'changing transition');
 
+    t.deepEqual(diffStyles({
+        'fog': {
+            'range': [1000, 2000],
+            'color': 'white',
+            'horizon-blend': 0.05
+        }
+    }, {
+        'fog': {
+            'range': [1000, 2000],
+            'color': 'white',
+            'horizon-blend': 0.05
+        }
+    }), [
+    ], 'fog no change');
+
+    t.deepEqual(diffStyles({
+        'fog': {
+            'range': [1000, 2000],
+            'color': 'white',
+            'horizon-blend': 0.05
+        }
+    }, {
+        'fog': {
+            'range': [0, 2000],
+            'color': 'blue',
+            'horizon-blend': 0.5
+        }
+    }), [{
+        command: 'setFog',
+        args: [{
+            'range': [0, 2000],
+            'color': 'blue',
+            'horizon-blend': 0.5
+        }]
+    }], 'changing fog');
+
     t.end();
 });
