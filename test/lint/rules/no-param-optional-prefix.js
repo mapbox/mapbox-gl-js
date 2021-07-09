@@ -1,18 +1,14 @@
 const iterateJsdoc = require('eslint-plugin-jsdoc/dist/iterateJsdoc.js').default;
 
-const OPTIONAL_PREFIX_REGEX = /^(\s*\(optional\)\s*)/;
+const OPTIONAL_PREFIX_REGEX = /^(\s*\(optional\)\s*)/g;
 
 module.exports = iterateJsdoc(({
     utils,
+    report,
 }) => {
     utils.forEachPreferredTag('param', (tag) => {
         if (OPTIONAL_PREFIX_REGEX.test(tag.description)) {
-            utils.reportJSDoc(`"(optional)" prefix not permitted on @${tag.tag}.`, tag, () => {
-                utils.changeTag(tag, {
-                    name: tag.optional ? tag.name : `[${tag.name}]`,
-                    description: tag.description.replace(OPTIONAL_PREFIX_REGEX, ''),
-                });
-            });
+            report(`use square brackets around @${tag.tag} name instead of "(optional)" in description`, null, tag);
         }
     });
 }, {
@@ -21,7 +17,6 @@ module.exports = iterateJsdoc(({
         docs: {
             description: 'Forbids usage of "(optional)" in param descriptions in favor of square brackets around the param name.',
         },
-        fixable: 'code',
         schema: [
             {
                 additionalProperties: false,
