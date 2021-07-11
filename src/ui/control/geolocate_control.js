@@ -30,6 +30,11 @@ type DeviceOrientationEvent = {
     webkitCompassHeading?: number,
 }
 
+type TriggerOptions = {
+    onSuccess?: (position: Position)=>void,
+    onError?: (error: PositionError)=>void,
+}
+
 const defaultOptions: Options = {
     positionOptions: {
         enableHighAccuracy: false,
@@ -527,7 +532,7 @@ class GeolocateControl extends Evented {
      * });
      * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
      */
-    trigger() {
+    trigger({onSuccess, onError}: TriggerOptions = {}) {
         if (!this._setup) {
             warnOnce('Geolocate control triggered before added to a map');
             return false;
@@ -616,7 +621,18 @@ class GeolocateControl extends Evented {
                 }
 
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
-                    this._onSuccess, this._onError, positionOptions);
+                    (position) => {
+                        this._onSuccess(position);
+                        if (onSuccess) {
+                            onSuccess(position);
+                        }
+                    },
+                    (error) => {
+                        this._onError(error);
+                        if (onError) {
+                            onError(error);
+                        }
+                    }, positionOptions);
 
                 if (this.options.showUserHeading) {
                     this._addDeviceOrientationListener();
@@ -624,7 +640,18 @@ class GeolocateControl extends Evented {
             }
         } else {
             window.navigator.geolocation.getCurrentPosition(
-                this._onSuccess, this._onError, this.options.positionOptions);
+                (position) => {
+                    this._onSuccess(position);
+                    if (onSuccess) {
+                        onSuccess(position);
+                    }
+                },
+                (error) => {
+                    this._onError(error);
+                    if (onError) {
+                        onError(error);
+                    }
+                }, this.options.positionOptions);
 
             // This timeout ensures that we still call finish() even if
             // the user declines to share their location in Firefox
