@@ -9,6 +9,7 @@ import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import browser from '../util/browser.js';
 
 import type {Source} from './source.js';
 import type {CanvasSourceSpecification} from './canvas_source.js';
@@ -78,7 +79,7 @@ class ImageSource extends Evented implements Source {
     dispatcher: Dispatcher;
     map: Map;
     texture: Texture | null;
-    image: HTMLImageElement | ImageBitmap;
+    image: ImageData;
     tileID: CanonicalTileID;
     _boundsArray: RasterBoundsArray;
     boundsBuffer: VertexBuffer;
@@ -117,7 +118,7 @@ class ImageSource extends Evented implements Source {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
-                this.image = image;
+                this.image = browser.getImageData(image);
                 if (newCoordinates) {
                     this.coordinates = newCoordinates;
                 }

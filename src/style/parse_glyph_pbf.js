@@ -7,16 +7,17 @@ const border = 3;
 
 import type {StyleGlyph} from './style_glyph.js';
 
-function readFontstacks(tag: number, glyphs: Array<StyleGlyph>, pbf: Protobuf) {
+function readFontstacks(tag: number, glyphData: {glyphs: Array<StyleGlyph>, ascender?: number, descender?: number}, pbf: Protobuf) {
+    glyphData.glyphs = [];
     if (tag === 1) {
-        pbf.readMessage(readFontstack, glyphs);
+        pbf.readMessage(readFontstack, glyphData);
     }
 }
 
-function readFontstack(tag: number, glyphs: Array<StyleGlyph>, pbf: Protobuf) {
+function readFontstack(tag: number,  glyphData: {glyphs: Array<StyleGlyph>, ascender?: number, descender?: number}, pbf: Protobuf) {
     if (tag === 3) {
         const {id, bitmap, width, height, left, top, advance} = pbf.readMessage(readGlyph, {});
-        glyphs.push({
+        glyphData.glyphs.push({
             id,
             bitmap: new AlphaImage({
                 width: width + 2 * border,
@@ -24,6 +25,10 @@ function readFontstack(tag: number, glyphs: Array<StyleGlyph>, pbf: Protobuf) {
             }, bitmap),
             metrics: {width, height, left, top, advance}
         });
+    } else if (tag === 4) {
+        glyphData.ascender = pbf.readSVarint();
+    } else if (tag === 5) {
+        glyphData.descender = pbf.readSVarint();
     }
 }
 
@@ -37,8 +42,8 @@ function readGlyph(tag: number, glyph: Object, pbf: Protobuf) {
     else if (tag === 7) glyph.advance = pbf.readVarint();
 }
 
-export default function (data: ArrayBuffer | Uint8Array): Array<StyleGlyph> {
-    return new Protobuf(data).readFields(readFontstacks, []);
+export default function (data: ArrayBuffer | Uint8Array): {glyphs: Array<StyleGlyph>, ascender?: number, descender?: number} {
+    return new Protobuf(data).readFields(readFontstacks, {});
 }
 
 export const GLYPH_PBF_BORDER = border;

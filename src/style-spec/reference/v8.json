@@ -2150,20 +2150,15 @@
       "value": "enum",
       "values": {
         "horizontal": {
-          "doc": "If a text's language supports horizontal writing mode, symbols with point placement would be laid out horizontally."
+          "doc": "If a text's language supports horizontal writing mode, symbols would be laid out horizontally."
         },
         "vertical": {
-          "doc": "If a text's language supports vertical writing mode, symbols with point placement would be laid out vertically."
+          "doc": "If a text's language supports vertical writing mode, symbols would be laid out vertically."
         }
       },
-      "doc": "The property allows control over a symbol's orientation. Note that the property values act as a hint, so that a symbol whose language doesn’t support the provided orientation will be laid out in its natural orientation. Example: English point symbol will be rendered horizontally even if array value contains single 'vertical' enum value. The order of elements in an array define priority order for the placement of an orientation variant.",
+      "doc": "The property allows control over a symbol's orientation. Note that the property values act as a hint, so that a symbol whose language doesn’t support the provided orientation will be laid out in its natural orientation. Example: English point symbol will be rendered horizontally even if array value contains single 'vertical' enum value. For symbol with point placement, the order of elements in an array define priority order for the placement of an orientation variant. For symbol with line placement, the default text writing mode is either ['horizontal', 'vertical'] or ['vertical', 'horizontal'], the order doesn't affect the placement.",
       "requires": [
-        "text-field",
-        {
-          "symbol-placement": [
-            "point"
-          ]
-        }
+        "text-field"
       ],
       "sdk-support": {
         "basic functionality": {
@@ -2703,7 +2698,7 @@
         }
       },
       "in": {
-        "doc": "Determines whether an item exists in an array or a substring exists in a string.",
+        "doc": "Determines whether an item exists in an array or a substring exists in a string. In the specific case when the second and third arguments are string literals, you must wrap at least one of them in a [`literal`](#types-literal) expression to hint correct interpretation to the [type system](#type-system).",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {

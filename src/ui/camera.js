@@ -192,8 +192,8 @@ class Camera extends Evented {
      * Pans the map by the specified offset.
      *
      * @memberof Map#
-     * @param offset `x` and `y` coordinates by which to pan the map.
-     * @param options Options object.
+     * @param offset The `x` and `y` coordinates by which to pan the map.
+     * @param options An options object describing the destination and animation of the transition. We do not recommend using `options.offset` since this value will override the value of the `offset` parameter.
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend

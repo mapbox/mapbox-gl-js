@@ -30,11 +30,14 @@ test('loadGlyphRange', (t) => {
         t.deepEqual(transform.getCall(0).args, ['https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf', 'Glyphs']);
 
         if (!result) return t.fail(); // appease flow
-
-        t.equal(Object.keys(result).length, 223);
-        for (const key in result) {
+        t.equal(typeof result.ascender, 'undefined');
+        t.equal(typeof result.descender, 'undefined');
+        t.equal(result.ascender, undefined);
+        t.equal(result.descender, undefined);
+        t.equal(Object.keys(result.glyphs).length, 223);
+        for (const key in result.glyphs) {
             const id = Number(key);
-            const glyph = result[id];
+            const glyph = result.glyphs[id];
             if (!glyph) return t.fail(); // appease flow
             t.equal(glyph.id, Number(id));
             t.ok(glyph.metrics);

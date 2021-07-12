@@ -1,0 +1,114 @@
+{
+  "version": 8,
+  "metadata": {
+    "description": "Flat roof centroid buffers were mismatching regular vertex buffer.",
+    "test": {
+      "height": 256,
+      "operations": [
+        ["wait", 1500]
+      ]
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 0.05
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/12-759-1609.terrain.png"
+      ],
+      "maxzoom": 11,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "buffer": 0,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.0005,
+                    0.0005
+                  ],
+                  [
+                    0.0005,
+                    0.0009
+                  ],
+                  [
+                    0.0008,
+                    0.0009
+                  ],
+                  [
+                    0.0008,
+                    0.0005
+                  ],
+                  [
+                    0.0005,
+                    0.0005
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 20
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.0005,
+                    0.0010
+                  ],
+                  [
+                    0.0005,
+                    0.0014
+                  ],
+                  [
+                    0.0008,
+                    0.0014
+                  ],
+                  [
+                    0.0008,
+                    0.0010
+                  ],
+                  [
+                    0.0005,
+                    0.0010
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "center": [0.0005, 0.0010],
+  "pitch": 60,
+  "bearing": -45,
+  "zoom": 17.5,
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-height": 10,
+        "fill-extrusion-color": "blue"
+      }
+    }
+  ]
+}
