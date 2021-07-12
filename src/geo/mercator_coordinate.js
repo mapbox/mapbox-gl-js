@@ -74,7 +74,7 @@ export function mercatorScale(lat: number) {
  * @example
  * var nullIsland = new mapboxgl.MercatorCoordinate(0.5, 0.5, 0);
  *
- * @see Example: [Add a custom style layer](https://www.mapbox.com/mapbox-gl-js/example/custom-style-layer/)
+ * @see [Example: Add a custom style layer](https://www.mapbox.com/mapbox-gl-js/example/custom-style-layer/)
  */
 class MercatorCoordinate {
     x: number;

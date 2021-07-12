@@ -13,8 +13,8 @@ export type DragPanOptions = {
 /**
  * The `DragPanHandler` allows the user to pan the map by clicking and dragging
  * the cursor.
- * @see Example: [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
- * @see Example: [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ * @see [Example: Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
  */
 export default class DragPanHandler {
 

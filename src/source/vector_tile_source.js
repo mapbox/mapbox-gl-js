@@ -45,8 +45,8 @@ import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
  *
  * @example
  * map.getSource('some id').setTiles(['https://d25uarhxywzl1j.cloudfront.net/v0.1/{z}/{x}/{y}.mvt']);
- * @see Example: [Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
- * @see Example: [Add a third party vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/third-party/)
+ * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
+ * @see [Example: Add a third party vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/third-party/)
  */
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
