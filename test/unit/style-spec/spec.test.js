@@ -31,9 +31,9 @@ test(`v8 Spec SDK Support section`, (t) => {
             if (props[key]["sdk-support"]) {
                 t.ok(props[key]["sdk-support"]["basic functionality"], `${objKey}_${key} is missing sdk support section for 'basic functionality'`);
                 if (props[key]["property-type"].includes("constant")) {
-                    t.notOk(props[key]["sdk-support"]["data-driven styling"], `${objKey}_${key} should not have sdk support section for 'data-driven styling'`);
+                    t.notOk(props[key]["sdk-support"]["data expressions"], `${objKey}_${key} should not have sdk support section for 'data expressions'`);
                 } else {
-                    t.ok(props[key]["sdk-support"]["data-driven styling"], `${objKey}_${key} is missing sdk support section for 'data-driven styling'`);
+                    t.ok(props[key]["sdk-support"]["data expressions"], `${objKey}_${key} is missing sdk support section for 'data expressions'`);
                 }
             }
         });

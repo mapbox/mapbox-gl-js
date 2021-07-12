@@ -729,7 +729,7 @@
           "ios": "5.8.0",
           "macos": "0.15.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "1.2.0",
           "android": "9.1.0",
           "ios": "5.8.0",
@@ -779,7 +779,7 @@
           "ios": "5.9.0",
           "macos": "0.16.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "1.2.0",
           "android": "9.2.0",
           "ios": "5.9.0",
@@ -889,7 +889,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "2.3.0"
         }
       },
@@ -924,7 +924,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.40.0",
           "android": "5.2.0",
           "ios": "3.7.0",
@@ -1000,7 +1000,7 @@
           "ios": "5.8.0",
           "macos": "0.15.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "1.2.0",
           "android": "9.1.0",
           "ios": "5.8.0",
@@ -1134,7 +1134,7 @@
           "ios": "4.11.0",
           "macos": "0.14.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.53.0",
           "android": "7.4.0",
           "ios": "4.11.0",
@@ -1307,7 +1307,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.35.0",
           "android": "5.1.0",
           "ios": "3.6.0",
@@ -1417,7 +1417,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.35.0",
           "android": "5.1.0",
           "ios": "3.6.0",
@@ -1449,7 +1449,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.21.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -1541,7 +1541,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.29.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -1600,7 +1600,7 @@
           "ios": "3.7.0",
           "macos": "0.6.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.40.0",
           "android": "5.2.0",
           "ios": "3.7.0",
@@ -1742,7 +1742,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -1776,7 +1776,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.43.0",
           "android": "6.0.0",
           "ios": "4.0.0",
@@ -1808,7 +1808,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.35.0",
           "android": "5.1.0",
           "ios": "3.6.0",
@@ -1840,7 +1840,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.40.0",
           "android": "5.2.0",
           "ios": "3.7.0",
@@ -1871,7 +1871,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "2.3.0"
         }
       },
@@ -1899,7 +1899,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.40.0",
           "android": "5.2.0",
           "ios": "3.7.0",
@@ -1943,7 +1943,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.39.0",
           "android": "5.2.0",
           "ios": "3.7.0",
@@ -1977,7 +1977,7 @@
           "ios": "4.10.0",
           "macos": "0.14.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.54.0",
           "android": "7.4.0",
           "ios": "4.10.0",
@@ -2099,7 +2099,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.39.0",
           "android": "5.2.0",
           "ios": "3.7.0",
@@ -2192,7 +2192,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.35.0",
           "android": "5.1.0",
           "ios": "3.6.0",
@@ -2290,7 +2290,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -2329,7 +2329,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.35.0",
           "android": "5.1.0",
           "ios": "3.6.0",
@@ -3103,7 +3103,7 @@
         }
       },
       "feature-state": {
-        "doc": "Retrieves a property value from the current feature's state. Returns null if the requested property is not present on the feature's state. A feature's state is not part of the GeoJSON or vector tile data, and must be set programmatically on each feature. Features are identified by their `id` attribute, which must be an integer or a string that can be cast to an integer. Note that [\"feature-state\"] can only be used with paint properties that support data-driven styling.",
+        "doc": "Retrieves a property value from the current feature's state. Returns null if the requested property is not present on the feature's state. A feature's state is not part of the GeoJSON or vector tile data, and must be set programmatically on each feature. Features are identified by their `id` attribute, which must be an integer or a string that can be cast to an integer. Note that [\"feature-state\"] can only be used with paint properties that support data expressions.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -3936,7 +3936,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.21.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -3970,7 +3970,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.19.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4006,7 +4006,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.19.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4092,7 +4092,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.49.0",
           "android": "6.5.0",
           "macos": "0.11.0",
@@ -4115,7 +4115,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity of the entire fill extrusion layer. This is rendered on a per-layer, not per-feature, basis, and data-driven styling is not available.",
+      "doc": "The opacity of the entire fill extrusion layer. This is rendered on a per-layer, not per-feature, basis, and data expressions is not available.",
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -4150,7 +4150,7 @@
           "ios": "3.6.0",
           "macos": "0.5.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.27.0",
           "android": "5.1.0",
           "ios": "3.6.0",
@@ -4236,7 +4236,7 @@
           "ios": "3.6.0",
           "macos": "0.5.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.49.0",
           "android": "6.5.0",
           "macos": "0.11.0",
@@ -4266,7 +4266,7 @@
           "ios": "3.6.0",
           "macos": "0.5.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.27.0",
           "android": "5.1.0",
           "ios": "3.6.0",
@@ -4300,7 +4300,7 @@
           "ios": "3.6.0",
           "macos": "0.5.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.27.0",
           "android": "5.1.0",
           "ios": "3.6.0",
@@ -4353,7 +4353,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.29.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4387,7 +4387,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.23.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4476,7 +4476,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.39.0",
           "android": "5.2.0",
           "ios": "3.7.0",
@@ -4507,7 +4507,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.29.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4537,7 +4537,7 @@
           "ios": "3.1.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.29.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4568,7 +4568,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.29.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4604,7 +4604,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "2.3.0"
         }
       },
@@ -4628,7 +4628,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.49.0",
           "android": "6.5.0",
           "macos": "0.11.0",
@@ -4669,7 +4669,7 @@
           "ios": "4.4.0",
           "macos": "0.11.0"
         },
-        "data-driven styling": {}
+        "data expressions": {}
       },
       "expression": {
         "interpolated": true,
@@ -4695,7 +4695,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.18.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4724,7 +4724,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.18.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4753,7 +4753,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.20.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4784,7 +4784,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.20.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4929,7 +4929,7 @@
           "ios": "3.5.0",
           "macos": "0.4.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.29.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4958,7 +4958,7 @@
           "ios": "3.5.0",
           "macos": "0.4.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.29.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -4989,7 +4989,7 @@
           "ios": "3.5.0",
           "macos": "0.4.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.29.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5022,7 +5022,7 @@
           "ios": "4.0.0",
           "macos": "0.7.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.43.0",
           "android": "6.0.0",
           "ios": "4.0.0",
@@ -5052,7 +5052,7 @@
           "ios": "4.0.0",
           "macos": "0.7.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.41.0",
           "android": "6.0.0",
           "ios": "4.0.0",
@@ -5123,7 +5123,7 @@
           "ios": "4.0.0",
           "macos": "0.7.0"
         },
-        "data-driven styling": {}
+        "data expressions": {}
       },
       "expression": {
         "interpolated": true,
@@ -5175,7 +5175,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5207,7 +5207,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5239,7 +5239,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5273,7 +5273,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5307,7 +5307,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5403,7 +5403,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5436,7 +5436,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5468,7 +5468,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5502,7 +5502,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5536,7 +5536,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {
+        "data expressions": {
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0",
@@ -5984,7 +5984,7 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data expressions": {}
       },
       "expression": {
         "interpolated": false,
@@ -6172,7 +6172,7 @@
         "basic functionality": {
           "js": "2.0.0"
         },
-        "data-driven styling": {}
+        "data expressions": {}
       },
       "expression": {
         "interpolated": true,
