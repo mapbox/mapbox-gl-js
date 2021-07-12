@@ -76,10 +76,10 @@ type IControl = {
 }
 /* eslint-enable no-use-before-define */
 
-const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
-const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
-const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
-const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
+export const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
+export const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
+export const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
+export const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
 
 type MapOptions = {
     hash?: boolean | string,
@@ -250,7 +250,7 @@ const defaultOptions = {
  * map and the other on the left edge of the map) at every zoom level.
  * @param {number} [options.maxTileCacheSize=null]  The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
  * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
- *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs', 'Hiragana', 'Katakana' and 'Hangul Syllables' ranges.
+ *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs', 'Hiragana', 'Katakana', 'Hangul Syllables' and 'CJK Symbols and Punctuation' ranges.
  *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
  *   Set to `false`, to enable font settings from the map's style for these glyph ranges.  Note that [Mapbox Studio](https://studio.mapbox.com/) sets this value to `false` by default.
  *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (See [Use locally generated ideographs](https://www.mapbox.com/mapbox-gl-js/example/local-ideographs).)
@@ -268,11 +268,12 @@ const defaultOptions = {
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
  * @example
  * var map = new mapboxgl.Map({
- *   container: 'map',
- *   center: [-122.420679, 37.772537],
- *   zoom: 13,
- *   style: style_object,
- *   hash: true,
+ *   container: 'map', // container ID
+ *   center: [-122.420679, 37.772537], // starting position [lng, lat]
+ *   zoom: 13, // starting zoom
+ *   style: 'mapbox://styles/mapbox/streets-v11', // style URL or style object
+ *   hash: true, // sync `center`, `zoom`, `pitch`, and `bearing` with URL
+ *   // Use `transformRequest` to modify requests that begin with `http://myHost`.
  *   transformRequest: (url, resourceType)=> {
  *     if(resourceType === 'Source' && url.startsWith('http://myHost')) {
  *       return {
@@ -283,6 +284,9 @@ const defaultOptions = {
  *     }
  *   }
  * });
+ * @see [Display a map on a webpage](https://docs.mapbox.com/mapbox-gl-js/example/simple-map/)
+ * @see [Display a map with a custom style](https://docs.mapbox.com/mapbox-gl-js/example/custom-style-id/)
+ * @see [Check if Mapbox GL JS is supported](https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/)
  */
 class Map extends Camera {
     style: Style;
@@ -1000,7 +1004,8 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a listener for events of a specified type, optionally limited to features in a specified style layer.
+     * Adds a listener for events of a specified type,
+     * optionally limited to features in a specified style layer.
      *
      * @param {string} type The event type to listen for. Events compatible with the optional `layerId` parameter are triggered
      * when the cursor enters a visible portion of the specified layer from outside that layer or outside the map canvas.
@@ -1056,18 +1061,19 @@ class Map extends Camera {
      * | [`sourcedataloading`](#map.event:sourcedataloading)       |                           |
      * | [`styleimagemissing`](#map.event:styleimagemissing)       |                           |
      *
-     * @param {string} layerId (optional) The ID of a style layer. Event will only be triggered if its location
-     * is within a visible feature in this layer. The event will have a `features` property containing
-     * an array of the matching features. If `layerId` is not supplied, the event will not have a `features` property.
-     * Please note that many event types are not compatible with the optional `layerId` parameter.
+     * @param {string} layerId (optional) The ID of a style layer. If you provide a `layerId`,
+     * the listener will be triggered only if its location is within a visible feature in this layer,
+     * and the event will have a `features` property containing an array of the matching features.
+     * If you do not provide a `layerId`, the listener will be triggered by a corresponding event
+     * happening anywhere on the map, and the event will not have a `features` property.
+     * Note that many event types are not compatible with the optional `layerId` parameter.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
      * @example
      * // Set an event listener that will fire
-     * // when the map has finished loading
+     * // when the map has finished loading.
      * map.on('load', function() {
-     *   // Once the map has finished loading,
-     *   // add a new layer
+     *   // Add a new layer.
      *   map.addLayer({
      *     id: 'points-of-interest',
      *     source: {
@@ -1086,17 +1092,18 @@ class Map extends Camera {
      * });
      * @example
      * // Set an event listener that will fire
-     * // when a feature on the countries layer of the map is clicked
+     * // when a feature on the countries layer of the map is clicked.
      * map.on('click', 'countries', function(e) {
      *   new mapboxgl.Popup()
      *     .setLngLat(e.lngLat)
      *     .setHTML(`Country name: ${e.features[0].properties.name}`)
      *     .addTo(map);
      * });
-     * @see [Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Add 3D terrain to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-terrain/)
      * @see [Center the map on a clicked symbol](https://docs.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
-     * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Create a draggable marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see [Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
     on(type: MapEvent, layerId: any, listener: any) {
         if (listener === undefined) {
@@ -1117,22 +1124,8 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a listener that will be called only once to a specified event type.
-     *
-     * @method
-     * @name once
-     * @memberof Map
-     * @instance
-     * @param {string} type The event type to add a listener for.
-     * @param {Function} listener (optional) The function to be called when the event is fired once.
-     *   The listener function is called with the data object passed to `fire`,
-     *   extended with `target` and `type` properties. If the listener is not provided,
-     *   returns a Promise that will be resolved when the event is fired once.
-     * @returns {Map} `this` | Promise
-     */
-
-    /**
-     * Adds a listener that will be called only once to a specified event type occurring on features in a specified style layer.
+     * Adds a listener that will be called only once to a specified event type,
+     * optionally limited to events occurring on features in a specified style layer.
      *
      * @param {string} type The event type to listen for; one of `'mousedown'`, `'mouseup'`, `'click'`, `'dblclick'`,
      * `'mousemove'`, `'mouseenter'`, `'mouseleave'`, `'mouseover'`, `'mouseout'`, `'contextmenu'`, `'touchstart'`,
@@ -1140,13 +1133,29 @@ class Map extends Camera {
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
      * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
-     * @param {string} layerId The ID of a style layer. Only events whose location is within a visible
-     * feature in this layer will trigger the listener. The event will have a `features` property containing
-     * an array of the matching features.
+     * @param {string} layerId (optional) The ID of a style layer. If you provide a `layerId`,
+     * the listener will be triggered only if its location is within a visible feature in this layer,
+     * and the event will have a `features` property containing an array of the matching features.
+     * If you do not provide a `layerId`, the listener will be triggered by a corresponding event
+     * happening anywhere on the map, and the event will not have a `features` property.
+     * Note that many event types are not compatible with the optional `layerId` parameter.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
+     * @example
+     * // Log the coordinates of a user's first map touch.
+     * map.once('touchstart', function (e) {
+     *   console.log('The first map touch was at: ' + e.lnglat)
+     * });
+     * @example
+     * // Log the coordinates of a user's first map touch
+     * // on a specific layer.
+     * map.once('touchstart', 'my-point-layer', function (e) {
+     *   console.log('The first map touch on the point layer was at: ' + e.lnglat)
+     * });
+     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
+     * @see [Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-
     once(type: MapEvent, layerId: any, listener: any) {
 
         if (listener === undefined) {
@@ -1163,24 +1172,29 @@ class Map extends Camera {
     }
 
     /**
-     * Removes an event listener previously added with `Map#on`.
-     *
-     * @method
-     * @name off
-     * @memberof Map
-     * @instance
-     * @param {string} type The event type previously used to install the listener.
-     * @param {Function} listener The function previously installed as a listener.
-     * @returns {Map} `this`
-     */
-
-    /**
-     * Removes an event listener for layer-specific events previously added with `Map#on`.
+     * Removes an event listener previously added with {@link Map#on},
+     * optionally limited to layer-specific events.
      *
      * @param {string} type The event type previously used to install the listener.
-     * @param {string} layerId The layer ID previously used to install the listener.
+     * @param {string} layerId (optional) The layer ID previously used to install the listener.
      * @param {Function} listener The function previously installed as a listener.
      * @returns {Map} `this`
+     * @example
+     * // Create a function to print coordinates while a mouse is moving.
+     * function onMove(e) {
+     *   console.log('The mouse is moving: ' + e.lngLat)
+     * }
+     * // Create a function to unbind the `mousemove` event.
+     * function onUp(e) {
+     *   console.log('The final coordinates are: ' + e.lngLat)
+     *   map.off('mousemove', onMove);
+     * }
+     * // When a click occurs, bind both functions to mouse events.
+     * map.on('mousedown', function (e) {
+     *   map.on('mousemove', onMove);
+     *   map.once('mouseup', onUp);
+     * });
+     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     off(type: MapEvent, layerId: any, listener: any) {
         if (listener === undefined) {
@@ -1957,13 +1971,13 @@ class Map extends Camera {
         return this._update(true);
     }
 
-    // eslint-disable-next-line jsdoc/require-returns
     /**
      * Removes the layer with the given ID from the map's style.
      *
      * If no such layer exists, an `error` event is fired.
      *
      * @param {string} id id of the layer to remove
+     * @returns {Map} `this`
      * @fires error
      *
      * @example
@@ -2156,7 +2170,7 @@ class Map extends Camera {
     /**
      * Sets the terrain property of the style.
      *
-     * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#terrain).
+     * @param terrain Terrain properties to set. Must conform to the [Terrain Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/terrain/).
      * If `null` or `undefined` is provided, function removes terrain.
      * @returns {Map} `this`
      * @example
@@ -2187,7 +2201,7 @@ class Map extends Camera {
 
     /**
      * Sets the fog property of the style.
-     * @param fog The fog properties to set. Must conform the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#fog).
+     * @param fog The fog properties to set. Must conform the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
      * If `null` or `undefined` is provided, this function call removes the fog from the map.
      * @returns {Map} `this`
      * @example
@@ -2196,6 +2210,7 @@ class Map extends Camera {
      *  "color": 'white',
      *  "horizon-blend": 0.1
      * });
+     * @see [Add fog to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-fog/)
      */
     setFog(fog: FogSpecification) {
         this._lazyInitEmptyStyle();
@@ -2242,6 +2257,7 @@ class Map extends Camera {
      * @example
      * var coordinate = [-122.420679, 37.772537];
      * var elevation = map.queryTerrainElevation(coordinate);
+     * @see [Query terrain elevation](https://docs.mapbox.com/mapbox-gl-js/example/query-terrain-elevation/)
      */
     queryTerrainElevation(lnglat: LngLatLike, options: ElevationQueryOptions): number | null {
         const elevation = this.transform.elevation;
@@ -2272,7 +2288,6 @@ class Map extends Camera {
      * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
      * @returns {Map} The map object.
-     *
      * @example
      * // When the mouse moves over the `my-layer` layer, update
      * // the feature state for the feature under the mouse
@@ -2672,6 +2687,13 @@ class Map extends Camera {
             this.style.update(parameters);
         }
 
+        const fogIsTransitioning = this.style && this.style.fog && this.style.fog.hasTransition();
+
+        if (fogIsTransitioning) {
+            this.style._markersNeedUpdate = true;
+            this._sourcesDirty = true;
+        }
+
         // If we are in _render for any reason other than an in-progress paint
         // transition, update source caches to check for and load any tiles we
         // need for the current transform
@@ -2825,7 +2847,12 @@ class Map extends Camera {
             const elevationChange = Math.abs(currentElevation - newElevation);
 
             if (elevationChange > AVERAGE_ELEVATION_EASE_THRESHOLD) {
-                this._averageElevation.easeTo(newElevation, timeStamp, AVERAGE_ELEVATION_EASE_TIME);
+                if (this._isInitialLoad) {
+                    this._averageElevation.jumpTo(newElevation);
+                    return applyUpdate(newElevation);
+                } else {
+                    this._averageElevation.easeTo(newElevation, timeStamp, AVERAGE_ELEVATION_EASE_TIME);
+                }
             } else if (elevationChange > AVERAGE_ELEVATION_CHANGE_THRESHOLD) {
                 this._averageElevation.jumpTo(newElevation);
                 return applyUpdate(newElevation);

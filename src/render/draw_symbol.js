@@ -102,14 +102,14 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     }
 }
 
-function calculateVariableRenderShift(anchor, width, height, textOffset, textBoxScale, renderTextSize): Point {
+function calculateVariableRenderShift(anchor, width, height, textOffset, textScale, renderTextSize): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
     const shiftY = -(verticalAlign - 0.5) * height;
     const variableOffset = evaluateVariableOffset(anchor, textOffset);
     return new Point(
-        (shiftX / textBoxScale + variableOffset[0]) * renderTextSize,
-        (shiftY / textBoxScale + variableOffset[1]) * renderTextSize
+        (shiftX / textScale + variableOffset[0]) * renderTextSize,
+        (shiftY / textScale + variableOffset[1]) * renderTextSize
     );
 }
 
@@ -168,10 +168,10 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
                 renderTextSize *= bucket.tilePixelRatio / tileScale;
             }
 
-            const {width, height, anchor, textOffset, textBoxScale} = variableOffset;
+            const {width, height, anchor, textOffset, textScale} = variableOffset;
 
             const shift = calculateVariableRenderShift(
-                anchor, width, height, textOffset, textBoxScale, renderTextSize);
+                anchor, width, height, textOffset, textScale, renderTextSize);
 
             // Usual case is that we take the projected anchor and add the pixel-based shift
             // calculated above. In the (somewhat weird) case of pitch-aligned text, we add an equivalent

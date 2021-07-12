@@ -181,7 +181,7 @@ class Painter {
 
     _updateFog(style: Style) {
         const fog = style.fog;
-        if (!fog || (fog && fog.getOpacity(this.transform.pitch) !== 1.0)) {
+        if (!fog || fog.getOpacity(this.transform.pitch) < 1 || fog.properties.get('horizon-blend') < 0.03) {
             this.transform.fogCullDistSq = null;
             return;
         }
@@ -189,6 +189,12 @@ class Painter {
         // We start culling where the fog opacity function hits
         // 98% which leaves a non-noticeable change threshold.
         const [start, end] = fog.getFovAdjustedRange(this.transform._fov);
+
+        if (start > end) {
+            this.transform.fogCullDistSq = null;
+            return;
+        }
+
         const fogBoundFraction = 0.78;
         const fogCullDist = start + (end - start) * fogBoundFraction;
 
@@ -565,6 +571,7 @@ class Painter {
                 const terrain = (((this.terrain): any): Terrain);
                 const prevLayer = this.currentLayer;
                 this.currentLayer = terrain.renderBatch(this.currentLayer);
+                assert(this.context.bindFramebuffer.current === null);
                 assert(this.currentLayer > prevLayer);
                 continue;
             }

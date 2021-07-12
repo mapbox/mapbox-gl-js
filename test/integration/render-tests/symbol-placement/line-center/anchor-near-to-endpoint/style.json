@@ -1,0 +1,81 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 300,
+      "width": 300
+    }
+  },
+  "center": [-122.13779903,37.42192284],
+  "zoom": 22,
+  "bearing": 0,
+  "pitch": 0,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/mapbox.mapbox-streets-v8/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+      {
+          "id": "background",
+          "type": "background",
+          "layout": {},
+          "paint": { "background-color": "hsl(38, 48%, 86%)" }
+      },
+      {
+          "id": "lines-symbol",
+          "type": "symbol",
+          "source": "mapbox",
+          "source-layer": "road",
+          "layout": {
+              "text-field": "Portage Ave",
+              "text-max-angle": 30,
+              "text-font": [
+                "Arial Unicode MS Regular"
+              ],
+              "symbol-placement": "line-center",
+              "text-padding": 1,
+              "text-rotation-alignment": "map",
+              "text-pitch-alignment": "viewport",
+              "text-letter-spacing": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  0,
+                  1,
+                  22,
+                  1
+              ],
+              "text-size" : [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              10,
+              9,
+              18,
+              14
+              ]
+          },
+          "paint": {
+              "text-color": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  5,
+                  "hsl(0, 0%, 33%)",
+                  6,
+                  "hsl(0, 0%, 0%)"
+              ],
+              "text-halo-blur": 0.5,
+              "text-halo-color": "hsla(0, 0%, 100%, 0.95)",
+              "text-halo-width": 3,
+              "text-opacity": 1
+          }
+      }
+  ]
+}

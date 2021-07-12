@@ -29,8 +29,9 @@ export type ElevationQueryOptions = {
 export class Elevation {
     /**
      * Helper around `getAtPoint` that guarantees that a numeric value is returned.
-     * @param point
-     * @param defaultIfNotLoaded
+     * @param {MercatorCoordinate} point Mercator coordinate of the point.
+     * @param {number} defaultIfNotLoaded Value that is returned if the dem tile of the provided point is not loaded.
+     * @returns {number} Altitude in meters.
      */
     getAtPointOrZero(point: MercatorCoordinate, defaultIfNotLoaded: number = 0): number {
         return this.getAtPoint(point, defaultIfNotLoaded) || 0;
@@ -40,7 +41,7 @@ export class Elevation {
      * Altitude above sea level in meters at specified point.
      * @param {MercatorCoordinate} point Mercator coordinate of the point.
      * @param {number} defaultIfNotLoaded Value that is returned if the dem tile of the provided point is not loaded
-     * @param exaggerated
+     * @param {boolean} exaggerated `true` if styling exaggeration should be applied to the resulting elevation.
      * @returns {number} Altitude in meters.
      * If there is no loaded tile that carries information for the requested
      * point elevation, returns `defaultIfNotLoaded`.

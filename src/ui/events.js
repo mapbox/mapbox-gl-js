@@ -69,6 +69,30 @@ export class MapMouseEvent extends Event {
     lngLat: LngLat;
 
     /**
+     * If a `layerId` was specified when adding the event listener with {@link Map#on}, `features` will be an array of
+     * [GeoJSON](http://geojson.org/) [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
+     * The array will contain all features from that layer that are rendered at the event's point.
+     * The `features` are identical to those returned by {@link Map#queryRenderedFeatures}.
+     *
+     * If no `layerId` was specified when adding the event listener, `features` will be `undefined`.
+     * You can get the features at the point with `map.queryRenderedFeatures(e.point)`.
+     *
+     * @example
+     * // logging features for a specific layer (with `e.features`)
+     * map.on('click', 'myLayerId', (e) => {
+     *     console.log(`There are ${e.features.length} features at point ${e.point}`);
+     * });
+     *
+     * @example
+     * // logging all features for all layers (without `e.features`)
+     * map.on('click', (e) => {
+     *     var features = map.queryRenderedFeatures(e.point);
+     *     console.log(`There are ${e.features.length} features at point ${e.point}`);
+     * });
+     */
+    features: Array<Object> | void;
+
+    /**
      * Prevents subsequent default processing of the event by the map.
      *
      * Calling this method will prevent the following default map behaviors:
@@ -181,6 +205,30 @@ export class MapTouchEvent extends Event {
      * [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches) property.
      */
     lngLats: Array<LngLat>;
+
+    /**
+     * If a `layerId` was specified when adding the event listener with {@link Map#on}, `features` will be an array of
+     * [GeoJSON](http://geojson.org/) [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
+     * The array will contain all features from that layer that are rendered at the event's point.
+     * The `features` are identical to those returned by {@link Map#queryRenderedFeatures}.
+     *
+     * If no `layerId` was specified when adding the event listener, `features` will be `undefined`.
+     * You can get the features at the point with `map.queryRenderedFeatures(e.point)`.
+     *
+     * @example
+     * // logging features for a specific layer (with `e.features`)
+     * map.on('touchstart', 'myLayerId', function(e) {
+     *     console.log('There are', e.features.length, 'features at point', e.point');
+     * });
+     *
+     * @example
+     * // logging all features for all layers (without `e.features`)
+     * map.on('touchstart', function(e) {
+     *     var features = map.queryRenderedFeatures(e.point);
+     *     console.log('There are', features.length, 'features at point', e.point');
+     * });
+     */
+    features: Array<Object> | void;
 
     /**
      * Prevents subsequent default processing of the event by the map.
@@ -883,7 +931,7 @@ export type MapEvent =
      * Fired just after the map completes a transition from one zoom level to another
      * as the result of either user interaction or methods such as {@link Map#flyTo}.
      * The zoom transition will usually end before rendering is finished, so if you
-     * need to wait for rendering to finish, use the {@link Map#idle} event instead.
+     * need to wait for rendering to finish, use the {@link Map.event:idle} event instead.
      *
      * @event zoomend
      * @memberof Map
