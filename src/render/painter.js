@@ -249,9 +249,9 @@ class Painter {
         this.rasterBoundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
 
         const viewportArray = new PosArray();
-        viewportArray.emplaceBack(0, 0);
-        viewportArray.emplaceBack(1, 0);
-        viewportArray.emplaceBack(0, 1);
+        viewportArray.emplaceBack(-1, -1);
+        viewportArray.emplaceBack(1, -1);
+        viewportArray.emplaceBack(-1, 1);
         viewportArray.emplaceBack(1, 1);
         this.viewportBuffer = context.createVertexBuffer(viewportArray, posAttributes.members);
         this.viewportSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
@@ -297,14 +297,9 @@ class Painter {
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
         // this function in favor of context.clear({ stencil: 0x0 })
-
-        const matrix = mat4.create();
-        mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
-        mat4.scale(matrix, matrix, [gl.drawingBufferWidth, gl.drawingBufferHeight, 0]);
-
         this.useProgram('clippingMask').draw(context, gl.TRIANGLES,
             DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
-            clippingMaskUniformValues(matrix),
+            clippingMaskUniformValues(this.identityMat),
             '$clipping', this.viewportBuffer,
             this.quadTriangleIndexBuffer, this.viewportSegments);
     }
