@@ -58,10 +58,10 @@ import type {Cancelable} from '../types/cancelable.js';
  *       }
  *   }]
  * });
- * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
- * @see [Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
- * @see [Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
- * @see [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
+ * @see Example: [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+ * @see Example: [Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
+ * @see Example: [Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
+ * @see Example: [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
  */
 class GeoJSONSource extends Evented implements Source {
     type: 'geojson';
