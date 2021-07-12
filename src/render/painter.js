@@ -287,9 +287,21 @@ class Painter {
      * new tiles at the same location, while retaining previously drawn pixels.
      */
     clearStencil() {
+        const context = this.context;
+        const gl = context.gl;
+
         this.nextStencilID = 1;
         this.currentStencilSource = undefined;
-        this.context.clear({stencil: 0x0});
+
+        // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
+        // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
+        // effectively clearing the stencil buffer: once an upstream patch lands, remove
+        // this function in favor of context.clear({ stencil: 0x0 })
+        this.useProgram('clippingMask').draw(context, gl.TRIANGLES,
+            DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
+            clippingMaskUniformValues(this.identityMat),
+            '$clipping', this.viewportBuffer,
+            this.quadTriangleIndexBuffer, this.viewportSegments);
     }
 
     _renderTileClippingMasks(layer: StyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
