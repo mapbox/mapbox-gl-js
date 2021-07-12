@@ -1009,7 +1009,7 @@ export type MapEvent =
      * @event pitchstart
      * @memberof Map
      * @instance
-     * @property {MapDataEvent} data
+     * @property {MapEventData} data
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
@@ -1029,7 +1029,7 @@ export type MapEvent =
      * @event pitch
      * @memberof Map
      * @instance
-     * @property {MapDataEvent} data
+     * @property {MapEventData} data
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
@@ -1048,7 +1048,7 @@ export type MapEvent =
      * @event pitchend
      * @memberof Map
      * @instance
-     * @property {MapDataEvent} data
+     * @property {MapEventData} data
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
