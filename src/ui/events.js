@@ -90,7 +90,7 @@ export class MapMouseEvent extends Event {
      * // logging all features for all layers (without `e.features`)
      * map.on('click', (e) => {
      *     const features = map.queryRenderedFeatures(e.point);
-     *     console.log(`There are ${e.features.length} features at point ${e.point}`);
+     *     console.log(`There are ${features.length} features at point ${e.point}`);
      * });
      */
     features: Array<Object> | void;
@@ -224,14 +224,14 @@ export class MapTouchEvent extends Event {
      * @example
      * // logging features for a specific layer (with `e.features`)
      * map.on('touchstart', 'myLayerId', (e) => {
-     *     console.log('There are', e.features.length, 'features at point', e.point);
+     *     console.log(`There are ${e.features.length} features at point ${e.point}`);
      * });
      *
      * @example
      * // logging all features for all layers (without `e.features`)
      * map.on('touchstart', (e) => {
      *     const features = map.queryRenderedFeatures(e.point);
-     *     console.log('There are', features.length, 'features at point', e.point);
+     *     console.log(`There are ${features.length} features at point ${e.point}`);
      * });
      */
     features: Array<Object> | void;
