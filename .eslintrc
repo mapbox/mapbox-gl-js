@@ -93,7 +93,8 @@
     "jsdoc/check-access": "warn",
     "jsdoc/check-alignment": "warn",
     "jsdoc/check-examples": ["error", {
-        "matchingFileName": "src/fake_filename_for_jsdoc_examples"
+        "matchingFileName": "src/fake_filename_for_jsdoc_examples",
+        "rejectExampleCodeRegex": "<script>"
     }],
     "jsdoc/check-indentation": "warn",
     "jsdoc/check-line-alignment": "warn",
