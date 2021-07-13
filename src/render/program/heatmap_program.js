@@ -1,11 +1,8 @@
 // @flow
 
-import {mat4} from 'gl-matrix';
-
 import {
     Uniform1i,
     Uniform1f,
-    Uniform2f,
     UniformMatrix4f
 } from '../uniform_binding.js';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
@@ -23,8 +20,6 @@ export type HeatmapUniformsType = {|
 |};
 
 export type HeatmapTextureUniformsType = {|
-    'u_matrix': UniformMatrix4f,
-    'u_world': Uniform2f,
     'u_image': Uniform1i,
     'u_color_ramp': Uniform1i,
     'u_opacity': Uniform1f
@@ -37,8 +32,6 @@ const heatmapUniforms = (context: Context, locations: UniformLocations): Heatmap
 });
 
 const heatmapTextureUniforms = (context: Context, locations: UniformLocations): HeatmapTextureUniformsType => ({
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_world': new Uniform2f(context, locations.u_world),
     'u_image': new Uniform1i(context, locations.u_image),
     'u_color_ramp': new Uniform1i(context, locations.u_color_ramp),
     'u_opacity': new Uniform1f(context, locations.u_opacity)
@@ -61,14 +54,7 @@ const heatmapTextureUniformValues = (
     textureUnit: number,
     colorRampUnit: number
 ): UniformValues<HeatmapTextureUniformsType> => {
-    const matrix = mat4.create();
-    mat4.ortho(matrix, 0, painter.width, painter.height, 0, 0, 1);
-
-    const gl = painter.context.gl;
-
     return {
-        'u_matrix': matrix,
-        'u_world': [gl.drawingBufferWidth, gl.drawingBufferHeight],
         'u_image': textureUnit,
         'u_color_ramp': colorRampUnit,
         'u_opacity': layer.paint.get('heatmap-opacity')
