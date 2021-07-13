@@ -36,19 +36,19 @@ export type CanvasSourceSpecification = {|
  * @example
  * // add to map
  * map.addSource('some id', {
- *    type: 'canvas',
- *    canvas: 'idOfMyHTMLCanvas',
- *    animate: true,
- *    coordinates: [
- *        [-76.54, 39.18],
- *        [-76.52, 39.18],
- *        [-76.52, 39.17],
- *        [-76.54, 39.17]
- *    ]
+ *     type: 'canvas',
+ *     canvas: 'idOfMyHTMLCanvas',
+ *     animate: true,
+ *     coordinates: [
+ *         [-76.54, 39.18],
+ *         [-76.52, 39.18],
+ *         [-76.52, 39.17],
+ *         [-76.54, 39.17]
+ *     ]
  * });
  *
  * // update
- * var mySource = map.getSource('some id');
+ * const mySource = map.getSource('some id');
  * mySource.setCoordinates([
  *     [-76.54335737228394, 39.18579907229748],
  *     [-76.52803659439087, 39.1838364847587],
