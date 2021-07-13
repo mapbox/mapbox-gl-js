@@ -29,11 +29,11 @@ const defaultOptions: Options = {
  * @param {Boolean} [options.showZoom=true] If `true` the zoom-in and zoom-out buttons are included.
  * @param {Boolean} [options.visualizePitch=false] If `true` the pitch is visualized by rotating X-axis of compass.
  * @example
- * var nav = new mapboxgl.NavigationControl();
+ * const nav = new mapboxgl.NavigationControl();
  * map.addControl(nav, 'top-left');
  * @example
- * var nav = new mapboxgl.NavigationControl({
- *   visualizePitch: true
+ * const nav = new mapboxgl.NavigationControl({
+ *     visualizePitch: true
  * });
  * map.addControl(nav, 'bottom-right');
  * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)

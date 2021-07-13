@@ -44,16 +44,16 @@ export const TERRAIN_OCCLUDED_OPACITY = 0.2;
  * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
  * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, maintaining a bearing as the map rotates. `viewport` aligns the `Marker`'s rotation relative to the viewport, agnostic to map rotations. `auto` is equivalent to `viewport`.
  * @example
- * var marker = new mapboxgl.Marker()
- *   .setLngLat([30.5, 50.5])
- *   .addTo(map);
+ * const marker = new mapboxgl.Marker()
+ *     .setLngLat([30.5, 50.5])
+ *     .addTo(map);
  * @example
  * // Set options
- * var marker = new mapboxgl.Marker({
+ * const marker = new mapboxgl.Marker({
  *     color: "#FFFFFF",
  *     draggable: true
- *   }).setLngLat([30.5, 50.5])
- *   .addTo(map);
+ * }).setLngLat([30.5, 50.5])
+ *     .addTo(map);
  * @see [Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
  * @see [Create a draggable Marker](https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
  */
@@ -241,9 +241,9 @@ export default class Marker extends Evented {
      * @param {Map} map The Mapbox GL JS map to add the marker to.
      * @returns {Marker} `this`
      * @example
-     * var marker = new mapboxgl.Marker()
-     *   .setLngLat([30.5, 50.5])
-     *   .addTo(map); // add the marker to the map
+     * const marker = new mapboxgl.Marker()
+     *     .setLngLat([30.5, 50.5])
+     *     .addTo(map); // add the marker to the map
      */
     addTo(map: Map) {
         this.remove();
@@ -267,7 +267,7 @@ export default class Marker extends Evented {
     /**
      * Removes the marker from a map.
      * @example
-     * var marker = new mapboxgl.Marker().addTo(map);
+     * const marker = new mapboxgl.Marker().addTo(map);
      * marker.remove();
      * @returns {Marker} `this`
      */
@@ -302,9 +302,9 @@ export default class Marker extends Evented {
      * @returns {LngLat} A {@link LngLat} describing the marker's location.
     * @example
     * // Store the marker's longitude and latitude coordinates in a variable
-    * var lngLat = marker.getLngLat();
+    * const lngLat = marker.getLngLat();
     * // Print the marker's longitude and latitude values in the console
-    * console.log('Longitude: ' + lngLat.lng + ', Latitude: ' + lngLat.lat )
+    * console.log(`Longitude: ${lngLat.lng}, Latitude: ${lngLat.lat}`);
     * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
     */
     getLngLat() {
@@ -318,8 +318,8 @@ export default class Marker extends Evented {
     * @example
     * // Create a new marker, set the longitude and latitude, and add it to the map
     * new mapboxgl.Marker()
-    *   .setLngLat([-65.017, -16.457])
-    *   .addTo(map);
+    *     .setLngLat([-65.017, -16.457])
+    *     .addTo(map);
     * @see [Add custom icons with Markers](https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
     * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
     * @see [Add a marker using a place name](https://docs.mapbox.com/mapbox-gl-js/example/marker-from-geocode/)
@@ -346,10 +346,10 @@ export default class Marker extends Evented {
      * set on this {@link Marker} instance is unset.
      * @returns {Marker} `this`
      * @example
-     * var marker = new mapboxgl.Marker()
-     *  .setLngLat([0, 0])
-     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>")) // add popup
-     *  .addTo(map);
+     * const marker = new mapboxgl.Marker()
+     *     .setLngLat([0, 0])
+     *     .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>")) // add popup
+     *     .addTo(map);
      * @see [Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
     setPopup(popup: ?Popup) {
@@ -417,10 +417,10 @@ export default class Marker extends Evented {
      * Returns the {@link Popup} instance that is bound to the {@link Marker}.
      * @returns {Popup} popup
      * @example
-     * var marker = new mapboxgl.Marker()
-     *  .setLngLat([0, 0])
-     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
-     *  .addTo(map);
+     * const marker = new mapboxgl.Marker()
+     *     .setLngLat([0, 0])
+     *     .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *     .addTo(map);
      *
      * console.log(marker.getPopup()); // return the popup instance
      */
@@ -432,10 +432,10 @@ export default class Marker extends Evented {
      * Opens or closes the {@link Popup} instance that is bound to the {@link Marker}, depending on the current state of the {@link Popup}.
      * @returns {Marker} `this`
      * @example
-     * var marker = new mapboxgl.Marker()
-     *  .setLngLat([0, 0])
-     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
-     *  .addTo(map);
+     * const marker = new mapboxgl.Marker()
+     *     .setLngLat([0, 0])
+     *     .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *     .addTo(map);
      *
      * marker.togglePopup(); // toggle popup open or closed
      */

@@ -42,14 +42,14 @@ export default class DragPanHandler {
      * @param {number} [options.deceleration=2500] the rate at which the speed reduces after the pan ends.
      *
      * @example
-     *   map.dragPan.enable();
+     * map.dragPan.enable();
      * @example
-     *   map.dragPan.enable({
-     *      linearity: 0.3,
-     *      easing: bezier(0, 0, 0.3, 1),
-     *      maxSpeed: 1400,
-     *      deceleration: 2500,
-     *   });
+     * map.dragPan.enable({
+     *     linearity: 0.3,
+     *     easing: bezier(0, 0, 0.3, 1),
+     *     maxSpeed: 1400,
+     *     deceleration: 2500,
+     * });
      */
     enable(options?: DragPanOptions) {
         this._inertiaOptions = options || {};
