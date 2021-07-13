@@ -158,6 +158,11 @@ class Camera extends Evented {
         //addAssertions(this);
     }
 
+    /** @section Camera
+     * @method
+     * @instance
+     * @memberof Map */
+
     /**
      * Returns the map's geographical centerpoint.
      *
@@ -723,7 +728,7 @@ class Camera extends Evented {
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
-	 * @example
+     * @example
      * var bbox = [[-79, 43], [-73, 45]];
      * map.fitBounds(bbox, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
@@ -795,7 +800,7 @@ class Camera extends Evented {
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
-	 * @example
+     * @example
      * var p0 = [220, 400];
      * var p1 = [500, 900];
      * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
