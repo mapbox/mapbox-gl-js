@@ -30,7 +30,7 @@ type Options = {
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
 
 /**
- * Creates a marker component
+ * Creates a marker component.
  * @param {Object} [options]
  * @param {HTMLElement} [options.element] DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
  * @param {string} [options.anchor='center'] A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
