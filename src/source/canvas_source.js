@@ -57,7 +57,7 @@ export type CanvasSourceSpecification = {|
  * ]);
  *
  * map.removeSource('some id');  // remove
- * @see [Add a canvas source](https://docs.mapbox.com/mapbox-gl-js/example/canvas-source/)
+ * @see [Example: Add a canvas source](https://docs.mapbox.com/mapbox-gl-js/example/canvas-source/)
  */
 class CanvasSource extends ImageSource {
     options: CanvasSourceSpecification;

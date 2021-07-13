@@ -56,7 +56,7 @@ export function renderStyleImage(image: StyleImage) {
  * @property {number} height
  * @property {Uint8Array | Uint8ClampedArray} data
  *
- * @see [Add an animated icon to the map.](https://docs.mapbox.com/mapbox-gl-js/example/add-image-animated/)
+ * @see [Example: Add an animated icon to the map.](https://docs.mapbox.com/mapbox-gl-js/example/add-image-animated/)
  *
  * @example
  * var flashingSquare = {
