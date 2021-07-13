@@ -1431,7 +1431,7 @@ August 16, 2018
 - Fix bug causing expired resources to be re-requested causing an infinite loop #4255
 - Fix problem where `MapDataEvent#isSourceLoaded` always returned false #4254
 - Resolve an issue where tiles in the source cache were prematurely deleted, resulting in tiles flickering when zooming in and out and  #4311
-- Make sure `MapDataEvent` is passed through on calls `Map#flyTo` #4342
+- Make sure `MapEventData` is passed through on calls `Map#flyTo` #4342
 - Fix incorrect returned values for `Map#isMoving` #4350
 - Fix categorical functions not allowing boolean stop domain values #4195
 - Fix piecewise-constant functions to allow non-integer zoom levels. #4196
