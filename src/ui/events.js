@@ -278,8 +278,8 @@ export class MapTouchEvent extends Event {
  * // Example of a MapWheelEvent of type "wheel"
  * {
  *   originalEvent: WheelEvent {...},
- * 	 target: Map {...},
- * 	 type: "wheel"
+ *   target: Map {...},
+ *   type: "wheel"
  * }
 * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  */
@@ -406,7 +406,10 @@ export type MapContextEvent = {
 }
 
 export type MapEvent =
-    /** @section Interaction */
+    /** @section Interaction
+     * @event
+     * @instance
+     * @memberof Map */
 
     /**
      * Fired when a pointing device (usually a mouse) is pressed within the map.
@@ -772,7 +775,10 @@ export type MapEvent =
      */
     | 'touchcancel'
 
-    /** @section Movement */
+    /** @section Movement
+     * @event
+     * @instance
+     * @memberof Map */
 
     /**
      * Fired just before the map begins a transition from one
@@ -1137,7 +1143,10 @@ export type MapEvent =
      */
     | 'resize'
 
-    /** @section Lifecycle */
+    /** @section Lifecycle
+     * @event
+     * @instance
+     * @memberof Map */
 
     /**
      * Fired immediately after all necessary resources have been downloaded
@@ -1277,7 +1286,10 @@ export type MapEvent =
      */
     | 'webglcontextrestored'
 
-    /** @section Data loading */
+    /** @section Data loading
+     * @event
+     * @instance
+     * @memberof Map */
 
     /**
      * Fired when any map data loads or changes. See {@link MapDataEvent}
