@@ -74,7 +74,7 @@ export type WorkerDEMTileCallback = (err: ?Error, result: ?DEMData) => void;
  * implementation may also be targeted by the {@link Source} via
  * `dispatcher.getActor().send('source-type.methodname', params, callback)`.
  *
- * @see Example: {@link Map#addSourceType}
+ * @see {@link Map#addSourceType}
  * @private
  *
  * @class WorkerSource
