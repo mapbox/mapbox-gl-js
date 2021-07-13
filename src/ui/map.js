@@ -2304,7 +2304,7 @@ class Map extends Camera {
      * });
      *
      * @see Example: [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
-     * @see Example: Tutorial: [Create interactive hover effects with Mapbox GL JS](https://docs.mapbox.com/help/tutorials/create-interactive-hover-effects-with-mapbox-gl-js/)
+     * @see Tutorial: [Create interactive hover effects with Mapbox GL JS](https://docs.mapbox.com/help/tutorials/create-interactive-hover-effects-with-mapbox-gl-js/)
      */
     setFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
         this.style.setFeatureState(feature, state);
