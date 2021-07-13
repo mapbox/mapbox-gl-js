@@ -1831,7 +1831,12 @@
       "units": "ems",
       "doc": "The maximum line width for text wrapping.",
       "requires": [
-        "text-field"
+        "text-field",
+        {
+            "symbol-placement": [
+            "point"
+            ]
+        }
       ],
       "sdk-support": {
         "basic functionality": {
@@ -2966,7 +2971,10 @@
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.54.0"
+            "js": "0.54.0",
+            "android" : "8.4.0",
+            "ios": "5.4.0",
+            "macos": "0.15.0"
           }
         }
       },
@@ -3185,7 +3193,10 @@
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.53.0"
+            "js": "0.53.0",
+            "android": "8.4.0",
+            "ios": "5.5.0",
+            "macos": "0.15.0"
           }
         }
       },
@@ -4325,6 +4336,7 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.50.0",
+          "android": "7.0.0",
           "ios": "4.7.0",
           "macos": "0.13.0"
         }
