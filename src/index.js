@@ -92,7 +92,7 @@ const exported = {
      * @returns {string} The currently set access token.
      * @example
      * mapboxgl.accessToken = myAccessToken;
-     * @see Example: Example: [Display a map](https://www.mapbox.com/mapbox-gl-js/example/simple-map/)
+     * @see Example: [Display a map](https://www.mapbox.com/mapbox-gl-js/example/simple-map/)
      */
     get accessToken(): ?string {
         return config.ACCESS_TOKEN;
