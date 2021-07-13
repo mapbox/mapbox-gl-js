@@ -348,6 +348,8 @@ class Map extends Camera {
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
 
+    /** @section Interaction handlers */
+
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
      * Find more details and examples using `scrollZoom` in the {@link ScrollZoomHandler} section.
@@ -544,6 +546,8 @@ class Map extends Camera {
         return this._mapId;
     }
 
+    /** @section Controls */
+
     /**
      * Adds an {@link IControl} to the map, calling `control.onAdd(this)`.
      *
@@ -621,6 +625,46 @@ class Map extends Camera {
     hasControl(control: IControl) {
         return this._controls.indexOf(control) > -1;
     }
+
+    /**
+     * Returns the map's containing HTML element.
+     *
+     * @returns {HTMLElement} The map's container.
+     */
+    getContainer() {
+        return this._container;
+    }
+
+    /**
+     * Returns the HTML element containing the map's `<canvas>` element.
+     *
+     * If you want to add non-GL overlays to the map, you should append them to this element.
+     *
+     * This is the element to which event bindings for map interactivity (such as panning and zooming) are
+     * attached. It will receive bubbled events from child elements such as the `<canvas>`, but not from
+     * map controls.
+     *
+     * @returns {HTMLElement} The container of the map's `<canvas>`.
+     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+     */
+    getCanvasContainer() {
+        return this._canvasContainer;
+    }
+
+    /**
+     * Returns the map's `<canvas>` element.
+     *
+     * @returns {HTMLCanvasElement} The map's `<canvas>` element.
+     * @see [Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
+     * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
+     */
+    getCanvas() {
+        return this._canvas;
+    }
+
+    /** @section Map constraints */
 
     /**
      * Resizes the map according to the dimensions of its
@@ -889,6 +933,8 @@ class Map extends Camera {
         return this._update();
     }
 
+    /** @section Point conversion */
+
     /**
      * Returns a {@link Point} representing pixel coordinates, relative to the map's `container`,
      * that correspond to the specified geographical location.
@@ -924,6 +970,8 @@ class Map extends Camera {
     unproject(point: PointLike) {
         return this.transform.pointLocation3D(Point.convert(point));
     }
+
+    /** @section Movement state */
 
     /**
      * Returns true if the map is panning, zooming, rotating, or pitching due to a camera animation or user gesture.
@@ -1002,6 +1050,8 @@ class Map extends Camera {
             return {layer: layerId, listener, delegates: {[type]: delegate}};
         }
     }
+
+    /** @section Working with events */
 
     /**
      * Adds a listener for events of a specified type,
@@ -1222,6 +1272,8 @@ class Map extends Camera {
         return this;
     }
 
+    /** @section Querying features */
+
     /**
      * Returns an array of [GeoJSON](http://geojson.org/)
      * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2)
@@ -1369,6 +1421,32 @@ class Map extends Camera {
     }
 
     /**
+     * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
+     * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
+     *
+     * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
+     * @param {LngLatLike} lnglat The geographical location at which to query.
+     * @param {ElevationQueryOptions} [options] options Object
+     * @param {boolean} [options.exaggerated=true] When `true` returns the terrain elevation with the value of `exaggeration` from the style already applied.
+     * When `false`, returns the raw value of the underlying data without styling applied.
+     * @returns {number | null} The elevation in meters
+     * @example
+     * var coordinate = [-122.420679, 37.772537];
+     * var elevation = map.queryTerrainElevation(coordinate);
+     * @see [Query terrain elevation](https://docs.mapbox.com/mapbox-gl-js/example/query-terrain-elevation/)
+     */
+    queryTerrainElevation(lnglat: LngLatLike, options: ElevationQueryOptions): number | null {
+        const elevation = this.transform.elevation;
+        if (elevation) {
+            options = extend({}, {exaggerated: true}, options);
+            return elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat), null, options.exaggerated);
+        }
+        return null;
+    }
+
+    /** @section Working with styles */
+
+    /**
      * Updates the map's Mapbox style object with a new value.
      *
      * If a style is already set when this is used and options.diff is set to true, the map renderer will attempt to compare the given style
@@ -1507,6 +1585,8 @@ class Map extends Camera {
         return this.style.loaded();
     }
 
+    /** @section Sources */
+
     /**
      * Adds a source to the map's style.
      *
@@ -1637,6 +1717,8 @@ class Map extends Camera {
     getSource(id: string) {
         return this.style.getSource(id);
     }
+
+    /** @section Images */
 
     // eslint-disable-next-line jsdoc/require-returns
     /**
@@ -1839,6 +1921,8 @@ class Map extends Camera {
     listImages() {
         return this.style.listImages();
     }
+
+    /** @section Layers */
 
     /**
      * Adds a [Mapbox style layer](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers)
@@ -2140,6 +2224,8 @@ class Map extends Camera {
         return this.style.getLayoutProperty(layerId, name);
     }
 
+    /** @section Style properties */
+
     /**
      * Sets the any combination of light values.
      *
@@ -2244,29 +2330,7 @@ class Map extends Camera {
         return this.style.fog.getOpacityAtLatLng(LngLat.convert(lnglat), this.transform);
     }
 
-    /**
-     * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
-     * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
-     *
-     * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
-     * @param {LngLatLike} lnglat The geographical location at which to query.
-     * @param {ElevationQueryOptions} [options] options Object
-     * @param {boolean} [options.exaggerated=true] When `true` returns the terrain elevation with the value of `exaggeration` from the style already applied.
-     * When `false`, returns the raw value of the underlying data without styling applied.
-     * @returns {number | null} The elevation in meters
-     * @example
-     * var coordinate = [-122.420679, 37.772537];
-     * var elevation = map.queryTerrainElevation(coordinate);
-     * @see [Query terrain elevation](https://docs.mapbox.com/mapbox-gl-js/example/query-terrain-elevation/)
-     */
-    queryTerrainElevation(lnglat: LngLatLike, options: ElevationQueryOptions): number | null {
-        const elevation = this.transform.elevation;
-        if (elevation) {
-            options = extend({}, {exaggerated: true}, options);
-            return elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat), null, options.exaggerated);
-        }
-        return null;
-    }
+    /** @section Feature state */
 
     /**
      * Sets the `state` of a feature.
@@ -2394,44 +2458,6 @@ class Map extends Camera {
      */
     getFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }): any {
         return this.style.getFeatureState(feature);
-    }
-
-    /**
-     * Returns the map's containing HTML element.
-     *
-     * @returns {HTMLElement} The map's container.
-     */
-    getContainer() {
-        return this._container;
-    }
-
-    /**
-     * Returns the HTML element containing the map's `<canvas>` element.
-     *
-     * If you want to add non-GL overlays to the map, you should append them to this element.
-     *
-     * This is the element to which event bindings for map interactivity (such as panning and zooming) are
-     * attached. It will receive bubbled events from child elements such as the `<canvas>`, but not from
-     * map controls.
-     *
-     * @returns {HTMLElement} The container of the map's `<canvas>`.
-     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
-     * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
-     */
-    getCanvasContainer() {
-        return this._canvasContainer;
-    }
-
-    /**
-     * Returns the map's `<canvas>` element.
-     *
-     * @returns {HTMLCanvasElement} The map's `<canvas>` element.
-     * @see [Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
-     * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
-     * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
-     */
-    getCanvas() {
-        return this._canvas;
     }
 
     _containerDimensions() {
@@ -2562,6 +2588,8 @@ class Map extends Camera {
         this._container.scrollLeft = 0;
         return false;
     }
+
+    /** @section Lifecycle */
 
     /**
      * Returns a Boolean indicating whether the map is fully loaded.
@@ -3033,6 +3061,8 @@ class Map extends Camera {
             this.resize({originalEvent: event})._update();
         }
     }
+
+    /** @section Debug features */
 
     /**
      * Gets and sets a Boolean indicating whether the map will render an outline

@@ -406,6 +406,8 @@ export type MapContextEvent = {
 }
 
 export type MapEvent =
+    /** @section Interaction */
+
     /**
      * Fired when a pointing device (usually a mouse) is pressed within the map.
      *
@@ -770,6 +772,8 @@ export type MapEvent =
      */
     | 'touchcancel'
 
+    /** @section Movement */
+
     /**
      * Fired just before the map begins a transition from one
      * view to another, as the result of either user interaction or methods such as {@link Map#jumpTo}.
@@ -1133,39 +1137,7 @@ export type MapEvent =
      */
     | 'resize'
 
-    /**
-     * Fired when the WebGL context is lost.
-     *
-     * @event webglcontextlost
-     * @memberof Map
-     * @instance
-     * @example
-     * // Initialize the map
-     * var map = new mapboxgl.Map({ // map options });
-     * // Set an event listener that fires
-     * // when the WebGL context is lost.
-     * map.on('webglcontextlost', function() {
-     *   console.log('A webglcontextlost event occurred.');
-     * });
-     */
-    | 'webglcontextlost'
-
-    /**
-     * Fired when the WebGL context is restored.
-     *
-     * @event webglcontextrestored
-     * @memberof Map
-     * @instance
-     * @example
-     * // Initialize the map
-     * var map = new mapboxgl.Map({ // map options });
-     * // Set an event listener that fires
-     * // when the WebGL context is restored.
-     * map.on('webglcontextrestored', function() {
-     *   console.log('A webglcontextrestored event occurred.');
-     * });
-     */
-    | 'webglcontextrestored'
+    /** @section Lifecycle */
 
     /**
      * Fired immediately after all necessary resources have been downloaded
@@ -1270,6 +1242,42 @@ export type MapEvent =
      * });
      */
     | 'error'
+
+    /**
+     * Fired when the WebGL context is lost.
+     *
+     * @event webglcontextlost
+     * @memberof Map
+     * @instance
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the WebGL context is lost.
+     * map.on('webglcontextlost', function() {
+     *   console.log('A webglcontextlost event occurred.');
+     * });
+     */
+    | 'webglcontextlost'
+
+    /**
+     * Fired when the WebGL context is restored.
+     *
+     * @event webglcontextrestored
+     * @memberof Map
+     * @instance
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the WebGL context is restored.
+     * map.on('webglcontextrestored', function() {
+     *   console.log('A webglcontextrestored event occurred.');
+     * });
+     */
+    | 'webglcontextrestored'
+
+    /** @section Data loading */
 
     /**
      * Fired when any map data loads or changes. See {@link MapDataEvent}
