@@ -16,7 +16,7 @@ type Options = {
  * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
- * @param {Object} [options]
+ * @param {object} [options]
  * @param {HTMLElement} [options.container] `container` is the [compatible DOM element](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen#Compatible_elements) which should be made full screen. By default, the map container element will be made full screen.
  *
  * @example

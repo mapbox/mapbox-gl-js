@@ -106,15 +106,18 @@ const sourceTypes = {
     canvas
 };
 
-/*
+/**
  * Creates a tiled data source instance given an options object.
  *
- * @param id
- * @param {Object} source A source definition object compliant with
+ * @param id The id for the source. Must not be used by any existing source.
+ * @param {object} source A source definition object compliant with
  * [`mapbox-gl-style-spec`](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or, for a third-party source type,
-  * with that type's requirements.
- * @param {Dispatcher} dispatcher
- * @returns {Source}
+ * with that type's requirements.
+ * @param {SourceSpecification} specification JSON representation of the source being created.
+ * @param {Dispatcher} dispatcher A {@link Dispatcher} instance, which can be used to send messages to the workers.
+ * @param {Evented} eventedParent The object to which events bubble up to.
+ * @returns {Source} An instance of an object compliant with the {@link Source} interface.
+ * @example
  */
 export const create = function(id: string, specification: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
     const source = new sourceTypes[specification.type](id, (specification: any), dispatcher, eventedParent);

@@ -88,7 +88,7 @@ const exported = {
     /**
      * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
      *
-     * @var {string} accessToken
+     * @member {string} accessToken
      * @returns {string} The currently set access token.
      * @example
      * mapboxgl.accessToken = myAccessToken;
@@ -102,7 +102,7 @@ const exported = {
         config.ACCESS_TOKEN = token;
     },
 
-    /**
+    /**.
      * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs
      *
      * @var {string} baseApiUrl
@@ -123,7 +123,7 @@ const exported = {
      * By default, it is set to 2.
      * Make sure to set this property before creating any map instances for it to have effect.
      *
-     * @var {string} workerCount
+     * @member {string} workerCount
      * @returns {number} Number of workers currently configured.
      * @example
      * mapboxgl.workerCount = 4;
@@ -140,7 +140,7 @@ const exported = {
      * Gets and sets the maximum number of images (raster tiles, sprites, icons) to load in parallel,
      * which affects performance in raster-heavy maps. 16 by default.
      *
-     * @var {string} maxParallelImageRequests
+     * @member {string} maxParallelImageRequests
      * @returns {number} Number of parallel requests currently configured.
      * @example
      * mapboxgl.maxParallelImageRequests = 10;
@@ -181,7 +181,7 @@ const exported = {
      *
      * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
      *
-     * @var {string} workerUrl
+     * @member {string} workerUrl
      * @returns {string} A URL hosting a JavaScript bundle for mapbox-gl's WebWorker.
      * @example
      * <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp.js'></script>
@@ -198,8 +198,8 @@ const exported = {
      *
      * Takes precedence over `mapboxgl.workerUrl`.
      *
-     * @var {Object} workerClass
-     * @returns {Object|null} a Class object, an instance of which exposes the `Worker` interface.
+     * @member {object} workerClass
+     * @returns {object | null} A Class object, an instance of which exposes the `Worker` interface.
      * @example
      * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js'
      * import MapboxGLWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker.js'
@@ -210,7 +210,8 @@ const exported = {
 
     /**
      * Sets the time used by GL JS internally for all animations. Useful for generating videos from GL JS.
-     * @var {number} time
+     *
+     * @member {number} time
      */
     setNow: browser.setNow,
 
@@ -226,7 +227,8 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
 /**
  * Gets the version of Mapbox GL JS in use as specified in `package.json`,
  * `CHANGELOG.md`, and the GitHub release.
- * @var {string} version
+ *
+ * @member {string} version
  * @example
  * console.log(`Mapbox GL JS v${mapboxgl.version}`);
  */
@@ -235,7 +237,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * Test whether the browser [supports Mapbox GL JS](https://www.mapbox.com/help/mapbox-browser-support/#mapbox-gl-js).
  *
  * @function supported
- * @param {Object} [options]
+ * @param {object} [options]
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
  *   the function will return `false` if the performance of Mapbox GL JS would
  *   be dramatically worse than expected (e.g. a software WebGL renderer would be used).
@@ -262,9 +264,9 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
  */
 
-/**
+/**.
   * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
-  * The status can be `unavailable` (i.e. not requested or removed), `loading`, `loaded` or `error`.
+  * The status can be `unavailable` (i.e. Not requested or removed), `loading`, `loaded` or `error`.
   * If the status is `loaded` and the plugin is requested again, an error will be thrown.
   *
   * @function getRTLTextPluginStatus

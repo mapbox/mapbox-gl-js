@@ -38,7 +38,7 @@ class LngLatBounds {
         }
     }
 
-    /**
+    /**.
      * Set the northeast corner of the bounding box
      *
      * @param {LngLatLike} ne a {@link LngLatLike} object describing the northeast corner of the bounding box.
@@ -49,7 +49,7 @@ class LngLatBounds {
         return this;
     }
 
-    /**
+    /**.
      * Set the southwest corner of the bounding box
      *
      * @param {LngLatLike} sw a {@link LngLatLike} object describing the southwest corner of the bounding box.
@@ -63,8 +63,8 @@ class LngLatBounds {
     /**
      * Extend the bounds to include a given LngLatLike or LngLatBoundsLike.
      *
-     * @param {LngLatLike|LngLatBoundsLike} obj object to extend to
-     * @returns {LngLatBounds} `this`
+     * @param {LngLatLike|LngLatBoundsLike} obj Object to extend to.
+     * @returns {LngLatBounds} `this`.
      */
     extend(obj: LngLatLike | LngLatBoundsLike) {
         const sw = this._sw,
@@ -128,51 +128,51 @@ class LngLatBounds {
     getSouthWest(): LngLat { return this._sw; }
 
     /**
-    * Returns the northeast corner of the bounding box.
-    *
-    * @returns {LngLat} The northeast corner of the bounding box.
+     * Returns the northeast corner of the bounding box.
+     *
+     * @returns {LngLat} The northeast corner of the bounding box.
      */
     getNorthEast(): LngLat { return this._ne; }
 
     /**
-    * Returns the northwest corner of the bounding box.
-    *
-    * @returns {LngLat} The northwest corner of the bounding box.
+     * Returns the northwest corner of the bounding box.
+     *
+     * @returns {LngLat} The northwest corner of the bounding box.
      */
     getNorthWest(): LngLat { return new LngLat(this.getWest(), this.getNorth()); }
 
     /**
-    * Returns the southeast corner of the bounding box.
-    *
-    * @returns {LngLat} The southeast corner of the bounding box.
+     * Returns the southeast corner of the bounding box.
+     *
+     * @returns {LngLat} The southeast corner of the bounding box.
      */
     getSouthEast(): LngLat { return new LngLat(this.getEast(), this.getSouth()); }
 
     /**
-    * Returns the west edge of the bounding box.
-    *
-    * @returns {number} The west edge of the bounding box.
+     * Returns the west edge of the bounding box.
+     *
+     * @returns {number} The west edge of the bounding box.
      */
     getWest(): number { return this._sw.lng; }
 
     /**
-    * Returns the south edge of the bounding box.
-    *
-    * @returns {number} The south edge of the bounding box.
+     * Returns the south edge of the bounding box.
+     *
+     * @returns {number} The south edge of the bounding box.
      */
     getSouth(): number { return this._sw.lat; }
 
     /**
-    * Returns the east edge of the bounding box.
-    *
-    * @returns {number} The east edge of the bounding box.
+     * Returns the east edge of the bounding box.
+     *
+     * @returns {number} The east edge of the bounding box.
      */
     getEast(): number { return this._ne.lng; }
 
     /**
-    * Returns the north edge of the bounding box.
-    *
-    * @returns {number} The north edge of the bounding box.
+     * Returns the north edge of the bounding box.
+     *
+     * @returns {number} The north edge of the bounding box.
      */
     getNorth(): number { return this._ne.lat; }
 
@@ -212,20 +212,20 @@ class LngLatBounds {
     }
 
     /**
-    * Check if the point is within the bounding box.
-    *
-    * @param {LngLatLike} lnglat geographic point to check against.
-    * @returns {boolean} True if the point is within the bounding box.
-    * @example
-    * var llb = new mapboxgl.LngLatBounds(
-    *   new mapboxgl.LngLat(-73.9876, 40.7661),
-    *   new mapboxgl.LngLat(-73.9397, 40.8002)
-    * );
-    *
-    * var ll = new mapboxgl.LngLat(-73.9567, 40.7789);
-    *
-    * console.log(llb.contains(ll)); // = true
-    */
+     * Check if the point is within the bounding box.
+     *
+     * @param {LngLatLike} lnglat Geographic point to check against.
+     * @returns {boolean} True if the point is within the bounding box.
+     * @example
+     * var llb = new mapboxgl.LngLatBounds(
+     *   new mapboxgl.LngLat(-73.9876, 40.7661),
+     *   new mapboxgl.LngLat(-73.9397, 40.8002)
+     * );
+     *
+     * var ll = new mapboxgl.LngLat(-73.9567, 40.7789);
+     *
+     * console.log(llb.contains(ll)); // = true
+     */
     contains(lnglat: LngLatLike) {
         const {lng, lat} = LngLat.convert(lnglat);
 

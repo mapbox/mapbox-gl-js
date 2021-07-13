@@ -22,7 +22,7 @@ const defaultOptions: Options = {
  * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
- * @param {Object} [options]
+ * @param {object} [options]
  * @param {number} [options.maxWidth='100'] The maximum length of the scale control in pixels.
  * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
  * @example
@@ -72,7 +72,7 @@ class ScaleControl {
         this._map = (undefined: any);
     }
 
-    /**
+    /**.
      * Set the scale's unit of the distance
      *
      * @param unit Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).

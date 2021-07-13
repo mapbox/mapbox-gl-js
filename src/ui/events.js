@@ -13,7 +13,8 @@ import type LngLat from '../geo/lng_lat.js';
  * `MapMouseEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'click' or 'hover'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
- * @extends {Object}
+ *
+ * @augments {object}
  * @example
  * // Example of a MapMouseEvent of type "click"
  * {
@@ -92,7 +93,7 @@ export class MapMouseEvent extends Event {
      */
     features: Array<Object> | void;
 
-    /**
+    /**.
      * Prevents subsequent default processing of the event by the map.
      *
      * Calling this method will prevent the following default map behaviors:
@@ -133,10 +134,11 @@ export class MapMouseEvent extends Event {
  * `MapTouchEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'touchstart' or 'touchend'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
- * @extends {Object}
+ *
+ * @augments {object}
  * @example
  * // Example of a MapTouchEvent of type "touch"
-  * {
+ * {
  *   lngLat: {
  *      lng: 40.203,
  *      lat: -74.451
@@ -164,7 +166,7 @@ export class MapMouseEvent extends Event {
  * }
  * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
-*/
+ */
 export class MapTouchEvent extends Event {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
@@ -230,7 +232,7 @@ export class MapTouchEvent extends Event {
      */
     features: Array<Object> | void;
 
-    /**
+    /**.
      * Prevents subsequent default processing of the event by the map.
      *
      * Calling this method will prevent the following default map behaviors:
@@ -273,7 +275,8 @@ export class MapTouchEvent extends Event {
  * `MapWheelEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'wheel'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
- * @extends {Object}
+ *
+ * @augments {object}
  * @example
  * // Example of a MapWheelEvent of type "wheel"
  * {
@@ -281,7 +284,7 @@ export class MapTouchEvent extends Event {
  * 	 target: Map {...},
  * 	 type: "wheel"
  * }
-* @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  */
 export class MapWheelEvent extends Event {
     /**
@@ -332,10 +335,10 @@ export class MapWheelEvent extends Event {
  * mouse events of specific types such as 'boxzoomstart' or 'boxzoomend'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
- * @typedef {Object} MapBoxZoomEvent
- * @property {MouseEvent} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`
+ * @typedef {object} MapBoxZoomEvent
+ * @property {MouseEvent} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`.
  * @property {string} type The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
- * @property {Map} target The `Map` instance that triggerred the event
+ * @property {Map} target The `Map` instance that triggerred the event.
  * @example
  * // Example of a BoxZoomEvent of type "boxzoomstart"
  * {
@@ -359,14 +362,14 @@ export type MapBoxZoomEvent = {
  * mouse events of specific types such as 'sourcedata' or 'dataloading'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
- * @typedef {Object} MapDataEvent
+ * @typedef {object} MapDataEvent
  * @property {string} type The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @property {string} dataType The type of data that has changed. One of `'source'` or `'style'`, where `'source'` refers to the data associated with any source, and `'style'` refers to the entire [style](https://docs.mapbox.com/help/glossary/style/) used by the map.
  * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
- * @property {Object} [source] The [style spec representation of the source](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) if the event has a `dataType` of `source`.
+ * @property {object} [source] The [style spec representation of the source](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) if the event has a `dataType` of `source`.
  * @property {string} [sourceDataType] Included if the event has a `dataType` of `source` and the event signals
  * that internal data has been received or changed. Possible values are `metadata`, `content` and `visibility`.
- * @property {Object} [tile] The tile being loaded or changed, if the event has a `dataType` of `source` and
+ * @property {object} [tile] The tile being loaded or changed, if the event has a `dataType` of `source` and
  * the event is related to loading of a tile.
  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `source` and
  * the event is related to loading of a tile.
@@ -704,12 +707,12 @@ export type MapEvent =
      * @instance
      * @property {MapTouchEvent} data
      * // Initialize the map
-     * var map = new mapboxgl.Map({ // map options });
+     * var map = new mapboxgl.Map({ // map options });.
      * // Set an event listener that fires
      * // when a touchstart event occurs within the map.
      * map.on('touchstart', function() {
      *   console.log('A touchstart event occurred.');
-     * });
+     * });.
      * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'touchstart'
@@ -1084,7 +1087,7 @@ export type MapEvent =
      * @event boxzoomend
      * @memberof Map
      * @instance
-     * @type {Object}
+     * @type {object}
      * @property {MapBoxZoomEvent} data
      * @example
      * // Initialize the map
@@ -1174,7 +1177,7 @@ export type MapEvent =
      * @event load
      * @memberof Map
      * @instance
-     * @type {Object}
+     * @type {object}
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
@@ -1189,8 +1192,8 @@ export type MapEvent =
      */
     | 'load'
 
-    /**
-     * Fired whenever the map is drawn to the screen, as the result of
+    /**.
+     * Fired whenever the map is drawn to the screen, as the result of.
      *
      * - a change to the map's position, zoom, pitch, or bearing
      * - a change to the map's style
@@ -1211,7 +1214,7 @@ export type MapEvent =
      */
     | 'render'
 
-    /**
+    /**.
      * Fired after the last frame rendered before the map enters an
      * "idle" state:
      *

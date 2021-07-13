@@ -14,7 +14,7 @@ import type Dispatcher from '../util/dispatcher.js';
 import type {Evented} from '../util/evented.js';
 import type {VideoSourceSpecification} from '../style-spec/types.js';
 
-/**
+/**.
  * A data source containing video.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-video) for detailed documentation of options.)
  *
@@ -147,10 +147,10 @@ class VideoSource extends ImageSource {
     /**
      * Sets the video's coordinates and re-renders the map.
      *
-     * @method setCoordinates
+     * @function setCoordinates
      * @instance
      * @memberof VideoSource
-     * @returns {VideoSource} this
+     * @returns {VideoSource} This.
      */
     // setCoordinates inherited from ImageSource
 

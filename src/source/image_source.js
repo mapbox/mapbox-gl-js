@@ -25,7 +25,7 @@ import type {
 
 type Coordinates = [[number, number], [number, number], [number, number], [number, number]];
 
-/**
+/**.
  * A data source containing an image.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.)
  *
@@ -138,13 +138,13 @@ class ImageSource extends Evented implements Source {
      * Updates the image URL and, optionally, the coordinates. To avoid having the image flash after changing,
      * set the `raster-fade-duration` paint property on the raster layer to 0.
      *
-     * @param {Object} options Options object.
+     * @param {object} options Options object.
      * @param {string} [options.url] Required image URL.
      * @param {Array<Array<number>>} [options.coordinates] Four geographical coordinates,
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} this
+     * @returns {ImageSource} This.
      */
     updateImage(options: {url: string, coordinates?: Coordinates}) {
         if (!this.image || !options.url) {
@@ -174,7 +174,7 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} this
+     * @returns {ImageSource} This.
      */
     setCoordinates(coordinates: Coordinates) {
         this.coordinates = coordinates;

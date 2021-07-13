@@ -48,7 +48,7 @@ const focusQuerySelector = [
 /**
  * A popup component.
  *
- * @param {Object} [options]
+ * @param {object} [options]
  * @param {boolean} [options.closeButton=true] If `true`, a close button will appear in the
  *   top right corner of the popup.
  * @param {boolean} [options.closeOnClick=true] If `true`, the popup will close when the
@@ -63,11 +63,11 @@ const focusQuerySelector = [
  *   `'top-right'`, `'bottom-left'`, and `'bottom-right'`. If unset, the anchor will be
  *   dynamically set to ensure the popup falls within the map container with a preference
  *   for `'bottom'`.
- * @param {number|PointLike|Object} [options.offset] -
+ * @param {number | PointLike | object} [options.offset] -
  *  A pixel offset applied to the popup's location specified as:
  *   - a single number specifying a distance from the popup's location
  *   - a {@link PointLike} specifying a constant offset
- *   - an object of {@link Point}s specifing an offset for each anchor position
+ *   - an object of {@link Point}s specifing an offset for each anchor position.
  *
  *  Negative offsets indicate left and up.
  * @param {string} [options.className] Space-separated CSS class names to add to popup container.
@@ -118,7 +118,7 @@ export default class Popup extends Evented {
      * Adds the popup to a map.
      *
      * @param {Map} map The Mapbox GL JS map to add the popup to.
-     * @returns {Popup} `this`
+     * @returns {Popup} `this`.
      * @example
      * new mapboxgl.Popup()
      *   .setLngLat([0, 0])
@@ -162,8 +162,8 @@ export default class Popup extends Evented {
          * @event open
          * @memberof Popup
          * @instance
-         * @type {Object}
-         * @property {Popup} popup object that was opened
+         * @type {object}
+         * @property {Popup} popup Object that was opened.
          *
          * @example
          * // Create a popup
@@ -193,7 +193,7 @@ export default class Popup extends Evented {
      * @example
      * var popup = new mapboxgl.Popup().addTo(map);
      * popup.remove();
-     * @returns {Popup} `this`
+     * @returns {Popup} `this`.
      */
     remove() {
         if (this._content) {
@@ -222,8 +222,8 @@ export default class Popup extends Evented {
          * @event close
          * @memberof Popup
          * @instance
-         * @type {Object}
-         * @property {Popup} popup object that was closed
+         * @type {object}
+         * @property {Popup} popup Object that was closed.
          *
          * @example
          * // Create a popup
@@ -257,7 +257,7 @@ export default class Popup extends Evented {
      * Sets the geographical location of the popup's anchor, and moves the popup to it. Replaces trackPointer() behavior.
      *
      * @param lnglat The geographical location to set as the popup's anchor.
-     * @returns {Popup} `this`
+     * @returns {Popup} `this`.
      */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
@@ -282,12 +282,13 @@ export default class Popup extends Evented {
     /**
      * Tracks the popup anchor to the cursor position on screens with a pointer device (it will be hidden on touchscreens). Replaces the `setLngLat` behavior.
      * For most use cases, set `closeOnClick` and `closeButton` to `false`.
+     *
      * @example
      * var popup = new mapboxgl.Popup({ closeOnClick: false, closeButton: false })
      *   .setHTML("<h1>Hello World!</h1>")
      *   .trackPointer()
      *   .addTo(map);
-     * @returns {Popup} `this`
+     * @returns {Popup} `this`.
      */
     trackPointer() {
         this._trackPointer = true;
@@ -309,6 +310,7 @@ export default class Popup extends Evented {
 
     /**
      * Returns the `Popup`'s HTML element.
+     *
      * @example
      * // Change the `Popup` element's font size
      * var popup = new mapboxgl.Popup()
@@ -317,7 +319,7 @@ export default class Popup extends Evented {
      *   .addTo(map);
      * var popupElem = popup.getElement();
      * popupElem.style.fontSize = "25px";
-     * @returns {HTMLElement} element
+     * @returns {HTMLElement} Element.
      */
     getElement() {
         return this._container;
@@ -331,7 +333,7 @@ export default class Popup extends Evented {
      * if the popup content is user-provided.
      *
      * @param text Textual content for the popup.
-     * @returns {Popup} `this`
+     * @returns {Popup} `this`.
      * @example
      * var popup = new mapboxgl.Popup()
      *   .setLngLat(e.lngLat)
@@ -350,7 +352,7 @@ export default class Popup extends Evented {
      * the content is an untrusted text string.
      *
      * @param html A string representing HTML content for the popup.
-     * @returns {Popup} `this`
+     * @returns {Popup} `this`.
      * @example
      * var popup = new mapboxgl.Popup()
      *   .setLngLat(e.lngLat)
@@ -384,7 +386,7 @@ export default class Popup extends Evented {
         return this._container && this._container.style.maxWidth;
     }
 
-    /**
+    /**.
      * Sets the popup's maximum width. This is setting the CSS property `max-width`.
      * Available values can be found here: https://developer.mozilla.org/en-US/docs/Web/CSS/max-width
      *
@@ -401,7 +403,7 @@ export default class Popup extends Evented {
      * Sets the popup's content to the element provided as a DOM node.
      *
      * @param htmlNode A DOM node to be used as content for the popup.
-     * @returns {Popup} `this`
+     * @returns {Popup} `this`.
      * @example
      * // create an element with the popup content
      * var div = window.document.createElement('div');
@@ -434,7 +436,7 @@ export default class Popup extends Evented {
     /**
      * Adds a CSS class to the popup container element.
      *
-     * @param {string} className Non-empty string with CSS class name to add to popup container
+     * @param {string} className Non-empty string with CSS class name to add to popup container.
      *
      * @example
      * let popup = new mapboxgl.Popup()
@@ -449,7 +451,7 @@ export default class Popup extends Evented {
     /**
      * Removes a CSS class from the popup container element.
      *
-     * @param {string} className Non-empty string with CSS class name to remove from popup container
+     * @param {string} className Non-empty string with CSS class name to remove from popup container.
      *
      * @example
      * let popup = new mapboxgl.Popup()
@@ -465,7 +467,7 @@ export default class Popup extends Evented {
      * Sets the popup's offset.
      *
      * @param offset Sets the popup's offset.
-     * @returns {Popup} `this`
+     * @returns {Popup} `this`.
      */
     setOffset (offset?: Offset) {
         this.options.offset = offset;
@@ -476,9 +478,9 @@ export default class Popup extends Evented {
     /**
      * Add or remove the given CSS class on the popup container, depending on whether the container currently has that class.
      *
-     * @param {string} className Non-empty string with CSS class name to add/remove
+     * @param {string} className Non-empty string with CSS class name to add/remove.
      *
-     * @returns {boolean} if the class was removed return false, if class was added, then return true
+     * @returns {boolean} If the class was removed return false, if class was added, then return true.
      *
      * @example
      * let popup = new mapboxgl.Popup()

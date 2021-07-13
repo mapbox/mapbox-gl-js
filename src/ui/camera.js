@@ -34,7 +34,7 @@ import type {PaddingOptions} from '../geo/edge_insets.js';
  * zoom, bearing, and pitch of the camera. All properties are optional, and when a property is omitted, the current
  * camera value for that property will remain unchanged.
  *
- * @typedef {Object} CameraOptions
+ * @typedef {object} CameraOptions
  * @property {LngLatLike} center The desired center.
  * @property {number} zoom The desired zoom level.
  * @property {number} bearing The desired bearing in degrees. The bearing is the compass direction that
@@ -74,18 +74,18 @@ export type CameraOptions = {
  * {@link Map#easeTo}, controlling the duration and easing function of the animation. All properties
  * are optional.
  *
- * @typedef {Object} AnimationOptions
+ * @typedef {object} AnimationOptions
  * @property {number} duration The animation's duration, measured in milliseconds.
  * @property {Function} easing A function taking a time in the range 0..1 and returning a number where 0 is
  *   the initial state and 1 is the final state.
- * @property {PointLike} offset of the target center relative to real map container center at the end of animation.
+ * @property {PointLike} offset Of the target center relative to real map container center at the end of animation.
  * @property {boolean} animate If `false`, no animation will occur.
  * @property {boolean} essential If `true`, then the animation is considered essential and will not be affected by
  *   [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
  * @see [Slowly fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto-options/)
  * @see [Customize camera animations](https://docs.mapbox.com/mapbox-gl-js/example/camera-animation/)
  * @see [Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
-*/
+ */
 export type AnimationOptions = {
     duration?: number,
     easing?: (_: number) => number,
@@ -105,7 +105,7 @@ export type ElevationBoxRaycast = {
  * Options for setting padding on calls to methods such as {@link Map#fitBounds}, {@link Map#fitScreenCoordinates}, and {@link Map#setPadding}. Adjust these options to set the amount of padding in pixels added to the edges of the canvas. Set a uniform padding on all edges or individual values for each edge. All properties of this object must be
  * non-negative integers.
  *
- * @typedef {Object} PaddingOptions
+ * @typedef {object} PaddingOptions
  * @property {number} top Padding in pixels from the top of the map canvas.
  * @property {number} bottom Padding in pixels from the bottom of the map canvas.
  * @property {number} left Padding in pixels from the left of the map canvas.
@@ -180,7 +180,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @example
      * map.setCenter([-74, 38]);
      */
@@ -197,7 +197,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     panBy(offset: PointLike, options?: AnimationOptions, eventData?: Object) {
@@ -214,7 +214,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @example
      * map.panTo([-74, 38]);
      * @example
@@ -250,7 +250,7 @@ class Camera extends Evented {
      * @fires zoom
      * @fires moveend
      * @fires zoomend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @example
      * // Zoom to the zoom level 5 without an animated transition
      * map.setZoom(5);
@@ -273,7 +273,7 @@ class Camera extends Evented {
      * @fires zoom
      * @fires moveend
      * @fires zoomend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @example
      * // Zoom to the zoom level 5 without an animated transition
      * map.zoomTo(5);
@@ -301,7 +301,7 @@ class Camera extends Evented {
      * @fires zoom
      * @fires moveend
      * @fires zoomend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @example
      * // zoom the map in one level with a custom animation duration
      * map.zoomIn({duration: 1000});
@@ -323,7 +323,7 @@ class Camera extends Evented {
      * @fires zoom
      * @fires moveend
      * @fires zoomend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @example
      * // zoom the map out one level with a custom animation offset
      * map.zoomOut({offset: [80, 60]});
@@ -354,7 +354,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @example
      * // rotate the map to 90 degrees
      * map.setBearing(90);
@@ -378,11 +378,11 @@ class Camera extends Evented {
      * Equivalent to `jumpTo({padding: padding})`.
      *
      * @memberof Map#
-     * @param padding The desired padding. Format: { left: number, right: number, top: number, bottom: number }
+     * @param padding The desired padding. Format: { left: number, right: number, top: number, bottom: number }.
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @example
      * // Sets a left padding of 300px, and a top padding of 50px
      * map.setPadding({ left: 300, top: 50 });
@@ -402,7 +402,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      */
     rotateTo(bearing: number, options?: AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
@@ -418,7 +418,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      */
     resetNorth(options?: AnimationOptions, eventData?: Object) {
         this.rotateTo(0, extend({duration: 1000}, options), eventData);
@@ -433,7 +433,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      */
     resetNorthPitch(options?: AnimationOptions, eventData?: Object) {
         this.easeTo(extend({
@@ -444,8 +444,8 @@ class Camera extends Evented {
         return this;
     }
 
-    /**
-     * Snaps the map so that north is up (0° bearing), if the current bearing is close enough to it (i.e. within the
+    /**.
+     * Snaps the map so that north is up (0° bearing), if the current bearing is close enough to it (i.e. Within the
      * `bearingSnap` threshold).
      *
      * @memberof Map#
@@ -479,7 +479,7 @@ class Camera extends Evented {
      * @fires pitchstart
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      */
     setPitch(pitch: number, eventData?: Object) {
         this.jumpTo({pitch}, eventData);
@@ -711,7 +711,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @param bounds Center these bounds in the viewport and use the highest
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
-     * @param {Object} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
+     * @param {object} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
@@ -719,11 +719,11 @@ class Camera extends Evented {
      * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
-     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
+     * @param {object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
-	 * @example
+     * @returns {Map} `this`.
+     * @example
      * var bbox = [[-79, 43], [-73, 45]];
      * map.fitBounds(bbox, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
@@ -780,8 +780,8 @@ class Camera extends Evented {
      * pass in the current map bearing.
      *
      * @memberof Map#
-     * @param p0 First point on screen, in pixel coordinates
-     * @param p1 Second point on screen, in pixel coordinates
+     * @param p0 First point on screen, in pixel coordinates.
+     * @param p1 Second point on screen, in pixel coordinates.
      * @param bearing Desired map bearing at end of animation, in degrees. This value is ignored if the map has non-zero pitch.
      * @param options Options object.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
@@ -794,8 +794,8 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`
-	 * @example
+     * @returns {Map} `this`.
+     * @example
      * var p0 = [220, 400];
      * var p1 = [500, 900];
      * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
@@ -876,7 +876,7 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @fires pitchend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @example
      * // jump to coordinates at current zoom
      * map.jumpTo({center: [0, 0]});
@@ -949,7 +949,7 @@ class Camera extends Evented {
      * Returns position and orientation of the camera entity.
      *
      * @memberof Map#
-     * @returns {FreeCameraOptions} The camera state
+     * @returns {FreeCameraOptions} The camera state.
      */
     getFreeCameraOptions(): FreeCameraOptions {
         return this.transform.getFreeCameraOptions();
@@ -964,7 +964,7 @@ class Camera extends Evented {
      * or the pitch is over the maximum pitch limit.
      *
      * @memberof Map#
-     * @param {FreeCameraOptions} options `FreeCameraOptions` object
+     * @param {FreeCameraOptions} options `FreeCameraOptions` object.
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
@@ -976,7 +976,7 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @fires pitchend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      */
     setFreeCameraOptions(options: FreeCameraOptions, eventData?: Object) {
         this.stop();
@@ -1040,7 +1040,7 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @fires pitchend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     easeTo(options: CameraOptions & AnimationOptions & {easeId?: string}, eventData?: Object) {
@@ -1207,7 +1207,7 @@ class Camera extends Evented {
      * unless 'options' includes `essential: true`.
      *
      * @memberof Map#
-     * @param {Object} options Options describing the destination and animation of the transition.
+     * @param {object} options Options describing the destination and animation of the transition.
      *     Accepts {@link CameraOptions}, {@link AnimationOptions},
      *     and the following additional options.
      * @param {number} [options.curve=1.42] The zooming "curve" that will occur along the
@@ -1238,7 +1238,7 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @fires pitchend
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      * @example
      * // fly with default options to null island
      * map.flyTo({center: [0, 0], zoom: 9});
@@ -1423,7 +1423,7 @@ class Camera extends Evented {
      * Stops any animated transition underway.
      *
      * @memberof Map#
-     * @returns {Map} `this`
+     * @returns {Map} `this`.
      */
     stop(): this {
         return this._stop();

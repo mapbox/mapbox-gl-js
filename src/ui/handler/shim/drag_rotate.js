@@ -5,6 +5,7 @@ import type {MouseRotateHandler, MousePitchHandler} from '../mouse.js';
 /**
  * The `DragRotateHandler` allows the user to rotate the map by clicking and
  * dragging the cursor while holding the right mouse button or `ctrl` key.
+ *
  * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
  * @see [Disable map rotation](https://docs.mapbox.com/mapbox-gl-js/example/disable-rotation/)
  */
@@ -58,8 +59,8 @@ export default class DragRotateHandler {
         return this._mouseRotate.isEnabled() && (!this._pitchWithRotate || this._mousePitch.isEnabled());
     }
 
-    /**
-     * Returns a Boolean indicating whether the "drag to rotate" interaction is active, i.e. currently being used.
+    /**.
+     * Returns a Boolean indicating whether the "drag to rotate" interaction is active, i.e. Currently being used.
      *
      * @returns {boolean} `true` if the "drag to rotate" interaction is active.
      */

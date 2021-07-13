@@ -23,11 +23,11 @@ export type CanvasSourceSpecification = {|
 /**
  * Options to add a canvas source type to the map.
  *
- * @typedef {Object} CanvasSourceOptions
+ * @typedef {object} CanvasSourceOptions
  * @property {string} type Source type. Must be `"canvas"`.
  * @property {string|HTMLCanvasElement} canvas Canvas source from which to read pixels. Can be a string representing the ID of the canvas element, or the `HTMLCanvasElement` itself.
  * @property {Array<Array<number>>} coordinates Four geographical coordinates denoting where to place the corners of the canvas, specified in `[longitude, latitude]` pairs.
- * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (i.e. pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
+ * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (i.e. Pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
  */
 
 /**
@@ -99,14 +99,16 @@ class CanvasSource extends ImageSource {
 
     /**
      * Enables animation. The image will be copied from the canvas to the map on each frame.
-     * @method play
+     *
+     * @function play
      * @instance
      * @memberof CanvasSource
      */
 
     /**
      * Disables animation. The map will display a static copy of the canvas image.
-     * @method pause
+     *
+     * @function pause
      * @instance
      * @memberof CanvasSource
      */
@@ -165,14 +167,14 @@ class CanvasSource extends ImageSource {
     /**
      * Sets the canvas's coordinates and re-renders the map.
      *
-     * @method setCoordinates
+     * @function setCoordinates
      * @instance
      * @memberof CanvasSource
      * @param {Array<Array<number>>} coordinates Four geographical coordinates,
      *   represented as arrays of longitude and latitude numbers, which define the corners of the canvas.
      *   The coordinates start at the top left corner of the canvas and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {CanvasSource} this
+     * @returns {CanvasSource} This.
      */
 
     // setCoordinates inherited from ImageSource

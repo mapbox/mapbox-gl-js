@@ -138,7 +138,6 @@
         "src/ui/events.js",
         "src/ui/control/**",
         "src/ui/handler/**",
-        "src/ui/handler/**",
         "src/geo/**",
         "src/source/**",
       ],

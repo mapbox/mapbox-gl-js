@@ -22,7 +22,7 @@ import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-s
 import type Actor from '../util/actor.js';
 import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
 
-/**
+/**.
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
  * (See the [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector) for detailed documentation of options.)
  *
@@ -154,7 +154,7 @@ class VectorTileSource extends Evented implements Source {
      * Sets the source `tiles` property and re-renders the map.
      *
      * @param {string[]} tiles An array of one or more tile source URLs, as in the TileJSON spec.
-     * @returns {VectorTileSource} this
+     * @returns {VectorTileSource} This.
      */
     setTiles(tiles: Array<string>) {
         this.setSourceProperty(() => {
@@ -168,7 +168,7 @@ class VectorTileSource extends Evented implements Source {
      * Sets the source `url` property and re-renders the map.
      *
      * @param {string} url A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`.
-     * @returns {VectorTileSource} this
+     * @returns {VectorTileSource} This.
      */
     setUrl(url: string) {
         this.setSourceProperty(() => {
