@@ -335,6 +335,8 @@ export default class Marker extends Evented {
     /**
      * Returns the `Marker`'s HTML element.
      * @returns {HTMLElement} element
+     * @example
+     * const element = marker.getElement();
      */
     getElement() {
         return this._element;
@@ -552,6 +554,8 @@ export default class Marker extends Evented {
     /**
      * Get the marker's offset.
      * @returns {Point} The marker's screen coordinates in pixels.
+     * @example
+     * const offset = marker.getOffset();
      */
     getOffset() {
         return this._offset;
@@ -561,6 +565,8 @@ export default class Marker extends Evented {
      * Sets the offset of the marker.
      * @param {PointLike} offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
      * @returns {Marker} `this`
+     * @example
+     * marker.setOffset([0, 1]);
      */
     setOffset(offset: PointLike) {
         this._offset = Point.convert(offset);
@@ -663,6 +669,8 @@ export default class Marker extends Evented {
      * Sets the `draggable` property and functionality of the marker.
      * @param {boolean} [shouldBeDraggable=false] Turns drag functionality on/off
      * @returns {Marker} `this`
+     * @example
+     * marker.setDraggable(true);
      */
     setDraggable(shouldBeDraggable: boolean) {
         this._draggable = !!shouldBeDraggable; // convert possible undefined value to false
@@ -685,6 +693,8 @@ export default class Marker extends Evented {
     /**
      * Returns true if the marker can be dragged.
      * @returns {boolean} True if the marker is draggable.
+     * @example
+     * const isMarkerDraggable = marker.isDraggable();
      */
     isDraggable() {
         return this._draggable;
@@ -694,6 +704,8 @@ export default class Marker extends Evented {
      * Sets the `rotation` property of the marker.
      * @param {number} [rotation=0] The rotation angle of the marker (clockwise, in degrees), relative to its respective {@link Marker#setRotationAlignment} setting.
      * @returns {Marker} `this`
+     * @example
+     * marker.setRotation(45);
      */
     setRotation(rotation: number) {
         this._rotation = rotation || 0;
@@ -704,6 +716,8 @@ export default class Marker extends Evented {
     /**
      * Returns the current rotation angle of the marker (in degrees).
      * @returns {number} The current rotation angle of the marker.
+     * @example
+     * const rotation = marker.getRotation();
      */
     getRotation() {
         return this._rotation;
@@ -713,6 +727,8 @@ export default class Marker extends Evented {
      * Sets the `rotationAlignment` property of the marker.
      * @param {string} [alignment='auto'] Sets the `rotationAlignment` property of the marker.
      * @returns {Marker} `this`
+     * @example
+     * marker.setRotationAlignment('viewport');
      */
     setRotationAlignment(alignment: string) {
         this._rotationAlignment = alignment || 'auto';
@@ -723,6 +739,8 @@ export default class Marker extends Evented {
     /**
      * Returns the current `rotationAlignment` property of the marker.
      * @returns {string} The current rotational alignment of the marker.
+     * @example
+     * const alignment = marker.getRotationAlignment();
      */
     getRotationAlignment() {
         return this._rotationAlignment;
@@ -732,6 +750,8 @@ export default class Marker extends Evented {
      * Sets the `pitchAlignment` property of the marker.
      * @param {string} [alignment] Sets the `pitchAlignment` property of the marker. If alignment is 'auto', it will automatically match `rotationAlignment`.
      * @returns {Marker} `this`
+     * @example
+     * marker.setPitchAlignment('map');
      */
     setPitchAlignment(alignment: string) {
         this._pitchAlignment = alignment && alignment !== 'auto' ? alignment : this._rotationAlignment;
@@ -742,6 +762,8 @@ export default class Marker extends Evented {
     /**
      * Returns the current `pitchAlignment` property of the marker.
      * @returns {string} The current pitch alignment of the marker in degrees.
+     * @example
+     * const alignment = marker.getPitchAlignment();
      */
     getPitchAlignment() {
         return this._pitchAlignment;
