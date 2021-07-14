@@ -27,7 +27,7 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
 
 /**
  * A data source containing an image.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.)
+ * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options).
  *
  * @example
  * // add to map
@@ -144,7 +144,7 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} this
+     * @returns {ImageSource} Returns `this`.
      * @example
      * // Add to an image source to the map with some initial URL and coordinates
      * map.addSource('image_source_id', {
@@ -196,7 +196,7 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} this
+     * @returns {ImageSource} Returns `this`.
      * @example
      * // Add an image source to the map with some initial coordinates
      * map.addSource('image_source_id', {

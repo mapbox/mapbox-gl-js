@@ -103,7 +103,7 @@ const exported = {
     },
 
     /**
-     * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs
+     * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs.
      *
      * @var {string} baseApiUrl
      * @returns {string} The current base API URL.
@@ -199,7 +199,7 @@ const exported = {
      * Takes precedence over `mapboxgl.workerUrl`.
      *
      * @var {Object} workerClass
-     * @returns {Object|null} a Class object, an instance of which exposes the `Worker` interface.
+     * @returns {Object|null} Class object, an instance of which exposes the `Worker` interface.
      * @example
      * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js';
      * import MapboxGLWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker.js';
@@ -240,7 +240,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * @param {Object} [options]
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
  *   the function will return `false` if the performance of Mapbox GL JS would
- *   be dramatically worse than expected (e.g. a software WebGL renderer would be used).
+ *   be dramatically worse than expected (a software WebGL renderer would be used).
  * @return {boolean}
  * @example
  * // Show an alert if the browser does not support Mapbox GL
@@ -266,7 +266,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
 
 /**
   * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
-  * The status can be `unavailable` (i.e. not requested or removed), `loading`, `loaded` or `error`.
+  * The status can be `unavailable` (not requested or removed), `loading`, `loaded` or `error`.
   * If the status is `loaded` and the plugin is requested again, an error will be thrown.
   *
   * @function getRTLTextPluginStatus

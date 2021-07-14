@@ -39,10 +39,10 @@ class LngLatBounds {
     }
 
     /**
-     * Set the northeast corner of the bounding box
+     * Set the northeast corner of the bounding box.
      *
-     * @param {LngLatLike} ne a {@link LngLatLike} object describing the northeast corner of the bounding box.
-     * @returns {LngLatBounds} `this`
+     * @param {LngLatLike} ne A {@link LngLatLike} object describing the northeast corner of the bounding box.
+     * @returns {LngLatBounds} Returns `this`.
      * @example
      * const sw = new mapboxgl.LngLat(-73.9876, 40.7661);
      * const ne = new mapboxgl.LngLat(-73.9397, 40.8002);
@@ -55,10 +55,10 @@ class LngLatBounds {
     }
 
     /**
-     * Set the southwest corner of the bounding box
+     * Set the southwest corner of the bounding box.
      *
-     * @param {LngLatLike} sw a {@link LngLatLike} object describing the southwest corner of the bounding box.
-     * @returns {LngLatBounds} `this`
+     * @param {LngLatLike} sw A {@link LngLatLike} object describing the southwest corner of the bounding box.
+     * @returns {LngLatBounds} Returns `this`.
      * @example
      * const sw = new mapboxgl.LngLat(-73.9876, 40.7661);
      * const ne = new mapboxgl.LngLat(-73.9397, 40.8002);
@@ -73,8 +73,8 @@ class LngLatBounds {
     /**
      * Extend the bounds to include a given LngLatLike or LngLatBoundsLike.
      *
-     * @param {LngLatLike|LngLatBoundsLike} obj object to extend to
-     * @returns {LngLatBounds} `this`
+     * @param {LngLatLike|LngLatBoundsLike} obj Object to extend to.
+     * @returns {LngLatBounds} Returns `this`.
      * @example
      * const sw = new mapboxgl.LngLat(-73.9876, 40.7661);
      * const ne = new mapboxgl.LngLat(-73.9397, 40.8002);
@@ -259,7 +259,7 @@ class LngLatBounds {
     /**
     * Check if the point is within the bounding box.
     *
-    * @param {LngLatLike} lnglat geographic point to check against.
+    * @param {LngLatLike} lnglat Geographic point to check against.
     * @returns {boolean} True if the point is within the bounding box.
     * @example
     * const llb = new mapboxgl.LngLatBounds(

@@ -73,7 +73,7 @@ class ScaleControl {
     }
 
     /**
-     * Set the scale's unit of the distance
+     * Set the scale's unit of the distance.
      *
      * @param unit Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
      */

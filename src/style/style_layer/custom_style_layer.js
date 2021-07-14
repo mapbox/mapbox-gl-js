@@ -22,7 +22,7 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * The `renderingMode` property controls whether the layer is treated as a `"2d"` or `"3d"` map layer. Use:
  * - `"renderingMode": "3d"` to use the depth buffer and share it with other layers
  * - `"renderingMode": "2d"` to add a layer with no depth. If you need to use the depth buffer for a `"2d"` layer you must use an offscreen
- *   framebuffer and {@link CustomLayerInterface#prerender}
+ *   framebuffer and {@link CustomLayerInterface#prerender}.
  *
  * @interface CustomLayerInterface
  * @property {string} id A unique layer id.

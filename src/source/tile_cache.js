@@ -16,9 +16,9 @@ class TileCache {
     order: Array<number>;
     onRemove: (element: Tile) => void;
     /**
-     * @param {number} max number of permitted values
+     * @param {number} max The max number of permitted values.
      * @private
-     * @param {Function} onRemove callback called with items when they expire
+     * @param {Function} onRemove The callback called with items when they expire.
      */
     constructor(max: number, onRemove: (element: Tile) => void) {
         this.max = max;
@@ -27,9 +27,9 @@ class TileCache {
     }
 
     /**
-     * Clear the cache
+     * Clear the cache.
      *
-     * @returns {TileCache} this cache
+     * @returns {TileCache} Return `this`.
      * @private
      */
     reset() {
@@ -53,7 +53,7 @@ class TileCache {
      * @param {OverscaledTileID} tileID lookup key for the item
      * @param {*} data any value
      *
-     * @returns {TileCache} this cache
+     * @returns {TileCache} Returns `this`.
      * @private
      */
     add(tileID: OverscaledTileID, data: Tile, expiryTimeout: number | void) {

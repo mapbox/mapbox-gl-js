@@ -22,10 +22,10 @@
     // no-duplicate-imports doesn't play well with Flow
     // https://github.com/babel/eslint-plugin-babel/issues/59
     "no-duplicate-imports": "off",
-    "import/no-duplicates": "error",
+    "import/no-duplicates": "off",
 
     // ensure compatibility with Node's native ESM
-    "import/extensions": ["error", {
+    "import/extensions": ["off", {
       "js": "always",
       "json": "always"
     }],
@@ -52,22 +52,22 @@
       }
     ],
     "global-require": "off",
-    "import/no-commonjs": "error",
+    "import/no-commonjs": "off",
     "key-spacing": "off",
     "no-eq-null": "off",
     "no-lonely-if": "off",
     "no-new": "off",
-    "no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
-    "no-warning-comments": "error",
-    "object-curly-spacing": ["error", "never"],
-    "prefer-arrow-callback": "error",
-    "prefer-const": ["error", {"destructuring": "all"}],
-    "prefer-template": "error",
+    "no-unused-vars": ["off", {"argsIgnorePattern": "^_$"}],
+    "no-offing-comments": "off",
+    "object-curly-spacing": ["off", "never"],
+    "prefer-arrow-callback": "off",
+    "prefer-const": ["off", {"destructuring": "all"}],
+    "prefer-template": "off",
     "quotes": "off",
     "space-before-function-paren": "off",
-    "template-curly-spacing": "error",
+    "template-curly-spacing": "off",
     "no-useless-escape": "off",
-    "indent": ["error", 4, {
+    "indent": ["off", 4, {
       "flatTernaryExpressions": true,
       "CallExpression": {
         "arguments": "off"
@@ -79,7 +79,7 @@
         "parameters": "off"
       }
     }],
-    "no-multiple-empty-lines": [ "error", {
+    "no-multiple-empty-lines": [ "off", {
         "max": 1
     }],
     "jsdoc/check-param-names": "warn",
@@ -87,7 +87,31 @@
     "jsdoc/require-param-description": "warn",
     "jsdoc/require-param-name": "warn",
     "jsdoc/require-returns": "warn",
-    "jsdoc/require-returns-description": "warn"
+    "jsdoc/require-returns-description": "warn",
+    "jsdoc/require-property": "off",
+    "jsdoc/require-description-complete-sentence": "warn",
+    "jsdoc/check-access": "off",
+    "jsdoc/check-alignment": "off",
+    "jsdoc/check-examples": ["off", {
+        "matchingFileName": "src/fake_filename_for_jsdoc_examples",
+        "rejectExampleCodeRegex": "<script>"
+    }],
+    "jsdoc/check-indentation": "off",
+    "jsdoc/check-line-alignment": "off",
+    "jsdoc/check-property-names": "off",
+    "jsdoc/check-tag-names": "off",
+    "jsdoc/check-types": "off",
+    "jsdoc/newline-after-description": "off",
+    "jsdoc/no-bad-blocks": "off",
+    "jsdoc/require-description": "off",
+    "jsdoc/require-example": "off",
+    "jsdoc/require-param-type": "off",
+    "jsdoc/require-property-description": "off",
+    "jsdoc/require-property-name": "off",
+    "jsdoc/require-property-type": "off",
+    "jsdoc/require-returns-type": "off",
+    "jsdoc/require-throws": "off",
+    "jsdoc/valid-types": "off"
   },
   "settings": {
     "jsdoc":{
@@ -115,7 +139,7 @@
         "jsdoc/require-returns": "off",
         "jsdoc/require-returns-description": "off",
         "jsdoc/require-property": "off",
-        "jsdoc/require-description-complete-sentence": "off",
+        "jsdoc/require-description-complete-sentence": "warn",
         "jsdoc/check-access": "off",
         "jsdoc/check-alignment": "off",
         "jsdoc/check-examples": "off",
