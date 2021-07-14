@@ -166,7 +166,7 @@ class VectorTileSource extends Evented implements Source {
      * const vectorTileSource = map.getSource('vector_source_id');
      *
      * // Update tiles a new endpoint
-     * vectorTileSource.setTiles(['https://another_end_point.net/v0.1/{z}/{x}/{y}.mvt'])
+     * vectorTileSource.setTiles(['https://another_end_point.net/v0.1/{z}/{x}/{y}.mvt']);
      */
     setTiles(tiles: Array<string>) {
         this.setSourceProperty(() => {
