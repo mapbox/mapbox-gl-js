@@ -32,18 +32,18 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
  * @example
  * // add to map
  * map.addSource('some id', {
- *    type: 'image',
- *    url: 'https://www.mapbox.com/images/foo.png',
- *    coordinates: [
- *        [-76.54, 39.18],
- *        [-76.52, 39.18],
- *        [-76.52, 39.17],
- *        [-76.54, 39.17]
- *    ]
+ *     type: 'image',
+ *     url: 'https://www.mapbox.com/images/foo.png',
+ *     coordinates: [
+ *         [-76.54, 39.18],
+ *         [-76.52, 39.18],
+ *         [-76.52, 39.17],
+ *         [-76.54, 39.17]
+ *     ]
  * });
  *
  * // update coordinates
- * var mySource = map.getSource('some id');
+ * const mySource = map.getSource('some id');
  * mySource.setCoordinates([
  *     [-76.54335737228394, 39.18579907229748],
  *     [-76.52803659439087, 39.1838364847587],
@@ -53,14 +53,14 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
  *
  * // update url and coordinates simultaneously
  * mySource.updateImage({
- *    url: 'https://www.mapbox.com/images/bar.png',
- *    coordinates: [
- *        [-76.54335737228394, 39.18579907229748],
- *        [-76.52803659439087, 39.1838364847587],
- *        [-76.5295386314392, 39.17683392507606],
- *        [-76.54520273208618, 39.17876344106642]
- *    ]
- * })
+ *     url: 'https://www.mapbox.com/images/bar.png',
+ *     coordinates: [
+ *         [-76.54335737228394, 39.18579907229748],
+ *         [-76.52803659439087, 39.1838364847587],
+ *         [-76.5295386314392, 39.17683392507606],
+ *         [-76.54520273208618, 39.17876344106642]
+ *     ]
+ * });
  *
  * map.removeSource('some id');  // remove
  * @see [Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)

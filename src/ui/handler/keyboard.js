@@ -139,7 +139,7 @@ class KeyboardHandler {
      * Enables the "keyboard rotate and zoom" interaction.
      *
      * @example
-     *   map.keyboard.enable();
+     * map.keyboard.enable();
      */
     enable() {
         this._enabled = true;
@@ -149,7 +149,7 @@ class KeyboardHandler {
      * Disables the "keyboard rotate and zoom" interaction.
      *
      * @example
-     *   map.keyboard.disable();
+     * map.keyboard.disable();
      */
     disable() {
         this._enabled = false;
@@ -183,7 +183,7 @@ class KeyboardHandler {
      * "keyboard zoom" interaction enabled.
      *
      * @example
-     *   map.keyboard.disableRotation();
+     * map.keyboard.disableRotation();
      */
     disableRotation() {
         this._rotationDisabled = true;
@@ -193,8 +193,8 @@ class KeyboardHandler {
      * Enables the "keyboard pan/rotate" interaction.
      *
      * @example
-     *   map.keyboard.enable();
-     *   map.keyboard.enableRotation();
+     * map.keyboard.enable();
+     * map.keyboard.enableRotation();
      */
     enableRotation() {
         this._rotationDisabled = false;

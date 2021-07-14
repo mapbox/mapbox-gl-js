@@ -40,9 +40,9 @@ export default class TouchZoomRotateHandler {
      * @param {string} [options.around] If "center" is passed, map will zoom around the center.
      *
      * @example
-     *   map.touchZoomRotate.enable();
+     * map.touchZoomRotate.enable();
      * @example
-     *   map.touchZoomRotate.enable({ around: 'center' });
+     * map.touchZoomRotate.enable({around: 'center'});
      */
     enable(options: ?{around?: 'center'}) {
         this._touchZoom.enable(options);
@@ -55,7 +55,7 @@ export default class TouchZoomRotateHandler {
      * Disables the "pinch to rotate and zoom" interaction.
      *
      * @example
-     *   map.touchZoomRotate.disable();
+     * map.touchZoomRotate.disable();
      */
     disable() {
         this._touchZoom.disable();
@@ -89,7 +89,7 @@ export default class TouchZoomRotateHandler {
      * interaction enabled.
      *
      * @example
-     *   map.touchZoomRotate.disableRotation();
+     * map.touchZoomRotate.disableRotation();
      */
     disableRotation() {
         this._rotationDisabled = true;
@@ -100,8 +100,8 @@ export default class TouchZoomRotateHandler {
      * Enables the "pinch to rotate" interaction.
      *
      * @example
-     *   map.touchZoomRotate.enable();
-     *   map.touchZoomRotate.enableRotation();
+     * map.touchZoomRotate.enable();
+     * map.touchZoomRotate.enableRotation();
      */
     enableRotation() {
         this._rotationDisabled = false;

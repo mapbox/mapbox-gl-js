@@ -58,7 +58,7 @@ class BoxZoomHandler {
      * Enables the "box zoom" interaction.
      *
      * @example
-     *   map.boxZoom.enable();
+     * map.boxZoom.enable();
      */
     enable() {
         if (this.isEnabled()) return;
@@ -69,7 +69,7 @@ class BoxZoomHandler {
      * Disables the "box zoom" interaction.
      *
      * @example
-     *   map.boxZoom.disable();
+     * map.boxZoom.disable();
      */
     disable() {
         if (!this.isEnabled()) return;

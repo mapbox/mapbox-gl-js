@@ -76,22 +76,24 @@ const focusQuerySelector = [
  *  To ensure the popup resizes to fit its content, set this property to `'none'`.
  *  See the MDN documentation for the list of [available values](https://developer.mozilla.org/en-US/docs/Web/CSS/max-width).
  * @example
- * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
- * var popupOffsets = {
- *  'top': [0, 0],
- *  'top-left': [0,0],
- *  'top-right': [0,0],
- *  'bottom': [0, -markerHeight],
- *  'bottom-left': [linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
- *  'bottom-right': [-linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
- *  'left': [markerRadius, (markerHeight - markerRadius) * -1],
- *  'right': [-markerRadius, (markerHeight - markerRadius) * -1]
- *  };
- * var popup = new mapboxgl.Popup({offset: popupOffsets, className: 'my-class'})
- *   .setLngLat(e.lngLat)
- *   .setHTML("<h1>Hello World!</h1>")
- *   .setMaxWidth("300px")
- *   .addTo(map);
+ * const markerHeight = 50;
+ * const markerRadius = 10;
+ * const linearOffset = 25;
+ * const popupOffsets = {
+ *     'top': [0, 0],
+ *     'top-left': [0, 0],
+ *     'top-right': [0, 0],
+ *     'bottom': [0, -markerHeight],
+ *     'bottom-left': [linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
+ *     'bottom-right': [-linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
+ *     'left': [markerRadius, (markerHeight - markerRadius) * -1],
+ *     'right': [-markerRadius, (markerHeight - markerRadius) * -1]
+ * };
+ * const popup = new mapboxgl.Popup({offset: popupOffsets, className: 'my-class'})
+ *     .setLngLat(e.lngLat)
+ *     .setHTML("<h1>Hello World!</h1>")
+ *     .setMaxWidth("300px")
+ *     .addTo(map);
  * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
  * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
  * @see [Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
@@ -121,9 +123,9 @@ export default class Popup extends Evented {
      * @returns {Popup} `this`.
      * @example
      * new mapboxgl.Popup()
-     *   .setLngLat([0, 0])
-     *   .setHTML("<h1>Null Island</h1>")
-     *   .addTo(map);
+     *     .setLngLat([0, 0])
+     *     .setHTML("<h1>Null Island</h1>")
+     *     .addTo(map);
      * @see [Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
      * @see [Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
      * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
@@ -167,11 +169,11 @@ export default class Popup extends Evented {
          *
          * @example
          * // Create a popup
-         * var popup = new mapboxgl.Popup();
+         * const popup = new mapboxgl.Popup();
          * // Set an event listener that will fire
          * // any time the popup is opened
-         * popup.on('open', function(){
-         *   console.log('popup was opened');
+         * popup.on('open', () => {
+         *     console.log('popup was opened');
          * });
          *
          */
@@ -191,7 +193,7 @@ export default class Popup extends Evented {
      * Removes the popup from the map it has been added to.
      *
      * @example
-     * var popup = new mapboxgl.Popup().addTo(map);
+     * const popup = new mapboxgl.Popup().addTo(map);
      * popup.remove();
      * @returns {Popup} `this`.
      */
@@ -227,11 +229,11 @@ export default class Popup extends Evented {
          *
          * @example
          * // Create a popup
-         * var popup = new mapboxgl.Popup();
+         * const popup = new mapboxgl.Popup();
          * // Set an event listener that will fire
          * // any time the popup is closed
-         * popup.on('close', function(){
-         *   console.log('popup was closed');
+         * popup.on('close', () => {
+         *     console.log('popup was closed');
          * });
          *
          */
@@ -284,11 +286,11 @@ export default class Popup extends Evented {
      * For most use cases, set `closeOnClick` and `closeButton` to `false`.
      *
      * @example
-     * var popup = new mapboxgl.Popup({ closeOnClick: false, closeButton: false })
-     *   .setHTML("<h1>Hello World!</h1>")
-     *   .trackPointer()
-     *   .addTo(map);
-     * @returns {Popup} `this`.
+     * const popup = new mapboxgl.Popup({closeOnClick: false, closeButton: false})
+     *     .setHTML("<h1>Hello World!</h1>")
+     *     .trackPointer()
+     *     .addTo(map);
+     * @returns {Popup} `this`
      */
     trackPointer() {
         this._trackPointer = true;
@@ -313,11 +315,11 @@ export default class Popup extends Evented {
      *
      * @example
      * // Change the `Popup` element's font size
-     * var popup = new mapboxgl.Popup()
-     *   .setLngLat([-96, 37.8])
-     *   .setHTML("<p>Hello World!</p>")
-     *   .addTo(map);
-     * var popupElem = popup.getElement();
+     * const popup = new mapboxgl.Popup()
+     *     .setLngLat([-96, 37.8])
+     *     .setHTML("<p>Hello World!</p>")
+     *     .addTo(map);
+     * const popupElem = popup.getElement();
      * popupElem.style.fontSize = "25px";
      * @returns {HTMLElement} Element.
      */
@@ -335,10 +337,10 @@ export default class Popup extends Evented {
      * @param text Textual content for the popup.
      * @returns {Popup} `this`.
      * @example
-     * var popup = new mapboxgl.Popup()
-     *   .setLngLat(e.lngLat)
-     *   .setText('Hello, world!')
-     *   .addTo(map);
+     * const popup = new mapboxgl.Popup()
+     *     .setLngLat(e.lngLat)
+     *     .setText('Hello, world!')
+     *     .addTo(map);
      */
     setText(text: string) {
         return this.setDOMContent(window.document.createTextNode(text));
@@ -354,10 +356,10 @@ export default class Popup extends Evented {
      * @param html A string representing HTML content for the popup.
      * @returns {Popup} `this`.
      * @example
-     * var popup = new mapboxgl.Popup()
-     *   .setLngLat(e.lngLat)
-     *   .setHTML("<h1>Hello World!</h1>")
-     *   .addTo(map);
+     * const popup = new mapboxgl.Popup()
+     *     .setLngLat(e.lngLat)
+     *     .setHTML("<h1>Hello World!</h1>")
+     *     .addTo(map);
      * @see [Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
      * @see [Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
      * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
@@ -406,12 +408,12 @@ export default class Popup extends Evented {
      * @returns {Popup} `this`.
      * @example
      * // create an element with the popup content
-     * var div = window.document.createElement('div');
+     * const div = window.document.createElement('div');
      * div.innerHTML = 'Hello, world!';
-     * var popup = new mapboxgl.Popup()
-     *   .setLngLat(e.lngLat)
-     *   .setDOMContent(div)
-     *   .addTo(map);
+     * const popup = new mapboxgl.Popup()
+     *     .setLngLat(e.lngLat)
+     *     .setDOMContent(div)
+     *     .addTo(map);
      */
     setDOMContent(htmlNode: Node) {
         if (this._content) {
@@ -439,8 +441,8 @@ export default class Popup extends Evented {
      * @param {string} className Non-empty string with CSS class name to add to popup container.
      *
      * @example
-     * let popup = new mapboxgl.Popup()
-     * popup.addClassName('some-class')
+     * const popup = new mapboxgl.Popup();
+     * popup.addClassName('some-class');
      */
     addClassName(className: string) {
         if (this._container) {
@@ -454,8 +456,8 @@ export default class Popup extends Evented {
      * @param {string} className Non-empty string with CSS class name to remove from popup container.
      *
      * @example
-     * let popup = new mapboxgl.Popup()
-     * popup.removeClassName('some-class')
+     * const popup = new mapboxgl.Popup();
+     * popup.removeClassName('some-class');
      */
     removeClassName(className: string) {
         if (this._container) {
@@ -483,8 +485,8 @@ export default class Popup extends Evented {
      * @returns {boolean} If the class was removed return false, if class was added, then return true.
      *
      * @example
-     * let popup = new mapboxgl.Popup()
-     * popup.toggleClassName('toggleClass')
+     * const popup = new mapboxgl.Popup();
+     * popup.toggleClassName('toggleClass');
      */
     toggleClassName(className: string) {
         if (this._container) {

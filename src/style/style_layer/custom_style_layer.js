@@ -70,7 +70,7 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  *     }
  * }
  *
- * map.on('load', function() {
+ * map.on('load', () => {
  *     map.addLayer(new NullIslandLayer());
  * });
  * @see [Add a custom style layer](https://docs.mapbox.com/mapbox-gl-js/example/custom-style-layer/)

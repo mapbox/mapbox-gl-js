@@ -70,7 +70,7 @@ const exported = {
      *
      * @function prewarm
      * @example
-     * mapboxgl.prewarm()
+     * mapboxgl.prewarm();
      */
     prewarm,
     /**
@@ -81,7 +81,7 @@ const exported = {
      *
      * @function clearPrewarmedResources
      * @example
-     * mapboxgl.clearPrewarmedResources()
+     * mapboxgl.clearPrewarmedResources();
      */
     clearPrewarmedResources,
 
@@ -201,8 +201,8 @@ const exported = {
      * @member {Object} workerClass
      * @returns {Object | null} A Class object, an instance of which exposes the `Worker` interface.
      * @example
-     * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js'
-     * import MapboxGLWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker.js'
+     * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js';
+     * import MapboxGLWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker.js';
      *
      * mapboxgl.workerClass = MapboxGLWorker;
      */
@@ -245,7 +245,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * @example
  * // Show an alert if the browser does not support Mapbox GL
  * if (!mapboxgl.supported()) {
- *   alert('Your browser does not support Mapbox GL');
+ *     alert('Your browser does not support Mapbox GL');
  * }
  * @see [Check for browser support](https://www.mapbox.com/mapbox-gl-js/example/check-for-support/)
  */

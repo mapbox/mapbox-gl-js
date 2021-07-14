@@ -29,34 +29,34 @@ import type {Cancelable} from '../types/cancelable.js';
  *
  * @example
  * map.addSource('some id', {
- *    type: 'geojson',
- *    data: {
- *        "type": "FeatureCollection",
- *        "features": [{
- *            "type": "Feature",
- *            "properties": {},
- *            "geometry": {
- *                "type": "Point",
- *                "coordinates": [
- *                    -76.53063297271729,
- *                    39.18174077994108
- *                ]
- *            }
- *        }]
- *    }
+ *     type: 'geojson',
+ *     data: {
+ *         "type": "FeatureCollection",
+ *         "features": [{
+ *             "type": "Feature",
+ *             "properties": {},
+ *             "geometry": {
+ *                 "type": "Point",
+ *                 "coordinates": [
+ *                     -76.53063297271729,
+ *                     39.18174077994108
+ *                 ]
+ *             }
+ *         }]
+ *     }
  * });
  *
  * @example
  * map.getSource('some id').setData({
- *   "type": "FeatureCollection",
- *   "features": [{
- *       "type": "Feature",
- *       "properties": { "name": "Null Island" },
- *       "geometry": {
- *           "type": "Point",
- *           "coordinates": [ 0, 0 ]
- *       }
- *   }]
+ *     "type": "FeatureCollection",
+ *     "features": [{
+ *         "type": "Feature",
+ *         "properties": {"name": "Null Island"},
+ *         "geometry": {
+ *             "type": "Point",
+ *             "coordinates": [ 0, 0 ]
+ *         }
+ *     }]
  * });
  * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
  * @see [Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
@@ -198,19 +198,19 @@ class GeoJSONSource extends Evented implements Source {
      * @returns {GeoJSONSource} This.
      * @example
      * // Retrieve cluster leaves on click
-     * map.on('click', 'clusters', function(e) {
-     *   var features = map.queryRenderedFeatures(e.point, {
-     *     layers: ['clusters']
-     *   });
+     * map.on('click', 'clusters', (e) => {
+     *     const features = map.queryRenderedFeatures(e.point, {
+     *         layers: ['clusters']
+     *     });
      *
-     *   var clusterId = features[0].properties.cluster_id;
-     *   var pointCount = features[0].properties.point_count;
-     *   var clusterSource = map.getSource('clusters');
+     *     const clusterId = features[0].properties.cluster_id;
+     *     const pointCount = features[0].properties.point_count;
+     *     const clusterSource = map.getSource('clusters');
      *
-     *   clusterSource.getClusterLeaves(clusterId, pointCount, 0, function(error, features) {
+     *     clusterSource.getClusterLeaves(clusterId, pointCount, 0, (error, features) => {
      *     // Print cluster leaves in the console
-     *     console.log('Cluster leaves:', error, features);
-     *   })
+     *         console.log('Cluster leaves:', error, features);
+     *     });
      * });
      */
     getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {

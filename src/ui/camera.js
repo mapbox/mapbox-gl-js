@@ -47,13 +47,13 @@ import type {PaddingOptions} from '../geo/edge_insets.js';
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
  * @example
  * // set the map's initial perspective with CameraOptions
- * var map = new mapboxgl.Map({
- *   container: 'map',
- *   style: 'mapbox://styles/mapbox/streets-v11',
- *   center: [-73.5804, 45.53483],
- *   pitch: 60,
- *   bearing: -60,
- *   zoom: 10
+ * const map = new mapboxgl.Map({
+ *     container: 'map',
+ *     style: 'mapbox://styles/mapbox/streets-v11',
+ *     center: [-73.5804, 45.53483],
+ *     pitch: 60,
+ *     bearing: -60,
+ *     zoom: 10
  * });
  * @see [Set pitch and bearing](https://docs.mapbox.com/mapbox-gl-js/example/set-perspective/)
  * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
@@ -112,15 +112,15 @@ export type ElevationBoxRaycast = {
  * @property {number} right Padding in pixels from the right of the map canvas.
  *
  * @example
- * var bbox = [[-79, 43], [-73, 45]];
+ * const bbox = [[-79, 43], [-73, 45]];
  * map.fitBounds(bbox, {
- *   padding: {top: 10, bottom:25, left: 15, right: 5}
+ *     padding: {top: 10, bottom:25, left: 15, right: 5}
  * });
  *
  * @example
- * var bbox = [[-79, 43], [-73, 45]];
+ * const bbox = [[-79, 43], [-73, 45]];
  * map.fitBounds(bbox, {
- *   padding: 20
+ *     padding: 20
  * });
  * @see [Fit to the bounds of a LineString](https://docs.mapbox.com/mapbox-gl-js/example/zoomto-linestring/)
  * @see [Fit a map to a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/fitbounds/)
@@ -165,9 +165,9 @@ class Camera extends Evented {
      * @returns The map's geographical centerpoint.
      * @example
      * // return a LngLat object such as {lng: 0, lat: 0}
-     * var center = map.getCenter();
+     * const center = map.getCenter();
      * // access longitude and latitude values directly
-     * var {longitude, latitude} = map.getCenter();
+     * const {longitude, latitude} = map.getCenter();
      * @see Tutorial: [Use Mapbox GL JS in a React app](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/#store-the-new-coordinates)
      */
     getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
@@ -279,8 +279,8 @@ class Camera extends Evented {
      * map.zoomTo(5);
      * // Zoom to the zoom level 8 with an animated transition
      * map.zoomTo(8, {
-     *   duration: 2000,
-     *   offset: [100, 50]
+     *     duration: 2000,
+     *     offset: [100, 50]
      * });
      */
     zoomTo(zoom: number, options: ? AnimationOptions, eventData?: Object) {
@@ -385,7 +385,7 @@ class Camera extends Evented {
      * @returns {Map} `this`.
      * @example
      * // Sets a left padding of 300px, and a top padding of 50px
-     * map.setPadding({ left: 300, top: 50 });
+     * map.setPadding({left: 300, top: 50});
      */
     setPadding(padding: PaddingOptions, eventData?: Object) {
         this.jumpTo({padding}, eventData);
@@ -499,9 +499,9 @@ class Camera extends Evented {
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
      *      `center`, `zoom`, and `bearing`. If map is unable to fit, method will warn and return undefined.
      * @example
-     * var bbox = [[-79, 43], [-73, 45]];
-     * var newCameraTransform = map.cameraForBounds(bbox, {
-     *   padding: {top: 10, bottom:25, left: 15, right: 5}
+     * const bbox = [[-79, 43], [-73, 45]];
+     * const newCameraTransform = map.cameraForBounds(bbox, {
+     *     padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      */
     cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
@@ -722,11 +722,11 @@ class Camera extends Evented {
      * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`.
-     * @example
-     * var bbox = [[-79, 43], [-73, 45]];
+     * @returns {Map} `this`
+	 * @example
+     * const bbox = [[-79, 43], [-73, 45]];
      * map.fitBounds(bbox, {
-     *   padding: {top: 10, bottom:25, left: 15, right: 5}
+     *     padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
@@ -794,12 +794,12 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} `this`.
-     * @example
-     * var p0 = [220, 400];
-     * var p1 = [500, 900];
+     * @returns {Map} `this`
+	 * @example
+     * const p0 = [220, 400];
+     * const p1 = [500, 900];
      * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
-     *   padding: {top: 10, bottom:25, left: 15, right: 5}
+     *     padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      * @see Used by {@link BoxZoomHandler}
      */
@@ -882,10 +882,10 @@ class Camera extends Evented {
      * map.jumpTo({center: [0, 0]});
      * // jump with zoom, pitch, and bearing options
      * map.jumpTo({
-     *   center: [0, 0],
-     *   zoom: 8,
-     *   pitch: 45,
-     *   bearing: 90
+     *     center: [0, 0],
+     *     zoom: 8,
+     *     pitch: 45,
+     *     bearing: 90
      * });
      * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
      * @see [Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
@@ -1244,13 +1244,13 @@ class Camera extends Evented {
      * map.flyTo({center: [0, 0], zoom: 9});
      * // using flyTo options
      * map.flyTo({
-     *   center: [0, 0],
-     *   zoom: 9,
-     *   speed: 0.2,
-     *   curve: 1,
-     *   easing(t) {
-     *     return t;
-     *   }
+     *     center: [0, 0],
+     *     zoom: 9,
+     *     speed: 0.2,
+     *     curve: 1,
+     *     easing(t) {
+     *         return t;
+     *     }
      * });
      * @see [Fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto/)
      * @see [Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
