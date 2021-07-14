@@ -107,7 +107,7 @@ export class Elevation {
 
     /**
      * Get elevation minimum and maximum for tile identified by `tileID`.
-     * @param {OverscaledTileID} The `tileID` is a sub tile (or covers the same space) of the DEM tile we read the information from.
+     * @param {OverscaledTileID} tileID The `tileId` is a sub tile (or covers the same space) of the DEM tile we read the information from.
      * @returns {?{min: number, max: number}} The min and max elevation.
      */
     getMinMaxForTile(tileID: OverscaledTileID): ?{min: number, max: number} {
