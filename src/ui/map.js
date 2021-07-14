@@ -794,6 +794,8 @@ class Map extends Camera {
      * @param {number | null | undefined} minPitch The minimum pitch to set (0-85).
      *   If `null` or `undefined` is provided, the function removes the current minimum pitch (i.e. sets it to 0).
      * @returns {Map} `this`
+     * @example
+     * map.setMinPitch(5);
      */
     setMinPitch(minPitch?: ?number) {
 
@@ -818,6 +820,8 @@ class Map extends Camera {
      * Returns the map's minimum allowable pitch.
      *
      * @returns {number} minPitch
+     * @example
+     * const minPitch = map.getMinPitch();
      */
     getMinPitch() { return this.transform.minPitch; }
 
@@ -829,6 +833,8 @@ class Map extends Camera {
      * @param {number | null | undefined} maxPitch The maximum pitch to set.
      *   If `null` or `undefined` is provided, the function removes the current maximum pitch (sets it to 85).
      * @returns {Map} `this`
+     * @example
+     * map.setMaxPitch(70);
      */
     setMaxPitch(maxPitch?: ?number) {
 
@@ -853,6 +859,8 @@ class Map extends Camera {
      * Returns the map's maximum allowable pitch.
      *
      * @returns {number} maxPitch
+     * @example
+     * const maxPitch = map.getMaxPitch();
      */
     getMaxPitch() { return this.transform.maxPitch; }
 
@@ -2073,6 +2081,8 @@ class Map extends Camera {
      *
      * @param {string} layerId The ID of the style layer whose filter to get.
      * @returns {Array} The layer's filter.
+     * @example
+     * const filter = map.getFilter('myLayer');
      */
     getFilter(layerId: string) {
         return this.style.getFilter(layerId);
@@ -2105,6 +2115,8 @@ class Map extends Camera {
      * @param {string} layerId The ID of the layer to get the paint property from.
      * @param {string} name The name of a paint property to get.
      * @returns {*} The value of the specified paint property.
+     * @example
+     * const paintProperty = map.getPaintProperty('mySymbolLayer', 'icon-color');
      */
     getPaintProperty(layerId: string, name: string) {
         return this.style.getPaintProperty(layerId, name);
@@ -2134,6 +2146,8 @@ class Map extends Camera {
      * @param {string} layerId The ID of the layer to get the layout property from.
      * @param {string} name The name of the layout property to get.
      * @returns {*} The value of the specified layout property.
+     * @example
+     * const layoutProperty = map.getLayoutProperty('mySymbolLayer', 'icon-anchor');
      */
     getLayoutProperty(layerId: string, name: string) {
         return this.style.getLayoutProperty(layerId, name);
@@ -2160,6 +2174,8 @@ class Map extends Camera {
      * Returns the value of the light object.
      *
      * @returns {Object} light Light properties of the style.
+     * @example
+     * const light = map.getLight();
      */
     getLight() {
         return this.style.getLight();
@@ -2193,6 +2209,8 @@ class Map extends Camera {
      * Returns the terrain specification or `null` if terrain isn't set on the map.
      *
      * @returns {Object} terrain Terrain specification properties of the style.
+     * @example
+     * const terrain = map.getTerrain();
      */
     getTerrain(): Terrain | null {
         return this.style ? this.style.getTerrain() : null;
@@ -2221,6 +2239,8 @@ class Map extends Camera {
      * Returns the fog specification or `null` if fog is not set on the map.
      *
      * @returns {Object} fog Fog specification properties of the style.
+     * @example
+     * const fog = map.getFog();
      */
     getFog(): Fog | null {
         return this.style ? this.style.getFog() : null;
@@ -2399,6 +2419,8 @@ class Map extends Camera {
      * Returns the map's containing HTML element.
      *
      * @returns {HTMLElement} The map's container.
+     * @example
+     * const container = map.getContainer();
      */
     getContainer() {
         return this._container;
@@ -2414,6 +2436,8 @@ class Map extends Camera {
      * map controls.
      *
      * @returns {HTMLElement} The container of the map's `<canvas>`.
+     * @example
+     * const canvasContainer = map.getCanvasContainer();
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      */
@@ -2425,6 +2449,8 @@ class Map extends Camera {
      * Returns the map's `<canvas>` element.
      *
      * @returns {HTMLCanvasElement} The map's `<canvas>` element.
+     * @example
+     * const canvas = map.getCanvas();
      * @see [Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
      * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
      * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
@@ -2570,6 +2596,8 @@ class Map extends Camera {
      * has not yet fully loaded.
      *
      * @returns {boolean} A Boolean indicating whether the map is fully loaded.
+     * @example
+     * const isLoaded = map.loaded();
      */
     loaded() {
         return !this._styleDirty && !this._sourcesDirty && !!this.style && this.style.loaded();
@@ -2958,6 +2986,8 @@ class Map extends Camera {
      * Use this method when you are done using the map and wish to ensure that it no
      * longer consumes browser resources. Afterwards, you must not call any other
      * methods on the map.
+     * @example
+     * map.remove();
      */
     remove() {
         if (this._hash) this._hash.remove();
