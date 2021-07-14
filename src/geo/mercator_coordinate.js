@@ -139,6 +139,12 @@ class MercatorCoordinate {
      * to transform into `MercatorCoordinate`s.
      *
      * @returns {number} Distance of 1 meter in `MercatorCoordinate` units.
+     * @example
+     * // Calculate a new MercatorCoordinate that is 150 meters west of the other coord.
+     * const coord = new mapboxgl.MercatorCoordinate(0.5, 0.25, 0);
+     * const offsetInMeters = 150;
+     * const offsetInMercatorCoordinateUnits = offsetInMeters * coord.meterInMercatorCoordinateUnits();
+     * const westCoord = new mapboxgl.MercatorCoordinate(coord.x - offsetInMercatorCoordinateUnits, coord.y, coord.z);
      */
     meterInMercatorCoordinateUnits() {
         // 1 meter / circumference at equator in meters * Mercator projection scale factor at this latitude

@@ -796,6 +796,7 @@ class SourceCache extends Evented {
 
     /**
      * Remove all tiles from this pyramid
+     * @private
      */
     clearTiles() {
         this._shouldReloadOnResume = false;
