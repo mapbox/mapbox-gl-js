@@ -26,7 +26,7 @@ const defaultOptions: Options = {
  * @param {number} [options.maxWidth='100'] The maximum length of the scale control in pixels.
  * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
  * @example
- * var scale = new mapboxgl.ScaleControl({
+ * const scale = new mapboxgl.ScaleControl({
  *     maxWidth: 80,
  *     unit: 'imperial'
  * });

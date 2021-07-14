@@ -96,6 +96,15 @@
   },
   "overrides": [
     {
+      "files": ["src/fake_filename_for_jsdoc_examples"],
+      "rules": {
+        "flowtype/require-valid-file-annotation": "off"
+      },
+      "globals": {
+        "map": true
+      }
+    },
+    {
       "files": ["debug/**", "bench/**", "test/**", "src/style-spec/**"],
       "rules": {
         "flowtype/require-valid-file-annotation": "off",
@@ -138,7 +147,6 @@
         "src/ui/events.js",
         "src/ui/control/**",
         "src/ui/handler/**",
-        "src/ui/handler/**",
         "src/geo/**",
         "src/source/**",
       ],
@@ -153,7 +161,10 @@
         "jsdoc/require-description-complete-sentence": "warn",
         "jsdoc/check-access": "warn",
         "jsdoc/check-alignment": "warn",
-        "jsdoc/check-examples": "warn",
+        "jsdoc/check-examples": ["error", {
+            "matchingFileName": "src/fake_filename_for_jsdoc_examples",
+            "rejectExampleCodeRegex": "<script>"
+        }],
         "jsdoc/check-indentation": "warn",
         "jsdoc/check-line-alignment": "warn",
         "jsdoc/check-property-names": "warn",

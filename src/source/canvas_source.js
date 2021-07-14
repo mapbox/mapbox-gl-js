@@ -36,19 +36,19 @@ export type CanvasSourceSpecification = {|
  * @example
  * // add to map
  * map.addSource('some id', {
- *    type: 'canvas',
- *    canvas: 'idOfMyHTMLCanvas',
- *    animate: true,
- *    coordinates: [
- *        [-76.54, 39.18],
- *        [-76.52, 39.18],
- *        [-76.52, 39.17],
- *        [-76.54, 39.17]
- *    ]
+ *     type: 'canvas',
+ *     canvas: 'idOfMyHTMLCanvas',
+ *     animate: true,
+ *     coordinates: [
+ *         [-76.54, 39.18],
+ *         [-76.52, 39.18],
+ *         [-76.52, 39.17],
+ *         [-76.54, 39.17]
+ *     ]
  * });
  *
  * // update
- * var mySource = map.getSource('some id');
+ * const mySource = map.getSource('some id');
  * mySource.setCoordinates([
  *     [-76.54335737228394, 39.18579907229748],
  *     [-76.52803659439087, 39.1838364847587],
@@ -145,6 +145,20 @@ class CanvasSource extends ImageSource {
      * Returns the HTML `canvas` element.
      *
      * @returns {HTMLCanvasElement} The HTML `canvas` element.
+     * @example
+     * // Assuming the following canvas is added to your page
+     * // <canvas id="canvasID" width="400" height="400"></canvas>
+     * map.addSource('canvas-source', {
+     *     type: 'canvas',
+     *     canvas: 'canvasID',
+     *     coordinates: [
+     *         [91.4461, 21.5006],
+     *         [100.3541, 21.5006],
+     *         [100.3541, 13.9706],
+     *         [91.4461, 13.9706]
+     *     ]
+     * });
+     * map.getSource('canvas-source').getCanvas(); // <canvas id="canvasID" width="400" height="400"></canvas>
      */
     getCanvas() {
         return this.canvas;
