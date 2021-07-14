@@ -24,7 +24,7 @@ const defaultOptions: Options = {
  * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
- * @param {object} [options]
+ * @param {Object} [options]
  * @param {boolean} [options.showCompass=true] If `true` the compass button is included.
  * @param {boolean} [options.showZoom=true] If `true` the zoom-in and zoom-out buttons are included.
  * @param {boolean} [options.visualizePitch=false] If `true` the pitch is visualized by rotating X-axis of compass.

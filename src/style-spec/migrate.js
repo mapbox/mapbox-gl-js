@@ -7,7 +7,7 @@ import migrateToExpressions from './migrate/expressions.js';
  *
  * @private
  * @alias migrate
- * @param {object} style a Mapbox GL Style
+ * @param {Object} style a Mapbox GL Style
  * @returns {Object} a migrated style
  * @example
  * var fs = require('fs');

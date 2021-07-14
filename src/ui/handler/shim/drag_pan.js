@@ -36,7 +36,7 @@ export default class DragPanHandler {
     /**
      * Enables the "drag to pan" interaction.
      *
-     * @param {object} [options] Options object.
+     * @param {Object} [options] Options object.
      * @param {number} [options.linearity=0] Factor used to scale the drag velocity.
      * @param {Function} [options.easing=bezier(0, 0, 0.3, 1)] Easing function applled to `map.panTo` when applying the drag.
      * @param {number} [options.maxSpeed=1400] The maximum value of the drag velocity.

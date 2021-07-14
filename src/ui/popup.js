@@ -48,7 +48,7 @@ const focusQuerySelector = [
 /**
  * A popup component.
  *
- * @param {object} [options]
+ * @param {Object} [options]
  * @param {boolean} [options.closeButton=true] If `true`, a close button will appear in the
  *   top right corner of the popup.
  * @param {boolean} [options.closeOnClick=true] If `true`, the popup will close when the
@@ -162,7 +162,7 @@ export default class Popup extends Evented {
          * @event open
          * @memberof Popup
          * @instance
-         * @type {object}
+         * @type {Object}
          * @property {Popup} popup Object that was opened.
          *
          * @example
@@ -222,7 +222,7 @@ export default class Popup extends Evented {
          * @event close
          * @memberof Popup
          * @instance
-         * @type {object}
+         * @type {Object}
          * @property {Popup} popup Object that was closed.
          *
          * @example

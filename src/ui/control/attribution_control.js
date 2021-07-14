@@ -16,7 +16,7 @@ type Options = {
  * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
- * @param {object} [options]
+ * @param {Object} [options]
  * @param {boolean} [options.compact] If `true`, force a compact attribution that shows the full attribution on mouse hover. If `false`, force the full attribution control. The default is a responsive attribution that collapses when the map is less than 640 pixels wide. **Attribution should not be collapsed if it can comfortably fit on the map. `compact` should only be used to modify default attribution when map size makes it impossible to fit [default attribution](https://docs.mapbox.com/help/how-mapbox-works/attribution/) and when the automatic compact resizing for default settings are not sufficient.**.
  * @param {string | Array<string>} [options.customAttribution] String or strings to show in addition to any other attributions. You can also set a custom attribution when initializing your map with {@link https://docs.mapbox.com/mapbox-gl-js/api/map/#map-parameters the customAttribution option}.
  * @example

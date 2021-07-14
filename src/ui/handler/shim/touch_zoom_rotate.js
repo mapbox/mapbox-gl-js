@@ -36,7 +36,7 @@ export default class TouchZoomRotateHandler {
     /**
      * Enables the "pinch to rotate and zoom" interaction.
      *
-     * @param {object} [options] Options object.
+     * @param {Object} [options] Options object.
      * @param {string} [options.around] If "center" is passed, map will zoom around the center.
      *
      * @example

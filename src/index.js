@@ -198,7 +198,7 @@ const exported = {
      *
      * Takes precedence over `mapboxgl.workerUrl`.
      *
-     * @member {object} workerClass
+     * @member {Object} workerClass
      * @returns {object | null} A Class object, an instance of which exposes the `Worker` interface.
      * @example
      * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js'
@@ -237,7 +237,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * Test whether the browser [supports Mapbox GL JS](https://www.mapbox.com/help/mapbox-browser-support/#mapbox-gl-js).
  *
  * @function supported
- * @param {object} [options]
+ * @param {Object} [options]
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
  *   the function will return `false` if the performance of Mapbox GL JS would
  *   be dramatically worse than expected (e.g. a software WebGL renderer would be used).

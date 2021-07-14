@@ -32,7 +32,7 @@ export const TERRAIN_OCCLUDED_OPACITY = 0.2;
 /**
  * Creates a marker component.
  *
- * @param {object} [options]
+ * @param {Object} [options]
  * @param {HTMLElement} [options.element] DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
  * @param {string} [options.anchor='center'] A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
@@ -603,7 +603,7 @@ export default class Marker extends Evented {
              * @event dragstart
              * @memberof Marker
              * @instance
-             * @type {object}
+             * @type {Object}
              * @property {Marker} marker The object that is being dragged.
              */
             this.fire(new Event('dragstart'));
@@ -615,7 +615,7 @@ export default class Marker extends Evented {
          * @event drag
          * @memberof Marker
          * @instance
-         * @type {object}
+         * @type {Object}
          * @property {Marker} marker The object that is being dragged.
          */
         this.fire(new Event('drag'));
@@ -638,7 +638,7 @@ export default class Marker extends Evented {
              * @event dragend
              * @memberof Marker
              * @instance
-             * @type {object}
+             * @type {Object}
              * @property {Marker} marker The object that was dragged.
              */
             this.fire(new Event('dragend'));
