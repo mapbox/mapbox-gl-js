@@ -232,7 +232,7 @@ class Camera extends Evented {
      * Returns the map's current zoom level.
      *
      * @memberof Map#
-     * @returns {Number} The map's current zoom level.
+     * @returns {number} The map's current zoom level.
      * @example
      * map.getZoom();
      */
@@ -338,7 +338,7 @@ class Camera extends Evented {
      * of 90° orients the map so that east is up.
      *
      * @memberof Map#
-     * @returns {Number} The map's current bearing.
+     * @returns {number} The map's current bearing.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     getBearing(): number { return this.transform.bearing; }
@@ -466,7 +466,7 @@ class Camera extends Evented {
      * Returns the map's current [pitch](https://docs.mapbox.com/help/glossary/camera/) (tilt).
      *
      * @memberof Map#
-     * @returns {Number} The map's current pitch, measured in degrees away from the plane of the screen.
+     * @returns {number} The map's current pitch, measured in degrees away from the plane of the screen.
      */
     getPitch(): number { return this.transform.pitch; }
 

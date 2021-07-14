@@ -853,7 +853,7 @@ class Style extends Evented {
     /**
      * Moves a layer to a different z-position. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
-     * @param {string} id  ID of the layer to move
+     * @param {string} id ID of the layer to move
      * @param {string} [before] ID of an existing layer to insert before
      */
     moveLayer(id: string, before?: string) {

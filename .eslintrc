@@ -97,7 +97,7 @@
     //     "rejectExampleCodeRegex": "<script>"
     // }],
     // "jsdoc/check-indentation": "warn",
-    // "jsdoc/check-line-alignment": "warn",
+    "jsdoc/check-line-alignment": "warn",
     // "jsdoc/check-property-names": "warn",
     // "jsdoc/check-tag-names": "warn",
     // "jsdoc/check-types": "warn",
@@ -111,7 +111,7 @@
     // "jsdoc/require-property-type": "warn",
     "jsdoc/require-returns-type": "error",
     // "jsdoc/require-throws": "warn",
-    "jsdoc/valid-types": "warn"
+    // "jsdoc/valid-types": "warn"
   },
   "settings": {
     "jsdoc":{
