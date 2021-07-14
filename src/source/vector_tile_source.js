@@ -155,6 +155,18 @@ class VectorTileSource extends Evented implements Source {
      *
      * @param {string[]} tiles An array of one or more tile source URLs, as in the TileJSON spec.
      * @returns {VectorTileSource} this
+     * @example
+     * map.addSource('vector_source_id', {
+     *     type: 'vector',
+     *     tiles: ['https://d25uarhxywzl1j.cloudfront.net/v0.1/{z}/{x}/{y}.mvt'],
+     *     minzoom: 6,
+     *     maxzoom: 14
+     * });
+     *
+     * const vectorTileSource = map.getSource('vector_source_id');
+     *
+     * // Update tiles a new endpoint
+     * vectorTileSource.setTiles(['https://another_end_point.net/v0.1/{z}/{x}/{y}.mvt'])
      */
     setTiles(tiles: Array<string>) {
         this.setSourceProperty(() => {
@@ -169,6 +181,16 @@ class VectorTileSource extends Evented implements Source {
      *
      * @param {string} url A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`.
      * @returns {VectorTileSource} this
+     * @example
+     * map.addSource('vector_source_id', {
+     *     type: 'vector',
+     *     url: 'mapbox://mapbox.mapbox-streets-v6'
+     * });
+     *
+     * const vectorTileSource = map.getSource('vector_source_id');
+     *
+     * // Update vector tile source to a new URL endpoint
+     * vectorTileSource.setUrl("mapbox://mapbox.mapbox-streets-v7");
      */
     setUrl(url: string) {
         this.setSourceProperty(() => {
