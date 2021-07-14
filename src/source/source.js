@@ -117,7 +117,6 @@ const sourceTypes = {
  * @param {Dispatcher} dispatcher A {@link Dispatcher} instance, which can be used to send messages to the workers.
  * @param {Evented} eventedParent The object to which events bubble up to.
  * @returns {Source} An instance of an object compliant with the {@link Source} interface.
- * @example
  */
 export const create = function(id: string, specification: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
     const source = new sourceTypes[specification.type](id, (specification: any), dispatcher, eventedParent);

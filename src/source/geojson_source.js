@@ -155,7 +155,7 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * Sets the GeoJSON data and re-renders the map.
      *
-     * @param {object | string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
+     * @param {Object | string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
      * @returns {GeoJSONSource} This.
      */
     setData(data: GeoJSON | string) {

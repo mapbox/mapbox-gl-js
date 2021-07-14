@@ -187,7 +187,7 @@ const defaultOptions = {
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
  * @param {number} [options.minPitch=0] The minimum pitch of the map (0-85).
  * @param {number} [options.maxPitch=85] The maximum pitch of the map (0-85).
- * @param {object | string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
+ * @param {Object | string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
  *
@@ -1853,7 +1853,7 @@ class Map extends Camera {
      * A layer defines how data from a specified source will be styled. Read more about layer types
      * and available paint and layout properties in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers).
      *
-     * @param {object | CustomLayerInterface} layer The layer to add, conforming to either the Mapbox Style Specification's [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers) or, less commonly, the {@link CustomLayerInterface} specification.
+     * @param {Object | CustomLayerInterface} layer The layer to add, conforming to either the Mapbox Style Specification's [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers) or, less commonly, the {@link CustomLayerInterface} specification.
      * The Mapbox Style Specification's layer definition is appropriate for most layers.
      *
      * @param {string} layer.id A unique identifier that you define.
@@ -3300,7 +3300,6 @@ function removeNode(node) {
  * `x` and `y` properties representing screen coordinates in pixels.
  *
  * @typedef {Object} Point
- * @example
  * @property
  * var point = new mapboxgl.Point(-77, 38);.
  */
@@ -3309,7 +3308,6 @@ function removeNode(node) {
  * A {@link Point} or an array of two numbers representing `x` and `y` screen coordinates in pixels.
  *
  * @typedef {(Point | Array<number>)} PointLike
- * @example
  * var p1 = new mapboxgl.Point(-77, 38); // a PointLike which is a Point
  * var p2 = [-77, 38]; // a PointLike which is an array of two numbers
  */
