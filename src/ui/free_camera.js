@@ -176,7 +176,6 @@ class FreeCameraOptions {
      *
      * // Update camera pitch and bearing
      * camera.setPitchBearing(80, 90);
-     * @example
      */
     setPitchBearing(pitch: number, bearing: number) {
         this.orientation = orientationFromPitchBearing(degToRad(pitch), degToRad(-bearing));
