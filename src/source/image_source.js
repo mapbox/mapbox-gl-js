@@ -25,7 +25,7 @@ import type {
 
 type Coordinates = [[number, number], [number, number], [number, number], [number, number]];
 
-/**.
+/**
  * A data source containing an image.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.)
  *
@@ -144,7 +144,7 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} This.
+     * @returns {ImageSource} Returns to itself to allow for method chaining.
      */
     updateImage(options: {url: string, coordinates?: Coordinates}) {
         if (!this.image || !options.url) {
@@ -174,7 +174,7 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} This.
+     * @returns {ImageSource} Returns to itself to allow for method chaining.
      */
     setCoordinates(coordinates: Coordinates) {
         this.coordinates = coordinates;

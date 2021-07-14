@@ -102,7 +102,7 @@ const exported = {
         config.ACCESS_TOKEN = token;
     },
 
-    /**.
+    /**
      * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs
      *
      * @var {string} baseApiUrl
@@ -264,7 +264,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
  */
 
-/**.
+/**
   * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
   * The status can be `unavailable` (i.e. Not requested or removed), `loading`, `loaded` or `error`.
   * If the status is `loaded` and the plugin is requested again, an error will be thrown.

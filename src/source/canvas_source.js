@@ -174,7 +174,7 @@ class CanvasSource extends ImageSource {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the canvas.
      *   The coordinates start at the top left corner of the canvas and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {CanvasSource} This.
+     * @returns {CanvasSource} Returns to itself to allow for chaining.
      */
 
     // setCoordinates inherited from ImageSource

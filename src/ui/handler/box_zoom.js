@@ -45,7 +45,7 @@ class BoxZoomHandler {
         return !!this._enabled;
     }
 
-    /**.
+    /**
      * Returns a Boolean indicating whether the "box zoom" interaction is active, i.e. Currently being used.
      *
      * @returns {boolean} `true` if the "box zoom" interaction is active.

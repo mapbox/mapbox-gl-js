@@ -83,7 +83,7 @@ class LngLat {
         return `LngLat(${this.lng}, ${this.lat})`;
     }
 
-    /**.
+    /**
      * Returns the approximate distance between a pair of coordinates in meters
      * Uses the Haversine Formula (from R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope, vol. 68, no. 2, 1984, p. 159)
      *

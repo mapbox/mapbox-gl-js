@@ -53,7 +53,7 @@ export default class DoubleClickZoomHandler {
         return this._clickZoom.isEnabled() && this._tapZoom.isEnabled();
     }
 
-    /**.
+    /**
      * Returns a Boolean indicating whether the "double click to zoom" interaction is active, i.e. Currently being used.
      *
      * @returns {boolean} `true` if the "double click to zoom" interaction is active.

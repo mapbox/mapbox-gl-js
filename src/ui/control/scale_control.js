@@ -72,7 +72,7 @@ class ScaleControl {
         this._map = (undefined: any);
     }
 
-    /**.
+    /**
      * Set the scale's unit of the distance
      *
      * @param unit Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).

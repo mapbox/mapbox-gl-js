@@ -96,7 +96,7 @@ export class MapMouseEvent extends Event {
      */
     features: Array<Object> | void;
 
-    /**.
+    /**
      * Prevents subsequent default processing of the event by the map.
      *
      * Calling this method will prevent the following default map behaviors:
@@ -238,7 +238,7 @@ export class MapTouchEvent extends Event {
      */
     features: Array<Object> | void;
 
-    /**.
+    /**
      * Prevents subsequent default processing of the event by the map.
      *
      * Calling this method will prevent the following default map behaviors:
@@ -1199,7 +1199,7 @@ export type MapEvent =
      */
     | 'load'
 
-    /**.
+    /**
      * Fired whenever the map is drawn to the screen, as the result of.
      *
      * - a change to the map's position, zoom, pitch, or bearing
@@ -1221,7 +1221,7 @@ export type MapEvent =
      */
     | 'render'
 
-    /**.
+    /**
      * Fired after the last frame rendered before the map enters an
      * "idle" state:
      *

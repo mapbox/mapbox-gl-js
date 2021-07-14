@@ -38,7 +38,7 @@ class LngLatBounds {
         }
     }
 
-    /**.
+    /**
      * Set the northeast corner of the bounding box
      *
      * @param {LngLatLike} ne a {@link LngLatLike} object describing the northeast corner of the bounding box.
@@ -49,7 +49,7 @@ class LngLatBounds {
         return this;
     }
 
-    /**.
+    /**
      * Set the southwest corner of the bounding box
      *
      * @param {LngLatLike} sw a {@link LngLatLike} object describing the southwest corner of the bounding box.
@@ -64,7 +64,7 @@ class LngLatBounds {
      * Extend the bounds to include a given LngLatLike or LngLatBoundsLike.
      *
      * @param {LngLatLike|LngLatBoundsLike} obj Object to extend to.
-     * @returns {LngLatBounds} `this`.
+     * @returns {LngLatBounds} Returns to itself to allow for method chaining.
      */
     extend(obj: LngLatLike | LngLatBoundsLike) {
         const sw = this._sw,
