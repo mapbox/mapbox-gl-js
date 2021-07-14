@@ -53,6 +53,8 @@ export default class DragRotateHandler {
      * Returns a Boolean indicating whether the "drag to rotate" interaction is enabled.
      *
      * @returns {boolean} `true` if the "drag to rotate" interaction is enabled.
+     * @example
+     * const isDragRotateEnabled = map.dragRotate.isEnabled();
      */
     isEnabled() {
         return this._mouseRotate.isEnabled() && (!this._pitchWithRotate || this._mousePitch.isEnabled());
@@ -62,6 +64,8 @@ export default class DragRotateHandler {
      * Returns a Boolean indicating whether the "drag to rotate" interaction is active, i.e. currently being used.
      *
      * @returns {boolean} `true` if the "drag to rotate" interaction is active.
+     * @example
+     * const isDragRotateActive = map.dragRotate.isActive();
      */
     isActive() {
         return this._mouseRotate.isActive() || this._mousePitch.isActive();

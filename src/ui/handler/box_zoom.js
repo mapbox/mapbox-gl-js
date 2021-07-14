@@ -39,6 +39,8 @@ class BoxZoomHandler {
      * Returns a Boolean indicating whether the "box zoom" interaction is enabled.
      *
      * @returns {boolean} `true` if the "box zoom" interaction is enabled.
+     * @example
+     * const isBoxZoomEnabled = map.boxZoom.isEnabled();
      */
     isEnabled() {
         return !!this._enabled;
@@ -48,6 +50,8 @@ class BoxZoomHandler {
      * Returns a Boolean indicating whether the "box zoom" interaction is active, i.e. currently being used.
      *
      * @returns {boolean} `true` if the "box zoom" interaction is active.
+     * @example
+     * const isBoxZoomActive = map.boxZoom.isActive();
      */
     isActive() {
         return !!this._active;
