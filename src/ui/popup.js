@@ -120,7 +120,7 @@ export default class Popup extends Evented {
      * Adds the popup to a map.
      *
      * @param {Map} map The Mapbox GL JS map to add the popup to.
-     * @returns {Popup} Returns `this`.
+     * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * new mapboxgl.Popup()
      *     .setLngLat([0, 0])
@@ -197,7 +197,7 @@ export default class Popup extends Evented {
      * @example
      * const popup = new mapboxgl.Popup().addTo(map);
      * popup.remove();
-     * @returns {Popup} Returns `this`.
+     * @returns {Popup} Returns itself to allow for method chaining.
      */
     remove() {
         if (this._content) {
@@ -263,7 +263,7 @@ export default class Popup extends Evented {
      * Sets the geographical location of the popup's anchor, and moves the popup to it. Replaces trackPointer() behavior.
      *
      * @param lnglat The geographical location to set as the popup's anchor.
-     * @returns {Popup} Returns `this`.
+     * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * popup.setLngLat([-122.4194, 37.7749]);
      */
@@ -296,7 +296,7 @@ export default class Popup extends Evented {
      *     .setHTML("<h1>Hello World!</h1>")
      *     .trackPointer()
      *     .addTo(map);
-     * @returns {Popup} Returns `this`.
+     * @returns {Popup} Returns itself to allow for method chaining.
      */
     trackPointer() {
         this._trackPointer = true;
@@ -341,7 +341,7 @@ export default class Popup extends Evented {
      * if the popup content is user-provided.
      *
      * @param text Textual content for the popup.
-     * @returns {Popup} Returns `this`.
+     * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * const popup = new mapboxgl.Popup()
      *     .setLngLat(e.lngLat)
@@ -360,7 +360,7 @@ export default class Popup extends Evented {
      * the content is an untrusted text string.
      *
      * @param html A string representing HTML content for the popup.
-     * @returns {Popup} Returns `this`.
+     * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * const popup = new mapboxgl.Popup()
      *     .setLngLat(e.lngLat)
@@ -401,7 +401,7 @@ export default class Popup extends Evented {
      * Available values can be found here: https://developer.mozilla.org/en-US/docs/Web/CSS/max-width.
      *
      * @param maxWidth A string representing the value for the maximum width.
-     * @returns {Popup} Returns `this`.
+     * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * popup.setMaxWidth('50');
      */
@@ -415,7 +415,7 @@ export default class Popup extends Evented {
      * Sets the popup's content to the element provided as a DOM node.
      *
      * @param htmlNode A DOM node to be used as content for the popup.
-     * @returns {Popup} Returns `this`.
+     * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * // create an element with the popup content
      * const div = window.document.createElement('div');
@@ -479,7 +479,7 @@ export default class Popup extends Evented {
      * Sets the popup's offset.
      *
      * @param offset Sets the popup's offset.
-     * @returns {Popup} Returns `this`.
+     * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * popup.setOffset(10);
      */

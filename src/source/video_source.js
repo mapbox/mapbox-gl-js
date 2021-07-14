@@ -169,7 +169,7 @@ class VideoSource extends ImageSource {
      * @method setCoordinates
      * @instance
      * @memberof VideoSource
-     * @returns {VideoSource} Returns `this`.
+     * @returns {VideoSource} Returns itself to allow for method chaining.
      * @example
      * // Add a video source to the map to map
      * map.addSource('video_source_id', {

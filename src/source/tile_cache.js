@@ -53,7 +53,7 @@ class TileCache {
      * @param {OverscaledTileID} tileID lookup key for the item
      * @param {*} data any value
      *
-     * @returns {TileCache} Returns `this`.
+     * @returns {TileCache} Returns itself to allow for method chaining.
      * @private
      */
     add(tileID: OverscaledTileID, data: Tile, expiryTimeout: number | void) {

@@ -180,7 +180,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setCenter([-74, 38]);
      */
@@ -197,7 +197,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.panBy([-74, 38]);
      * @example
@@ -219,7 +219,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.panTo([-74, 38]);
      * @example
@@ -255,7 +255,7 @@ class Camera extends Evented {
      * @fires zoom
      * @fires moveend
      * @fires zoomend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Zoom to the zoom level 5 without an animated transition
      * map.setZoom(5);
@@ -278,7 +278,7 @@ class Camera extends Evented {
      * @fires zoom
      * @fires moveend
      * @fires zoomend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Zoom to the zoom level 5 without an animated transition
      * map.zoomTo(5);
@@ -306,7 +306,7 @@ class Camera extends Evented {
      * @fires zoom
      * @fires moveend
      * @fires zoomend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // zoom the map in one level with a custom animation duration
      * map.zoomIn({duration: 1000});
@@ -328,7 +328,7 @@ class Camera extends Evented {
      * @fires zoom
      * @fires moveend
      * @fires zoomend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // zoom the map out one level with a custom animation offset
      * map.zoomOut({offset: [80, 60]});
@@ -361,7 +361,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // rotate the map to 90 degrees
      * map.setBearing(90);
@@ -391,7 +391,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Sets a left padding of 300px, and a top padding of 50px
      * map.setPadding({left: 300, top: 50});
@@ -411,7 +411,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.rotateTo(30);
      * @example
@@ -432,7 +432,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // resetNorth with an animation of 2 seconds.
      * map.resetNorth({duration: 2000});
@@ -450,7 +450,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // resetNorthPitch with an animation of 2 seconds.
      * map.resetNorthPitch({duration: 2000});
@@ -473,7 +473,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // snapToNorth with an animation of 2 seconds.
      * map.snapToNorth({duration: 2000});
@@ -504,7 +504,7 @@ class Camera extends Evented {
      * @fires pitchstart
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // setPitch with an animation of 2 seconds.
      * map.setPitch(80, {duration: 2000});
@@ -750,7 +750,7 @@ class Camera extends Evented {
      * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
 	 * @example
      * const bbox = [[-79, 43], [-73, 45]];
      * map.fitBounds(bbox, {
@@ -822,7 +822,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
 	 * @example
      * const p0 = [220, 400];
      * const p1 = [500, 900];
@@ -904,7 +904,7 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @fires pitchend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // jump to coordinates at current zoom
      * map.jumpTo({center: [0, 0]});
@@ -1014,7 +1014,7 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @fires pitchend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * const camera = map.getFreeCameraOptions();
      *
@@ -1088,7 +1088,7 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @fires pitchend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      * @example
      * // Ease with default options to null island for 5 seconds
@@ -1301,7 +1301,7 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @fires pitchend
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // fly with default options to null island
      * map.flyTo({center: [0, 0], zoom: 9});
@@ -1486,7 +1486,7 @@ class Camera extends Evented {
      * Stops any animated transition underway.
      *
      * @memberof Map#
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.stop();
      */

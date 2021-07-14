@@ -42,7 +42,7 @@ class LngLatBounds {
      * Set the northeast corner of the bounding box.
      *
      * @param {LngLatLike} ne A {@link LngLatLike} object describing the northeast corner of the bounding box.
-     * @returns {LngLatBounds} Returns `this`.
+     * @returns {LngLatBounds} Returns itself to allow for method chaining.
      * @example
      * const sw = new mapboxgl.LngLat(-73.9876, 40.7661);
      * const ne = new mapboxgl.LngLat(-73.9397, 40.8002);
@@ -58,7 +58,7 @@ class LngLatBounds {
      * Set the southwest corner of the bounding box.
      *
      * @param {LngLatLike} sw A {@link LngLatLike} object describing the southwest corner of the bounding box.
-     * @returns {LngLatBounds} Returns `this`.
+     * @returns {LngLatBounds} Returns itself to allow for method chaining.
      * @example
      * const sw = new mapboxgl.LngLat(-73.9876, 40.7661);
      * const ne = new mapboxgl.LngLat(-73.9397, 40.8002);
@@ -74,7 +74,7 @@ class LngLatBounds {
      * Extend the bounds to include a given LngLatLike or LngLatBoundsLike.
      *
      * @param {LngLatLike|LngLatBoundsLike} obj Object to extend to.
-     * @returns {LngLatBounds} Returns `this`.
+     * @returns {LngLatBounds} Returns itself to allow for method chaining.
      * @example
      * const sw = new mapboxgl.LngLat(-73.9876, 40.7661);
      * const ne = new mapboxgl.LngLat(-73.9397, 40.8002);

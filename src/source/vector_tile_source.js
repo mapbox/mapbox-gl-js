@@ -154,7 +154,7 @@ class VectorTileSource extends Evented implements Source {
      * Sets the source `tiles` property and re-renders the map.
      *
      * @param {string[]} tiles An array of one or more tile source URLs, as in the TileJSON spec.
-     * @returns {VectorTileSource} Returns `this`.
+     * @returns {VectorTileSource} Returns itself to allow for method chaining.
      * @example
      * map.addSource('vector_source_id', {
      *     type: 'vector',
@@ -180,7 +180,7 @@ class VectorTileSource extends Evented implements Source {
      * Sets the source `url` property and re-renders the map.
      *
      * @param {string} url A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`.
-     * @returns {VectorTileSource} Returns `this`.
+     * @returns {VectorTileSource} Returns itself to allow for method chaining.
      * @example
      * map.addSource('vector_source_id', {
      *     type: 'vector',

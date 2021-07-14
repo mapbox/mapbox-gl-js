@@ -548,7 +548,7 @@ class Map extends Camera {
      * @param {IControl} control The {@link IControl} to add.
      * @param {string} [position] Position on the map to which the control will be added.
      * Valid values are `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`. Defaults to `'top-right'`.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Add zoom and rotation controls to the map.
      * map.addControl(new mapboxgl.NavigationControl());
@@ -582,7 +582,7 @@ class Map extends Camera {
      * Removes the control from the map.
      *
      * @param {IControl} control The {@link IControl} to remove.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Define a new navigation control.
      * const navigation = new mapboxgl.NavigationControl();
@@ -631,7 +631,7 @@ class Map extends Camera {
      * @param eventData Additional properties to be passed to `movestart`, `move`, `resize`, and `moveend`
      *   events that get triggered as a result of resize. This can be useful for differentiating the
      *   source of an event (for example, user-initiated or programmatically-triggered events).
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Resize the map when the map container is shown
      * // after being initially hidden with CSS.
@@ -696,7 +696,7 @@ class Map extends Camera {
      * remaining within the bounds.
      *
      * @param {LngLatBoundsLike | null | undefined} bounds The maximum bounds to set. If `null` or `undefined` is provided, the function removes the map's maximum bounds.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Define bounds that conform to the `LngLatBoundsLike` object.
      * const bounds = [
@@ -723,7 +723,7 @@ class Map extends Camera {
      *
      * @param {number | null | undefined} minZoom The minimum zoom level to set (-2 - 24).
      *   If `null` or `undefined` is provided, the function removes the current minimum zoom and it will be reset to -2.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setMinZoom(12.25);
      */
@@ -758,7 +758,7 @@ class Map extends Camera {
      *
      * @param {number | null | undefined} maxZoom The maximum zoom level to set.
      *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 22).
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setMaxZoom(18.75);
      */
@@ -793,9 +793,10 @@ class Map extends Camera {
      *
      * @param {number | null | undefined} minPitch The minimum pitch to set (0-85).
      *   If `null` or `undefined` is provided, the function removes the current minimum pitch (i.e. sets it to 0).
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setMinPitch(5);
+     *   If `null` or `undefined` is provided, the function removes the current minimum pitch and resets it to 0.
      *   If `null` or `undefined` is provided, the function removes the current minimum pitch and resets it to 0.
      */
     setMinPitch(minPitch?: ?number) {
@@ -833,7 +834,7 @@ class Map extends Camera {
      *
      * @param {number | null | undefined} maxPitch The maximum pitch to set.
      *   If `null` or `undefined` is provided, the function removes the current maximum pitch (sets it to 85).
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setMaxPitch(70);
      */
@@ -889,7 +890,7 @@ class Map extends Camera {
      * map and the other on the left edge of the map) at every zoom level.
      *
      * `undefined` is treated as `true`, `null` is treated as `false`.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setRenderWorldCopies(true);
      * @see [Render world copies](https://docs.mapbox.com/mapbox-gl-js/example/render-world-copies/)
@@ -1081,7 +1082,7 @@ class Map extends Camera {
      * happening anywhere on the map, and the event will not have a `features` property.
      * Note that many event types are not compatible with the optional `layerId` parameter.
      * @param {Function} listener The function to be called when the event is fired.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Set an event listener that will fire
      * // when the map has finished loading.
@@ -1153,7 +1154,7 @@ class Map extends Camera {
      * happening anywhere on the map, and the event will not have a `features` property.
      * Note that many event types are not compatible with the optional `layerId` parameter.
      * @param {Function} listener The function to be called when the event is fired.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Log the coordinates of a user's first map touch.
      * map.once('touchstart', (e) => {
@@ -1191,7 +1192,7 @@ class Map extends Camera {
      * @param {string} type The event type previously used to install the listener.
      * @param {string} layerId (optional) The layer ID previously used to install the listener.
      * @param {Function} listener The function previously installed as a listener.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Create a function to print coordinates while a mouse is moving.
      * function onMove(e) {
@@ -1400,7 +1401,7 @@ class Map extends Camera {
      *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
      *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
      *   Forces a full update.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      *
      * @example
      * map.setStyle("mapbox://styles/mapbox/streets-v11");
@@ -1527,7 +1528,7 @@ class Map extends Camera {
      * Mapbox Style Specification's [source definition](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or
      * {@link CanvasSourceOptions}.
      * @fires source.add
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.addSource('my-data', {
      *     type: 'vector',
@@ -1616,7 +1617,7 @@ class Map extends Camera {
      * Removes a source from the map's style.
      *
      * @param {string} id The ID of the source to remove.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.removeSource('bathymetry-data');
      */
@@ -1901,7 +1902,7 @@ class Map extends Camera {
      * If this argument is not specified, the layer will be appended to the end of the layers array
      * and appear visually above all other layers.
      *
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      *
      * @example
      * // Add a circle layer with a vector source
@@ -1971,7 +1972,7 @@ class Map extends Camera {
      *
      * @param {string} id The ID of the layer to move.
      * @param {string} [beforeId] The ID of an existing layer to insert the new layer before. When viewing the map, the `id` layer will appear beneath the `beforeId` layer. If `beforeId` is omitted, the layer will be appended to the end of the layers array and appear above all other layers on the map.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      *
      * @example
      * // Move a layer with ID 'polygon' before the layer with ID 'country-label'. The `polygon` layer will appear beneath the `country-label` layer on the map.
@@ -1988,7 +1989,7 @@ class Map extends Camera {
      * If no such layer exists, an `error` event is fired.
      *
      * @param {string} id ID of the layer to remove.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @fires error
      *
      * @example
@@ -2031,7 +2032,7 @@ class Map extends Camera {
      * @param {string} layerId The ID of the layer to which the zoom extent will be applied.
      * @param {number} minzoom The minimum zoom to set (0-24).
      * @param {number} maxzoom The maximum zoom to set (0-24).
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      *
      * @example
      * map.setLayerZoomRange('my-layer', 2, 5);
@@ -2058,7 +2059,7 @@ class Map extends Camera {
      *   [filter definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      *
      * @example
      * // display only features with the 'name' property 'USA'
@@ -2101,7 +2102,7 @@ class Map extends Camera {
      *   Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setPaintProperty('my-layer', 'fill-color', '#faafee');
      * @see [Change a layer's color with buttons](https://www.mapbox.com/mapbox-gl-js/example/color-switcher/)
@@ -2134,7 +2135,7 @@ class Map extends Camera {
      * @param {*} value The value of the layout property. Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
      * @see [Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
@@ -2163,7 +2164,7 @@ class Map extends Camera {
      * @param light Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * const layerVisibility = map.getLayoutProperty('my-layer', 'visibility');
      * @see [Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
@@ -2191,7 +2192,7 @@ class Map extends Camera {
      *
      * @param terrain Terrain properties to set. Must conform to the [Terrain Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/terrain/).
      * If `null` or `undefined` is provided, function removes terrain.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.addSource('mapbox-dem', {
      *     'type': 'raster-dem',
@@ -2225,7 +2226,7 @@ class Map extends Camera {
      *
      * @param fog The fog properties to set. Must conform the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
      * If `null` or `undefined` is provided, this function call removes the fog from the map.
-     * @returns {Map} Returns `this`.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setFog({
      *     "range": [1.0, 12.0],

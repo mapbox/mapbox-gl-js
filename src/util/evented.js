@@ -65,7 +65,7 @@ export class Evented {
      * @param {Function} listener The function to be called when the event is fired.
      *   The listener function is called with the data object passed to `fire`,
      *   extended with `target` and `type` properties.
-     * @returns {Object} Returns `this`.
+     * @returns {Object} Returns itself to allow for method chaining.
      */
     on(type: *, listener: Listener): this {
         this._listeners = this._listeners || {};
@@ -79,7 +79,7 @@ export class Evented {
      *
      * @param {string} type The event type to remove listeners for.
      * @param {Function} listener The listener function to remove.
-     * @returns {Object} Returns `this`.
+     * @returns {Object} Returns itself to allow for method chaining.
      */
     off(type: *, listener: Listener) {
         _removeEventListener(type, listener, this._listeners);

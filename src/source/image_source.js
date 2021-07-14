@@ -144,7 +144,7 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} Returns `this`.
+     * @returns {ImageSource} Returns itself to allow for method chaining.
      * @example
      * // Add to an image source to the map with some initial URL and coordinates
      * map.addSource('image_source_id', {
@@ -196,7 +196,7 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} Returns `this`.
+     * @returns {ImageSource} Returns itself to allow for method chaining.
      * @example
      * // Add an image source to the map with some initial coordinates
      * map.addSource('image_source_id', {
