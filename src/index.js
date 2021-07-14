@@ -199,7 +199,7 @@ const exported = {
      * Takes precedence over `mapboxgl.workerUrl`.
      *
      * @var {Object} workerClass
-     * @returns {Object|null} Class object, an instance of which exposes the `Worker` interface.
+     * @returns {Object|null} A class that implements the `Worker` interface.
      * @example
      * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js';
      * import MapboxGLWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker.js';
