@@ -1,8 +1,9 @@
 // @flow
 import {lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
+import type {Projection} from './index.js';
 
-export default function tileTransform(id: Object, project: function) {
+export default function tileTransform(id: Object, projection: Projection) {
     const s = Math.pow(2, -id.z);
     const x1 = (id.x) * s;
     const x2 = (id.x + 1) * s;
@@ -22,10 +23,10 @@ export default function tileTransform(id: Object, project: function) {
         const lng = lngFromMercatorX(interpolate(x1, x2, i / n));
         const lat = latFromMercatorY(interpolate(y1, y2, i / n));
 
-        const p0 = project(lng, lat1);
-        const p1 = project(lng, lat2);
-        const p2 = project(lng1, lat);
-        const p3 = project(lng2, lat);
+        const p0 = projection.project(lng, lat1);
+        const p1 = projection.project(lng, lat2);
+        const p2 = projection.project(lng1, lat);
+        const p3 = projection.project(lng2, lat);
 
         minX = Math.min(minX, p0.x, p1.x, p2.x, p3.x);
         maxX = Math.max(maxX, p0.x, p1.x, p2.x, p3.x);

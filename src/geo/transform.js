@@ -3,7 +3,7 @@
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
-import projections from './projection/index.js';
+import getProjection from './projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
@@ -93,6 +93,7 @@ class Transform {
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
     _averageElevation: number;
+    projectionOptions: {name: string} | string;
     projection: Projection;
     _elevation: ?Elevation;
     _fov: number;
@@ -129,7 +130,8 @@ class Transform {
         this.setMaxBounds();
 
         if (!projection) projection = 'mercator';
-        this.projection = projections[projection];
+        this.projectionOptions = projection;
+        this.projection = getProjection(projection);
 
         this.width = 0;
         this.height = 0;
@@ -678,7 +680,7 @@ class Transform {
         const minRange = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
 
         const aabbForTile = (z, x, y, wrap, min, max) => {
-            const tt = tileTransform({z, x, y}, this.projection.project);
+            const tt = tileTransform({z, x, y}, this.projection);
             const tx = tt.x / tt.scale;
             const ty = tt.y / tt.scale;
             const tx2 = tt.x2 / tt.scale;
@@ -1265,7 +1267,7 @@ class Transform {
             scaledX = unwrappedX * scale;
             scaledY = canonical.y * scale;
         } else {
-            const cs = tileTransform(canonical, this.projection.project);
+            const cs = tileTransform(canonical, this.projection);
             scale = 1;
             scaledX = cs.x;
             scaledY = cs.y;
