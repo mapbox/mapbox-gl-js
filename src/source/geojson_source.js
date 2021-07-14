@@ -191,7 +191,7 @@ class GeoJSONSource extends Evented implements Source {
      * @example
      * // Assuming the map has a layer named 'clusters' and a source 'earthquakes'
      * // The following creates a camera animation on cluster feature click
-     * map.on('click', 'clusters', function (e) {
+     * map.on('click', 'clusters', (e) => {
      *     const features = map.queryRenderedFeatures(e.point, {
      *         layers: ['clusters']
      *     });
@@ -205,7 +205,7 @@ class GeoJSONSource extends Evented implements Source {
      *             if (!err) {
      *                 map.easeTo({
      *                     center: features[0].geometry.coordinates,
-     *                     zoom: zoom
+     *                     zoom
      *                 });
      *             }
      *         }
