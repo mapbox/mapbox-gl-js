@@ -139,6 +139,9 @@ class MercatorCoordinate {
      * to transform into `MercatorCoordinate`s.
      *
      * @returns {number} Distance of 1 meter in `MercatorCoordinate` units.
+     * @example
+     * const coord = new mapboxgl.MercatorCoordinate(0, 0, 0.02);
+     * coord.meterInMercatorCoordinateUnits(); // 2.895799898894401e-7
      */
     meterInMercatorCoordinateUnits() {
         // 1 meter / circumference at equator in meters * Mercator projection scale factor at this latitude

@@ -145,6 +145,20 @@ class CanvasSource extends ImageSource {
      * Returns the HTML `canvas` element.
      *
      * @returns {HTMLCanvasElement} The HTML `canvas` element.
+     * @example
+     * // Assuming the following canvas is added to your page
+     * // <canvas id="canvasID" width="400" height="400"></canvas>
+     * map.addSource('canvas-source', {
+     *     type: 'canvas',
+     *     canvas: 'canvasID',
+     *     coordinates: [
+     *         [91.4461, 21.5006],
+     *         [100.3541, 21.5006],
+     *         [100.3541, 13.9706],
+     *         [91.4461, 13.9706]
+     *     ]
+     * });
+     * map.getSource('canvas-source').getCanvas(); // <canvas id="canvasID" width="400" height="400"></canvas>
      */
     getCanvas() {
         return this.canvas;
