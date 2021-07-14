@@ -1833,9 +1833,9 @@
       "requires": [
         "text-field",
         {
-            "symbol-placement": [
+          "symbol-placement": [
             "point"
-            ]
+          ]
         }
       ],
       "sdk-support": {
