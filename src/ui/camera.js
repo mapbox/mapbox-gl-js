@@ -162,7 +162,7 @@ class Camera extends Evented {
      * Returns the map's geographical centerpoint.
      *
      * @memberof Map#
-     * @returns The map's geographical centerpoint.
+     * @returns {LngLatLike} The map's geographical centerpoint.
      * @example
      * // return a LngLat object such as {lng: 0, lat: 0}
      * const center = map.getCenter();
@@ -232,7 +232,7 @@ class Camera extends Evented {
      * Returns the map's current zoom level.
      *
      * @memberof Map#
-     * @returns The map's current zoom level.
+     * @returns {Number} The map's current zoom level.
      * @example
      * map.getZoom();
      */
@@ -338,7 +338,7 @@ class Camera extends Evented {
      * of 90° orients the map so that east is up.
      *
      * @memberof Map#
-     * @returns The map's current bearing.
+     * @returns {Number} The map's current bearing.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     getBearing(): number { return this.transform.bearing; }
@@ -356,7 +356,7 @@ class Camera extends Evented {
      * @fires moveend
      * @returns {Map} `this`
      * @example
-     * // rotate the map to 90 degrees
+     * // Rotate the map to 90 degrees.
      * map.setBearing(90);
      */
     setBearing(bearing: number, eventData?: Object) {
@@ -368,7 +368,7 @@ class Camera extends Evented {
      * Returns the current padding applied around the map viewport.
      *
      * @memberof Map#
-     * @returns The current padding around the map viewport.
+     * @returns {PaddingOptions} The current padding around the map viewport.
      */
     getPadding(): PaddingOptions { return this.transform.padding; }
 
@@ -463,15 +463,15 @@ class Camera extends Evented {
     }
 
     /**
-     * Returns the map's current pitch (tilt).
+     * Returns the map's current [pitch](https://docs.mapbox.com/help/glossary/camera/) (tilt).
      *
      * @memberof Map#
-     * @returns The map's current pitch, measured in degrees away from the plane of the screen.
+     * @returns {Number} The map's current pitch, measured in degrees away from the plane of the screen.
      */
     getPitch(): number { return this.transform.pitch; }
 
     /**
-     * Sets the map's pitch (tilt). Equivalent to `jumpTo({pitch: pitch})`.
+     * Sets the map's [pitch](https://docs.mapbox.com/help/glossary/camera/) (tilt). Equivalent to `jumpTo({pitch: pitch})`.
      *
      * @memberof Map#
      * @param pitch The pitch to set, measured in degrees away from the plane of the screen (0-60).
@@ -487,6 +487,9 @@ class Camera extends Evented {
     }
 
     /**
+     * Returns a {@link CameraOptions} object for the highest zoom level
+     * up to and including `Map#getMaxZoom()` that fits the bounds
+     * in the viewport at the specified bearing.
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
      *      the highest zoom level up to and including `Map#getMaxZoom()` that fits

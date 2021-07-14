@@ -677,7 +677,7 @@ class Map extends Camera {
 
     /**
      * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
-     * @returns The map object.
+     * @returns {Map} The map object.
      * @example
      * const maxBounds = map.getMaxBounds();
      */
@@ -3290,7 +3290,7 @@ function removeNode(node) {
  * A [`Point` geometry](https://github.com/mapbox/point-geometry) object, which has
  * `x` and `y` properties representing screen coordinates in pixels.
  *
- * @typedef {Object} Point
+ * @typedef {Point} Point
  * @example
  * const point = new mapboxgl.Point(-77, 38);
  */

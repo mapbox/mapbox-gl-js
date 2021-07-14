@@ -183,6 +183,8 @@ export default class Popup extends Evented {
     }
 
     /**
+     * Checks if a popup is open.
+     *
      * @returns {boolean} `true` if the popup is open, `false` if it is closed.
      */
     isOpen() {
