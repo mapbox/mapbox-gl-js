@@ -99,7 +99,17 @@ export function orientationFromFrame(forward: vec3, up: vec3): ?quat {
          - Pitch has an upper limit
  * @see [Animate the camera around a point in 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
  * @see [Animate the camera along a path](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-path/)
-*/
+ * @example
+ * const camera = map.getFreeCameraOptions();
+ *
+ * const position = [138.72649, 35.33974];
+ * const altitude = 3000;
+ *
+ * camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+ * camera.lookAtPoint([138.73036, 35.36197]);
+ *
+ * map.setFreeCameraOptions(camera);
+ */
 class FreeCameraOptions {
     orientation: ?quat;
     _position: ?MercatorCoordinate;
@@ -126,6 +136,16 @@ class FreeCameraOptions {
      * @param {LngLatLike} location Location of the focus point on the map
      * @param {vec3?} up Up vector of the camera is necessary in certain scenarios where bearing can't be deduced
      *      from the viewing direction.
+     * @example
+     * const camera = map.getFreeCameraOptions();
+     *
+     * const position = [138.72649, 35.33974];
+     * const altitude = 3000;
+     *
+     * camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+     * camera.lookAtPoint([138.73036, 35.36197]);
+     *
+     * map.setFreeCameraOptions(camera);
      */
     lookAtPoint(location: LngLatLike, up?: vec3) {
         this.orientation = null;
@@ -151,6 +171,12 @@ class FreeCameraOptions {
      *
      * @param {number} pitch Pitch angle in degrees
      * @param {number} bearing Bearing angle in degrees
+     * @example
+     * const camera = map.getFreeCameraOptions();
+     *
+     * // Update camera pitch and bearing
+     * camera.setPitchBearing(80, 90);
+     * @example
      */
     setPitchBearing(pitch: number, bearing: number) {
         this.orientation = orientationFromPitchBearing(degToRad(pitch), degToRad(-bearing));
