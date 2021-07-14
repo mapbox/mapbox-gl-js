@@ -110,10 +110,9 @@ const sourceTypes = {
  * Creates a tiled data source instance given an options object.
  *
  * @param id The id for the source. Must not be used by any existing source.
- * @param {Object} source A source definition object compliant with
+ * @param {SourceSpecification} specification A source definition object compliant with
  * [`mapbox-gl-style-spec`](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or, for a third-party source type,
  * with that type's requirements.
- * @param {SourceSpecification} specification JSON representation of the source being created.
  * @param {Dispatcher} dispatcher A {@link Dispatcher} instance, which can be used to send messages to the workers.
  * @param {Evented} eventedParent The object to which events bubble up to.
  * @returns {Source} An instance of an object compliant with the {@link Source} interface.

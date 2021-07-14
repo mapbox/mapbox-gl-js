@@ -1346,7 +1346,7 @@ class Map extends Camera {
      *   to limit query results.
      * @param {boolean} [parameters.validate=true] Whether to check if the [parameters.filter] conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      *
-     * @returns {Array<object>} An array of [GeoJSON](http://geojson.org/)
+     * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
      * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * In contrast to {@link Map#queryRenderedFeatures}, this function returns all features matching the query parameters,
@@ -3300,14 +3300,17 @@ function removeNode(node) {
  * `x` and `y` properties representing screen coordinates in pixels.
  *
  * @typedef {Object} Point
- * @property
- * var point = new mapboxgl.Point(-77, 38);.
+ * @property {number} x The x coordinate
+ * @property {number} y The y coordinate
+ * @example
+ * const point = new mapboxgl.Point(-77, 38);.
  */
 
 /**
  * A {@link Point} or an array of two numbers representing `x` and `y` screen coordinates in pixels.
  *
  * @typedef {(Point | Array<number>)} PointLike
- * var p1 = new mapboxgl.Point(-77, 38); // a PointLike which is a Point
- * var p2 = [-77, 38]; // a PointLike which is an array of two numbers
+ * @example
+ * const p1 = new mapboxgl.Point(-77, 38); // a PointLike which is a Point
+ * const p2 = [-77, 38]; // a PointLike which is an array of two numbers
  */
