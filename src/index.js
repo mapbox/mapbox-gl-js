@@ -119,7 +119,7 @@ const exported = {
     },
 
     /**
-     * Gets and sets the number of web workers instantiated on a page with GL JS maps.
+     * Gets and sets the number of web workers instantiated on a page with Mapbox GL JS maps.
      * By default, it is set to 2.
      * Make sure to set this property before creating any map instances for it to have effect.
      *
@@ -209,7 +209,7 @@ const exported = {
     workerClass: null,
 
     /**
-     * Sets the time used by GL JS internally for all animations. Useful for generating videos from GL JS.
+     * Sets the time used by Mapbox GL JS internally for all animations. Useful for generating videos from Mapbox GL JS.
      * @var {number} time
      */
     setNow: browser.setNow,
