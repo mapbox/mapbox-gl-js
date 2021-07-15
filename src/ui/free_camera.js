@@ -144,7 +144,7 @@ class FreeCameraOptions {
      *
      * camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
      * camera.lookAtPoint([138.73036, 35.36197]);
-     *
+     * // Apply camera changes
      * map.setFreeCameraOptions(camera);
      */
     lookAtPoint(location: LngLatLike, up?: vec3) {
@@ -176,6 +176,8 @@ class FreeCameraOptions {
      *
      * // Update camera pitch and bearing
      * camera.setPitchBearing(80, 90);
+     * // Apply changes
+     * map.setFreeCameraOptions(camera);
      */
     setPitchBearing(pitch: number, bearing: number) {
         this.orientation = orientationFromPitchBearing(degToRad(pitch), degToRad(-bearing));
