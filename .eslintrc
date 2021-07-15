@@ -169,7 +169,7 @@
         "jsdoc/check-line-alignment": "warn",
         "jsdoc/check-property-names": "warn",
         "jsdoc/check-tag-names": "warn",
-        "jsdoc/check-types": "warn",
+        "jsdoc/check-types": "error",
         "jsdoc/newline-after-description": "warn",
         "jsdoc/no-bad-blocks": "warn",
         "jsdoc/require-description": "warn",

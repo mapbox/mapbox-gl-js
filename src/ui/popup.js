@@ -48,7 +48,7 @@ const focusQuerySelector = [
 /**
  * A popup component.
  *
- * @param {Object} [options]
+ * @param {object} [options]
  * @param {boolean} [options.closeButton=true] If `true`, a close button will appear in the
  *   top right corner of the popup.
  * @param {boolean} [options.closeOnClick=true] If `true`, the popup will close when the
@@ -63,7 +63,7 @@ const focusQuerySelector = [
  *   `'top-right'`, `'bottom-left'`, and `'bottom-right'`. If unset, the anchor will be
  *   dynamically set to ensure the popup falls within the map container with a preference
  *   for `'bottom'`.
- * @param {number|PointLike|Object} [options.offset] -
+ * @param {number | PointLike | object} [options.offset] -
  *  A pixel offset applied to the popup's location specified as:
  *   - a single number specifying a distance from the popup's location
  *   - a {@link PointLike} specifying a constant offset
@@ -164,7 +164,7 @@ export default class Popup extends Evented {
          * @event open
          * @memberof Popup
          * @instance
-         * @type {Object}
+         * @type {object}
          * @property {Popup} popup object that was opened
          *
          * @example
@@ -226,7 +226,7 @@ export default class Popup extends Evented {
          * @event close
          * @memberof Popup
          * @instance
-         * @type {Object}
+         * @type {object}
          * @property {Popup} popup object that was closed
          *
          * @example

@@ -24,10 +24,10 @@ const defaultOptions: Options = {
  * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
- * @param {Object} [options]
- * @param {Boolean} [options.showCompass=true] If `true` the compass button is included.
- * @param {Boolean} [options.showZoom=true] If `true` the zoom-in and zoom-out buttons are included.
- * @param {Boolean} [options.visualizePitch=false] If `true` the pitch is visualized by rotating X-axis of compass.
+ * @param {object} [options]
+ * @param {boolean} [options.showCompass=true] If `true` the compass button is included.
+ * @param {boolean} [options.showZoom=true] If `true` the zoom-in and zoom-out buttons are included.
+ * @param {boolean} [options.visualizePitch=false] If `true` the pitch is visualized by rotating X-axis of compass.
  * @example
  * const nav = new mapboxgl.NavigationControl();
  * map.addControl(nav, 'top-left');

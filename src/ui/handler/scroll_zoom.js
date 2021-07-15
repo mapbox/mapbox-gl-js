@@ -124,7 +124,7 @@ class ScrollZoomHandler {
     /**
      * Enables the "scroll to zoom" interaction.
      *
-     * @param {Object} [options] Options object.
+     * @param {object} [options] Options object.
      * @param {string} [options.around] If "center" is passed, map will zoom around center of map
      *
      * @example

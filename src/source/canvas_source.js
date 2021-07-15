@@ -23,7 +23,7 @@ export type CanvasSourceSpecification = {|
 /**
  * Options to add a canvas source type to the map.
  *
- * @typedef {Object} CanvasSourceOptions
+ * @typedef {object} CanvasSourceOptions
  * @property {string} type Source type. Must be `"canvas"`.
  * @property {string|HTMLCanvasElement} canvas Canvas source from which to read pixels. Can be a string representing the ID of the canvas element, or the `HTMLCanvasElement` itself.
  * @property {Array<Array<number>>} coordinates Four geographical coordinates denoting where to place the corners of the canvas, specified in `[longitude, latitude]` pairs.
