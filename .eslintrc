@@ -91,7 +91,10 @@
   },
   "settings": {
     "jsdoc":{
-      "ignorePrivate": true
+      "ignorePrivate": true,
+      "preferredTypes": {
+        "object": "Object"
+      }
     }
   },
   "overrides": [

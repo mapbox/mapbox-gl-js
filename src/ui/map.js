@@ -181,13 +181,13 @@ const defaultOptions = {
  * object.
  *
  * @extends Evented
- * @param {object} options
+ * @param {Object} options
  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
  * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
  * @param {number} [options.minPitch=0] The minimum pitch of the map (0-85).
  * @param {number} [options.maxPitch=85] The maximum pitch of the map (0-85).
- * @param {object | string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
+ * @param {Object | string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
  *
@@ -227,21 +227,21 @@ const defaultOptions = {
  * @param {boolean} [options.antialias] If `true`, the gl context will be created with MSAA antialiasing, which can be useful for antialiasing custom layers. this is `false` by default as a performance optimization.
  * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
  * @param {LngLatBoundsLike} [options.maxBounds] If set, the map will be constrained to the given bounds.
- * @param {boolean | object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
+ * @param {boolean | Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
  * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see {@link BoxZoomHandler}).
  * @param {boolean} [options.dragRotate=true] If `true`, the "drag to rotate" interaction is enabled (see {@link DragRotateHandler}).
- * @param {boolean | object} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled. An `Object` value is passed as options to {@link DragPanHandler#enable}.
+ * @param {boolean | Object} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled. An `Object` value is passed as options to {@link DragPanHandler#enable}.
  * @param {boolean} [options.keyboard=true] If `true`, keyboard shortcuts are enabled (see {@link KeyboardHandler}).
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
- * @param {boolean | object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
- * @param {boolean | object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler#enable}.
+ * @param {boolean | Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
+ * @param {boolean | Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler#enable}.
  * @param {boolean} [options.trackResize=true]  If `true`, the map will automatically resize when the browser window resizes.
  * @param {LngLatLike} [options.center=[0, 0]] The inital geographical centerpoint of the map. If `center` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: Mapbox GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
  * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
- * @param {object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
+ * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
  * @param {boolean} [options.optimizeForTerrain=true] With terrain on, if `true`, the map will render for performance priority, which may lead to layer reordering allowing to maximize performance (layers that are draped over terrain will be drawn first, including fill, line, background, hillshade and raster). Otherwise, if set to `false`, the map will always be drawn for layer order priority.
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
  * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire
@@ -263,7 +263,7 @@ const defaultOptions = {
  * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @param {string} [options.accessToken=null] If specified, map will use this token instead of the one defined in mapboxgl.accessToken.
- * @param {object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
+ * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
  * @example
@@ -1241,14 +1241,14 @@ class Map extends Camera {
      * or with only an `options` argument) is equivalent to passing a bounding box encompassing the entire
      * map viewport.
      * Only values within the existing viewport are supported.
-     * @param {object} [options] Options object.
+     * @param {Object} [options] Options object.
      * @param {Array<string>} [options.layers] An array of [style layer IDs](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-id) for the query to inspect.
      *   Only features within these layers will be returned. If this parameter is undefined, all layers will be checked.
      * @param {Array} [options.filter] A [filter](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter)
      *   to limit query results.
      * @param {boolean} [options.validate=true] Whether to check if the [options.filter] conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      *
-     * @returns {Array<object>} An array of [GeoJSON](http://geojson.org/)
+     * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
      * [feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
@@ -1341,14 +1341,14 @@ class Map extends Camera {
      * representing features within the specified vector tile or GeoJSON source that satisfy the query parameters.
      *
      * @param {string} sourceId The ID of the vector tile or GeoJSON source to query.
-     * @param {object} [parameters] Options object.
+     * @param {Object} [parameters] Options object.
      * @param {string} [parameters.sourceLayer] The name of the [source layer](https://docs.mapbox.com/help/glossary/source-layer/)
      *   to query. *For vector tile sources, this parameter is required.* For GeoJSON sources, it is ignored.
      * @param {Array} [parameters.filter] A [filter](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter)
      *   to limit query results.
      * @param {boolean} [parameters.validate=true] Whether to check if the [parameters.filter] conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      *
-     * @returns {Array<object>} An array of [GeoJSON](http://geojson.org/)
+     * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
      * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * In contrast to {@link Map#queryRenderedFeatures}, this function returns all features matching the query parameters,
@@ -1388,7 +1388,7 @@ class Map extends Camera {
      *
      * @param style A JSON object conforming to the schema described in the
      *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
-     * @param {object} [options] Options object.
+     * @param {Object} [options] Options object.
      * @param {boolean} [options.diff=true] If false, force a 'full' update, removing the current style
      *   and building the given one instead of attempting a diff-based update.
      * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
@@ -1488,7 +1488,7 @@ class Map extends Camera {
     /**
      * Returns the map's Mapbox [style](https://docs.mapbox.com/help/glossary/style/) object, a JSON object which can be used to recreate the map's style.
      *
-     * @returns {object} The map's style JSON object.
+     * @returns {Object} The map's style JSON object.
      *
      * @example
      * map.on('load', () => {
@@ -1519,7 +1519,7 @@ class Map extends Camera {
      * Adds a source to the map's style.
      *
      * @param {string} id The ID of the source to add. Must not conflict with existing sources.
-     * @param {object} source The source object, conforming to the
+     * @param {Object} source The source object, conforming to the
      * Mapbox Style Specification's [source definition](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or
      * {@link CanvasSourceOptions}.
      * @fires source.add
@@ -1631,7 +1631,7 @@ class Map extends Camera {
      * of an image source.
      *
      * @param {string} id The ID of the source to get.
-     * @returns {?object} The style source with the specified ID or `undefined` if the ID
+     * @returns {?Object} The style source with the specified ID or `undefined` if the ID
      * corresponds to no existing sources.
      * The shape of the object varies by source type.
      * A list of options for each source type is available on the Mapbox Style Specification's
@@ -1854,7 +1854,7 @@ class Map extends Camera {
      * A layer defines how data from a specified source will be styled. Read more about layer types
      * and available paint and layout properties in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers).
      *
-     * @param {object | CustomLayerInterface} layer The layer to add, conforming to either the Mapbox Style Specification's [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers) or, less commonly, the {@link CustomLayerInterface} specification.
+     * @param {Object | CustomLayerInterface} layer The layer to add, conforming to either the Mapbox Style Specification's [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers) or, less commonly, the {@link CustomLayerInterface} specification.
      * The Mapbox Style Specification's layer definition is appropriate for most layers.
      *
      * @param {string} layer.id A unique identifier that you define.
@@ -1862,7 +1862,7 @@ class Map extends Camera {
      * A list of layer types is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#type).
      *
      * (This can also be `custom`. For more information, see {@link CustomLayerInterface}.)
-     * @param {string | object} [layer.source] The data source for the layer.
+     * @param {string | Object} [layer.source] The data source for the layer.
      * Reference a source that has _already been defined_ using the source's unique id.
      * Reference a _new source_ using a source object (as defined in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/)) directly.
      * This is **required** for all `layer.type` options _except_ for `custom` and `background`.
@@ -1873,11 +1873,11 @@ class Map extends Camera {
      * The Mapbox Style Specification includes more information on the limitations of the [`filter`](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter) parameter
      * and a complete list of available [expressions](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/).
      * If no filter is provided, all features in the source (or source layer for vector tilesets) will be displayed.
-     * @param {object} [layer.paint] (optional) Paint properties for the layer.
+     * @param {Object} [layer.paint] (optional) Paint properties for the layer.
      * Available paint properties vary by `layer.type`.
      * A full list of paint properties for each layer type is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/).
      * If no paint properties are specified, default values will be used.
-     * @param {object} [layer.layout] (optional) Layout properties for the layer.
+     * @param {Object} [layer.layout] (optional) Layout properties for the layer.
      * Available layout properties vary by `layer.type`.
      * A full list of layout properties for each layer type is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/).
      * If no layout properties are specified, default values will be used.
@@ -1889,7 +1889,7 @@ class Map extends Camera {
      * At zoom levels less than the minzoom, the layer will be hidden.
      * The value can be any number between `0` and `24` (inclusive).
      * If no minzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
-     * @param {object} [layer.metadata] (optional) Arbitrary properties useful to track with the layer, but do not influence rendering.
+     * @param {Object} [layer.metadata] (optional) Arbitrary properties useful to track with the layer, but do not influence rendering.
      * @param {string} [layer.renderingMode] This is only applicable for layers with the type `custom`.
      * See {@link CustomLayerInterface} for more information.
      * @param {string} [beforeId] The ID of an existing layer to insert the new layer before,
@@ -2000,7 +2000,7 @@ class Map extends Camera {
      * Returns the layer with the specified ID in the map's style.
      *
      * @param {string} id The ID of the layer to get.
-     * @returns {?object} The layer with the specified ID, or `undefined`
+     * @returns {?Object} The layer with the specified ID, or `undefined`
      *   if the ID corresponds to no existing layers.
      *
      * @example
@@ -2052,7 +2052,7 @@ class Map extends Camera {
      * @param {string} layerId The ID of the layer to which the filter will be applied.
      * @param {Array | null | undefined} filter The filter, conforming to the Mapbox Style Specification's
      *   [filter definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
-     * @param {object} [options] Options object.
+     * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      *
@@ -2095,7 +2095,7 @@ class Map extends Camera {
      * @param {string} name The name of the paint property to set.
      * @param {*} value The value of the paint property to set.
      *   Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
-     * @param {object} [options] Options object.
+     * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      * @example
@@ -2128,7 +2128,7 @@ class Map extends Camera {
      * @param {string} layerId The ID of the layer to set the layout property in.
      * @param {string} name The name of the layout property to set.
      * @param {*} value The value of the layout property. Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
-     * @param {object} [options] Options object.
+     * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      * @example
@@ -2157,7 +2157,7 @@ class Map extends Camera {
      * Sets the any combination of light values.
      *
      * @param light Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
-     * @param {object} [options] Options object.
+     * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      * @example
@@ -2173,7 +2173,7 @@ class Map extends Camera {
     /**
      * Returns the value of the light object.
      *
-     * @returns {object} light Light properties of the style.
+     * @returns {Object} light Light properties of the style.
      * @example
      * const light = map.getLight();
      */
@@ -2208,7 +2208,7 @@ class Map extends Camera {
     /**
      * Returns the terrain specification or `null` if terrain isn't set on the map.
      *
-     * @returns {object} terrain Terrain specification properties of the style.
+     * @returns {Object} terrain Terrain specification properties of the style.
      * @example
      * const terrain = map.getTerrain();
      */
@@ -2238,7 +2238,7 @@ class Map extends Camera {
     /**
      * Returns the fog specification or `null` if fog is not set on the map.
      *
-     * @returns {object} fog Fog specification properties of the style.
+     * @returns {Object} fog Fog specification properties of the style.
      * @example
      * const fog = map.getFog();
      */
@@ -2300,12 +2300,12 @@ class Map extends Camera {
      *
      * _Note: You can use the [`feature-state` expression](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#feature-state) to access the values in a feature's state object for the purposes of styling._
      *
-     * @param {object} feature Feature identifier. Feature objects returned from
+     * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
-     * @param {object} state A set of key-value pairs. The values should be valid JSON types.
+     * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
      * @returns {Map} The map object.
      * @example
      * // When the mouse moves over the `my-layer` layer, update
@@ -2338,7 +2338,7 @@ class Map extends Camera {
      * If `key` is also specified, it removes only that key from that feature's state.
      * Features are identified by their `feature.id` attribute, which can be any number or string.
      *
-     * @param {object} feature Identifier of where to remove state. It can be a source, a feature, or a specific key of feature.
+     * @param {Object} feature Identifier of where to remove state. It can be a source, a feature, or a specific key of feature.
      * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
@@ -2389,13 +2389,13 @@ class Map extends Camera {
      *
      * _Note: To access the values in a feature's state object for the purposes of styling the feature, use the [`feature-state` expression](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#feature-state)._
      *
-     * @param {object} feature Feature identifier. Feature objects returned from
+     * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      *
-     * @returns {object} The state of the feature: a set of key-value pairs that was assigned to the feature at runtime.
+     * @returns {Object} The state of the feature: a set of key-value pairs that was assigned to the feature at runtime.
      *
      * @example
      * // When the mouse moves over the `my-layer` layer,
@@ -3320,7 +3320,7 @@ function removeNode(node) {
  * A [`Point` geometry](https://github.com/mapbox/point-geometry) object, which has
  * `x` and `y` properties representing screen coordinates in pixels.
  *
- * @typedef {object} Point
+ * @typedef {Object} Point
  * @example
  * const point = new mapboxgl.Point(-77, 38);
  */

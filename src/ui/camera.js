@@ -34,7 +34,7 @@ import type {PaddingOptions} from '../geo/edge_insets.js';
  * zoom, bearing, and pitch of the camera. All properties are optional, and when a property is omitted, the current
  * camera value for that property will remain unchanged.
  *
- * @typedef {object} CameraOptions
+ * @typedef {Object} CameraOptions
  * @property {LngLatLike} center The desired center.
  * @property {number} zoom The desired zoom level.
  * @property {number} bearing The desired bearing in degrees. The bearing is the compass direction that
@@ -74,7 +74,7 @@ export type CameraOptions = {
  * {@link Map#easeTo}, controlling the duration and easing function of the animation. All properties
  * are optional.
  *
- * @typedef {object} AnimationOptions
+ * @typedef {Object} AnimationOptions
  * @property {number} duration The animation's duration, measured in milliseconds.
  * @property {Function} easing A function taking a time in the range 0..1 and returning a number where 0 is
  *   the initial state and 1 is the final state.
@@ -105,7 +105,7 @@ export type ElevationBoxRaycast = {
  * Options for setting padding on calls to methods such as {@link Map#fitBounds}, {@link Map#fitScreenCoordinates}, and {@link Map#setPadding}. Adjust these options to set the amount of padding in pixels added to the edges of the canvas. Set a uniform padding on all edges or individual values for each edge. All properties of this object must be
  * non-negative integers.
  *
- * @typedef {object} PaddingOptions
+ * @typedef {Object} PaddingOptions
  * @property {number} top Padding in pixels from the top of the map canvas.
  * @property {number} bottom Padding in pixels from the bottom of the map canvas.
  * @property {number} left Padding in pixels from the left of the map canvas.
@@ -733,7 +733,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @param bounds Center these bounds in the viewport and use the highest
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
-     * @param {object} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
+     * @param {Object} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
@@ -741,7 +741,7 @@ class Camera extends Evented {
      * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
-     * @param {object} [eventData] Additional properties to be added to event objects of events triggered by this method.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -1264,7 +1264,7 @@ class Camera extends Evented {
      * unless 'options' includes `essential: true`.
      *
      * @memberof Map#
-     * @param {object} options Options describing the destination and animation of the transition.
+     * @param {Object} options Options describing the destination and animation of the transition.
      *     Accepts {@link CameraOptions}, {@link AnimationOptions},
      *     and the following additional options.
      * @param {number} [options.curve=1.42] The zooming "curve" that will occur along the
