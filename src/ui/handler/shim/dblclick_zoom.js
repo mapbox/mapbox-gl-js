@@ -55,7 +55,7 @@ export default class DoubleClickZoomHandler {
     }
 
     /**
-     * Returns a Boolean indicating whether the "double click to zoom" interaction is active, i.e. currently being used.
+     * Returns a Boolean indicating whether the "double click to zoom" interaction is active (currently being used).
      *
      * @returns {boolean} `true` if the "double click to zoom" interaction is active.
      * @example

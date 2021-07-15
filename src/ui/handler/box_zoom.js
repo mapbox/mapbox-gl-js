@@ -47,7 +47,7 @@ class BoxZoomHandler {
     }
 
     /**
-     * Returns a Boolean indicating whether the "box zoom" interaction is active, i.e. currently being used.
+     * Returns a Boolean indicating whether the "box zoom" interaction is active (currently being used).
      *
      * @returns {boolean} `true` if the "box zoom" interaction is active.
      * @example

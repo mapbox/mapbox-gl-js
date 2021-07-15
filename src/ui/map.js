@@ -222,7 +222,7 @@ const defaultOptions = {
  * @param {string | Array<string>} [options.customAttribution] String or strings to show in an {@link AttributionControl}. Only applicable if `options.attributionControl` is `true`.
  * @param {string} [options.logoPosition='bottom-left'] A string representing the position of the Mapbox wordmark on the map. Valid options are `top-left`,`top-right`, `bottom-left`, `bottom-right`.
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox
- *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
+ *   GL JS would be dramatically worse than expected (for example, a software renderer would be used).
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
  * @param {boolean} [options.antialias] If `true`, the gl context will be created with MSAA antialiasing, which can be useful for antialiasing custom layers. this is `false` by default as a performance optimization.
  * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
@@ -722,7 +722,7 @@ class Map extends Camera {
      * no matter what the `minZoom` is set to.
      *
      * @param {number | null | undefined} minZoom The minimum zoom level to set (-2 - 24).
-     *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to -2).
+     *   If `null` or `undefined` is provided, the function removes the current minimum zoom and sets it to -2.
      * @returns {Map} `this`
      * @example
      * map.setMinZoom(12.25);
@@ -792,7 +792,7 @@ class Map extends Camera {
      * the map will pitch to the new minimum.
      *
      * @param {number | null | undefined} minPitch The minimum pitch to set (0-85).
-     *   If `null` or `undefined` is provided, the function removes the current minimum pitch (i.e. sets it to 0).
+     *   If `null` or `undefined` is provided, the function removes the current minimum pitch and sets it to 0.
      * @returns {Map} `this`
      * @example
      * map.setMinPitch(5);
@@ -1237,7 +1237,7 @@ class Map extends Camera {
      *
      * @param {PointLike|Array<PointLike>} [geometry] - The geometry of the query region in pixels:
      * either a single point or bottom left and top right points describing a bounding box, where the origin is at the top left.
-     * Omitting this parameter (i.e. calling {@link Map#queryRenderedFeatures} with zero arguments,
+     * Omitting this parameter (for example, calling {@link Map#queryRenderedFeatures} with zero arguments,
      * or with only an `options` argument) is equivalent to passing a bounding box encompassing the entire
      * map viewport.
      * Only values within the existing viewport are supported.
@@ -1252,7 +1252,7 @@ class Map extends Camera {
      * [feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
-     * string and numeric property values are supported (i.e. `null`, `Array`, and `Object` values are not supported).
+     * string and numeric property values are supported. `null`, `Array`, and `Object` values are not supported.
      *
      * Each feature includes top-level `layer`, `source`, and `sourceLayer` properties. The `layer` property is an object
      * representing the style layer to  which the feature belongs. Layout and paint properties in this object contain values
@@ -1352,7 +1352,7 @@ class Map extends Camera {
      * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * In contrast to {@link Map#queryRenderedFeatures}, this function returns all features matching the query parameters,
-     * whether or not they are rendered by the current style (i.e. visible). The domain of the query includes all currently-loaded
+     * whether or not they are rendered by the current style (in other words, visible). The domain of the query includes all currently-loaded
      * vector tiles and GeoJSON source tiles: this function does not check tiles outside the currently
      * visible viewport.
      *

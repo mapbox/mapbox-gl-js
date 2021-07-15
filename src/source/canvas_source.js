@@ -27,7 +27,7 @@ export type CanvasSourceSpecification = {|
  * @property {string} type Source type. Must be `"canvas"`.
  * @property {string|HTMLCanvasElement} canvas Canvas source from which to read pixels. Can be a string representing the ID of the canvas element, or the `HTMLCanvasElement` itself.
  * @property {Array<Array<number>>} coordinates Four geographical coordinates denoting where to place the corners of the canvas, specified in `[longitude, latitude]` pairs.
- * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (i.e. pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
+ * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (meaning pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
  */
 
 /**

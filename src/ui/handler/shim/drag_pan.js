@@ -82,7 +82,7 @@ export default class DragPanHandler {
     }
 
     /**
-     * Returns a Boolean indicating whether the "drag to pan" interaction is active, i.e. currently being used.
+     * Returns a Boolean indicating whether the "drag to pan" interaction is active (currently being used).
      *
      * @returns {boolean} `true` if the "drag to pan" interaction is active.
      * @example
