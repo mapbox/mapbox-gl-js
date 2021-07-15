@@ -157,6 +157,24 @@ class GeoJSONSource extends Evented implements Source {
      *
      * @param {Object|string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
      * @returns {GeoJSONSource} this
+     * @example
+     * map.addSource('source_id', {
+     *     type: 'geojson',
+     *     data: {}
+     * });
+     * const geojsonSource = map.getSource('source_id');
+     * // Update the data after the geojson source was created
+     * geojsonSource.setData({
+     *     "type": "FeatureCollection",
+     *     "features": [{
+     *         "type": "Feature",
+     *         "properties": {"name": "Null Island"},
+     *         "geometry": {
+     *             "type": "Point",
+     *             "coordinates": [ 0, 0 ]
+     *         }
+     *     }]
+     * });
      */
     setData(data: GeoJSON | string) {
         this._data = data;
@@ -170,6 +188,29 @@ class GeoJSONSource extends Evented implements Source {
      * @param clusterId The value of the cluster's `cluster_id` property.
      * @param callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
      * @returns {GeoJSONSource} this
+     * @example
+     * // Assuming the map has a layer named 'clusters' and a source 'earthquakes'
+     * // The following creates a camera animation on cluster feature click
+     * map.on('click', 'clusters', (e) => {
+     *     const features = map.queryRenderedFeatures(e.point, {
+     *         layers: ['clusters']
+     *     });
+     *
+     *     const clusterId = features[0].properties.cluster_id;
+     *
+     *     // Ease the camera to the next cluster expansion
+     *     map.getSource('earthquakes').getClusterExpansionZoom(
+     *         clusterId,
+     *         (err, zoom) => {
+     *             if (!err) {
+     *                 map.easeTo({
+     *                     center: features[0].geometry.coordinates,
+     *                     zoom
+     *                 });
+     *             }
+     *         }
+     *     );
+     * });
      */
     getClusterExpansionZoom(clusterId: number, callback: Callback<number>) {
         this.actor.send('geojson.getClusterExpansionZoom', {clusterId, source: this.id}, callback);
@@ -182,6 +223,22 @@ class GeoJSONSource extends Evented implements Source {
      * @param clusterId The value of the cluster's `cluster_id` property.
      * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
      * @returns {GeoJSONSource} this
+     * @example
+     * // Retrieve cluster children on click
+     * map.on('click', 'clusters', (e) => {
+     *     const features = map.queryRenderedFeatures(e.point, {
+     *         layers: ['clusters']
+     *     });
+     *
+     *     const clusterId = features[0].properties.cluster_id;
+     *
+     *     clusterSource.getClusterChildren(clusterId, (error, features) => {
+     *         if (!error) {
+     *             console.log('Cluster children:', features);
+     *         }
+     *     });
+     * });
+     *
      */
     getClusterChildren(clusterId: number, callback: Callback<Array<GeoJSONFeature>>) {
         this.actor.send('geojson.getClusterChildren', {clusterId, source: this.id}, callback);
