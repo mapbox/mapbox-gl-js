@@ -616,7 +616,9 @@
           "doc": "A spherical dome around the map that is always rendered behind all other layers.",
           "sdk-support": {
             "basic functionality": {
-              "js": "2.0.0"
+              "js": "2.0.0",
+              "ios": "10.0.0",
+              "android": "10.0.0"
             }
           }
         }
@@ -712,7 +714,9 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "property-type": "constant"
@@ -3184,7 +3188,9 @@
         "group": "sky",
         "sdk-support": {
           "basic functionality": {
-            "js": "2.0.0"
+            "js": "2.0.0",
+            "ios": "10.0.0",
+            "android": "10.0.0"
           }
         }
       },
@@ -3875,7 +3881,9 @@
       "required": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       }
     },
@@ -3895,7 +3903,9 @@
       "doc": "Exaggerates the elevation of the terrain by multiplying the data from the DEM with this value.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       }
     }
@@ -6045,7 +6055,9 @@
       "doc": "The type of the sky",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "expression": {
@@ -6067,7 +6079,9 @@
       "doc": "Position of the sun center [a azimuthal angle, p polar angle]. The azimuthal angle indicates the position of the sun relative to 0° north, where degrees proceed clockwise. The polar angle indicates the height of the sun, where 0° is directly above, at zenith, and 90° at the horizon. When this property is ommitted, the sun center is directly inherited from the light position.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "requires": [
@@ -6097,7 +6111,9 @@
       "doc": "Intensity of the sun as a light source in the atmosphere (on a scale from 0 to a 100). Setting higher values will brighten up the sky.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "property-type": "data-constant"
@@ -6122,7 +6138,9 @@
       "doc": "Position of the gradient center [a azimuthal angle, p polar angle]. The azimuthal angle indicates the position of the gradient center relative to 0° north, where degrees proceed clockwise. The polar angle indicates the height of the gradient center, where 0° is directly above, at zenith, and 90° at the horizon.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "expression": {
@@ -6147,7 +6165,9 @@
       "doc": "The angular distance (measured in degrees) from `sky-gradient-center` up to which the gradient extends. A value of 180 causes the gradient to wrap around to the opposite direction from `sky-gradient-center`.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "expression": {
@@ -6182,7 +6202,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         },
         "data-driven styling": {}
       },
@@ -6206,7 +6228,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "property-type": "data-constant"
@@ -6223,7 +6247,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "property-type": "data-constant"
@@ -6237,7 +6263,9 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "expression": {
