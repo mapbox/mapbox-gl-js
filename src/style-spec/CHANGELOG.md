@@ -1,4 +1,4 @@
-# 13.21.0
+# 13.21.0-beta.1
 
 ### ✨ Features and improvements
 * Add support for `text-writing-mode` property when using `symbol-placement: line` text labels. ([#10647](https://github.com/mapbox/mapbox-gl-js/pull/10647))

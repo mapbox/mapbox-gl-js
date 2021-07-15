@@ -1,4 +1,4 @@
-## 2.4.0
+## 2.4.0-beta.1
 
 ### ✨ Features and improvements
 * Add `showUserHeading` option to `GeolocateControl` thats draws a hat around the dot to donate both the users location and the direction they're facing.([#10817](https://github.com/mapbox/mapbox-gl-js/pull/10817)) (h/t to [@tsuz](https://github.com/tsuz))
