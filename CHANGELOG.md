@@ -1,17 +1,17 @@
 ## 2.4.0-beta.1
 
 ### ✨ Features and improvements
-* Add `showUserHeading` option to `GeolocateControl` thats draws a hat around the dot to donate both the users location and the direction they're facing.([#10817](https://github.com/mapbox/mapbox-gl-js/pull/10817)) (h/t to [@tsuz](https://github.com/tsuz))
+* Add `showUserHeading` option to `GeolocateControl` that draws a triangle in front of the dot to denote both the user's location, and the direction they're facing.([#10817](https://github.com/mapbox/mapbox-gl-js/pull/10817)) (h/t to [@tsuz](https://github.com/tsuz))
 * Add support for `text-writing-mode` property when using `symbol-placement: line` text labels. ([#10647](https://github.com/mapbox/mapbox-gl-js/pull/10647))
-  * Note: This change will bring following changes for CJK text block:
-    * 1. For vertical CJK text, all the characters including Latin and Numbers will be vertically placed now. Previously, Latin and Numbers are horizontally placed.
-    * 2. For horizontal CJK text, it may have a slight horizontal shift due to the anchor shift.
+  * Note: This change will bring the following changes for CJK text blocks:
+    * 1. For vertical CJK text, all the characters including Latin and Numbers will be vertically placed now. Previously, Latin and Numbers were horizontally placed.
+    * 2. For horizontal CJK text, there may be a slight horizontal shift due to the anchor shift.
 * Improve character alignment in labels with mixed CJK and Latin characters by adding support for `descender` and `ascender` font metrics.([#8781](https://github.com/mapbox/mapbox-gl-js/pull/10652))
 * Improve terrain performance by reducing number of framebuffer switches during draping.([#10701](https://github.com/mapbox/mapbox-gl-js/pull/10701))
 * Improve behavior of vertically aligned line labels with horizontal text by adding stickiness to their flip state, preventing them from flickering. ([#10622](https://github.com/mapbox/mapbox-gl-js/pull/10622))
 
 ### 🐞 Bug fixes
-* Fix a potential rendering artifact when using custom fill-extrusion data set with terrain. ([#10812](https://github.com/mapbox/mapbox-gl-js/pull/10812))
+* Fix a potential rendering artifact when using custom `fill-extrusion` dataset with terrain. ([#10812](https://github.com/mapbox/mapbox-gl-js/pull/10812))
 * Fix anchor calculation for `line-center` line labels when the anchor is very near to line segment endpoints. ([#10776](https://github.com/mapbox/mapbox-gl-js/pull/10776))
 * Fix `ImageSource` breaking in FF/Safari if it's not immediately visible.([#10698](https://github.com/mapbox/mapbox-gl-js/pull/10698))
 * Fix gradient skybox rendering issue on some ARM Mali GPU's.([#10703](https://github.com/mapbox/mapbox-gl-js/pull/10703))
