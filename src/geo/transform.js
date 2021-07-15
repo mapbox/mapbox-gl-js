@@ -431,6 +431,7 @@ class Transform {
 
     /**
      * Computes a zoom value relative to a map plane that goes through the provided mercator position.
+     *
      * @param {MercatorCoordinate} position A position defining the altitude of the the map plane.
      * @returns {number} The zoom value.
      */
@@ -575,6 +576,7 @@ class Transform {
 
     /**
      * Return a zoom level that will cover all tiles the transform
+     *
      * @param {Object} options options
      * @param {number} options.tileSize Tile size, expressed in screen pixels.
      * @param {boolean} options.roundZoom Target zoom level. If true, the value will be rounded to the closest integer. Otherwise the value will be floored.
@@ -1143,6 +1145,7 @@ class Transform {
     /**
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
+     *
      * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
      */
     getBounds(): LngLatBounds {
@@ -1195,6 +1198,7 @@ class Transform {
 
     /**
      * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
+     *
      * @returns {LngLatBounds} {@link LngLatBounds}
      */
     getMaxBounds(): LngLatBounds | null {
@@ -1206,6 +1210,7 @@ class Transform {
 
     /**
      * Sets or clears the map's geographical constraints.
+     *
      * @param {LngLatBounds} bounds A {@link LngLatBounds} object describing the new geographic boundaries of the map.
      */
     setMaxBounds(bounds?: LngLatBounds) {
@@ -1750,6 +1755,7 @@ class Transform {
 
     /**
      * Converts a zoom delta value into a physical distance travelled in web mercator coordinates.
+     *
      * @param {vec3} center Destination mercator point of the movement.
      * @param {number} zoomDelta Change in the zoom value.
      * @returns {number} The distance in mercator coordinates.

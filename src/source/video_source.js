@@ -96,6 +96,7 @@ class VideoSource extends ImageSource {
 
     /**
      * Pauses the video.
+     *
      * @example
      * // Assuming a video source identified by video_source_id was added to the map
      * const videoSource = map.getSource('video_source_id');
@@ -111,6 +112,7 @@ class VideoSource extends ImageSource {
 
     /**
      * Plays the video.
+     *
      * @example
      * // Assuming a video source identified by video_source_id was added to the map
      * const videoSource = map.getSource('video_source_id');
