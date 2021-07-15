@@ -512,6 +512,7 @@ class GeolocateControl extends Evented {
 
     /**
      * Trigger a geolocation
+     *
      * @example
      * // Initialize the geolocate control.
      * const geolocate = new mapboxgl.GeolocateControl({

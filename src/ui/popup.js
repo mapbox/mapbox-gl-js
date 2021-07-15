@@ -186,6 +186,8 @@ export default class Popup extends Evented {
      * Checks if a popup is open.
      *
      * @returns {boolean} `true` if the popup is open, `false` if it is closed.
+     * @example
+     * const isPopupOpen = popup.isOpen();
      */
     isOpen() {
         return !!this._map;
@@ -252,6 +254,8 @@ export default class Popup extends Evented {
      * the popup on screen.
      *
      * @returns {LngLat} The geographical location of the popup's anchor.
+     * @example
+     * const lngLat = popup.getLngLat();
      */
     getLngLat() {
         return this._lngLat;
@@ -262,6 +266,8 @@ export default class Popup extends Evented {
      *
      * @param lnglat The geographical location to set as the popup's anchor.
      * @returns {Popup} `this`
+     * @example
+     * popup.setLngLat([-122.4194, 37.7749]);
      */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
@@ -286,6 +292,7 @@ export default class Popup extends Evented {
     /**
      * Tracks the popup anchor to the cursor position on screens with a pointer device (it will be hidden on touchscreens). Replaces the `setLngLat` behavior.
      * For most use cases, set `closeOnClick` and `closeButton` to `false`.
+     *
      * @example
      * const popup = new mapboxgl.Popup({closeOnClick: false, closeButton: false})
      *     .setHTML("<h1>Hello World!</h1>")
@@ -313,6 +320,7 @@ export default class Popup extends Evented {
 
     /**
      * Returns the `Popup`'s HTML element.
+     *
      * @example
      * // Change the `Popup` element's font size
      * const popup = new mapboxgl.Popup()
@@ -383,6 +391,8 @@ export default class Popup extends Evented {
      * Returns the popup's maximum width.
      *
      * @returns {string} The maximum width of the popup.
+     * @example
+     * const maxWidth = popup.getMaxWidth();
      */
     getMaxWidth() {
         return this._container && this._container.style.maxWidth;
@@ -394,6 +404,8 @@ export default class Popup extends Evented {
      *
      * @param maxWidth A string representing the value for the maximum width.
      * @returns {Popup} `this`
+     * @example
+     * popup.setMaxWidth('50');
      */
     setMaxWidth(maxWidth: string) {
         this.options.maxWidth = maxWidth;
@@ -470,6 +482,8 @@ export default class Popup extends Evented {
      *
      * @param offset Sets the popup's offset.
      * @returns {Popup} `this`
+     * @example
+     * popup.setOffset(10);
      */
     setOffset (offset?: Offset) {
         this.options.offset = offset;

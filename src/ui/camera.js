@@ -198,6 +198,11 @@ class Camera extends Evented {
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * map.panBy([-74, 38]);
+     * @example
+     * // panBy with an animation of 5 seconds.
+     * map.panBy([-74, 38], {duration: 5000});
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     panBy(offset: PointLike, options?: AnimationOptions, eventData?: Object) {
@@ -340,6 +345,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @returns {number} The map's current bearing.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
+     * @example
+     * const bearing = map.getBearing();
      */
     getBearing(): number { return this.transform.bearing; }
 
@@ -369,6 +376,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns {PaddingOptions} The current padding around the map viewport.
+     * @example
+     * const padding = map.getPadding();
      */
     getPadding(): PaddingOptions { return this.transform.padding; }
 
@@ -403,6 +412,11 @@ class Camera extends Evented {
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * map.rotateTo(30);
+     * @example
+     * // rotateTo with an animation of 2 seconds.
+     * map.rotateTo(30, {duration: 2000});
      */
     rotateTo(bearing: number, options?: AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
@@ -419,6 +433,9 @@ class Camera extends Evented {
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * // resetNorth with an animation of 2 seconds.
+     * map.resetNorth({duration: 2000});
      */
     resetNorth(options?: AnimationOptions, eventData?: Object) {
         this.rotateTo(0, extend({duration: 1000}, options), eventData);
@@ -434,6 +451,9 @@ class Camera extends Evented {
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * // resetNorthPitch with an animation of 2 seconds.
+     * map.resetNorthPitch({duration: 2000});
      */
     resetNorthPitch(options?: AnimationOptions, eventData?: Object) {
         this.easeTo(extend({
@@ -454,6 +474,9 @@ class Camera extends Evented {
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * // snapToNorth with an animation of 2 seconds.
+     * map.snapToNorth({duration: 2000});
      */
     snapToNorth(options?: AnimationOptions, eventData?: Object) {
         if (Math.abs(this.getBearing()) < this._bearingSnap) {
@@ -467,6 +490,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns {number} The map's current pitch, measured in degrees away from the plane of the screen.
+     * @example
+     * const pitch = map.getPitch();
      */
     getPitch(): number { return this.transform.pitch; }
 
@@ -480,6 +505,9 @@ class Camera extends Evented {
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * // setPitch with an animation of 2 seconds.
+     * map.setPitch(80, {duration: 2000});
      */
     setPitch(pitch: number, eventData?: Object) {
         this.jumpTo({pitch}, eventData);
@@ -953,6 +981,16 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns {FreeCameraOptions} The camera state
+     * @example
+     * const camera = map.getFreeCameraOptions();
+     *
+     * const position = [138.72649, 35.33974];
+     * const altitude = 3000;
+     *
+     * camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+     * camera.lookAtPoint([138.73036, 35.36197]);
+     *
+     * map.setFreeCameraOptions(camera);
      */
     getFreeCameraOptions(): FreeCameraOptions {
         return this.transform.getFreeCameraOptions();
@@ -980,6 +1018,16 @@ class Camera extends Evented {
      * @fires zoomend
      * @fires pitchend
      * @returns {Map} `this`
+     * @example
+     * const camera = map.getFreeCameraOptions();
+     *
+     * const position = [138.72649, 35.33974];
+     * const altitude = 3000;
+     *
+     * camera.position = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+     * camera.lookAtPoint([138.73036, 35.36197]);
+     *
+     * map.setFreeCameraOptions(camera);
      */
     setFreeCameraOptions(options: FreeCameraOptions, eventData?: Object) {
         this.stop();
@@ -1045,6 +1093,21 @@ class Camera extends Evented {
      * @fires pitchend
      * @returns {Map} `this`
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
+     * @example
+     * // Ease with default options to null island for 5 seconds
+     * map.easeTo({center: [0, 0], zoom: 9, duration: 5000});
+     * @example
+     * // Using easeTo options
+     * map.easeTo({
+     *     center: [0, 0],
+     *     zoom: 9,
+     *     speed: 0.2,
+     *     curve: 1,
+     *     duration: 5000,
+     *     easing(t) {
+     *         return t;
+     *     }
+     * });
      */
     easeTo(options: CameraOptions & AnimationOptions & {easeId?: string}, eventData?: Object) {
         this._stop(false, options.easeId);
@@ -1427,6 +1490,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns {Map} `this`
+     * @example
+     * map.stop();
      */
     stop(): this {
         return this._stop();

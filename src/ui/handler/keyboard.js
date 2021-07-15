@@ -21,6 +21,7 @@ const defaultOptions = {
  * - `Shift+⇠`: Decrease the rotation by 15 degrees.
  * - `Shift+⇡`: Increase the pitch by 10 degrees.
  * - `Shift+⇣`: Decrease the pitch by 10 degrees.
+ *
  * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
  * @see [Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
  * @see [Display map navigation controls](https://docs.mapbox.com/mapbox-gl-js/example/navigation/)
@@ -161,6 +162,8 @@ class KeyboardHandler {
      *
      * @returns {boolean} `true` if the "keyboard rotate and zoom"
      * interaction is enabled.
+     * @example
+     * const isKeyboardEnabled = map.keyboard.isEnabled();
      */
     isEnabled() {
         return this._enabled;
@@ -172,6 +175,8 @@ class KeyboardHandler {
      *
      * @returns {boolean} `true` if the handler is enabled and has detected the
      * start of a zoom/rotate gesture.
+     * @example
+     * const isKeyboardActive = map.keyboard.isActive();
      */
     isActive() {
         return this._active;

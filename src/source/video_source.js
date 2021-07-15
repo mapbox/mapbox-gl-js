@@ -96,6 +96,13 @@ class VideoSource extends ImageSource {
 
     /**
      * Pauses the video.
+     *
+     * @example
+     * // Assuming a video source identified by video_source_id was added to the map
+     * const videoSource = map.getSource('video_source_id');
+     *
+     * // Pauses the video
+     * videoSource.pause();
      */
     pause() {
         if (this.video) {
@@ -105,6 +112,13 @@ class VideoSource extends ImageSource {
 
     /**
      * Plays the video.
+     *
+     * @example
+     * // Assuming a video source identified by video_source_id was added to the map
+     * const videoSource = map.getSource('video_source_id');
+     *
+     * // Starts the video
+     * videoSource.play();
      */
     play() {
         if (this.video) {
@@ -129,6 +143,11 @@ class VideoSource extends ImageSource {
      * Returns the HTML `video` element.
      *
      * @returns {HTMLVideoElement} The HTML `video` element.
+     * @example
+     * // Assuming a video source identified by video_source_id was added to the map
+     * const videoSource = map.getSource('video_source_id');
+     *
+     * videoSource.getVideo(); // <video crossorigin="Anonymous" loop="">...</video>
      */
     getVideo() {
         return this.video;
@@ -151,6 +170,30 @@ class VideoSource extends ImageSource {
      * @instance
      * @memberof VideoSource
      * @returns {VideoSource} this
+     * @example
+     * // Add a video source to the map to map
+     * map.addSource('video_source_id', {
+     *     type: 'video',
+     *     url: [
+     *         'https://www.mapbox.com/blog/assets/baltimore-smoke.mp4',
+     *         'https://www.mapbox.com/blog/assets/baltimore-smoke.webm'
+     *     ],
+     *     coordinates: [
+     *         [-76.54, 39.18],
+     *         [-76.52, 39.18],
+     *         [-76.52, 39.17],
+     *         [-76.54, 39.17]
+     *     ]
+     * });
+     *
+     * // Then update the video source coordinates by new coordinates
+     * const videoSource = map.getSource('video_source_id');
+     * videoSource.setCoordinates([
+     *     [-76.5433, 39.1857],
+     *     [-76.5280, 39.1838],
+     *     [-76.5295, 39.1768],
+     *     [-76.5452, 39.1787]
+     * ]);
      */
     // setCoordinates inherited from ImageSource
 

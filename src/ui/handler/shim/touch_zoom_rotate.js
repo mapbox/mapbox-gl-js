@@ -9,6 +9,7 @@ import type TapDragZoomHandler from '../tap_drag_zoom.js';
  *
  * They can zoom with one finger by double tapping and dragging. On the second tap,
  * hold the finger down and drag up or down to zoom in or out.
+ *
  * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
  */
 export default class TouchZoomRotateHandler {
@@ -67,6 +68,8 @@ export default class TouchZoomRotateHandler {
      * Returns a Boolean indicating whether the "pinch to rotate and zoom" interaction is enabled.
      *
      * @returns {boolean} `true` if the "pinch to rotate and zoom" interaction is enabled.
+     * @example
+     * const isTouchZoomRotateEnabled = map.touchZoomRotate.isEnabled();
      */
     isEnabled() {
         return this._touchZoom.isEnabled() &&
@@ -78,6 +81,8 @@ export default class TouchZoomRotateHandler {
      * Returns true if the handler is enabled and has detected the start of a zoom/rotate gesture.
      *
      * @returns {boolean} `true` if enabled and a zoom/rotate gesture was detected.
+     * @example
+     * const isTouchZoomRotateActive = map.touchZoomRotate.isActive();
      */
     isActive() {
         return this._touchZoom.isActive() || this._touchRotate.isActive() || this._tapDragZoom.isActive();

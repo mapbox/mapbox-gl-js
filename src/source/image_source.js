@@ -145,6 +145,28 @@ class ImageSource extends Evented implements Source {
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
      * @returns {ImageSource} this
+     * @example
+     * // Add to an image source to the map with some initial URL and coordinates
+     * map.addSource('image_source_id', {
+     *     type: 'image',
+     *     url: 'https://www.mapbox.com/images/foo.png',
+     *     coordinates: [
+     *         [-76.54, 39.18],
+     *         [-76.52, 39.18],
+     *         [-76.52, 39.17],
+     *         [-76.54, 39.17]
+     *     ]
+     * });
+     * // Then update the image URL and coordinates
+     * imageSource.updateImage({
+     *     url: 'https://www.mapbox.com/images/bar.png',
+     *     coordinates: [
+     *         [-76.5433, 39.1857],
+     *         [-76.5280, 39.1838],
+     *         [-76.5295, 39.1768],
+     *         [-76.5452, 39.1787]
+     *     ]
+     * });
      */
     updateImage(options: {url: string, coordinates?: Coordinates}) {
         if (!this.image || !options.url) {
@@ -175,6 +197,25 @@ class ImageSource extends Evented implements Source {
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
      * @returns {ImageSource} this
+     * @example
+     * // Add an image source to the map with some initial coordinates
+     * map.addSource('image_source_id', {
+     *     type: 'image',
+     *     url: 'https://www.mapbox.com/images/foo.png',
+     *     coordinates: [
+     *         [-76.54, 39.18],
+     *         [-76.52, 39.18],
+     *         [-76.52, 39.17],
+     *         [-76.54, 39.17]
+     *     ]
+     * });
+     * // Then update the image coordinates
+     * imageSource.setCoordinates([
+     *     [-76.5433, 39.1857],
+     *     [-76.5280, 39.1838],
+     *     [-76.5295, 39.1768],
+     *     [-76.5452, 39.1787]
+     * ]);
      */
     setCoordinates(coordinates: Coordinates) {
         this.coordinates = coordinates;
