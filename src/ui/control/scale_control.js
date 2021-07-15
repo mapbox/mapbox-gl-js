@@ -75,7 +75,7 @@ class ScaleControl {
     /**
      * Set the scale's unit of the distance
      *
-     * @param unit Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
+     * @param {'imperial' | 'metric' | 'nautical'} unit Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
      */
     setUnit(unit: Unit) {
         this.options.unit = unit;

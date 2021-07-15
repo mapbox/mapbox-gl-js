@@ -344,7 +344,7 @@ export default class Marker extends Evented {
 
     /**
      * Binds a {@link Popup} to the {@link Marker}.
-     * @param popup An instance of the {@link Popup} class. If undefined or null, any popup
+     * @param {Popup | null} popup An instance of the {@link Popup} class. If undefined or null, any popup
      * set on this {@link Marker} instance is unset.
      * @returns {Marker} `this`
      * @example

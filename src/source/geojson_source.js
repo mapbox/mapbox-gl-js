@@ -185,8 +185,8 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * For clustered sources, fetches the zoom at which the given cluster expands.
      *
-     * @param clusterId The value of the cluster's `cluster_id` property.
-     * @param callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
+     * @param {number} clusterId The value of the cluster's `cluster_id` property.
+     * @param {Callback<number>} callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
      * @returns {GeoJSONSource} this
      * @example
      * // Assuming the map has a layer named 'clusters' and a source 'earthquakes'
@@ -220,8 +220,8 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * For clustered sources, fetches the children of the given cluster on the next zoom level (as an array of GeoJSON features).
      *
-     * @param clusterId The value of the cluster's `cluster_id` property.
-     * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
+     * @param {number} clusterId The value of the cluster's `cluster_id` property.
+     * @param {Callback<Array<GeoJSONFeature>>} callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
      * @returns {GeoJSONSource} this
      * @example
      * // Retrieve cluster children on click
@@ -248,10 +248,10 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * For clustered sources, fetches the original points that belong to the cluster (as an array of GeoJSON features).
      *
-     * @param clusterId The value of the cluster's `cluster_id` property.
-     * @param limit The maximum number of features to return. (Defaults to `10` if a falsy value is given.)
-     * @param offset The number of features to skip (e.g. for pagination). (Defaults to `0` if a falsy value is given.)
-     * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
+     * @param {number} clusterId The value of the cluster's `cluster_id` property.
+     * @param {number} limit The maximum number of features to return. (Defaults to `10` if a falsy value is given.)
+     * @param {number} offset The number of features to skip (e.g. for pagination). (Defaults to `0` if a falsy value is given.)
+     * @param {Callback<Array<GeoJSONFeature>>} callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
      * @returns {GeoJSONSource} this
      * @example
      * // Retrieve cluster leaves on click
