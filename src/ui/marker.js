@@ -676,7 +676,7 @@ export default class Marker extends Evented {
         this._draggable = !!shouldBeDraggable; // convert possible undefined value to false
 
         // handle case where map may not exist yet
-        // e.g. when setDraggable is called before addTo
+        // for example, when setDraggable is called before addTo
         if (this._map) {
             if (shouldBeDraggable) {
                 this._map.on('mousedown', this._addDragHandler);

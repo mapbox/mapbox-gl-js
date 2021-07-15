@@ -238,7 +238,8 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * @param {Object} [options]
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
  *   the function will return `false` if the performance of Mapbox GL JS would
- *   be dramatically worse than expected (e.g. a software WebGL renderer would be used).
+ *   be dramatically worse than expected (for example, a software WebGL renderer
+ *   would be used).
  * @return {boolean}
  * @example
  * // Show an alert if the browser does not support Mapbox GL

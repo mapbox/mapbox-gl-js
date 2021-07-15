@@ -210,7 +210,7 @@ const defaultOptions = {
  * @param {(boolean|string)} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
  *   For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
  *   An additional string may optionally be provided to indicate a parameter-styled hash,
- *   e.g. http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, where foo
+ *   for example http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, where foo
  *   is a custom parameter and bar is an arbitrary hash distinct from the map hash.
  * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners will be attached to the map, so it will not respond to interaction.
  * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
@@ -263,7 +263,7 @@ const defaultOptions = {
  * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @param {string} [options.accessToken=null] If specified, map will use this token instead of the one defined in mapboxgl.accessToken.
- * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
+ * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
  * @example
@@ -2654,7 +2654,7 @@ class Map extends Camera {
     /**
      * Call when a (re-)render of the map is required:
      * - The style has changed (`setPaintProperty()`, etc.)
-     * - Source data has changed (e.g. tiles have finished loading)
+     * - Source data has changed (for example, tiles have finished loading)
      * - The map has is moving (or just finished moving)
      * - A transition is in progress
      *
