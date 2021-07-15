@@ -87,7 +87,8 @@
     "jsdoc/require-param-name": "error",
     "jsdoc/require-returns": "error",
     "jsdoc/require-returns-description": "error",
-    "jsdoc/require-property": "error"
+    "jsdoc/require-property": "error",
+    "jsdoc/require-property-description": "error"
   },
   "settings": {
     "jsdoc":{
