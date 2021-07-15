@@ -170,7 +170,7 @@
         "jsdoc/check-property-names": "warn",
         "jsdoc/check-tag-names": "warn",
         "jsdoc/check-types": "warn",
-        "jsdoc/newline-after-description": "warn",
+        "jsdoc/newline-after-description": "error",
         "jsdoc/no-bad-blocks": "warn",
         "jsdoc/require-description": "warn",
         "jsdoc/require-example": "warn",
