@@ -161,10 +161,10 @@ class ImageSource extends Evented implements Source {
      * imageSource.updateImage({
      *     url: 'https://www.mapbox.com/images/bar.png',
      *     coordinates: [
-     *         [-76.54335737228394, 39.18579907229748],
-     *         [-76.52803659439087, 39.1838364847587],
-     *         [-76.5295386314392, 39.17683392507606],
-     *         [-76.54520273208618, 39.17876344106642]
+     *         [-76.5433, 39.1857],
+     *         [-76.5280, 39.1838],
+     *         [-76.5295, 39.1768],
+     *         [-76.5452, 39.1787]
      *     ]
      * });
      */
@@ -211,10 +211,10 @@ class ImageSource extends Evented implements Source {
      * });
      * // Then update the image coordinates
      * imageSource.setCoordinates([
-     *     [-76.54335737228394, 39.18579907229748],
-     *     [-76.52803659439087, 39.1838364847587],
-     *     [-76.5295386314392, 39.17683392507606],
-     *     [-76.54520273208618, 39.17876344106642]
+     *     [-76.5433, 39.1857],
+     *     [-76.5280, 39.1838],
+     *     [-76.5295, 39.1768],
+     *     [-76.5452, 39.1787]
      * ]);
      */
     setCoordinates(coordinates: Coordinates) {

@@ -187,10 +187,10 @@ class VideoSource extends ImageSource {
      * // Then update the video source coordinates by new coordinates
      * const videoSource = map.getSource('video_source_id');
      * videoSource.setCoordinates([
-     *     [-76.54335737228394, 39.18579907229748],
-     *     [-76.52803659439087, 39.1838364847587],
-     *     [-76.5295386314392, 39.17683392507606],
-     *     [-76.54520273208618, 39.17876344106642]
+     *     [-76.5433, 39.1857],
+     *     [-76.5280, 39.1838],
+     *     [-76.5295, 39.1768],
+     *     [-76.5452, 39.1787]
      * ]);
      */
     // setCoordinates inherited from ImageSource
