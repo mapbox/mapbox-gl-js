@@ -101,6 +101,8 @@ class ScrollZoomHandler {
      * Returns a Boolean indicating whether the "scroll to zoom" interaction is enabled.
      *
      * @returns {boolean} `true` if the "scroll to zoom" interaction is enabled.
+     * @example
+     * const isScrollZoomEnabled = map.scrollZoom.isEnabled();
      */
     isEnabled() {
         return !!this._enabled;

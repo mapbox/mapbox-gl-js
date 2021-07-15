@@ -47,6 +47,8 @@ export default class DoubleClickZoomHandler {
      * Returns a Boolean indicating whether the "double click to zoom" interaction is enabled.
      *
      * @returns {boolean} `true` if the "double click to zoom" interaction is enabled.
+     * @example
+     * const isDoubleClickZoomEnabled = map.doubleClickZoom.isEnabled();
      */
     isEnabled() {
         return this._clickZoom.isEnabled() && this._tapZoom.isEnabled();
@@ -56,6 +58,8 @@ export default class DoubleClickZoomHandler {
      * Returns a Boolean indicating whether the "double click to zoom" interaction is active, i.e. currently being used.
      *
      * @returns {boolean} `true` if the "double click to zoom" interaction is active.
+     * @example
+     * const isDoubleClickZoomActive = map.doubleClickZoom.isActive();
      */
     isActive() {
         return this._clickZoom.isActive() || this._tapZoom.isActive();
