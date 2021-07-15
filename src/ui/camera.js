@@ -345,6 +345,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @returns The map's current bearing.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
+     * @example
+     * const bearing = map.getBearing();
      */
     getBearing(): number { return this.transform.bearing; }
 
@@ -374,6 +376,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns The current padding around the map viewport.
+     * @example
+     * const padding = map.getPadding();
      */
     getPadding(): PaddingOptions { return this.transform.padding; }
 
@@ -486,6 +490,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns The map's current pitch, measured in degrees away from the plane of the screen.
+     * @example
+     * const pitch = map.getPitch();
      */
     getPitch(): number { return this.transform.pitch; }
 
@@ -1481,6 +1487,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns {Map} `this`
+     * @example
+     * map.stop();
      */
     stop(): this {
         return this._stop();

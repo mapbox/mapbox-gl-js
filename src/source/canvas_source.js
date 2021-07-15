@@ -99,6 +99,7 @@ class CanvasSource extends ImageSource {
 
     /**
      * Enables animation. The image will be copied from the canvas to the map on each frame.
+     *
      * @method play
      * @instance
      * @memberof CanvasSource
@@ -106,6 +107,7 @@ class CanvasSource extends ImageSource {
 
     /**
      * Disables animation. The map will display a static copy of the canvas image.
+     *
      * @method pause
      * @instance
      * @memberof CanvasSource

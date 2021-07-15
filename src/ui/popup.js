@@ -290,6 +290,7 @@ export default class Popup extends Evented {
     /**
      * Tracks the popup anchor to the cursor position on screens with a pointer device (it will be hidden on touchscreens). Replaces the `setLngLat` behavior.
      * For most use cases, set `closeOnClick` and `closeButton` to `false`.
+     *
      * @example
      * const popup = new mapboxgl.Popup({closeOnClick: false, closeButton: false})
      *     .setHTML("<h1>Hello World!</h1>")
@@ -317,6 +318,7 @@ export default class Popup extends Evented {
 
     /**
      * Returns the `Popup`'s HTML element.
+     *
      * @example
      * // Change the `Popup` element's font size
      * const popup = new mapboxgl.Popup()

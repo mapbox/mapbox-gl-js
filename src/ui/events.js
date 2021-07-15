@@ -13,6 +13,7 @@ import type LngLat from '../geo/lng_lat.js';
  * `MapMouseEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'click' or 'hover'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
+ *
  * @extends {Object}
  * @example
  * // Example of a MapMouseEvent of type "click"
@@ -105,6 +106,10 @@ export class MapMouseEvent extends Event {
      *   * On `mousedown` events, the behavior of {@link BoxZoomHandler}
      *   * On `dblclick` events, the behavior of {@link DoubleClickZoomHandler}
      *
+     * @example
+     * map.on('click', (e) => {
+     *     e.preventDefault();
+     * });
      */
     preventDefault() {
         this._defaultPrevented = true;
@@ -136,6 +141,7 @@ export class MapMouseEvent extends Event {
  * `MapTouchEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'touchstart' or 'touchend'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
+ *
  * @extends {Object}
  * @example
  * // Example of a MapTouchEvent of type "touch"
@@ -244,6 +250,10 @@ export class MapTouchEvent extends Event {
      *   * On `touchstart` events, the behavior of {@link DragPanHandler}
      *   * On `touchstart` events, the behavior of {@link TouchZoomRotateHandler}
      *
+     * @example
+     * map.on('touchstart', (e) => {
+     *     e.preventDefault();
+     * });
      */
     preventDefault() {
         this._defaultPrevented = true;
@@ -279,6 +289,7 @@ export class MapTouchEvent extends Event {
  * `MapWheelEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'wheel'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
+ *
  * @extends {Object}
  * @example
  * // Example of a MapWheelEvent of type "wheel"
@@ -308,6 +319,12 @@ export class MapWheelEvent extends Event {
      * Prevents subsequent default processing of the event by the map.
      *
      * Calling this method will prevent the the behavior of {@link ScrollZoomHandler}.
+     *
+     * @example
+     * map.on('wheel', (e) => {
+     *     // Prevent the default map scroll zoom behavior.
+     *     e.preventDefault();
+     * });
      */
     preventDefault() {
         this._defaultPrevented = true;
