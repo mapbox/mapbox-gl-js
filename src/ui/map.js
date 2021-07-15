@@ -667,6 +667,7 @@ class Map extends Camera {
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
      * If a padding is set on the map, the bounds returned are for the inset.
+     *
      * @returns {LngLatBounds} The geographical bounds of the map as {@link LngLatBounds}.
      * @example
      * const bounds = map.getBounds();
@@ -677,6 +678,7 @@ class Map extends Camera {
 
     /**
      * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
+     *
      * @returns The map object.
      * @example
      * const maxBounds = map.getMaxBounds();
@@ -870,6 +872,7 @@ class Map extends Camera {
      * container, there will be blank space beyond 180 and -180 degrees longitude.
      * - Features that cross 180 and -180 degrees longitude will be cut in two (with one portion on the right edge of the
      * map and the other on the left edge of the map) at every zoom level.
+     *
      * @returns {boolean} renderWorldCopies
      * @example
      * const worldCopiesRendered = map.getRenderWorldCopies();
@@ -935,6 +938,7 @@ class Map extends Camera {
 
     /**
      * Returns true if the map is panning, zooming, rotating, or pitching due to a camera animation or user gesture.
+     *
      * @returns {boolean} True if the map is moving.
      * @example
      * const isMoving = map.isMoving();
@@ -945,6 +949,7 @@ class Map extends Camera {
 
     /**
      * Returns true if the map is zooming due to a camera animation or user gesture.
+     *
      * @returns {boolean} True if the map is zooming.
      * @example
      * const isZooming = map.isZooming();
@@ -955,6 +960,7 @@ class Map extends Camera {
 
     /**
      * Returns true if the map is rotating due to a camera animation or user gesture.
+     *
      * @returns {boolean} True if the map is rotating.
      * @example
      * map.isRotating();
@@ -2218,6 +2224,7 @@ class Map extends Camera {
 
     /**
      * Sets the fog property of the style.
+     *
      * @param {Object} fog The fog properties to set. Must conform the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
      * If `null` or `undefined` is provided, this function call removes the fog from the map.
      * @returns {Map} `this`
@@ -2268,6 +2275,7 @@ class Map extends Camera {
      * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
      *
      * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
+     *
      * @param {LngLatLike} lnglat The geographical location at which to query.
      * @param {ElevationQueryOptions} [options] options Object
      * @param {boolean} [options.exaggerated=true] When `true` returns the terrain elevation with the value of `exaggeration` from the style already applied.
@@ -2986,6 +2994,7 @@ class Map extends Camera {
      * Use this method when you are done using the map and wish to ensure that it no
      * longer consumes browser resources. Afterwards, you must not call any other
      * methods on the map.
+     *
      * @example
      * map.remove();
      */
@@ -3029,6 +3038,7 @@ class Map extends Camera {
      * repaint the map when the layer's properties or properties associated with the
      * layer's source change. Calling this multiple times before the
      * next frame is rendered will still result in only a single frame being rendered.
+     *
      * @example
      * map.triggerRepaint();
      * @see [Add a 3D model](https://docs.mapbox.com/mapbox-gl-js/example/add-3d-model/)
