@@ -52,9 +52,9 @@ export function renderStyleImage(image: StyleImage) {
  * can be used to update the image.
  *
  * @interface StyleImageInterface
- * @property {number} width
- * @property {number} height
- * @property {Uint8Array | Uint8ClampedArray} data
+ * @property {number} width Width in pixels.
+ * @property {number} height Height in Pixels.
+ * @property {Uint8Array | Uint8ClampedArray} data Byte array representing the image. Size must be width × height × 4 (for each RGBA channel).
  *
  * @see [Add an animated icon to the map.](https://docs.mapbox.com/mapbox-gl-js/example/add-image-animated/)
  *
