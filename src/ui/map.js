@@ -1061,7 +1061,7 @@ class Map extends Camera {
      * | [`sourcedataloading`](#map.event:sourcedataloading)       |                           |
      * | [`styleimagemissing`](#map.event:styleimagemissing)       |                           |
      *
-     * @param {string} layerId (optional) The ID of a style layer. If you provide a `layerId`,
+     * @param {string} [layerId] (optional) The ID of a style layer. If you provide a `layerId`,
      * the listener will be triggered only if its location is within a visible feature in this layer,
      * and the event will have a `features` property containing an array of the matching features.
      * If you do not provide a `layerId`, the listener will be triggered by a corresponding event
@@ -1133,7 +1133,7 @@ class Map extends Camera {
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
      * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
-     * @param {string} layerId (optional) The ID of a style layer. If you provide a `layerId`,
+     * @param {string} [layerId] (optional) The ID of a style layer. If you provide a `layerId`,
      * the listener will be triggered only if its location is within a visible feature in this layer,
      * and the event will have a `features` property containing an array of the matching features.
      * If you do not provide a `layerId`, the listener will be triggered by a corresponding event
@@ -1176,7 +1176,7 @@ class Map extends Camera {
      * optionally limited to layer-specific events.
      *
      * @param {string} type The event type previously used to install the listener.
-     * @param {string} layerId (optional) The layer ID previously used to install the listener.
+     * @param {string} [layerId] (optional) The layer ID previously used to install the listener.
      * @param {Function} listener The function previously installed as a listener.
      * @returns {Map} `this`
      * @example
@@ -2324,7 +2324,7 @@ class Map extends Camera {
      * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
-     * @param {string} key (optional) The key in the feature state to reset.
+     * @param {string} [key] (optional) The key in the feature state to reset.
      *
      * @example
      * // Reset the entire state object for all features
