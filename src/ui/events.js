@@ -105,6 +105,10 @@ export class MapMouseEvent extends Event {
      *   * On `mousedown` events, the behavior of {@link BoxZoomHandler}
      *   * On `dblclick` events, the behavior of {@link DoubleClickZoomHandler}
      *
+     * @example
+     * map.on('click', (e) => {
+     *     e.preventDefault();
+     * });
      */
     preventDefault() {
         this._defaultPrevented = true;
@@ -244,6 +248,10 @@ export class MapTouchEvent extends Event {
      *   * On `touchstart` events, the behavior of {@link DragPanHandler}
      *   * On `touchstart` events, the behavior of {@link TouchZoomRotateHandler}
      *
+     * @example
+     * map.on('touchstart', (e) => {
+     *     e.preventDefault();
+     * });
      */
     preventDefault() {
         this._defaultPrevented = true;
@@ -308,6 +316,11 @@ export class MapWheelEvent extends Event {
      * Prevents subsequent default processing of the event by the map.
      *
      * Calling this method will prevent the the behavior of {@link ScrollZoomHandler}.
+     * @example
+     * map.on('wheel', (e) => {
+     *     // Prevent the default map scroll zoom behavior.
+     *     e.preventDefault();
+     * });
      */
     preventDefault() {
         this._defaultPrevented = true;
