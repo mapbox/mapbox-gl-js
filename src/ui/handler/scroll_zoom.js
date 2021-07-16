@@ -27,6 +27,7 @@ const maxScalePerFrame = 2;
 
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
+ *
  * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
  * @see [Disable scroll zoom](https://docs.mapbox.com/mapbox-gl-js/example/disable-scroll-zoom/)
  */
@@ -77,6 +78,7 @@ class ScrollZoomHandler {
 
     /**
      * Sets the zoom rate of a trackpad.
+     *
      * @param {number} [zoomRate=1/100] The rate used to scale trackpad movement to a zoom value.
      * @example
      * // Speed up trackpad zoom
@@ -88,6 +90,7 @@ class ScrollZoomHandler {
 
     /**
     * Sets the zoom rate of a mouse wheel.
+     *
     * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
     * @example
     * // Slow down zoom of mouse wheel

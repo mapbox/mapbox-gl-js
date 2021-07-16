@@ -210,6 +210,7 @@ const exported = {
 
     /**
      * Sets the time used by Mapbox GL JS internally for all animations. Useful for generating videos from Mapbox GL JS.
+     *
      * @var {number} time
      */
     setNow: browser.setNow,
@@ -226,6 +227,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
 /**
  * Gets the version of Mapbox GL JS in use as specified in `package.json`,
  * `CHANGELOG.md`, and the GitHub release.
+ *
  * @var {string} version
  * @example
  * console.log(`Mapbox GL JS v${mapboxgl.version}`);
