@@ -62,9 +62,9 @@ export default class DragRotateHandler {
     }
 
     /**
-     * Returns a Boolean indicating whether the "drag to rotate" interaction is active, i.e. currently being used.
+     * Returns a Boolean indicating whether the "drag to rotate" interaction is active (currently being used).
      *
-     * @returns {boolean} `true` if the "drag to rotate" interaction is active.
+     * @returns {boolean} Returns `true` if the "drag to rotate" interaction is active.
      * @example
      * const isDragRotateActive = map.dragRotate.isActive();
      */

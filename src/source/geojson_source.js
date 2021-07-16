@@ -19,7 +19,7 @@ import type {Cancelable} from '../types/cancelable.js';
 
 /**
  * A source containing GeoJSON.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-geojson) for detailed documentation of options.)
+ * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-geojson) for detailed documentation of options).
  *
  * @example
  * map.addSource('some id', {
@@ -156,7 +156,7 @@ class GeoJSONSource extends Evented implements Source {
      * Sets the GeoJSON data and re-renders the map.
      *
      * @param {Object|string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
-     * @returns {GeoJSONSource} this
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * map.addSource('source_id', {
      *     type: 'geojson',
@@ -187,7 +187,7 @@ class GeoJSONSource extends Evented implements Source {
      *
      * @param clusterId The value of the cluster's `cluster_id` property.
      * @param callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
-     * @returns {GeoJSONSource} this
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * // Assuming the map has a layer named 'clusters' and a source 'earthquakes'
      * // The following creates a camera animation on cluster feature click
@@ -222,7 +222,7 @@ class GeoJSONSource extends Evented implements Source {
      *
      * @param clusterId The value of the cluster's `cluster_id` property.
      * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
-     * @returns {GeoJSONSource} this
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * // Retrieve cluster children on click
      * map.on('click', 'clusters', (e) => {
@@ -249,10 +249,10 @@ class GeoJSONSource extends Evented implements Source {
      * For clustered sources, fetches the original points that belong to the cluster (as an array of GeoJSON features).
      *
      * @param clusterId The value of the cluster's `cluster_id` property.
-     * @param limit The maximum number of features to return. (Defaults to `10` if a falsy value is given.)
-     * @param offset The number of features to skip (e.g. for pagination). (Defaults to `0` if a falsy value is given.)
+     * @param limit The maximum number of features to return. (Defaults to `10` if a falsy value is given).
+     * @param offset The number of features to skip. This is useful for paginating results. Defaults to `0` if a falsy value is given.
      * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
-     * @returns {GeoJSONSource} this
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * // Retrieve cluster leaves on click
      * map.on('click', 'clusters', (e) => {

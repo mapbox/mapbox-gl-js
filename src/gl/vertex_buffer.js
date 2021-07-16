@@ -81,10 +81,10 @@ class VertexBuffer {
     }
 
     /**
-     * Set the attribute pointers in a WebGL context
-     * @param gl The WebGL context
-     * @param program The active WebGL program
-     * @param vertexOffset Index of the starting vertex of the segment
+     * Set the attribute pointers in a WebGL context.
+     * @param gl The WebGL context.
+     * @param program The active WebGL program.
+     * @param vertexOffset Index of the starting vertex of the segment.
      */
     setVertexAttribPointers(gl: WebGLRenderingContext, program: Program<*>, vertexOffset: ?number) {
         for (let j = 0; j < this.attributes.length; j++) {
@@ -105,7 +105,7 @@ class VertexBuffer {
     }
 
     /**
-     * Destroy the GL buffer bound to the given WebGL context
+     * Destroy the GL buffer bound to the given WebGL context.
      */
     destroy() {
         const gl = this.context.gl;

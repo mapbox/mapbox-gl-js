@@ -101,10 +101,10 @@ export class MapMouseEvent extends Event {
      *
      * Calling this method will prevent the following default map behaviors:
      *
-     *   * On `mousedown` events, the behavior of {@link DragPanHandler}
-     *   * On `mousedown` events, the behavior of {@link DragRotateHandler}
-     *   * On `mousedown` events, the behavior of {@link BoxZoomHandler}
-     *   * On `dblclick` events, the behavior of {@link DoubleClickZoomHandler}
+     *   * On `mousedown` events, the behavior of {@link DragPanHandler}.
+     *   * On `mousedown` events, the behavior of {@link DragRotateHandler}.
+     *   * On `mousedown` events, the behavior of {@link BoxZoomHandler}.
+     *   * On `dblclick` events, the behavior of {@link DoubleClickZoomHandler}.
      *
      * @example
      * map.on('click', (e) => {
@@ -248,8 +248,8 @@ export class MapTouchEvent extends Event {
      *
      * Calling this method will prevent the following default map behaviors:
      *
-     *   * On `touchstart` events, the behavior of {@link DragPanHandler}
-     *   * On `touchstart` events, the behavior of {@link TouchZoomRotateHandler}
+     *   * On `touchstart` events, the behavior of {@link DragPanHandler}.
+     *   * On `touchstart` events, the behavior of {@link TouchZoomRotateHandler}.
      *
      * @example
      * map.on('touchstart', (e) => {
@@ -261,7 +261,7 @@ export class MapTouchEvent extends Event {
     }
 
     /**
-     * `true` if `preventDefault` has been called.
+     * Returns `true` if `preventDefault` has been called.
      * @private
      */
     get defaultPrevented(): boolean {
@@ -362,9 +362,9 @@ export class MapWheelEvent extends Event {
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
  * @typedef {Object} MapBoxZoomEvent
- * @property {MouseEvent} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`
+ * @property {MouseEvent} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`.
  * @property {string} type The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
- * @property {Map} target The `Map` instance that triggerred the event
+ * @property {Map} target The `Map` instance that triggered the event.
  * @example
  * // Example trigger of a BoxZoomEvent of type "boxzoomstart"
  * map.on('boxzoomstart', (e) => {
@@ -742,6 +742,7 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapTouchEvent} data
+     * @example
      * // Initialize the map
      * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
@@ -761,10 +762,9 @@ export type MapEvent =
      * @instance
      * @property {MapTouchEvent} data
      * @example
-     * // Initialize the map
+     * // Initialize the map.
      * const map = new mapboxgl.Map({});
-     * // Set an event listener that fires
-     * // when a touchstart event occurs within the map.
+     * // Set an event listener that fires when a touchstart event occurs within the map.
      * map.on('touchstart', () => {
      *     console.log('A touchstart event occurred.');
      * });
@@ -780,10 +780,9 @@ export type MapEvent =
      * @instance
      * @property {MapTouchEvent} data
      * @example
-     * // Initialize the map
+     * // Initialize the map.
      * const map = new mapboxgl.Map({});
-     * // Set an event listener that fires
-     * // when a touchmove event occurs within the map.
+     * // Set an event listener that fires when a touchmove event occurs within the map.
      * map.on('touchmove', () => {
      *     console.log('A touchmove event occurred.');
      * });
@@ -799,10 +798,9 @@ export type MapEvent =
      * @instance
      * @property {MapTouchEvent} data
      * @example
-     * // Initialize the map
+     * // Initialize the map.
      * const map = new mapboxgl.Map({});
-     * // Set an event listener that fires
-     * // when a touchcancel event occurs within the map.
+     * // Set an event listener that fires when a touchcancel event occurs within the map.
      * map.on('touchcancel', () => {
      *     console.log('A touchcancel event occurred.');
      * });
@@ -810,19 +808,16 @@ export type MapEvent =
     | 'touchcancel'
 
     /**
-     * Fired just before the map begins a transition from one
-     * view to another, as the result of either user interaction or methods such as {@link Map#jumpTo}.
+     * Fired just before the map begins a transition from one view to another, as the result of either user interaction or methods such as {@link Map#jumpTo}.
      *
      * @event movestart
      * @memberof Map
      * @instance
      * @property {{originalEvent: DragEvent}} data
      * @example
-     * // Initialize the map
+     * // Initialize the map.
      * const map = new mapboxgl.Map({});
-     * // Set an event listener that fires
-     * // just before the map begins a transition
-     * // from one view to another.
+     * // Set an event listener that fires just before the map begins a transition from one view to another.
      * map.on('movestart', () => {
      *     console.log('A movestart` event occurred.');
      * });
@@ -830,18 +825,16 @@ export type MapEvent =
     | 'movestart'
 
     /**
-     * Fired repeatedly during an animated transition from one view to
-     * another, as the result of either user interaction or methods such as {@link Map#flyTo}.
+     * Fired repeatedly during an animated transition from one view to another, as the result of either user interaction or methods such as {@link Map#flyTo}.
      *
      * @event move
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
      * @example
-     * // Initialize the map
+     * // Initialize the map.
      * const map = new mapboxgl.Map({});
-     * // Set an event listener that fires
-     * // repeatedly during an animated transition.
+     * // Set an event listener that fires repeatedly during an animated transition.
      * map.on('move', () => {
      *     console.log('A move event occurred.');
      * });
@@ -1229,12 +1222,12 @@ export type MapEvent =
     | 'load'
 
     /**
-     * Fired whenever the map is drawn to the screen, as the result of
+     * Fired whenever the map is drawn to the screen, as the result of:
      *
      * - a change to the map's position, zoom, pitch, or bearing
      * - a change to the map's style
      * - a change to a GeoJSON source
-     * - the loading of a vector tile, GeoJSON file, glyph, or sprite
+     * - the loading of a vector tile, GeoJSON file, glyph, or sprite.
      *
      * @event render
      * @memberof Map
@@ -1256,7 +1249,7 @@ export type MapEvent =
      *
      * - No camera transitions are in progress
      * - All currently requested tiles have loaded
-     * - All fade/transition animations have completed
+     * - All fade/transition animations have completed.
      *
      * @event idle
      * @memberof Map
