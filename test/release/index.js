@@ -108,6 +108,10 @@ const pages = [
         "title": "Image Source"
     },
     {
+        "key": "locate-user",
+        "title": "Locate the user"
+    },
+    {
         "key": "extrusion-query",
         "url": "./extrusion-query.html",
         "title": "Fill extrusion querying with terrain"
