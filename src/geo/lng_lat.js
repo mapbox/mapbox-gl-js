@@ -84,10 +84,10 @@ class LngLat {
     }
 
     /**
-     * Returns the approximate distance between a pair of coordinates in meters
-     * Uses the Haversine Formula (from R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope, vol. 68, no. 2, 1984, p. 159)
+     * Returns the approximate distance between a pair of coordinates in meters.
+     * Uses the Haversine Formula (from R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope, vol. 68, no. 2, 1984, p. 159).
      *
-     * @param {LngLat} lngLat coordinates to compute the distance to
+     * @param {LngLat} lngLat Coordinates to compute the distance to.
      * @returns {number} Distance in meters between the two coordinates.
      * @example
      * const newYork = new mapboxgl.LngLat(-74.0060, 40.7128);

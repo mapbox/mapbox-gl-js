@@ -16,7 +16,7 @@ import type {VideoSourceSpecification} from '../style-spec/types.js';
 
 /**
  * A data source containing video.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-video) for detailed documentation of options.)
+ * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-video) for detailed documentation of options).
  *
  * @example
  * // add to map
@@ -169,7 +169,7 @@ class VideoSource extends ImageSource {
      * @method setCoordinates
      * @instance
      * @memberof VideoSource
-     * @returns {VideoSource} this
+     * @returns {VideoSource} Returns itself to allow for method chaining.
      * @example
      * // Add a video source to the map to map
      * map.addSource('video_source_id', {

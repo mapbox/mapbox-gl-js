@@ -241,7 +241,7 @@ export default class Marker extends Evented {
      * Attaches the `Marker` to a `Map` object.
      *
      * @param {Map} map The Mapbox GL JS map to add the marker to.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
      * const marker = new mapboxgl.Marker()
      *     .setLngLat([30.5, 50.5])
@@ -272,7 +272,7 @@ export default class Marker extends Evented {
      * @example
      * const marker = new mapboxgl.Marker().addTo(map);
      * marker.remove();
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      */
     remove() {
         if (this._map) {
@@ -318,7 +318,7 @@ export default class Marker extends Evented {
     * Set the marker's geographical position and move it.
      *
     * @param {LngLat} lnglat A {@link LngLat} describing where the marker should be located.
-    * @returns {Marker} `this`
+    * @returns {Marker} Returns itself to allow for method chaining.
     * @example
     * // Create a new marker, set the longitude and latitude, and add it to the map
     * new mapboxgl.Marker()
@@ -339,7 +339,7 @@ export default class Marker extends Evented {
     /**
      * Returns the `Marker`'s HTML element.
      *
-     * @returns {HTMLElement} element
+     * @returns {HTMLElement} Returns the marker element.
      * @example
      * const element = marker.getElement();
      */
@@ -352,7 +352,7 @@ export default class Marker extends Evented {
      *
      * @param popup An instance of the {@link Popup} class. If undefined or null, any popup
      * set on this {@link Marker} instance is unset.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
      * const marker = new mapboxgl.Marker()
      *     .setLngLat([0, 0])
@@ -424,7 +424,7 @@ export default class Marker extends Evented {
     /**
      * Returns the {@link Popup} instance that is bound to the {@link Marker}.
      *
-     * @returns {Popup} popup
+     * @returns {Popup} Returns the popup.
      * @example
      * const marker = new mapboxgl.Marker()
      *     .setLngLat([0, 0])
@@ -440,7 +440,7 @@ export default class Marker extends Evented {
     /**
      * Opens or closes the {@link Popup} instance that is bound to the {@link Marker}, depending on the current state of the {@link Popup}.
      *
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
      * const marker = new mapboxgl.Marker()
      *     .setLngLat([0, 0])
@@ -574,7 +574,7 @@ export default class Marker extends Evented {
      * Sets the offset of the marker.
      *
      * @param {PointLike} offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
      * marker.setOffset([0, 1]);
      */
@@ -678,8 +678,8 @@ export default class Marker extends Evented {
     /**
      * Sets the `draggable` property and functionality of the marker.
      *
-     * @param {boolean} [shouldBeDraggable=false] Turns drag functionality on/off
-     * @returns {Marker} `this`
+     * @param {boolean} [shouldBeDraggable=false] Turns drag functionality on/off.
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
      * marker.setDraggable(true);
      */
@@ -716,7 +716,7 @@ export default class Marker extends Evented {
      * Sets the `rotation` property of the marker.
      *
      * @param {number} [rotation=0] The rotation angle of the marker (clockwise, in degrees), relative to its respective {@link Marker#setRotationAlignment} setting.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
      * marker.setRotation(45);
      */
@@ -741,7 +741,7 @@ export default class Marker extends Evented {
      * Sets the `rotationAlignment` property of the marker.
      *
      * @param {string} [alignment='auto'] Sets the `rotationAlignment` property of the marker.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
      * marker.setRotationAlignment('viewport');
      */
@@ -766,7 +766,7 @@ export default class Marker extends Evented {
      * Sets the `pitchAlignment` property of the marker.
      *
      * @param {string} [alignment] Sets the `pitchAlignment` property of the marker. If alignment is 'auto', it will automatically match `rotationAlignment`.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
      * marker.setPitchAlignment('map');
      */

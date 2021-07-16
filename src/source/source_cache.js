@@ -795,7 +795,7 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Remove all tiles from this pyramid
+     * Remove all tiles from this pyramid.
      * @private
      */
     clearTiles() {
