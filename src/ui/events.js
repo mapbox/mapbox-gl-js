@@ -14,7 +14,7 @@ import type LngLat from '../geo/lng_lat.js';
  * mouse events of specific types such as 'click' or 'hover'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
- * @augments {object}
+ * @extends {Object}
  * @example
  * // Example of a MapMouseEvent of type "click"
  * map.on('click', (e) => {
@@ -96,7 +96,7 @@ export class MapMouseEvent extends Event {
      */
     features: Array<Object> | void;
 
-    /**.
+    /**
      * Prevents subsequent default processing of the event by the map.
      *
      * Calling this method will prevent the following default map behaviors:
@@ -142,7 +142,7 @@ export class MapMouseEvent extends Event {
  * mouse events of specific types such as 'touchstart' or 'touchend'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
- * @augments {object}
+ * @extends {Object}
  * @example
  * // Example of a MapTouchEvent of type "touch"
  * map.on('touchstart', (e) => {
@@ -242,7 +242,7 @@ export class MapTouchEvent extends Event {
      */
     features: Array<Object> | void;
 
-    /**.
+    /**
      * Prevents subsequent default processing of the event by the map.
      *
      * Calling this method will prevent the following default map behaviors:
@@ -290,7 +290,7 @@ export class MapTouchEvent extends Event {
  * mouse events of specific types such as 'wheel'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
- * @augments {object}
+ * @extends {Object}
  * @example
  * // Example of a MapWheelEvent of type "wheel"
  * map.on('wheel', (e) => {
@@ -1213,8 +1213,8 @@ export type MapEvent =
      */
     | 'load'
 
-    /**.
-     * Fired whenever the map is drawn to the screen, as the result of.
+    /**
+     * Fired whenever the map is drawn to the screen, as the result of
      *
      * - a change to the map's position, zoom, pitch, or bearing
      * - a change to the map's style
@@ -1235,7 +1235,7 @@ export type MapEvent =
      */
     | 'render'
 
-    /**.
+    /**
      * Fired after the last frame rendered before the map enters an
      * "idle" state:
      *
