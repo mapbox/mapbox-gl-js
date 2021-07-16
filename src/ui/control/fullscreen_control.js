@@ -21,7 +21,7 @@ type Options = {
  *
  * @example
  * map.addControl(new mapboxgl.FullscreenControl({container: document.querySelector('body')}));
- * @see [View a fullscreen map](https://www.mapbox.com/mapbox-gl-js/example/fullscreen/)
+ * @see [Example: View a fullscreen map](https://www.mapbox.com/mapbox-gl-js/example/fullscreen/)
  */
 
 class FullscreenControl {

@@ -17,6 +17,7 @@ import type LngLat from '../geo/lng_lat.js';
  * @extends {Object}
  * @example
  * // Example of a MapMouseEvent of type "click"
+<<<<<<< HEAD
  * map.on('click', (e) => {
  *     console.log(e);
  *     // {
@@ -36,6 +37,24 @@ import type LngLat from '../geo/lng_lat.js';
  * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  * @see [Display popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+=======
+ * {
+ *     lngLat: {
+ *         lng: 40.203,
+ *         lat: -74.451
+ *     },
+ *     originalEvent: {...},
+ *     point: {
+ *         x: 266,
+ *         y: 464
+ *     },
+ *      target: {...},
+ *      type: "click"
+ * }
+ * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+ * @see [Example: Display popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+>>>>>>> dd0aad489f543cb10e936e0dfbe93e4400cea42d
  */
 export class MapMouseEvent extends Event {
     /**
@@ -145,6 +164,7 @@ export class MapMouseEvent extends Event {
  *
  * @example
  * // Example of a MapTouchEvent of type "touch"
+<<<<<<< HEAD
  * map.on('touchstart', (e) => {
  *     console.log(e);
  *     // {
@@ -176,6 +196,36 @@ export class MapMouseEvent extends Event {
  * });
  * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+=======
+  * {
+ *   lngLat: {
+ *      lng: 40.203,
+ *      lat: -74.451
+ *   },
+ *   lngLats: [
+ *      {
+ *         lng: 40.203,
+ *         lat: -74.451
+ *      }
+ *   ],
+ *   originalEvent: {...},
+ *   point: {
+ *      x: 266,
+ *      y: 464
+ *   },
+ *   points: [
+ *      {
+ *         x: 266,
+ *         y: 464
+ *      }
+ *   ]
+ *   preventDefault(),
+ *   target: {...},
+ *   type: "touchstart"
+ * }
+ * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+>>>>>>> dd0aad489f543cb10e936e0dfbe93e4400cea42d
 */
 export class MapTouchEvent extends Event {
     /**
@@ -289,15 +339,22 @@ export class MapTouchEvent extends Event {
  * `MapWheelEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'wheel'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
- * @extends {Object}
  *
+ * @extends {Object}
  * @example
- * // Example of a MapWheelEvent of type "wheel"
+ * // Example event trigger for a MapWheelEvent of type "wheel"
  * map.on('wheel', (e) => {
  *     console.log('event type:', e.type);
  *     // event type: wheel
  * });
-* @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @example
+ * // Example of a MapWheelEvent of type "wheel"
+ * {
+ *   originalEvent: WheelEvent {...},
+ * 	 target: Map {...},
+ * 	 type: "wheel"
+ * }
+ * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  */
 export class MapWheelEvent extends Event {
     /**
@@ -359,12 +416,22 @@ export class MapWheelEvent extends Event {
  * @property {Map} target The `Map` instance that triggerred the event
  * @example
  * // Example of a BoxZoomEvent of type "boxzoomstart"
+<<<<<<< HEAD
  * map.on('boxzoomstart', (e) => {
  *     console.log('event type:', e.type);
  *     // event type: boxzoomstart
  * });
  * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+=======
+ * {
+ *   originalEvent: {...},
+ *   type: "boxzoomstart",
+ *   target: {...}
+ * }
+ * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+>>>>>>> dd0aad489f543cb10e936e0dfbe93e4400cea42d
  */
 export type MapBoxZoomEvent = {
     type: 'boxzoomstart'
@@ -384,6 +451,7 @@ export type MapBoxZoomEvent = {
  * @property {string} dataType The type of data that has changed. One of `'source'` or `'style'`, where `'source'` refers to the data associated with any source, and `'style'` refers to the entire [style](https://docs.mapbox.com/help/glossary/style/) used by the map.
  * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
  * @property {Object} [source] The [style spec representation of the source](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) if the event has a `dataType` of `source`.
+ * @property {string} [sourceId] The `id` of the [`source`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) that triggered the event, if the event has a `dataType` of `source`. Same as the `id` of the object in the `source` property.
  * @property {string} [sourceDataType] Included if the event has a `dataType` of `source` and the event signals
  * that internal data has been received or changed. Possible values are `metadata`, `content` and `visibility`.
  * @property {Object} [tile] The tile being loaded or changed, if the event has a `dataType` of `source` and
@@ -392,6 +460,7 @@ export type MapBoxZoomEvent = {
  * the event is related to loading of a tile.
  * @example
  * // Example of a MapDataEvent of type "sourcedata"
+<<<<<<< HEAD
  * map.on('sourcedata', (e) => {
  *     console.log(e);
  *     // {
@@ -411,6 +480,24 @@ export type MapBoxZoomEvent = {
  * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Change a map's style](https://docs.mapbox.com/mapbox-gl-js/example/setstyle/)
  * @see [Add a GeoJSON line](https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/)
+=======
+ * {
+ *   dataType: "source",
+ *   isSourceLoaded: false,
+ *   source: {
+ *     type: "vector",
+ *     url: "mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2"
+ *   },
+ *   sourceDataType: "visibility",
+ *   sourceId: "composite",
+ *   style: {...},
+ *   target: {...},
+ *   type: "sourcedata"
+ * }
+ * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [Example: Change a map's style](https://docs.mapbox.com/mapbox-gl-js/example/setstyle/)
+ * @see [Example: Add a GeoJSON line](https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/)
+>>>>>>> dd0aad489f543cb10e936e0dfbe93e4400cea42d
  */
 export type MapDataEvent = {
     type: 'data'
@@ -454,8 +541,8 @@ export type MapEvent =
      * map.on('mousedown', 'poi-label', () => {
      *     console.log('A mousedown event has occurred on a visible portion of the poi-label layer.');
      * });
-     * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
-     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+     * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'mousedown'
 
@@ -484,8 +571,8 @@ export type MapEvent =
      * map.on('mouseup', 'poi-label', () => {
      *     console.log('A mouseup event has occurred on a visible portion of the poi-label layer.');
      * });
-     * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
-     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+     * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'mouseup'
 
@@ -516,9 +603,9 @@ export type MapEvent =
      * map.on('mouseover', 'poi-label', () => {
      *     console.log('A mouseover event has occurred on a visible portion of the poi-label layer.');
      * });
-     * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
-     * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
-     * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Example: Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
+     * @see [Example: Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see [Example: Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
      */
     | 'mouseover'
 
@@ -548,9 +635,9 @@ export type MapEvent =
      * map.on('mousemove', 'poi-label', () => {
      *     console.log('A mousemove event has occurred on a visible portion of the poi-label layer.');
      * });
-     * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
-     * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
-     * @see [Display a popup on over](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Example: Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
+     * @see [Example: Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see [Example: Display a popup on over](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
      */
     | 'mousemove'
 
@@ -579,8 +666,8 @@ export type MapEvent =
      * map.on('click', 'poi-label', (e) => {
      *     console.log(`A click event has occurred on a visible portion of the poi-label layer at ${e.lngLat}`);
      * });
-     * @see [Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
-     * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
+     * @see [Example: Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
+     * @see [Example: Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
     | 'click'
 
@@ -631,8 +718,8 @@ export type MapEvent =
      * map.on('mouseenter', 'water', () => {
      *     console.log('A mouseenter event occurred on a visible portion of the water layer.');
      * });
-     * @see [Center the map on a clicked symbol](https://docs.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
-     * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Example: Center the map on a clicked symbol](https://docs.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
+     * @see [Example: Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
     | 'mouseenter'
 
@@ -658,8 +745,8 @@ export type MapEvent =
      * map.on('mouseleave', 'water', () => {
      *     console.log('A mouseleave event occurred.');
      * });
-     * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
-     * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Example: Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see [Example: Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
     | 'mouseleave'
 
@@ -733,7 +820,7 @@ export type MapEvent =
      * map.on('touchstart', () => {
      *     console.log('A touchstart event occurred.');
      * });
-     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'touchstart'
 
@@ -752,7 +839,7 @@ export type MapEvent =
      * map.on('touchstart', () => {
      *     console.log('A touchstart event occurred.');
      * });
-     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'touchend'
 
@@ -771,7 +858,7 @@ export type MapEvent =
      * map.on('touchmove', () => {
      *     console.log('A touchmove event occurred.');
      * });
-     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'touchmove'
 
@@ -829,8 +916,8 @@ export type MapEvent =
      * map.on('move', () => {
      *     console.log('A move event occurred.');
      * });
-     * @see [Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
-     * @see [Filter features within map view](https://docs.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
+     * @see [Example: Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
+     * @see [Example: Filter features within map view](https://docs.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
     | 'move'
 
@@ -850,9 +937,9 @@ export type MapEvent =
      * map.on('moveend', () => {
      *     console.log('A moveend event occurred.');
      * });
-     * @see [Play map locations as a slideshow](https://www.mapbox.com/mapbox-gl-js/example/playback-locations/)
-     * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
-     * @see [Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
+     * @see [Example: Play map locations as a slideshow](https://www.mapbox.com/mapbox-gl-js/example/playback-locations/)
+     * @see [Example: Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
+     * @see [Example: Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
      */
     | 'moveend'
 
@@ -907,7 +994,7 @@ export type MapEvent =
      * map.on('dragend', () => {
      *     console.log('A dragend event occurred.');
      * });
-     * @see [Create a draggable marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+     * @see [Example: Create a draggable marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
      */
     | 'dragend'
 
@@ -946,7 +1033,7 @@ export type MapEvent =
      * map.on('zoom', () => {
      *     console.log('A zoom event occurred.');
      * });
-     * @see [Update a choropleth layer by zoom level](https://www.mapbox.com/mapbox-gl-js/example/updating-choropleth/)
+     * @see [Example: Update a choropleth layer by zoom level](https://www.mapbox.com/mapbox-gl-js/example/updating-choropleth/)
      */
     | 'zoom'
 
@@ -1206,9 +1293,9 @@ export type MapEvent =
      * map.on('load', () => {
      *     console.log('A load event occurred.');
      * });
-     * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
-     * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
-     * @see [Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
+     * @see [Example: Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+     * @see [Example: Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
+     * @see [Example: Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
      */
     | 'load'
 
@@ -1310,7 +1397,7 @@ export type MapEvent =
      * map.on('data', () => {
      *     console.log('A data event occurred.');
      * });
-     * @see [Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
+     * @see [Example: Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
      */
     | 'data'
 
@@ -1432,7 +1519,7 @@ export type MapEvent =
      * map.on('styleimagemissing', () => {
      *     console.log('A styleimagemissing event occurred.');
      * });
-     * @see [Generate and add a missing icon to the map](https://mapbox.com/mapbox-gl-js/example/add-image-missing-generated/)
+     * @see [Example: Generate and add a missing icon to the map](https://mapbox.com/mapbox-gl-js/example/add-image-missing-generated/)
      */
     | 'styleimagemissing'
 

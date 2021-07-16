@@ -97,8 +97,6 @@ export function orientationFromFrame(forward: vec3, up: vec3): ?quat {
         Orientation can be set freely but certain constraints still apply
          - Orientation must be representable with only pitch and bearing.
          - Pitch has an upper limit
- * @see [Animate the camera around a point in 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
- * @see [Animate the camera along a path](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-path/)
  * @example
  * const camera = map.getFreeCameraOptions();
  *
@@ -109,6 +107,8 @@ export function orientationFromFrame(forward: vec3, up: vec3): ?quat {
  * camera.lookAtPoint([138.73036, 35.36197]);
  *
  * map.setFreeCameraOptions(camera);
+ * @see [Example: Animate the camera around a point in 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
+ * @see [Example: Animate the camera along a path](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-path/)
  */
 class FreeCameraOptions {
     orientation: ?quat;

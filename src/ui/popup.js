@@ -76,6 +76,7 @@ const focusQuerySelector = [
  *  To ensure the popup resizes to fit its content, set this property to `'none'`.
  *  See the MDN documentation for the list of [available values](https://developer.mozilla.org/en-US/docs/Web/CSS/max-width).
  * @example
+<<<<<<< HEAD
  * const markerHeight = 50;
  * const markerRadius = 10;
  * const linearOffset = 25;
@@ -94,10 +95,10 @@ const focusQuerySelector = [
  *     .setHTML("<h1>Hello World!</h1>")
  *     .setMaxWidth("300px")
  *     .addTo(map);
- * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
- * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
- * @see [Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
- * @see [Attach a popup to a marker instance](https://www.mapbox.com/mapbox-gl-js/example/set-popup/)
+ * @see [Example: Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
+ * @see [Example: Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+ * @see [Example: Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+ * @see [Example: Attach a popup to a marker instance](https://www.mapbox.com/mapbox-gl-js/example/set-popup/)
  */
 export default class Popup extends Evented {
     _map: Map;
@@ -126,10 +127,10 @@ export default class Popup extends Evented {
      *     .setLngLat([0, 0])
      *     .setHTML("<h1>Null Island</h1>")
      *     .addTo(map);
-     * @see [Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
-     * @see [Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
-     * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
-     * @see [Show polygon information on click](https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/)
+     * @see [Example: Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
+     * @see [Example: Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Example: Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Example: Show polygon information on click](https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/)
      */
     addTo(map: Map) {
         if (this._map) this.remove();
@@ -368,10 +369,10 @@ export default class Popup extends Evented {
      *     .setLngLat(e.lngLat)
      *     .setHTML("<h1>Hello World!</h1>")
      *     .addTo(map);
-     * @see [Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
-     * @see [Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
-     * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
-     * @see [Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
+     * @see [Example: Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
+     * @see [Example: Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Example: Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Example: Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
     setHTML(html: string) {
         const frag = window.document.createDocumentFragment();
