@@ -76,7 +76,6 @@ const focusQuerySelector = [
  *  To ensure the popup resizes to fit its content, set this property to `'none'`.
  *  See the MDN documentation for the list of [available values](https://developer.mozilla.org/en-US/docs/Web/CSS/max-width).
  * @example
-<<<<<<< HEAD
  * const markerHeight = 50;
  * const markerRadius = 10;
  * const linearOffset = 25;

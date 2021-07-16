@@ -518,6 +518,7 @@ class Camera extends Evented {
      * Returns a {@link CameraOptions} object for the highest zoom level
      * up to and including `Map#getMaxZoom()` that fits the bounds
      * in the viewport at the specified bearing.
+     * 
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
      *      the highest zoom level up to and including `Map#getMaxZoom()` that fits
