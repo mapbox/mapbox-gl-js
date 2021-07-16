@@ -27,7 +27,7 @@ export type CanvasSourceSpecification = {|
  * @property {string} type Source type. Must be `"canvas"`.
  * @property {string|HTMLCanvasElement} canvas Canvas source from which to read pixels. Can be a string representing the ID of the canvas element, or the `HTMLCanvasElement` itself.
  * @property {Array<Array<number>>} coordinates Four geographical coordinates denoting where to place the corners of the canvas, specified in `[longitude, latitude]` pairs.
- * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (i.e. pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
+ * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
  */
 
 /**
@@ -57,7 +57,7 @@ export type CanvasSourceSpecification = {|
  * ]);
  *
  * map.removeSource('some id');  // remove
- * @see [Add a canvas source](https://docs.mapbox.com/mapbox-gl-js/example/canvas-source/)
+ * @see [Example: Add a canvas source](https://docs.mapbox.com/mapbox-gl-js/example/canvas-source/)
  */
 class CanvasSource extends ImageSource {
     options: CanvasSourceSpecification;
@@ -188,7 +188,7 @@ class CanvasSource extends ImageSource {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the canvas.
      *   The coordinates start at the top left corner of the canvas and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {CanvasSource} this
+     * @returns {CanvasSource} Returns itself to allow for method chaining.
      */
 
     // setCoordinates inherited from ImageSource

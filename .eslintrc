@@ -82,12 +82,6 @@
     "no-multiple-empty-lines": [ "error", {
         "max": 1
     }],
-    "jsdoc/check-param-names": "warn",
-    "jsdoc/require-param": "warn",
-    "jsdoc/require-param-description": "warn",
-    "jsdoc/require-param-name": "warn",
-    "jsdoc/require-returns": "warn",
-    "jsdoc/require-returns-description": "warn"
   },
   "settings": {
     "jsdoc":{
