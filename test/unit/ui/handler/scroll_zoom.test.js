@@ -48,6 +48,30 @@ test('ScrollZoomHandler', (t) => {
         t.end();
     });
 
+    t.test('respects requireCtrl option', (t) => {
+        const clock = sinon.useFakeTimers(now);
+        const map = createMap(t);
+        map._renderTaskQueue.run();
+
+        map.scrollZoom.disable();
+        map.scrollZoom.enable({requireCtrl: true});
+
+        let startZoom = map.getZoom();
+        simulate.wheel(map.getCanvas(), {type: 'trackpad', deltaY: -50});
+        clock.tick(200);
+        map._renderTaskQueue.run();
+        t.equal(map.getZoom() - startZoom,  0);
+
+        startZoom = map.getZoom();
+        simulate.wheel(map.getCanvas(), {type: 'trackpad', deltaY: -50, ctrlKey: true});
+        clock.tick(200);
+        map._renderTaskQueue.run();
+        equalWithPrecision(t, map.getZoom() - startZoom,  0.0779, 0.001);
+
+        clock.restore();
+        t.end();
+    });
+
     t.test('Zooms for single mouse wheel tick with non-magical deltaY', (t) => {
         const map = createMap(t);
         map._renderTaskQueue.run();

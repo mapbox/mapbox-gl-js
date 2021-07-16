@@ -3,7 +3,7 @@
 import assert from 'assert';
 import DOM from '../../util/dom.js';
 
-import {ease as _ease, bindAll, bezier} from '../../util/util.js';
+import {ease as _ease, bindAll, bezier, isSafari} from '../../util/util.js';
 import browser from '../../util/browser.js';
 import window from '../../util/window.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
@@ -39,6 +39,7 @@ class ScrollZoomHandler {
     _aroundCenter: boolean;
     _aroundPoint: Point;
     _aroundCoord: MercatorCoordinate;
+    _requireCtrl: boolean;
     _type: 'wheel' | 'trackpad' | null;
     _lastValue: number;
     _timeout: ?TimeoutID; // used for delayed-handling of a single wheel movement
@@ -106,6 +107,18 @@ class ScrollZoomHandler {
         return !!this._enabled;
     }
 
+    /**
+     * Returns a Boolean indicating whether to require the CTRL key for zoom events. Modern browsers treat
+     * pinch gestures as WheelEvents with the CTRL key pressed.
+     *
+     * Return false if we're currently in Safari as Safari uses pinch gestures for the tab switcher.
+     *
+     * @returns {boolean} `true` if the "require CTRL" option is enabled.
+     */
+    requiresCtrl() {
+        return this._requireCtrl && !isSafari();
+    }
+
     /*
     * Active state is turned on and off with every scroll wheel event and is set back to false before the map
     * render is called, so _active is not a good candidate for determining if a scroll zoom animation is in
@@ -122,18 +135,22 @@ class ScrollZoomHandler {
     /**
      * Enables the "scroll to zoom" interaction.
      *
-     * @param {Object} [options] Options object.
-     * @param {string} [options.around] If "center" is passed, map will zoom around center of map
+     * @param {Object}  [options] Options object.
+     * @param {string}  [options.around] If "center" is passed, map will zoom around center of map
+     * @param {boolean} [options.requireCtrl] If `true` is passed, map will only zoom when Ctrl key is pressed
      *
      * @example
      *   map.scrollZoom.enable();
      * @example
      *  map.scrollZoom.enable({ around: 'center' })
+     * @example
+     *  map.scrollZoom.enable({ requireCtrl: true })
      */
-    enable(options: any) {
+    enable(options: ?{around?: 'center', requireCtrl?: false}) {
         if (this.isEnabled()) return;
         this._enabled = true;
-        this._aroundCenter = options && options.around === 'center';
+        this._aroundCenter = !!options && options.around === 'center';
+        this._requireCtrl = !!options && options.requireCtrl === true;
     }
 
     /**
@@ -149,6 +166,7 @@ class ScrollZoomHandler {
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
+        if (this.requiresCtrl() && !e.ctrlKey) return;
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
         let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
