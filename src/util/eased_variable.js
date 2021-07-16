@@ -37,7 +37,7 @@ class EasedVariable {
      *
      * @param timeStamp {number} Current time stamp.
      *
-     * @returns {boolean} Returns true if ease in progress.
+     * @returns {boolean} Returns `true` if ease is in progress.
      */
     isEasing(timeStamp: number): boolean {
         return timeStamp >= this._startTime && timeStamp <= this._endTime;

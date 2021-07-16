@@ -29,7 +29,7 @@ class TileCache {
     /**
      * Clear the cache.
      *
-     * @returns {TileCache} Return `this`.
+     * @returns {TileCache} Returns itself to allow for method chaining.
      * @private
      */
     reset() {
