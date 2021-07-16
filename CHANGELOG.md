@@ -1,3 +1,14 @@
+## 2.4.0
+### ✨ Features and improvements
+
+- Now you can send `onSuccess` and `onError` to `trigger` in `geolocate` ([#10834](https://github.com/mapbox/mapbox-gl-js/pull/10834))
+
+## 1.14.0
+
+### ✨ Features and improvements
+
+- Now you can send `onSuccess` and `onError` to `trigger` in `geolocate` ([#10834](https://github.com/mapbox/mapbox-gl-js/pull/10834))
+
 ## 2.3.1
 
 ### 🐞 Bug fixes
