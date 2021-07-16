@@ -59,7 +59,7 @@ export function mercatorScale(lat: number) {
  *
  * `MercatorCoordinate` uses the web mercator projection ([EPSG:3857](https://epsg.io/3857)) with slightly different units:
  * - the size of 1 unit is the width of the projected world instead of the "mercator meter"
- * - the origin of the coordinate space is at the north-west corner instead of the middle
+ * - the origin of the coordinate space is at the north-west corner instead of the middle.
  *
  * For example, `MercatorCoordinate(0, 0, 0)` is the north-west corner of the mercator world and
  * `MercatorCoordinate(1, 1, 0)` is the south-east corner. If you are familiar with
