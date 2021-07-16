@@ -678,6 +678,7 @@ class Map extends Camera {
 
     /**
      * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
+     *
      * @returns {Map} The map object.
      *
      * @example

@@ -17,7 +17,6 @@ import type LngLat from '../geo/lng_lat.js';
  * @extends {Object}
  * @example
  * // Example of a MapMouseEvent of type "click"
-<<<<<<< HEAD
  * map.on('click', (e) => {
  *     console.log(e);
  *     // {
@@ -34,27 +33,9 @@ import type LngLat from '../geo/lng_lat.js';
  *     //      type: "click"
  *     // }
  * });
- * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
- * @see [Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
- * @see [Display popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
-=======
- * {
- *     lngLat: {
- *         lng: 40.203,
- *         lat: -74.451
- *     },
- *     originalEvent: {...},
- *     point: {
- *         x: 266,
- *         y: 464
- *     },
- *      target: {...},
- *      type: "click"
- * }
  * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  * @see [Example: Display popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
->>>>>>> dd0aad489f543cb10e936e0dfbe93e4400cea42d
  */
 export class MapMouseEvent extends Event {
     /**
@@ -160,11 +141,11 @@ export class MapMouseEvent extends Event {
  * `MapTouchEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'touchstart' or 'touchend'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
+ *
  * @extends {Object}
  *
  * @example
  * // Example of a MapTouchEvent of type "touch"
-<<<<<<< HEAD
  * map.on('touchstart', (e) => {
  *     console.log(e);
  *     // {
@@ -194,38 +175,8 @@ export class MapMouseEvent extends Event {
  *     //   type: "touchstart"
  *     // }
  * });
- * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
- * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
-=======
-  * {
- *   lngLat: {
- *      lng: 40.203,
- *      lat: -74.451
- *   },
- *   lngLats: [
- *      {
- *         lng: 40.203,
- *         lat: -74.451
- *      }
- *   ],
- *   originalEvent: {...},
- *   point: {
- *      x: 266,
- *      y: 464
- *   },
- *   points: [
- *      {
- *         x: 266,
- *         y: 464
- *      }
- *   ]
- *   preventDefault(),
- *   target: {...},
- *   type: "touchstart"
- * }
  * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
->>>>>>> dd0aad489f543cb10e936e0dfbe93e4400cea42d
 */
 export class MapTouchEvent extends Event {
     /**
@@ -349,11 +300,11 @@ export class MapTouchEvent extends Event {
  * });
  * @example
  * // Example of a MapWheelEvent of type "wheel"
- * {
- *   originalEvent: WheelEvent {...},
- * 	 target: Map {...},
- * 	 type: "wheel"
- * }
+ * // {
+ * //   originalEvent: WheelEvent {...},
+ * // 	 target: Map {...},
+ * // 	 type: "wheel"
+ * // }
  * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  */
 export class MapWheelEvent extends Event {
@@ -374,8 +325,8 @@ export class MapWheelEvent extends Event {
 
     /**
      * Prevents subsequent default processing of the event by the map.
-     *
      * Calling this method will prevent the the behavior of {@link ScrollZoomHandler}.
+     *
      * @example
      * map.on('wheel', (e) => {
      *     // Prevent the default map scroll zoom behavior.
@@ -415,23 +366,20 @@ export class MapWheelEvent extends Event {
  * @property {string} type The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @property {Map} target The `Map` instance that triggerred the event
  * @example
- * // Example of a BoxZoomEvent of type "boxzoomstart"
-<<<<<<< HEAD
+ * // Example trigger of a BoxZoomEvent of type "boxzoomstart"
  * map.on('boxzoomstart', (e) => {
  *     console.log('event type:', e.type);
  *     // event type: boxzoomstart
  * });
- * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
- * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
-=======
- * {
- *   originalEvent: {...},
- *   type: "boxzoomstart",
- *   target: {...}
- * }
+ * @example
+ * // Example of a BoxZoomEvent of type "boxzoomstart"
+ * // {
+ * //   originalEvent: {...},
+ * //   type: "boxzoomstart",
+ * //   target: {...}
+ * // }
  * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
->>>>>>> dd0aad489f543cb10e936e0dfbe93e4400cea42d
  */
 export type MapBoxZoomEvent = {
     type: 'boxzoomstart'
@@ -460,7 +408,6 @@ export type MapBoxZoomEvent = {
  * the event is related to loading of a tile.
  * @example
  * // Example of a MapDataEvent of type "sourcedata"
-<<<<<<< HEAD
  * map.on('sourcedata', (e) => {
  *     console.log(e);
  *     // {
@@ -477,27 +424,9 @@ export type MapBoxZoomEvent = {
  *     //   type: "sourcedata"
  *     // }
  * });
- * @see [`Map` events documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
- * @see [Change a map's style](https://docs.mapbox.com/mapbox-gl-js/example/setstyle/)
- * @see [Add a GeoJSON line](https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/)
-=======
- * {
- *   dataType: "source",
- *   isSourceLoaded: false,
- *   source: {
- *     type: "vector",
- *     url: "mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2"
- *   },
- *   sourceDataType: "visibility",
- *   sourceId: "composite",
- *   style: {...},
- *   target: {...},
- *   type: "sourcedata"
- * }
  * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Example: Change a map's style](https://docs.mapbox.com/mapbox-gl-js/example/setstyle/)
  * @see [Example: Add a GeoJSON line](https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/)
->>>>>>> dd0aad489f543cb10e936e0dfbe93e4400cea42d
  */
 export type MapDataEvent = {
     type: 'data'
