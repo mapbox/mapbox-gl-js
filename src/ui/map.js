@@ -791,13 +791,10 @@ class Map extends Camera {
      * If the map's current pitch is lower than the new minimum,
      * the map will pitch to the new minimum.
      *
-     * @param {number | null | undefined} minPitch The minimum pitch to set (0-85).
-     *   If `null` or `undefined` is provided, the function removes the current minimum pitch (i.e. sets it to 0).
+     * @param {number | null | undefined} minPitch The minimum pitch to set (0-85). If `null` or `undefined` is provided, the function removes the current minimum pitch and resets it to 0.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setMinPitch(5);
-     *   If `null` or `undefined` is provided, the function removes the current minimum pitch and resets it to 0.
-     *   If `null` or `undefined` is provided, the function removes the current minimum pitch and resets it to 0.
      */
     setMinPitch(minPitch?: ?number) {
 

@@ -319,6 +319,7 @@ export class MapWheelEvent extends Event {
      * Prevents subsequent default processing of the event by the map.
      *
      * Calling this method will prevent the the behavior of {@link ScrollZoomHandler}.
+     *
      * @example
      * map.on('wheel', (e) => {
      *     // Prevent the default map scroll zoom behavior.
