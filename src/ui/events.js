@@ -1268,7 +1268,7 @@ export type MapEvent =
     | 'remove'
 
     /**
-     * Fired when an error occurs. This is GL JS's primary error reporting
+     * Fired when an error occurs. This is Mapbox GL JS's primary error reporting
      * mechanism. We use an event instead of `throw` to better accommodate
      * asyncronous operations. If no listeners are bound to the `error` event, the
      * error will be printed to the console.

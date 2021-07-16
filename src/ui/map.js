@@ -261,7 +261,7 @@ const defaultOptions = {
  * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @param {string} [options.accessToken=null] If specified, map will use this token instead of the one defined in mapboxgl.accessToken.
- * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings (control tooltips). The `locale` object maps namespaced UI string IDs to translated strings in the target language;
+ * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
  * @example
@@ -1255,7 +1255,7 @@ class Map extends Camera {
      * [feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
-     * string and numeric property values are supported (i.e. `null`, `Array`, and `Object` values are not supported).
+     * string and numeric property values are supported. `null`, `Array`, and `Object` values are not supported.
      *
      * Each feature includes top-level `layer`, `source`, and `sourceLayer` properties. The `layer` property is an object
      * representing the style layer to  which the feature belongs. Layout and paint properties in this object contain values
@@ -1355,7 +1355,7 @@ class Map extends Camera {
      * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * In contrast to {@link Map#queryRenderedFeatures}, this function returns all features matching the query parameters,
-     * whether or not they are rendered (visible) by the current style. The domain of the query includes all currently-loaded
+     * whether or not they are rendered by the current style (in other words, are visible). The domain of the query includes all currently-loaded
      * vector tiles and GeoJSON source tiles: this function does not check tiles outside the currently
      * visible viewport.
      *
@@ -2658,7 +2658,7 @@ class Map extends Camera {
     /**
      * Call when a (re-)render of the map is required:
      * - The style has changed (`setPaintProperty()`, etc.)
-     * - Source data has changed (e.g. tiles have finished loading)
+     * - Source data has changed (for example, tiles have finished loading)
      * - The map has is moving (or just finished moving)
      * - A transition is in progress
      *

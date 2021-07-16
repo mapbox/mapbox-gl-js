@@ -465,8 +465,8 @@ class Camera extends Evented {
     }
 
     /**
-     * Snaps the map so that north is up (0° bearing), if the current bearing is close enough to it (within the
-     * `bearingSnap` threshold).
+     * Snaps the map so that north is up (0° bearing), if the current bearing is
+     * close enough to it (within the `bearingSnap` threshold).
      *
      * @memberof Map#
      * @param options Options object.

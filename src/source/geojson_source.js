@@ -249,8 +249,8 @@ class GeoJSONSource extends Evented implements Source {
      * For clustered sources, fetches the original points that belong to the cluster (as an array of GeoJSON features).
      *
      * @param clusterId The value of the cluster's `cluster_id` property.
-     * @param limit The maximum number of features to return. (Defaults to `10` if a falsy value is given).
-     * @param offset The number of features to skip. This is useful for paginating results. Defaults to `0` if a falsy value is given.
+     * @param limit The maximum number of features to return. Defaults to `10` if a falsy value is given.
+     * @param offset The number of features to skip (for example, for pagination). Defaults to `0` if a falsy value is given.
      * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
      * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
