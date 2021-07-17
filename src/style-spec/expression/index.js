@@ -15,7 +15,7 @@ import definitions from './definitions/index.js';
 import * as isConstant from './is_constant.js';
 import RuntimeError from './runtime_error.js';
 import {success, error} from '../util/result.js';
-import {supportsPropertyExpression, supportsZoomExpression, supportsInterpolation} from '../util/properties.js';
+import {supportsPropertyExpression, supportsZoomExpression, supportsInterpolation, supportsCameraStateExpression} from '../util/properties.js';
 
 import type {Type, EvaluationKind} from './types.js';
 import type {Value} from './values.js';
@@ -27,6 +27,7 @@ import type {PropertyValueSpecification} from '../types.js';
 import type {FormattedSection} from './types/formatted.js';
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../source/tile_id.js';
+import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -40,6 +41,8 @@ export type FeatureState = {[_: string]: any};
 
 export type GlobalProperties = $ReadOnly<{
     zoom: number,
+    pitch: number,
+    cameraDistanceMatrix?: number[],
     heatmapDensity?: number,
     lineProgress?: number,
     skyRadialProgress?: number,
@@ -63,24 +66,26 @@ export class StyleExpression {
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, refLocation?: MercatorCoordinate): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
         this._evaluator.canonical = canonical;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection;
+        this._evaluator.cameraDistanceReferencePoint = refLocation || null;
 
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, refLocation?: MercatorCoordinate): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;
         this._evaluator.canonical = canonical;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection || null;
+        this._evaluator.cameraDistanceReferencePoint = refLocation || null;
 
         try {
             const val = this.expression.evaluate(this._evaluator);
@@ -186,6 +191,24 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
     }
 }
 
+export class CameraDependentExpression<Kind: EvaluationKind> {
+    kind: Kind;
+    _styleExpression: StyleExpression;
+
+    constructor(kind: Kind, expression: StyleExpression) {
+        this.kind = kind;
+        this._styleExpression = expression;
+    }
+
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, ): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
+    }
+
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, refLocation: MercatorCoordinate): any {
+        return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection, refLocation);
+    }
+}
+
 export type ConstantExpression = {
     kind: 'constant',
     +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
@@ -214,11 +237,23 @@ export type CompositeExpression = {
     interpolationType: ?InterpolationType
 };
 
+export type CameraStateExpression = {
+    kind: 'camera',
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
+};
+
+export type CompositeCameraStateExpression = {
+    kind: 'composite',
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, refLocation?: MercatorCoordinate) => any,
+};
+
 export type StylePropertyExpression =
     | ConstantExpression
     | SourceExpression
     | CameraExpression
-    | CompositeExpression;
+    | CompositeExpression
+    | CameraStateExpression
+    | CompositeCameraStateExpression;
 
 export function createPropertyExpression(expression: mixed, propertySpec: StylePropertySpecification): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec);
@@ -233,9 +268,15 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
         return error([new ParsingError('', 'data expressions not supported')]);
     }
 
-    const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom']);
+    const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'pitch', 'distance-from-camera']);
     if (!isZoomConstant && !supportsZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
+    }
+
+    if (supportsCameraStateExpression(propertySpec)) {
+        return success(isFeatureConstant ?
+                (new CameraDependentExpression('composite', expression.value): CameraStateExpression) :
+                (new CameraDependentExpression('composite', expression.value): CompositeCameraStateExpression));
     }
 
     const zoomCurve = findZoomCurve(parsed);

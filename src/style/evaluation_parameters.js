@@ -14,14 +14,18 @@ export type CrossfadeParameters = {
 
 class EvaluationParameters {
     zoom: number;
+    pitch: number;
+    cameraDistanceMatrix: number[];
     now: number;
     fadeDuration: number;
     zoomHistory: ZoomHistory;
     transition: TransitionSpecification;
 
     // "options" may also be another EvaluationParameters to copy, see CrossFadedProperty.possiblyEvaluate
-    constructor(zoom: number, options?: *) {
+    constructor(zoom: number, pitch: number, cameraDistanceMatrix: number[],  options?: *) {
         this.zoom = zoom;
+        this.pitch = pitch;
+        this.cameraDistanceMatrix = cameraDistanceMatrix;
 
         if (options) {
             this.now = options.now;

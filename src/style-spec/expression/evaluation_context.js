@@ -1,11 +1,16 @@
 // @flow
 
 import {Color} from './values.js';
+import {vec3} from 'gl-matrix';
+
+import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
 import type {FormattedSection} from './types/formatted.js';
 import type {GlobalProperties, Feature, FeatureState} from './index.js';
-import type {CanonicalTileID} from '../../source/tile_id.js';
+import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
+
+const tempArray = [0, 0, 0];
 
 class EvaluationContext {
     globals: GlobalProperties;
@@ -14,6 +19,7 @@ class EvaluationContext {
     formattedSection: ?FormattedSection;
     availableImages: ?Array<string>;
     canonical: ?CanonicalTileID;
+    cameraDistanceReferencePoint: ?MercatorCoordinate;
 
     _parseColorCache: {[_: string]: ?Color};
 
@@ -25,6 +31,7 @@ class EvaluationContext {
         this._parseColorCache = {};
         this.availableImages = null;
         this.canonical = null;
+        this.cameraDistanceReferencePoint = null;
     }
 
     id() {
@@ -45,6 +52,17 @@ class EvaluationContext {
 
     properties() {
         return this.feature && this.feature.properties || {};
+    }
+
+    distanceFromCamera() {
+        if (this.cameraDistanceReferencePoint && this.globals && this.globals.cameraDistanceMatrix) {
+            tempArray[0] = this.cameraDistanceReferencePoint.x;
+            tempArray[1] = this.cameraDistanceReferencePoint.y;
+            tempArray[2] = this.cameraDistanceReferencePoint.z;
+            return vec3.length(vec3.transformMat4(tempArray, tempArray, this.globals.cameraDistanceMatrix));
+        }
+
+        return 0;
     }
 
     parseColor(input: string): ?Color {

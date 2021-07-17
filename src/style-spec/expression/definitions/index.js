@@ -201,6 +201,16 @@ CompoundExpression.register(expressions, {
         [],
         (ctx) => ctx.globals.zoom
     ],
+    'pitch': [
+        NumberType,
+        [],
+        (ctx) => ctx.globals.pitch
+    ],
+    'distance-from-camera': [
+        NumberType,
+        [],
+        (ctx) => ctx.distanceFromCamera()
+    ],
     'heatmap-density': [
         NumberType,
         [],

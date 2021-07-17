@@ -457,8 +457,8 @@ export class PossiblyEvaluatedPropertyValue<T> {
         }
     }
 
-    evaluate(feature: Feature, featureState: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>): T {
-        return this.property.evaluate(this.value, this.parameters, feature, featureState, canonical, availableImages);
+    evaluate(feature: Feature, featureState: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, refLocation: MercatorCoordinate): T {
+        return this.property.evaluate(this.value, this.parameters, feature, featureState, canonical, availableImages, refLocation);
     }
 }
 
@@ -581,11 +581,11 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         }
     }
 
-    evaluate(value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters, feature: Feature, featureState: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>): T {
+    evaluate(value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters, feature: Feature, featureState: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, refLocation: MercatorCoordinate): T {
         if (value.kind === 'constant') {
             return value.value;
         } else {
-            return value.evaluate(parameters, feature, featureState, canonical, availableImages);
+            return value.evaluate(parameters, feature, featureState, canonical, availableImages, null, refLocation);
         }
     }
 }
