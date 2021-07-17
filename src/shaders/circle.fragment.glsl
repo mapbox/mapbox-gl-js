@@ -3,6 +3,8 @@ varying float v_visibility;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
+#pragma mapbox: define mediump float start_angle
+#pragma mapbox: define mediump float end_angle
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define highp vec4 stroke_color
@@ -12,6 +14,8 @@ varying float v_visibility;
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize mediump float radius
+    #pragma mapbox: initialize mediump float start_angle
+    #pragma mapbox: initialize mediump float end_angle
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize highp vec4 stroke_color
@@ -25,6 +29,14 @@ void main() {
     float antialiased_blur = -max(blur, antialiasblur);
 
     float opacity_t = smoothstep(0.0, antialiased_blur, extrude_length - 1.0);
+
+    #define DEG_TO_RAD(v) (v * 0.01745329251994329576)
+    #define PI 3.14159265358979323846
+
+    float angle_r = atan(v_data.y, -v_data.x) + PI;
+    float start_angle_r = DEG_TO_RAD(start_angle);
+    float end_angle_r = DEG_TO_RAD(end_angle);
+    opacity_t = mix(opacity_t, 0.0, float(angle_r < start_angle_r || angle_r > end_angle_r));
 
     float color_t = stroke_width < 0.01 ? 0.0 : smoothstep(
         antialiased_blur,

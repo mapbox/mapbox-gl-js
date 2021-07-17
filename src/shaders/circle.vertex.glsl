@@ -16,6 +16,8 @@ varying float v_visibility;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
+#pragma mapbox: define mediump float start_angle
+#pragma mapbox: define mediump float end_angle
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define highp vec4 stroke_color
@@ -68,6 +70,8 @@ float get_sample_step() {
 void main(void) {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize mediump float radius
+    #pragma mapbox: initialize mediump float start_angle
+    #pragma mapbox: initialize mediump float end_angle
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize highp vec4 stroke_color
