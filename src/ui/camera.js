@@ -197,7 +197,7 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns itself to allow for method chaining.
+     * @returns {Map} `this` Returns itself to allow for method chaining.
      * @example
      * map.panBy([-74, 38]);
      * @example
