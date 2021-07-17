@@ -131,12 +131,14 @@ class CollisionIndex {
         const projectionCache = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
+        const roundRadius = fontSize;
 
         const firstAndLastGlyph = screenAnchorPoint.signedDistanceFromCamera > 0 ? projection.placeFirstAndLastGlyph(
             labelPlaneFontScale,
             glyphOffsetArray,
             lineOffsetX,
             lineOffsetY,
+            roundRadius,
             /*flip*/ false,
             labelPlaneAnchorPoint,
             tileUnitAnchorPoint,

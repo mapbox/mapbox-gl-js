@@ -588,7 +588,7 @@ class SymbolBucket implements Bucket {
         if (anchor.segment !== undefined) {
             let sumForwardLength = anchor.dist(line[anchor.segment + 1]);
             let sumBackwardLength = anchor.dist(line[anchor.segment]);
-            const vertices = {};
+            const vertices = [];
             for (let i = anchor.segment + 1; i < line.length; i++) {
                 vertices[i] = {x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumForwardLength};
                 if (i < line.length - 1) {
