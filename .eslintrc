@@ -163,7 +163,7 @@
         "jsdoc/newline-after-description": "error",
         "jsdoc/require-description": "error",
         "jsdoc/require-example": "error",
-        "jsdoc/require-param-type": "error",
+        "jsdoc/require-param-type": "warn",
         "jsdoc/require-property-description": "warn",
         "jsdoc/require-property-name": "error",
         "jsdoc/require-property-type": "error",
