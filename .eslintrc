@@ -85,7 +85,10 @@
   },
   "settings": {
     "jsdoc":{
-      "ignorePrivate": true
+      "ignorePrivate": true,
+      "preferredTypes": {
+        "object": "Object"
+      }
     }
   },
   "overrides": [
@@ -165,7 +168,7 @@
         "jsdoc/check-line-alignment": "warn",
         "jsdoc/check-property-names": "warn",
         "jsdoc/check-tag-names": "warn",
-        "jsdoc/check-types": "warn",
+        "jsdoc/check-types": "error",
         "jsdoc/newline-after-description": "error",
         "jsdoc/no-bad-blocks": "warn",
         "jsdoc/require-description": "warn",

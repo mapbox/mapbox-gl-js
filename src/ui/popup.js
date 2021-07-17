@@ -63,7 +63,7 @@ const focusQuerySelector = [
  *   `'top-right'`, `'bottom-left'`, and `'bottom-right'`. If unset, the anchor will be
  *   dynamically set to ensure the popup falls within the map container with a preference
  *   for `'bottom'`.
- * @param {number|PointLike|Object} [options.offset] -
+ * @param {number | PointLike | Object} [options.offset] -
  *  A pixel offset applied to the popup's location specified as:
  *   - a single number specifying a distance from the popup's location
  *   - a {@link PointLike} specifying a constant offset
