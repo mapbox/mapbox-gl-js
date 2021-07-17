@@ -202,6 +202,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         };
         const text = feature.text;
         let textOffset: [number, number] = [0, 0];
+        let flippedLineOffsetY: number = 0;
         if (text) {
             const unformattedText = text.toString();
             const spacing = layout.get('text-letter-spacing').evaluate(feature, {}, canonical) * ONE_EM;
@@ -275,9 +276,20 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 if (textJustify === "auto") {
                     textJustify = getAnchorJustification(textAnchor);
                 }
+
+                // text-offset is applied in screen-space in projection.js, where character spacing around curved lines can be
+                // corrected. text-anchor is applied to individual characters, where spacing cannot be corrected.  Thus, *only
+                // for text along lines*, we remove the vertical component of text-anchor and instead pass that value as an
+                // additional (flip-dependent) offset, to be added to text-offset during projection.
+                let adjustedTextAnchor = textAnchor;
+                if (textAlongLine) {
+                    flippedLineOffsetY = getAnchorBaselineShift(textAnchor) * lineHeight;
+                    adjustedTextAnchor = getAnchorJustification(textAnchor);
+                }
+
                 // Add horizontal shaping for all point labels and line labels that need horizontal writing mode.
                 if (isPointPlacement || ((layout.get("text-writing-mode").indexOf('horizontal') >= 0) || !allowsVerticalWritingMode(unformattedText))) {
-                    const shaping = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed,
+                    const shaping = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, adjustedTextAnchor, textJustify, spacingIfAllowed,
                                             textOffset, WritingMode.horizontal, false, symbolPlacement, layoutTextSize, layoutTextSizeThisZoom);
                     if (shaping) shapedTextOrientations.horizontal[textJustify] = shaping;
                 }
@@ -315,12 +327,28 @@ export function performSymbolLayout(bucket: SymbolBucket,
             bucket.iconsInText = shapedText ? shapedText.iconsInText : false;
         }
         if (shapedText || shapedIcon) {
-            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, canonical);
+            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, flippedLineOffsetY, isSDFIcon, canonical);
         }
     }
 
     if (showCollisionBoxes) {
         bucket.generateCollisionDebugBuffers(tileZoom, bucket.collisionBoxArray);
+    }
+}
+
+// Return the vertical component of the anchor as -0.5 | 0 | 0.5
+function getAnchorBaselineShift(textAnchor: TextAnchor): number {
+    switch (textAnchor) {
+    case 'top':
+    case 'top-left':
+    case 'top-right':
+        return 0.5;
+    case 'bottom':
+    case 'bottom-left':
+    case 'bottom-right':
+        return -0.5;
+    default:
+        return 0;
     }
 }
 
@@ -355,6 +383,7 @@ function addFeature(bucket: SymbolBucket,
                     layoutTextSize: number,
                     layoutIconSize: number,
                     textOffset: [number, number],
+                    flippedLineOffsetY: number,
                     isSDFIcon: boolean, canonical: CanonicalTileID) {
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.
@@ -405,7 +434,7 @@ function addFeature(bucket: SymbolBucket,
 
         addSymbol(bucket, anchor, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
-            bucket.index, textPadding, textAlongLine, textOffset,
+            bucket.index, textPadding, textAlongLine, textOffset, flippedLineOffsetY,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
             feature, sizes, isSDFIcon, canonical, layoutTextSize);
     };
@@ -479,6 +508,7 @@ function addTextVertices(bucket: SymbolBucket,
                          textAlongLine: boolean,
                          feature: SymbolFeature,
                          textOffset: [number, number],
+                         flippedLineOffsetY: number,
                          lineArray: {lineStartIndex: number, lineLength: number},
                          writingMode: number,
                          placementTypes: Array<'vertical' | 'center' | 'left' | 'right'>,
@@ -514,6 +544,7 @@ function addTextVertices(bucket: SymbolBucket,
         glyphQuads,
         textSizeData,
         textOffset,
+        flippedLineOffsetY,
         textAlongLine,
         feature,
         writingMode,
@@ -632,6 +663,7 @@ function addSymbol(bucket: SymbolBucket,
                    textPadding: number,
                    textAlongLine: boolean,
                    textOffset: [number, number],
+                   flippedLineOffsetY: number,
                    iconBoxScale: number,
                    iconPadding: number,
                    iconAlongLine: boolean,
@@ -718,6 +750,7 @@ function addSymbol(bucket: SymbolBucket,
             iconQuads,
             iconSizeData,
             iconOffset,
+            0,
             iconAlongLine,
             feature,
             false,
@@ -737,6 +770,7 @@ function addSymbol(bucket: SymbolBucket,
                 verticalIconQuads,
                 iconSizeData,
                 iconOffset,
+                0,
                 iconAlongLine,
                 feature,
                 WritingMode.vertical,
@@ -767,7 +801,7 @@ function addSymbol(bucket: SymbolBucket,
 
         const singleLine = shaping.positionedLines.length === 1;
         numHorizontalGlyphVertices += addTextVertices(
-            bucket, anchor, shaping, imageMap, layer, textAlongLine, feature, textOffset, lineArray,
+            bucket, anchor, shaping, imageMap, layer, textAlongLine, feature, textOffset, flippedLineOffsetY, lineArray,
             shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly,
             singleLine ? (Object.keys(shapedTextOrientations.horizontal): any) : [justification],
             placedTextSymbolIndices, placedIconSymbolIndex, sizes, canonical);
@@ -780,7 +814,7 @@ function addSymbol(bucket: SymbolBucket,
     if (shapedTextOrientations.vertical) {
         numVerticalGlyphVertices += addTextVertices(
             bucket, anchor, shapedTextOrientations.vertical, imageMap, layer, textAlongLine, feature,
-            textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices, verticalPlacedIconSymbolIndex, sizes, canonical);
+            textOffset, 0, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices, verticalPlacedIconSymbolIndex, sizes, canonical);
     }
 
     // Check if runtime collision circles should be used for any of the collision features.

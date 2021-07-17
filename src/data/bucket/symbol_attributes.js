@@ -76,6 +76,8 @@ export const placement = createLayout([
     {type: 'Uint16', name: 'upperSize'},
     {type: 'Float32', name: 'lineOffsetX'},
     {type: 'Float32', name: 'lineOffsetY'},
+    // line offset, but which inverts along with keep-upright flipping. only valid for text along lines.
+    {type: 'Float32', name: 'flippedLineOffsetY'},
     {type: 'Uint8', name: 'writingMode'},
     {type: 'Uint8', name: 'placedOrientation'},
     {type: 'Uint8', name: 'hidden'},
