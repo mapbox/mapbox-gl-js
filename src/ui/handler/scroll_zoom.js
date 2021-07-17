@@ -28,8 +28,8 @@ const maxScalePerFrame = 2;
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
  *
- * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
- * @see [Disable scroll zoom](https://docs.mapbox.com/mapbox-gl-js/example/disable-scroll-zoom/)
+ * @see [Example: Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ * @see [Example: Disable scroll zoom](https://docs.mapbox.com/mapbox-gl-js/example/disable-scroll-zoom/)
  */
 class ScrollZoomHandler {
     _map: Map;

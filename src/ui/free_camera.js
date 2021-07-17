@@ -109,7 +109,7 @@ export function orientationFromFrame(forward: vec3, up: vec3): ?quat {
  * map.setFreeCameraOptions(camera);
  * @see [Example: Animate the camera around a point in 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
  * @see [Example: Animate the camera along a path](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-path/)
- */
+*/
 class FreeCameraOptions {
     orientation: ?quat;
     _position: ?MercatorCoordinate;
