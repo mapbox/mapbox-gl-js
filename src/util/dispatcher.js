@@ -56,7 +56,7 @@ class Dispatcher {
 
     /**
      * Acquires an actor to dispatch messages to. The actors are distributed in round-robin fashion.
-     * @returns An actor object backed by a web worker for processing messages.
+     * @returns {Actor} An actor object backed by a web worker for processing messages.
      */
     getActor(): Actor {
         assert(this.actors.length);

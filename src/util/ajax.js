@@ -45,15 +45,19 @@ if (typeof Object.freeze == 'function') {
  * @property {boolean} collectResourceTiming If true, Resource Timing API information will be collected for these transformed requests and returned in a resourceTiming property of relevant data events.
  * @example
  * // use transformRequest to modify requests that begin with `http://myHost`
- * transformRequest: function(url, resourceType) {
- *  if (resourceType === 'Source' && url.indexOf('http://myHost') > -1) {
- *    return {
- *      url: url.replace('http', 'https'),
- *      headers: { 'my-custom-header': true },
- *      credentials: 'include'  // Include cookies for cross-origin requests
- *    }
- *   }
- *  }
+ * const map = new Map({
+ *     container: 'map',
+ *     style: 'mapbox://styles/mapbox/streets-v11',
+ *     transformRequest: (url, resourceType) => {
+ *         if (resourceType === 'Source' && url.indexOf('http://myHost') > -1) {
+ *             return {
+ *                 url: url.replace('http', 'https'),
+ *                 headers: {'my-custom-header': true},
+ *                 credentials: 'include'  // Include cookies for cross-origin requests
+ *             };
+ *         }
+ *     }
+ * });
  *
  */
 export type RequestParameters = {

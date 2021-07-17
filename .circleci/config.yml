@@ -157,7 +157,6 @@ jobs:
             - v2-lint-{{ .Branch }}
             - v2-lint
       - run: yarn run lint
-      - run: yarn run lint-docs
       - run: yarn run lint-css
       - save_cache:
           key: v2-lint-{{ .Branch }}-{{ .Revision }}

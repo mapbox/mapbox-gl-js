@@ -1,6 +1,6 @@
 // @flow strict
 
-// This file is intended for use in the GL-JS test suite
+// This file is intended for use in the Mapbox GL JS test suite
 // It implements a JSDOM window object for use in Node environments
 // In a browser environment, this file is replaced with ./src/util/browser/window.js
 // when Rollup builds the main bundle

@@ -146,7 +146,7 @@ class ProxySourceCache extends SourceCache {
 /**
  * Canonical, wrap and overscaledZ contain information of original source cache tile.
  * This tile gets ortho-rendered to proxy tile (defined by proxyTileKey).
- * posMatrix holds orthographic, scaling and translation information that is used
+ * `posMatrix` holds orthographic, scaling and translation information that is used
  * for rendering original tile content to a proxy tile. Proxy tile covers whole
  * or sub-rectangle of the original tile.
  */

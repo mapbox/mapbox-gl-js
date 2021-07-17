@@ -552,7 +552,7 @@ class HandlerManager {
                 vec3.scale(zoomVec, aroundRay.dir, movement);
             } else if (tr._terrainEnabled()) {
                 // Special handling is required if the ray created from the cursor is heading up.
-                // This scenario is possible if user is trying to zoom towards e.g. a hill or a mountain.
+                // This scenario is possible if user is trying to zoom towards a feature like a hill or a mountain.
                 // Convert zoomDelta to a movement vector as if the camera would be orbiting around the picked point
                 const movement = tr.zoomDeltaToMovement(pickedPosition, zoomDelta);
                 vec3.scale(zoomVec, aroundRay.dir, movement);

@@ -15,7 +15,7 @@ let stubTime;
 const exported = {
     /**
      * Returns either performance.now() or a value set by setNow.
-     * @returns Time value in milliseconds.
+     * @returns {number} Time value in milliseconds.
      */
     now(): number {
         if (stubTime !== undefined) {
@@ -57,7 +57,7 @@ const exported = {
     get devicePixelRatio() { return window.devicePixelRatio; },
     get prefersReducedMotion(): boolean {
         if (!window.matchMedia) return false;
-        //Lazily initialize media query
+        // Lazily initialize media query.
         if (reducedMotionQuery == null) {
             reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         }
