@@ -27,7 +27,7 @@ export type CanvasSourceSpecification = {|
  * @property {string} type Source type. Must be `"canvas"`.
  * @property {string|HTMLCanvasElement} canvas Canvas source from which to read pixels. Can be a string representing the ID of the canvas element, or the `HTMLCanvasElement` itself.
  * @property {Array<Array<number>>} coordinates Four geographical coordinates denoting where to place the corners of the canvas, specified in `[longitude, latitude]` pairs.
- * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (i.e. pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
+ * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
  */
 
 /**
@@ -36,19 +36,19 @@ export type CanvasSourceSpecification = {|
  * @example
  * // add to map
  * map.addSource('some id', {
- *    type: 'canvas',
- *    canvas: 'idOfMyHTMLCanvas',
- *    animate: true,
- *    coordinates: [
- *        [-76.54, 39.18],
- *        [-76.52, 39.18],
- *        [-76.52, 39.17],
- *        [-76.54, 39.17]
- *    ]
+ *     type: 'canvas',
+ *     canvas: 'idOfMyHTMLCanvas',
+ *     animate: true,
+ *     coordinates: [
+ *         [-76.54, 39.18],
+ *         [-76.52, 39.18],
+ *         [-76.52, 39.17],
+ *         [-76.54, 39.17]
+ *     ]
  * });
  *
  * // update
- * var mySource = map.getSource('some id');
+ * const mySource = map.getSource('some id');
  * mySource.setCoordinates([
  *     [-76.54335737228394, 39.18579907229748],
  *     [-76.52803659439087, 39.1838364847587],
@@ -57,7 +57,7 @@ export type CanvasSourceSpecification = {|
  * ]);
  *
  * map.removeSource('some id');  // remove
- * @see [Add a canvas source](https://docs.mapbox.com/mapbox-gl-js/example/canvas-source/)
+ * @see [Example: Add a canvas source](https://docs.mapbox.com/mapbox-gl-js/example/canvas-source/)
  */
 class CanvasSource extends ImageSource {
     options: CanvasSourceSpecification;
@@ -99,6 +99,7 @@ class CanvasSource extends ImageSource {
 
     /**
      * Enables animation. The image will be copied from the canvas to the map on each frame.
+     *
      * @method play
      * @instance
      * @memberof CanvasSource
@@ -106,6 +107,7 @@ class CanvasSource extends ImageSource {
 
     /**
      * Disables animation. The map will display a static copy of the canvas image.
+     *
      * @method pause
      * @instance
      * @memberof CanvasSource
@@ -145,6 +147,20 @@ class CanvasSource extends ImageSource {
      * Returns the HTML `canvas` element.
      *
      * @returns {HTMLCanvasElement} The HTML `canvas` element.
+     * @example
+     * // Assuming the following canvas is added to your page
+     * // <canvas id="canvasID" width="400" height="400"></canvas>
+     * map.addSource('canvas-source', {
+     *     type: 'canvas',
+     *     canvas: 'canvasID',
+     *     coordinates: [
+     *         [91.4461, 21.5006],
+     *         [100.3541, 21.5006],
+     *         [100.3541, 13.9706],
+     *         [91.4461, 13.9706]
+     *     ]
+     * });
+     * map.getSource('canvas-source').getCanvas(); // <canvas id="canvasID" width="400" height="400"></canvas>
      */
     getCanvas() {
         return this.canvas;
@@ -172,7 +188,7 @@ class CanvasSource extends ImageSource {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the canvas.
      *   The coordinates start at the top left corner of the canvas and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {CanvasSource} this
+     * @returns {CanvasSource} Returns itself to allow for method chaining.
      */
 
     // setCoordinates inherited from ImageSource

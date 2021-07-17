@@ -5,8 +5,9 @@ import DOM from '../../util/dom.js';
 import window from '../../util/window.js';
 import {extend, bindAll, warnOnce} from '../../util/util.js';
 import assert from 'assert';
-import LngLat from '../../geo/lng_lat.js';
 import Marker from '../marker.js';
+import LngLat from '../../geo/lng_lat.js';
+import throttle from '../../util/throttle.js';
 
 import type Map from '../map.js';
 import type {AnimationOptions, CameraOptions} from '../camera.js';
@@ -16,8 +17,18 @@ type Options = {
     fitBoundsOptions?: AnimationOptions & CameraOptions,
     trackUserLocation?: boolean,
     showAccuracyCircle?: boolean,
-    showUserLocation?: boolean
+    showUserLocation?: boolean,
+    showUserHeading?: boolean
 };
+
+type DeviceOrientationEvent = {
+    absolute: boolean,
+    alpha: number,
+    beta: number,
+    gamma: number,
+    requestPermission: Promise<String>,
+    webkitCompassHeading?: number,
+}
 
 const defaultOptions: Options = {
     positionOptions: {
@@ -30,7 +41,8 @@ const defaultOptions: Options = {
     },
     trackUserLocation: false,
     showAccuracyCircle: true,
-    showUserLocation: true
+    showUserLocation: true,
+    showUserHeading: false
 };
 
 let supportsGeolocation;
@@ -69,31 +81,33 @@ let noTimeout = false;
  * geolocation support is not available, the GeolocateControl will show
  * as disabled.
  *
- * The zoom level applied will depend on the accuracy of the geolocation provided by the device.
+ * The [zoom level](https://docs.mapbox.com/help/glossary/zoom-level/) applied depends on the accuracy of the geolocation provided by the device.
  *
  * The GeolocateControl has two modes. If `trackUserLocation` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the user location. If the user moves, the map won't update. This is most suited for the desktop. If `trackUserLocation` is `true` the control acts as a toggle button that when active the user's location is actively monitored for changes. In this mode the GeolocateControl has three interaction states:
- * * active - the map's camera automatically updates as the user's location changes, keeping the location dot in the center. Initial state and upon clicking the `GeolocateControl` button.
- * * passive - the user's location dot automatically updates, but the map's camera does not. Occurs upon the user initiating a map movement.
- * * disabled - occurs if Geolocation is not available, disabled or denied.
+ * * active - The map's camera automatically updates as the user's location changes, keeping the location dot in the center. This is the initial state, and the state upon clicking the `GeolocateControl` button.
+ * * passive - The user's location dot automatically updates, but the map's camera does not. Occurs upon the user initiating a map movement.
+ * * disabled - Occurs if geolocation is not available, disabled, or denied.
  *
- * These interaction states can't be controlled programmatically, rather they are set based on user interactions.
+ * These interaction states can't be controlled programmatically. Instead, they are set based on user interactions.
  *
  * @implements {IControl}
  * @param {Object} [options]
  * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A Geolocation API [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
  * @param {Object} [options.fitBoundsOptions={maxZoom: 15}] A {@link Map#fitBounds} options object to use when the map is panned and zoomed to the user's location. The default is to use a `maxZoom` of 15 to limit how far the map will zoom in for very accurate locations.
- * @param {Object} [options.trackUserLocation=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the user's location as it changes.
- * @param {Object} [options.showAccuracyCircle=true] By default, if showUserLocation is `true`, a transparent circle will be drawn around the user location indicating the accuracy (95% confidence level) of the user's location. Set to `false` to disable. Always disabled when showUserLocation is `false`.
+ * @param {Object} [options.trackUserLocation=false] If `true` the GeolocateControl becomes a toggle button and when active the map will receive updates to the user's location as it changes.
+ * @param {Object} [options.showAccuracyCircle=true] By default, if `showUserLocation` is `true`, a transparent circle will be drawn around the user location indicating the accuracy (95% confidence level) of the user's location. Set to `false` to disable. Always disabled when `showUserLocation` is `false`.
  * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
+ * @param {Object} [options.showUserHeading=false] If `true` an arrow will be drawn next to the user location dot indicating the device's heading. This only has affect when `trackUserLocation` is `true`.
  *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
  *     positionOptions: {
  *         enableHighAccuracy: true
  *     },
- *     trackUserLocation: true
+ *     trackUserLocation: true,
+ *     showUserHeading: true
  * }));
- * @see [Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
+ * @see [Example: Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
  */
 class GeolocateControl extends Evented {
     _map: Map;
@@ -110,6 +124,9 @@ class GeolocateControl extends Evented {
     _accuracyCircleMarker: Marker;
     _accuracy: number;
     _setup: boolean; // set to true once the control has been setup
+    _heading: ?number;
+    _updateMarkerRotationThrottled: Function;
+    _onDeviceOrientationListener: Function;
 
     constructor(options: Options) {
         super();
@@ -122,8 +139,13 @@ class GeolocateControl extends Evented {
             '_finish',
             '_setupUI',
             '_updateCamera',
-            '_updateMarker'
+            '_updateMarker',
+            '_updateMarkerRotation'
         ], this);
+
+        // by referencing the function with .bind(), we can correctly remove from window's event listeners
+        this._onDeviceOrientationListener = this._onDeviceOrientation.bind(this);
+        this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20);
     }
 
     onAdd(map: Map) {
@@ -325,6 +347,21 @@ class GeolocateControl extends Evented {
         }
     }
 
+    /**
+     * Update the user location dot Marker rotation to the current heading
+     *
+     * @private
+     */
+    _updateMarkerRotation() {
+        if (this._userLocationDotMarker && typeof this._heading === 'number') {
+            this._userLocationDotMarker.setRotation(this._heading);
+            this._dotElement.classList.add('mapboxgl-user-location-show-heading');
+        } else {
+            this._dotElement.classList.remove('mapboxgl-user-location-show-heading');
+            this._userLocationDotMarker.setRotation(0);
+        }
+    }
+
     _onError(error: PositionError) {
         if (!this._map) {
             // control has since been removed
@@ -398,9 +435,15 @@ class GeolocateControl extends Evented {
 
         // when showUserLocation is enabled, keep the Geolocate button disabled until the device location marker is setup on the map
         if (this.options.showUserLocation) {
-            this._dotElement = DOM.create('div', 'mapboxgl-user-location-dot');
+            this._dotElement = DOM.create('div', 'mapboxgl-user-location');
+            this._dotElement.appendChild(DOM.create('div', 'mapboxgl-user-location-dot'));
+            this._dotElement.appendChild(DOM.create('div', 'mapboxgl-user-location-heading'));
 
-            this._userLocationDotMarker = new Marker(this._dotElement);
+            this._userLocationDotMarker = new Marker({
+                element: this._dotElement,
+                rotationAlignment: 'map',
+                pitchAlignment: 'map'
+            });
 
             this._circleElement = DOM.create('div', 'mapboxgl-user-location-accuracy-circle');
             this._accuracyCircleMarker = new Marker({element: this._circleElement, pitchAlignment: 'map'});
@@ -435,8 +478,12 @@ class GeolocateControl extends Evented {
     * Programmatically request and move the map to the user's location.
     *
     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
+    * Called on a deviceorientation event.
+    *
+    * @param deviceOrientationEvent {DeviceOrientationEvent}
+    * @private
     * @example
-    * // Initialize the geolocate control.
+    * // Initialize the GeolocateControl.
     * var geolocate = new mapboxgl.GeolocateControl({
     *  positionOptions: {
     *    enableHighAccuracy: true
@@ -449,6 +496,38 @@ class GeolocateControl extends Evented {
     *   geolocate.trigger();
     * });
     */
+    _onDeviceOrientation(deviceOrientationEvent: DeviceOrientationEvent) {
+        // absolute is true if the orientation data is provided as the difference between the Earth's coordinate frame and the device's coordinate frame, or false if the orientation data is being provided in reference to some arbitrary, device-determined coordinate frame.
+        if (this._userLocationDotMarker) {
+            if (deviceOrientationEvent.webkitCompassHeading) {
+                // Safari
+                this._heading = deviceOrientationEvent.webkitCompassHeading;
+            } else if (deviceOrientationEvent.absolute === true) {
+                // non-Safari alpha increases counter clockwise around the z axis
+                this._heading = deviceOrientationEvent.alpha * -1;
+            }
+            this._updateMarkerRotationThrottled();
+        }
+    }
+
+    /**
+     * Trigger a geolocation event.
+     *
+     * @example
+     * // Initialize the geolocate control.
+     * const geolocate = new mapboxgl.GeolocateControl({
+     *     positionOptions: {
+     *         enableHighAccuracy: true
+     *     },
+     *     trackUserLocation: true
+     * });
+     * // Add the control to the map.
+     * map.addControl(geolocate);
+     * map.on('load', () => {
+     *     geolocate.trigger();
+     * });
+     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
+     */
     trigger() {
         if (!this._setup) {
             warnOnce('Geolocate control triggered before added to a map');
@@ -458,7 +537,7 @@ class GeolocateControl extends Evented {
             // update watchState and do any outgoing state cleanup
             switch (this._watchState) {
             case 'OFF':
-                // turn on the Geolocate Control
+                // turn on the GeolocateControl
                 this._watchState = 'WAITING_ACTIVE';
 
                 this.fire(new Event('trackuserlocationstart'));
@@ -467,7 +546,7 @@ class GeolocateControl extends Evented {
             case 'ACTIVE_LOCK':
             case 'ACTIVE_ERROR':
             case 'BACKGROUND_ERROR':
-                // turn off the Geolocate Control
+                // turn off the GeolocateControl
                 numberOfWatches--;
                 noTimeout = false;
                 this._watchState = 'OFF';
@@ -539,6 +618,10 @@ class GeolocateControl extends Evented {
 
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
+
+                if (this.options.showUserHeading) {
+                    this._addDeviceOrientationListener();
+                }
             }
         } else {
             window.navigator.geolocation.getCurrentPosition(
@@ -552,8 +635,35 @@ class GeolocateControl extends Evented {
         return true;
     }
 
+    _addDeviceOrientationListener() {
+        const addListener = () => {
+            if ('ondeviceorientationabsolute' in window) {
+                window.addEventListener('deviceorientationabsolute', this._onDeviceOrientationListener);
+            } else {
+                window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
+            }
+        };
+
+        if (typeof window.DeviceMotionEvent !== "undefined" &&
+            typeof window.DeviceMotionEvent.requestPermission === 'function') {
+            //$FlowFixMe[incompatible-type]
+            DeviceOrientationEvent.requestPermission()
+                .then(response => {
+                    if (response === 'granted') {
+                        addListener();
+                    }
+                })
+                .catch(console.error);
+        } else {
+            addListener();
+        }
+    }
+
     _clearWatch() {
         window.navigator.geolocation.clearWatch(this._geolocationWatchID);
+
+        window.removeEventListener('deviceorientation', this._onDeviceOrientationListener);
+        window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientationListener);
 
         this._geolocationWatchID = (undefined: any);
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
@@ -567,13 +677,13 @@ class GeolocateControl extends Evented {
 
 export default GeolocateControl;
 
-/* Geolocate Control Watch States
+/* GeolocateControl Watch States
  * This is the private state of the control.
  *
  * OFF
  *    off/inactive
  * WAITING_ACTIVE
- *    Geolocate Control was clicked but still waiting for Geolocation API response with user location
+ *    GeolocateControl was clicked but still waiting for Geolocation API response with user location
  * ACTIVE_LOCK
  *    Showing the user location as a dot AND tracking the camera to be fixed to their location. If their location changes the map moves to follow.
  * ACTIVE_ERROR
@@ -585,124 +695,124 @@ export default GeolocateControl;
  */
 
 /**
- * Fired on each Geolocation API position update which returned as success.
+ * Fired on each Geolocation API position update that returned as success.
  *
  * @event geolocate
  * @memberof GeolocateControl
  * @instance
  * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
  * @example
- * // Initialize the geolocate control.
- * var geolocate = new mapboxgl.GeolocateControl({
- *   positionOptions: {
- *       enableHighAccuracy: true
- *   },
- *   trackUserLocation: true
+ * // Initialize the GeolocateControl.
+ * const geolocate = new mapboxgl.GeolocateControl({
+ *     positionOptions: {
+ *         enableHighAccuracy: true
+ *     },
+ *     trackUserLocation: true
  * });
  * // Add the control to the map.
  * map.addControl(geolocate);
  * // Set an event listener that fires
  * // when a geolocate event occurs.
- * geolocate.on('geolocate', function() {
- *   console.log('A geolocate event has occurred.')
+ * geolocate.on('geolocate', () => {
+ *     console.log('A geolocate event has occurred.');
  * });
  *
  */
 
 /**
- * Fired on each Geolocation API position update which returned as an error.
+ * Fired on each Geolocation API position update that returned as an error.
  *
  * @event error
  * @memberof GeolocateControl
  * @instance
  * @property {PositionError} data The returned [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
  * @example
- * // Initialize the geolocate control.
- * var geolocate = new mapboxgl.GeolocateControl({
- *   positionOptions: {
- *       enableHighAccuracy: true
- *   },
- *   trackUserLocation: true
+ * // Initialize the GeolocateControl.
+ * const geolocate = new mapboxgl.GeolocateControl({
+ *     positionOptions: {
+ *         enableHighAccuracy: true
+ *     },
+ *     trackUserLocation: true
  * });
  * // Add the control to the map.
  * map.addControl(geolocate);
  * // Set an event listener that fires
  * // when an error event occurs.
- * geolocate.on('error', function() {
- *   console.log('An error event has occurred.')
+ * geolocate.on('error', () => {
+ *     console.log('An error event has occurred.');
  * });
  *
  */
 
 /**
- * Fired on each Geolocation API position update which returned as success but user position is out of map maxBounds.
+ * Fired on each Geolocation API position update that returned as success but user position is out of map `maxBounds`.
  *
  * @event outofmaxbounds
  * @memberof GeolocateControl
  * @instance
  * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
  * @example
- * // Initialize the geolocate control.
- * var geolocate = new mapboxgl.GeolocateControl({
- *   positionOptions: {
- *       enableHighAccuracy: true
- *   },
- *   trackUserLocation: true
+ * // Initialize the GeolocateControl.
+ * const geolocate = new mapboxgl.GeolocateControl({
+ *     positionOptions: {
+ *         enableHighAccuracy: true
+ *     },
+ *     trackUserLocation: true
  * });
  * // Add the control to the map.
  * map.addControl(geolocate);
  * // Set an event listener that fires
  * // when an outofmaxbounds event occurs.
- * geolocate.on('outofmaxbounds', function() {
- *   console.log('An outofmaxbounds event has occurred.')
+ * geolocate.on('outofmaxbounds', () => {
+ *     console.log('An outofmaxbounds event has occurred.');
  * });
  *
  */
 
 /**
- * Fired when the Geolocate Control changes to the active lock state, which happens either upon first obtaining a successful Geolocation API position for the user (a geolocate event will follow), or the user clicks the geolocate button when in the background state which uses the last known position to recenter the map and enter active lock state (no geolocate event will follow unless the users's location changes).
+ * Fired when the GeolocateControl changes to the active lock state, which happens either upon first obtaining a successful Geolocation API position for the user (a geolocate event will follow), or when the user clicks the geolocate button when in the background state, which uses the last known position to recenter the map and enter active lock state (no geolocate event will follow unless the users's location changes).
  *
  * @event trackuserlocationstart
  * @memberof GeolocateControl
  * @instance
  * @example
- * // Initialize the geolocate control.
- * var geolocate = new mapboxgl.GeolocateControl({
- *   positionOptions: {
- *       enableHighAccuracy: true
- *   },
- *   trackUserLocation: true
+ * // Initialize the GeolocateControl.
+ * const geolocate = new mapboxgl.GeolocateControl({
+ *     positionOptions: {
+ *         enableHighAccuracy: true
+ *     },
+ *     trackUserLocation: true
  * });
  * // Add the control to the map.
  * map.addControl(geolocate);
  * // Set an event listener that fires
  * // when a trackuserlocationstart event occurs.
- * geolocate.on('trackuserlocationstart', function() {
- *   console.log('A trackuserlocationstart event has occurred.')
+ * geolocate.on('trackuserlocationstart', () => {
+ *     console.log('A trackuserlocationstart event has occurred.');
  * });
  *
  */
 
 /**
- * Fired when the Geolocate Control changes to the background state, which happens when a user changes the camera during an active position lock. This only applies when trackUserLocation is true. In the background state, the dot on the map will update with location updates but the camera will not.
+ * Fired when the GeolocateControl changes to the background state, which happens when a user changes the camera during an active position lock. This only applies when trackUserLocation is true. In the background state, the dot on the map will update with location updates but the camera will not.
  *
  * @event trackuserlocationend
  * @memberof GeolocateControl
  * @instance
  * @example
- * // Initialize the geolocate control.
- * var geolocate = new mapboxgl.GeolocateControl({
- *   positionOptions: {
- *       enableHighAccuracy: true
- *   },
- *   trackUserLocation: true
+ * // Initialize the GeolocateControl.
+ * const geolocate = new mapboxgl.GeolocateControl({
+ *     positionOptions: {
+ *         enableHighAccuracy: true
+ *     },
+ *     trackUserLocation: true
  * });
  * // Add the control to the map.
  * map.addControl(geolocate);
  * // Set an event listener that fires
  * // when a trackuserlocationend event occurs.
- * geolocate.on('trackuserlocationend', function() {
- *   console.log('A trackuserlocationend event has occurred.')
+ * geolocate.on('trackuserlocationend', () => {
+ *     console.log('A trackuserlocationend event has occurred.');
  * });
  *
  */

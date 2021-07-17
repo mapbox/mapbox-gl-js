@@ -20,9 +20,9 @@ class EasedVariable {
     /**
      * Evaluate the current value, given a timestamp.
      *
-     * @param timeStamp {number} time at which to evaluate
+     * @param timeStamp {number} Time at which to evaluate.
      *
-     * @return {number} evaluated value
+     * @returns {number} Evaluated value.
      */
     getValue(timeStamp: number): number {
         if (timeStamp <= this._startTime) return this._start;
@@ -35,9 +35,9 @@ class EasedVariable {
     /**
      * Check if an ease is in progress.
      *
-     * @param timeStamp {number} current time stamp
+     * @param timeStamp {number} Current time stamp.
      *
-     * @returns {boolean} true if ease in progress
+     * @returns {boolean} Returns `true` if ease is in progress.
      */
     isEasing(timeStamp: number): boolean {
         return timeStamp >= this._startTime && timeStamp <= this._endTime;
@@ -46,7 +46,7 @@ class EasedVariable {
     /**
      * Set the value without easing and cancel any in progress ease.
      *
-     * @param value {number} new value
+     * @param value {number} New value.
      */
     jumpTo(value: number) {
         this._startTime = -Infinity;
@@ -59,9 +59,9 @@ class EasedVariable {
     /**
      * Cancel any in-progress ease and begin a new ease.
      *
-     * @param value {number} new value to which to ease
-     * @param timeStamp {number} current time stamp
-     * @param duration {number} ease duration, in same units as timeStamp
+     * @param value {number} New value to which to ease.
+     * @param timeStamp {number} Current time stamp.
+     * @param duration {number} Ease duration, in same units as timeStamp.
      */
     easeTo(value: number, timeStamp: number, duration: number) {
         this._start = this.getValue(timeStamp);

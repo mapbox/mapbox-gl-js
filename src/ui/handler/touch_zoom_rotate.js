@@ -197,7 +197,8 @@ const ALLOWED_SINGLE_TOUCH_TIME = 100;
 
 /**
  * The `TouchPitchHandler` allows the user to pitch the map by dragging up and down with two fingers.
- * @see [Set pitch and bearing](https://docs.mapbox.com/mapbox-gl-js/example/set-perspective/)
+ *
+ * @see [Example: Set pitch and bearing](https://docs.mapbox.com/mapbox-gl-js/example/set-perspective/)
 */
 export class TouchPitchHandler extends TwoTouchHandler {
 
@@ -265,42 +266,4 @@ export class TouchPitchHandler extends TwoTouchHandler {
         const isSameDirection = vectorA.y > 0 === vectorB.y > 0;
         return isVertical(vectorA) && isVertical(vectorB) && isSameDirection;
     }
-
-    /**
-     * Returns a Boolean indicating whether the "drag to pitch" interaction is enabled.
-     *
-     * @memberof TouchPitchHandler
-     * @name isEnabled
-     * @instance
-     * @returns {boolean} `true` if the "drag to pitch" interaction is enabled.
-     */
-
-    /**
-     * Returns a Boolean indicating whether the "drag to pitch" interaction is active, i.e. currently being used.
-     *
-     * @memberof TouchPitchHandler
-     * @name isActive
-     * @instance
-     * @returns {boolean} `true` if the "drag to pitch" interaction is active.
-     */
-
-    /**
-     * Enables the "drag to pitch" interaction.
-     *
-     * @memberof TouchPitchHandler
-     * @name enable
-     * @instance
-     * @example
-     * map.touchPitch.enable();
-     */
-
-    /**
-     * Disables the "drag to pitch" interaction.
-     *
-     * @memberof TouchPitchHandler
-     * @name disable
-     * @instance
-     * @example
-     * map.touchPitch.disable();
-     */
 }

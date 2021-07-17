@@ -24,12 +24,12 @@ export const earthRadius = 6371008.8;
  * @param {number} lng Longitude, measured in degrees.
  * @param {number} lat Latitude, measured in degrees.
  * @example
- * var ll = new mapboxgl.LngLat(-123.9749, 40.7736);
- * ll.lng; // = -123.9749
- * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
- * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
- * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
- * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
+ * const ll = new mapboxgl.LngLat(-123.9749, 40.7736);
+ * console.log(ll.lng); // = -123.9749
+ * @see [Example: Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
+ * @see [Example: Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
+ * @see [Example: Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ * @see [Example: Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
  */
 class LngLat {
     lng: number;
@@ -51,9 +51,9 @@ class LngLat {
      *
      * @returns {LngLat} The wrapped `LngLat` object.
      * @example
-     * var ll = new mapboxgl.LngLat(286.0251, 40.7736);
-     * var wrapped = ll.wrap();
-     * wrapped.lng; // = -73.9749
+     * const ll = new mapboxgl.LngLat(286.0251, 40.7736);
+     * const wrapped = ll.wrap();
+     * console.log(wrapped.lng); // = -73.9749
      */
     wrap() {
         return new LngLat(wrap(this.lng, -180, 180), this.lat);
@@ -64,7 +64,7 @@ class LngLat {
      *
      * @returns {Array<number>} The coordinates represeted as an array of longitude and latitude.
      * @example
-     * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
+     * const ll = new mapboxgl.LngLat(-73.9749, 40.7736);
      * ll.toArray(); // = [-73.9749, 40.7736]
      */
     toArray() {
@@ -76,7 +76,7 @@ class LngLat {
      *
      * @returns {string} The coordinates represented as a string of the format `'LngLat(lng, lat)'`.
      * @example
-     * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
+     * const ll = new mapboxgl.LngLat(-73.9749, 40.7736);
      * ll.toString(); // = "LngLat(-73.9749, 40.7736)"
      */
     toString() {
@@ -84,15 +84,15 @@ class LngLat {
     }
 
     /**
-     * Returns the approximate distance between a pair of coordinates in meters
-     * Uses the Haversine Formula (from R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope, vol. 68, no. 2, 1984, p. 159)
+     * Returns the approximate distance between a pair of coordinates in meters.
+     * Uses the Haversine Formula (from R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope, vol. 68, no. 2, 1984, p. 159).
      *
-     * @param {LngLat} lngLat coordinates to compute the distance to
+     * @param {LngLat} lngLat Coordinates to compute the distance to.
      * @returns {number} Distance in meters between the two coordinates.
      * @example
-     * var new_york = new mapboxgl.LngLat(-74.0060, 40.7128);
-     * var los_angeles = new mapboxgl.LngLat(-118.2437, 34.0522);
-     * new_york.distanceTo(los_angeles); // = 3935751.690893987, "true distance" using a non-spherical approximation is ~3966km
+     * const newYork = new mapboxgl.LngLat(-74.0060, 40.7128);
+     * const losAngeles = new mapboxgl.LngLat(-118.2437, 34.0522);
+     * newYork.distanceTo(losAngeles); // = 3935751.690893987, "true distance" using a non-spherical approximation is ~3966km
      */
     distanceTo(lngLat: LngLat) {
         const rad = Math.PI / 180;
@@ -110,7 +110,7 @@ class LngLat {
      * @param {number} [radius=0] Distance in meters from the coordinates to extend the bounds.
      * @returns {LngLatBounds} A new `LngLatBounds` object representing the coordinates extended by the `radius`.
      * @example
-     * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
+     * const ll = new mapboxgl.LngLat(-73.9749, 40.7736);
      * ll.toBounds(100).toArray(); // = [[-73.97501862141328, 40.77351016847229], [-73.97478137858673, 40.77368983152771]]
      */
     toBounds(radius?: number = 0) {
@@ -131,9 +131,9 @@ class LngLat {
      * @param {LngLatLike} input An array of two numbers or object to convert, or a `LngLat` object to return.
      * @returns {LngLat} A new `LngLat` object, if a conversion occurred, or the original `LngLat` object.
      * @example
-     * var arr = [-73.9749, 40.7736];
-     * var ll = mapboxgl.LngLat.convert(arr);
-     * ll;   // = LngLat {lng: -73.9749, lat: 40.7736}
+     * const arr = [-73.9749, 40.7736];
+     * const ll = mapboxgl.LngLat.convert(arr);
+     * console.log(ll);   // = LngLat {lng: -73.9749, lat: 40.7736}
      */
     static convert(input: LngLatLike): LngLat {
         if (input instanceof LngLat) {
@@ -159,9 +159,9 @@ class LngLat {
  *
  * @typedef {LngLat | {lng: number, lat: number} | {lon: number, lat: number} | [number, number]} LngLatLike
  * @example
- * var v1 = new mapboxgl.LngLat(-122.420679, 37.772537);
- * var v2 = [-122.420679, 37.772537];
- * var v3 = {lon: -122.420679, lat: 37.772537};
+ * const v1 = new mapboxgl.LngLat(-122.420679, 37.772537);
+ * const v2 = [-122.420679, 37.772537];
+ * const v3 = {lon: -122.420679, lat: 37.772537};
  */
 export type LngLatLike = LngLat | {lng: number, lat: number} | {lon: number, lat: number} | [number, number];
 

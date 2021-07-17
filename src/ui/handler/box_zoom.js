@@ -9,8 +9,9 @@ import type Map from '../map.js';
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
  * The bounding box is defined by clicking and holding `shift` while dragging the cursor.
- * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
- * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ *
+ * @see [Example: Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
  */
 class BoxZoomHandler {
     _map: Map;
@@ -38,16 +39,20 @@ class BoxZoomHandler {
     /**
      * Returns a Boolean indicating whether the "box zoom" interaction is enabled.
      *
-     * @returns {boolean} `true` if the "box zoom" interaction is enabled.
+     * @returns {boolean} Returns `true` if the "box zoom" interaction is enabled.
+     * @example
+     * const isBoxZoomEnabled = map.boxZoom.isEnabled();
      */
     isEnabled() {
         return !!this._enabled;
     }
 
     /**
-     * Returns a Boolean indicating whether the "box zoom" interaction is active, i.e. currently being used.
+     * Returns a Boolean indicating whether the "box zoom" interaction is active (currently being used).
      *
-     * @returns {boolean} `true` if the "box zoom" interaction is active.
+     * @returns {boolean} Returns `true` if the "box zoom" interaction is active.
+     * @example
+     * const isBoxZoomActive = map.boxZoom.isActive();
      */
     isActive() {
         return !!this._active;
@@ -57,7 +62,7 @@ class BoxZoomHandler {
      * Enables the "box zoom" interaction.
      *
      * @example
-     *   map.boxZoom.enable();
+     * map.boxZoom.enable();
      */
     enable() {
         if (this.isEnabled()) return;
@@ -68,7 +73,7 @@ class BoxZoomHandler {
      * Disables the "box zoom" interaction.
      *
      * @example
-     *   map.boxZoom.disable();
+     * map.boxZoom.disable();
      */
     disable() {
         if (!this.isEnabled()) return;

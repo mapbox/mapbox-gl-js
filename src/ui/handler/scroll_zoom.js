@@ -27,8 +27,9 @@ const maxScalePerFrame = 2;
 
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
- * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
- * @see [Disable scroll zoom](https://docs.mapbox.com/mapbox-gl-js/example/disable-scroll-zoom/)
+ *
+ * @see [Example: Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ * @see [Example: Disable scroll zoom](https://docs.mapbox.com/mapbox-gl-js/example/disable-scroll-zoom/)
  */
 class ScrollZoomHandler {
     _map: Map;
@@ -77,10 +78,11 @@ class ScrollZoomHandler {
 
     /**
      * Sets the zoom rate of a trackpad.
+     *
      * @param {number} [zoomRate=1/100] The rate used to scale trackpad movement to a zoom value.
      * @example
      * // Speed up trackpad zoom
-     * map.scrollZoom.setZoomRate(1/25);
+     * map.scrollZoom.setZoomRate(1 / 25);
      */
     setZoomRate(zoomRate: number) {
         this._defaultZoomRate = zoomRate;
@@ -88,10 +90,11 @@ class ScrollZoomHandler {
 
     /**
     * Sets the zoom rate of a mouse wheel.
+     *
     * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
     * @example
     * // Slow down zoom of mouse wheel
-    * map.scrollZoom.setWheelZoomRate(1/600);
+    * map.scrollZoom.setWheelZoomRate(1 / 600);
     */
     setWheelZoomRate(wheelZoomRate: number) {
         this._wheelZoomRate = wheelZoomRate;
@@ -101,6 +104,8 @@ class ScrollZoomHandler {
      * Returns a Boolean indicating whether the "scroll to zoom" interaction is enabled.
      *
      * @returns {boolean} `true` if the "scroll to zoom" interaction is enabled.
+     * @example
+     * const isScrollZoomEnabled = map.scrollZoom.isEnabled();
      */
     isEnabled() {
         return !!this._enabled;
@@ -123,12 +128,12 @@ class ScrollZoomHandler {
      * Enables the "scroll to zoom" interaction.
      *
      * @param {Object} [options] Options object.
-     * @param {string} [options.around] If "center" is passed, map will zoom around center of map
+     * @param {string} [options.around] If "center" is passed, map will zoom around center of map.
      *
      * @example
-     *   map.scrollZoom.enable();
+     * map.scrollZoom.enable();
      * @example
-     *  map.scrollZoom.enable({ around: 'center' })
+     * map.scrollZoom.enable({around: 'center'});
      */
     enable(options: any) {
         if (this.isEnabled()) return;
@@ -140,7 +145,7 @@ class ScrollZoomHandler {
      * Disables the "scroll to zoom" interaction.
      *
      * @example
-     *   map.scrollZoom.disable();
+     * map.scrollZoom.disable();
      */
     disable() {
         if (!this.isEnabled()) return;
