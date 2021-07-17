@@ -2541,9 +2541,6 @@
       },
       "!has": {
         "doc": "`[\"!has\", key]` `feature[key]` does not exist"
-      },
-      "within": {
-        "doc": "`[\"within\", object]` feature geometry is within object geometry"
       }
     },
     "doc": "The filter operator."
@@ -3475,6 +3472,7 @@
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
+            "js": "2.3.0",
             "android": "9.2.0",
             "ios": "5.9.0",
             "macos": "0.16.0"
