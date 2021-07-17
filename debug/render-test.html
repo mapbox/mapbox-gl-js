@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body { height: 100%; }
+        #map {
+            width: 256px;
+            height: 256px;
+        }
+        .panel {
+            position: absolute;
+            padding: 10px;
+        }
+        .panel.panel-top-right {
+            top: 0;
+            right: 0;
+            text-align: right;
+            z-index: 1;
+        }
+        .panel.panel-top-left {
+            top: 0;
+            left: 0;
+            z-index: 2;
+            background-color: rgba(255,255,255,0.7);
+        }
+        #render-test {
+            width: 300px;
+
+        }
+        #toggle-expected {
+            margin-bottom: 5px;
+        }
+        #render-test.js-error {
+            box-shadow: 0 0 5px #c12;
+        }
+        #error-message {
+            color: #c12;
+            background-color: rgba(255,255,255,0.5);
+            line-height: 1.5em;
+            font-family: monospace;
+            padding: 0 5px;
+        }
+        #expected-img {
+            display: none;
+            border: 1px solid red;
+        }
+        #container.fullscreen {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+        #container.fullscreen #map {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: auto !important;
+            height: auto !important;
+        }
+        #container:not(.fullscreen) .panel {
+            position: static;
+        }
+        #container:not(.fullscreen) .panel-top-right,
+        #container:not(.fullscreen) #map {
+            display: inline-block;
+            padding: 0;
+            margin-left: 10px;
+        }
+        #container:not(.fullscreen) #map {
+            border: 1px solid blue;
+        }
+        .field:not(:first-child) {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="container" class="fullscreen">
+    <div class="panel panel-top-left">
+        <div class="field">
+            <input type="text" id="render-test" placeholder="path/to/render-test">
+            <div id="error-message"></div>
+        </div>
+        <div class="field">
+            <label for="constrain"><input type="checkbox" name="constrain" id="constrain"> Constrain size</label>
+            <label for="expected"><input type="checkbox" name="expected" id="expected"> Expected</label>
+        </div>
+    </div>
+
+    <div id='map'></div>
+
+    <div class="panel panel-top-right">
+        <img id="expected-img">
+    </div>
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+})
+
+while(map._controls.length) map.removeControl(map._controls[0]);
+
+const config = getInitialConfig({
+    test: 'line-blur/default',
+    isConstrained: true,
+    showExpected: true,
+});
+
+const renderTestInput = document.getElementById('render-test');
+renderTestInput.value = config.test;
+loadTest(config.test);
+
+const container = document.getElementById('container');
+const expected = document.getElementById('expected-img');
+const expectedInput = document.getElementById('expected');
+const constrainInput = document.getElementById('constrain');
+
+constrainInput.checked = config.isConstrained;
+expectedInput.checked = config.showExpected;
+
+constrainInput.addEventListener('change', onChangeConstrained);
+expectedInput.addEventListener('change', onChangeExpected);
+
+onChangeExpected({target: {checked: config.showExpected}});
+onChangeConstrained({target: {checked: config.isConstrained}});
+
+function onChangeExpected(event) {
+    config.showExpected = event.target.checked;
+    expected.style.display = config.showExpected ? 'block' : 'none';
+    updateSearch();
+}
+
+function onChangeConstrained(event) {
+    config.isConstrained = event.target.checked;
+    if (config.isConstrained) {
+        container.classList.remove('fullscreen');
+    } else {
+        container.classList.add('fullscreen');
+    }
+    requestAnimationFrame(() => map.resize());
+    updateSearch();
+    reView();
+}
+
+function normalizeTestPath (path) {
+    return (path
+        // Remove leading test/integration/render-test
+        .replace(/^\s*\/?(?:(?:test\/)?integration\/)?render-tests\//, '')
+        // Remove trailing "style.json"
+        .replace(/style\.json\s*$/, '')
+        // Remove a trailing slash
+        .replace(/\/$\s*/, ''));
+}
+
+function showErrorMessage (text) {
+    document.getElementById('error-message').textContent = text ? text : '';
+}
+
+function fullTestPath (normalizedPath) {
+    return `/test/integration/render-tests/${normalizedPath}`
+}
+
+function getInitialConfig (config) {
+    const search = new URLSearchParams(window.location.search);
+    if (search.has('constrain')) config.isConstrained = search.get('constrain') === 't';
+    if (search.has('expected')) config.showExpected = search.get('expected') === 't';
+    if (search.has('test')) config.test = search.get('test');
+    config.test = normalizeTestPath(config.test);
+    return config;
+}
+
+function updateSearch () {
+    var searchParams = new URLSearchParams(window.location.search)
+    searchParams.set('test', config.test);
+    searchParams.set('expected', config.showExpected ? 't' : 'f');
+    searchParams.set('constrain', config.isConstrained ? 't' : 'f');
+    history.pushState(null, '', window.location.pathname + '?' + searchParams.toString() + window.location.hash);
+}
+
+function onTest (event) {
+    const unnormalizedPath = event.target.value;
+    const newPath = normalizeTestPath(unnormalizedPath);
+
+    if (unnormalizedPath !== newPath) {
+        renderTestInput.value = newPath;
+        return;
+    }
+
+    loadTest(newPath);
+};
+
+renderTestInput.addEventListener('change', onTest);
+renderTestInput.addEventListener('keyup', function (event) {
+    if (event.keyCode === 13) onTest(event);
+});
+
+function setError(msg) {
+    showErrorMessage(msg);
+    if (!msg) {
+        renderTestInput.classList.remove('js-error');
+        return;
+    }
+    renderTestInput.classList.add('js-error');
+}
+
+function reView () {
+    if (!window.style) return;
+    map.resize();
+    map.setCenter(window.style.center || [0, 0]);
+    map.setBearing(window.style.bearing || 0);
+    map.setZoom(window.style.zoom || 0);
+    map.setPitch(window.style.pitch || 0);
+}
+
+function loadTest (path) {
+    config.test = path;
+    console.log('Loading new test:', path);
+    setError(null);
+
+    const fullPath = fullTestPath(path);
+
+    fetch(`${fullPath}/style.json`).then(function (response) {
+        return response.json();
+    }).then(function (style) {
+        for (let sourceName in style.sources) {
+            const source = style.sources[sourceName];
+            if (!source.tiles) continue;
+            for (let i = 0; i < source.tiles.length; i++) {
+                source.tiles[i] = source.tiles[i].replace(/^local:\/\//, 'http://localhost:9966/test/integration/')
+            }
+        }
+        if (style.glyphs) style.glyphs = style.glyphs.replace(/^local:\/\//, 'http://localhost:9966/test/integration/')
+        if (style.sprite) style.sprite = style.sprite.replace(/^local:\/\//, 'http://localhost:9966/test/integration/')
+
+        updateSearch();
+
+        function onComplete () {
+
+            if (style.metadata && style.metadata.test) {
+                const meta = style.metadata.test;
+                const mapEl = document.getElementById('map');
+                mapEl.style.width = `${meta.width ? meta.width : 512}px`;
+                mapEl.style.height = `${meta.height ? meta.height : 512}px`;
+                map.resize();
+            }
+            requestAnimationFrame(reView);
+        }
+
+        map.once('styledata', function () {
+            window.style = style;
+            setError(null);
+            onComplete();
+            console.log('Completed loading style', path, style);
+        });
+
+        map.once('error', function (error) {
+            onComplete();
+            console.error(error)
+        });
+
+        map.setStyle(style);
+
+        requestAnimationFrame(onComplete);
+
+        expected.src = `${fullPath}/expected.png`;
+
+    }).catch(error => {
+        if (error.message = 'Unexpected token N in JSON at position 0') {
+            setError('Test not found');
+        } else {
+            setError(error.message);
+        }
+    });
+}
+
+</script>
+</body>
+</html>
