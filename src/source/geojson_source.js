@@ -58,10 +58,10 @@ import type {Cancelable} from '../types/cancelable.js';
  *         }
  *     }]
  * });
- * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
- * @see [Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
- * @see [Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
- * @see [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
+ * @see [Example: Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+ * @see [Example: Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
+ * @see [Example: Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
+ * @see [Example: Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
  */
 class GeoJSONSource extends Evented implements Source {
     type: 'geojson';
@@ -155,7 +155,7 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * Sets the GeoJSON data and re-renders the map.
      *
-     * @param {Object|string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
+     * @param {Object | string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
      * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * map.addSource('source_id', {
@@ -249,8 +249,8 @@ class GeoJSONSource extends Evented implements Source {
      * For clustered sources, fetches the original points that belong to the cluster (as an array of GeoJSON features).
      *
      * @param clusterId The value of the cluster's `cluster_id` property.
-     * @param limit The maximum number of features to return. (Defaults to `10` if a falsy value is given).
-     * @param offset The number of features to skip. This is useful for paginating results. Defaults to `0` if a falsy value is given.
+     * @param limit The maximum number of features to return. Defaults to `10` if a falsy value is given.
+     * @param offset The number of features to skip (for example, for pagination). Defaults to `0` if a falsy value is given.
      * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
      * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example

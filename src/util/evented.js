@@ -170,7 +170,6 @@ export class Evented {
     /**
      * Bubble all events fired by this instance of Evented to this parent instance of Evented.
      *
-     * @private
      * @returns {Object} `this`
      * @private
      */

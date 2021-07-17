@@ -12,7 +12,7 @@ const definitionList = Object.keys(definitions).filter((expression) => {
 test('v8.json includes all definitions from style-spec', (t) => {
     const v8List = Object.keys(v8.expression_name.values);
     const v8SupportedList = v8List.filter((expression) => {
-        //filter out expressions that are not supported in GL-JS
+        //filter out expressions that are not supported in Mapbox GL JS
         return !!v8.expression_name.values[expression]["sdk-support"]["basic functionality"]["js"];
     });
     t.deepEquals(definitionList, v8SupportedList.sort());

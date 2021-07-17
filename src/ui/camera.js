@@ -55,10 +55,10 @@ import type {PaddingOptions} from '../geo/edge_insets.js';
  *     bearing: -60,
  *     zoom: 10
  * });
- * @see [Set pitch and bearing](https://docs.mapbox.com/mapbox-gl-js/example/set-perspective/)
- * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
- * @see [Fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto/)
- * @see [Display buildings in 3D](https://docs.mapbox.com/mapbox-gl-js/example/3d-buildings/)
+ * @see [Example: Set pitch and bearing](https://docs.mapbox.com/mapbox-gl-js/example/set-perspective/)
+ * @see [Example: Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
+ * @see [Example: Fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto/)
+ * @see [Example: Display buildings in 3D](https://docs.mapbox.com/mapbox-gl-js/example/3d-buildings/)
  */
 export type CameraOptions = {
     center?: LngLatLike,
@@ -82,9 +82,9 @@ export type CameraOptions = {
  * @property {boolean} animate If `false`, no animation will occur.
  * @property {boolean} essential If `true`, then the animation is considered essential and will not be affected by
  *   [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
- * @see [Slowly fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto-options/)
- * @see [Customize camera animations](https://docs.mapbox.com/mapbox-gl-js/example/camera-animation/)
- * @see [Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
+ * @see [Example: Slowly fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto-options/)
+ * @see [Example: Customize camera animations](https://docs.mapbox.com/mapbox-gl-js/example/camera-animation/)
+ * @see [Example: Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
 */
 export type AnimationOptions = {
     duration?: number,
@@ -122,8 +122,8 @@ export type ElevationBoxRaycast = {
  * map.fitBounds(bbox, {
  *     padding: 20
  * });
- * @see [Fit to the bounds of a LineString](https://docs.mapbox.com/mapbox-gl-js/example/zoomto-linestring/)
- * @see [Fit a map to a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/fitbounds/)
+ * @see [Example: Fit to the bounds of a LineString](https://docs.mapbox.com/mapbox-gl-js/example/zoomto-linestring/)
+ * @see [Example: Fit a map to a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/fitbounds/)
  */
 
 class Camera extends Evented {
@@ -162,13 +162,13 @@ class Camera extends Evented {
      * Returns the map's geographical centerpoint.
      *
      * @memberof Map#
-     * @returns The map's geographical centerpoint.
+     * @returns {LngLat} The map's geographical centerpoint.
      * @example
-     * // return a LngLat object such as {lng: 0, lat: 0}
+     * // Return a LngLat object such as {lng: 0, lat: 0}.
      * const center = map.getCenter();
-     * // access longitude and latitude values directly
+     * // Access longitude and latitude values directly.
      * const {longitude, latitude} = map.getCenter();
-     * @see Tutorial: [Use Mapbox GL JS in a React app](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/#store-the-new-coordinates)
+     * @see [Tutorial: Use Mapbox GL JS in a React app](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/#store-the-new-coordinates)
      */
     getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
 
@@ -197,13 +197,13 @@ class Camera extends Evented {
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
-     * @returns {Map} Returns itself to allow for method chaining.
+     * @returns {Map} `this` Returns itself to allow for method chaining.
      * @example
      * map.panBy([-74, 38]);
      * @example
      * // panBy with an animation of 5 seconds.
      * map.panBy([-74, 38], {duration: 5000});
-     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
+     * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     panBy(offset: PointLike, options?: AnimationOptions, eventData?: Object) {
         offset = Point.convert(offset).mult(-1);
@@ -225,7 +225,7 @@ class Camera extends Evented {
      * @example
      * // Specify that the panTo animation should last 5000 milliseconds.
      * map.panTo([-74, 38], {duration: 5000});
-     * @see [Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
+     * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
     panTo(lnglat: LngLatLike, options?: AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
@@ -237,7 +237,7 @@ class Camera extends Evented {
      * Returns the map's current zoom level.
      *
      * @memberof Map#
-     * @returns The map's current zoom level.
+     * @returns {number} The map's current zoom level.
      * @example
      * map.getZoom();
      */
@@ -343,10 +343,10 @@ class Camera extends Evented {
      * of 90° orients the map so that east is up.
      *
      * @memberof Map#
-     * @returns The map's current bearing.
-     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
+     * @returns {number} The map's current bearing.
      * @example
      * const bearing = map.getBearing();
+     * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     getBearing(): number { return this.transform.bearing; }
 
@@ -363,7 +363,7 @@ class Camera extends Evented {
      * @fires moveend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
-     * // rotate the map to 90 degrees
+     * // Rotate the map to 90 degrees.
      * map.setBearing(90);
      */
     setBearing(bearing: number, eventData?: Object) {
@@ -375,7 +375,7 @@ class Camera extends Evented {
      * Returns the current padding applied around the map viewport.
      *
      * @memberof Map#
-     * @returns The current padding around the map viewport.
+     * @returns {PaddingOptions} The current padding around the map viewport.
      * @example
      * const padding = map.getPadding();
      */
@@ -465,8 +465,8 @@ class Camera extends Evented {
     }
 
     /**
-     * Snaps the map so that north is up (0° bearing), if the current bearing is close enough to it (within the
-     * `bearingSnap` threshold).
+     * Snaps the map so that north is up (0° bearing), if the current bearing is
+     * close enough to it (within the `bearingSnap` threshold).
      *
      * @memberof Map#
      * @param options Options object.
@@ -486,17 +486,17 @@ class Camera extends Evented {
     }
 
     /**
-     * Returns the map's current pitch (tilt).
+     * Returns the map's current [pitch](https://docs.mapbox.com/help/glossary/camera/) (tilt).
      *
      * @memberof Map#
-     * @returns The map's current pitch, measured in degrees away from the plane of the screen.
+     * @returns {number} The map's current pitch, measured in degrees away from the plane of the screen.
      * @example
      * const pitch = map.getPitch();
      */
     getPitch(): number { return this.transform.pitch; }
 
     /**
-     * Sets the map's pitch (tilt). Equivalent to `jumpTo({pitch: pitch})`.
+     * Sets the map's [pitch](https://docs.mapbox.com/help/glossary/camera/) (tilt). Equivalent to `jumpTo({pitch: pitch})`.
      *
      * @memberof Map#
      * @param pitch The pitch to set, measured in degrees away from the plane of the screen (0-60).
@@ -515,6 +515,10 @@ class Camera extends Evented {
     }
 
     /**
+     * Returns a {@link CameraOptions} object for the highest zoom level
+     * up to and including `Map#getMaxZoom()` that fits the bounds
+     * in the viewport at the specified bearing.
+     *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
      *      the highest zoom level up to and including `Map#getMaxZoom()` that fits
@@ -756,7 +760,7 @@ class Camera extends Evented {
      * map.fitBounds(bbox, {
      *     padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
-     * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
+     * @see [Example: Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
     fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object) {
         return this._fitInternal(
@@ -915,8 +919,8 @@ class Camera extends Evented {
      *     pitch: 45,
      *     bearing: 90
      * });
-     * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
-     * @see [Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
+     * @see [Example: Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
+     * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
     jumpTo(options: CameraOptions, eventData?: Object) {
         this.stop();
@@ -1088,13 +1092,12 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @fires pitchend
-     * @returns {Map} Returns itself to allow for method chaining.
-     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
+     * @returns {Map} `this` Returns itself to allow for method chaining.
      * @example
-     * // Ease with default options to null island for 5 seconds
+     * // Ease with default options to null island for 5 seconds.
      * map.easeTo({center: [0, 0], zoom: 9, duration: 5000});
      * @example
-     * // Using easeTo options
+     * // Using easeTo options.
      * map.easeTo({
      *     center: [0, 0],
      *     zoom: 9,
@@ -1105,6 +1108,7 @@ class Camera extends Evented {
      *         return t;
      *     }
      * });
+     * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     easeTo(options: CameraOptions & AnimationOptions & {easeId?: string}, eventData?: Object) {
         this._stop(false, options.easeId);
@@ -1315,9 +1319,9 @@ class Camera extends Evented {
      *         return t;
      *     }
      * });
-     * @see [Fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto/)
-     * @see [Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
-     * @see [Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
+     * @see [Example: Fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto/)
+     * @see [Example: Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
+     * @see [Example: Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
     flyTo(options: Object, eventData?: Object) {
         // Fall through to jumpTo if user has set prefers-reduced-motion
