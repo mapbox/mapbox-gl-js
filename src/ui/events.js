@@ -351,7 +351,7 @@ export class MapWheelEvent extends Event {
 
 /**
  * `MapBoxZoomEvent` is a class used to generate
- * events 'boxzoomstart', 'boxzoomend' and 'boxzoomcancel'.
+ * the events 'boxzoomstart', 'boxzoomend' and 'boxzoomcancel'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
  * @typedef {Object} MapBoxZoomEvent
@@ -380,14 +380,14 @@ export type MapBoxZoomEvent = {
  * events related to loading data, styles and sources.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
- * @typedef {object} MapDataEvent
+ * @typedef {Object} MapDataEvent
  * @property {('data' | 'dataloading' | 'styledata' | 'styledataloading' | 'sourcedata'| 'sourcedataloading')} type The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  * @property {('source' | 'style')} dataType The type of data that has changed. One of `'source'` or `'style'`, where `'source'` refers to the data associated with any source, and `'style'` refers to the entire [style](https://docs.mapbox.com/help/glossary/style/) used by the map.
  * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
- * @property {object} [source] The [style spec representation of the source](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) if the event has a `dataType` of `source`.
+ * @property {Object} [source] The [style spec representation of the source](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) if the event has a `dataType` of `source`.
  * @property {string} [sourceDataType] Included if the event has a `dataType` of `source` and the event signals
  * that internal data has been received or changed. Possible values are `metadata`, `content` and `visibility`.
- * @property {object} [tile] The tile being loaded or changed, if the event has a `dataType` of `source` and
+ * @property {Object} [tile] The tile being loaded or changed, if the event has a `dataType` of `source` and
  * the event is related to loading of a tile.
  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `source` and
  * the event is related to loading of a tile.
@@ -1102,7 +1102,7 @@ export type MapEvent =
      * @event boxzoomend
      * @memberof Map
      * @instance
-     * @type {object}
+     * @type {Object}
      * @type {MapBoxZoomEvent}
      * @example
      * // Initialize the map
@@ -1192,7 +1192,7 @@ export type MapEvent =
      * @event load
      * @memberof Map
      * @instance
-     * @type {object}
+     * @type {Object}
      * @example
      * // Initialize the map
      * const map = new mapboxgl.Map({});
