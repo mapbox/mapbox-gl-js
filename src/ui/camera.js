@@ -176,8 +176,8 @@ class Camera extends Evented {
      * Sets the map's geographical centerpoint. Equivalent to `jumpTo({center: center})`.
      *
      * @memberof Map#
-     * @param center The centerpoint to set.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {LngLatLike} center The centerpoint to set.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} Returns itself to allow for method chaining.
@@ -192,9 +192,9 @@ class Camera extends Evented {
      * Pans the map by the specified offset.
      *
      * @memberof Map#
-     * @param offset The `x` and `y` coordinates by which to pan the map.
-     * @param options An options object describing the destination and animation of the transition. We do not recommend using `options.offset` since this value will override the value of the `offset` parameter.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {PointLike} offset The `x` and `y` coordinates by which to pan the map.
+     * @param {AnimationOptions | null} options An options object describing the destination and animation of the transition. We do not recommend using `options.offset` since this value will override the value of the `offset` parameter.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this` Returns itself to allow for method chaining.
@@ -214,9 +214,9 @@ class Camera extends Evented {
      * Pans the map to the specified location with an animated transition.
      *
      * @memberof Map#
-     * @param lnglat The location to pan the map to.
-     * @param options Options describing the destination and animation of the transition.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {LngLatLike} lnglat The location to pan the map to.
+     * @param {AnimationOptions | null} options Options describing the destination and animation of the transition.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} Returns itself to allow for method chaining.
@@ -247,8 +247,8 @@ class Camera extends Evented {
      * Sets the map's zoom level. Equivalent to `jumpTo({zoom: zoom})`.
      *
      * @memberof Map#
-     * @param zoom The zoom level to set (0-20).
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {number} zoom The zoom level to set (0-20).
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -269,9 +269,9 @@ class Camera extends Evented {
      * Zooms the map to the specified zoom level, with an animated transition.
      *
      * @memberof Map#
-     * @param zoom The zoom level to transition to.
-     * @param options Options object.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {number} zoom The zoom level to transition to.
+     * @param {AnimationOptions | null} options Options object.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -298,8 +298,8 @@ class Camera extends Evented {
      * Increases the map's zoom level by 1.
      *
      * @memberof Map#
-     * @param options Options object.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {AnimationOptions | null} options Options object.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -320,8 +320,8 @@ class Camera extends Evented {
      * Decreases the map's zoom level by 1.
      *
      * @memberof Map#
-     * @param options Options object.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {AnimationOptions | null} options Options object.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -357,8 +357,8 @@ class Camera extends Evented {
      * Equivalent to `jumpTo({bearing: bearing})`.
      *
      * @memberof Map#
-     * @param bearing The desired bearing.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {number} bearing The desired bearing.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} Returns itself to allow for method chaining.
@@ -387,8 +387,8 @@ class Camera extends Evented {
      * Equivalent to `jumpTo({padding: padding})`.
      *
      * @memberof Map#
-     * @param padding The desired padding. Format: {left: number, right: number, top: number, bottom: number}.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {PaddingOptions} padding The desired padding. Format: {left: number, right: number, top: number, bottom: number}.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} Returns itself to allow for method chaining.
@@ -406,9 +406,9 @@ class Camera extends Evented {
      * that is \"up\"; for example, a bearing of 90° orients the map so that east is up.
      *
      * @memberof Map#
-     * @param bearing The desired bearing.
-     * @param options Options object.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {number} bearing The desired bearing.
+     * @param {AnimationOptions | null} options Options object.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} Returns itself to allow for method chaining.
@@ -428,8 +428,8 @@ class Camera extends Evented {
      * Rotates the map so that north is up (0° bearing), with an animated transition.
      *
      * @memberof Map#
-     * @param options Options object.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {AnimationOptions | null} options Options object.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} Returns itself to allow for method chaining.
@@ -446,8 +446,8 @@ class Camera extends Evented {
      * Rotates and pitches the map so that north is up (0° bearing) and pitch is 0°, with an animated transition.
      *
      * @memberof Map#
-     * @param options Options object.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {AnimationOptions | null} options Options object.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} Returns itself to allow for method chaining.
@@ -469,8 +469,8 @@ class Camera extends Evented {
      * close enough to it (within the `bearingSnap` threshold).
      *
      * @memberof Map#
-     * @param options Options object.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {AnimationOptions | null} options Options object.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} Returns itself to allow for method chaining.
@@ -499,8 +499,8 @@ class Camera extends Evented {
      * Sets the map's [pitch](https://docs.mapbox.com/help/glossary/camera/) (tilt). Equivalent to `jumpTo({pitch: pitch})`.
      *
      * @memberof Map#
-     * @param pitch The pitch to set, measured in degrees away from the plane of the screen (0-60).
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {number} pitch The pitch to set, measured in degrees away from the plane of the screen (0-60).
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires pitchstart
      * @fires movestart
      * @fires moveend
@@ -523,7 +523,7 @@ class Camera extends Evented {
      * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
      *      the highest zoom level up to and including `Map#getMaxZoom()` that fits
      *      in the viewport. LngLatBounds represent a box that is always axis-aligned with bearing 0.
-     * @param options Options object.
+     * @param {CameraOptions | null} options Options object.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
@@ -575,8 +575,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {LngLatLike} p0 First point
      * @param {LngLatLike} p1 Second point
-     * @param bearing Desired map bearing at end of animation, in degrees
-     * @param options
+     * @param {number} bearing Desired map bearing at end of animation, in degrees
+     * @param {CameraOptions | null} options
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
@@ -646,7 +646,7 @@ class Camera extends Evented {
      * @param {LngLatLike} p1 Second point
      * @param {number} minAltitude Optional min altitude in meters
      * @param {number} maxAltitude Optional max altitude in meters
-     * @param options
+     * @param {CameraOptions | null} options
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
      *      `center`, `zoom`, `bearing` and `pitch`. If map is unable to fit, method will warn and return undefined.
@@ -741,7 +741,7 @@ class Camera extends Evented {
      * If a padding is set on the map, the bounds are fit to the inset.
      *
      * @memberof Map#
-     * @param bounds Center these bounds in the viewport and use the highest
+     * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
      * @param {Object} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
@@ -812,10 +812,10 @@ class Camera extends Evented {
      * pass in the current map bearing.
      *
      * @memberof Map#
-     * @param p0 First point on screen, in pixel coordinates.
-     * @param p1 Second point on screen, in pixel coordinates.
-     * @param bearing Desired map bearing at end of animation, in degrees. This value is ignored if the map has non-zero pitch.
-     * @param options Options object.
+     * @param {PointLike} p0 First point on screen, in pixel coordinates.
+     * @param {PointLike} p1 Second point on screen, in pixel coordinates.
+     * @param {number} bearing Desired map bearing at end of animation, in degrees. This value is ignored if the map has non-zero pitch.
+     * @param {CameraOptions | null} options Options object.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
@@ -823,7 +823,7 @@ class Camera extends Evented {
      * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} Returns itself to allow for method chaining.
@@ -896,8 +896,8 @@ class Camera extends Evented {
      * details not specified in `options`.
      *
      * @memberof Map#
-     * @param options Options object.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {CameraOptions} options Options object.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires pitchstart
@@ -1007,7 +1007,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {FreeCameraOptions} options `FreeCameraOptions` object.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires pitchstart
@@ -1079,9 +1079,9 @@ class Camera extends Evented {
      * unless `options` includes `essential: true`.
      *
      * @memberof Map#
-     * @param options Options describing the destination and animation of the transition.
+     * @param {CameraOptions & AnimationOptions} options Options describing the destination and animation of the transition.
      *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires pitchstart
@@ -1294,7 +1294,7 @@ class Camera extends Evented {
      *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
      * @param {number} [options.maxDuration] The animation's maximum duration, measured in milliseconds.
      *     If duration exceeds maximum duration, it resets to 0.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires pitchstart
