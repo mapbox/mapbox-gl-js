@@ -107,7 +107,7 @@ let noTimeout = false;
  *     trackUserLocation: true,
  *     showUserHeading: true
  * }));
- * @see [Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
+ * @see [Example: Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
  */
 class GeolocateControl extends Evented {
     _map: Map;
@@ -511,7 +511,7 @@ class GeolocateControl extends Evented {
     }
 
     /**
-     * Trigger a geolocation
+     * Trigger a geolocation event.
      *
      * @example
      * // Initialize the geolocate control.

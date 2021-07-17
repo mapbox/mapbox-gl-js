@@ -26,10 +26,10 @@ export const earthRadius = 6371008.8;
  * @example
  * const ll = new mapboxgl.LngLat(-123.9749, 40.7736);
  * console.log(ll.lng); // = -123.9749
- * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
- * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
- * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
- * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
+ * @see [Example: Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
+ * @see [Example: Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
+ * @see [Example: Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ * @see [Example: Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
  */
 class LngLat {
     lng: number;
@@ -84,10 +84,10 @@ class LngLat {
     }
 
     /**
-     * Returns the approximate distance between a pair of coordinates in meters
-     * Uses the Haversine Formula (from R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope, vol. 68, no. 2, 1984, p. 159)
+     * Returns the approximate distance between a pair of coordinates in meters.
+     * Uses the Haversine Formula (from R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope, vol. 68, no. 2, 1984, p. 159).
      *
-     * @param {LngLat} lngLat coordinates to compute the distance to
+     * @param {LngLat} lngLat Coordinates to compute the distance to.
      * @returns {number} Distance in meters between the two coordinates.
      * @example
      * const newYork = new mapboxgl.LngLat(-74.0060, 40.7128);

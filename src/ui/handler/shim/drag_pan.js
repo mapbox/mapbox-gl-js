@@ -14,8 +14,8 @@ export type DragPanOptions = {
  * The `DragPanHandler` allows the user to pan the map by clicking and dragging
  * the cursor.
  *
- * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
- * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ * @see [Example: Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
  */
 export default class DragPanHandler {
 
@@ -37,10 +37,10 @@ export default class DragPanHandler {
      * Enables the "drag to pan" interaction.
      *
      * @param {Object} [options] Options object.
-     * @param {number} [options.linearity=0] factor used to scale the drag velocity
-     * @param {Function} [options.easing=bezier(0, 0, 0.3, 1)] easing function applled to `map.panTo` when applying the drag.
-     * @param {number} [options.maxSpeed=1400] the maximum value of the drag velocity.
-     * @param {number} [options.deceleration=2500] the rate at which the speed reduces after the pan ends.
+     * @param {number} [options.linearity=0] Factor used to scale the drag velocity.
+     * @param {Function} [options.easing=bezier(0, 0, 0.3, 1)] Easing function applied to `map.panTo` when applying the drag.
+     * @param {number} [options.maxSpeed=1400] The maximum value of the drag velocity.
+     * @param {number} [options.deceleration=2500] The rate at which the speed reduces after the pan ends.
      *
      * @example
      * map.dragPan.enable();
@@ -74,7 +74,7 @@ export default class DragPanHandler {
     /**
      * Returns a Boolean indicating whether the "drag to pan" interaction is enabled.
      *
-     * @returns {boolean} `true` if the "drag to pan" interaction is enabled.
+     * @returns {boolean} Returns `true` if the "drag to pan" interaction is enabled.
      * @example
      * const isDragPanEnabled = map.dragPan.isEnabled();
      */
@@ -83,9 +83,9 @@ export default class DragPanHandler {
     }
 
     /**
-     * Returns a Boolean indicating whether the "drag to pan" interaction is active, i.e. currently being used.
+     * Returns a Boolean indicating whether the "drag to pan" interaction is active (currently being used).
      *
-     * @returns {boolean} `true` if the "drag to pan" interaction is active.
+     * @returns {boolean} Returns `true` if the "drag to pan" interaction is active.
      * @example
      * const isDragPanActive = map.dragPan.isActive();
      */
