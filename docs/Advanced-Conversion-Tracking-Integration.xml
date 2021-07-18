@@ -1,0 +1,544 @@
+$~≤_\```
+```All docsHelpTutorialsUse the Mapbox Vision SDK for Android with an external USB camera
+Use the Mapbox Vision SDK for Android with an external USB camera
+On this page
+Getting started
+Add the UVCCamera library
+Create a USB VideoSource
+Create Vision with custom implemented USB VideoSource
+Finished product
+Next steps
+The Mapbox Vision SDK for Android is a library for interpreting road scenes in real time directly on Android devices. By default the Vision SDK uses the device's internal camera via Camera 2 API, but it is also possible to use an external camera or any other video source (for example a file or internet stream) with the Vision SDK. Using an external camera can improve your mobile app usability since it won't require the user to mount the phone to the car windshield.
+
+To use an external source, you will need to implement a custom VideoSource. This tutorial will show how to implement custom VideoSource for a connected USB camera.
+
+Here's an example setup running the Vision SDK on a Samsung S10+ with a Logitech C920 USB camera:
+
+Vision SDK running with Logitech C920 USB camera.
+Getting started
+Before starting this tutorial, go through the Install and configure steps in the Vision SDK for Android documentation. This will walk you through how to install the Vision SDK and configure your application.
+
+USB camera on Android
+Some Android devices may support some USB cameras via defaultCamera/Camera2 APIs, but support and device coverage is limited. This tutorial uses the UVCCamera library to get video stream from the USB camera. The library itself uses modified versions of libusb and libuvc to handle the USB cameras.
+
+Camera and device positioning
+The USB camera should be mounted under the windshield as stated at requirements. Device positioning requirements depend on which Vision features you're using:
+
+If you're using Vision features that do not require camera calibration or sensor data (like segmentation and detections), there are no strict requirements with regard to phone position.
+If you're using the USB camera with other features (like Vision AR or Vision Safety) that do require camera calibration and sensor data (including gyro, accelerometer, and gravity), you will need to mount the phone so that sensor data coming from the device is reliable. This means that phone orientation should be fixed and aligned with the orientation of the camera as much as possible.
+Add the UVCCamera library
+Add the following maven repository to the repositories section of the top-level build.gradle:
+
+build.gradle
+repositories {
+  maven { url 'http://raw.github.com/saki4510t/libcommon/master/repository/' }
+}
+Next, add the dependencies. You may build the UVCCamera library yourself or use prebuilt libuvccamera-release.aar from this tutorial. Supposing you've put library into the libs directory in your project, add the dependencies to the project-level build.gradle:
+
+build.gradle
+dependencies {
+  implementation fileTree(dir: 'libs', include: ['*.aar'])
+  implementation("com.serenegiant:common:$uvccamera_common") {
+    exclude module: 'support-v4'
+  }
+}
+You will also need android.permission.CAMERA permission granted to access USB camera, add it to the AndroidManifest.xml:
+
+AndroidManifest.xml
+<uses-permission android:name="android.permission.CAMERA" />
+Create a USB VideoSource
+To connect Vision with a USB camera, implement a custom VideoSource and pass it to VisionManager.create.VisionManager will call the attach method of this Video when it's ready to process frames so you can save this listener and start feeding it frames.
+
+In the attach callback, create a USBMonitor object and call its register method to trigger the USB camera launch process.
+
+Note
+You should switch to a background thread to call all USB camera related methods to avoid main thread delays.
+
+
+
+Java
+
+Kotlin
+// VideoSource implementation that connects to USB camera and feeds frames to VisionManager.
+private val usbVideoSource = object : VideoSource {
+ 
+// VisionManager will attach [videoSourceListener] after [VisionManager.create] is called.
+// Here you open USB camera connection and continue connection via [onDeviceConnectListener] callbacks.
+//
+// NOTE : method is called from the same thread, that [VisionManager.create] is called.
+override fun attach(videoSourceListener: VideoSourceListener) {
+if (!backgroundHandlerThread.isAlive) {
+backgroundHandlerThread.start()
+}
+backgroundHandler.post {
+// Init and register USBMonitor.
+synchronized(this@UsbVideoSourceActivityKt) {
+this@UsbVideoSourceActivityKt.usbVideoSourceListener = videoSourceListener
+ 
+usbMonitor = USBMonitor(this@UsbVideoSourceActivityKt, onDeviceConnectListener)
+usbMonitor?.register()
+}
+}
+}
+ 
+// VisionManager will detach listener after [VisionManager.destroy] is called.
+// Here we close USB camera connection.
+//
+// NOTE : method is called from the same thread, that [VisionManager.destroy] is called.
+override fun detach() {
+backgroundHandler.post {
+synchronized(this@UsbVideoSourceActivityKt) {
+usbMonitor?.unregister()
+uvcCamera?.stopPreview()
+usbMonitor?.destroy()
+releaseCamera()
+usbVideoSourceListener = null
+}
+}
+ 
+backgroundHandlerThread.quitSafely()
+}
+}
+Copy
+USB camera life cycle
+To create USBMonitor in the previous step, you need an instance of OnDeviceConnectListener. This object will handle callbacks that send USB connection state updates.
+
+First request permission to connect to the camera in an onAttach callback (this call will trigger a system dialog describing the request).
+After confirmation of the dialog, an onConnect callback will follow, where connection itself is started.
+When the camera is disconnected, an onDisconnect callback allows you to release camera and deallocate resources used.
+
+
+Java
+
+Kotlin
+private val onDeviceConnectListener: USBMonitor.OnDeviceConnectListener =
+object : USBMonitor.OnDeviceConnectListener {
+override fun onAttach(device: UsbDevice?) {
+synchronized(this@UsbVideoSourceActivityKt) {
+usbMonitor?.requestPermission(device!!)
+}
+}
+ 
+override fun onConnect(
+device: UsbDevice?,
+ctrlBlock: USBMonitor.UsbControlBlock?,
+createNew: Boolean
+) {
+backgroundHandler.post {
+synchronized(this@UsbVideoSourceActivityKt) {
+releaseCamera()
+initializeCamera(ctrlBlock!!)
+}
+}
+}
+ 
+override fun onDetach(device: UsbDevice?) {}
+ 
+override fun onCancel(device: UsbDevice?) {}
+ 
+override fun onDisconnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
+backgroundHandler.post {
+synchronized(this@UsbVideoSourceActivityKt) {
+releaseCamera()
+}
+}
+}
+}
+Copy
+Create and release UVCCamera
+The function that creates the camera instance and configures it contains several steps:
+
+Create a UVCCamera object and set the preview size parameters via UVCCamera.setPreviewSize.
+Create an external OpenGL ES texture and set the preview to use this texture wrapped in a SurfaceTexture object. The external surface fits since the raw video stream from the camera does not need to be displayed on the screen. Instead, frames go directly to the Vision SDK and then, after processing VisionView, displays segmentation results.
+Set a frame callback with camera.setFrameCallback that will retrieve individual frames and feed them to the Vision SDK viausbVideoSourceListener.
+The code for camera initialization is:
+
+
+
+Java
+
+Kotlin
+private fun initializeCamera(ctrlBlock: USBMonitor.UsbControlBlock) {
+uvcCamera = UVCCamera().also { camera ->
+camera.open(ctrlBlock)
+camera.setPreviewSize(
+CAMERA_FRAME_SIZE.imageWidth,
+CAMERA_FRAME_SIZE.imageHeight,
+UVCCamera.FRAME_FORMAT_YUYV
+)
+ 
+val surfaceTexture = SurfaceTexture(createExternalGlTexture())
+surfaceTexture.setDefaultBufferSize(
+CAMERA_FRAME_SIZE.imageWidth,
+CAMERA_FRAME_SIZE.imageHeight
+)
+// Start preview to external GL texture
+// NOTE : this is necessary for callback passed to [UVCCamera.setFrameCallback]
+// to be triggered afterwards
+camera.setPreviewTexture(surfaceTexture)
+camera.startPreview()
+ 
+// Set callback that will feed frames from the USB camera to Vision SDK
+camera.setFrameCallback(
+{ frame ->
+usbVideoSourceListener?.onNewFrame(
+VideoSourceListener.FrameHolder.ByteBufferHolder(frame),
+ImageFormat.RGBA,
+CAMERA_FRAME_SIZE
+)
+},
+UVCCamera.PIXEL_FORMAT_RGBX
+)
+}
+}
+Copy
+Lastly, create external an OpenGL ES texture.
+
+Note
+You should call this function from thread with GL context.
+
+
+
+Java
+
+Kotlin
+private fun createExternalGlTexture(): Int {
+val textures = IntArray(1)
+GLES20.glGenTextures(1, textures, 0)
+val texId = textures[0]
+GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId)
+GLES20.glTexParameterf(
+GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER,
+GLES20.GL_LINEAR.toFloat()
+)
+GLES20.glTexParameterf(
+GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER,
+GLES20.GL_LINEAR.toFloat()
+)
+GLES20.glTexParameteri(
+GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S,
+GLES20.GL_CLAMP_TO_EDGE
+)
+GLES20.glTexParameteri(
+GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T,
+GLES20.GL_CLAMP_TO_EDGE
+)
+return texId
+}
+Copy
+To release UVCCamera and associated resources call its close and destroy methods:
+
+
+
+Java
+
+Kotlin
+private fun releaseCamera() {
+uvcCamera?.close()
+uvcCamera?.destroy()
+uvcCamera = null
+}
+Copy
+Create Vision with custom implemented USB VideoSource
+Now that you have implemented a new VideoSource, you can use it to initialize VisionManager:
+
+
+
+Java
+
+Kotlin
+override fun onStart() {
+super.onStart()
+startVisionManager()
+}
+ 
+private fun startVisionManager() {
+if (allPermissionsGranted() visionManagerWasInit) {
+VisionManager.create(usbVideoSource)
+VisionManager.setModelPerformance(
+new ModelPerformance.On(
+ModelPerformanceMode.FIXED, ModelPerformanceRate.HIGH.INSTANCE
+)
+);
+vision_view.setVisionManager(VisionManager)
+VisionManager.start()
+ 
+visionManagerWasInit = true
+}
+}
+Copy
+Finished product
+You've launched Vision SDK with external USB camera.
+
+UsbActivity.kt View on GitHub
+
+
+Java
+
+Kotlin
+package com.mapbox.vision.examples
+ 
+import android.graphics.SurfaceTexture
+import android.hardware.usb.UsbDevice
+import android.opengl.GLES11Ext
+import android.opengl.GLES20
+import android.os.Handler
+import android.os.HandlerThread
+import com.mapbox.vision.VisionManager
+import com.mapbox.vision.mobile.core.models.frame.ImageFormat
+import com.mapbox.vision.mobile.core.models.frame.ImageSize
+import com.mapbox.vision.performance.ModelPerformance
+import com.mapbox.vision.performance.ModelPerformanceMode
+import com.mapbox.vision.performance.ModelPerformanceRate
+import com.mapbox.vision.video.videosource.VideoSource
+import com.mapbox.vision.video.videosource.VideoSourceListener
+import com.serenegiant.usb.USBMonitor
+import com.serenegiant.usb.UVCCamera
+import kotlinx.android.synthetic.main.activity_main.*
+ 
+/**
+* Example shows how Vision SDK can work with external USB camera.
+* [UVCCamera](https://github.com/saki4510t/UVCCamera) library is used to connect to the USB camera itself,
+* frames from camera are then fed to Vision SDK.
+*/
+class UsbVideoSourceActivityKt : BaseActivity() {
+ 
+companion object {
+private val CAMERA_FRAME_SIZE = ImageSize(
+imageWidth = 1280,
+imageHeight = 720
+)
+}
+ 
+private val backgroundHandlerThread = HandlerThread("VideoDecode").apply { start() }
+private var backgroundHandler = Handler(backgroundHandlerThread.looper)
+ 
+private var visionManagerWasInit = false
+ 
+/**
+* Vision SDK will attach listener to get frames and camera parameters from the USB camera.
+*/
+private var usbVideoSourceListener: VideoSourceListener? = null
+ 
+/**
+* VideoSource implementation that connects to USB camera and feeds frames to VisionManager.
+*/
+private val usbVideoSource = object : VideoSource {
+ 
+/**
+* VisionManager will attach [videoSourceListener] after [VisionManager.create] is called.
+* Here we open USB camera connection, and proceed connection via [onDeviceConnectListener] callbacks.
+*
+* NOTE : method is called from the same thread, that [VisionManager.create] is called.
+*/
+override fun attach(videoSourceListener: VideoSourceListener) {
+if (!backgroundHandlerThread.isAlive) {
+backgroundHandlerThread.start()
+}
+backgroundHandler.post {
+// Init and register USBMonitor.
+synchronized(this@UsbVideoSourceActivityKt) {
+this@UsbVideoSourceActivityKt.usbVideoSourceListener = videoSourceListener
+ 
+usbMonitor = USBMonitor(this@UsbVideoSourceActivityKt, onDeviceConnectListener)
+usbMonitor?.register()
+}
+}
+}
+ 
+/**
+* VisionManager will detach listener after [VisionManager.destroy] is called.
+* Here we close USB camera connection.
+*
+* NOTE : method is called from the same thread, that [VisionManager.destroy] is called.
+*/
+override fun detach() {
+backgroundHandler.post {
+synchronized(this@UsbVideoSourceActivityKt) {
+usbMonitor?.unregister()
+uvcCamera?.stopPreview()
+usbMonitor?.destroy()
+releaseCamera()
+usbVideoSourceListener = null
+}
+}
+ 
+backgroundHandlerThread.quitSafely()
+}
+}
+ 
+private var usbMonitor: USBMonitor? = null
+private var uvcCamera: UVCCamera? = null
+ 
+override fun onPermissionsGranted() {
+startVisionManager()
+}
+ 
+override fun initViews() {
+setContentView(R.layout.activity_main)
+}
+ 
+override fun onStart() {
+super.onStart()
+startVisionManager()
+}
+ 
+override fun onStop() {
+super.onStop()
+stopVisionManager()
+}
+ 
+override fun onResume() {
+super.onResume()
+vision_view.onResume()
+}
+ 
+override fun onPause() {
+super.onPause()
+vision_view.onPause()
+}
+ 
+private fun startVisionManager() {
+if (allPermissionsGranted() && !visionManagerWasInit) {
+VisionManager.create(usbVideoSource)
+VisionManager.setModelPerformance(
+ModelPerformance.On(ModelPerformanceMode.FIXED, ModelPerformanceRate.HIGH)
+)
+vision_view.setVisionManager(VisionManager)
+VisionManager.start()
+ 
+visionManagerWasInit = true
+}
+}
+ 
+private fun stopVisionManager() {
+if (visionManagerWasInit) {
+VisionManager.stop()
+VisionManager.destroy()
+ 
+visionManagerWasInit = false
+}
+}
+ 
+private val onDeviceConnectListener: USBMonitor.OnDeviceConnectListener =
+object : USBMonitor.OnDeviceConnectListener {
+override fun onAttach(device: UsbDevice?) {
+synchronized(this@UsbVideoSourceActivityKt) {
+usbMonitor?.requestPermission(device!!)
+}
+}
+ 
+override fun onConnect(
+device: UsbDevice?,
+ctrlBlock: USBMonitor.UsbControlBlock?,
+createNew: Boolean
+) {
+backgroundHandler.post {
+synchronized(this@UsbVideoSourceActivityKt) {
+releaseCamera()
+initializeCamera(ctrlBlock!!)
+}
+}
+}
+ 
+override fun onDetach(device: UsbDevice?) {}
+ 
+override fun onCancel(device: UsbDevice?) {}
+ 
+override fun onDisconnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
+backgroundHandler.post {
+synchronized(this@UsbVideoSourceActivityKt) {
+releaseCamera()
+}
+}
+}
+}
+ 
+private fun releaseCamera() {
+uvcCamera?.close()
+uvcCamera?.destroy()
+uvcCamera = null
+}
+ 
+private fun initializeCamera(ctrlBlock: USBMonitor.UsbControlBlock) {
+uvcCamera = UVCCamera().also { camera ->
+camera.open(ctrlBlock)
+camera.setPreviewSize(
+CAMERA_FRAME_SIZE.imageWidth,
+CAMERA_FRAME_SIZE.imageHeight,
+UVCCamera.FRAME_FORMAT_YUYV
+)
+ 
+val surfaceTexture = SurfaceTexture(createExternalGlTexture())
+surfaceTexture.setDefaultBufferSize(
+CAMERA_FRAME_SIZE.imageWidth,
+CAMERA_FRAME_SIZE.imageHeight
+)
+// Start preview to external GL texture
+// NOTE : this is necessary for callback passed to [UVCCamera.setFrameCallback]
+// to be triggered afterwards
+camera.setPreviewTexture(surfaceTexture)
+camera.startPreview()
+ 
+// Set callback that will feed frames from the USB camera to Vision SDK
+camera.setFrameCallback(
+{ frame ->
+usbVideoSourceListener?.onNewFrame(
+VideoSourceListener.FrameHolder.ByteBufferHolder(frame),
+ImageFormat.RGBA,
+CAMERA_FRAME_SIZE
+)
+},
+UVCCamera.PIXEL_FORMAT_RGBX
+)
+}
+}
+ 
+/**
+* Create external OpenGL texture for [uvcCamera].
+*/
+private fun createExternalGlTexture(): Int {
+val textures = IntArray(1)
+GLES20.glGenTextures(1, textures, 0)
+val texId = textures[0]
+GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId)
+GLES20.glTexParameterf(
+GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER,
+GLES20.GL_LINEAR.toFloat()
+)
+GLES20.glTexParameterf(
+GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER,
+GLES20.GL_LINEAR.toFloat()
+)
+GLES20.glTexParameteri(
+GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S,
+GLES20.GL_CLAMP_TO_EDGE
+)
+GLES20.glTexParameteri(
+GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T,
+GLES20.GL_CLAMP_TO_EDGE
+)
+return texId
+}
+}
+Copy
+Next steps
+Use Vision AR for Android with the implemented UsbVideoSource. For a complete example using Vision AR, see the Basic AR navigation example.
+
+Related tutorials
+Advanced
+ Java
+Build a navigation app for Android
+Integrate navigation into any Android application.
+Advanced
+ Java, Kotlin
+Draw points of interest using the Mapbox Vision SDK for Android
+Use coordinate transformations to draw a point of interest (POI) on the screen from its geolocation using the Vision SDK for Android.
+Advanced
+ Swift
+Build a navigation app for iOS
+Integrate navigation into any iOS application.
+Advanced
+ Swift
+Draw points of interest using the Mapbox Vision SDK for iOS
+Use coordinate transformations to draw a point of interest (POI) on the screen from its geolocation using the Vision SDK for iOS.
