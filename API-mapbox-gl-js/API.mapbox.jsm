@@ -21,7 +21,7 @@ forked from
 * Drag files here to add them to your repository
 * Drag additional files here to add them to your repository
 * Drop to upload your files
->
+>###'[https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp-worker.js]`
 >
 >
 * @BigGuy573
