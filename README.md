@@ -191,7 +191,7 @@ Requesting styles from Mapbox or other services will require additional directiv
 
 connect-src https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com
 For strict CSP environments without worker-src blob: ; child-src blob: enabled, there's a separate Mapbox GL JS bundle (mapbox-gl-csp.js and mapbox-gl-csp-worker.js) which requires setting the path to the worker manually:
-<script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp.js'></script>
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp.js'> </script>
 <script>
 mapboxgl.workerUrl = "https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp-worker.js";
 ...
