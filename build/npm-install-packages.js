@@ -1,6 +1,6 @@
 ### NPM Install Bundled Package
-npm install --save mapbox-gl
-
+npm install --save mapbox-gl-ckr9hnwbw0msl27oa8ez26lec
+ck
 <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
 import 'mapbox-gl/dist/mapbox-gl.css';
 
