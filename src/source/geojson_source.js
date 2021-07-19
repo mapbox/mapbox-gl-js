@@ -186,7 +186,7 @@ class GeoJSONSource extends Evented implements Source {
      * For clustered sources, fetches the zoom at which the given cluster expands.
      *
      * @param {number} clusterId The value of the cluster's `cluster_id` property.
-     * @param {Callback<number>} callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
+     * @param {Function} callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
      * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * // Assuming the map has a layer named 'clusters' and a source 'earthquakes'
@@ -221,7 +221,7 @@ class GeoJSONSource extends Evented implements Source {
      * For clustered sources, fetches the children of the given cluster on the next zoom level (as an array of GeoJSON features).
      *
      * @param {number} clusterId The value of the cluster's `cluster_id` property.
-     * @param {Callback<Array<GeoJSONFeature>>} callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
+     * @param {Function} callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
      * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * // Retrieve cluster children on click
@@ -251,7 +251,7 @@ class GeoJSONSource extends Evented implements Source {
      * @param {number} clusterId The value of the cluster's `cluster_id` property.
      * @param {number} limit The maximum number of features to return. Defaults to `10` if a falsy value is given.
      * @param {number} offset The number of features to skip (for example, for pagination). Defaults to `0` if a falsy value is given.
-     * @param {Callback<Array<GeoJSONFeature>>} callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
+     * @param {Function} callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
      * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * // Retrieve cluster leaves on click

@@ -491,9 +491,9 @@ export default class Popup extends Evented {
      *    'top-right': ?PointLike,
      *    'bottom-left': ?PointLike,
      *    'bottom-right': ?PointLike
-     * }
+     * }.
      *
-     * @returns {Popup} `this`
+     * @returns {Popup} `this`.
      * @example
      * popup.setOffset(10);
      */
