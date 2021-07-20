@@ -7,6 +7,7 @@ varying float v_fog_opacity;
 
 void main() {
     vec4 color = texture2D(u_image0, v_pos0);
+    color.a = 0.5;
 //#ifdef FOG
 //    color.rgb = fog_dither(fog_apply_from_vert(color.rgb, v_fog_opacity));
 //#endif

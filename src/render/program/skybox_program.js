@@ -15,6 +15,7 @@ import type Context from '../../gl/context.js';
 export type SkyboxUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_sun_direction': Uniform3f,
+    'u_camera_pos': Uniform3f,
     'u_cubemap': Uniform1i,
     'u_opacity': Uniform1f,
     'u_temporal_offset': Uniform1f
@@ -32,6 +33,7 @@ export type SkyboxGradientlUniformsType = {|
 const skyboxUniforms = (context: Context, locations: UniformLocations): SkyboxUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_sun_direction': new Uniform3f(context, locations.u_sun_direction),
+    'u_camera_pos': new Uniform3f(context, locations.u_camera_pos),
     'u_cubemap': new Uniform1i(context, locations.u_cubemap),
     'u_opacity': new Uniform1f(context, locations.u_opacity),
     'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset)
@@ -43,10 +45,12 @@ const skyboxUniformValues = (
     sunDirection: vec3,
     cubemap: number,
     opacity: number,
-    temporalOffset: number
+    temporalOffset: number,
+    cameraPos: vec3
 ): UniformValues<SkyboxUniformsType> => ({
     'u_matrix': matrix,
     'u_sun_direction': sunDirection,
+    'u_camera_pos': cameraPos,
     'u_cubemap': cubemap,
     'u_opacity': opacity,
     'u_temporal_offset': temporalOffset

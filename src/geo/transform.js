@@ -740,7 +740,7 @@ class Transform {
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation ? z : 0;
-        
+
         // Compute size of the globe in tiles, ie. worldSize / tileSize
         //const radiusInTiles = numTiles / (2.0 * Math.PI);
         const globeMatrix = this.calculateGlobeMatrix(numTiles);
@@ -1476,7 +1476,7 @@ class Transform {
 
         if (decode)
             return mat4.multiply([], posMatrix, this.decodeMatrix(unwrappedTileID));
-        
+
         return posMatrix;
     }
 
@@ -1721,7 +1721,7 @@ class Transform {
         const halfFov = this._fov / 2;
         const offset = this.centerOffset;
         const pixelsPerMeter = 1.0;// this.pixelsPerMeter;
-        
+
         const altitudeScaler = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * (1.0 - altitudeScaler);
 

@@ -27,7 +27,7 @@
 <script>
 
 var GUIParams = function() {
-    this.enableFog = true;
+    this.enableFog = false;
     this.enableTerrain = true;
     this.freezeTileCoverage = false;
     this.enableSky = true;
@@ -193,16 +193,7 @@ map.on('style.load', function() {
         'type': 'sky',
         'paint': {
             'sky-type': 'atmosphere',
-            'sky-gradient-center': [90, 3],
-            'sky-opacity': [
-                'interpolate',
-                ['exponential', 0.1],
-                ['zoom'],
-                5,
-                0,
-                22,
-                1
-            ]
+            'sky-gradient-center': [90, 3]
         }
     });
 

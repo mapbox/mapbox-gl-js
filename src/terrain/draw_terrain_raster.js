@@ -398,7 +398,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                 } else {
                     poleVB.updateData(mesh);
                 }
-            
+
                 const poleMatrix = mat4.identity(new Float64Array(16));
 
                 mat4.translate(poleMatrix, poleMatrix, [point.x, point.y, -(ws / Math.PI / 2.0)]);
@@ -409,7 +409,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                 if (coord.canonical.y === tiles - 1) {
                     mat4.scale(poleMatrix, poleMatrix, [1, -1, 1]);
                 }
-                
+
                 mat4.multiply(poleMatrix, tr.projMatrix, poleMatrix);
 
                 const unis = globeRasterUniformValues(

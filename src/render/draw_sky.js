@@ -9,6 +9,7 @@ import Texture from './texture.js';
 import Program from './program.js';
 import type SourceCache from '../source/source_cache.js';
 import SkyboxGeometry from './skybox_geometry.js';
+import {altitudeFromMercatorZ} from '../geo/mercator_coordinate.js';
 import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program.js';
 import {skyboxCaptureUniformValues} from './program/skybox_capture_program.js';
 import SkyLayer from '../style/style_layer/sky_style_layer.js';
@@ -89,7 +90,12 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
 
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
 
-    const uniformValues = skyboxUniformValues(transform.skyboxMatrix, layer.getCenter(painter, false), 0, opacity, temporalOffset);
+    const cameraAltitude = altitudeFromMercatorZ(transform._camera.position[2], transform._camera.position[1]);
+
+    const uniformValues = skyboxUniformValues(
+        transform.skyboxMatrix,
+        layer.getCenter(painter, false),
+        0, opacity, temporalOffset, [transform._camera.position[0], transform._camera.position[1], cameraAltitude]);
 
     painter.prepareDrawProgram(context, program);
 
