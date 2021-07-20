@@ -264,7 +264,7 @@ export default class Popup extends Evented {
     /**
      * Sets the geographical location of the popup's anchor, and moves the popup to it. Replaces trackPointer() behavior.
      *
-     * @param lnglat The geographical location to set as the popup's anchor.
+     * @param {LngLatLike} lnglat The geographical location to set as the popup's anchor.
      * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * popup.setLngLat([-122.4194, 37.7749]);
@@ -342,7 +342,7 @@ export default class Popup extends Evented {
      * so it cannot insert raw HTML. Use this method for security against XSS
      * if the popup content is user-provided.
      *
-     * @param text Textual content for the popup.
+     * @param {string} text Textual content for the popup.
      * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * const popup = new mapboxgl.Popup()
@@ -361,7 +361,7 @@ export default class Popup extends Evented {
      * used only with trusted content. Consider {@link Popup#setText} if
      * the content is an untrusted text string.
      *
-     * @param html A string representing HTML content for the popup.
+     * @param {string} html A string representing HTML content for the popup.
      * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * const popup = new mapboxgl.Popup()
@@ -402,7 +402,7 @@ export default class Popup extends Evented {
      * Sets the popup's maximum width. This is setting the CSS property `max-width`.
      * Available values can be found here: https://developer.mozilla.org/en-US/docs/Web/CSS/max-width.
      *
-     * @param maxWidth A string representing the value for the maximum width.
+     * @param {string} maxWidth A string representing the value for the maximum width.
      * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * popup.setMaxWidth('50');
@@ -416,7 +416,7 @@ export default class Popup extends Evented {
     /**
      * Sets the popup's content to the element provided as a DOM node.
      *
-     * @param htmlNode A DOM node to be used as content for the popup.
+     * @param {Element} htmlNode A DOM node to be used as content for the popup.
      * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * // create an element with the popup content
@@ -480,8 +480,20 @@ export default class Popup extends Evented {
     /**
      * Sets the popup's offset.
      *
-     * @param offset Sets the popup's offset.
-     * @returns {Popup} Returns itself to allow for method chaining.
+     * @param {number | PointLike | Object} offset Sets the popup's offset. The `Object` is of the following structure
+     * {
+     *    'center': ?PointLike,
+     *    'top': ?PointLike,
+     *    'bottom': ?PointLike,
+     *    'left': ?PointLike,
+     *    'right': ?PointLike,
+     *    'top-left': ?PointLike,
+     *    'top-right': ?PointLike,
+     *    'bottom-left': ?PointLike,
+     *    'bottom-right': ?PointLike
+     * }.
+     *
+     * @returns {Popup} `this`.
      * @example
      * popup.setOffset(10);
      */
