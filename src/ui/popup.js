@@ -443,7 +443,9 @@ export default class Popup extends Evented {
     addClassName(className: string) {
         if (this._container) {
             this._container.classList.add(className);
-        }
+        } else if (this.options.className && this.options.className !== ``) {
+            this.options.className += ` ${className}`;
+        } else { this.options.className = className; }
     }
 
     /**
