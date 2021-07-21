@@ -499,9 +499,8 @@ export default class Popup extends Evented {
     toggleClassName(className: string) {
         if (this._container) {
             return this._container.classList.toggle(className);
-        } else {
-            console.warn(`toggleClassName() has no effect before the popup is added to a map.`);
         }
+        console.warn(`toggleClassName() has no effect before the popup is added to a map.`);
     }
 
     _createCloseButton() {
