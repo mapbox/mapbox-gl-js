@@ -814,7 +814,7 @@ export type MapEvent =
      * @event movestart
      * @memberof Map
      * @instance
-     * @type {{originalEvent: DragEvent}}
+     * @type {DragEvent}
      * @example
      * // Initialize the map.
      * const map = new mapboxgl.Map({});
