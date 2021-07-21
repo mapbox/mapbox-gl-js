@@ -455,9 +455,9 @@ export default class Popup extends Evented {
      *
      * @example
      * const popup = new mapboxgl.Popup({className: 'some classes'})
-        .setText('Popup')
-        .setLngLat([0, 0])
-        .addTo(map);
+     *   .setText('Popup')
+     *   .setLngLat([0, 0])
+     *   .addTo(map);
      * popup.removeClassName('some')
      */
     removeClassName(className: string) {
@@ -490,9 +490,9 @@ export default class Popup extends Evented {
      * @example
      * let popup = new mapboxgl.Popup()
      * const popup = new mapboxgl.Popup({className: 'highlighted'})
-        .setText('Popup')
-        .setLngLat([0, 0])
-        .addTo(map);
+     *   .setText('Popup')
+     *   .setLngLat([0, 0])
+     *   .addTo(map);
      * popup.toggleClassName('highlighted')
      * popup.toggleClassName('highlighted')
      */
