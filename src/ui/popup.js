@@ -454,8 +454,11 @@ export default class Popup extends Evented {
      * @param {string} className Non-empty string with CSS class name to remove from popup container
      *
      * @example
-     * let popup = new mapboxgl.Popup()
-     * popup.removeClassName('some-class')
+     * const popup = new mapboxgl.Popup({className: 'some classes'})
+        .setText('Popup')
+        .setLngLat([0, 0])
+        .addTo(map);
+     * popup.removeClassName('some')
      */
     removeClassName(className: string) {
         if (this._container) {
@@ -484,7 +487,12 @@ export default class Popup extends Evented {
      *
      * @example
      * let popup = new mapboxgl.Popup()
-     * popup.toggleClassName('toggleClass')
+     * const popup = new mapboxgl.Popup({className: 'highlighted'})
+        .setText('Popup')
+        .setLngLat([0, 0])
+        .addTo(map);
+     * popup.toggleClassName('highlighted')
+     * popup.toggleClassName('highlighted')
      */
     toggleClassName(className: string) {
         if (this._container) {
