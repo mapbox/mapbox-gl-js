@@ -1203,7 +1203,7 @@ class Camera extends Evented {
      * the user maintain their bearings even after traversing a great distance.
      *
      * If a user has the `reduced motion` accessibility feature enabled in their
-     * operating system, the animation will be skipped and this will behave 
+     * operating system, the animation will be skipped and this will behave
      * equivalently to `jumpTo`, unless 'options' includes `essential: true`.
      *
      * @memberof Map#
