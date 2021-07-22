@@ -2,8 +2,6 @@
 import ValidationError from '../error/validation_error.js';
 import validate from './validate.js';
 import getType from '../util/get_type.js';
-import {isExpression} from '../expression/index.js';
-import {deepUnbundle} from '../util/unbundle_jsonlint.js';
 
 export default function validateFog(options) {
     const fog = options.value;
@@ -18,10 +16,6 @@ export default function validateFog(options) {
     } else if (rootType !== 'object') {
         errors = errors.concat([new ValidationError('fog', fog, `object expected, ${rootType} found`)]);
         return errors;
-    }
-
-    if (fog.range && !isExpression(deepUnbundle(fog.range)) && fog.range[0] >= fog.range[1]) {
-        errors = errors.concat([new ValidationError('fog', fog, 'fog.range[0] can\'t be greater than or equal to fog.range[1]')]);
     }
 
     for (const key in fog) {

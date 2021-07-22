@@ -616,7 +616,9 @@
           "doc": "A spherical dome around the map that is always rendered behind all other layers.",
           "sdk-support": {
             "basic functionality": {
-              "js": "2.0.0"
+              "js": "2.0.0",
+              "ios": "10.0.0",
+              "android": "10.0.0"
             }
           }
         }
@@ -712,7 +714,9 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "property-type": "constant"
@@ -1854,7 +1858,12 @@
       "units": "ems",
       "doc": "The maximum line width for text wrapping.",
       "requires": [
-        "text-field"
+        "text-field",
+        {
+          "symbol-placement": [
+            "point"
+          ]
+        }
       ],
       "sdk-support": {
         "basic functionality": {
@@ -2173,20 +2182,15 @@
       "value": "enum",
       "values": {
         "horizontal": {
-          "doc": "If a text's language supports horizontal writing mode, symbols with point placement would be laid out horizontally."
+          "doc": "If a text's language supports horizontal writing mode, symbols would be laid out horizontally."
         },
         "vertical": {
-          "doc": "If a text's language supports vertical writing mode, symbols with point placement would be laid out vertically."
+          "doc": "If a text's language supports vertical writing mode, symbols would be laid out vertically."
         }
       },
-      "doc": "The property allows control over a symbol's orientation. Note that the property values act as a hint, so that a symbol whose language doesn’t support the provided orientation will be laid out in its natural orientation. Example: English point symbol will be rendered horizontally even if array value contains single 'vertical' enum value. The order of elements in an array define priority order for the placement of an orientation variant.",
+      "doc": "The property allows control over a symbol's orientation. Note that the property values act as a hint, so that a symbol whose language doesn’t support the provided orientation will be laid out in its natural orientation. Example: English point symbol will be rendered horizontally even if array value contains single 'vertical' enum value. For symbol with point placement, the order of elements in an array define priority order for the placement of an orientation variant. For symbol with line placement, the default text writing mode is either ['horizontal', 'vertical'] or ['vertical', 'horizontal'], the order doesn't affect the placement.",
       "requires": [
-        "text-field",
-        {
-          "symbol-placement": [
-            "point"
-          ]
-        }
+        "text-field"
       ],
       "sdk-support": {
         "basic functionality": {
@@ -2726,7 +2730,7 @@
         }
       },
       "in": {
-        "doc": "Determines whether an item exists in an array or a substring exists in a string.",
+        "doc": "Determines whether an item exists in an array or a substring exists in a string. In the specific case when the second and third arguments are string literals, you must wrap at least one of them in a [`literal`](#types-literal) expression to hint correct interpretation to the [type system](#type-system).",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
@@ -2994,7 +2998,10 @@
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.54.0"
+            "js": "0.54.0",
+            "android" : "8.4.0",
+            "ios": "5.4.0",
+            "macos": "0.15.0"
           }
         }
       },
@@ -3140,7 +3147,7 @@
         }
       },
       "geometry-type": {
-        "doc": "Gets the feature's geometry type: `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`.",
+        "doc": "Gets the feature's geometry type: `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`. `Multi*` feature types are only returned in GeoJSON sources. When working with vector tile sources, use the singular forms.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -3204,7 +3211,9 @@
         "group": "sky",
         "sdk-support": {
           "basic functionality": {
-            "js": "2.0.0"
+            "js": "2.0.0",
+            "ios": "10.0.0",
+            "android": "10.0.0"
           }
         }
       },
@@ -3231,7 +3240,10 @@
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.53.0"
+            "js": "0.53.0",
+            "android": "8.4.0",
+            "ios": "5.5.0",
+            "macos": "0.15.0"
           }
         }
       },
@@ -3910,7 +3922,9 @@
       "required": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       }
     },
@@ -3930,7 +3944,9 @@
       "doc": "Exaggerates the elevation of the terrain by multiplying the data from the DEM with this value.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       }
     }
@@ -4371,6 +4387,7 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.50.0",
+          "android": "7.0.0",
           "ios": "4.7.0",
           "macos": "0.13.0"
         }
@@ -6079,7 +6096,9 @@
       "doc": "The type of the sky",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "expression": {
@@ -6101,7 +6120,9 @@
       "doc": "Position of the sun center [a azimuthal angle, p polar angle]. The azimuthal angle indicates the position of the sun relative to 0° north, where degrees proceed clockwise. The polar angle indicates the height of the sun, where 0° is directly above, at zenith, and 90° at the horizon. When this property is ommitted, the sun center is directly inherited from the light position.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "requires": [
@@ -6131,7 +6152,9 @@
       "doc": "Intensity of the sun as a light source in the atmosphere (on a scale from 0 to a 100). Setting higher values will brighten up the sky.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "property-type": "data-constant"
@@ -6156,7 +6179,9 @@
       "doc": "Position of the gradient center [a azimuthal angle, p polar angle]. The azimuthal angle indicates the position of the gradient center relative to 0° north, where degrees proceed clockwise. The polar angle indicates the height of the gradient center, where 0° is directly above, at zenith, and 90° at the horizon.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "expression": {
@@ -6181,7 +6206,9 @@
       "doc": "The angular distance (measured in degrees) from `sky-gradient-center` up to which the gradient extends. A value of 180 causes the gradient to wrap around to the opposite direction from `sky-gradient-center`.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "expression": {
@@ -6216,7 +6243,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         },
         "data-driven styling": {}
       },
@@ -6240,7 +6269,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "property-type": "data-constant"
@@ -6257,7 +6288,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "property-type": "data-constant"
@@ -6271,7 +6304,9 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "2.0.0"
+          "js": "2.0.0",
+          "ios": "10.0.0",
+          "android": "10.0.0"
         }
       },
       "expression": {

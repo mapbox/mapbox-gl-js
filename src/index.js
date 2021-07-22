@@ -92,7 +92,7 @@ const exported = {
      * @returns {string} The currently set access token.
      * @example
      * mapboxgl.accessToken = myAccessToken;
-     * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
+     * @see [Example: Display a map](https://www.mapbox.com/mapbox-gl-js/example/simple-map/)
      */
     get accessToken(): ?string {
         return config.ACCESS_TOKEN;
@@ -173,7 +173,23 @@ const exported = {
     clearStorage(callback?: (err: ?Error) => void) {
         clearTileCache(callback);
     },
-
+    /**
+     * Provides an interface for loading mapbox-gl's WebWorker bundle from a self-hosted URL.
+     * This needs to be set only once, and before any call to `new mapboxgl.Map(..)` takes place.
+     * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
+     * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
+     *
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     *
+     * @var {string} workerUrl
+     * @returns {string} A URL hosting a JavaScript bundle for mapbox-gl's WebWorker.
+     * @example
+     * <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp.js'></script>
+     * <script>
+     * mapboxgl.workerUrl = "https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp-worker.js";
+     * ...
+     * </script>
+     */
     workerUrl: '',
 
     /**
@@ -208,10 +224,11 @@ const exported = {
 Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics, getPerformanceMetricsAsync: WorkerPerformanceUtils.getPerformanceMetricsAsync});
 
 /**
- * The version of Mapbox GL JS in use as specified in `package.json`,
+ * Gets the version of Mapbox GL JS in use as specified in `package.json`,
  * `CHANGELOG.md`, and the GitHub release.
- *
  * @var {string} version
+ * @example
+ * console.log(`Mapbox GL JS v${mapboxgl.version}`);
  */
 
 /**
@@ -228,7 +245,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * if (!mapboxgl.supported()) {
  *   alert('Your browser does not support Mapbox GL');
  * }
- * @see [Check for browser support](https://www.mapbox.com/mapbox-gl-js/example/check-for-support/)
+ * @see [Example: Check for browser support](https://www.mapbox.com/mapbox-gl-js/example/check-for-support/)
  */
 
 /**
@@ -242,7 +259,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  *    rtl text will then be rendered only after the plugin finishes loading.
  * @example
  * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
- * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
+ * @see [Example: Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
  */
 
 /**

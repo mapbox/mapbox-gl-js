@@ -12,6 +12,7 @@ import type EvaluationParameters from './evaluation_parameters.js';
 import type {TransitionParameters} from './properties.js';
 import type LngLat from '../geo/lng_lat.js';
 import type Transform from '../geo/transform.js';
+import type {StyleSetterOptions} from '../style/style.js';
 import type {FogState} from './fog_helpers.js';
 
 type Props = {|
@@ -52,8 +53,8 @@ class Fog extends Evented {
         return this._transitionable.serialize();
     }
 
-    set(fog?: FogSpecification) {
-        if (this._validate(validateFog, fog)) {
+    set(fog?: FogSpecification, options: StyleSetterOptions = {}) {
+        if (this._validate(validateFog, fog, options)) {
             return;
         }
 

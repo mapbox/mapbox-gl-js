@@ -5,7 +5,7 @@ import {AlphaImage} from '../util/image.js';
 import {register} from '../util/web_worker_transfer.js';
 import potpack from 'potpack';
 
-import type {GlyphMetrics, StyleGlyph} from '../style/style_glyph.js';
+import type {StyleGlyph} from '../style/style_glyph.js';
 
 const glyphPadding = 1;
 /*
@@ -17,34 +17,31 @@ const glyphPadding = 1;
 */
 const localGlyphPadding = glyphPadding * SDF_SCALE;
 
-export type Rect = {
+export type GlyphRect = {
     x: number,
     y: number,
     w: number,
     h: number
 };
+// {glyphID: glyphRect}
+export type GlyphPositionMap = { [_: number]: GlyphRect };
 
-export type GlyphPosition = {
-    rect: Rect,
-    metrics: GlyphMetrics
-};
-
-export type GlyphPositions = {[_: string]: {[_: number]: GlyphPosition } }
+// {fontStack: glyphPoistionMap}
+export type GlyphPositions = { [_: string]: GlyphPositionMap };
 
 export default class GlyphAtlas {
     image: AlphaImage;
     positions: GlyphPositions;
-
-    constructor(stacks: {[_: string]: {[_: number]: ?StyleGlyph } }) {
+    constructor(stacks: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph }, ascender?: number, descender?: number }}) {
         const positions = {};
         const bins = [];
 
         for (const stack in stacks) {
-            const glyphs = stacks[stack];
-            const stackPositions = positions[stack] = {};
+            const glyphData = stacks[stack];
+            const glyphPositionMap = positions[stack] = {};
 
-            for (const id in glyphs) {
-                const src = glyphs[+id];
+            for (const id in glyphData.glyphs) {
+                const src = glyphData.glyphs[+id];
                 if (!src || src.bitmap.width === 0 || src.bitmap.height === 0) continue;
 
                 const padding = src.metrics.localGlyph ? localGlyphPadding : glyphPadding;
@@ -55,7 +52,7 @@ export default class GlyphAtlas {
                     h: src.bitmap.height + 2 * padding
                 };
                 bins.push(bin);
-                stackPositions[id] = {rect: bin, metrics: src.metrics};
+                glyphPositionMap[id] = bin;
             }
         }
 
@@ -63,12 +60,12 @@ export default class GlyphAtlas {
         const image = new AlphaImage({width: w || 1, height: h || 1});
 
         for (const stack in stacks) {
-            const glyphs = stacks[stack];
+            const glyphData = stacks[stack];
 
-            for (const id in glyphs) {
-                const src = glyphs[+id];
+            for (const id in glyphData.glyphs) {
+                const src = glyphData.glyphs[+id];
                 if (!src || src.bitmap.width === 0 || src.bitmap.height === 0) continue;
-                const bin = positions[stack][id].rect;
+                const bin = positions[stack][id];
                 const padding = src.metrics.localGlyph ? localGlyphPadding : glyphPadding;
                 AlphaImage.copy(src.bitmap, image, {x: 0, y: 0}, {x: bin.x + padding, y: bin.y + padding}, src.bitmap);
             }
