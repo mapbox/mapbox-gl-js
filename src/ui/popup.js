@@ -113,7 +113,8 @@ export default class Popup extends Evented {
         super();
         this.options = extend(Object.create(defaultOptions), options);
         bindAll(['_update', '_onClose', 'remove', '_onMouseMove', '_onMouseUp', '_onDrag'], this);
-        this._classList = new Set(options && options.className ? options.className.split(` `) : []);
+        this._classList = new Set(options && options.className ?
+            options.className.trim().split(/\s+/) : []);
     }
 
     /**
