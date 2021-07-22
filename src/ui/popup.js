@@ -107,11 +107,13 @@ export default class Popup extends Evented {
     _lngLat: LngLat;
     _trackPointer: boolean;
     _pos: ?Point;
+    _classList: Set<string>;
 
     constructor(options: PopupOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
         bindAll(['_update', '_onClose', 'remove', '_onMouseMove', '_onMouseUp', '_onDrag'], this);
+        this._classList = new Set(options && options.className ? options.className.split(` `) : []);
     }
 
     /**
@@ -435,17 +437,18 @@ export default class Popup extends Evented {
      * Adds a CSS class to the popup container element.
      *
      * @param {string} className Non-empty string with CSS class name to add to popup container
+     * @returns {Popup} `this`
      *
      * @example
      * let popup = new mapboxgl.Popup()
      * popup.addClassName('some-class')
      */
     addClassName(className: string) {
+        this._classList.add(className);
         if (this._container) {
             this._container.classList.add(className);
-        } else if (this.options.className) {
-            this.options.className += ` ${className}`;
-        } else { this.options.className = className; }
+        }
+        return this;
     }
 
     /**
@@ -453,19 +456,17 @@ export default class Popup extends Evented {
      *
      * @param {string} className Non-empty string with CSS class name to remove from popup container
      *
+     * @returns {Popup} `this`
      * @example
      * const popup = new mapboxgl.Popup({className: 'some classes'})
-     *   .setText('Popup')
-     *   .setLngLat([0, 0])
-     *   .addTo(map);
      * popup.removeClassName('some')
      */
     removeClassName(className: string) {
+        this._classList.delete(className);
         if (this._container) {
             this._container.classList.remove(className);
-        } else {
-            console.warn(`removeClassName() has no effect before the popup is added to a map.`);
         }
+        return this;
     }
 
     /**
@@ -489,18 +490,18 @@ export default class Popup extends Evented {
      *
      * @example
      * let popup = new mapboxgl.Popup()
-     * const popup = new mapboxgl.Popup({className: 'highlighted'})
-     *   .setText('Popup')
-     *   .setLngLat([0, 0])
-     *   .addTo(map);
-     * popup.toggleClassName('highlighted')
      * popup.toggleClassName('highlighted')
      */
     toggleClassName(className: string) {
         if (this._container) {
-            return this._container.classList.toggle(className);
+            this._container.classList.toggle(className);
         }
-        console.warn(`toggleClassName() has no effect before the popup is added to a map.`);
+        if (this._classList.has(className)) {
+            this._classList.delete(className);
+            return false;
+        }
+        this._classList.add(className);
+        return true;
     }
 
     _createCloseButton() {
@@ -534,8 +535,8 @@ export default class Popup extends Evented {
             this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
-            if (this.options.className) {
-                this.options.className.split(' ').forEach(name =>
+            if (this._classList) {
+                this._classList.forEach(name =>
                     this._container.classList.add(name));
             }
 
