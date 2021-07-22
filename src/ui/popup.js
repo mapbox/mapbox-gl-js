@@ -438,7 +438,7 @@ export default class Popup extends Evented {
      * Adds a CSS class to the popup container element.
      *
      * @param {string} className Non-empty string with CSS class name to add to popup container
-     * @returns {Popup} `this`
+     * @returns {Popup} Returns itself to allow for method chaining.
      *
      * @example
      * let popup = new mapboxgl.Popup()
@@ -457,7 +457,7 @@ export default class Popup extends Evented {
      *
      * @param {string} className Non-empty string with CSS class name to remove from popup container
      *
-     * @returns {Popup} `this`
+     * @returns {Popup} Returns itself to allow for method chaining.
      * @example
      * const popup = new mapboxgl.Popup({className: 'some classes'})
      * popup.removeClassName('some')
