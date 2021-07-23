@@ -6,26 +6,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
-        body { margin: 0; padding: 0; }
+        body { margin: 0; padding: 0; background: #eee}
         html, body, #map { height: 100%; }
+        #map1, #map2, #map3{
+            display: inline-block;
+            width: 1200px;
+            height: 1200px;
+                background: white;
+        }
     </style>
 </head>
 
 <body>
-<div id='map'></div>
+<div id='map1'></div>
+<br>
+<div id='map2'></div>
+<div id='map3'></div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
-var map = window.map = new mapboxgl.Map({
-    container: 'map',
-    zoom: 12.5,
-    center: [-122.4194, 37.7749],
-    style: 'mapbox://styles/mapbox/streets-v10',
+/*
+            display: inline-block;
+            */
+    var zoom = 12.5;
+    var center = [-122.4194, 37.7749];
+var pitch = 60;
+var bearing = 0;
+    var style = 'mapbox://styles/mapbox/streets-v11';
+    style = 'mapbox://styles/mapbox/navigation-day-v1';
+
+const factor = 2;
+
+var map1 = window.map = new mapboxgl.Map({
+    scaleFactor: 1,
+    sizeFactor: 1,
+    container: 'map1',
+    zoom,
+    pitch,
+    bearing,
+    center,
+    style,
     hash: true
 });
 
+zoom = map1.getZoom();
+center = map1.getCenter();
+    pitch = map1.getPitch();
+bearing = map1.getBearing();
+
+var map2 = window.map = new mapboxgl.Map({
+    scaleFactor: 1,
+    sizeFactor: factor,
+    container: 'map2',
+    zoom,
+    pitch,
+    bearing,
+    center,
+    style
+});
+
+var map2 = window.map = new mapboxgl.Map({
+    scaleFactor: factor,
+    sizeFactor: 1,
+    container: 'map3',
+    zoom: zoom - 1,
+    pitch,
+    bearing,
+    center,
+    style
+});
+
+</script>
+</body>
+</script>
+</body>
 </script>
 </body>
 </html>

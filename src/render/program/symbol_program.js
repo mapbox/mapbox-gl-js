@@ -190,7 +190,8 @@ const symbolSDFUniformValues = (
     glCoordMatrix: Float32Array,
     isText: boolean,
     texSize: [number, number],
-    isHalo: boolean
+    isHalo: boolean,
+    scaleFactor
 ): UniformValues<SymbolSDFUniformsType> => {
     const {cameraToCenterDistance, _pitch} = painter.transform;
 
@@ -198,7 +199,7 @@ const symbolSDFUniformValues = (
         rotateInShader, pitchWithMap, painter, matrix, labelPlaneMatrix,
         glCoordMatrix, isText, texSize), {
         'u_gamma_scale': pitchWithMap ? cameraToCenterDistance * Math.cos(painter.terrain ? 0 : _pitch) : 1,
-        'u_device_pixel_ratio': browser.devicePixelRatio,
+        'u_device_pixel_ratio': browser.devicePixelRatio * (painter.scaleFactor),
         'u_is_halo': +isHalo
     });
 };

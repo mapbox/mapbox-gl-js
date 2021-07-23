@@ -421,6 +421,8 @@ class Map extends Camera {
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
+        this._sizeFactor = options.sizeFactor || 1;
+        this._scaleFactor = options.scaleFactor || 1;
         this._interactive = options.interactive;
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
@@ -646,7 +648,7 @@ class Map extends Camera {
         const height = dimensions[1];
 
         this._resizeCanvas(width, height);
-        this.transform.resize(width, height);
+        this.transform.resize(width / this._scaleFactor, height / this._scaleFactor);
         this.painter.resize(width, height);
 
         const fireMoving = !this._moving;
@@ -2529,6 +2531,8 @@ class Map extends Camera {
         storeAuthState(gl, true);
 
         this.painter = new Painter(gl, this.transform);
+        this.painter.scaleFactor = this._scaleFactor;
+        console.log(this.painter.scaleFactor);
         this.on('data', (event: MapDataEvent) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);

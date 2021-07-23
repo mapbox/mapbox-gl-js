@@ -294,7 +294,43 @@ class Style extends Evented {
         }
 
         this._loaded = true;
+
         this.stylesheet = json;
+
+        const wrap = (object, name) => {
+            if (!object[name]) return;
+
+            const val = object[name];
+            if (val[0] === "interpolate") {
+                for (let i = 4; i < val.length; i += 2) {
+                    wrap(val, i);
+                }
+            } else if (val[0] === "step" && val[1][0] === "zoom") {
+                for (let i = 2; i < val.length; i += 2) {
+                    wrap(val, i);
+                }
+            } else {
+                if (typeof val === 'number') {
+                    object[name] = this.map._sizeFactor * val;
+                } else {
+                    object[name] = ["*", this.map._sizeFactor, object[name]];
+                }
+            }
+        };
+
+        for (const layer of this.stylesheet.layers) {
+            if (layer.type === 'symbol') {
+                if (!layer.layout['icon-size']) layer.layout['icon-size'] = 1;
+                wrap(layer.layout, ['icon-size']);
+                wrap(layer.layout, ['text-size']);
+                wrap(layer.layout, ['text-halo-blur']);
+                wrap(layer.layout, ['text-halo-width']);
+                wrap(layer.layout, ['symbol-spacing']);
+            } else if (layer.type === 'line') {
+                wrap(layer.paint, ['line-width']);
+                wrap(layer.paint, ['line-gap-width']);
+            }
+        }
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
