@@ -39,6 +39,7 @@ class EdgeInsets {
      * Interpolates the inset in-place.
      * This maintains the current inset value for any inset not present in `target`.
      *
+     * @private
      * @param {PaddingOptions | EdgeInsets} start The initial padding options.
      * @param {PaddingOptions} target The target padding options.
      * @param {number} t The interpolation variable.
@@ -58,6 +59,7 @@ class EdgeInsets {
      * Utility method that computes the new apprent center or vanishing point after applying insets.
      * This is in pixels and with the top left being (0.0) and +y being downwards.
      *
+     * @private
      * @param {number} width The width of the map in pixels.
      * @param {number} height The height of the map in pixels.
      * @returns {Point} The apparent center or vanishing point of the map.
@@ -86,6 +88,7 @@ class EdgeInsets {
      * Returns the current state as json, useful when you want to have a
      * read-only representation of the inset.
      *
+     * @private
      * @returns {PaddingOptions} The current padding options.
      * @memberof EdgeInsets
      */

@@ -59,7 +59,7 @@ export function mercatorScale(lat: number) {
  *
  * `MercatorCoordinate` uses the web mercator projection ([EPSG:3857](https://epsg.io/3857)) with slightly different units:
  * - the size of 1 unit is the width of the projected world instead of the "mercator meter"
- * - the origin of the coordinate space is at the north-west corner instead of the middle
+ * - the origin of the coordinate space is at the north-west corner instead of the middle.
  *
  * For example, `MercatorCoordinate(0, 0, 0)` is the north-west corner of the mercator world and
  * `MercatorCoordinate(1, 1, 0)` is the south-east corner. If you are familiar with
@@ -72,9 +72,9 @@ export function mercatorScale(lat: number) {
  * @param {number} y The y component of the position.
  * @param {number} z The z component of the position.
  * @example
- * var nullIsland = new mapboxgl.MercatorCoordinate(0.5, 0.5, 0);
+ * const nullIsland = new mapboxgl.MercatorCoordinate(0.5, 0.5, 0);
  *
- * @see [Add a custom style layer](https://www.mapbox.com/mapbox-gl-js/example/custom-style-layer/)
+ * @see [Example: Add a custom style layer](https://www.mapbox.com/mapbox-gl-js/example/custom-style-layer/)
  */
 class MercatorCoordinate {
     x: number;
@@ -94,8 +94,8 @@ class MercatorCoordinate {
      * @param {number} altitude The altitude in meters of the position.
      * @returns {MercatorCoordinate} The projected mercator coordinate.
      * @example
-     * var coord = mapboxgl.MercatorCoordinate.fromLngLat({ lng: 0, lat: 0}, 0);
-     * coord; // MercatorCoordinate(0.5, 0.5, 0)
+     * const coord = mapboxgl.MercatorCoordinate.fromLngLat({lng: 0, lat: 0}, 0);
+     * console.log(coord); // MercatorCoordinate(0.5, 0.5, 0)
      */
     static fromLngLat(lngLatLike: LngLatLike, altitude: number = 0) {
         const lngLat = LngLat.convert(lngLatLike);
@@ -111,8 +111,8 @@ class MercatorCoordinate {
      *
      * @returns {LngLat} The `LngLat` object.
      * @example
-     * var coord = new mapboxgl.MercatorCoordinate(0.5, 0.5, 0);
-     * var lngLat = coord.toLngLat(); // LngLat(0, 0)
+     * const coord = new mapboxgl.MercatorCoordinate(0.5, 0.5, 0);
+     * const lngLat = coord.toLngLat(); // LngLat(0, 0)
      */
     toLngLat() {
         return new LngLat(
@@ -125,7 +125,7 @@ class MercatorCoordinate {
      *
      * @returns {number} The altitude in meters.
      * @example
-     * var coord = new mapboxgl.MercatorCoordinate(0, 0, 0.02);
+     * const coord = new mapboxgl.MercatorCoordinate(0, 0, 0.02);
      * coord.toAltitude(); // 6914.281956295339
      */
     toAltitude() {
@@ -139,6 +139,12 @@ class MercatorCoordinate {
      * to transform into `MercatorCoordinate`s.
      *
      * @returns {number} Distance of 1 meter in `MercatorCoordinate` units.
+     * @example
+     * // Calculate a new MercatorCoordinate that is 150 meters west of the other coord.
+     * const coord = new mapboxgl.MercatorCoordinate(0.5, 0.25, 0);
+     * const offsetInMeters = 150;
+     * const offsetInMercatorCoordinateUnits = offsetInMeters * coord.meterInMercatorCoordinateUnits();
+     * const westCoord = new mapboxgl.MercatorCoordinate(coord.x - offsetInMercatorCoordinateUnits, coord.y, coord.z);
      */
     meterInMercatorCoordinateUnits() {
         // 1 meter / circumference at equator in meters * Mercator projection scale factor at this latitude

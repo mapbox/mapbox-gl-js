@@ -21,9 +21,10 @@ const defaultOptions = {
  * - `Shift+⇠`: Decrease the rotation by 15 degrees.
  * - `Shift+⇡`: Increase the pitch by 10 degrees.
  * - `Shift+⇣`: Decrease the pitch by 10 degrees.
- * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
- * @see [Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
- * @see [Display map navigation controls](https://docs.mapbox.com/mapbox-gl-js/example/navigation/)
+ *
+ * @see [Example: Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ * @see [Example: Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
+ * @see [Example: Display map navigation controls](https://docs.mapbox.com/mapbox-gl-js/example/navigation/)
  */
 class KeyboardHandler {
     _enabled: boolean;
@@ -138,7 +139,7 @@ class KeyboardHandler {
      * Enables the "keyboard rotate and zoom" interaction.
      *
      * @example
-     *   map.keyboard.enable();
+     * map.keyboard.enable();
      */
     enable() {
         this._enabled = true;
@@ -148,7 +149,7 @@ class KeyboardHandler {
      * Disables the "keyboard rotate and zoom" interaction.
      *
      * @example
-     *   map.keyboard.disable();
+     * map.keyboard.disable();
      */
     disable() {
         this._enabled = false;
@@ -161,6 +162,8 @@ class KeyboardHandler {
      *
      * @returns {boolean} `true` if the "keyboard rotate and zoom"
      * interaction is enabled.
+     * @example
+     * const isKeyboardEnabled = map.keyboard.isEnabled();
      */
     isEnabled() {
         return this._enabled;
@@ -172,6 +175,8 @@ class KeyboardHandler {
      *
      * @returns {boolean} `true` if the handler is enabled and has detected the
      * start of a zoom/rotate gesture.
+     * @example
+     * const isKeyboardActive = map.keyboard.isActive();
      */
     isActive() {
         return this._active;
@@ -182,7 +187,7 @@ class KeyboardHandler {
      * "keyboard zoom" interaction enabled.
      *
      * @example
-     *   map.keyboard.disableRotation();
+     * map.keyboard.disableRotation();
      */
     disableRotation() {
         this._rotationDisabled = true;
@@ -192,8 +197,8 @@ class KeyboardHandler {
      * Enables the "keyboard pan/rotate" interaction.
      *
      * @example
-     *   map.keyboard.enable();
-     *   map.keyboard.enableRotation();
+     * map.keyboard.enable();
+     * map.keyboard.enableRotation();
      */
     enableRotation() {
         this._rotationDisabled = false;

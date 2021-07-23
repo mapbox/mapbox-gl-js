@@ -30,7 +30,8 @@ type Options = {
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
 
 /**
- * Creates a marker component
+ * Creates a marker component.
+ *
  * @param {Object} [options]
  * @param {HTMLElement} [options.element] DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
  * @param {string} [options.anchor='center'] A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
@@ -44,18 +45,19 @@ export const TERRAIN_OCCLUDED_OPACITY = 0.2;
  * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
  * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, maintaining a bearing as the map rotates. `viewport` aligns the `Marker`'s rotation relative to the viewport, agnostic to map rotations. `auto` is equivalent to `viewport`.
  * @example
- * var marker = new mapboxgl.Marker()
- *   .setLngLat([30.5, 50.5])
- *   .addTo(map);
+ * // Create a new marker.
+ * const marker = new mapboxgl.Marker()
+ *     .setLngLat([30.5, 50.5])
+ *     .addTo(map);
  * @example
- * // Set options
- * var marker = new mapboxgl.Marker({
+ * // Set marker options.
+ * const marker = new mapboxgl.Marker({
  *     color: "#FFFFFF",
  *     draggable: true
- *   }).setLngLat([30.5, 50.5])
- *   .addTo(map);
- * @see [Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
- * @see [Create a draggable Marker](https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+ * }).setLngLat([30.5, 50.5])
+ *     .addTo(map);
+ * @see [Example: Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
+ * @see [Example: Create a draggable Marker](https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
  */
 export default class Marker extends Evented {
     _map: Map;
@@ -238,12 +240,13 @@ export default class Marker extends Evented {
 
     /**
      * Attaches the `Marker` to a `Map` object.
+     *
      * @param {Map} map The Mapbox GL JS map to add the marker to.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
-     * var marker = new mapboxgl.Marker()
-     *   .setLngLat([30.5, 50.5])
-     *   .addTo(map); // add the marker to the map
+     * const marker = new mapboxgl.Marker()
+     *     .setLngLat([30.5, 50.5])
+     *     .addTo(map); // add the marker to the map
      */
     addTo(map: Map) {
         this.remove();
@@ -266,10 +269,11 @@ export default class Marker extends Evented {
 
     /**
      * Removes the marker from a map.
+     *
      * @example
-     * var marker = new mapboxgl.Marker().addTo(map);
+     * const marker = new mapboxgl.Marker().addTo(map);
      * marker.remove();
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      */
     remove() {
         if (this._map) {
@@ -302,10 +306,10 @@ export default class Marker extends Evented {
      * @returns {LngLat} A {@link LngLat} describing the marker's location.
     * @example
     * // Store the marker's longitude and latitude coordinates in a variable
-    * var lngLat = marker.getLngLat();
+    * const lngLat = marker.getLngLat();
     * // Print the marker's longitude and latitude values in the console
-    * console.log('Longitude: ' + lngLat.lng + ', Latitude: ' + lngLat.lat )
-    * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+    * console.log(`Longitude: ${lngLat.lng}, Latitude: ${lngLat.lat}`);
+    * @see [Example: Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
     */
     getLngLat() {
         return this._lngLat;
@@ -313,16 +317,17 @@ export default class Marker extends Evented {
 
     /**
     * Set the marker's geographical position and move it.
+     *
     * @param {LngLat} lnglat A {@link LngLat} describing where the marker should be located.
-    * @returns {Marker} `this`
+    * @returns {Marker} Returns itself to allow for method chaining.
     * @example
-    * // Create a new marker, set the longitude and latitude, and add it to the map
+    * // Create a new marker, set the longitude and latitude, and add it to the map.
     * new mapboxgl.Marker()
-    *   .setLngLat([-65.017, -16.457])
-    *   .addTo(map);
-    * @see [Add custom icons with Markers](https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
-    * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
-    * @see [Add a marker using a place name](https://docs.mapbox.com/mapbox-gl-js/example/marker-from-geocode/)
+    *     .setLngLat([-65.017, -16.457])
+    *     .addTo(map);
+    * @see [Example: Add custom icons with Markers](https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
+    * @see [Example: Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+    * @see [Example: Add a marker using a place name](https://docs.mapbox.com/mapbox-gl-js/example/marker-from-geocode/)
     */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
@@ -334,7 +339,10 @@ export default class Marker extends Evented {
 
     /**
      * Returns the `Marker`'s HTML element.
-     * @returns {HTMLElement} element
+     *
+     * @returns {HTMLElement} Returns the marker element.
+     * @example
+     * const element = marker.getElement();
      */
     getElement() {
         return this._element;
@@ -342,15 +350,16 @@ export default class Marker extends Evented {
 
     /**
      * Binds a {@link Popup} to the {@link Marker}.
-     * @param popup An instance of the {@link Popup} class. If undefined or null, any popup
+     *
+     * @param {Popup | null} popup An instance of the {@link Popup} class. If undefined or null, any popup
      * set on this {@link Marker} instance is unset.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
-     * var marker = new mapboxgl.Marker()
-     *  .setLngLat([0, 0])
-     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>")) // add popup
-     *  .addTo(map);
-     * @see [Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
+     * const marker = new mapboxgl.Marker()
+     *     .setLngLat([0, 0])
+     *     .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>")) // add popup
+     *     .addTo(map);
+     * @see [Example: Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
     setPopup(popup: ?Popup) {
         if (this._popup) {
@@ -415,12 +424,13 @@ export default class Marker extends Evented {
 
     /**
      * Returns the {@link Popup} instance that is bound to the {@link Marker}.
-     * @returns {Popup} popup
+     *
+     * @returns {Popup} Returns the popup.
      * @example
-     * var marker = new mapboxgl.Marker()
-     *  .setLngLat([0, 0])
-     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
-     *  .addTo(map);
+     * const marker = new mapboxgl.Marker()
+     *     .setLngLat([0, 0])
+     *     .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *     .addTo(map);
      *
      * console.log(marker.getPopup()); // return the popup instance
      */
@@ -430,12 +440,13 @@ export default class Marker extends Evented {
 
     /**
      * Opens or closes the {@link Popup} instance that is bound to the {@link Marker}, depending on the current state of the {@link Popup}.
-     * @returns {Marker} `this`
+     *
+     * @returns {Marker} Returns itself to allow for method chaining.
      * @example
-     * var marker = new mapboxgl.Marker()
-     *  .setLngLat([0, 0])
-     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
-     *  .addTo(map);
+     * const marker = new mapboxgl.Marker()
+     *     .setLngLat([0, 0])
+     *     .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *     .addTo(map);
      *
      * marker.togglePopup(); // toggle popup open or closed
      */
@@ -551,7 +562,10 @@ export default class Marker extends Evented {
 
     /**
      * Get the marker's offset.
+     *
      * @returns {Point} The marker's screen coordinates in pixels.
+     * @example
+     * const offset = marker.getOffset();
      */
     getOffset() {
         return this._offset;
@@ -559,8 +573,11 @@ export default class Marker extends Evented {
 
     /**
      * Sets the offset of the marker.
+     *
      * @param {PointLike} offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
+     * @example
+     * marker.setOffset([0, 1]);
      */
     setOffset(offset: PointLike) {
         this._offset = Point.convert(offset);
@@ -661,14 +678,17 @@ export default class Marker extends Evented {
 
     /**
      * Sets the `draggable` property and functionality of the marker.
-     * @param {boolean} [shouldBeDraggable=false] Turns drag functionality on/off
-     * @returns {Marker} `this`
+     *
+     * @param {boolean} [shouldBeDraggable=false] Turns drag functionality on/off.
+     * @returns {Marker} Returns itself to allow for method chaining.
+     * @example
+     * marker.setDraggable(true);
      */
     setDraggable(shouldBeDraggable: boolean) {
         this._draggable = !!shouldBeDraggable; // convert possible undefined value to false
 
         // handle case where map may not exist yet
-        // e.g. when setDraggable is called before addTo
+        // for example, when setDraggable is called before addTo
         if (this._map) {
             if (shouldBeDraggable) {
                 this._map.on('mousedown', this._addDragHandler);
@@ -684,7 +704,10 @@ export default class Marker extends Evented {
 
     /**
      * Returns true if the marker can be dragged.
+     *
      * @returns {boolean} True if the marker is draggable.
+     * @example
+     * const isMarkerDraggable = marker.isDraggable();
      */
     isDraggable() {
         return this._draggable;
@@ -692,8 +715,11 @@ export default class Marker extends Evented {
 
     /**
      * Sets the `rotation` property of the marker.
+     *
      * @param {number} [rotation=0] The rotation angle of the marker (clockwise, in degrees), relative to its respective {@link Marker#setRotationAlignment} setting.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
+     * @example
+     * marker.setRotation(45);
      */
     setRotation(rotation: number) {
         this._rotation = rotation || 0;
@@ -703,7 +729,10 @@ export default class Marker extends Evented {
 
     /**
      * Returns the current rotation angle of the marker (in degrees).
+     *
      * @returns {number} The current rotation angle of the marker.
+     * @example
+     * const rotation = marker.getRotation();
      */
     getRotation() {
         return this._rotation;
@@ -711,8 +740,11 @@ export default class Marker extends Evented {
 
     /**
      * Sets the `rotationAlignment` property of the marker.
+     *
      * @param {string} [alignment='auto'] Sets the `rotationAlignment` property of the marker.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
+     * @example
+     * marker.setRotationAlignment('viewport');
      */
     setRotationAlignment(alignment: string) {
         this._rotationAlignment = alignment || 'auto';
@@ -722,7 +754,10 @@ export default class Marker extends Evented {
 
     /**
      * Returns the current `rotationAlignment` property of the marker.
+     *
      * @returns {string} The current rotational alignment of the marker.
+     * @example
+     * const alignment = marker.getRotationAlignment();
      */
     getRotationAlignment() {
         return this._rotationAlignment;
@@ -730,8 +765,11 @@ export default class Marker extends Evented {
 
     /**
      * Sets the `pitchAlignment` property of the marker.
+     *
      * @param {string} [alignment] Sets the `pitchAlignment` property of the marker. If alignment is 'auto', it will automatically match `rotationAlignment`.
-     * @returns {Marker} `this`
+     * @returns {Marker} Returns itself to allow for method chaining.
+     * @example
+     * marker.setPitchAlignment('map');
      */
     setPitchAlignment(alignment: string) {
         this._pitchAlignment = alignment && alignment !== 'auto' ? alignment : this._rotationAlignment;
@@ -741,7 +779,10 @@ export default class Marker extends Evented {
 
     /**
      * Returns the current `pitchAlignment` property of the marker.
+     *
      * @returns {string} The current pitch alignment of the marker in degrees.
+     * @example
+     * const alignment = marker.getPitchAlignment();
      */
     getPitchAlignment() {
         return this._pitchAlignment;
