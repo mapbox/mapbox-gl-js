@@ -445,7 +445,7 @@ export type MapContextEvent = {
 }
 
 export type MapEvent =
-    /** @section Interaction
+    /** @section {Interaction}
      * @event
      * @instance
      * @memberof Map */
@@ -812,7 +812,7 @@ export type MapEvent =
      */
     | 'touchcancel'
 
-    /** @section Movement
+    /** @section {Movement}
      * @event
      * @instance
      * @memberof Map */
@@ -1175,7 +1175,7 @@ export type MapEvent =
      */
     | 'resize'
 
-    /** @section Lifecycle
+    /** @section {Lifecycle}
      * @event
      * @instance
      * @memberof Map */
@@ -1352,7 +1352,7 @@ export type MapEvent =
      */
     | 'webglcontextrestored'
 
-    /** @section Data loading
+    /** @section {Data loading}
      * @event
      * @instance
      * @memberof Map */

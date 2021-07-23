@@ -346,7 +346,7 @@ class Map extends Camera {
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
 
-    /** @section Interaction handlers */
+    /** @section {Interaction handlers} */
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -544,7 +544,7 @@ class Map extends Camera {
         return this._mapId;
     }
 
-    /** @section Controls */
+    /** @section {Controls} */
 
     /**
      * Adds an {@link IControl} to the map, calling `control.onAdd(this)`.
@@ -668,7 +668,7 @@ class Map extends Camera {
         return this._canvas;
     }
 
-    /** @section Map constraints */
+    /** @section {Map constraints} */
 
     /**
      * Resizes the map according to the dimensions of its
@@ -948,7 +948,7 @@ class Map extends Camera {
         return this._update();
     }
 
-    /** @section Point conversion */
+    /** @section {Point conversion} */
 
     /**
      * Returns a {@link Point} representing pixel coordinates, relative to the map's `container`,
@@ -986,7 +986,7 @@ class Map extends Camera {
         return this.transform.pointLocation3D(Point.convert(point));
     }
 
-    /** @section Movement state */
+    /** @section {Movement state} */
 
     /**
      * Returns true if the map is panning, zooming, rotating, or pitching due to a camera animation or user gesture.
@@ -1069,7 +1069,7 @@ class Map extends Camera {
         }
     }
 
-    /** @section Working with events */
+    /** @section {Working with events} */
 
     /**
      * Adds a listener for events of a specified type,
@@ -1290,7 +1290,7 @@ class Map extends Camera {
         return this;
     }
 
-    /** @section Querying features */
+    /** @section {Querying features} */
 
     /**
      * Returns an array of [GeoJSON](http://geojson.org/)
@@ -1463,7 +1463,7 @@ class Map extends Camera {
         return null;
     }
 
-    /** @section Working with styles */
+    /** @section {Working with styles} */
 
     /**
      * Updates the map's Mapbox style object with a new value.
@@ -1603,7 +1603,7 @@ class Map extends Camera {
         return this.style.loaded();
     }
 
-    /** @section Sources */
+    /** @section {Sources} */
 
     /**
      * Adds a source to the map's style.
@@ -1736,7 +1736,7 @@ class Map extends Camera {
         return this.style.getSource(id);
     }
 
-    /** @section Images */
+    /** @section {Images} */
 
     // eslint-disable-next-line jsdoc/require-returns
     /**
@@ -1939,7 +1939,7 @@ class Map extends Camera {
         return this.style.listImages();
     }
 
-    /** @section Layers */
+    /** @section {Layers} */
 
     /**
      * Adds a [Mapbox style layer](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers)
@@ -2247,7 +2247,7 @@ class Map extends Camera {
         return this.style.getLayoutProperty(layerId, name);
     }
 
-    /** @section Style properties */
+    /** @section {Style properties} */
 
     /**
      * Sets the any combination of light values.
@@ -2360,7 +2360,7 @@ class Map extends Camera {
         return this.style.fog.getOpacityAtLatLng(LngLat.convert(lnglat), this.transform);
     }
 
-    /** @section Feature state */
+    /** @section {Feature state} */
 
     /**
      * Sets the `state` of a feature.
@@ -2619,7 +2619,7 @@ class Map extends Camera {
         return false;
     }
 
-    /** @section Lifecycle */
+    /** @section {Lifecycle} */
 
     /**
      * Returns a Boolean indicating whether the map is fully loaded.
@@ -3098,7 +3098,7 @@ class Map extends Camera {
         }
     }
 
-    /** @section Debug features */
+    /** @section {Debug features} */
 
     /**
      * Gets and sets a Boolean indicating whether the map will render an outline

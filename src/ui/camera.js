@@ -158,7 +158,7 @@ class Camera extends Evented {
         //addAssertions(this);
     }
 
-    /** @section Camera
+    /** @section {Camera}
      * @method
      * @instance
      * @memberof Map */
