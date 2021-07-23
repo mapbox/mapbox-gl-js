@@ -8,7 +8,7 @@ import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
 import window from '../util/window.js';
 import smartWrap from '../util/smart_wrap.js';
-import {type Anchor, anchorTranslate, applyAnchorClass} from './anchor.js';
+import {type Anchor, anchorTranslate} from './anchor.js';
 
 import type Map from './map.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
@@ -107,6 +107,7 @@ export default class Popup extends Evented {
     _lngLat: LngLat;
     _trackPointer: boolean;
     _pos: ?Point;
+    _anchor: Anchor;
     _classList: Set<string>;
 
     constructor(options: PopupOptions) {
@@ -151,9 +152,6 @@ export default class Popup extends Evented {
         if (this._trackPointer) {
             this._map.on('mousemove', this._onMouseMove);
             this._map.on('mouseup', this._onMouseUp);
-            if (this._container) {
-                this._container.classList.add('mapboxgl-popup-track-pointer');
-            }
             this._map._canvasContainer.classList.add('mapboxgl-track-pointer');
         } else {
             this._map.on('move', this._update);
@@ -273,9 +271,6 @@ export default class Popup extends Evented {
         if (this._map) {
             this._map.on('move', this._update);
             this._map.off('mousemove', this._onMouseMove);
-            if (this._container) {
-                this._container.classList.remove('mapboxgl-popup-track-pointer');
-            }
             this._map._canvasContainer.classList.remove('mapboxgl-track-pointer');
         }
 
@@ -300,9 +295,6 @@ export default class Popup extends Evented {
             this._map.off('move', this._update);
             this._map.on('mousemove', this._onMouseMove);
             this._map.on('drag', this._onDrag);
-            if (this._container) {
-                this._container.classList.add('mapboxgl-popup-track-pointer');
-            }
             this._map._canvasContainer.classList.add('mapboxgl-track-pointer');
         }
 
@@ -447,7 +439,7 @@ export default class Popup extends Evented {
     addClassName(className: string) {
         this._classList.add(className);
         if (this._container) {
-            this._container.classList.add(className);
+            this._updateClassList();
         }
         return this;
     }
@@ -465,7 +457,7 @@ export default class Popup extends Evented {
     removeClassName(className: string) {
         this._classList.delete(className);
         if (this._container) {
-            this._container.classList.remove(className);
+            this._updateClassList();
         }
         return this;
     }
@@ -494,15 +486,18 @@ export default class Popup extends Evented {
      * popup.toggleClassName('highlighted')
      */
     toggleClassName(className: string) {
-        if (this._container) {
-            this._container.classList.toggle(className);
-        }
+        let finalState: boolean;
         if (this._classList.has(className)) {
             this._classList.delete(className);
-            return false;
+            finalState = false;
+        } else {
+            this._classList.add(className);
+            finalState = true;
         }
-        this._classList.add(className);
-        return true;
+        if (this._container) {
+            this._updateClassList();
+        }
+        return finalState;
     }
 
     _createCloseButton() {
@@ -527,6 +522,47 @@ export default class Popup extends Evented {
         this._update(event.point);
     }
 
+    _getAnchor(offset: any) {
+        if (this.options.anchor) { return this.options.anchor; }
+
+        const pos: any = this._pos;
+        const width = this._container.offsetWidth;
+        const height = this._container.offsetHeight;
+
+        let anchorComponents;
+        if (pos.y + offset.bottom.y < height) {
+            anchorComponents = ['top'];
+        } else if (pos.y > this._map.transform.height - height) {
+            anchorComponents = ['bottom'];
+        } else {
+            anchorComponents = [];
+        }
+
+        if (pos.x < width / 2) {
+            anchorComponents.push('left');
+        } else if (pos.x > this._map.transform.width - width / 2) {
+            anchorComponents.push('right');
+        }
+
+        if (anchorComponents.length === 0) {
+            return 'bottom';
+        }
+        return ((anchorComponents.join('-'): any): Anchor);
+
+    }
+
+    _updateClassList() {
+        const classes = new Set(this._classList);
+        classes.add('mapboxgl-popup');
+        if (this._anchor) {
+            classes.add(`mapboxgl-popup-anchor-${this._anchor}`);
+        }
+        if (this._trackPointer) {
+            classes.add('mapboxgl-popup-track-pointer');
+        }
+        this._container.className = [...classes].join(' ');
+    }
+
     _update(cursor: ?PointLike) {
         const hasPosition = this._lngLat || this._trackPointer;
 
@@ -536,14 +572,6 @@ export default class Popup extends Evented {
             this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
-            if (this._classList) {
-                this._classList.forEach(name =>
-                    this._container.classList.add(name));
-            }
-
-            if (this._trackPointer) {
-                this._container.classList.add('mapboxgl-popup-track-pointer');
-            }
         }
 
         if (this.options.maxWidth && this._container.style.maxWidth !== this.options.maxWidth) {
@@ -554,46 +582,22 @@ export default class Popup extends Evented {
             this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
         }
 
-        if (this._trackPointer && !cursor) return;
+        if (!this._trackPointer || cursor) {
+            const pos = this._pos = this._trackPointer && cursor ? cursor : this._map.project(this._lngLat);
 
-        const pos = this._pos = this._trackPointer && cursor ? cursor : this._map.project(this._lngLat);
+            const offset = normalizeOffset(this.options.offset);
+            const anchor = this._anchor = this._getAnchor(offset);
+            this._updateClassList();
 
-        let anchor: ?Anchor = this.options.anchor;
-        const offset = normalizeOffset(this.options.offset);
-
-        if (!anchor) {
-            const width = this._container.offsetWidth;
-            const height = this._container.offsetHeight;
-            let anchorComponents;
-
-            if (pos.y + offset.bottom.y < height) {
-                anchorComponents = ['top'];
-            } else if (pos.y > this._map.transform.height - height) {
-                anchorComponents = ['bottom'];
-            } else {
-                anchorComponents = [];
-            }
-
-            if (pos.x < width / 2) {
-                anchorComponents.push('left');
-            } else if (pos.x > this._map.transform.width - width / 2) {
-                anchorComponents.push('right');
-            }
-
-            if (anchorComponents.length === 0) {
-                anchor = 'bottom';
-            } else {
-                anchor = (anchorComponents.join('-'): any);
-            }
+            const offsetedPos = pos.add(offset[anchor]).round();
+            this._map._requestDomTask(() => {
+                if (this._container && anchor) {
+                    DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
+                }
+            });
         }
 
-        const offsetedPos = pos.add(offset[anchor]).round();
-        this._map._requestDomTask(() => {
-            if (this._container && anchor) {
-                DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
-                applyAnchorClass(this._container, anchor, 'popup');
-            }
-        });
+        this._updateClassList();
     }
 
     _focusFirstElement() {
@@ -615,10 +619,9 @@ export default class Popup extends Evented {
 }
 
 function normalizeOffset(offset: ?Offset) {
-    if (!offset) {
-        return normalizeOffset(new Point(0, 0));
+    if (!offset) offset = (new Point(0, 0));
 
-    } else if (typeof offset === 'number') {
+    if (typeof offset === 'number') {
         // input specifies a radius from which to calculate offsets at all positions
         const cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2)));
         return {
