@@ -17,5 +17,5 @@ export function supportsInterpolation(spec: StylePropertySpecification): boolean
 export function supportsCameraStateExpression(spec: StylePropertySpecification): boolean {
     return !!spec.expression && spec.expression.parameters.indexOf('zoom') > -1 &&
         spec.expression.parameters.indexOf('pitch') > -1  &&
-        spec.expression.parameters.indexOf('distance-from-camera') > -1;
+        spec.expression.parameters.indexOf('distance-from-center') > -1;
 }

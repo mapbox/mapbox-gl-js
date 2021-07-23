@@ -206,7 +206,7 @@ CompoundExpression.register(expressions, {
         [],
         (ctx) => ctx.globals.pitch
     ],
-    'distance-from-camera': [
+    'distance-from-center': [
         NumberType,
         [],
         (ctx) => ctx.distanceFromCamera()

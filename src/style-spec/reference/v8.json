@@ -1172,7 +1172,7 @@
           "zoom",
           "feature",
           "pitch",
-          "distance-from-camera"
+          "distance-from-center"
         ]
       },
       "property-type": "data-driven"
@@ -3226,7 +3226,7 @@
           }
         }
       },
-      "distance-from-camera": {
+      "distance-from-center": {
         "doc": "The distance of the feature from the camera",
         "group": "Camera",
         "sdk-support": {

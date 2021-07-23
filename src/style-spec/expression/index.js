@@ -268,7 +268,7 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
         return error([new ParsingError('', 'data expressions not supported')]);
     }
 
-    const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'pitch', 'distance-from-camera']);
+    const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'pitch', 'distance-from-center']);
     if (!isZoomConstant && !supportsZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
     }
