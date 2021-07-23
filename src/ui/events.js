@@ -1181,40 +1181,6 @@ export type MapEvent =
      * @memberof Map */
 
     /**
-     * Fired when the WebGL context is lost.
-     *
-     * @event webglcontextlost
-     * @memberof Map
-     * @instance
-     * @example
-     * // Initialize the map
-     * const map = new mapboxgl.Map({});
-     * // Set an event listener that fires
-     * // when the WebGL context is lost.
-     * map.on('webglcontextlost', () => {
-     *     console.log('A webglcontextlost event occurred.');
-     * });
-     */
-    | 'webglcontextlost'
-
-    /**
-     * Fired when the WebGL context is restored.
-     *
-     * @event webglcontextrestored
-     * @memberof Map
-     * @instance
-     * @example
-     * // Initialize the map
-     * const map = new mapboxgl.Map({});
-     * // Set an event listener that fires
-     * // when the WebGL context is restored.
-     * map.on('webglcontextrestored', () => {
-     *     console.log('A webglcontextrestored event occurred.');
-     * });
-     */
-    | 'webglcontextrestored'
-
-    /**
      * Fired immediately after all necessary resources have been downloaded
      * and the first visually complete rendering of the map has occurred.
      *
@@ -1326,11 +1292,11 @@ export type MapEvent =
      * @instance
      * @example
      * // Initialize the map
-     * var map = new mapboxgl.Map({ // map options });
+     * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
      * // when the WebGL context is lost.
-     * map.on('webglcontextlost', function() {
-     *   console.log('A webglcontextlost event occurred.');
+     * map.on('webglcontextlost', () => {
+     *     console.log('A webglcontextlost event occurred.');
      * });
      */
     | 'webglcontextlost'
@@ -1343,11 +1309,11 @@ export type MapEvent =
      * @instance
      * @example
      * // Initialize the map
-     * var map = new mapboxgl.Map({ // map options });
+     * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
      * // when the WebGL context is restored.
-     * map.on('webglcontextrestored', function() {
-     *   console.log('A webglcontextrestored event occurred.');
+     * map.on('webglcontextrestored', () => {
+     *     console.log('A webglcontextrestored event occurred.');
      * });
      */
     | 'webglcontextrestored'
