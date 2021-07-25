@@ -576,7 +576,7 @@ test('Popup#remove is idempotent (#2395)', (t) => {
     t.end();
 });
 
-test('Popup adds classes from className option, methods for class manipulations works properly', (t) => {
+test('Popup adds classes from className option, methods for class manipulation work properly', (t) => {
     const map = createMap(t);
     const popup = new Popup({className: 'some classes'})
         .setText('Test')
@@ -638,7 +638,7 @@ test('Popup className option and addClassName both add classes', (t) => {
     t.end();
 });
 
-test('Methods for class manipulations works properly when popup is not on map', (t) => {
+test('Methods for class manipulation work properly when popup is not on map', (t) => {
     const map = createMap(t);
     const popup = new Popup()
         .setText('Test')
