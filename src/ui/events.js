@@ -358,7 +358,7 @@ export class MapWheelEvent extends Event {
 
 /**
  * `MapBoxZoomEvent` is a class used to generate
- * the events 'boxzoomstart', 'boxzoomend' and 'boxzoomcancel'.
+ * the events 'boxzoomstart', 'boxzoomend', and 'boxzoomcancel'.
  * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
  *
  * @typedef {Object} MapBoxZoomEvent
