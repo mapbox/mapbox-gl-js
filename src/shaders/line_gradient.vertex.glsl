@@ -4,36 +4,61 @@
 // there are also "special" normals that have a bigger length (of up to 126 in
 // this case).
 // #define scale 63.0
-#define scale 0.015873016
+#define EXTRUDE_SCALE 0.015873016
 
 attribute vec2 a_pos_normal;
 attribute vec4 a_data;
-attribute float a_uv_x;
-attribute float a_split_index;
 
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
 uniform lowp float u_device_pixel_ratio;
 uniform vec2 u_units_to_pixels;
-uniform float u_image_height;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_gamma_scale;
-varying highp vec2 v_uv;
 
+#pragma mapbox: define highp vec4 color
+#pragma mapbox: define lowp float floorwidth
+#pragma mapbox: define lowp vec4 dash_from
+#pragma mapbox: define lowp vec4 dash_to
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define lowp float offset
 #pragma mapbox: define mediump float width
 
+#ifdef RENDER_LINE_GRADIENT
+attribute float a_uv_x;
+attribute float a_split_index;
+uniform float u_image_height;
+varying highp vec2 v_uv;
+#endif
+
+#ifdef RENDER_LINE_DASH
+attribute float a_linesofar;
+uniform vec2 u_texsize;
+uniform mediump vec3 u_scale;
+varying vec2 v_tex_a;
+varying vec2 v_tex_b;
+#endif
+
 void main() {
+    #pragma mapbox: initialize highp vec4 color
+    #pragma mapbox: initialize lowp float floorwidth
+    #pragma mapbox: initialize lowp vec4 dash_from
+    #pragma mapbox: initialize lowp vec4 dash_to
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize lowp float offset
     #pragma mapbox: initialize mediump float width
+
+#ifdef RENDER_LINE_GRADIENT
+    highp float texel_height = 1.0 / u_image_height;
+    highp float half_texel_height = 0.5 * texel_height;
+    v_uv = vec2(a_uv_x, a_split_index * texel_height - half_texel_height);
+#endif
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
@@ -41,10 +66,6 @@ void main() {
 
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
-
-    highp float texel_height = 1.0 / u_image_height;
-    highp float half_texel_height = 0.5 * texel_height;
-    v_uv = vec2(a_uv_x, a_split_index * texel_height - half_texel_height);
 
     vec2 pos = floor(a_pos_normal * 0.5);
 
@@ -66,7 +87,7 @@ void main() {
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    mediump vec2 dist = outset * a_extrude * scale;
+    mediump vec2 dist = outset * a_extrude * EXTRUDE_SCALE;
 
     // Calculate the offset when drawing a line that is to the side of the actual line.
     // We do this by creating a vector that points towards the extrude, but rotate
@@ -74,7 +95,7 @@ void main() {
     // extrude vector points in another direction.
     mediump float u = 0.5 * a_direction;
     mediump float t = 1.0 - abs(u);
-    mediump vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
+    mediump vec2 offset2 = offset * a_extrude * EXTRUDE_SCALE * normal.y * mat2(t, -u, u, t);
 
     vec4 projected_extrude = u_matrix * vec4(dist / u_ratio, 0.0, 0.0);
     gl_Position = u_matrix * vec4(pos + offset2 / u_ratio, 0.0, 1.0) + projected_extrude;
@@ -86,7 +107,22 @@ void main() {
     v_gamma_scale = extrude_length_without_perspective / extrude_length_with_perspective;
 #else
     v_gamma_scale = 1.0;
+#endif       
+
+#ifdef RENDER_LINE_DASH
+    float tileZoomRatio = u_scale.x;
+    float fromScale = u_scale.y;
+    float toScale = u_scale.z;
+
+    float scaleA = dash_from.z == 0.0 ? 0.0 : tileZoomRatio / (dash_from.z * fromScale);
+    float scaleB = dash_to.z == 0.0 ? 0.0 : tileZoomRatio / (dash_to.z * toScale);
+    float heightA = dash_from.y;
+    float heightB = dash_to.y;
+
+    v_tex_a = vec2(a_linesofar * scaleA / floorwidth, (-normal.y * heightA + dash_from.x + 0.5) / u_texsize.y);
+    v_tex_b = vec2(a_linesofar * scaleB / floorwidth, (-normal.y * heightB + dash_to.x + 0.5) / u_texsize.y);
 #endif
+
     v_width2 = vec2(outset, inset);
 
 #ifdef FOG

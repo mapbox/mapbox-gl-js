@@ -23,7 +23,13 @@ export type LineUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_ratio': Uniform1f,
     'u_device_pixel_ratio': Uniform1f,
-    'u_units_to_pixels': Uniform2f
+    'u_units_to_pixels': Uniform2f,
+    'u_dash_image': Uniform1i,
+    'u_gradient_image': Uniform1i,
+    'u_image_height': Uniform1f,
+    'u_texsize': Uniform2f,
+    'u_scale': Uniform3f,
+    'u_mix': Uniform1f
 |};
 
 export type LineGradientUniformsType = {|
@@ -61,7 +67,13 @@ const lineUniforms = (context: Context, locations: UniformLocations): LineUnifor
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels)
+    'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
+    'u_dash_image': new Uniform1i(context, locations.u_dash_image),
+    'u_gradient_image': new Uniform1i(context, locations.u_gradient_image),
+    'u_image_height': new Uniform1f(context, locations.u_image_height),
+    'u_texsize': new Uniform2f(context, locations.u_texsize),
+    'u_scale': new Uniform3f(context, locations.u_scale),
+    'u_mix': new Uniform1f(context, locations.u_mix)
 });
 
 const lineGradientUniforms = (context: Context, locations: UniformLocations): LineGradientUniformsType => ({
@@ -99,10 +111,12 @@ const lineUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: LineStyleLayer,
-    matrix: ?Float32Array
+    crossfade: CrossfadeParameters,
+    matrix: ?Float32Array,
+    imageHeight: number
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
-
+    const tileZoomRatio = calculateTileRatio(tile, painter.transform);
     return {
         'u_matrix': calculateMatrix(painter, tile, layer, matrix),
         'u_ratio': 1 / pixelsToTileUnits(tile, 1, transform.zoom),
@@ -110,7 +124,13 @@ const lineUniformValues = (
         'u_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
-        ]
+        ],
+        'u_dash_image': 0,
+        'u_gradient_image': 1,
+        'u_image_height': imageHeight,
+        'u_texsize': tile.lineAtlasTexture.size,
+        'u_scale': [tileZoomRatio, crossfade.fromScale, crossfade.toScale],
+        'u_mix': crossfade.t
     };
 };
 
@@ -181,6 +201,13 @@ function calculateMatrix(painter, tile, layer, matrix) {
     );
 }
 
+const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
+    const values = [];
+    if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
+    if (layer.paint.get('line-dasharray').value.value) values.push('RENDER_LINE_DASH');
+    return values;
+};
+
 export {
     lineUniforms,
     lineGradientUniforms,
@@ -189,5 +216,6 @@ export {
     lineUniformValues,
     lineGradientUniformValues,
     linePatternUniformValues,
-    lineSDFUniformValues
+    lineSDFUniformValues,
+    lineDefinesValues
 };
