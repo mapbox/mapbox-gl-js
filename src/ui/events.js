@@ -742,7 +742,6 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @type {MapTouchEvent}
-     * @property {MapTouchEvent} data
      * @example
      * // Initialize the map
      * const map = new mapboxgl.Map({});
