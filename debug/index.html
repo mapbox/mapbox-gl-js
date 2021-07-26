@@ -71,7 +71,7 @@ var map2 = window.map = new mapboxgl.Map({
     scaleFactor: factor,
     sizeFactor: 1,
     container: 'map3',
-    zoom: zoom - 1,
+    zoom: zoom - Math.log(factor) / Math.LN2,
     pitch,
     bearing,
     center,
