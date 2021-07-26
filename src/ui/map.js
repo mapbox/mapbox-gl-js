@@ -187,8 +187,9 @@ const defaultOptions = {
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
  * @param {number} [options.minPitch=0] The minimum pitch of the map (0-85).
  * @param {number} [options.maxPitch=85] The maximum pitch of the map (0-85).
- * @param {Object | string} [options.style] The map's Mapbox style. This must be a JSON object conforming to
- * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
+ * @param {Object | string} options.style The map's Mapbox style. This must be an a JSON object conforming to
+ * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL
+ * to such JSON. Can accept a null value to allow adding a style manually.
  *
  * To load a style from the Mapbox API, you can use a URL of the form `mapbox://styles/:owner/:style`,
  * where `:owner` is your Mapbox account name and `:style` is the style ID. You can also use a
@@ -218,14 +219,14 @@ const defaultOptions = {
  * @param {boolean} [options.pitchWithRotate=true] If `false`, the map's pitch (tilt) control with "drag to rotate" interaction will be disabled.
  * @param {number} [options.clickTolerance=3] The max number of pixels a user can shift the mouse pointer during a click for it to be considered a valid click (as opposed to a mouse drag).
  * @param {boolean} [options.attributionControl=true] If `true`, an {@link AttributionControl} will be added to the map.
- * @param {string | Array<string>} [options.customAttribution] String or strings to show in an {@link AttributionControl}. Only applicable if `options.attributionControl` is `true`.
+ * @param {string | Array<string>} [options.customAttribution=null] String or strings to show in an {@link AttributionControl}. Only applicable if `options.attributionControl` is `true`.
  * @param {string} [options.logoPosition='bottom-left'] A string representing the position of the Mapbox wordmark on the map. Valid options are `top-left`,`top-right`, `bottom-left`, `bottom-right`.
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox GL JS would be dramatically worse than expected (a software renderer would be used).
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
- * @param {boolean} [options.antialias] If `true`, the gl context will be created with MSAA antialiasing, which can be useful for antialiasing custom layers. This is `false` by default as a performance optimization.
+ * @param {boolean} [options.antialias=false] If `true`, the gl context will be created with MSAA antialiasing, which can be useful for antialiasing custom layers. This is `false` by default as a performance optimization.
  * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
- * @param {LngLatBoundsLike} [options.maxBounds] If set, the map will be constrained to the given bounds.
- * @param {boolean | Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
+ * @param {LngLatBoundsLike} [options.maxBounds=null] If set, the map will be constrained to the given bounds.
+ * @param {boolean|Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
  * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see {@link BoxZoomHandler}).
  * @param {boolean} [options.dragRotate=true] If `true`, the "drag to rotate" interaction is enabled (see {@link DragRotateHandler}).
  * @param {boolean | Object} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled. An `Object` value is passed as options to {@link DragPanHandler#enable}.
@@ -238,7 +239,7 @@ const defaultOptions = {
  * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
- * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
+ * @param {LngLatBoundsLike} [options.bounds=null] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
  * @param {boolean} [options.optimizeForTerrain=true] With terrain on, if `true`, the map will render for performance priority, which may lead to layer reordering allowing to maximize performance (layers that are draped over terrain will be drawn first, including fill, line, background, hillshade and raster). Otherwise, if set to `false`, the map will always be drawn for layer order priority.
  * @param {boolean} [options.renderWorldCopies=true] If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
@@ -627,7 +628,7 @@ class Map extends Camera {
      * This method must be called after the map's `container` is resized programmatically
      * or when the map is shown after being initially hidden with CSS.
      *
-     * @param eventData Additional properties to be passed to `movestart`, `move`, `resize`, and `moveend`
+     * @param {Object | null} eventData Additional properties to be passed to `movestart`, `move`, `resize`, and `moveend`
      *   events that get triggered as a result of resize. This can be useful for differentiating the
      *   source of an event (for example, user-initiated or programmatically-triggered events).
      * @returns {Map} Returns itself to allow for method chaining.
@@ -1388,7 +1389,7 @@ class Map extends Camera {
      * style and the given style are different in any way, the map renderer will force a full update, removing the current style and building
      * the given one from scratch.
      *
-     * @param style A JSON object conforming to the schema described in the
+     * @param {Object | string| null} style A JSON object conforming to the schema described in the
      *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
      * @param {Object} [options] Options object.
      * @param {boolean} [options.diff=true] If false, force a 'full' update, removing the current style
@@ -1658,15 +1659,15 @@ class Map extends Camera {
      * or [`line-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-line-line-pattern).
      * A {@link Map.event:error} event will be fired if there is not enough space in the sprite to add this image.
      *
-     * @param id The ID of the image.
-     * @param image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
+     * @param {string} id The ID of the image.
+     * @param {HTMLImageElement | ImageBitmap | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface} image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
      * properties with the same format as `ImageData`.
-     * @param options Options object.
-     * @param options.pixelRatio The ratio of pixels in the image to physical pixels on the screen.
-     * @param options.sdf Whether the image should be interpreted as an SDF image.
-     * @param options.content `[x1, y1, x2, y2]` If `icon-text-fit` is used in a layer with this image, this option defines the part of the image that can be covered by the content in `text-field`.
-     * @param options.stretchX `[[x1, x2], ...]` If `icon-text-fit` is used in a layer with this image, this option defines the part(s) of the image that can be stretched horizontally.
-     * @param options.stretchY `[[y1, y2], ...]` If `icon-text-fit` is used in a layer with this image, this option defines the part(s) of the image that can be stretched vertically.
+     * @param {Object | null} options Options object.
+     * @param {number} options.pixelRatio The ratio of pixels in the image to physical pixels on the screen.
+     * @param {boolean} options.sdf Whether the image should be interpreted as an SDF image.
+     * @param {[number, number, number, number]} options.content `[x1, y1, x2, y2]`  If `icon-text-fit` is used in a layer with this image, this option defines the part of the image that can be covered by the content in `text-field`.
+     * @param {Array<[number, number]>} options.stretchX `[[x1, x2], ...]` If `icon-text-fit` is used in a layer with this image, this option defines the part(s) of the image that can be stretched horizontally.
+     * @param {Array<[number, number]>} options.stretchY `[[y1, y2], ...]` If `icon-text-fit` is used in a layer with this image, this option defines the part(s) of the image that can be stretched vertically.
      *
      * @example
      * // If the style's sprite does not already contain an image with ID 'cat',
@@ -1736,8 +1737,8 @@ class Map extends Camera {
      * [`fill-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-fill-fill-pattern),
      * or [`line-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-line-line-pattern).
      *
-     * @param id The ID of the image.
-     * @param image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
+     * @param {string} id The ID of the image.
+     * @param {HTMLImageElement | ImageBitmap | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface} image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
      * properties with the same format as `ImageData`.
      *
      * @example
@@ -1778,7 +1779,7 @@ class Map extends Camera {
      * in the style's original [sprite](https://docs.mapbox.com/help/glossary/sprite/) and any images
      * that have been added at runtime using {@link Map#addImage}.
      *
-     * @param id The ID of the image.
+     * @param {string} id The ID of the image.
      *
      * @returns {boolean} A Boolean indicating whether the image exists.
      * @example
@@ -1800,7 +1801,7 @@ class Map extends Camera {
      * [sprite](https://docs.mapbox.com/help/glossary/sprite/) or any images
      * that have been added at runtime using {@link Map#addImage}.
      *
-     * @param id The ID of the image.
+     * @param {string} id The ID of the image.
      *
      * @example
      * // If an image with the ID 'cat' exists in
@@ -2158,7 +2159,7 @@ class Map extends Camera {
     /**
      * Sets the any combination of light values.
      *
-     * @param light Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
+     * @param {Object} light Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} Returns itself to allow for method chaining.
@@ -2187,7 +2188,7 @@ class Map extends Camera {
     /**
      * Sets the terrain property of the style.
      *
-     * @param terrain Terrain properties to set. Must conform to the [Terrain Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/terrain/).
+     * @param {Object} terrain Terrain properties to set. Must conform to the [Terrain Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/terrain/).
      * If `null` or `undefined` is provided, function removes terrain.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
@@ -2210,7 +2211,7 @@ class Map extends Camera {
     /**
      * Returns the terrain specification or `null` if terrain isn't set on the map.
      *
-     * @returns {Object} Terrain specification properties of the style.
+     * @returns {Object | null} Terrain specification properties of the style.
      * @example
      * const terrain = map.getTerrain();
      */
@@ -2221,7 +2222,7 @@ class Map extends Camera {
     /**
      * Sets the fog property of the style.
      *
-     * @param fog The fog properties to set. Must conform the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
+     * @param {Object} fog The fog properties to set. Must conform the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
      * If `null` or `undefined` is provided, this function call removes the fog from the map.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
