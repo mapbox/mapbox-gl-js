@@ -92,7 +92,7 @@ const lineUniformValues = (
         'u_scale': [0, 0, 0],
         'u_mix': 0
     };
-    if (layer.paint.get('line-dasharray').value.value) {
+    if (hasDash(layer)) {
         const tileZoomRatio = calculateTileRatio(tile, painter.transform);
         values['u_texsize'] = tile.lineAtlasTexture.size;
         values['u_scale'] = [tileZoomRatio, crossfade.fromScale, crossfade.toScale];
@@ -141,10 +141,15 @@ function calculateMatrix(painter, tile, layer, matrix) {
 
 const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     const values = [];
+    if (hasDash(layer)) values.push('RENDER_LINE_DASH');
     if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
-    if (layer.paint.get('line-dasharray').value.value) values.push('RENDER_LINE_DASH');
     return values;
 };
+
+function hasDash(layer) {
+    const dashPropertyValue = layer.paint.get('line-dasharray').value;
+    return dashPropertyValue.value || dashPropertyValue.kind !== "constant";
+}
 
 export {
     lineUniforms,
