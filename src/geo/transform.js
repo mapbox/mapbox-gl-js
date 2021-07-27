@@ -264,27 +264,29 @@ class Transform {
         return new Point(this.width, this.height);
     }
 
-    // get bearing(): number {
+    _getBearingOffset(lngLat): number {
+        const {lng, lat} = lngLat || this.center;
+        const north = {lng, lat: lat + 0.0001};
+        const projectedCenter = this.projection.project(lng, lat);
+        const projectedNorth = this.projection.project(north.lng, north.lat);
+        const northVector = {x: projectedNorth.x - projectedCenter.x, y: projectedNorth.y - projectedCenter.y};
+        return (Math.atan2(northVector.x, northVector.y) * 180 / Math.PI) + 180;
+    }
 
-    // }
+    get bearing(): number {
+        return wrap(this._getBearingOffset() + this.rotation, -180, 180);
+    }
 
-    // set bearing(bearing: number) {
-    //     this.rotation = bearing;
-    //     let {lng, lat} = this.center;
-    //     const north = {lng, lat: lat += 0.0001};
-    //     const projectedCenter = this.projection.project(lng, lat);
-    //     const mercatorNorth = MercatorCoordinate.fromLngLat(north);
-    //     const northVector = {x: mercatorNorth.x - projectedCenter.x, y: mercatorNorth.y - projectedCenter.y};
-    //     const offset = Math.atan2(northVector.x, northVector.y) * 180 / Math.PI;
-    //     return offset + bearing;
-    // }
+    set bearing(bearing: number) {
+        this.rotation = bearing - this._getBearingOffset();
+    }
 
     get rotation(): number {
         return -this.angle / Math.PI * 180;
     }
 
     set rotation(rotation: number) {
-        const b = -wrap(rotation, -180, 180) * Math.PI / 180;
+        const b = -rotation * Math.PI / 180;
         if (this.angle === b) return;
         this._unmodified = false;
         this.angle = b;
@@ -887,6 +889,7 @@ class Transform {
 
                     if (!minmax) { minmax = {min: minRange, max: maxRange}; }
 
+                    // TODO: ensure that we want `this.rotation` instead of `this.bearing` here
                     const cornerFar = furthestTileCorner(this.rotation);
 
                     const farX = cornerFar[0] * EXTENT;

@@ -341,17 +341,8 @@ class Camera extends Evented {
      * @returns The map's current bearing.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    getBearing(): number { 
-        // return this.transform.bearing;
-        const tr = this.transform;
-        let {lng, lat} = tr.center;
-        const north = {lng, lat: lat += 0.0001};
-        const projectedCenter = tr.projection.project(lng, lat);
-        const mercatorNorth = MercatorCoordinate.fromLngLat(north);
-        const northVector = {x: mercatorNorth.x - projectedCenter.x, y: mercatorNorth.y - projectedCenter.y};
-        const offset = Math.atan2(northVector.x, northVector.y) * 180 / Math.PI;
-        console.log('offset: ', offset, tr.rotation);
-        return offset + tr.rotation;
+    getBearing(): number {
+        return this.transform.bearing;
     }
 
     /**
