@@ -6,8 +6,6 @@ import Texture from './texture.js';
 import {
     lineUniformValues,
     linePatternUniformValues,
-    lineSDFUniformValues,
-    lineGradientUniformValues,
     lineDefinesValues
 } from './program/line_program.js';
 
@@ -75,7 +73,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
 
         const matrix = painter.terrain ? coord.projMatrix : null;
-        var uniformValues = image ? 
+        const uniformValues = image ?
             linePatternUniformValues(painter, tile, layer, crossfade, matrix) :
             lineUniformValues(painter, tile, layer, crossfade, matrix, bucket.lineClipsArray.length);
 
@@ -122,7 +120,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             programConfiguration.updatePaintBuffers(crossfade);
-        }  
+        }
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
