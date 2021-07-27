@@ -1,15 +1,21 @@
 uniform lowp float u_device_pixel_ratio;
-uniform sampler2D u_dash_image;
-uniform sampler2D u_gradient_image;
-uniform float u_mix;
-uniform vec3 u_scale;
 
 varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
-varying highp vec2 v_uv;
+
+#ifdef RENDER_LINE_DASH
+uniform sampler2D u_dash_image;
+uniform float u_mix;
+uniform vec3 u_scale;
 varying vec2 v_tex_a;
 varying vec2 v_tex_b;
+#endif
+
+#ifdef RENDER_LINE_GRADIENT
+uniform sampler2D u_gradient_image;
+varying highp vec2 v_uv;
+#endif
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth

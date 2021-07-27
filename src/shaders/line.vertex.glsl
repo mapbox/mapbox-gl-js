@@ -8,24 +8,35 @@
 
 attribute vec2 a_pos_normal;
 attribute vec4 a_data;
-attribute float a_uv_x;
-attribute float a_split_index;
+
+#ifdef RENDER_LINE_GRADIENT
+// Includes in order: a_uv_x, a_split_index, a_linesofar
+// to reduce attribute count on older devices
+attribute vec3 a_packed;
+#else
 attribute float a_linesofar;
+#endif
 
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
 uniform vec2 u_units_to_pixels;
 uniform lowp float u_device_pixel_ratio;
-uniform float u_image_height;
-uniform vec2 u_texsize;
-uniform mediump vec3 u_scale;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_gamma_scale;
-varying highp vec2 v_uv;
+
+#ifdef RENDER_LINE_DASH
+uniform vec2 u_texsize;
+uniform mediump vec3 u_scale;
 varying vec2 v_tex_a;
 varying vec2 v_tex_b;
+#endif
+
+#ifdef RENDER_LINE_GRADIENT
+uniform float u_image_height;
+varying highp vec2 v_uv;
+#endif
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
@@ -97,6 +108,9 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_GRADIENT
+    float a_uv_x = a_packed[0];
+    float a_split_index = a_packed[1];
+    float a_linesofar = a_packed[2];
     highp float texel_height = 1.0 / u_image_height;
     highp float half_texel_height = 0.5 * texel_height;
     v_uv = vec2(a_uv_x, a_split_index * texel_height - half_texel_height);
