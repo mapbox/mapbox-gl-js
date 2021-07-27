@@ -1955,7 +1955,7 @@ class Map extends Camera {
      * @param {string} layer.type The type of layer (for example `fill` or `symbol`).
      * A list of layer types is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#type).
      *
-     * (This can also be `custom`. For more information, see {@link CustomLayerInterface}).
+     * This can also be `custom`. For more information, see {@link CustomLayerInterface}.
      * @param {string | Object} [layer.source] The data source for the layer.
      * Reference a source that has _already been defined_ using the source's unique id.
      * Reference a _new source_ using a source object (as defined in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/)) directly.
