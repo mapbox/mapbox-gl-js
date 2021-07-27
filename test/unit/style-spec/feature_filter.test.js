@@ -104,7 +104,85 @@ test('filter', t => {
             ],
             ["all", ["<", ["get", "filter_rank"], 2 ], [ "<" ,["pitch"], 60]],
             ["any", ["<", ["get", "filter_rank"], 2 ], [ "<" ,["pitch"], 60]],
-            ["<" ,["pitch"], 60]
+            ["<" ,["pitch"], 60],
+            ["all",
+                [
+                    "<=",
+                    ["get", "filterrank"],
+                    3
+                ],
+                [
+                    "match",
+                    ["get", "class"],
+                    "settlement",
+                    [
+                    "match",
+                    ["get", "worldview"],
+                    ["all", "US"],
+                    true,
+                    false
+                    ],
+                    "disputed_settlement",
+                    [
+                    "all",
+                    [
+                        "==",
+                        ["get", "disputed"],
+                        "true"
+                    ],
+                    [
+                        "match",
+                        ["get", "worldview"],
+                        ["all", "US"],
+                        true,
+                        false
+                    ],
+                    ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]]
+                    ],
+                    false
+                ],
+                [
+                    "step",
+                    ["zoom"],
+                    false,
+                    8,
+                    [
+                    "<",
+                    ["get", "symbolrank"],
+                    11
+                    ],
+                    10,
+                    [
+                    "<",
+                    ["get", "symbolrank"],
+                    12
+                    ],
+                    11,
+                    [
+                    "<",
+                    ["get", "symbolrank"],
+                    13
+                    ],
+                    12,
+                    [
+                    "<",
+                    ["get", "symbolrank"],
+                    15
+                    ],
+                    13,
+                    [
+                    ">=",
+                    ["get", "symbolrank"],
+                    11
+                    ],
+                    14,
+                    [
+                    ">=",
+                    ["get", "symbolrank"],
+                    13
+                    ]
+                ]
+            ]
         ];
 
         const STATIC_FILTERS = [
@@ -248,6 +326,22 @@ test('filter', t => {
                     ["get", "filterrank"],
                     4
                 ]
+            ],
+        ["<=",
+            ["get", "filterrank"],
+            [
+                "+",
+                [
+                "step",
+                ["zoom"],
+                0,
+                16,
+                1,
+                17,
+                2
+                ],
+                3
+            ]
             ]
         ]
 
