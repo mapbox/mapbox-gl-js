@@ -2315,7 +2315,7 @@ class Map extends Camera {
     /**
      * Sets the fog property of the style.
      *
-     * @param {Object} fog The fog properties to set. Must conform the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
+     * @param {Object} fog The fog properties to set. Must conform to the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
      * If `null` or `undefined` is provided, this function call removes the fog from the map.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
