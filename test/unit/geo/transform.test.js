@@ -117,6 +117,17 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('getBounds() returns valid longitudes across the 180th meridian', (t) => {
+        const transform = new Transform();
+        transform.center = new LngLat(180, 0);
+        transform.zoom = 0;
+        transform.resize(500, 500);
+        const bounds = transform.getBounds();
+        t.ok(bounds.getEast() > -180 && bounds.getEast() <= 180);
+        t.ok(bounds.getWest() > -180 && bounds.getWest() <= 180);
+        t.end();
+    });
+
     t.test('_minZoomForBounds respects latRange and lngRange', (t) => {
         t.test('it returns 0 when latRange and lngRange are undefined', (t) => {
             const transform = new Transform();

@@ -1147,11 +1147,12 @@ class Transform {
      */
     getBounds(): LngLatBounds {
         if (this._terrainEnabled()) return this._getBounds3D();
-        return new LngLatBounds()
+        const bounds = new LngLatBounds()
             .extend(this.pointLocation(new Point(this._edgeInsets.left, this._edgeInsets.top)))
             .extend(this.pointLocation(new Point(this.width - this._edgeInsets.right, this._edgeInsets.top)))
             .extend(this.pointLocation(new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom)))
             .extend(this.pointLocation(new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom)));
+        return new LngLatBounds(bounds.getSouthWest(), bounds.getNorthEast());
     }
 
     _getBounds3D(): LngLatBounds {

@@ -862,6 +862,14 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('returns valid longitudes across the 180th meridian', (t) => {
+            const map = createMap(t, {zoom: 1, center: [180, 0], bearing: 45, skipCSSStub: true});
+            const bounds = map.getBounds();
+            t.ok(bounds.getEast() > -180 && bounds.getEast() <= 180);
+            t.ok(bounds.getWest() > -180 && bounds.getWest() <= 180);
+            t.end();
+        });
+
         t.end();
 
         function toFixed(bounds) {
