@@ -27,7 +27,7 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
 
 /**
  * A data source containing an image.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options).
+ * See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.
  *
  * @example
  * // add to map

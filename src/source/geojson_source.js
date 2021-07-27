@@ -19,7 +19,7 @@ import type {Cancelable} from '../types/cancelable.js';
 
 /**
  * A source containing GeoJSON.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-geojson) for detailed documentation of options).
+ * See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-geojson) for detailed documentation of options.
  *
  * @example
  * map.addSource('some id', {
@@ -163,7 +163,7 @@ class GeoJSONSource extends Evented implements Source {
      *     data: {}
      * });
      * const geojsonSource = map.getSource('source_id');
-     * // Update the data after the geojson source was created
+     * // Update the data after the GeoJSON source was created
      * geojsonSource.setData({
      *     "type": "FeatureCollection",
      *     "features": [{

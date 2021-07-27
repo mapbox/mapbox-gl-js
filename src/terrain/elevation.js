@@ -40,7 +40,7 @@ export class Elevation {
     /**
      * Altitude above sea level in meters at specified point.
      * @param {MercatorCoordinate} point Mercator coordinate of the point.
-     * @param {number} defaultIfNotLoaded Value that is returned if the dem tile of the provided point is not loaded.
+     * @param {number} defaultIfNotLoaded Value that is returned if the DEM tile of the provided point is not loaded.
      * @param {boolean} exaggerated `true` if styling exaggeration should be applied to the resulting elevation.
      * @returns {number} Altitude in meters.
      * If there is no loaded tile that carries information for the requested

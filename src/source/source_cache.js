@@ -636,7 +636,7 @@ class SourceCache extends Evented {
                     continue; // tile is covered by overzoomed child
                 }
             } else {
-                // check if all 4 immediate children are loaded (in other words, the missing ideal tile is covered)
+                // Check if all 4 immediate children are loaded (in other words, the missing ideal tile is covered)
                 const children = tileID.children(this._source.maxzoom);
 
                 if (retain[children[0].key] &&
