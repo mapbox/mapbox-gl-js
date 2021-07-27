@@ -206,8 +206,9 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
-      - browser-tools/install-chrome
+          at: ~/
+      - browser-tools/install-chrome:
+          chrome-version: 91.0.4472.164
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -218,8 +219,9 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
-      - browser-tools/install-chrome
+          at: ~/
+      - browser-tools/install-chrome:
+          chrome-version: 91.0.4472.164
       - run: yarn run test-render-prod
       - store_test_results:
           path: test/integration/render-tests
@@ -230,8 +232,9 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
-      - browser-tools/install-chrome
+          at: ~/
+      - browser-tools/install-chrome:
+          chrome-version: 91.0.4472.164
       - run: yarn run test-query
       - store_test_results:
           path: test/integration/query-tests
@@ -257,8 +260,9 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
-      - browser-tools/install-chrome
+          at: ~/
+      - browser-tools/install-chrome:
+          chrome-version: 91.0.4472.164
       - run:
           name: Collect performance stats
           command: node bench/gl-stats.js
@@ -271,8 +275,9 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
-      - browser-tools/install-browser-tools
+          at: ~/
+      - browser-tools/install-browser-tools:
+          chrome-version: 91.0.4472.164
       - run: yarn run build-dev
       - run: yarn run build-token
       - run:
