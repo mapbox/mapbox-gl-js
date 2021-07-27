@@ -4672,9 +4672,6 @@
       "transition": false,
       "requires": [
         {
-          "!": "line-dasharray"
-        },
-        {
           "!": "line-pattern"
         },
         {
