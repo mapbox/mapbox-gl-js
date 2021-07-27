@@ -8,7 +8,7 @@ type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, c
 export type FeatureFilter ={filter: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
-export {isExpressionFilter, isFilterDynamic};
+export {isExpressionFilter, isDynamicFilter};
 
 function isExpressionFilter(filter: any) {
     if (filter === true || filter === false) {
@@ -55,17 +55,25 @@ function isExpressionFilter(filter: any) {
 
 
 
-function isFilterDynamic(filter: any): boolean {
+function isDynamicFilter(filter: any): boolean {
     // Base Cases
-    if (filter === true || filter === false) {
+    if (typeof filter === 'boolean') {
         return false;
     }
     if (isRootExpressionDynamic(filter[0])) {
         return true;
     }
+    if (!Array.isArray(filter)) {
+        return false;
+    }
 
-    // Recursively traverse expression and bubble up a base case.
-    return filter.slice(1).some((f) => isFilterDynamic(f));
+    for(const child of filter.slice(1)) {
+        if (isDynamicFilter(child)){
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function isRootExpressionDynamic(expression: string): boolean {
