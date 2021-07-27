@@ -42,6 +42,8 @@ export type LinePatternUniformsType = {|
     'u_fade': Uniform1f
 |};
 
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH';
+
 const lineUniforms = (context: Context, locations: UniformLocations): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
@@ -86,8 +88,8 @@ const lineUniformValues = (
         'u_dash_image': 0,
         'u_gradient_image': 1,
         'u_image_height': imageHeight,
-        'u_texsize': 0,
-        'u_scale': [],
+        'u_texsize': [0, 0],
+        'u_scale': [0, 0, 0],
         'u_mix': 0
     };
     if (layer.paint.get('line-dasharray').value.value) {

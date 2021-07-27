@@ -2,7 +2,7 @@
 
 import type {CircleDefinesType} from './circle_program.js';
 import type {SymbolDefinesType} from './symbol_program.js';
-import type {LineDefineTypes} from './line_program.js';
+import type {LineDefinesType} from './line_program.js';
 import {fillExtrusionUniforms, fillExtrusionPatternUniforms} from './fill_extrusion_program.js';
 import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms} from './fill_program.js';
 import {circleUniforms} from './circle_program.js';
@@ -19,7 +19,7 @@ import {terrainRasterUniforms} from '../../terrain/terrain_raster_program.js';
 import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program.js';
 import {skyboxCaptureUniforms} from './skybox_capture_program.js';
 
-export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefineTypes;
+export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,

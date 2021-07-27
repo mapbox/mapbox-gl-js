@@ -14,6 +14,7 @@ import type SourceCache from '../source/source_cache.js';
 import type LineStyleLayer from '../style/style_layer/line_style_layer.js';
 import type LineBucket from '../data/bucket/line_bucket.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
+import type {DynamicDefinesType} from './program/program_uniforms.js';
 import {clamp, nextPowerOfTwo} from '../util/util.js';
 import {renderColorRamp} from '../util/color_ramp.js';
 import EXTENT from '../data/extent.js';
