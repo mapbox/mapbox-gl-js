@@ -264,7 +264,10 @@ class Transform {
         return new Point(this.width, this.height);
     }
 
-    _getBearingOffset(lngLat): number {
+    // calculates the angle between a vector pointing north in
+    // Mercator and a vector pointing north in the projection
+    // and converts the angle from radians to degrees
+    _getBearingOffset(lngLat?: LngLat): number {
         const {lng, lat} = lngLat || this.center;
         const north = {lng, lat: lat + 0.0001};
         const projectedCenter = this.projection.project(lng, lat);
@@ -889,7 +892,7 @@ class Transform {
 
                     if (!minmax) { minmax = {min: minRange, max: maxRange}; }
 
-                    // TODO: ensure that we want `this.rotation` instead of `this.bearing` here
+                    // ensure that we want `this.rotation` instead of `this.bearing` here
                     const cornerFar = furthestTileCorner(this.rotation);
 
                     const farX = cornerFar[0] * EXTENT;

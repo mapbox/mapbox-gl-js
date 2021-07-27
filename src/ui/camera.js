@@ -700,7 +700,7 @@ class Camera extends Evented {
         return {
             center: tr.center,
             zoom: tr.zoom,
-            bearing: tr.rotation,
+            bearing: tr.bearing,
             pitch: tr.pitch
         };
     }
@@ -909,9 +909,9 @@ class Camera extends Evented {
             tr.center = LngLat.convert(options.center);
         }
 
-        if ('bearing' in options && tr.rotation !== +options.bearing) {
+        if ('bearing' in options && tr.bearing !== +options.bearing) {
             bearingChanged = true;
-            tr.rotation = +options.bearing;
+            tr.bearing = +options.bearing;
         }
 
         if ('pitch' in options && tr.pitch !== +options.pitch) {
@@ -986,13 +986,13 @@ class Camera extends Evented {
         const tr = this.transform;
         const prevZoom = tr.zoom;
         const prevPitch = tr.pitch;
-        const prevBearing = tr.rotation;
+        const prevBearing = tr.bearing;
 
         tr.setFreeCameraOptions(options);
 
         const zoomChanged = prevZoom !== tr.zoom;
         const pitchChanged = prevPitch !== tr.pitch;
-        const bearingChanged = prevBearing !== tr.rotation;
+        const bearingChanged = prevBearing !== tr.bearing;
 
         this.fire(new Event('movestart', eventData))
             .fire(new Event('move', eventData));
@@ -1104,7 +1104,7 @@ class Camera extends Evented {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
             if (this._rotating) {
-                tr.rotation = interpolate(startBearing, bearing, k);
+                tr.bearing = interpolate(startBearing, bearing, k);
             }
             if (this._pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
@@ -1394,7 +1394,7 @@ class Camera extends Evented {
             tr.zoom = k === 1 ? zoom : startZoom + tr.scaleZoom(scale);
 
             if (this._rotating) {
-                tr.rotation = interpolate(startBearing, bearing, k);
+                tr.bearing = interpolate(startBearing, bearing, k);
             }
             if (this._pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);

@@ -514,7 +514,7 @@ class HandlerManager {
         map._stop(true);
 
         around = around || map.transform.centerPoint;
-        if (bearingDelta) tr.rotation += bearingDelta;
+        if (bearingDelta) tr.bearing += bearingDelta;
         if (pitchDelta) tr.pitch += pitchDelta;
         tr._updateCameraState();
 
