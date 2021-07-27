@@ -1152,7 +1152,7 @@ class Transform {
             .extend(this.pointLocation(new Point(this.width - this._edgeInsets.right, this._edgeInsets.top)))
             .extend(this.pointLocation(new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom)))
             .extend(this.pointLocation(new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom)));
-        return new LngLatBounds(bounds.getSouthWest(), bounds.getNorthEast());
+        return new LngLatBounds(bounds.getSouthWest().wrap(), bounds.getNorthEast().wrap());
     }
 
     _getBounds3D(): LngLatBounds {
