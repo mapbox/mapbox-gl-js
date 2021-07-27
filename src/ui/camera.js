@@ -158,6 +158,11 @@ class Camera extends Evented {
         //addAssertions(this);
     }
 
+    /** @section {Camera}
+     * @method
+     * @instance
+     * @memberof Map */
+
     /**
      * Returns the map's geographical centerpoint.
      *
