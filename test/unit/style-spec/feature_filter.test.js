@@ -1,5 +1,5 @@
 import {test} from '../../util/test.js';
-import {default as createFilter, isExpressionFilter} from '../../../src/style-spec/feature_filter/index.js';
+import {default as createFilter, isExpressionFilter, isDynamicFilter} from '../../../src/style-spec/feature_filter/index.js';
 
 import convertFilter from '../../../src/style-spec/feature_filter/convert.js';
 import Point from '@mapbox/point-geometry';
@@ -87,6 +87,17 @@ test('filter', t => {
         t.equal(withinFilter.filter({zoom: 3}, {type: 2, geometry: [[getPointFromLngLat(2, 2, canonical), getPointFromLngLat(3, 3, canonical)]]}, canonical), true);
         t.equal(withinFilter.filter({zoom: 3}, {type: 2, geometry: [[getPointFromLngLat(6, 6, canonical), getPointFromLngLat(2, 2, canonical)]]}, canonical), false);
         t.equal(withinFilter.filter({zoom: 3}, {type: 2, geometry: [[getPointFromLngLat(5, 5, canonical), getPointFromLngLat(2, 2, canonical)]]}, canonical), false);
+        t.end();
+    });
+
+    t.test('dynamic filters', (t) => {
+
+        t.test('isDynamicFilter', (t) => {
+
+
+            t.end();
+        });
+
         t.end();
     });
 

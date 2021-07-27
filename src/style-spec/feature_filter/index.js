@@ -8,7 +8,7 @@ type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, c
 export type FeatureFilter ={filter: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
-export {isExpressionFilter};
+export {isExpressionFilter, isFilterDynamic};
 
 function isExpressionFilter(filter: any) {
     if (filter === true || filter === false) {
@@ -52,6 +52,27 @@ function isExpressionFilter(filter: any) {
     }
 }
 
+
+
+
+function isFilterDynamic(filter: any): boolean {
+    // Base Cases
+    if (filter === true || filter === false) {
+        return false;
+    }
+    if (isRootExpressionDynamic(filter[0])) {
+        return true;
+    }
+
+    // Recursively traverse expression and bubble up a base case.
+    return filter.slice(1).some((f) => isFilterDynamic(f));
+}
+
+function isRootExpressionDynamic(expression: string): boolean {
+    return expression === 'pitch' ||
+        expression === 'distance-from-center';
+}
+
 const filterSpec = {
     'type': 'boolean',
     'default': false,
@@ -59,7 +80,7 @@ const filterSpec = {
     'property-type': 'data-driven',
     'expression': {
         'interpolated': false,
-        'parameters': ['zoom', 'feature']
+        'parameters': ['zoom', 'feature', 'pitch', 'distance-from-center']
     }
 };
 
@@ -83,7 +104,7 @@ function createFilter(filter: any): FeatureFilter {
 
     const compiled = createExpression(filter, filterSpec);
     if (compiled.result === 'error') {
-        throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
+        throw new Error(compiled.value.map(err => `${err.key}: ${ermessage}`).join(', '));
     } else {
         const needGeometry = geometryNeeded(filter);
         return {filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiled.value.evaluate(globalProperties, feature, {}, canonical),
