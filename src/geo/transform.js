@@ -268,6 +268,7 @@ class Transform {
     // Mercator and a vector pointing north in the projection
     // and converts the angle from radians to degrees
     _getBearingOffset(lngLat?: LngLat): number {
+        if (this.projection.name === 'mercator') return 0;
         const {lng, lat} = lngLat || this.center;
         const north = {lng, lat: lat + 0.0001};
         const projectedCenter = this.projection.project(lng, lat);
