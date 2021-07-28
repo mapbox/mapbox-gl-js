@@ -15,6 +15,7 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features.js';
 import loadGeometry from '../load_geometry.js';
 import toEvaluationFeature from '../evaluation_feature.js';
 import EvaluationParameters from '../../style/evaluation_parameters.js';
+import Point from '@mapbox/point-geometry';
 
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {
@@ -25,7 +26,6 @@ import type {
     PopulateParameters
 } from '../bucket.js';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer.js';
-import type Point from '@mapbox/point-geometry';
 import type {Segment} from '../segment.js';
 import {RGBAImage} from '../../util/image.js';
 import type Context from '../../gl/context.js';
@@ -355,6 +355,16 @@ class LineBucket implements Bucket {
         while (first < len - 1 && vertices[first].equals(vertices[first + 1])) {
             first++;
         }
+        // Permit degenerate two-vertex line segments since the end caps *should* cause
+        // them to display, even if they shrink to a point.
+        if (!isPolygon && len - first < 2) {
+            // Expand the range by one in either direction, if possible
+            if (first) {
+                first--;
+            } else {
+                len = Math.min(len + 1, vertices.length);
+            }
+        }
 
         // Ignore invalid geometry.
         if (len < (isPolygon ? 3 : 2)) return;
@@ -388,8 +398,11 @@ class LineBucket implements Bucket {
                 (isPolygon ? vertices[first + 1] : (undefined: any)) : // if it's a polygon, treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
 
-            // if two consecutive vertices exist, skip the current one
-            if (nextVertex && vertices[i].equals(nextVertex)) continue;
+            // if two consecutive vertices exist, skip the current one *unless* we require it
+            const nextEqualsCurrent = nextVertex && vertices[i].equals(nextVertex);
+            if (nextEqualsCurrent && (isPolygon || len > 2)) {
+                continue;
+            }
 
             if (nextNormal) prevNormal = nextNormal;
             if (currentVertex) prevVertex = currentVertex;
@@ -399,7 +412,11 @@ class LineBucket implements Bucket {
             // Calculate the normal towards the next vertex in this line. In case
             // there is no next vertex, pretend that the line is continuing straight,
             // meaning that we are just using the previous normal.
-            nextNormal = nextVertex ? nextVertex.sub(currentVertex)._unit()._perp() : prevNormal;
+            if (nextEqualsCurrent || !nextVertex) {
+                nextNormal = prevNormal || new Point(1, 0);
+            } else {
+                nextNormal = nextVertex.sub(currentVertex)._unit()._perp();
+            }
 
             // If we still don't have a previous normal, this is the beginning of a
             // non-closed line, so we're doing a straight "join".

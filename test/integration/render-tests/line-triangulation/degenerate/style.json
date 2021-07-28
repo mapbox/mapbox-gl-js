@@ -1,0 +1,206 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "geojson-with-tolerance": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features":  [
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [-20, -30],
+                [-20, -30]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [-19.999999, -20],
+                [-20.000001, -20]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [-19.9999, -10],
+                [-20.0001, -10]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [-19.99, 0],
+                [-20.01, 0]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [-19.9, 10],
+                [-20.1, 10]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [-19, 20],
+                [-21, 20]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [-5, 30],
+                [-35, 30]
+              ]
+            }
+          }
+        ]
+      },
+      "tolerance": 0
+    },
+    "geojson-without-tolerance": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features":  [
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [20, -30],
+                [20, -30]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [19.999999, -20],
+                [20.000001, -20]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [19.9999, -10],
+                [20.0001, -10]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [19.99, 0],
+                [20.01, 0]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [19.9, 10],
+                [20.1, 10]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [19, 20],
+                [21, 20]
+              ]
+            }
+          },
+          {
+            "type":"Feature",
+            "geometry": {
+              "type":"LineString",
+              "coordinates": [
+                [5, 30],
+                [35, 30]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#FFF"
+      }
+    },
+    {
+      "id": "lhs-geojson-with-tolerance",
+      "type": "line",
+      "source": "geojson-with-tolerance",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 8
+      }
+    },
+    {
+      "id": "rhs-geojson-without-tolerance",
+      "type": "line",
+      "source": "geojson-without-tolerance",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 8
+      }
+    }
+  ]
+}
