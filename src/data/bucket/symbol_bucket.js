@@ -462,8 +462,7 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
-            const linePlacement = layout.get('symbol-placement') === 'line' || layout.get('symbol-placement') === 'line-center';
-            if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, !linePlacement ? canonical : undefined);
+            if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature);
 
             let text: Formatted | void;
             if (hasText) {
@@ -638,8 +637,6 @@ class SymbolBucket implements Bucket {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
-        //console.log(JSON.stringify(canonical) + " " + labelAnchor.x + " " + labelAnchor.y + " " + labelAnchor.z);
-
         const segment = arrays.segments.prepareSegment(4 * quads.length, layoutVertexArray, indexArray, this.canOverlap ? feature.sortKey : undefined);
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
         const vertexStartIndex = segment.vertexLength;
@@ -673,11 +670,7 @@ class SymbolBucket implements Bucket {
             }
         }
 
-        if (labelAnchor.x === tileAnchor.x) {
-            const asd = 2;
-        }
-
-        arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y, labelAnchor.z || 0, tileAnchor.x, tileAnchor.y,
+        arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y,
             glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart, vertexStartIndex,
             lineStartIndex, lineLength, (tileAnchor.segment: any),
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
