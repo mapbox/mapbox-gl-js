@@ -575,7 +575,7 @@ class Transform {
     }
 
     /**
-     * Return a zoom level that will cover all tiles the transform.
+     * Return the highest zoom level that fully includes all tiles within the transform's boundaries.
      * @param {Object} options Options.
      * @param {number} options.tileSize Tile size, expressed in screen pixels.
      * @param {boolean} options.roundZoom Target zoom level. If true, the value will be rounded to the closest integer. Otherwise the value will be floored.
