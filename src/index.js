@@ -257,7 +257,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  *
  * @function setRTLTextPlugin
  * @param {string} pluginURL URL pointing to the Mapbox RTL text plugin source.
- * @param {Function} callback Called with an error argument if there is an error.
+ * @param {Function} callback Called with an error argument if there is an error, or a null error argument on success.
  * @param {boolean} lazy If set to `true`, mapboxgl will defer loading the plugin until rtl text is encountered,
  *    rtl text will then be rendered only after the plugin finishes loading.
  * @example
