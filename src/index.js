@@ -137,8 +137,8 @@ const exported = {
     },
 
     /**
-     * Gets and sets the maximum number of images (raster tiles, sprites, icons) to load in parallel,
-     * which affects performance in raster-heavy maps. 16 by default.
+     * Gets and sets the maximum number of images (raster tiles, sprites, icons) to load in parallel.
+     * 16 by default. There is no maximum value, but the number of images affects performance in raster-heavy maps.
      *
      * @var {string} maxParallelImageRequests
      * @returns {number} Number of parallel requests currently configured.
