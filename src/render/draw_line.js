@@ -6,8 +6,7 @@ import Texture from './texture.js';
 import {
     lineUniformValues,
     linePatternUniformValues,
-    lineSDFUniformValues,
-    lineGradientUniformValues
+    lineDefinesValues
 } from './program/line_program.js';
 
 import type Painter from './painter.js';
@@ -15,6 +14,7 @@ import type SourceCache from '../source/source_cache.js';
 import type LineStyleLayer from '../style/style_layer/line_style_layer.js';
 import type LineBucket from '../data/bucket/line_bucket.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
+import type {DynamicDefinesType} from './program/program_uniforms.js';
 import {clamp, nextPowerOfTwo} from '../util/util.js';
 import {renderColorRamp} from '../util/color_ramp.js';
 import EXTENT from '../data/extent.js';
@@ -38,10 +38,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const gradient = layer.paint.get('line-gradient');
     const crossfade = layer.getCrossfadeParameters();
 
-    const programId =
-        image ? 'linePattern' :
-        dasharray ? 'lineSDF' :
-        gradient ? 'lineGradient' : 'line';
+    const programId = image ? 'linePattern' : 'line';
 
     const context = painter.context;
     const gl = context.gl;
@@ -55,7 +52,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.prepareDrawTile(coord);
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(programId, programConfiguration);
+        const definesValues = lineDefinesValues(layer);
+        const program = painter.useProgram(programId, programConfiguration, ((definesValues: any): DynamicDefinesType[]));
 
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
@@ -76,20 +74,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
 
         const matrix = painter.terrain ? coord.projMatrix : null;
-        const uniformValues = image ? linePatternUniformValues(painter, tile, layer, crossfade, matrix) :
-            dasharray ? lineSDFUniformValues(painter, tile, layer, crossfade, matrix) :
-            gradient ? lineGradientUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length) :
-            lineUniformValues(painter, tile, layer, matrix);
+        const uniformValues = image ?
+            linePatternUniformValues(painter, tile, layer, crossfade, matrix) :
+            lineUniformValues(painter, tile, layer, crossfade, matrix, bucket.lineClipsArray.length);
 
-        if (image) {
-            context.activeTexture.set(gl.TEXTURE0);
-            tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePaintBuffers(crossfade);
-        } else if (dasharray) {
-            context.activeTexture.set(gl.TEXTURE0);
-            tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
-            programConfiguration.updatePaintBuffers(crossfade);
-        } else if (gradient) {
+        if (gradient) {
             const layerGradient = bucket.gradients[layer.id];
             let gradientTexture = layerGradient.texture;
             if (layer.gradientVersion !== layerGradient.version) {
@@ -120,8 +109,18 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                 layerGradient.version = layer.gradientVersion;
                 gradientTexture = layerGradient.texture;
             }
-            context.activeTexture.set(gl.TEXTURE0);
+            context.activeTexture.set(gl.TEXTURE1);
             gradientTexture.bind(layer.stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);
+        }
+        if (dasharray) {
+            context.activeTexture.set(gl.TEXTURE0);
+            tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
+            programConfiguration.updatePaintBuffers(crossfade);
+        }
+        if (image) {
+            context.activeTexture.set(gl.TEXTURE0);
+            tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            programConfiguration.updatePaintBuffers(crossfade);
         }
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());

@@ -1169,7 +1169,7 @@ export {
     StructArrayLayout4i8 as FillExtrusionLayoutArray,
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout2i4ub1f12 as LineLayoutArray,
-    StructArrayLayout2f8 as LineExtLayoutArray,
+    StructArrayLayout3f12 as LineExtLayoutArray,
     StructArrayLayout10ui20 as PatternLayoutArray,
     StructArrayLayout8ui16 as DashLayoutArray,
     StructArrayLayout4i4ui4i24 as SymbolLayoutArray,

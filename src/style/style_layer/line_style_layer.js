@@ -82,14 +82,9 @@ class LineStyleLayer extends StyleLayer {
     }
 
     getProgramIds(): string[] {
-        const dasharray = this.paint.get('line-dasharray');
         const patternProperty = this.paint.get('line-pattern');
         const image = patternProperty.constantOr((1: any));
-        const gradient = this.paint.get('line-gradient');
-        const programId =
-            image ? 'linePattern' :
-            dasharray ? 'lineSDF' :
-            gradient ? 'lineGradient' : 'line';
+        const programId = image ? 'linePattern' : 'line';
         return [programId];
     }
 

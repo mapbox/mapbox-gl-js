@@ -41,12 +41,8 @@ import hillshadeFrag from './hillshade.fragment.glsl';
 import hillshadeVert from './hillshade.vertex.glsl';
 import lineFrag from './line.fragment.glsl';
 import lineVert from './line.vertex.glsl';
-import lineGradientFrag from './line_gradient.fragment.glsl';
-import lineGradientVert from './line_gradient.vertex.glsl';
 import linePatternFrag from './line_pattern.fragment.glsl';
 import linePatternVert from './line_pattern.vertex.glsl';
-import lineSDFFrag from './line_sdf.fragment.glsl';
-import lineSDFVert from './line_sdf.vertex.glsl';
 import rasterFrag from './raster.fragment.glsl';
 import rasterVert from './raster.vertex.glsl';
 import symbolIconFrag from './symbol_icon.fragment.glsl';
@@ -96,9 +92,7 @@ export default {
     hillshadePrepare: compile(hillshadePrepareFrag, hillshadePrepareVert),
     hillshade: compile(hillshadeFrag, hillshadeVert),
     line: compile(lineFrag, lineVert),
-    lineGradient: compile(lineGradientFrag, lineGradientVert),
     linePattern: compile(linePatternFrag, linePatternVert),
-    lineSDF: compile(lineSDFFrag, lineSDFVert),
     raster: compile(rasterFrag, rasterVert),
     symbolIcon: compile(symbolIconFrag, symbolIconVert),
     symbolSDF: compile(symbolSDFFrag, symbolSDFVert),
