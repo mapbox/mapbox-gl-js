@@ -8,7 +8,7 @@ type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, c
 export type FeatureFilter ={filter: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
-export {isExpressionFilter, isDynamicFilter};
+export {isExpressionFilter, isDynamicFilter, extractStaticFilter};
 
 function isExpressionFilter(filter: any) {
     if (filter === true || filter === false) {
@@ -52,7 +52,13 @@ function isExpressionFilter(filter: any) {
     }
 }
 
+function extractStaticFilter(filter: any): any {
+    if (!isDynamicFilter(filter)) {
+        return filter;
+    }
 
+    return true;
+}
 
 
 function isDynamicFilter(filter: any): boolean {
