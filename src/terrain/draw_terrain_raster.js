@@ -23,6 +23,7 @@ import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import { array } from '../style-spec/expression/types.js';
+import {tileLatLngCorners, latLngToECEF} from '../geo/projection/globe.js'
 
 export {
     drawTerrainRaster,
@@ -145,30 +146,6 @@ function calculateGridKey(y, z) {
     return (1 << Math.min(z, 22)) + y;
 }
 
-function tileLatLngCorners(id: CanonicalTileID) {
-    const tileScale = Math.pow(2, id.z);
-    const left = id.x / tileScale;
-    const right = (id.x + 1) / tileScale;
-    const top = id.y / tileScale;
-    const bottom = (id.y + 1) / tileScale;
-
-    const latLngTL = [ latFromMercatorY(top), lngFromMercatorX(left) ];
-    const latLngBR = [ latFromMercatorY(bottom), lngFromMercatorX(right) ];
-
-    return [latLngTL, latLngBR];
-}
-
-function latLngToECEF(lat, lng, r) {
-    lat = degToRad(lat);
-    lng = degToRad(lng);
-
-    const sx = Math.cos(lat) * Math.sin(lng) * r;
-    const sy = -Math.sin(lat) * r;
-    const sz = Math.cos(lat) * Math.cos(lng) * r;
-
-    return [sx, sy, sz];
-}
-
 function createGridVertices(count: number, sz, sy, ws): any {
     const tiles = Math.pow(2, sz);
     const [latLngTL, latLngBR]= tileLatLngCorners(new CanonicalTileID(sz, tiles / 2, sy));
@@ -195,9 +172,6 @@ function createGridVertices(count: number, sz, sy, ws): any {
 }
 
 function createFlatVertices(count): any {
-    //const tiles = Math.pow(2, sz);
-    //const [latLngTL, latLngBR]= tileLatLngCorners(new CanonicalTileID(sz, tiles / 2, sy));
-    //const radius = ws / Math.PI / 2.0;
     const boundsArray = new RasterBoundsArray();
 
     const gridExt = count;
@@ -205,12 +179,8 @@ function createFlatVertices(count): any {
     boundsArray.reserve(count * count);
 
     for (let y = 0; y < vertexExt; y++) {
-        //const lat = lerp(latLngTL[0], latLngBR[0], y / gridExt);
-        //const mercY = clamp(mercatorYfromLat(lat), 0, 1);
         const uvY = y / gridExt;
         for (let x = 0; x < vertexExt; x++) {
-            //const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
-            //const p = latLngToECEF(lat, lng, radius);
             boundsArray.emplaceBack(x / gridExt * EXTENT, y / gridExt * EXTENT, x / gridExt * EXTENT, y / gridExt * EXTENT);
         }
     }
@@ -304,7 +274,8 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
     //const transitionLerp = clamp(tr.zoom - 5.0, 0.0, 1.0);// (now % 1000.0) / 1000.0;
     const phase = (now % 10000.0) / 10000.0;
-    const transitionLerp = phase <= 0.5 ? phase * 2.0 : 2.0 - 2.0 * phase;
+    const transitionLerp = 0.0;// phase <= 0.5 ? phase * 2.0 : 2.0 - 2.0 * phase;
+    //const transitionLerp = phase <= 0.5 ? phase * 2.0 : 2.0 - 2.0 * phase;
 
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
@@ -380,14 +351,13 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             const tiles = Math.pow(2, coord.canonical.z);
             const normId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
 
-            const refRadius = EXTENT / (2.0 * Math.PI);
             const latLngCorners = tileLatLngCorners(normId);
             const tl = latLngCorners[0];
             const br = latLngCorners[1];
-            const tlNorm = latLngToECEF(tl[0], tl[1], refRadius);
-            const trNorm = latLngToECEF(tl[0], br[1], refRadius);
-            const brNorm = latLngToECEF(br[0], br[1], refRadius);
-            const blNorm = latLngToECEF(br[0], tl[1], refRadius);
+            const tlNorm = latLngToECEF(tl[0], tl[1]);
+            const trNorm = latLngToECEF(tl[0], br[1]);
+            const brNorm = latLngToECEF(br[0], br[1]);
+            const blNorm = latLngToECEF(br[0], tl[1]);
 
             vec3.normalize(tlNorm, tlNorm);
             vec3.normalize(trNorm, trNorm);

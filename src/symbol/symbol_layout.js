@@ -33,6 +33,7 @@ import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js'
 import {Aabb} from '../util/primitives.js';
 import {vec3} from 'gl-matrix';
 import {clamp} from '../util/util.js';
+import {tileLatLngCorners, latLngToECEF, normalizeECEF, tileBoundsOnGlobe} from '../geo/projection/globe.js'
 
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
@@ -151,98 +152,14 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
     return (offset[1] !== INVALID_TEXT_OFFSET) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
 }
 
-const refRadius = 8192.0 / Math.PI / 2.0;
-
-function latLngToECEF(lat, lng, r) {
-    lat = degToRad(lat);
-    lng = degToRad(lng);
-
-    const sx = Math.cos(lat) * Math.sin(lng) * r;
-    const sy = -Math.sin(lat) * r;
-    const sz = Math.cos(lat) * Math.cos(lng) * r;
-
-    return [sx, sy, sz];
-}
-
 const reprojectTileAnchor = (p, tileID) => {
     const tiles = Math.pow(2.0, tileID.z);
     const mx = (p.x / 8192.0 + tileID.x) / tiles;
     const my = (p.y / 8192.0 + tileID.y) / tiles;
     const lat = latFromMercatorY(my);
     const lng = lngFromMercatorX(mx);
-    return latLngToECEF(lat, lng, refRadius);
+    return latLngToECEF(lat, lng);
 };
-
-function tileLatLngCorners(id: CanonicalTileID, padding: ?number) {
-    const tileScale = Math.pow(2, id.z);
-    const left = id.x / tileScale;
-    const right = (id.x + 1) / tileScale;
-    const top = id.y / tileScale;
-    const bottom = (id.y + 1) / tileScale;
-
-    const latLngTL = [ latFromMercatorY(top), lngFromMercatorX(left) ];
-    const latLngBR = [ latFromMercatorY(bottom), lngFromMercatorX(right) ];
-
-    return [latLngTL, latLngBR];
-}
-
-function normalizeECEF(point, bounds: Aabb) {
-    const size = vec3.sub([], bounds.max, bounds.min);
-    const normPoint = vec3.divide([], vec3.sub([], point, bounds.min), size);
-
-    normPoint[0] = clamp(normPoint[0], 0, 1);
-    normPoint[1] = clamp(normPoint[1], 0, 1);
-    normPoint[2] = clamp(normPoint[2], 0, 1);
-
-    return normPoint;
-}
-
-function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
-    const z = id.z;
-
-    const mn = -refRadius;
-    const mx = refRadius;
-
-    if (z === 0) {
-        return new Aabb([mn, mn, mn], [mx, mx, mx]);
-    } else if (z === 1) {
-        if (id.x === 0 && id.y === 0) {
-            return new Aabb([mn, mn, mn], [0, 0, mx]);
-        } else if (id.x === 1 && id.y === 0) {
-            return new Aabb([0, mn, mn], [mx, 0, mx]);
-        } else if (id.x === 0 && id.y === 1) {
-            return new Aabb([mn, 0, mn], [0, mx, mx]);
-        } else if (id.x === 1 && id.y === 1) {
-            return new Aabb([0, 0, mn], [mx, mx, mx]);
-        }
-    }
-
-    // After zoom 1 surface function is monotonic for all tile patches
-    // => it is enough to project corner points
-    const [min, max] = tileLatLngCorners(id);
-
-    const corners = [
-        latLngToECEF(min[0], min[1], refRadius),
-        latLngToECEF(min[0], max[1], refRadius),
-        latLngToECEF(max[0], min[1], refRadius),
-        latLngToECEF(max[0], max[1], refRadius)
-    ];
-
-    const bMin = [mx, mx, mx];
-    const bMax = [mn, mn, mn];
-
-    for (const p of corners) {
-        bMin[0] = Math.min(bMin[0], p[0]);
-        bMin[1] = Math.min(bMin[1], p[1]);
-        bMin[2] = Math.min(bMin[2], p[2]);
-
-        bMax[0] = Math.max(bMax[0], p[0]);
-        bMax[1] = Math.max(bMax[1], p[1]);
-        bMax[2] = Math.max(bMax[2], p[2]);
-    }
-
-    return new Aabb(bMin, bMax);
-}
 
 export function performSymbolLayout(bucket: SymbolBucket,
                              glyphMap: {[_: string]: {[number]: ?StyleGlyph}},
@@ -521,6 +438,7 @@ function addFeature(bucket: SymbolBucket,
     };
 
     const bounds = tileBoundsOnGlobe(canonical);
+    const normalizationMatrix = normalizeECEF(bounds);
 
     if (symbolPlacement === 'line') {
         for (const line of clipLine(feature.geometry, 0, 0, EXTENT, EXTENT)) {
@@ -541,10 +459,10 @@ function addFeature(bucket: SymbolBucket,
                     const tileAnchor = anchor.clone();
 
                     let p = reprojectTileAnchor(anchor, canonical);
-                    p = normalizeECEF(p, bounds);
-                    anchor.x = p[0] * ((1 << 15) - 1);
-                    anchor.y = p[1] * ((1 << 15) - 1);
-                    anchor.z = p[2] * ((1 << 15) - 1);
+                    vec3.transformMat4(p, p, normalizationMatrix);
+                    anchor.x = p[0];
+                    anchor.y = p[1];
+                    anchor.z = p[2];
                     anchor.inside = anchorInside(tileAnchor.x, tileAnchor.y);
 
                     addSymbolAtAnchor(line, anchor, tileAnchor);
@@ -567,14 +485,13 @@ function addFeature(bucket: SymbolBucket,
                     const tileAnchor = anchor.clone();
 
                     let p = reprojectTileAnchor(anchor, canonical);
-                    p = normalizeECEF(p, bounds);
-                    anchor.x = p[0] * ((1 << 15) - 1);
-                    anchor.y = p[1] * ((1 << 15) - 1);
-                    anchor.z = p[2] * ((1 << 15) - 1);
+                    vec3.transformMat4(p, p, normalizationMatrix);
+                    anchor.x = p[0];
+                    anchor.y = p[1];
+                    anchor.z = p[2];
                     anchor.inside = anchorInside(tileAnchor.x, tileAnchor.y);
 
                     addSymbolAtAnchor(line, anchor, tileAnchor);
-                    //addSymbolAtAnchor(line, anchor, null);
                 }
             }
         }

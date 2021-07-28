@@ -33,7 +33,6 @@ export class Elevation {
      * @param defaultIfNotLoaded
      */
     getAtPointOrZero(point: MercatorCoordinate, defaultIfNotLoaded: number = 0): number {
-        return 0;
         return this.getAtPoint(point, defaultIfNotLoaded) || 0;
     }
 
@@ -48,7 +47,6 @@ export class Elevation {
      * Doesn't invoke network request to fetch the data.
      */
     getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: ?number, exaggerated: boolean = true): number | null {
-        return 0;
         // Force a cast to null for both null and undefined
         if (defaultIfNotLoaded == null) defaultIfNotLoaded = null;
 
@@ -83,7 +81,6 @@ export class Elevation {
      * x and y are offset within tile, in 0 .. EXTENT coordinate space.
      */
     getAtTileOffset(tileID: OverscaledTileID, x: number, y: number): number {
-        return 0;
         const tilesAtTileZoom = 1 << tileID.canonical.z;
         return this.getAtPointOrZero(new MercatorCoordinate(
             tileID.wrap + (tileID.canonical.x + x / EXTENT) / tilesAtTileZoom,
@@ -102,8 +99,7 @@ export class Elevation {
         if (!helper) { return false; }
 
         points.forEach(p => {
-            p[2] = 0.0;
-            //p[2] = this.exaggeration() * helper.getElevationAt(p[0], p[1], interpolated);
+            p[2] = this.exaggeration() * helper.getElevationAt(p[0], p[1], interpolated);
         });
         return true;
     }

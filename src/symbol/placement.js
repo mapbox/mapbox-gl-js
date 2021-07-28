@@ -317,13 +317,13 @@ export class Placement {
 
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
             textScale, textBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
-            textAllowOverlap, textPixelRatio, posMatrix, false, collisionGroup.predicate);
+            textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
 
         if (iconBox) {
             const placedIconBoxes = this.collisionIndex.placeCollisionBox(
                 bucket.getSymbolInstanceIconSize(iconSize, this.transform.zoom, symbolIndex),
                 iconBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
-                textAllowOverlap, textPixelRatio, posMatrix, false, collisionGroup.predicate);
+                textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
             if (placedIconBoxes.box.length === 0) return;
         }
 
@@ -485,7 +485,7 @@ export class Placement {
                     const placeBox = (collisionTextBox, orientation) => {
                         const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, symbolIndex);
                         const placedFeature = this.collisionIndex.placeCollisionBox(textScale, collisionTextBox,
-                            new Point(0, 0), textAllowOverlap, textPixelRatio, posMatrix, symbolInstance.dynamicAnchor, collisionGroup.predicate);
+                            new Point(0, 0), textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                         if (placedFeature && placedFeature.box && placedFeature.box.length) {
                             this.markUsedOrientation(bucket, orientation, symbolInstance);
                             this.placedOrientations[symbolInstance.crossTileID] = orientation;
@@ -641,7 +641,7 @@ export class Placement {
                         new Point(0, 0);
                     const iconScale = bucket.getSymbolInstanceIconSize(partiallyEvaluatedIconSize, this.transform.zoom, symbolIndex);
                     return this.collisionIndex.placeCollisionBox(iconScale, iconBox, shiftPoint,
-                        iconAllowOverlap, textPixelRatio, posMatrix, symbolInstance.dynamicAnchor, collisionGroup.predicate);
+                        iconAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                 };
 
                 if (placedVerticalText && placedVerticalText.box && placedVerticalText.box.length && collisionArrays.verticalIconBox) {

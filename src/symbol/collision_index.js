@@ -31,19 +31,6 @@ import {degToRad} from '../util/util.js';
 // stability, but it's expensive.
 const viewportPadding = 100;
 
-const refRadius = 8192.0 / Math.PI / 2.0;
-
-function latLngToECEF(lat, lng, r) {
-    lat = degToRad(lat);
-    lng = degToRad(lng);
-
-    const sx = Math.cos(lat) * Math.sin(lng) * r;
-    const sy = -Math.sin(lat) * r;
-    const sz = Math.cos(lat) * Math.cos(lng) * r;
-
-    return [sx, sy, sz];
-}
-
 /**
  * A collision index used to prevent symbols from overlapping. It keep tracks of
  * where previous symbols have been placed and is used to check if a new
@@ -86,25 +73,10 @@ class CollisionIndex {
         this.fogState = fogState;
     }
 
-    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, dynamicAnchor, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
+    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
-        let projectedPoint = null;
-        // if (dynamicAnchor) {
-        //     const tileID = collisionBox.tileID;
-        //     const tiles = Math.pow(2.0, tileID.canonical.z);
-        //     const mx = (collisionBox.anchorPointX / 8192.0 + tileID.canonical.x) / tiles;
-        //     const my = (collisionBox.anchorPointY / 8192.0 + tileID.canonical.y) / tiles;
-        //     const lat = latFromMercatorY(my);
-        //     const lng = lngFromMercatorX(mx);
-        //     const pg = latLngToECEF(lat, lng, refRadius);
-        //     projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, pg[0], pg[1], pg[2], collisionBox.tileID);
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.anchorPointZ, collisionBox.tileID);
 
-        // } else {
-            projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.anchorPointZ, collisionBox.tileID);
-        //}
-
-        //const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation, collisionBox.tileID);
-        //const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.anchorPointZ, collisionBox.tileID);
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
         const tlY = (collisionBox.y1 * scale + shift.y - collisionBox.padding) * tileToViewport + projectedPoint.point.y;
@@ -152,29 +124,15 @@ class CollisionIndex {
         const getElevation = elevation ? (p => elevation.getAtTileOffset(tileID, p.x, p.y)) : (_ => 0);
 
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-
-        //// Project to globe
-        //const tiles = Math.pow(2.0, tileID.canonical.z);
-        //const mx = (tileUnitAnchorPoint.x / 8192.0 + tileID.canonical.x) / tiles;
-        //const my = (tileUnitAnchorPoint.y / 8192.0 + tileID.canonical.y) / tiles;
-        //const lat = latFromMercatorY(my);
-        //const lng = lngFromMercatorX(mx);
-        //const point = latLngToECEF(lat, lng, refRadius);
-        //const screenAnchorPoint = this.projectAndGetPerspectiveRatio(globeMatrix, point[0], point[1], point[2], tileID);
         const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, symbol.anchorX, symbol.anchorY, symbol.anchorZ, tileID);
-
-        //console.log(screenAnchorPoint.point.x + " " + screenAnchorPoint.point.y + " | " + screenAnchorPoint2.point.x + " " + screenAnchorPoint2.point.y);
 
         screenAnchorPoint.point.x -= viewportPadding;
         screenAnchorPoint.point.y -= viewportPadding;
 
-        //const anchorElevation = getElevation(tileUnitAnchorPoint);
-        //const screenAnchorPointTEMP = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, 0, tileID);
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
 
-        //const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix, anchorElevation).point;
         const labelPlaneAnchorPoint = screenAnchorPoint.point;
 
         const projectionCache = {};

@@ -15,8 +15,8 @@ import type {
     SymbolDynamicLayoutArray
 } from '../data/array_types.js';
 import {WritingMode} from '../symbol/shaping.js';
-import {mercatorZfromAltitude, latFromMercatorY, lngFromMercatorX} from '../geo/mercator_coordinate.js';
-import {degToRad} from '../util/util.js';
+import {latFromMercatorY, lngFromMercatorX} from '../geo/mercator_coordinate.js';
+import {latLngToECEF} from '../geo/projection/globe.js'
 
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
@@ -138,26 +138,13 @@ function project(point: Point, matrix: mat4, elevation: number = 0) {
     };
 }
 
-const refRadius = 8192.0 / Math.PI / 2.0;
-
-function latLngToECEF(lat, lng, r) {
-    lat = degToRad(lat);
-    lng = degToRad(lng);
-
-    const sx = Math.cos(lat) * Math.sin(lng) * r;
-    const sy = -Math.sin(lat) * r;
-    const sz = Math.cos(lat) * Math.cos(lng) * r;
-
-    return [sx, sy, sz];
-}
-
-const tileAnchorToScreen = (p, m, tileID) => {
+function projectToGlobe(p, m, tileID) {
     const tiles = Math.pow(2.0, tileID.canonical.z);
     const mx = (p.x / 8192.0 + tileID.canonical.x) / tiles;
     const my = (p.y / 8192.0 + tileID.canonical.y) / tiles;
     const lat = latFromMercatorY(my);
     const lng = lngFromMercatorX(mx);
-    const pg = latLngToECEF(lat, lng, refRadius);
+    const pg = latLngToECEF(lat, lng);
 
     const v = vec4.transformMat4([], [pg[0], pg[1], pg[2], 1.0], m);
     return {
@@ -233,29 +220,19 @@ function updateLineLabels(bucket: SymbolBucket,
         // const elevation = getElevation ? getElevation({x: symbol.anchorX, y: symbol.anchorY}) : 0;
         const anchorPos = [symbol.anchorX, symbol.anchorY, symbol.anchorZ, 1];
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
-        //const elevation = undefined;
-        //const anchorPos = [symbol.anchorX, symbol.anchorY, 0, 1];
-        //const anchorProjection = project()
-        //const anchorProjection = tileAnchorToScreen(new Point(symbol.anchorX, symbol.anchorY), posMatrix, tileID);
-        //const w = anchorProjection.signedDistanceFromCamera;
-        //const anchorPos = [anchorProjection.point.x * w, anchorProjection.point.y * w, 0, w];
 
         // Don't bother calculating the correct point for invisible labels.
         if (!isVisible(anchorPos, clippingBuffer)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
-        
-        const cameraToAnchorDistance = anchorPos[3];
-        //const cameraToAnchorDistance = anchorProjection.signedDistanceFromCamera;
 
-        // Compensate the curvature of the globe
+        const cameraToAnchorDistance = anchorPos[3];
         const perspectiveRatio = getPerspectiveRatio(painter.transform.cameraToCenterDistance, cameraToAnchorDistance);
 
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
 
-        //let toScreen = mat4.multiply([], labelPlaneMatrix, posMatrix);
         const transformedTileAnchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix, symbol.anchorZ);
         const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
 
@@ -267,14 +244,7 @@ function updateLineLabels(bucket: SymbolBucket,
         }
 
         const anchorPoint = transformedTileAnchor.point;
-        // const pe = vec4.transformMat4([], [anchorProjection.point.x, anchorProjection.point.y, 0, 1], labelPlaneMatrix);
-        // pe[0] /= pe[3];
-        // pe[1] /= pe[3];
-        // const anchorPoint = new Point(pe[0], pe[1]);
-
         let projectionCache = {};
-        
-        //toScreen = mat4.multiply([], labelPlaneMatrix, globeMatrix);
 
         const getElevationForPlacement = null;// pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
         const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, globeLabelPlaneMatrix, globeGlCoordMatrix,
@@ -422,10 +392,6 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         if (!singleGlyph)
             return {notEnoughRoom: true};
 
-        const p = singleGlyph.point;
-        const a = vec4.transformMat4([], [p.x, p.y, 0, 1], glCoordMatrix);
-        const b = vec4.transformMat4([], a, posMatrix);
-
         placedGlyphs = [singleGlyph];
     }
 
@@ -442,7 +408,7 @@ function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint:
     // plane of the camera.
     const unitVertex = previousTilePoint.add(previousTilePoint.sub(currentTilePoint)._unit());
     //const projectedUnitVertex = project(unitVertex, projectionMatrix, getElevation ? getElevation(unitVertex) : 0).point;
-    const projectedUnitVertex = tileAnchorToScreen(unitVertex, projectionMatrix, tileID).point;
+    const projectedUnitVertex = projectToGlobe(unitVertex, projectionMatrix, tileID).point;
     const projectedUnitSegment = previousProjectedPoint.sub(projectedUnitVertex);
 
     return previousProjectedPoint.add(projectedUnitSegment._mult(minimumLength / projectedUnitSegment.mag()));
@@ -525,7 +491,7 @@ function placeGlyphAlongLine(offsetX: number,
         if (current === undefined) {
             currentVertex = new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
             //const projection = project(currentVertex, labelPlaneMatrix, getElevation ? getElevation(currentVertex) : 0);
-            const projection = tileAnchorToScreen(currentVertex, labelPlaneMatrix, tileID);
+            const projection = projectToGlobe(currentVertex, labelPlaneMatrix, tileID);
             if (projection.signedDistanceFromCamera > 0) {
                 current = projectionCache[currentIndex] = projection.point;
             } else {
