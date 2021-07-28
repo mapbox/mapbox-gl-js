@@ -16,8 +16,9 @@ class TileCache {
     order: Array<number>;
     onRemove: (element: Tile) => void;
     /**
-     * @param {number} max number of permitted values
-     * @param {Function} onRemove callback called with items when they expire
+     * @param {number} max The max number of permitted values.
+     * @private
+     * @param {Function} onRemove The callback called with items when they expire.
      */
     constructor(max: number, onRemove: (element: Tile) => void) {
         this.max = max;
@@ -26,9 +27,9 @@ class TileCache {
     }
 
     /**
-     * Clear the cache
+     * Clear the cache.
      *
-     * @returns {TileCache} this cache
+     * @returns {TileCache} Returns itself to allow for method chaining.
      * @private
      */
     reset() {
@@ -52,7 +53,7 @@ class TileCache {
      * @param {OverscaledTileID} tileID lookup key for the item
      * @param {*} data any value
      *
-     * @returns {TileCache} this cache
+     * @returns {TileCache} Returns itself to allow for method chaining.
      * @private
      */
     add(tileID: OverscaledTileID, data: Tile, expiryTimeout: number | void) {
@@ -192,6 +193,7 @@ class TileCache {
      * Remove entries that do not pass a filter function. Used for removing
      * stale tiles from the cache.
      *
+     * @private
      * @param {function} filterFn Determines whether the tile is filtered. If the supplied function returns false, the tile will be filtered out.
      */
     filter(filterFn: (tile: Tile) => boolean) {

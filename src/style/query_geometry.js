@@ -70,9 +70,9 @@ export class QueryGeometry {
     }
 
     /**
-     * Returns true if the initial query by the user was a single point
+     * Returns true if the initial query by the user was a single point.
      *
-     * @returns {boolean} True if the initial query geometry was a single point
+     * @returns {boolean} Returns `true` if the initial query geometry was a single point.
      */
     isPointQuery(): boolean {
         return this.screenBounds.length === 1;
@@ -80,7 +80,7 @@ export class QueryGeometry {
 
     /**
      * Due to data-driven styling features do not uniform size(eg `circle-radius`) and can be offset differntly
-     * from their original location(for eg. with `*-translate`). This means we have to expand our query region for
+     * from their original location(for example with `*-translate`). This means we have to expand our query region for
      * each tile to account for variation in these properties.
      * Each tile calculates a tile level max padding value (in screenspace pixels) when its parsed, this function
      * lets us calculate a buffered version of the screenspace query geometry for each tile.
@@ -101,9 +101,8 @@ export class QueryGeometry {
      * the query at the surface of the earth. Instead the feature may be closer and only intersect
      * the query because it extrudes into the air.
      *
-     * This returns a geometry thats a convex polygon that encomapasses the query frustum and the point underneath the camera.
+     * This returns a geometry that is a convex polygon that encompasses the query frustum and the point underneath the camera.
      * Similar to `bufferedScreenGeometry`, buffering is added to account for variation in paint properties.
-     *
      *
      * Case 1: point underneath camera is exactly behind query volume
      *              +----------+
@@ -115,10 +114,7 @@ export class QueryGeometry {
      *                X      X
      *                 X    X
      *                  X  X
-     *                   XX
-     *
-     *
-     *
+     *                   XX.
      *
      * Case 2: point is behind and to the right
      *              +----------+
@@ -130,9 +126,7 @@ export class QueryGeometry {
      *                 XXXX       X
      *                    XXX     XX
      *                        XX   X
-     *                           XXX
-     *
-     *
+     *                           XXX.
      *
      * Case 3: point is behind and to the left
      *              +----------+
@@ -144,9 +138,7 @@ export class QueryGeometry {
      *          XX       XXX
      *          X    XXXX
      *         X XXXX
-     *         XXX
-     *
-     *
+     *         XXX.
      *
      * @param {number} buffer The tile padding in screenspace pixels.
      * @returns {Point[]} The buffered query geometry.
@@ -179,7 +171,7 @@ export class QueryGeometry {
      * @param {Tile} tile The tile to check.
      * @param {Transform} transform The current map transform.
      * @param {boolean} use3D A boolean indicating whether to query 3D features.
-     * @returns {?TilespaceQueryGeometry} Returns undefined if the tile does not intersect
+     * @returns {?TilespaceQueryGeometry} Returns `undefined` if the tile does not intersect.
      */
     containsTile(tile: Tile, transform: Transform, use3D: boolean): ?TilespaceQueryGeometry {
         // The buffer around the query geometry is applied in screen-space.
