@@ -210,9 +210,7 @@ jobs:
           at: ~/
       - browser-tools/install-chrome:
           chrome-version: 91.0.4472.164
-          at: .
-      - browser-tools/install-firefox:
-          at: .
+      - browser-tools/install-firefox
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -239,9 +237,7 @@ jobs:
           at: ~/
       - browser-tools/install-chrome:
           chrome-version: 91.0.4472.164
-          at: .
-      - browser-tools/install-firefox:
-          at: .
+      - browser-tools/install-firefox
       - run: yarn run test-query
       - store_test_results:
           path: test/integration/query-tests
