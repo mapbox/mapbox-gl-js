@@ -22,8 +22,37 @@ uniform float u_exaggeration;
 uniform float u_meter_to_dem;
 uniform mat4 u_label_plane_matrix_inv;
 
+uniform vec3 u_tile_tl_up;
+uniform vec3 u_tile_tr_up;
+uniform vec3 u_tile_br_up;
+uniform vec3 u_tile_bl_up;
+
+//// Bilinear interpolation over normals of corner points
+//vec3 normal = normalize(mix(
+//    mix(u_tl_normal, u_tr_normal, a_uv.xxx),
+//    mix(u_bl_normal, u_br_normal, a_uv.xxx),
+//    a_uv.yyy));
+//
+//float elevation = elevation(a_uv * 8192.0);
+//float meters_to_pixels = mix(u_top_meters_to_pixels, u_bottom_meters_to_pixels, a_uv.y);
+//
+//vec4 globePos = u_globe_matrix * vec4(a_globe_pos + normal * elevation * meters_to_pixels, 1.0);
+//vec4 mercPos = u_mercator_matrix * vec4(a_pos, 0.0, 1.0);
+
 uniform sampler2D u_depth;
 uniform vec2 u_depth_size_inv;
+
+vec3 tileUpVector(vec2 uv) {
+    float topLen = length(u_tile_tl_up);
+    float bottomLen = length(u_tile_bl_up);
+
+    vec3 up = normalize(mix(
+        mix(u_tile_tl_up, u_tile_tr_up, uv.xxx),
+        mix(u_tile_bl_up, u_tile_br_up, uv.xxx),
+        uv.yyy));
+
+    return up * mix(topLen, bottomLen, uv.y);
+}
 
 vec4 tileUvToDemSample(vec2 uv, float dem_size, float dem_scale, vec2 dem_tl) {
     vec2 pos = dem_size * (uv * dem_scale + dem_tl) + 1.0;

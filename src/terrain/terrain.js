@@ -9,7 +9,7 @@ import {RasterBoundsArray, TriangleIndexArray, LineIndexArray} from '../data/arr
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import Program from '../render/program.js';
-import {Uniform1i, Uniform1f, Uniform2f, Uniform4f, UniformMatrix4f} from '../render/uniform_binding.js';
+import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from '../render/uniform_binding.js';
 import {prepareDEMTexture} from '../render/draw_hillshade.js';
 import EXTENT from '../data/extent.js';
 import {clamp, warnOnce} from '../util/util.js';
@@ -37,6 +37,7 @@ import browser from '../util/browser.js';
 import DEMData from '../data/dem_data.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
+import { GlobeTile } from '../geo/projection/globe.js';
 
 import type Map from '../ui/map.js';
 import type Painter from '../render/painter.js';
@@ -553,6 +554,14 @@ export class Terrain extends Elevation {
         const uniforms = defaultTerrainUniforms(((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding);
         uniforms['u_dem_size'] = this.sourceCache.getSource().tileSize;
         uniforms['u_exaggeration'] = this.exaggeration();
+
+        // Apply up vectors for the tile if the globe view is enabled
+        const globeTile = new GlobeTile(tile.tileID.toUnwrapped());
+
+        uniforms['u_tile_tl_up'] = globeTile.upVector(0, 0);
+        uniforms['u_tile_tr_up'] = globeTile.upVector(1, 0);
+        uniforms['u_tile_br_up'] = globeTile.upVector(1, 1);
+        uniforms['u_tile_bl_up'] = globeTile.upVector(0, 1);
 
         let demTile = null;
         let prevDemTile = null;
@@ -1513,7 +1522,13 @@ export type TerrainUniformsType = {|
     'u_depth': Uniform1i,
     'u_depth_size_inv': Uniform2f,
     'u_meter_to_dem'?: Uniform1f,
-    'u_label_plane_matrix_inv'?: UniformMatrix4f
+    'u_label_plane_matrix_inv'?: UniformMatrix4f,
+
+    // TODO: separate set of uniforms for the globe?
+    'u_tile_tl_up': Uniform3f,
+    'u_tile_tr_up': Uniform3f,
+    'u_tile_br_up': Uniform3f,
+    'u_tile_bl_up': Uniform3f
 |};
 
 export const terrainUniforms = (context: Context, locations: UniformLocations): TerrainUniformsType => ({
@@ -1530,7 +1545,11 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_depth': new Uniform1i(context, locations.u_depth),
     'u_depth_size_inv': new Uniform2f(context, locations.u_depth_size_inv),
     'u_meter_to_dem': new Uniform1f(context, locations.u_meter_to_dem),
-    'u_label_plane_matrix_inv': new UniformMatrix4f(context, locations.u_label_plane_matrix_inv)
+    'u_label_plane_matrix_inv': new UniformMatrix4f(context, locations.u_label_plane_matrix_inv),
+    'u_tile_tl_up': new Uniform3f(context, locations.u_tile_tl_up),
+    'u_tile_tr_up': new Uniform3f(context, locations.u_tile_tr_up),
+    'u_tile_br_up': new Uniform3f(context, locations.u_tile_br_up),
+    'u_tile_bl_up': new Uniform3f(context, locations.u_tile_bl_up)
 });
 
 function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUniformsType> {
@@ -1546,6 +1565,10 @@ function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUni
         'u_dem_lerp': 1.0,
         'u_depth': 3,
         'u_depth_size_inv': [0, 0],
-        'u_exaggeration': 0
+        'u_exaggeration': 0,
+        'u_tile_tl_up': [0, 0, 1],
+        'u_tile_tr_up': [0, 0, 1],
+        'u_tile_br_up': [0, 0, 1],
+        'u_tile_bl_up': [0, 0, 1]
     };
 }

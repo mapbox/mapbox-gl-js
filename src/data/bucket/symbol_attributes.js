@@ -6,7 +6,7 @@ export const symbolLayoutAttributes = createLayout([
     {name: 'a_pos_offset',  components: 4, type: 'Int16'},
     {name: 'a_data',        components: 4, type: 'Uint16'},
     {name: 'a_pixeloffset', components: 4, type: 'Int16'},
-    {name: 'a_globe_ext',   components: 4, type: 'Int16'}
+    {name: 'a_globe_ext',   components: 4, type: 'Int16'}       // anchorZ, tileAnchorX, tileAnchorY
 ], 4);
 
 export const dynamicLayoutAttributes = createLayout([
@@ -29,9 +29,12 @@ export const collisionVertexAttributesExt = createLayout([
 
 export const collisionBox = createLayout([
     // the box is centered around the anchor point
-    {type: 'Int16', name: 'anchorPointX'},
-    {type: 'Int16', name: 'anchorPointY'},
-    {type: 'Int16', name: 'anchorPointZ'},
+    {type: 'Int16', name: 'projectedAnchorX'},
+    {type: 'Int16', name: 'projectedAnchorY'},
+    {type: 'Int16', name: 'projectedAnchorZ'},
+
+    {type: 'Int16', name: 'tileAnchorX'},
+    {type: 'Int16', name: 'tileAnchorY'},
 
     // distances to the edges from the anchor
     {type: 'Float32', name: 'x1'},
@@ -50,9 +53,9 @@ export const collisionBox = createLayout([
 ]);
 
 export const collisionBoxLayout = createLayout([ // used to render collision boxes for debugging purposes
-    {name: 'a_pos',        components: 3, type: 'Int16'},
-    {name: 'a_anchor_pos', components: 3, type: 'Int16'},
-    {name: 'a_extrude',    components: 2, type: 'Int16'}
+    {name: 'a_pos',             components: 3, type: 'Int16'},
+    {name: 'a_anchor_pos',      components: 2, type: 'Int16'},
+    {name: 'a_extrude',         components: 2, type: 'Int16'}
 ], 4);
 
 export const collisionCircleLayout = createLayout([ // used to render collision circles for debugging purposes

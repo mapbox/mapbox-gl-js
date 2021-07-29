@@ -154,6 +154,7 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
 
 const reprojectTileAnchor = (p, tileID) => {
     const tiles = Math.pow(2.0, tileID.z);
+    //const mx = (p.x / 8192.0 + tiles / 2) / tiles;
     const mx = (p.x / 8192.0 + tileID.x) / tiles;
     const my = (p.y / 8192.0 + tileID.y) / tiles;
     const lat = latFromMercatorY(my);
@@ -423,7 +424,6 @@ function addFeature(bucket: SymbolBucket,
             return;
         }
 
-
         let p = reprojectTileAnchor(anchor, canonicalId);
         vec3.transformMat4(p, p, normalizationMatrix);
         const projectedAnchor = new Anchor(p[0], p[1], p[2], 0, undefined);
@@ -574,6 +574,7 @@ function getDefaultHorizontalShaping(horizontalShaping: {[_: TextJustify]: Shapi
 }
 
 export function evaluateBoxCollisionFeature(collisionBoxArray: CollisionBoxArray,
+                                     projectedAnchor: Anchor,
                                      anchor: Anchor,
                                      featureIndex: number,
                                      sourceLayerIndex: number,
@@ -620,7 +621,7 @@ export function evaluateBoxCollisionFeature(collisionBoxArray: CollisionBoxArray
         y2 = Math.max(tl.y, tr.y, bl.y, br.y);
     }
 
-    collisionBoxArray.emplaceBack(anchor.x, anchor.y, anchor.z, x1, y1, x2, y2, padding, featureIndex, sourceLayerIndex, bucketIndex);
+    collisionBoxArray.emplaceBack(projectedAnchor.x, projectedAnchor.y, projectedAnchor.z, anchor.x, anchor.y, x1, y1, x2, y2, padding, featureIndex, sourceLayerIndex, bucketIndex);
 
     return collisionBoxArray.length - 1;
 }
@@ -701,9 +702,9 @@ function addSymbol(bucket: SymbolBucket,
         } else {
             const textRotation = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
             const verticalTextRotation = textRotation + 90.0;
-            verticalTextBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, projectedAnchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textPadding, verticalTextRotation);
+            verticalTextBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, projectedAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textPadding, verticalTextRotation);
             if (verticallyShapedIcon) {
-                verticalIconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, projectedAnchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconPadding, verticalTextRotation);
+                verticalIconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, projectedAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconPadding, verticalTextRotation);
             }
         }
     }
@@ -717,7 +718,7 @@ function addSymbol(bucket: SymbolBucket,
         const hasIconTextFit = layer.layout.get('icon-text-fit') !== 'none';
         const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit);
         const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit) : undefined;
-        iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, projectedAnchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconRotate);
+        iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, projectedAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconRotate);
         numIconVertices = iconQuads.length * 4;
 
         const sizeData = bucket.iconSizeData;
@@ -790,7 +791,7 @@ function addSymbol(bucket: SymbolBucket,
                 textCircle = evaluateCircleCollisionFeature(shaping);
             } else {
                 const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
-                textBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, projectedAnchor, featureIndex, sourceLayerIndex, bucketIndex, shaping, textPadding, textRotate);
+                textBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, projectedAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaping, textPadding, textRotate);
             }
         }
 

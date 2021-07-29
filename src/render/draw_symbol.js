@@ -309,7 +309,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
         mat4.multiply(globeMatrix, painter.transform.projMatrix, globeMatrix);
-        const globeLabelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, false);
+        const globeLabelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, true);
         const globeGlCoordMatrix = symbolProjection.getGlCoordMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, false);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();

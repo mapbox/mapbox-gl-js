@@ -67,9 +67,11 @@ export type SingleCollisionBox = {
     x2: number;
     y2: number;
     padding: number;
-    anchorPointX: number;
-    anchorPointY: number;
-    anchorPointZ: number;
+    projectedAnchorX: number;
+    projectedAnchorY: number;
+    projectedAnchorZ: number;
+    tileAnchorX: number;
+    tileAnchorY: number;
     elevation?: number;
     tileID?: OverscaledTileID;
 };
@@ -115,14 +117,14 @@ const shaderOpacityAttributes = [
     {name: 'a_fade_opacity', components: 1, type: 'Uint8', offset: 0}
 ];
 
-function addVertex(array, anchorX, anchorY, anchorZ, ox, oy, tx, ty, sizeVertex, isSDF: boolean, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY) {
+function addVertex(array, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, ox, oy, tx, ty, sizeVertex, isSDF: boolean, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY) {
     const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0])) : 0;
     const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1])) : 0;
 
     array.emplaceBack(
         // a_pos_offset
-        anchorX,
-        anchorY,
+        projectedAnchorX,
+        projectedAnchorY,
         Math.round(ox * 32),
         Math.round(oy * 32),
 
@@ -136,9 +138,10 @@ function addVertex(array, anchorX, anchorY, anchorZ, ox, oy, tx, ty, sizeVertex,
         minFontScaleX * 256,
         minFontScaleY * 256,
         
-        anchorZ,
-        0,
-        0,
+        // a_globe_ext
+        projectedAnchorZ,
+        tileAnchorX,
+        tileAnchorY,
         0
     );
 }
@@ -650,10 +653,10 @@ class SymbolBucket implements Bucket {
             const index = segment.vertexLength;
 
             const y = glyphOffset[1];
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
 
             addDynamicAttributes(arrays.dynamicLayoutVertexArray, labelAnchor, angle);
 
@@ -687,7 +690,7 @@ class SymbolBucket implements Bucket {
         );
     }
 
-    _commitLayoutVertex(array: StructArray, point: any, anchorX: number, anchorY: number, anchorZ: number, extrude: Point) {
+    _commitLayoutVertex(array: StructArray, point: any, anchorX: number, anchorY: number, extrude: Point) {
         array.emplaceBack(
             // pos
             point[0],
@@ -696,7 +699,6 @@ class SymbolBucket implements Bucket {
             // a_anchor_pos
             anchorX,
             anchorY,
-            anchorZ,
             // extrude
             Math.round(extrude.x),
             Math.round(extrude.y));
@@ -705,9 +707,9 @@ class SymbolBucket implements Bucket {
     _addCollisionDebugVertices(box: CollisionBox, scale: number, arrays: CollisionBuffers, boxAnchorPoint: any, symbolInstance: SymbolInstance) {
         const segment = arrays.segments.prepareSegment(4, arrays.layoutVertexArray, arrays.indexArray);
         const index = segment.vertexLength;
-        const anchorX = symbolInstance.anchorX;
-        const anchorY = symbolInstance.anchorY;
-        const anchorZ = symbolInstance.anchorZ || 0;
+        const tileAnchorX = symbolInstance.tileAnchorX;
+        const tileAnchorY = symbolInstance.tileAnchorY;
+        //const anchorZ = symbolInstance.anchorZ || 0;
 
         for (let i = 0; i < 4; i++) {
             arrays.collisionVertexArray.emplaceBack(0, 0, 0, 0);
@@ -718,10 +720,10 @@ class SymbolBucket implements Bucket {
         arrays.collisionVertexArrayExt.emplaceBack(scale,  box.padding,  box.padding);
         arrays.collisionVertexArrayExt.emplaceBack(scale, -box.padding,  box.padding);
 
-        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, anchorZ, new Point(box.x1, box.y1));
-        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, anchorZ, new Point(box.x2, box.y1));
-        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, anchorZ, new Point(box.x2, box.y2));
-        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, anchorX, anchorY, anchorZ, new Point(box.x1, box.y2));
+        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, tileAnchorX, tileAnchorY, new Point(box.x1, box.y1));
+        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, tileAnchorX, tileAnchorY, new Point(box.x2, box.y1));
+        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, tileAnchorX, tileAnchorY, new Point(box.x2, box.y2));
+        this._commitLayoutVertex(arrays.layoutVertexArray, boxAnchorPoint, tileAnchorX, tileAnchorY, new Point(box.x1, box.y2));
 
         segment.vertexLength += 4;
 
@@ -739,7 +741,7 @@ class SymbolBucket implements Bucket {
             const box: CollisionBox = (collisionBoxArray.get(b): any);
             const scale = this.getSymbolInstanceTextSize(size, instance, zoom, b);
 
-            this._addCollisionDebugVertices(box, scale, this.textCollisionBox, [box.anchorPointX, box.anchorPointY, box.anchorPointZ], /*box.anchorPoint,*/ instance);
+            this._addCollisionDebugVertices(box, scale, this.textCollisionBox, [box.projectedAnchorX, box.projectedAnchorY, box.projectedAnchorZ], /*box.anchorPoint,*/ instance);
         }
     }
 
@@ -748,7 +750,7 @@ class SymbolBucket implements Bucket {
             const box: CollisionBox = (collisionBoxArray.get(b): any);
             const scale = this.getSymbolInstanceIconSize(size, zoom, b);
 
-            this._addCollisionDebugVertices(box, scale, this.iconCollisionBox, [box.anchorPointX, box.anchorPointY, box.anchorPointZ],/*box.anchorPoint,*/ instance);
+            this._addCollisionDebugVertices(box, scale, this.iconCollisionBox, [box.projectedAnchorX, box.projectedAnchorY, box.projectedAnchorZ],/*box.anchorPoint,*/ instance);
         }
     }
 
@@ -855,27 +857,27 @@ class SymbolBucket implements Bucket {
         const collisionArrays = {};
         for (let k = textStartIndex; k < textEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.textBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY, anchorPointZ: box.anchorPointZ};
+            collisionArrays.textBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, projectedAnchorX: box.projectedAnchorX, projectedAnchorY: box.projectedAnchorY, projectedAnchorZ: box.projectedAnchorZ, tileAnchorX: box.tileAnchorX, tileAnchorY: box.tileAnchorY};
             collisionArrays.textFeatureIndex = box.featureIndex;
             break; // Only one box allowed per instance
         }
         for (let k = verticalTextStartIndex; k < verticalTextEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.verticalTextBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY, anchorPointZ: box.anchorPointZ};
+            collisionArrays.verticalTextBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, projectedAnchorX: box.projectedAnchorX, projectedAnchorY: box.projectedAnchorY, projectedAnchorZ: box.projectedAnchorZ, tileAnchorX: box.tileAnchorX, tileAnchorY: box.tileAnchorY};
             collisionArrays.verticalTextFeatureIndex = box.featureIndex;
             break; // Only one box allowed per instance
         }
         for (let k = iconStartIndex; k < iconEndIndex; k++) {
             // An icon can only have one box now, so this indexing is a bit vestigial...
             const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.iconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY, anchorPointZ: box.anchorPointZ};
+            collisionArrays.iconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, projectedAnchorX: box.projectedAnchorX, projectedAnchorY: box.projectedAnchorY, projectedAnchorZ: box.projectedAnchorZ, tileAnchorX: box.tileAnchorX, tileAnchorY: box.tileAnchorY};
             collisionArrays.iconFeatureIndex = box.featureIndex;
             break; // Only one box allowed per instance
         }
         for (let k = verticalIconStartIndex; k < verticalIconEndIndex; k++) {
             // An icon can only have one box now, so this indexing is a bit vestigial...
             const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.verticalIconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY, anchorPointZ: box.anchorPointZ};
+            collisionArrays.verticalIconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, projectedAnchorX: box.projectedAnchorX, projectedAnchorY: box.projectedAnchorY, projectedAnchorZ: box.projectedAnchorZ, tileAnchorX: box.tileAnchorX, tileAnchorY: box.tileAnchorY};
             collisionArrays.verticalIconFeatureIndex = box.featureIndex;
             break; // Only one box allowed per instance
         }

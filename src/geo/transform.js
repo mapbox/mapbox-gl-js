@@ -1358,6 +1358,13 @@ class Transform {
     calculateGlobeMatrixForTile(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
         // transform the globe from reference coordinate space to world space
         const posMatrix = this.calculateGlobeMatrix(worldSize);
+
+        // const tileDim = Math.pow(2, unwrappedTileID.canonical.z);
+        // const xOffset = unwrappedTileID.canonical.x - tileDim / 2;
+        // const yAngle = xOffset / tileDim * Math.PI * 2.0;
+        
+        // mat4.rotateY(posMatrix, posMatrix, yAngle);
+
         const decode = denormalizeECEF(tileBoundsOnGlobe(unwrappedTileID.canonical));
 
         return mat4.multiply([], posMatrix, decode);
@@ -1625,7 +1632,7 @@ class Transform {
         const offset = this.centerOffset;
 
         // Z-axis uses pixel coordinates when globe mode is enabled
-        const pixelsPerMeter = 1.0;// this.pixelsPerMeter;
+        const pixelsPerMeter = this.pixelsPerMeter;
         
         const altitudeScaler = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * (1.0 - altitudeScaler);
@@ -1666,7 +1673,7 @@ class Transform {
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
         this._nearZ = this.height / 50;
 
-        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
+        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, /*pixelsPerMeter*/ 1.0);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
 
         // Apply center of perspective offset
@@ -1677,7 +1684,7 @@ class Transform {
 
         // The mercatorMatrix can be used to transform points from mercator coordinates
         // ([0, 0] nw, [1, 1] se) to GL coordinates.
-        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter]);
+        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / /*pixelsPerMeter*/ 1.0]);
 
         this.projMatrix = m;
 

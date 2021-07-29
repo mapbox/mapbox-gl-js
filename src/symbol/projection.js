@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 
-import {mat4, vec4} from 'gl-matrix';
+import {mat4, vec3, vec4} from 'gl-matrix';
 import * as symbolSize from './symbol_size.js';
 import {addDynamicAttributes} from '../data/bucket/symbol_bucket.js';
 
@@ -16,7 +16,7 @@ import type {
 } from '../data/array_types.js';
 import {WritingMode} from '../symbol/shaping.js';
 import {latFromMercatorY, lngFromMercatorX} from '../geo/mercator_coordinate.js';
-import {latLngToECEF} from '../geo/projection/globe.js'
+import {latLngToECEF, normalizeECEF, tileBoundsOnGlobe} from '../geo/projection/globe.js'
 
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
@@ -138,7 +138,7 @@ function project(point: Point, matrix: mat4, elevation: number = 0) {
     };
 }
 
-function projectToGlobe(p, m, tileID) {
+function projectToGlobe(p, m, e, tileID) {
     const tiles = Math.pow(2.0, tileID.canonical.z);
     const mx = (p.x / 8192.0 + tileID.canonical.x) / tiles;
     const my = (p.y / 8192.0 + tileID.canonical.y) / tiles;
@@ -146,6 +146,10 @@ function projectToGlobe(p, m, tileID) {
     const lng = lngFromMercatorX(mx);
     const pg = latLngToECEF(lat, lng);
 
+    vec3.transformMat4(pg, pg, normalizeECEF(tileBoundsOnGlobe(tileID.canonical)));
+    vec3.add(pg, pg, e);
+
+    //const v = vec4.transformMat4([], [pg[0], pg[1], pg[2], 1.0], m);
     const v = vec4.transformMat4([], [pg[0], pg[1], pg[2], 1.0], m);
     return {
         point: new Point(v[0] / v[3], v[1] / v[3]),
@@ -408,7 +412,8 @@ function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint:
     // plane of the camera.
     const unitVertex = previousTilePoint.add(previousTilePoint.sub(currentTilePoint)._unit());
     //const projectedUnitVertex = project(unitVertex, projectionMatrix, getElevation ? getElevation(unitVertex) : 0).point;
-    const projectedUnitVertex = projectToGlobe(unitVertex, projectionMatrix, tileID).point;
+    //const projectedUnitVertex = projectToGlobe(unitVertex, projectionMatrix, tileID).point;
+    const projectedUnitVertex = projectToGlobe(unitVertex, projectionMatrix, getElevation ? getElevation(unitVertex) : [0, 0, 0], tileID).point;
     const projectedUnitSegment = previousProjectedPoint.sub(projectedUnitVertex);
 
     return previousProjectedPoint.add(projectedUnitSegment._mult(minimumLength / projectedUnitSegment.mag()));
@@ -431,7 +436,7 @@ function placeGlyphAlongLine(offsetX: number,
                              lineVertexArray: SymbolLineVertexArray,
                              labelPlaneMatrix: mat4,
                              projectionCache: {[_: number]: Point},
-                             getElevation: ?((p: Point) => number),
+                             getElevation: ?((p: Point) => Array<number>),
                              returnPathInTileCoords: ?boolean,
                              endGlyph: ?boolean,
                              tileID) {
@@ -491,7 +496,8 @@ function placeGlyphAlongLine(offsetX: number,
         if (current === undefined) {
             currentVertex = new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
             //const projection = project(currentVertex, labelPlaneMatrix, getElevation ? getElevation(currentVertex) : 0);
-            const projection = projectToGlobe(currentVertex, labelPlaneMatrix, tileID);
+            //const projection = projectToGlobe(currentVertex, labelPlaneMatrix, tileID);
+            const projection = projectToGlobe(currentVertex, labelPlaneMatrix, getElevation ? getElevation(currentVertex) : [0, 0, 0], tileID);
             if (projection.signedDistanceFromCamera > 0) {
                 current = projectionCache[currentIndex] = projection.point;
             } else {

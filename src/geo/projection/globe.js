@@ -5,8 +5,8 @@ import {mat4, vec3} from 'gl-matrix';
 import {Aabb} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
 import {degToRad} from '../../util/util.js';
-import {lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
-import CanonicalTileID from '../../source/tile_id.js';
+import {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude} from '../mercator_coordinate.js';
+import CanonicalTileID, { UnwrappedTileID } from '../../source/tile_id.js';
 
 export const globeRefRadius = EXTENT / Math.PI / 2.0;
 
@@ -85,15 +85,19 @@ export function latLngToECEF(lat, lng, radius) {
     return [sx, sy, sz];
 }
 
-const normBitRange = 16;
+const normBitRange = 13;    // 8192
 
 export function normalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
-    const size = vec3.div([], [1.0, 1.0, 1.0], vec3.sub([], bounds.max, bounds.min));
+    //return m;
+
+    const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
+    //const size = vec3.div([], [1.0, 1.0, 1.0], vec3.sub([], bounds.max, bounds.min));
     const st = (1 << (normBitRange - 1)) - 1;
 
     mat4.scale(m, m, [st, st, st]);
-    mat4.scale(m, m, size);
+    mat4.scale(m, m, [maxExtInv, maxExtInv, maxExtInv]);
+    //mat4.scale(m, m, size);
     mat4.translate(m, m, vec3.negate([], bounds.min));
 
     return m;
@@ -101,12 +105,68 @@ export function normalizeECEF(bounds: Aabb): Float64Array {
 
 export function denormalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
+    //return m;
+
+    const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
 
     // Denormalize points to the correct range
     const st = 1.0 / ((1 << (normBitRange - 1)) - 1);
     mat4.translate(m, m, bounds.min);
-    mat4.scale(m, m, vec3.sub([], bounds.max, bounds.min));
+    //mat4.scale(m, m, vec3.sub([], bounds.max, bounds.min));
+    mat4.scale(m, m, [maxExt, maxExt, maxExt]);
     mat4.scale(m, m, [st, st, st]);
 
     return m;
+}
+
+export class GlobeTile {
+    tileID: UnwrappedTileID;
+    _tlUp: Array<number>;
+    _trUp: Array<number>;
+    _blUp: Array<number>;
+    _brUp: Array<number>;
+
+    constructor(tileID: UnwrappedTileID) {
+        this.tileID = tileID;
+
+        // Pre-compute up vectors of each corner of the tile
+        const corners = tileLatLngCorners(tileID.canonical);
+        const tl = corners[0];
+        const br = corners[1];
+
+        this._tlUp = latLngToECEF(tl[0], tl[1]);
+        this._trUp = latLngToECEF(tl[0], br[1]);
+        this._brUp = latLngToECEF(br[0], br[1]);
+        this._blUp = latLngToECEF(br[0], tl[1]);
+
+        const topEcefPerMeter = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
+        const bottomEcefPerMeter = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
+
+        vec3.scale(this._tlUp, vec3.normalize(this._tlUp, this._tlUp), topEcefPerMeter);
+        vec3.scale(this._trUp, vec3.normalize(this._trUp, this._trUp), topEcefPerMeter);
+        vec3.scale(this._brUp, vec3.normalize(this._brUp, this._brUp), bottomEcefPerMeter);
+        vec3.scale(this._blUp, vec3.normalize(this._blUp, this._blUp), bottomEcefPerMeter);
+
+        // Normalize
+        const bounds = tileBoundsOnGlobe(tileID.canonical);
+
+        const norm = mat4.identity(new Float64Array(16));
+        const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
+        const st = (1 << (normBitRange - 1)) - 1;
+    
+        mat4.scale(norm, norm, [st, st, st]);
+        mat4.scale(norm, norm, [maxExtInv, maxExtInv, maxExtInv]);
+
+        vec3.transformMat4(this._tlUp, this._tlUp, norm);
+        vec3.transformMat4(this._trUp, this._trUp, norm);
+        vec3.transformMat4(this._blUp, this._blUp, norm);
+        vec3.transformMat4(this._brUp, this._brUp, norm);
+    }
+
+    upVector(u: number, v: number): Array<number> {
+        return vec3.lerp([],
+            vec3.lerp([], this._tlUp, this._trUp, u),
+            vec3.lerp([], this._blUp, this._brUp, u),
+            v);
+    }
 }

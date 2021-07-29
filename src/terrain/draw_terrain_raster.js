@@ -366,8 +366,9 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
             // Pixels per meters have to be interpolated for the latitude range
             const ws2 = tr.tileSize * Math.pow(2, coord.canonical.z);
-            const topPixelsPerMeter = mercatorZfromAltitude(1, tl[0]) * ws2;
-            const bottomPixelsPerMeter = mercatorZfromAltitude(1, br[0]) * ws2;
+            const topPixelsPerMeter = mercatorZfromAltitude(1, 0) * ws2;
+            const bottomPixelsPerMeter = mercatorZfromAltitude(1, 0) * ws2;
+            const test = mercatorZfromAltitude(1, 0) * ws2;
 
             const uniformValues = globeRasterUniformValues(projMatrix, mercProjMatrix, transitionLerp, tlNorm, trNorm, brNorm, blNorm, topPixelsPerMeter, bottomPixelsPerMeter);
 

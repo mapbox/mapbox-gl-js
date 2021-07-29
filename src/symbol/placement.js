@@ -446,7 +446,7 @@ export class Placement {
                 if (!this.transform.elevation && !box.elevation) return;
                 box.elevation = this.transform.elevation ? this.transform.elevation.getAtTileOffset(
                     this.retainedQueryData[bucket.bucketInstanceId].tileID,
-                    box.anchorPointX, box.anchorPointY) : 0;
+                    box.tileAnchorX, box.tileAnchorY) : 0;
             };
 
             const textBox = collisionArrays.textBox;
