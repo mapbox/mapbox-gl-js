@@ -1200,11 +1200,11 @@ class Camera extends Evented {
     /**
      * Changes any combination of center, zoom, bearing, and pitch, animating the transition along a curve that
      * evokes flight. The animation seamlessly incorporates zooming and panning to help
-     * the user maintain her bearings even after traversing a great distance.
+     * the user maintain their bearings even after traversing a great distance.
      *
-     * Note: The animation will be skipped, and this will behave equivalently to `jumpTo`
-     * if the user has the `reduced motion` accessibility feature enabled in their operating system,
-     * unless 'options' includes `essential: true`.
+     * If a user has the `reduced motion` accessibility feature enabled in their
+     * operating system, the animation will be skipped and this will behave
+     * equivalently to `jumpTo`, unless 'options' includes `essential: true`.
      *
      * @memberof Map#
      * @param {Object} options Options describing the destination and animation of the transition.
@@ -1216,9 +1216,9 @@ class Camera extends Evented {
      *     value selected by participants in the user study discussed in
      *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
      *     `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A
-     *     value of 1 would produce a circular motion.
+     *     value of 1 would produce a circular motion. If `options.minZoom` is specified, this option will be ignored.
      * @param {number} [options.minZoom] The zero-based zoom level at the peak of the flight path. If
-     *     `options.curve` is specified, this option is ignored.
+     *     this option is specified, `options.curve` will be ignored.
      * @param {number} [options.speed=1.2] The average speed of the animation defined in relation to
      *     `options.curve`. A speed of 1.2 means that the map appears to move along the flight path
      *     by 1.2 times `options.curve` screenfuls every second. A _screenful_ is the map's visible span.
