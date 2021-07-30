@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, lngFromMercatorX} from './mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -887,6 +887,7 @@ class Transform {
     zoomScale(zoom: number) { return Math.pow(2, zoom); }
     scaleZoom(scale: number) { return Math.log(scale) / Math.LN2; }
 
+    // World coordinates from LngLat
     project(lnglat: LngLat) {
         const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
         return new Point(
@@ -894,10 +895,12 @@ class Transform {
                 mercatorYfromLat(lat) * this.worldSize);
     }
 
+    // LngLat from world coordinates
     unproject(point: Point): LngLat {
         return new MercatorCoordinate(point.x / this.worldSize, point.y / this.worldSize).toLngLat();
     }
 
+    // Point at center in world coordinates.
     get point(): Point { return this.project(this.center); }
 
     setLocationAtPoint(lnglat: LngLat, point: Point) {
@@ -1401,8 +1404,14 @@ class Transform {
         }
 
         if (this.lngRange) {
-            const x = point.x,
-                w2 = size.x / 2;
+            let x = point.x;
+            const w2 = size.x / 2;
+
+            // If the left edge is more than 180 degrees below the minimum boundary, add 360 degrees to the value.
+            if (x - w2 - minX < -this.worldSize / 2) x += this.worldSize;
+
+            // If the right edge is more than 180 degrees beyond the max boundary, add 360 degrees to the value.
+            if (x + w2 - maxX > this.worldSize / 2) x -= this.worldSize;
 
             if (x - w2 < minX) x2 = minX + w2;
             if (x + w2 > maxX) x2 = maxX - w2;

@@ -143,7 +143,7 @@ test('transform', (t) => {
         transform.lngRange = [-190, -160];
         transform.latRange = [-55, -23];
 
-        transform.center = new LngLat(190, -40);
+        transform.center = new LngLat(170, -40);
 
         console.log("transform center lng");
         console.log(transform.center);
