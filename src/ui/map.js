@@ -486,6 +486,7 @@ class Map extends Camera {
             window.addEventListener('online', this._onWindowOnline, false);
             window.addEventListener('resize', this._onWindowResize, false);
             window.addEventListener('orientationchange', this._onWindowResize, false);
+            window.addEventListener('webkitfullscreenchange', this._onWindowResize, false);
         }
 
         this.handlers = new HandlerManager(this, options);
