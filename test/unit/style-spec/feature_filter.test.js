@@ -1,5 +1,5 @@
 import {test} from '../../util/test.js';
-import {default as createFilter, isExpressionFilter, isDynamicFilter} from '../../../src/style-spec/feature_filter/index.js';
+import {default as createFilter, isExpressionFilter, isDynamicFilter, extractStaticFilter} from '../../../src/style-spec/feature_filter/index.js';
 
 import convertFilter from '../../../src/style-spec/feature_filter/convert.js';
 import Point from '@mapbox/point-geometry';
@@ -360,6 +360,17 @@ test('filter', t => {
                 t.end();
             });
 
+
+            t.end();
+        });
+
+        t.test('extractStaticFilter', (t) => {
+            t.test('it lets static filters pass through', (t) => {
+                for(const filter of STATIC_FILTERS) {
+                    t.equal(extractStaticFilter(filter), filter);
+                }
+                t.end();
+            });
 
             t.end();
         });

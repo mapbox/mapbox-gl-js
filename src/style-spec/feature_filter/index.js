@@ -57,6 +57,10 @@ function extractStaticFilter(filter: any): any {
         return filter;
     }
 
+    // 1. Union branches
+
+    // 2. Collapse dynamic conditions to  `true`
+
     return true;
 }
 
