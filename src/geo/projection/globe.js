@@ -85,7 +85,7 @@ export function latLngToECEF(lat, lng, radius) {
     return [sx, sy, sz];
 }
 
-const normBitRange = 13;    // 8192
+const normBitRange = 15;    // 8192
 
 export function normalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));

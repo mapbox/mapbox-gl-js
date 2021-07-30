@@ -17,6 +17,7 @@ import {getAnchorAlignment, WritingMode} from '../symbol/shaping.js';
 import ONE_EM from '../symbol/one_em.js';
 import {evaluateVariableOffset} from '../symbol/symbol_layout.js';
 import Tile from '../source/tile.js';
+import { GlobeTile } from '../geo/projection/globe.js';
 
 import {
     symbolIconUniformValues,
@@ -133,7 +134,14 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
         if (size) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
             const elevation = tr.elevation;
-            const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : (_ => 0);
+            //const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : (_ => 0);
+            const globeTile = new GlobeTile(coord.toUnwrapped());
+            const getElevation = elevation ? (p => {
+                const e = elevation.getAtTileOffset(coord, p.x, p.y);
+                const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
+                vec3.scale(up, up, e);
+                return up;
+            }) : (_ => [0, 0, 0]);
             updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
                                   tr, labelPlaneMatrix, coord.projMatrix, tileScale, size, updateTextFitIcon, getElevation);
         }
@@ -319,7 +327,14 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (alongLine) {
             const elevation = tr.elevation;
-            const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : null;
+            //const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : null;
+            const globeTile = new GlobeTile(coord.toUnwrapped());
+            const getElevation = elevation ? (p => {
+                const e = elevation.getAtTileOffset(coord, p.x, p.y);
+                const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
+                vec3.scale(up, up, e);
+                return up;
+            }) : (_ => [0, 0, 0]);
             symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, globeLabelPlaneMatrix, globeGlCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
         } else {
             // Hide each placed point symbol that is behind the globe
@@ -432,7 +447,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     for (const segmentState of tileRenderState) {
         const state = segmentState.state;
 
-        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: false, labelPlaneMatrixInv: state.labelPlaneMatrixInv});
+        // HACK: force exaggeration to 0 with line aligned labels. This is because the result of updateLineLabels are already in the label space!
+        // this interferes with elevation sampling as it's not limited to only z-component anymore!
+        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: false, labelPlaneMatrixInv: state.labelPlaneMatrixInv, overrideExaggeration: alongLine ? 0.0 : undefined });
         context.activeTexture.set(gl.TEXTURE0);
         state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
         if (state.atlasTextureIcon) {

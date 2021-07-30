@@ -22,7 +22,7 @@ import type {FogState} from '../style/fog_helpers.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {degToRad} from '../util/util.js';
-import { GlobeTile } from '../geo/projection/globe.js';
+import { GlobeTile, latLngToECEF, normalizeECEF, tileBoundsOnGlobe } from '../geo/projection/globe.js';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around
@@ -31,6 +31,19 @@ import { GlobeTile } from '../geo/projection/globe.js';
 // occur offscreen. Making this constant greater increases label
 // stability, but it's expensive.
 const viewportPadding = 100;
+
+function projectToGlobe(p, e, tileID) {
+    const tiles = Math.pow(2.0, tileID.canonical.z);
+    const mx = (p.x / 8192.0 + tileID.canonical.x) / tiles;
+    const my = (p.y / 8192.0 + tileID.canonical.y) / tiles;
+    const lat = latFromMercatorY(my);
+    const lng = lngFromMercatorX(mx);
+    const pg = latLngToECEF(lat, lng);
+
+    vec3.transformMat4(pg, pg, normalizeECEF(tileBoundsOnGlobe(tileID.canonical)));
+    vec3.add(pg, pg, e);
+    return pg;
+};
 
 /**
  * A collision index used to prevent symbols from overlapping. It keep tracks of
@@ -142,12 +155,14 @@ class CollisionIndex {
         }) : (_ => [0, 0, 0]);
 
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-        const elevationVec = getElevation(tileUnitAnchorPoint);
-        
+
+        // NOTE: symbol.anchor can't be used for line aligned placement because the value is rounded!
+        const elevatedAnchor = projectToGlobe(tileUnitAnchorPoint, getElevation(tileUnitAnchorPoint), tileID);
+
         // const upVec = globeTile.upVector(symbol.tileAnchorX / 8192.0, symbol.tileAnchorY / 8192.0);
-        const elevatedAnchorX = symbol.anchorX + elevationVec[0];
-        const elevatedAnchorY = symbol.anchorY + elevationVec[1];
-        const elevatedAnchorZ = symbol.anchorZ + elevationVec[2];
+        const elevatedAnchorX = elevatedAnchor[0]; //symbol.anchorX + elevationVec[0];
+        const elevatedAnchorY = elevatedAnchor[1]; //symbol.anchorY + elevationVec[1];
+        const elevatedAnchorZ = elevatedAnchor[2]; //symbol.anchorZ + elevationVec[2];
 
         //const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, symbol.anchorX, symbol.anchorY, symbol.anchorZ, tileID);
         const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchorX, elevatedAnchorY, elevatedAnchorZ, tileID);

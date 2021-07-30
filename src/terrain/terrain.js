@@ -547,13 +547,14 @@ export class Terrain extends Elevation {
             useDepthForOcclusion?: boolean,
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
-            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number }
+            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number },
+            overrideExaggeration?: number
         }) {
         const context = this.painter.context;
         const gl = context.gl;
         const uniforms = defaultTerrainUniforms(((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding);
         uniforms['u_dem_size'] = this.sourceCache.getSource().tileSize;
-        uniforms['u_exaggeration'] = this.exaggeration();
+        uniforms['u_exaggeration'] = (options && options.overrideExaggeration !== undefined) ? options.overrideExaggeration : this.exaggeration();
 
         // Apply up vectors for the tile if the globe view is enabled
         const globeTile = new GlobeTile(tile.tileID.toUnwrapped());

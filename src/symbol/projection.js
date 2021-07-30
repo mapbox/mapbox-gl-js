@@ -174,6 +174,19 @@ function isVisible(anchorPos: [number, number, number, number],
     return inPaddedViewport;
 }
 
+function projectToGlobe2(p, e, tileID) {
+    const tiles = Math.pow(2.0, tileID.canonical.z);
+    const mx = (p.x / 8192.0 + tileID.canonical.x) / tiles;
+    const my = (p.y / 8192.0 + tileID.canonical.y) / tiles;
+    const lat = latFromMercatorY(my);
+    const lng = lngFromMercatorX(mx);
+    const pg = latLngToECEF(lat, lng);
+
+    vec3.transformMat4(pg, pg, normalizeECEF(tileBoundsOnGlobe(tileID.canonical)));
+    vec3.add(pg, pg, e);
+    return pg;
+};
+
 /*
  *  Update the `dynamicLayoutVertexBuffer` for the buffer with the correct glyph positions for the current map view.
  *  This is only run on labels that are aligned with lines. Horizontal labels are handled entirely in the shader.
@@ -188,7 +201,7 @@ function updateLineLabels(bucket: SymbolBucket,
                           globeGlCoordMatrix,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
-                          getElevation: ?((p: Point) => number),
+                          getElevation: ?((p: Point) => Array<number>),
                           tileID) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
@@ -221,8 +234,14 @@ function updateLineLabels(bucket: SymbolBucket,
         // Awkward... but we're counting on the paired "vertical" symbol coming immediately after its horizontal counterpart
         useVertical = false;
 
+        // Project tile anchor to globe anchor
+        const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
+        const elevatedAnchor = projectToGlobe2(tileAnchorPoint, getElevation(tileAnchorPoint), tileID);
+        const anchorPos = [...elevatedAnchor, 1.0];
         // const elevation = getElevation ? getElevation({x: symbol.anchorX, y: symbol.anchorY}) : 0;
-        const anchorPos = [symbol.anchorX, symbol.anchorY, symbol.anchorZ, 1];
+        //const anchorPos = [symbol.anchorX, symbol.anchorY, symbol.anchorZ, 1];
+
+
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
@@ -237,30 +256,31 @@ function updateLineLabels(bucket: SymbolBucket,
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
 
-        const transformedTileAnchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix, symbol.anchorZ);
-        const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
+        const labelPlaneAnchorPoint = project(new Point(elevatedAnchor[0], elevatedAnchor[1]), labelPlaneMatrix, elevatedAnchor[2]);
+        //const transformedTileAnchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix, symbol.anchorZ);
+        //const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
 
         // Skip labels behind the camera
-        if (transformedTileAnchor.signedDistanceFromCamera <= 0.0) {
+        if (labelPlaneAnchorPoint.signedDistanceFromCamera <= 0.0) {
         //if (anchorProjection.signedDistanceFromCamera <= 0.0) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
 
-        const anchorPoint = transformedTileAnchor.point;
+        //const anchorPoint = transformedTileAnchor.point;
         let projectionCache = {};
 
-        const getElevationForPlacement = null;// pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
-        const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, globeLabelPlaneMatrix, globeGlCoordMatrix,
-            bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tileID);
+        const getElevationForPlacement = pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
+        const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, globeGlCoordMatrix,
+            bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, labelPlaneAnchorPoint.point, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tileID);
 
         useVertical = placeUnflipped.useVertical;
 
         if (getElevationForPlacement && placeUnflipped.needsFlipping) projectionCache = {}; // Truncated points should be recalculated.
         if (placeUnflipped.notEnoughRoom || useVertical ||
             (placeUnflipped.needsFlipping &&
-             placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, globeLabelPlaneMatrix, globeGlCoordMatrix,
-                 bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tileID).notEnoughRoom)) {
+             placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, labelPlaneMatrix, globeGlCoordMatrix,
+                 bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, labelPlaneAnchorPoint.point, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tileID).notEnoughRoom)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
         }
     }
@@ -413,6 +433,7 @@ function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint:
     const unitVertex = previousTilePoint.add(previousTilePoint.sub(currentTilePoint)._unit());
     //const projectedUnitVertex = project(unitVertex, projectionMatrix, getElevation ? getElevation(unitVertex) : 0).point;
     //const projectedUnitVertex = projectToGlobe(unitVertex, projectionMatrix, tileID).point;
+    const test = projectToGlobe(previousTilePoint, projectionMatrix, getElevation ? getElevation(previousTilePoint) : [0, 0, 0], tileID).point;
     const projectedUnitVertex = projectToGlobe(unitVertex, projectionMatrix, getElevation ? getElevation(unitVertex) : [0, 0, 0], tileID).point;
     const projectedUnitSegment = previousProjectedPoint.sub(projectedUnitVertex);
 
