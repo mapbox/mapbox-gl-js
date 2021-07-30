@@ -1,0 +1,36 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setZoom",
+          1
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": {
+          "stops": [
+            [0, "white"],
+            [1, "black"]
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "addSource",
+          "raster",
+          {
+            "type": "raster",
+            "url": "local://tilesets/raster.json",
+            "tileSize": 256
+          }
+        ],
+        [
+          "addLayer",
+          {
+            "id": "raster",
+            "type": "raster",
+            "source": "raster",
+            "paint": {
+                "raster-fade-duration": 0
+            }
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "sources": {},
+  "layers": []
+}

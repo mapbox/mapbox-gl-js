@@ -1,0 +1,100 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "zoom": 3,
+  "center": [2.5, 2.5],
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                  1.9775390625,
+                  2.3284603685731593
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                  1.7138671875,
+                  -1.7136116598836224
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "polygon": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+              "type": "Feature",
+              "properties": {},
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                  [[0, 0],
+                   [0, 5],
+                   [5, 5],
+                   [5, 0],
+                   [0, 0]]
+                ]
+              }
+            }
+          ]
+        }
+      }
+  },
+  "layers": [
+    {
+      "id": "border",
+      "type": "fill",
+      "source": "polygon",
+      "paint": {
+          "fill-color": "black",
+          "fill-opacity": 0.5
+      }
+    },
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "points",
+      "filter": ["within", {
+                  "type": "Polygon",
+                  "coordinates": [
+                      [
+                          [0, 0],
+                          [0, 5],
+                          [5, 5],
+                          [5, 0],
+                          [0, 0]
+                      ]
+                  ]
+                 }
+               ],
+      "paint": {
+        "circle-radius": 5,
+        "circle-color": "red"
+      }
+    } 
+  ]
+}

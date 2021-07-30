@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {}
+  },
+  "zoom": 0.99,
+  "center": [
+    0.7,
+    0
+  ],
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "sprite": "local://sprites/solid-black",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-pattern": "black"
+      }
+    }
+  ]
+}

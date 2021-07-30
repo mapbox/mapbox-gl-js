@@ -1,0 +1,32 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    -77.0424,
+    38.90924
+  ],
+  "zoom": 19,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/feature.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "minzoom": 19,
+      "paint": {
+        "line-color": "#EC8D8D",
+        "line-width": 4
+      }
+    }
+  ]
+}

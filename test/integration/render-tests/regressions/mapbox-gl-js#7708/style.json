@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+          [
+              "addCustomLayer",
+              "null-island"
+          ]
+      ]
+    }
+  },
+  "sources": {
+    "geometry": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [{
+          "type": "Feature",
+          "properties": {},
+          "geometry": {
+            "type": "Point",
+            "coordinates": [0, 0]
+          }
+        }]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "geometry",
+      "type": "circle",
+      "source": "geometry",
+      "layout": {
+        "visibility": "none"
+      },
+      "paint": {
+        "circle-radius": 40
+      }
+    }
+  ]
+}

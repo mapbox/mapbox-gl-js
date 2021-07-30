@@ -1,0 +1,82 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 160,
+      "width": 100
+    }
+  },
+  "center": [ -0.0055, 0.0065 ],
+  "zoom": 14,
+  "bearing": 60,
+  "sources": {
+    "line": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "geometry": {
+              "coordinates": [
+                [
+                  -0.008778156849501784,
+                  0.004124676107977621
+                ],
+                [
+                  -0.00581685092268458,
+                  0.007085982020228698
+                ],
+                [
+                  -0.0037016324048408933,
+                  0.0072975038696938554
+                ],
+                [
+                  -0.0007403264791605579,
+                  0.006239894618133235
+                ],
+                [
+                  0.0009518483364558961,
+                  0.004336197959602828
+                ]
+              ],
+              "type": "LineString"
+            },
+            "type": "Feature",
+            "properties": {}
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "line",
+      "type": "symbol",
+      "source": "line",
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 100,
+        "text-field": ["format", "London",
+                                ["image", "london-overground"],
+                                ["image", "london-underground"],
+                                ["image", "national-rail"],
+                                ["image", "dlr"]
+                              ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    },
+    {
+      "id": "outline",
+      "type": "line",
+      "source": "line",
+      "paint": {
+        "line-opacity": 0.2
+      }
+  }
+  ]
+}

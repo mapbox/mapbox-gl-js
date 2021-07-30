@@ -1,0 +1,58 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "fill-visible",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "#000",
+        "fill-opacity": 1
+      }
+    },
+    {
+      "id": "fill-none",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "layout": {
+        "visibility": "none"
+      },
+      "paint": {
+        "fill-color": "#000",
+        "fill-opacity": 0
+      }
+    }
+  ]
+}

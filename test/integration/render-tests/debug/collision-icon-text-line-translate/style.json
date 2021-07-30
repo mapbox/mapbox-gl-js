@@ -1,0 +1,81 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "height": 1000,
+      "width" : 1000
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 12,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+            [
+                0,
+                0
+            ],
+            [
+                0.5,
+                0.5
+            ]
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+          "background-color": "white"
+      }
+    },
+    {
+      "id": "translate",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "fav-airport-18",
+        "text-field": "abc",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "symbol-placement": "line",
+        "symbol-spacing": 50
+      },
+      "paint": {
+        "icon-opacity": 1,
+        "text-color": "hsl(0, 82%, 48%)",
+        "icon-translate": [
+          "interpolate",
+          ["exponential", 2.0],
+          ["zoom"],
+          9,
+          ["literal", [0, 0]],
+          14,
+          ["literal", [-130, -130]]
+        ],
+        "text-translate": [
+          "interpolate",
+          ["exponential", 1.2],
+          ["zoom"],
+          9,
+          ["literal", [0, 0]],
+          13,
+          ["literal", [0, -130]]
+        ]
+      }
+    }
+  ]
+}

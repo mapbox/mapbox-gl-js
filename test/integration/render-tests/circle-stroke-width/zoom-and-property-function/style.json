@@ -1,0 +1,88 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "width": 5
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -10,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "width": 10
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                10,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-color": "#fff",
+        "circle-stroke-width": {
+          "property": "width",
+          "stops": [
+            [
+              {
+                "zoom": 0,
+                "value": 0
+              },
+              2
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": 50
+              },
+              8
+            ],
+            [
+              {
+                "zoom": 1,
+                "value": 0
+              },
+              6
+            ],
+            [
+              {
+                "zoom": 1,
+                "value": 50
+              },
+              24
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}

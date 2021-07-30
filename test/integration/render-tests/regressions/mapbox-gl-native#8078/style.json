@@ -1,0 +1,105 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "sourceOne": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": "a",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -10,
+                0
+              ]
+            }
+          }                   
+        ]
+      }
+    },
+    "sourceTwo": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": "a",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                10,
+                0
+              ]
+            }
+          }                   
+        ]
+      }
+    },
+    "sourceThree": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": "a",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                -10
+              ]
+            }
+          }                   
+        ]
+      }
+    }        
+  },
+  "layers": [
+    {
+      "id": "circleOne",
+      "type": "circle",
+      "source": "sourceOne",
+      "paint": {
+        "circle-color": "rgba(0,0,0,0)",
+        "circle-radius": 10,
+        "circle-stroke-color": "blue",
+        "circle-stroke-width": 2
+      }
+    },
+    {
+      "id": "circleTwo",
+      "type": "circle",
+      "source": "sourceTwo",
+      "paint": {
+        "circle-opacity": 0,
+        "circle-radius": 10,
+        "circle-stroke-color": "red",
+        "circle-stroke-width": 2
+      }
+    },
+    {
+      "id": "circleThree",
+      "type": "circle",
+      "source": "sourceThree",
+      "paint": {
+        "circle-radius": 0,
+        "circle-stroke-color": "green",
+        "circle-stroke-width": 2
+      }
+    }    
+  ]
+}

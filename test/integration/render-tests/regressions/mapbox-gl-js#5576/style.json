@@ -1,0 +1,72 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": []
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [{
+          "type": "Feature",
+          "properties": {
+            "x": "invalid"
+          },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              -10,
+              0
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "x": "center"
+          },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "x": "top"
+          },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              10,
+              0
+            ]
+          }
+        }]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [{
+    "id": "symbol",
+    "type": "symbol",
+    "source": "geojson",
+    "layout": {
+      "icon-image": "dot.sdf",
+      "icon-anchor": ["get", "x"],
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true
+    },
+    "paint": {
+      "icon-color": "red"
+    }
+  }]
+}

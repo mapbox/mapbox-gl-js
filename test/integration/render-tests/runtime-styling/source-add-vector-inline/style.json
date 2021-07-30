@@ -1,0 +1,38 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "addSource",
+          "vector",
+          {
+            "type": "vector",
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.mvt"
+            ]
+          }
+        ],
+        [
+          "addLayer",
+          {
+            "id": "fill",
+            "type": "fill",
+            "source": "vector",
+            "source-layer": "water"
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "sources": {},
+  "layers": []
+}

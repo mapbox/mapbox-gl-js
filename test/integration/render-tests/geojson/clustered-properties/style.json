@@ -1,0 +1,78 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 128
+    }
+  },
+  "center": [
+    -10,
+    -5
+  ],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/places.geojson",
+      "cluster": true,
+      "clusterRadius": 50,
+      "clusterProperties": {
+        "max": ["max", ["get", "scalerank"]],
+        "sum": ["+", ["get", "scalerank"]],
+        "has_island": ["any", ["==", ["get", "featureclass"], "island"]]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "cluster",
+      "type": "circle",
+      "source": "geojson",
+      "filter": [
+        "==",
+        "cluster",
+        true
+      ],
+      "paint": {
+        "circle-color": ["case", ["get", "has_island"], "orange", "rgba(0, 200, 0, 1)"],
+        "circle-radius": 20
+      }
+    },
+    {
+      "id": "cluster_label",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": [
+        "==",
+        "cluster",
+        true
+      ],
+      "layout": {
+        "text-field": "{sum},{max}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 12,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      }
+    },
+    {
+      "id": "unclustered_point",
+      "type": "circle",
+      "source": "geojson",
+      "filter": [
+        "!=",
+        "cluster",
+        true
+      ],
+      "paint": {
+        "circle-color": "rgba(0, 0, 200, 1)",
+        "circle-radius": 10
+      }
+    }
+  ]
+}

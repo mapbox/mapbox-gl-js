@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 14,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "butt",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "layout": {
+        "line-cap": "butt"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-color": "#000",
+        "line-opacity": 1
+      }
+    }
+  ]
+}

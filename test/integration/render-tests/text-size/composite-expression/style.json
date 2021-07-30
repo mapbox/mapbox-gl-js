@@ -1,0 +1,81 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "zoom": 0.5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "x": 0 },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ -10, 0 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": 5 },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                10,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "reference",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "A",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": ["match", ["number", ["get", "x"]], 5, 24, 12],
+        "text-ignore-placement": true,
+        "text-allow-overlap": true
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "A",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": [
+          "interpolate",
+          ["cubic-bezier", 0, 0.9, 0.1, 1],
+          ["zoom"],
+          0,
+          2,
+          1,
+          [ "match", ["number", ["get", "x"]], 5, 24, 12]
+        ],
+        "text-offset": [0, 1],
+        "text-ignore-placement": true,
+        "text-allow-overlap": true
+      }
+    }
+  ]
+}

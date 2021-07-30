@@ -1,0 +1,68 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "comment": "The `pauseSource` prevents new tiles from loading and forces the map to use tiles outside of their ideal zoom range.",
+      "operations": [
+          ["pauseSource", "geojson"],
+          ["setZoom", 2],
+          ["wait"]
+      ]
+    }
+  },
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -10,
+              -10
+            ],
+            [
+              -10,
+              10
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              10,
+              -10
+            ],
+            [
+              -10,
+              -10
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "green",
+        "fill-opacity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            0.5,
+            0,
+            1,
+            ["match", ["get", "fakeproptotriggercompositeexpression"], "nope", 1, 1]
+        ]
+      }
+    }
+  ]
+}

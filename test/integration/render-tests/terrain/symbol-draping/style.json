@@ -1,0 +1,80 @@
+{
+  "version": 8,
+  "sprite": "local://sprites/sprite",
+  "metadata": {
+    "test": {
+      "height": 256,
+      "operations": [
+        ["wait"],
+        ["setTerrain", {
+          "source": "rgbterrain",
+          "exaggeration": 0.03
+        }],
+        ["wait"],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/const/0-0-0.terrain.512.png"
+      ],
+      "maxzoom": 11,
+      "tileSize": 512
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+         {
+            "type": "Feature",
+            "geometry": {
+              "type": "MultiPoint",
+              "coordinates": [
+                  [-0.00003, 0.00036], [-0.00003, 0.00037],
+                  [ -0.0001, 0.0 ], [ 0.0, 0.0004 ],
+                  [  0.0001, 0.0004 ], [ 0.0001, 0.00035 ],
+                  [ -0.0001, 0.00035 ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 45,
+  "zoom": 18,
+  "bearing": -45,
+  "center": [-0.0002, 0.00012],
+  "layers": [
+    {
+      "id": "hillshade-translucent",
+      "type": "hillshade",
+      "source": "rgbterrain",
+      "paint": {
+        "hillshade-exaggeration": 1
+      }
+    },
+    {
+      "id": "symbol-outline",
+      "type": "symbol",
+      "source": "geojson",
+      "minzoom": 15,
+      "layout": {
+        "icon-image": "dot.sdf",
+        "icon-size": { "base": 1.5, "stops": [ [ 14, 0.2 ], [ 18, 2.0 ], [ 20, 2.3 ] ] },
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-padding": 0,
+        "icon-rotation-alignment": "map"
+      },
+      "paint": {
+        "icon-color": "red",
+        "icon-opacity": 0.5
+      }
+    }
+  ]
+}

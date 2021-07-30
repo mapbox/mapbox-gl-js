@@ -1,0 +1,202 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512
+    }
+  },
+  "zoom": 2,
+  "center": [-14.41400, 39.09187],
+  "sources": {
+    "mapbox": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "身什戰 1"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -14.4195556640625,
+                  39.091699613104595
+                ],
+                [
+                  102.3046875,
+                  39.36827914916014
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "two 身什戰"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -14.403076171875,
+                  39.10022600175347
+                ],
+                [
+                  103.35937499999999,
+                  65.80277639340238
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "身什戰33"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -14.414062499999998,
+                  39.091699613104595
+                ],
+                [
+                  -14.765625,
+                  82.21421714106776
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "身什戰"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -14.408569335937498,
+                  39.091699613104595
+                ],
+                [
+                  -130.78125,
+                  39.095962936305476
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "身什戰 five"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -14.414062499999998,
+                  39.095962936305476
+                ],
+                [
+                  -16.5234375,
+                  -58.81374171570779
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "six 身什戰"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -14.4195556640625,
+                  39.10022600175347
+                ],
+                [
+                  -130.4296875,
+                  64.47279382008166
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "身什戰 seven"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -14.4195556640625,
+                  39.0831721934762
+                ],
+                [
+                  33.75,
+                  81.87364125482827
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "eight 身什戰"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -14.447021484374998,
+                  39.104488809440475
+                ],
+                [
+                  -66.4453125,
+                  82.26169873683153
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "lines-symbol",
+      "type": "symbol",
+      "source": "mapbox",
+      "layout": {
+        "text-field": "{name}",
+        "symbol-placement": "line",
+        "symbol-spacing": 150,
+        "text-allow-overlap": true,
+        "text-font": [ "NotoCJK" ]
+      }
+    }, {
+      "id": "lines",
+      "type": "line",
+      "source": "mapbox",
+      "paint": {
+          "line-opacity": 0.25
+      }
+    }
+  ]
+}

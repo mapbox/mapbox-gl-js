@@ -1,0 +1,17 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["setStyle", "local://styles/norway.json"],
+        ["setZoom", 12 ],
+        ["setCenter", [10.8181, 64.863174] ],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}

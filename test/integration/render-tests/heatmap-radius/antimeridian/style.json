@@ -1,0 +1,37 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 514,
+      "height": 64,
+      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform."
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          179,
+          0
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "heatmap",
+      "type": "heatmap",
+      "source": "geojson",
+      "paint": {
+        "heatmap-radius": 50
+      }
+    }
+  ]
+}

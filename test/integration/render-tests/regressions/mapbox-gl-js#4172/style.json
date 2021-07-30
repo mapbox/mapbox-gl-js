@@ -1,0 +1,61 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "zero": 0
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "baseline",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 5,
+        "circle-translate": [-5, 0]
+      }
+    },
+    {
+      "id": "interpolate",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": ["interpolate", ["linear"], ["/", 0, ["get", "zero"]], 1, 1, 2, 2],
+        "circle-translate": [0, 0]
+      }
+    },
+    {
+      "id": "step",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": ["step", ["/", 0, ["get", "zero"]], 1, 2, 2],
+        "circle-translate": [5, 0]
+      }
+    }
+  ]
+}

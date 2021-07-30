@@ -1,0 +1,70 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "height": 512
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 15,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line-center",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "road_label",
+      "layout": {
+        "text-field": ".",
+        "symbol-placement": "line-center",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road_label",
+      "paint": {
+        "line-width": 1,
+        "line-color": ["match",
+            ["%", ["to-number", ["id"]], 10],
+            0, ["to-color", "red"],
+            1, ["to-color", "blue"],
+            2, ["to-color", "yellow"],
+            3, ["to-color", "black"],
+            4, ["to-color", "grey"],
+            5, ["to-color", "purple"],
+            6, ["to-color", "green"],
+            7, ["to-color", "orange"],
+            8, ["to-color", "brown"],
+            9, ["to-color", "lime"],
+            ["to-color", "magenta"]
+        ]
+      }
+    }
+  ]
+}

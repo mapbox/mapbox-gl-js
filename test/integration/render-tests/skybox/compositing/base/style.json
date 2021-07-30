@@ -1,0 +1,60 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 512
+    }
+  },
+  "sources": {},
+  "zoom": 16,
+  "pitch": 85,
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [0, 0],
+        "sky-atmosphere-sun-intensity": 30
+      }
+    },
+    {
+      "id": "rainbow",
+      "type": "sky",
+      "paint": {
+        "sky-type": "gradient",
+        "sky-gradient-center": [0, 90],
+        "sky-gradient": [
+          "interpolate",
+          ["linear"],
+          ["sky-radial-progress"],
+          0.49,
+          "rgba(0,0,0,0)",
+          0.5,
+          "blue",
+          0.6,
+          "royalblue",
+          0.7,
+          "cyan",
+          0.8,
+          "lime",
+          0.9,
+          "yellow",
+          0.99,
+          "red",
+          1,
+          "rgba(0,0,0,0)"
+        ],
+        "sky-gradient-radius": 20
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    }
+  ]
+}

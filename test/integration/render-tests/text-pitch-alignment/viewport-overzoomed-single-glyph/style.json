@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "center": [
+    -118.28162,
+    33.86852
+  ],
+  "zoom": 21,
+  "pitch": 60,
+  "bearing": 161.5,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/mapbox.mapbox-streets-v7/16-11235-26208.mvt"
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "road-label-large",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "road_label",
+      "layout": {
+        "text-size": { "base": 1, "stops": [ [ 9, 10 ], [ 20, 16 ] ] },
+        "text-max-angle": 30,
+        "symbol-spacing": 250,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "symbol-placement": "line",
+        "text-padding": 1,
+        "text-rotation-alignment": "map",
+        "text-pitch-alignment": "viewport",
+        "text-field": "C",
+        "text-letter-spacing": 0.01
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 0%)",
+        "text-halo-color": "hsla(0, 0%, 100%, 0.75)",
+        "text-halo-width": 1,
+        "text-halo-blur": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "operations": [
+        ["addLayer", {"id": "mapbox", "type": "background"}],
+        ["removeLayer", "mapbox"],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}

@@ -1,0 +1,145 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "crossSourceCollisions": false,
+            "height": 128,
+            "width": 128,
+            "description": "Three collision groups of two layers each. Each group should show one label (overlapping with labels from other groups)"
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 0,
+    "sources": {
+        "source1": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                0
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "source2": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                0
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "source3": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                0
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+  "sprite": "local://sprites/sprite",
+    "layers": [
+        {
+            "id": "source1Group1",
+            "type": "symbol",
+            "source": "source1",
+            "layout": {
+              "symbol-placement": "point",
+              "icon-image": "building-12"
+            }
+        },
+        {
+            "id": "source1Group2",
+            "type": "symbol",
+            "source": "source1",
+            "layout": {
+              "symbol-placement": "point",
+              "icon-image": "night-building-12"
+            }
+        },
+        {
+            "id": "source2Group1",
+            "type": "symbol",
+            "source": "source2",
+            "layout": {
+                "symbol-placement": "point",
+                "icon-image": "restaurant-12",
+                "icon-offset": [
+                    7,
+                    7
+                ]
+            }
+        },
+        {
+            "id": "source2Group2",
+            "type": "symbol",
+            "source": "source2",
+            "layout": {
+                "symbol-placement": "point",
+                "icon-image": "night-restaurant-12",
+                "icon-offset": [
+                    7,
+                    7
+                ]
+            }
+        },
+        {
+            "id": "source3Group1",
+            "type": "symbol",
+            "source": "source3",
+            "layout": {
+                "symbol-placement": "point",
+                "icon-image": "school-12",
+                "icon-offset": [
+                    14,
+                    14
+                ]
+            }
+        },
+        {
+            "id": "source3Group2",
+            "type": "symbol",
+            "source": "source3",
+            "layout": {
+                "symbol-placement": "point",
+                "icon-image": "night-school-12",
+                "icon-offset": [
+                    14,
+                    14
+                ]
+            }
+        }
+    ]
+}

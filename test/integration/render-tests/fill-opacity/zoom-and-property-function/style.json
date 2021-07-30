@@ -1,0 +1,162 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "zoom": 0.1,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 0
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -12,
+                    -12
+                  ],
+                  [
+                    -12,
+                    12
+                  ],
+                  [
+                    -4,
+                    12
+                  ],
+                  [
+                    -4,
+                    -12
+                  ],
+                  [
+                    -12,
+                    -12
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 1
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -4,
+                    -12
+                  ],
+                  [
+                    -4,
+                    12
+                  ],
+                  [
+                    4,
+                    12
+                  ],
+                  [
+                    4,
+                    -12
+                  ],
+                  [
+                    -4,
+                    -12
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 2
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    4,
+                    -12
+                  ],
+                  [
+                    4,
+                    12
+                  ],
+                  [
+                    12,
+                    12
+                  ],
+                  [
+                    12,
+                    -12
+                  ],
+                  [
+                    4,
+                    -12
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-antialias": false,
+        "fill-opacity": {
+          "property": "property",
+          "stops": [
+            [
+              {
+                "zoom": 0,
+                "value": 0
+              },
+              1
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": 4
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 1,
+                "value": 0
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 1,
+                "value": 4
+              },
+              0
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}

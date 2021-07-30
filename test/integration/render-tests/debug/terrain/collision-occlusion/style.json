@@ -1,0 +1,73 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "height": 160,
+      "width": 160,
+      "allowed": 0.0005,
+      "description": "Collision debug and occlusion test for text and icons.",
+      "operations": [
+        ["wait", 1500]
+      ]
+    }
+  },
+  "center": [
+    13.421,
+    52.499168
+  ],
+  "bearing": 36.8,
+  "pitch": 41,
+  "zoom": 14,
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 3
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/const/{z}-{x}-{y}.terrain.512.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 512
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "road_label",
+      "layout": {
+        "icon-image": "triangle-stroked-12",
+        "text-field": "test test",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "symbol-placement": "point",
+        "symbol-spacing": 20
+      },
+      "paint": {
+        "icon-opacity": 1
+      }
+    }
+  ]
+}

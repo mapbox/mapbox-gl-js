@@ -1,0 +1,193 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "pixelRatio": 2,
+      "width": 200,
+      "height": 150
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://geojson/anchors.json"
+    }
+  },
+  "sprite": "local://sprites/icon-text-fit-1x",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "anchor-center",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["==", "anchor", "center"],
+      "layout": {
+        "text-field": "Ügt",
+        "text-size": 20,
+        "text-anchor": "center",
+        "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "icon-image": "small-box",
+        "icon-text-fit": "both",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "anchor-left",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["==", "anchor", "left"],
+      "layout": {
+        "text-field": "Ügt",
+        "text-size": 20,
+        "text-anchor": "left",
+        "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "icon-image": "small-box",
+        "icon-text-fit": "both",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "anchor-top-left",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["==", "anchor", "top-left"],
+      "layout": {
+        "text-field": "Ügt",
+        "text-size": 20,
+        "text-anchor": "top-left",
+        "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "icon-image": "small-box",
+        "icon-text-fit": "both",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "anchor-top",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["==", "anchor", "top"],
+      "layout": {
+        "text-field": "Ügt",
+        "text-size": 20,
+        "text-anchor": "top",
+        "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "icon-image": "small-box",
+        "icon-text-fit": "both",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "anchor-top-right",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["==", "anchor", "top-right"],
+      "layout": {
+        "text-field": "Ügt",
+        "text-size": 20,
+        "text-anchor": "top-right",
+        "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "icon-image": "small-box",
+        "icon-text-fit": "both",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "anchor-right",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["==", "anchor", "right"],
+      "layout": {
+        "text-field": "Ügt",
+        "text-size": 20,
+        "text-anchor": "right",
+        "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "icon-image": "small-box",
+        "icon-text-fit": "both",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "anchor-bottom-left",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["==", "anchor", "bottom-left"],
+      "layout": {
+        "text-field": "Ügt",
+        "text-size": 20,
+        "text-anchor": "bottom-left",
+        "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "icon-image": "small-box",
+        "icon-text-fit": "both",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "anchor-bottom",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["==", "anchor", "bottom"],
+      "layout": {
+        "text-field": "Ügt",
+        "text-size": 20,
+        "text-anchor": "bottom",
+        "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "icon-image": "small-box",
+        "icon-text-fit": "both",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "anchor-bottom-right",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["==", "anchor", "bottom-right"],
+      "layout": {
+        "text-field": "Ügt",
+        "text-size": 20,
+        "text-anchor": "bottom-right",
+        "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "icon-image": "small-box",
+        "icon-text-fit": "both",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "anchors",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 2,
+        "circle-color": "green",
+        "circle-stroke-color": "white",
+        "circle-stroke-width": 1
+      }
+    }
+  ]
+}

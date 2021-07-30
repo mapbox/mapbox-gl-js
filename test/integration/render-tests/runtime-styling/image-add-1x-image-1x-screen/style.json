@@ -1,0 +1,40 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "addImage",
+          "marker",
+          "./sprites/1x.png"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "geometry",
+            "type": "symbol",
+            "source": "geometry",
+            "layout": {
+              "icon-image": "marker"
+            }
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "geometry": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0, 0]
+      }
+    }
+  },
+  "layers": []
+}

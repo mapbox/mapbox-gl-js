@@ -1,0 +1,55 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "collisionDebug": true,
+            "width": 500,
+            "height": 500
+        }
+    },
+    "center": [
+        -74.522,
+        39.92
+    ],
+    "pitch": 30,
+    "zoom": 7.5,
+    "sources": {
+        "us-counties": {
+            "type": "vector",
+            "maxzoom": 7,
+            "minzoom": 7,
+            "tiles": [
+                "local://tiles/counties-{z}-{x}-{y}.mvt"
+            ]
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "sprite": "local://sprites/sprite",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "white"
+            }
+        },
+        {
+            "id": "counties",
+            "type": "symbol",
+            "source": "us-counties",
+            "source-layer": "counties",
+            "layout": {
+                "text-field": "{name}",
+                "text-size": 11,
+                "symbol-spacing": 60,
+                "text-max-angle": 1000,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "symbol-placement": "line"
+            },
+            "interactive": true
+        }
+    ]
+}

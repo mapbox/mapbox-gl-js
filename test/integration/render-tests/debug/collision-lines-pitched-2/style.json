@@ -1,0 +1,76 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "collisionDebug": true,
+            "width": 512,
+            "height": 512
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 4,
+    "pitch": 60,
+    "bearing": 90,
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "maxzoom": 1,
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Some sentence that is quite long"
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [ -20, 4 ], [ 20, 4 ]
+                        ]
+                    }
+
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Another sentence that is even longer than the previous one"
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [ 0, 0 ], [ 50, 0 ]
+                        ]
+                    }
+
+                }]
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "white"
+            }
+        },
+        {
+            "id": "line",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "text-field": "{name}",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "symbol-placement": "line",
+                "text-pitch-alignment": "map"
+            }
+        }
+    ]
+}

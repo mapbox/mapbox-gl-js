@@ -1,0 +1,217 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "crossSourceCollisions": false,
+            "height": 128,
+            "width": 256,
+            "description": "Three collision groups of two layers each. Each group should show one label (overlapping with labels from other groups)"
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 0,
+    "sources": {
+        "source1": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "A"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                -20,
+                                0
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "B"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                20,
+                                0
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "source2": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "A"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                -20,
+                                0
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "B"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                20,
+                                0
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "source3": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "A"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                -20,
+                                0
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "B"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                20,
+                                0
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "source1Group1",
+            "type": "symbol",
+            "source": "source1",
+            "layout": {
+                "text-field": "Source1 Group {name}",
+                "text-max-width": 30,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        },
+        {
+            "id": "source1Group2",
+            "type": "symbol",
+            "source": "source1",
+            "layout": {
+                "text-field": "2nd Layer Source1 Group {name}",
+                "text-max-width": 30,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        },
+        {
+            "id": "source2Group1",
+            "type": "symbol",
+            "source": "source2",
+            "layout": {
+                "text-field": "Source2 Group {name}",
+                "text-max-width": 30,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "text-offset": [
+                    0,
+                    0.5
+                ]
+            }
+        },
+        {
+            "id": "source2Group2",
+            "type": "symbol",
+            "source": "source2",
+            "layout": {
+                "text-field": "2nd Layer Source2 Group {name}",
+                "text-max-width": 30,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "text-offset": [
+                    0,
+                    0.5
+                ]
+            }
+        },
+        {
+            "id": "source3Group1",
+            "type": "symbol",
+            "source": "source3",
+            "layout": {
+                "text-field": "Source3 Group {name}",
+                "text-max-width": 30,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "text-offset": [
+                    0,
+                    1
+                ]
+            }
+        },
+        {
+            "id": "ssource3Group2",
+            "type": "symbol",
+            "source": "source3",
+            "layout": {
+                "text-field": "2nd Layer Source3 Group {name}",
+                "text-max-width": 30,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "text-offset": [
+                    0,
+                    1
+                ]
+            }
+        }
+    ]
+}

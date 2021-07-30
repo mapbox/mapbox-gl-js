@@ -1,0 +1,31 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "sources": {},
+  "zoom": 14,
+  "pitch": 72,
+  "bearing": 60,
+  "layers": [
+    {
+      "id": "blue-fill",
+      "type": "sky",
+      "paint": {
+        "sky-type": "gradient",
+        "sky-gradient-center": [0, 0],
+        "sky-gradient": "green"
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "red"
+      }
+    }
+  ]
+}

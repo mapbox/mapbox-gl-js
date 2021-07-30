@@ -1,0 +1,75 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 512
+    }
+  },
+  "center": [ 0, -15 ],
+  "zoom": 1.5,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { 
+              "width": "varying",
+              "text": "These lines look the same a a a a a a a a a a a a a a a a a a a a a a a a a a a a" 
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ -25, -15 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { 
+              "width": "fixed",
+              "text": "These lines look the same a a a a a a a a a a a a a a a a a a a a a a a a a a a a" 
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 25, -15 ]
+            }
+          }  
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "{text}",
+        "text-max-width": {
+          "type": "categorical",
+          "property": "width",
+          "stops": [
+            [{"zoom": 0, "value": "varying"}, 1],
+            [{"zoom": 0, "value": "fixed"}, 7],
+            [{"zoom": 2, "value": "varying"}, 13],
+            [{"zoom": 2, "value": "fixed"}, 7]
+          ]
+        },
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

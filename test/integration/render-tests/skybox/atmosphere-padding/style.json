@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "showPadding": true,
+      "width": 256,
+      "height": 256,
+      "operations": [
+        [
+          "setPadding",
+          {
+            "top": 0,
+            "left": 100,
+            "bottom": 100,
+            "right": 0
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {},
+  "zoom": 16,
+  "pitch": 85,
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [0, 90],
+        "sky-atmosphere-sun-intensity": 30
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    }
+  ]
+}

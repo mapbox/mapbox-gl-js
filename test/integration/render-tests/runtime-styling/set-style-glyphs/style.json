@@ -1,0 +1,90 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0003,
+      "operations": [
+        [
+          "setStyle",
+          {
+            "version": 8,
+            "center": [
+              -70.751953125,
+              43.38904828677382
+            ],
+            "zoom": 11,
+            "sources": {
+              "geojson": {
+                "type": "geojson",
+                "data": "local://data/chinese.geojson"
+              }
+            },
+            "sprite": "local://sprites/sprite",
+            "glyphs": "local://glyphs/NotoCJK/{range}.pbf?ignore={fontstack}&hat_tip=jfirebaugh",
+            "layers": [
+              {
+                "id": "background",
+                "type": "background",
+                "paint": {
+                  "background-color": "white"
+                }
+              },
+              {
+                "id": "icon",
+                "type": "symbol",
+                "source": "geojson",
+                "layout": {
+                  "text-field": "{name}",
+                  "text-font": [
+                    "NotoCJK"
+                  ],
+                  "symbol-placement": "point"
+                }
+              }
+            ]
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "center": [
+    -70.751953125,
+    43.38904828677382
+  ],
+  "zoom": 11,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/chinese.geojson"
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "HELLO",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "symbol-placement": "point"
+      }
+    }
+  ]
+}

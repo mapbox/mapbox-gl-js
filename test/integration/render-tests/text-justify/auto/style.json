@@ -1,0 +1,115 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 2,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "x": "bottom-right" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ -10, 10 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": "bottom" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 10 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": "bottom-left" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 10, 10 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": "right" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ -10, 0 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": "center" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 0 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": "left" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 10, 0 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": "top-right" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ -10, -10 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": "top" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, -10 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": "top-left" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 10, -10 ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "Justified Text",
+        "text-max-width": 5,
+        "text-anchor": {
+          "type": "identity",
+          "property": "x"
+        },
+        "text-justify": "auto",
+        "text-allow-overlap": true,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

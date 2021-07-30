@@ -1,0 +1,107 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "center": [0, 32],
+  "zoom": 1,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "red",
+              "sort-key": 1,
+              "image": "interstate_2"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                6,
+                35
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "green",
+              "sort-key": 0,
+              "image": "interstate_2"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                6,
+                29
+              ]
+            }
+          },          {
+            "type": "Feature",
+            "properties": {
+              "color": "red",
+              "sort-key": 1,
+              "image": "interstate_2"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -6,
+                35
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "green",
+              "sort-key": 0,
+              "image": "interstate_2"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -6,
+                29
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-sort-key": ["get", "sort-key"],
+        "icon-image": ["get", "image"],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-field": ["get", "sort-key"],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": "rgb(255,255,255)",
+        "text-halo-width": 1,
+        "text-halo-color": ["get", "color"]
+      }
+    }
+  ]
+}

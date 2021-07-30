@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "showPadding": true,
+      "height": 128,
+      "width": 128,
+      "operations": [
+        [
+          "setPadding",
+          {
+            "top": 100,
+            "left": 0,
+            "bottom": 0,
+            "right": 0
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {},
+  "zoom": 14,
+  "pitch": 60,
+  "layers": [
+    {
+      "id": "blue-fill",
+      "type": "sky",
+      "paint": {
+        "sky-type": "gradient",
+        "sky-gradient-center": [0, 0],
+        "sky-gradient": "green"
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "blue"
+      }
+    }
+  ]
+}

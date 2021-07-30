@@ -1,0 +1,50 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "foo": "bar"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-color": {
+          "type": "categorical",
+          "property": "foo",
+          "stops": [
+            [
+              {
+                "value": "nonesuch",
+                "zoom": 0
+              },
+              "red"
+            ]
+          ],
+          "default": "green"
+        }
+      }
+    }
+  ]
+}

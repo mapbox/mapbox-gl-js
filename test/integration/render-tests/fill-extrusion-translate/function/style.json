@@ -1,0 +1,91 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 10
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [ [ -0.0003, -0.00047 ],
+                  [ -0.0003, -0.00017 ],
+                  [ 0, -0.00017 ],
+                  [ 0, -0.00047 ],
+                  [ -0.0003, -0.00047 ] ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 20
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [ [ -0.00015, -0.00015 ],
+                  [ -0.00015, 0.00015 ],
+                  [ 0.00015, 0.00015 ],
+                  [ 0.00015, -0.00015 ],
+                  [ -0.00015, -0.00015 ] ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 30
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [ [ 0, 0.00017 ],
+                  [ 0, 0.00047 ],
+                  [ 0.0003, 0.00047 ],
+                  [ 0.0003, 0.00017 ],
+                  [ 0, 0.00017 ] ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 60,
+  "zoom": 19,
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "rgba(0,255,255,1)"
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-height": 10,
+        "fill-extrusion-translate": {
+          "stops": [[18, [0, -220]], [20, [100, -20]]],
+          "type": "exponential"
+        }
+      }
+    }
+  ]
+}

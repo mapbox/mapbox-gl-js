@@ -1,0 +1,96 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "zoom": 2,
+  "sprite": "local://sprites/emerald",
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "street"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  10,
+                  -10
+                ],
+                [
+                  -10,
+                  -10
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "path"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  0
+                ],
+                [
+                  10,
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "street"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  10
+                ],
+                [
+                  10,
+                  10
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "a",
+      "paint": {
+        "line-width": 10,
+        "line-pattern": ["case", ["==", ["get", "class"], "street"], "generic_icon", "generic_metro" ]
+      }
+    }
+  ]
+}

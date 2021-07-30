@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 14,
+  "bearing": 180,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "point-placement-align-map-false",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "layout": {
+        "symbol-placement": "point",
+        "text-allow-overlap": true,
+        "text-field": "point point point",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-rotation-alignment": "map",
+        "text-keep-upright": false
+      },
+      "paint": {
+        "text-opacity": 1
+      }
+    }
+  ]
+}

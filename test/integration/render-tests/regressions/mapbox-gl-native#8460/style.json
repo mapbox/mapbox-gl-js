@@ -1,0 +1,74 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "zoom": 0.999,
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "property": 0
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -5,
+            0
+          ]
+        }
+      }
+    },
+    "b": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "property": 0
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            5,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "a",
+      "type": "circle",
+      "source": "a",
+      "paint": {
+        "circle-radius": {
+          "property": "property",
+          "stops": [
+            [{"zoom": 0.0, "value": 0}, 0],
+            [{"zoom": 0.5, "value": 0}, 10]
+          ]
+        }
+      }
+    },
+    {
+      "id": "b",
+      "type": "circle",
+      "source": "b",
+      "paint": {
+        "circle-radius": {
+          "property": "property",
+          "stops": [
+            [{"zoom": 0.5, "value": 0}, 0],
+            [{"zoom": 1.5, "value": 0}, 10]
+          ]
+        }
+      }
+    }
+  ]
+}

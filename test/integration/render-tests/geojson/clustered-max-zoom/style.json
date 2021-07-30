@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 32,
+      "height": 32
+    }
+  },
+  "center": [-1.426798, 53.943034],
+  "zoom": 20,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "features": [
+          {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-1.426798, 53.943034]}},
+          {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-1.426798, 53.943034]}}
+        ]
+      },
+      "maxzoom": 20,
+      "cluster": true,
+      "clusterRadius": 1,
+      "clusterMaxZoom": 20
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "cluster",
+      "type": "circle",
+      "source": "geojson",
+      "filter": ["==", "cluster", true],
+      "paint": {
+        "circle-color": "orange",
+        "circle-radius": 10
+      }
+    }
+  ]
+}

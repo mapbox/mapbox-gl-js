@@ -1,0 +1,84 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0.99,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "class": "motorway" },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [-10, 10],
+                [10, -10]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "class": "trunk" },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [10, 10],
+                [-10, -10]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "class": "other" },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [-10, 0],
+                [10, 0]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": 10,
+        "line-opacity": [
+          "step", ["zoom"],
+          ["match", ["string", ["get", "class"]],
+            "motorway", 1,
+            "trunk", 0.25,
+            0.1
+          ],
+          1,
+          1
+        ]
+      }
+    }
+  ]
+}

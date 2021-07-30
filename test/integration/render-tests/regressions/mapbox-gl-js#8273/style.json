@@ -1,0 +1,43 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        ["setPaintProperty", "line", "line-pattern", "zoo_icon"],
+        ["wait"]
+      ]
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -20,
+            -20
+          ],
+          [
+            20,
+            20
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-pattern": "generic_icon",
+        "line-width": 20
+      }
+    }
+  ]
+}

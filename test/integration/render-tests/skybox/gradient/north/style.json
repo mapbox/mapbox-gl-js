@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256
+    }
+  },
+  "sources": {},
+  "zoom": 16,
+  "pitch": 85,
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "gradient",
+        "sky-gradient-center": [0, 90],
+        "sky-gradient-radius": 30,
+        "sky-gradient": [
+          "interpolate",
+          ["linear"],
+          ["sky-radial-progress"],
+          0.0,
+          "red",
+          1,
+          "white"
+      ]
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    }
+  ]
+}

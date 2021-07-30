@@ -1,0 +1,59 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "setStyle",
+          {
+            "version": 8,
+            "transition": {
+              "duration": 0
+            },
+            "sources": {},
+            "layers": [
+              {
+                "id": "background",
+                "type": "background",
+                "paint": {
+                  "background-color": [
+                    "interpolate",
+                    [
+                      "exponential",
+                      1
+                    ],
+                    [
+                      "zoom"
+                    ],
+                    0,
+                    "blue",
+                    10,
+                    "white"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "red"
+      }
+    }
+  ]
+}

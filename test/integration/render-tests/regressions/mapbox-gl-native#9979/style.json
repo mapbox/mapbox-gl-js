@@ -1,0 +1,85 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "operations": [
+        [
+          "addSource",
+          "geojson",
+          {
+            "type": "geojson",
+            "data": {
+              "type": "Polygon",
+              "coordinates": []
+            }
+          }
+        ],
+        [
+          "addLayer",
+          {
+            "id": "line",
+            "source": "geojson",
+            "type": "line"
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "removeLayer",
+          "line"
+        ],
+        [
+          "removeSource",
+          "geojson"
+        ],
+        [
+          "addSource",
+          "geojson",
+          {
+            "maxzoom": 16,
+            "type": "geojson",
+            "data": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [0.134411688130084, 52.2205792605345],
+                  [0.134414225556761, 52.2206321864999],
+                  [0.1342400618783, 52.2206353389478],
+                  [0.134235355257573, 52.2205371595184],
+                  [0.134408523751762, 52.2205340250887],
+                  [0.134411688130084, 52.2205792605345]
+                ]
+              ]
+            }
+          }
+        ],
+        [
+          "addLayer",
+          {
+            "id": "line",
+            "source": "geojson",
+            "type": "line",
+            "paint": {
+              "line-width": 3
+            }
+          }
+        ],
+        [
+          "setZoom",
+          16.7
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 18,
+  "center": [0.13429, 52.22056],
+  "sources": {},
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": []
+}

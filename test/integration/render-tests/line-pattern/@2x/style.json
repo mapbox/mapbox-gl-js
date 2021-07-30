@@ -1,0 +1,90 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "pixelRatio": 2
+    }
+  },
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10,
+            -10
+          ],
+          [
+            10,
+            -10
+          ]
+        ]
+      }
+    },
+    "b": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10,
+            0
+          ],
+          [
+            10,
+            0
+          ]
+        ]
+      }
+    },
+    "c": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10,
+            10
+          ],
+          [
+            10,
+            10
+          ]
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "a",
+      "type": "line",
+      "source": "a",
+      "paint": {
+        "line-width": 2,
+        "line-pattern": "generic_icon"
+      }
+    },
+    {
+      "id": "b",
+      "type": "line",
+      "source": "b",
+      "paint": {
+        "line-width": 4,
+        "line-pattern": "generic_icon"
+      }
+    },
+    {
+      "id": "c",
+      "type": "line",
+      "source": "c",
+      "paint": {
+        "line-width": 8,
+        "line-pattern": "generic_icon"
+      }
+    }
+  ]
+}

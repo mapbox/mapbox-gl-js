@@ -1,0 +1,69 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 128,
+            "height": 128
+        }
+    },
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "देवनागरी"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                -15
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "سلام۳۹"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                15
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+          "id": "background",
+          "type": "background",
+          "paint": {
+            "background-color": "white"
+          }
+        },
+        {
+            "id": "symbol",
+            "type": "symbol",
+            "source": "geojson",
+            "filter": ["is-supported-script", ["get", "name"]],
+            "layout": {
+                "symbol-placement": "point",
+                "text-field": ["get", "name"],
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        }
+    ]
+}

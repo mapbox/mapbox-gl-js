@@ -1,0 +1,65 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 512
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 0,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "x": "right" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ -100, 0 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": "center" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 0 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "x": "left" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 100, 0 ]
+            }
+          }  
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "A very very long \n line label",
+        "text-justify": {
+          "type": "identity",
+          "property": "x"
+        },
+        "text-allow-overlap": true,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

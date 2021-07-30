@@ -1,0 +1,73 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "description": "Checks that icons are not hidden when the text is an empty string"
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                      0,
+                      0
+                    ]
+                },
+                "properties": {
+                    "text": "OK"
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                      20,
+                      0
+                    ]
+                },
+                "properties": {
+                    "text": ""
+                }
+            }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "point",
+        "text-allow-overlap": true,
+        "icon-allow-overlap": true,
+        "icon-image": "triangle-12",
+        "text-field": "{text}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "icon-opacity": 0.5,
+        "text-translate": [
+          -10,
+          0
+        ]
+      }
+    }
+  ]
+}

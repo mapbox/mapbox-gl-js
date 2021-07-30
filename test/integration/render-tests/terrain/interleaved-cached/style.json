@@ -1,0 +1,132 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 200,
+      "width": 200,
+      "optimizeForTerrain": true
+    }
+  },
+  "center": [-113.2697514325975, 35.962383122262054],
+  "zoom": 12.5,
+  "pitch": 30,
+  "bearing": -40,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 256
+    },
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "geojson1": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -113.27384948730469,
+              35.962
+            ],
+            [
+              -113.26421051269531,
+              35.962
+            ],
+            [
+              -113.26421051269531,
+              35.97
+            ],
+            [
+              -113.27384948730469,
+              35.962
+            ]
+          ]
+        ]
+      }
+    },
+    "geojson2": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -113.27384948730469,
+              35.97
+            ],
+            [
+              -113.26421051269531,
+              35.97
+            ],
+            [
+              -113.26421051269531,
+              35.962
+            ],
+            [
+              -113.27384948730469,
+              35.97
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "fill-translucent",
+      "type": "fill",
+      "source": "geojson1",
+      "paint": {
+        "fill-color": "yellow",
+        "fill-outline-color": "blue",
+        "fill-opacity": 0.5
+      }
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "geojson1",
+      "layout": {
+        "symbol-placement": "point",
+        "text-field": "Test Test Test",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 20
+      }
+    },
+    {
+      "id": "fill-overlay",
+      "type": "fill",
+      "source": "geojson2",
+      "paint": {
+        "fill-color": "orange",
+        "fill-outline-color": "red",
+        "fill-opacity": 0.7
+      }
+    }
+  ]
+}

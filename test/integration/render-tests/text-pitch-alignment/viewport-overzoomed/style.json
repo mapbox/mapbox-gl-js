@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 1024
+    }
+  },
+  "center": [
+    50,
+    0
+  ],
+  "zoom": 18,
+  "pitch": 60,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "maxzoom": 16,
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+            [ 50, -90 ],
+            [ 50, 90 ]
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 10,
+        "text-rotation-alignment": "map",
+        "text-pitch-alignment": "viewport",
+        "text-field": "Figueroa St.",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-opacity": 1
+      }
+    }
+  ]
+}

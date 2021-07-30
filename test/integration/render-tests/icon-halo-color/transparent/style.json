@@ -1,0 +1,37 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "dot.sdf"
+      },
+      "paint": {
+        "icon-halo-width": 2,
+        "icon-halo-color": "rgba(255,0,0,1)",
+        "icon-opacity": 0
+      }
+    }
+  ]
+}

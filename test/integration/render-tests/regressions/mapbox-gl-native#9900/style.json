@@ -1,0 +1,76 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "operations": [
+        [
+            "wait"
+        ],
+        [
+          "addSource",
+          "geojson",
+          {
+            "type": "geojson",
+            "data": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -45,
+                        -45
+                    ],
+                    [
+                        45,
+                        45
+                    ]
+                ]
+            }
+          }
+        ],
+        [
+         "addLayer",
+         {
+             "id": "noop",
+             "type": "symbol",
+             "source": "geojson"
+         }
+        ],
+        [
+            "wait"
+        ],
+        [
+         "setCenter",
+         [
+             45,
+             45
+         ]
+        ],
+        [
+         "addLayer",
+         {
+             "id": "line",
+             "type": "line",
+             "source": "geojson"
+         }
+        ],
+        [
+            "wait"
+        ],
+        [
+         "setCenter",
+         [
+             0,
+             0
+         ]
+        ],
+        [
+            "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 10,
+  "sources": {},
+  "layers": []
+}

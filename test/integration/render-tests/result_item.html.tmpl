@@ -1,0 +1,8 @@
+<div class="test <%- r.status %> <%- (hasFailedTests && /passed/.test(r.status) || /ignored/.test(r.status)) ? 'hide' : '' %>">
+    <h2><span class="label" style="background: <%- r.color %>"><%- r.status %></span> <%- r.id %></h2>
+    <% if (r.status !== 'errored') { %>
+        <img width="<%- r.width %>" height="<%- r.height %>" src="data:image/png;base64,<%- r.actual %>" data-alt-src="data:image/png;base64,<%- r.expected %>"><img style="width: <%- r.width %>; height: <%- r.height %>" src="data:image/png;base64,<%- r.diff %>">
+    <% } %>
+    <% if (r.error) { %><p style="color: red"><strong>Error:</strong> <%- r.error.message %></p><% } %>
+    <% if (r.difference) { %><p class="diff"><strong>Diff:</strong> <%- r.difference %></p><% } %>
+</div>

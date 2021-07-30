@@ -1,0 +1,48 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 64
+    }
+  },
+  "center": [
+      -10,
+      0
+  ],
+  "zoom": 0,
+  "sources": {
+    "image": {
+      "type": "image",
+      "coordinates": [
+        [
+          -270,
+          -80
+        ],
+        [
+          90,
+          -80
+        ],
+        [
+          90,
+          80
+        ],
+        [
+          -270,
+          80
+        ]
+      ],
+      "url": "local://image/0.png"
+    }
+  },
+  "layers": [
+    {
+      "id": "image",
+      "type": "raster",
+      "source": "image",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

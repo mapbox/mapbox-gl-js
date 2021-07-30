@@ -1,0 +1,18 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+          [
+              "addCustomLayer",
+              "null-island"
+          ]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": [
+  ]
+}

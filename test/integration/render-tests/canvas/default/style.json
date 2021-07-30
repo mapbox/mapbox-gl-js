@@ -1,0 +1,52 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "addFakeCanvas": {
+          "id": "fake-canvas",
+          "image": "./image/0.png"
+      }
+    }
+  },
+  "center": [
+    -122.514426,
+    37.562984
+  ],
+  "zoom": 17,
+  "sources": {
+    "canvas": {
+      "type": "canvas",
+      "coordinates": [
+        [
+          -122.51596391201019,
+          37.56238816766053
+        ],
+        [
+          -122.51467645168304,
+          37.56410183312965
+        ],
+        [
+          -122.51309394836426,
+          37.563391708549425
+        ],
+        [
+          -122.51423120498657,
+          37.56161849366671
+        ]
+      ],
+      "canvas": "fake-canvas"
+    }
+  },
+  "layers": [
+    {
+      "id": "canvas",
+      "type": "raster",
+      "source": "canvas",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

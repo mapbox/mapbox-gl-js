@@ -1,0 +1,102 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "light": {
+    "intensity": 1
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 0
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -0.0003,
+                    -0.0003
+                  ],
+                  [
+                    -0.0003,
+                    0.0003
+                  ],
+                  [
+                    0.0003,
+                    0.0003
+                  ],
+                  [
+                    0.0003,
+                    -0.0003
+                  ],
+                  [
+                    -0.0003,
+                    -0.0003
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 20
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -0.0003,
+                    -0.0003
+                  ],
+                  [
+                    -0.0003,
+                    0.0003
+                  ],
+                  [
+                    0.0003,
+                    0.0003
+                  ],
+                  [
+                    0.0003,
+                    -0.0003
+                  ],
+                  [
+                    -0.0003,
+                    -0.0003
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 60,
+  "zoom": 18,
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-height": ["+", ["get", "property"], 18],
+        "fill-extrusion-base": ["get", "property"],
+        "fill-extrusion-color": "#999",
+        "fill-extrusion-vertical-gradient": false
+      }
+    }
+  ]
+}

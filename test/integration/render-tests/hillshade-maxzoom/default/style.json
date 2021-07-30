@@ -1,0 +1,36 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "description": "This test verifies that setting a lower maxzoom on the raster-dem source produces the same output as a higher maxzoom (hillshade-accent-color/default) when the map zoom level is lower than the maxzoom (i.e., maxzoom does not alter rendering at lower zooms)"
+    }
+  },
+  "center": [-113.26903, 35.9654],
+  "zoom": 11,
+  "sources": {
+    "source": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "hillshade",
+      "type": "hillshade",
+      "source": "source"
+    }
+  ]
+}
