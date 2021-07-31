@@ -117,40 +117,66 @@ test('transform', (t) => {
         t.end();
     });
 
-    t.test('maxBounds snaps to correct side when crossing 180th meridian (#10447)', (t) => {
-        console.log("start snap test");
-        const transform = new Transform();
-        transform.zoom = 6;
-        transform.resize(500, 500);
+    t.test('maxBounds should not jump to the wrong side when crossing 180th meridian (#10447)', (t) => {
+        t.test(' to the East', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [160, 190];
+            transform.latRange = [-55, -23];
 
-        transform.lngRange = [160, 190];
-        transform.latRange = [-55, -23];
+            transform.center = new LngLat(-170, -40);
 
-        transform.center = new LngLat(-170, -40);
+            t.ok(transform.center.lng < 190);
+            t.ok(transform.center.lng > 175);
 
-        t.ok(transform.center.lng < 190);
-        t.ok(transform.center.lng > 175);
+            t.end();
+        });
+
+        t.test('to the West', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [-190, -160];
+            transform.latRange = [-55, -23];
+
+            transform.center = new LngLat(170, -40);
+
+            t.ok(transform.center.lng > -190);
+            t.ok(transform.center.lng < -175);
+
+            t.end();
+        });
+
+        t.test('longitude 0 - 360', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [0, 360];
+            transform.latRange = [-90, 90];
+
+            transform.center = new LngLat(-155, 0);
+
+            t.same(transform.center, new LngLat(205, 0));
+
+            t.end();
+        });
+
+        t.test('longitude -360 - 0', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [-360, 0];
+            transform.latRange = [-90, 90];
+
+            transform.center = new LngLat(160, 0);
+            t.same(transform.center, new LngLat(-200, 0));
+
+            t.end();
+        });
 
         t.end();
-    });
 
-    t.test('maxBounds snaps to correct side when crossing 180th meridian on the West', (t) => {
-        console.log("start snap test");
-        const transform = new Transform();
-        transform.zoom = 6;
-        transform.resize(500, 500);
-
-        transform.lngRange = [-190, -160];
-        transform.latRange = [-55, -23];
-
-        transform.center = new LngLat(170, -40);
-
-        console.log("transform center lng");
-        console.log(transform.center);
-        t.ok(transform.center.lng > -190);
-        t.ok(transform.center.lng < -175);
-
-        t.end();
     });
 
     t.test('_minZoomForBounds respects latRange and lngRange', (t) => {

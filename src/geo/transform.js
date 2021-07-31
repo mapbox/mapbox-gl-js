@@ -1362,7 +1362,7 @@ class Transform {
         let maxY = 90;
         let minX = -180;
         let maxX = 180;
-        let sy, sx, x2, y2;
+        let sy, sx, y2;
         const size = this.size,
             unmodified = this._unmodified;
 
@@ -1403,24 +1403,23 @@ class Transform {
             if (y + h2 > maxY) y2 = maxY - h2;
         }
 
+        let x = point.x;
+
         if (this.lngRange) {
-            let x = point.x;
             const w2 = size.x / 2;
 
-            // If the left edge is more than 180 degrees below the minimum boundary, add 360 degrees to the value.
-            if (x - w2 - minX < -this.worldSize / 2) x += this.worldSize;
+            // Wrapping.
+            if (x < minX) x += this.worldSize;
+            if (x > maxX) x -= this.worldSize;
 
-            // If the right edge is more than 180 degrees beyond the max boundary, add 360 degrees to the value.
-            if (x + w2 - maxX > this.worldSize / 2) x -= this.worldSize;
-
-            if (x - w2 < minX) x2 = minX + w2;
-            if (x + w2 > maxX) x2 = maxX - w2;
+            if (x - w2 < minX) x = minX + w2;
+            if (x + w2 > maxX) x = maxX - w2;
         }
 
         // pan the map if the screen goes off the range
-        if (x2 !== undefined || y2 !== undefined) {
+        if (x !== point.x || y2 !== undefined) {
             this.center = this.unproject(new Point(
-                x2 !== undefined ? x2 : point.x,
+                x,
                 y2 !== undefined ? y2 : point.y));
         }
 

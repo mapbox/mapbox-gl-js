@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Zealand conspiracy</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11',
+    zoom: 6,
+    center: [179.012, -18.124],
+    maxBounds: [[175, -21.943], [360 - 175, -12.261]]
+});
+map.transform.center = new mapboxgl.LngLat(190, -40);
+
+document.addEventListener('keypress', (e) => {
+    console.log(e.key);
+    if (e.key === " ") {
+        console.log(map.transform.center);
+        console.log(map.transform.point);
+    }
+});
+
+</script>
+</body>
+</html>
