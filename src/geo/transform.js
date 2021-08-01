@@ -1361,11 +1361,9 @@ class Transform {
 
         this._constraining = true;
 
-        let minY;
-        let maxY;
-        let minX = -180;
-        let maxX = 180;
-        let sy, sx, y2;
+        let minY = 0;
+        let maxY = 0;
+        let minX, maxX, sy, sx, y2;
         const size = this.size,
             unmodified = this._unmodified;
 
