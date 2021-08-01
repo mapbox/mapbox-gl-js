@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, lngFromMercatorX} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -1213,7 +1213,10 @@ class Transform {
      */
     setMaxBounds(bounds?: LngLatBounds) {
         if (bounds) {
-            this.lngRange = [bounds.getWest(), bounds.getEast()];
+            const eastBound = bounds.getEast();
+            const westBound = bounds.getWest();
+            // Unwrap bounds if they cross the 180th meridian
+            this.lngRange = [westBound, eastBound > westBound ? eastBound : eastBound + 360];
             this.latRange = [bounds.getSouth(), bounds.getNorth()];
             this._constrain();
         } else {
@@ -1358,8 +1361,8 @@ class Transform {
 
         this._constraining = true;
 
-        let minY = -90;
-        let maxY = 90;
+        let minY;
+        let maxY;
         let minX = -180;
         let maxX = 180;
         let sy, sx, y2;
@@ -1406,14 +1409,18 @@ class Transform {
         let x = point.x;
 
         if (this.lngRange) {
+            // Translate to positive positions with the map center in the center position.
+            // This ensures that the map snaps to the correct edge.
+            const shift = this.worldSize / 2 - (minX + maxX) / 2;
+            x = (x + shift + this.worldSize) % this.worldSize;
+            minX += shift;
+            maxX += shift;
+
             const w2 = size.x / 2;
-
-            // Wrapping.
-            if (x < minX) x += this.worldSize;
-            if (x > maxX) x -= this.worldSize;
-
             if (x - w2 < minX) x = minX + w2;
             if (x + w2 > maxX) x = maxX - w2;
+
+            x -= shift;
         }
 
         // pan the map if the screen goes off the range
