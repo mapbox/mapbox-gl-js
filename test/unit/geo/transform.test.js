@@ -201,7 +201,6 @@ test('transform', (t) => {
         transform.zoom = 6;
         transform.resize(500, 500);
         transform.setMaxBounds(new LngLatBounds([160, -20], [-160, 20]));  //East bound is "smaller"
-        console.log(transform.getMaxBounds());
 
         const wrap = val => ((val + 360) % 360);
 
