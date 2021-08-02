@@ -547,18 +547,17 @@ export class Terrain extends Elevation {
             useDepthForOcclusion?: boolean,
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
-            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number },
-            overrideExaggeration?: number,
-            labelSpace?: boolean
-        }) {
+            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number }
+        },
+        globeTile?: GlobeTile) {
         const context = this.painter.context;
         const gl = context.gl;
         const uniforms = defaultTerrainUniforms(((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding);
         uniforms['u_dem_size'] = this.sourceCache.getSource().tileSize;
-        uniforms['u_exaggeration'] = (options && options.overrideExaggeration !== undefined) ? options.overrideExaggeration : this.exaggeration();
+        uniforms['u_exaggeration'] = this.exaggeration();
 
         // Apply up vectors for the tile if the globe view is enabled
-        const globeTile = new GlobeTile(tile.tileID.canonical, options ? options.labelSpace : false);
+        globeTile = globeTile || new GlobeTile(tile.tileID.canonical); new GlobeTile(tile.tileID.canonical);
 
         uniforms['u_tile_tl_up'] = globeTile.upVector(0, 0);
         uniforms['u_tile_tr_up'] = globeTile.upVector(1, 0);
@@ -588,6 +587,7 @@ export class Terrain extends Elevation {
             (demTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
             context.activeTexture.set(gl.TEXTURE4);
             (prevDemTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+
             uniforms["u_dem_lerp"] = morphingPhase;
         } else {
             demTile = this.terrainTileForTile[tile.tileID.key];

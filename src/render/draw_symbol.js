@@ -324,8 +324,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
         mat4.multiply(globeMatrix, painter.transform.projMatrix, globeMatrix);
-        const globeLabelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
-        const globeGlCoordMatrix = symbolProjection.getGlCoordMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&
@@ -334,7 +332,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (alongLine) {
             const elevation = tr.elevation;
-            //const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : null;
             const globeTile = new GlobeTile(coord.canonical);
             const getElevation = elevation ? (p => {
                 const e = elevation.getAtTileOffset(coord, p.x, p.y);
@@ -450,14 +447,11 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     if (sortFeaturesByKey) {
         tileRenderState.sort((a, b) => a.sortKey - b.sortKey);
     }
-//#error TODO: fiksaa pitchWithMap symboleiden rendaus :)
-//#error TODO: fiksaa precision issuet tilejen surfacen rendauksessa :)
+
     for (const segmentState of tileRenderState) {
         const state = segmentState.state;
 
-        // HACK: force exaggeration to 0 with line aligned labels. This is because the result of updateLineLabels are already in the label space!
-        // this interferes with elevation sampling as it's not limited to only z-component anymore!
-        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: false, labelPlaneMatrixInv: state.labelPlaneMatrixInv, overrideExaggeration: /*alongLine && !pitchWithMap ? 0.0 :*/ undefined, labelSpace: pitchWithMap ? tr.pixelsPerMeter : 0 });
+        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: false, labelPlaneMatrixInv: state.labelPlaneMatrixInv}, new GlobeTile(state.tile.tileID.canonical, pitchWithMap ? tr.pixelsPerMeter: undefined));
         context.activeTexture.set(gl.TEXTURE0);
         state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
         if (state.atlasTextureIcon) {

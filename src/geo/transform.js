@@ -1358,13 +1358,6 @@ class Transform {
     calculateGlobeMatrixForTile(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
         // transform the globe from reference coordinate space to world space
         const posMatrix = this.calculateGlobeMatrix(worldSize);
-
-        // const tileDim = Math.pow(2, unwrappedTileID.canonical.z);
-        // const xOffset = unwrappedTileID.canonical.x - tileDim / 2;
-        // const yAngle = xOffset / tileDim * Math.PI * 2.0;
-        
-        // mat4.rotateY(posMatrix, posMatrix, yAngle);
-
         const decode = denormalizeECEF(tileBoundsOnGlobe(unwrappedTileID.canonical));
 
         return mat4.multiply([], posMatrix, decode);
@@ -1376,7 +1369,7 @@ class Transform {
         // This has to be compensated for the map aligned label space.
         // Whithout this logic map aligned symbols would appear larger than intended
         const altitudeScaler = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
-        const ws = this.worldSize * (1.0 / (1.0 - altitudeScaler));
+        const ws = this.worldSize / (1.0 - altitudeScaler);
 
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadius = ws / (2.0 * Math.PI);
@@ -1443,10 +1436,9 @@ class Transform {
     }
 
     recenterOnTerrain() {
-        return;
         if (!this._elevation)
             return;
-
+//#error TODO: tää näyttää toimivan ekvaattorilla ja hyppivän mitä kauemmaksi mennään. Sama juttu ku pixelsPerMeter?
         const elevation: Elevation = this._elevation;
         this._updateCameraState();
 

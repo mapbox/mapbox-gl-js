@@ -146,21 +146,14 @@ function calculateGridKey(y, z) {
     return (1 << Math.min(z, 22)) + y;
 }
 
-function createGridVertices(count: number, sz, sy, ws): any {
+function createGridVertices(count: number, sz, sy): any {
     const tiles = Math.pow(2, sz);
     const gridTileId = new CanonicalTileID(sz, tiles / 2, sy);
     const [latLngTL, latLngBR] = tileLatLngCorners(gridTileId);
-    const radius = 8192.0 / Math.PI / 2.0;
     const boundsArray = new GlobeVertexArray();
 
     const bounds = tileBoundsOnGlobe(gridTileId);
     const norm = normalizeECEF(bounds);
-    // const norm = mat4.identity(new Float64Array(16));
-    // const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
-    // const st = (1 << (15 - 1)) - 1;
-
-    // mat4.scale(norm, norm, [st, st, st]);
-    // mat4.scale(norm, norm, [maxExtInv, maxExtInv, maxExtInv]);
 
     const gridExt = count;
     const vertexExt = gridExt + 1;
@@ -173,7 +166,7 @@ function createGridVertices(count: number, sz, sy, ws): any {
         for (let x = 0; x < vertexExt; x++) {
             const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
 
-            const p = latLngToECEF(lat, lng/*, radius*/);
+            const p = latLngToECEF(lat, lng);
             vec3.transformMat4(p, p, norm);
 
             boundsArray.emplaceBack(p[0], p[1], p[2], x / gridExt, uvY);
@@ -259,6 +252,69 @@ let gridBuffer = null;
 let gridIndexBuffer = null;
 let gridSegments = null;
 
+function prepareBuffersForTileMesh(context, id: CanonicalTileID) {
+    // check if the grid mesh exists for this tile
+    const gridKey = calculateGridKey(id.y, id.z);
+    let gridMesh = null;
+
+    if (gridKey in gridMeshDatabase) {
+        gridMesh = gridMeshDatabase[gridKey];
+    } else {
+        gridMesh = createGridVertices(gridExt, id.z, id.y);
+        gridMeshDatabase[gridKey] = gridMesh;
+    }
+
+    if (!gridBuffer) {
+        flatGridBuffer = context.createVertexBuffer(createFlatVertices(gridExt), rasterBoundsAttributes.members, true);
+        gridBuffer = context.createVertexBuffer(gridMesh, layout.members, true);
+        gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
+        gridSegments = SegmentVector.simpleSegment(0, 0, (gridExt + 1) * (gridExt + 1), gridExt * gridExt * 2);
+    } else {
+        gridBuffer.updateData(gridMesh);
+    }
+}
+
+function globeMatrixForTile(id: CanonicalTileID, globeMatrix) {
+    // Tile geometry is pre-generated and can be reused for each tiles on the same x-row.
+    // i.e. for each tile id (x, y, z) use pregenerated mesh of (0, y, z)
+    // For this reason the transformation matrix is rotated first by 'yRotation' to place the tile in correct longitude location.
+    // This is a HACK and very slow
+    const tileDim = Math.pow(2, id.z);
+    const xOffset = id.x - tileDim / 2;
+    const yRotation = xOffset / tileDim * Math.PI * 2.0;
+
+    const gridTileId = new CanonicalTileID(id.z, Math.pow(2, id.z) / 2, id.y);
+    const bounds = tileBoundsOnGlobe(gridTileId);
+    const decode = denormalizeECEF(bounds);
+    const posMatrix = mat4.rotateY([], globeMatrix, yRotation);
+    mat4.mul(posMatrix, posMatrix, decode);
+
+    return posMatrix;
+}
+
+function poleMatrixForTile(id: CanonicalTileID, tr) {
+    const poleMatrix = mat4.identity(new Float64Array(16));
+
+    const tileDim = Math.pow(2, id.z);
+    const xOffset = id.x - tileDim / 2;
+    const yRotation = xOffset / tileDim * Math.PI * 2.0;
+
+    const point = tr.point;
+    const ws = tr.worldSize;
+    const s = tr.worldSize / (tr.tileSize * tileDim);
+    
+    mat4.translate(poleMatrix, poleMatrix, [point.x, point.y, -(ws / Math.PI / 2.0)]);
+    mat4.scale(poleMatrix, poleMatrix, [s, s, s]);
+    mat4.rotateX(poleMatrix, poleMatrix, degToRad(-tr._center.lat));
+    mat4.rotateY(poleMatrix, poleMatrix, degToRad(-tr._center.lng));
+    mat4.rotateY(poleMatrix, poleMatrix, yRotation);
+    if (id.y === tileDim - 1) {
+        mat4.scale(poleMatrix, poleMatrix, [1, -1, 1]);
+    }
+
+    return poleMatrix;
+}
+
 function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>, now: number) {
     const context = painter.context;
     const gl = context.gl;
@@ -267,12 +323,12 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
 
     const setShaderMode = (mode, isWireframe) => {
-    //    if (programMode === mode)
-    //        return;
-    //    const modes = [shaderDefines[mode]];
-    //    if (isWireframe) modes.push(shaderDefines[showWireframe]);
-        program = painter.useProgram('globeRaster');
-        //programMode = mode;
+        if (programMode === mode)
+            return;
+        const modes = [shaderDefines[mode]];
+        if (isWireframe) modes.push(shaderDefines[showWireframe]);
+        program = painter.useProgram('globeRaster', null, modes);
+        programMode = mode;
     };
 
     const colorMode = painter.colorModeForRenderPass();
@@ -284,11 +340,6 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
     const batches = showWireframe ? [false, true] : [false];
 
-    //const transitionLerp = clamp(tr.zoom - 5.0, 0.0, 1.0);// (now % 1000.0) / 1000.0;
-    const phase = (now % 10000.0) / 10000.0;
-    const transitionLerp = 0.0;// phase <= 0.5 ? phase * 2.0 : 2.0 - 2.0 * phase;
-    //const transitionLerp = phase <= 0.5 ? phase * 2.0 : 2.0 - 2.0 * phase;
-
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
         // terrain (if applicable) so that this is enough to ensure the correct program is
@@ -299,25 +350,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         const [buffer, segments] = isWireframe ? terrain.getWirefameBuffer() : [terrain.gridIndexBuffer, terrain.gridSegments];
 
         for (const coord of tileIDs) {
-            // check if the grid mesh exists for this tile
-            const gridKey = calculateGridKey(coord.canonical.y, coord.canonical.z);
-            let gridMesh = null;
-
-            if (gridKey in gridMeshDatabase) {
-                gridMesh = gridMeshDatabase[gridKey];
-            } else {
-                gridMesh = createGridVertices(gridExt, coord.canonical.z, coord.canonical.y, tr.tileSize * Math.pow(2, coord.canonical.z));
-                gridMeshDatabase[gridKey] = gridMesh;
-            }
-
-            if (!gridBuffer) {
-                flatGridBuffer = context.createVertexBuffer(createFlatVertices(gridExt), rasterBoundsAttributes.members, true);
-                gridBuffer = context.createVertexBuffer(gridMesh, layout.members, true);
-                gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
-                gridSegments = SegmentVector.simpleSegment(0, 0, (gridExt + 1) * (gridExt + 1), gridExt * gridExt * 2);
-            } else {
-                gridBuffer.updateData(gridMesh);
-            }
+            prepareBuffersForTileMesh(context, coord.canonical);
 
             const tile = sourceCache.getTile(coord);
             const stencilMode = StencilMode.disabled;
@@ -341,75 +374,16 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                 elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
             }
 
-            const tileDim = Math.pow(2, coord.canonical.z);
-            const xOffset = coord.canonical.x - tileDim / 2;
-            const yAngle = xOffset / tileDim * Math.PI * 2.0;
-
-            const posMatrix = mat4.identity(new Float64Array(16));
-            const point = tr.point;
-            const ws = tr.worldSize;
-            const s = tr.worldSize / (8192.0);//(tr.tileSize * tileDim);
-
-            const gridTileId = new CanonicalTileID(coord.canonical.z, Math.pow(2, coord.canonical.z) / 2, coord.canonical.y);
-            const bounds = tileBoundsOnGlobe(gridTileId);
-            const decode = denormalizeECEF(bounds);
-
-            // const decode = mat4.identity(new Float64Array(16));
-            // const maxExtInv = Math.max(...vec3.sub([], bounds.max, bounds.min));
-            // const st = 1.0 / ((1 << (15 - 1)) - 1);
-
-            // mat4.scale(decode, decode, [st, st, st]);
-            // mat4.scale(decode, decode, [maxExtInv, maxExtInv, maxExtInv]);
-
-            //mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);// -(ws / Math.PI / 2.0)]);
-            mat4.translate(posMatrix, posMatrix, [point.x, point.y, -(ws / Math.PI / 2.0)]);
-            //mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
-            mat4.scale(posMatrix, posMatrix, [s, s, s]);
-            //mat4.translate(posMatrix, posMatrix, [0, 0, -radius]);
-            mat4.rotateX(posMatrix, posMatrix, degToRad(-tr._center.lat));
-            mat4.rotateY(posMatrix, posMatrix, degToRad(-tr._center.lng));
-            mat4.rotateY(posMatrix, posMatrix, yAngle);
-            //mat4.translate(posMatrix, posMatrix, [0, 0, radius]);
-
-            mat4.mul(posMatrix, posMatrix, decode);
-
+            const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
             const projMatrix = mat4.multiply([], tr.projMatrix, posMatrix);
-            const mercProjMatrix = mat4.multiply([], tr.projMatrix, tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize));
-
-            // Compute normal vectors of corner points. They're used for adding elevation to curved surface
-            const globeTile = new GlobeTile(gridTileId);
+            
             const tiles = Math.pow(2, coord.canonical.z);
-            //const normId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
-
-            // const latLngCorners = tileLatLngCorners(gridTileId);
-            // const tl = latLngCorners[0];
-            // const br = latLngCorners[1];
-            // const tlNorm = latLngToECEF(tl[0], tl[1]);
-            // const trNorm = latLngToECEF(tl[0], br[1]);
-            // const brNorm = latLngToECEF(br[0], br[1]);
-            // const blNorm = latLngToECEF(br[0], tl[1]);
-
-            // vec3.normalize(tlNorm, tlNorm);
-            // vec3.normalize(trNorm, trNorm);
-            // vec3.normalize(brNorm, brNorm);
-            // vec3.normalize(blNorm, blNorm);
-            const tlNorm = globeTile.upVector(0, 0);
-            const trNorm = globeTile.upVector(1, 0);
-            const brNorm = globeTile.upVector(1, 1);
-            const blNorm = globeTile.upVector(0, 1);
-
-
-            // Pixels per meters have to be interpolated for the latitude range
-            const ws2 = tr.tileSize * Math.pow(2, coord.canonical.z);
-            const topPixelsPerMeter = mercatorZfromAltitude(1, 0) * ws2;
-            const bottomPixelsPerMeter = mercatorZfromAltitude(1, 0) * ws2;
-            const test = mercatorZfromAltitude(1, 0) * ws2;
-
-            const uniformValues = globeRasterUniformValues(projMatrix, mercProjMatrix, transitionLerp, tlNorm, trNorm, brNorm, blNorm, topPixelsPerMeter, bottomPixelsPerMeter);
-
+            const uniformValues = globeRasterUniformValues(projMatrix);
+            
             setShaderMode(shaderMode, isWireframe);
 
-            terrain.setupElevationDraw(tile, program, elevationOptions);
+            const gridTileId = new CanonicalTileID(coord.canonical.z, Math.pow(2, coord.canonical.z) / 2, coord.canonical.y);
+            terrain.setupElevationDraw(tile, program, elevationOptions, new GlobeTile(gridTileId));
 
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
@@ -417,7 +391,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                 uniformValues, "globe_raster", gridBuffer, gridIndexBuffer, gridSegments, null, null, null, flatGridBuffer);
 
             // Fill poles by extrapolating adjacent border tiles
-            if (transitionLerp === 0 && coord.canonical.y === 0 || coord.canonical.y === tiles - 1) {
+            if (coord.canonical.y === 0 || coord.canonical.y === tiles - 1) {
                 // Mesh already exists?
                 const key = calculateGridKey(coord.canonical.y, coord.canonical.z);
                 let mesh = null;
@@ -436,33 +410,15 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                 } else {
                     poleVB.updateData(mesh);
                 }
-            
-                const poleMatrix = mat4.identity(new Float64Array(16));
 
-                mat4.translate(poleMatrix, poleMatrix, [point.x, point.y, -(ws / Math.PI / 2.0)]);
-                mat4.scale(poleMatrix, poleMatrix, [s, s, s]);
-                mat4.rotateX(poleMatrix, poleMatrix, degToRad(-tr._center.lat));
-                mat4.rotateY(poleMatrix, poleMatrix, degToRad(-tr._center.lng));
-                mat4.rotateY(poleMatrix, poleMatrix, yAngle);
-                if (coord.canonical.y === tiles - 1) {
-                    mat4.scale(poleMatrix, poleMatrix, [1, -1, 1]);
-                }
-                
+                const poleMatrix = poleMatrixForTile(coord.canonical, tr);
                 mat4.multiply(poleMatrix, tr.projMatrix, poleMatrix);
 
-                const unis = globeRasterUniformValues(
-                    poleMatrix,
-                    poleMatrix,
-                    0.0,
-                    [0, -1, 0],
-                    [0, -1, 0],
-                    [0, -1, 0],
-                    [0, -1, 0],
-                    mercatorZfromAltitude(1, 85.0) * ws2,
-                    mercatorZfromAltitude(1, 85.0) * ws2);
+                const poleUniforms = globeRasterUniformValues(
+                    poleMatrix);
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                    unis, "globe_pole_raster", poleVB, poleIB, poleSeg);
+                    poleUniforms, "globe_pole_raster", poleVB, poleIB, poleSeg);
             }
         }
     });
@@ -490,11 +446,6 @@ function skirtHeight(zoom) {
     // Skirt height calculation is heuristic: provided value hides
     // seams between tiles and it is not too large: 9 at zoom 22, ~20000m at zoom 0.
     return 6 * Math.pow(1.5, 22 - zoom);
-}
-
-function isEdgeTile(cid: CanonicalTileID, renderWorldCopies: boolean): boolean {
-    const numTiles = 1 << cid.z;
-    return (!renderWorldCopies && (cid.x === 0 || cid.x === numTiles - 1)) || cid.y === 0 || cid.y === numTiles - 1;
 }
 
 export {
