@@ -23,7 +23,7 @@ import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import { array } from '../style-spec/expression/types.js';
-import {tileLatLngCorners, latLngToECEF} from '../geo/projection/globe.js'
+import {tileLatLngCorners, latLngToECEF, tileBoundsOnGlobe, denormalizeECEF, normalizeECEF, GlobeTile} from '../geo/projection/globe.js'
 
 export {
     drawTerrainRaster,
@@ -148,9 +148,19 @@ function calculateGridKey(y, z) {
 
 function createGridVertices(count: number, sz, sy, ws): any {
     const tiles = Math.pow(2, sz);
-    const [latLngTL, latLngBR]= tileLatLngCorners(new CanonicalTileID(sz, tiles / 2, sy));
-    const radius = ws / Math.PI / 2.0;
+    const gridTileId = new CanonicalTileID(sz, tiles / 2, sy);
+    const [latLngTL, latLngBR] = tileLatLngCorners(gridTileId);
+    const radius = 8192.0 / Math.PI / 2.0;
     const boundsArray = new GlobeVertexArray();
+
+    const bounds = tileBoundsOnGlobe(gridTileId);
+    const norm = normalizeECEF(bounds);
+    // const norm = mat4.identity(new Float64Array(16));
+    // const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
+    // const st = (1 << (15 - 1)) - 1;
+
+    // mat4.scale(norm, norm, [st, st, st]);
+    // mat4.scale(norm, norm, [maxExtInv, maxExtInv, maxExtInv]);
 
     const gridExt = count;
     const vertexExt = gridExt + 1;
@@ -163,7 +173,9 @@ function createGridVertices(count: number, sz, sy, ws): any {
         for (let x = 0; x < vertexExt; x++) {
             const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
 
-            const p = latLngToECEF(lat, lng, radius);
+            const p = latLngToECEF(lat, lng/*, radius*/);
+            vec3.transformMat4(p, p, norm);
+
             boundsArray.emplaceBack(p[0], p[1], p[2], x / gridExt, uvY);
         }
     }
@@ -336,33 +348,56 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             const posMatrix = mat4.identity(new Float64Array(16));
             const point = tr.point;
             const ws = tr.worldSize;
-            const s = tr.worldSize / (tr.tileSize * tileDim);
+            const s = tr.worldSize / (8192.0);//(tr.tileSize * tileDim);
 
+            const gridTileId = new CanonicalTileID(coord.canonical.z, Math.pow(2, coord.canonical.z) / 2, coord.canonical.y);
+            const bounds = tileBoundsOnGlobe(gridTileId);
+            const decode = denormalizeECEF(bounds);
+
+            // const decode = mat4.identity(new Float64Array(16));
+            // const maxExtInv = Math.max(...vec3.sub([], bounds.max, bounds.min));
+            // const st = 1.0 / ((1 << (15 - 1)) - 1);
+
+            // mat4.scale(decode, decode, [st, st, st]);
+            // mat4.scale(decode, decode, [maxExtInv, maxExtInv, maxExtInv]);
+
+            //mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);// -(ws / Math.PI / 2.0)]);
             mat4.translate(posMatrix, posMatrix, [point.x, point.y, -(ws / Math.PI / 2.0)]);
+            //mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
             mat4.scale(posMatrix, posMatrix, [s, s, s]);
+            //mat4.translate(posMatrix, posMatrix, [0, 0, -radius]);
             mat4.rotateX(posMatrix, posMatrix, degToRad(-tr._center.lat));
             mat4.rotateY(posMatrix, posMatrix, degToRad(-tr._center.lng));
             mat4.rotateY(posMatrix, posMatrix, yAngle);
+            //mat4.translate(posMatrix, posMatrix, [0, 0, radius]);
+
+            mat4.mul(posMatrix, posMatrix, decode);
 
             const projMatrix = mat4.multiply([], tr.projMatrix, posMatrix);
             const mercProjMatrix = mat4.multiply([], tr.projMatrix, tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize));
 
             // Compute normal vectors of corner points. They're used for adding elevation to curved surface
+            const globeTile = new GlobeTile(gridTileId);
             const tiles = Math.pow(2, coord.canonical.z);
-            const normId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
+            //const normId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
 
-            const latLngCorners = tileLatLngCorners(normId);
-            const tl = latLngCorners[0];
-            const br = latLngCorners[1];
-            const tlNorm = latLngToECEF(tl[0], tl[1]);
-            const trNorm = latLngToECEF(tl[0], br[1]);
-            const brNorm = latLngToECEF(br[0], br[1]);
-            const blNorm = latLngToECEF(br[0], tl[1]);
+            // const latLngCorners = tileLatLngCorners(gridTileId);
+            // const tl = latLngCorners[0];
+            // const br = latLngCorners[1];
+            // const tlNorm = latLngToECEF(tl[0], tl[1]);
+            // const trNorm = latLngToECEF(tl[0], br[1]);
+            // const brNorm = latLngToECEF(br[0], br[1]);
+            // const blNorm = latLngToECEF(br[0], tl[1]);
 
-            vec3.normalize(tlNorm, tlNorm);
-            vec3.normalize(trNorm, trNorm);
-            vec3.normalize(brNorm, brNorm);
-            vec3.normalize(blNorm, blNorm);
+            // vec3.normalize(tlNorm, tlNorm);
+            // vec3.normalize(trNorm, trNorm);
+            // vec3.normalize(brNorm, brNorm);
+            // vec3.normalize(blNorm, blNorm);
+            const tlNorm = globeTile.upVector(0, 0);
+            const trNorm = globeTile.upVector(1, 0);
+            const brNorm = globeTile.upVector(1, 1);
+            const blNorm = globeTile.upVector(0, 1);
+
 
             // Pixels per meters have to be interpolated for the latitude range
             const ws2 = tr.tileSize * Math.pow(2, coord.canonical.z);

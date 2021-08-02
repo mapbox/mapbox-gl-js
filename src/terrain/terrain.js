@@ -558,7 +558,7 @@ export class Terrain extends Elevation {
         uniforms['u_exaggeration'] = (options && options.overrideExaggeration !== undefined) ? options.overrideExaggeration : this.exaggeration();
 
         // Apply up vectors for the tile if the globe view is enabled
-        const globeTile = new GlobeTile(tile.tileID.toUnwrapped(), options ? options.labelSpace : false);
+        const globeTile = new GlobeTile(tile.tileID.canonical, options ? options.labelSpace : false);
 
         uniforms['u_tile_tl_up'] = globeTile.upVector(0, 0);
         uniforms['u_tile_tr_up'] = globeTile.upVector(1, 0);

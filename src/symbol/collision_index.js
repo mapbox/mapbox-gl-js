@@ -92,7 +92,7 @@ class CollisionIndex {
 
         // anchorPoint is defined in normalized ecef coordinates when the globe view is enabled
         // elevation is applied by finding the unit up vector in ecef space and applying it to the anchor coordinate
-        const globeTile = new GlobeTile(collisionBox.tileID);
+        const globeTile = new GlobeTile(collisionBox.tileID.canonical);
         const upVec = globeTile.upVector(collisionBox.tileAnchorX / 8192.0, collisionBox.tileAnchorY / 8192.0);
 
         const elevatedAnchorX = collisionBox.projectedAnchorX + upVec[0] * collisionBox.elevation;
@@ -146,7 +146,7 @@ class CollisionIndex {
         const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
 
-        const globeTile = new GlobeTile(tileID.toUnwrapped());
+        const globeTile = new GlobeTile(tileID.canonical);
         const getElevation = elevation ? (p => {
             const e = elevation.getAtTileOffset(tileID, p.x, p.y);
             const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);

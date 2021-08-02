@@ -85,7 +85,7 @@ export function latLngToECEF(lat, lng, radius) {
     return [sx, sy, sz];
 }
 
-const normBitRange = 15;    // 8192
+const normBitRange = 15;
 
 export function normalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
@@ -120,17 +120,17 @@ export function denormalizeECEF(bounds: Aabb): Float64Array {
 }
 
 export class GlobeTile {
-    tileID: UnwrappedTileID;
+    tileID: CanonicalTileID;
     _tlUp: Array<number>;
     _trUp: Array<number>;
     _blUp: Array<number>;
     _brUp: Array<number>;
 
-    constructor(tileID: UnwrappedTileID, labelSpace = false) {
+    constructor(tileID: CanonicalTileID, labelSpace = false) {
         this.tileID = tileID;
 
         // Pre-compute up vectors of each corner of the tile
-        const corners = tileLatLngCorners(tileID.canonical);
+        const corners = tileLatLngCorners(tileID);
         const tl = corners[0];
         const br = corners[1];
 
@@ -150,7 +150,7 @@ export class GlobeTile {
             vec3.scale(this._blUp, vec3.normalize(this._blUp, this._blUp), bottomEcefPerMeter);
 
             // Normalize
-            const bounds = tileBoundsOnGlobe(tileID.canonical);
+            const bounds = tileBoundsOnGlobe(tileID);
 
             const norm = mat4.identity(new Float64Array(16));
             const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));

@@ -135,7 +135,7 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
             const elevation = tr.elevation;
             //const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : (_ => 0);
-            const globeTile = new GlobeTile(coord.toUnwrapped());
+            const globeTile = new GlobeTile(coord.canonical);
             const getElevation = elevation ? (p => {
                 const e = elevation.getAtTileOffset(coord, p.x, p.y);
                 const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
@@ -335,7 +335,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (alongLine) {
             const elevation = tr.elevation;
             //const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : null;
-            const globeTile = new GlobeTile(coord.toUnwrapped());
+            const globeTile = new GlobeTile(coord.canonical);
             const getElevation = elevation ? (p => {
                 const e = elevation.getAtTileOffset(coord, p.x, p.y);
                 const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
