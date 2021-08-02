@@ -467,8 +467,8 @@ export default class Popup extends Evented {
      *
      * @returns {Popup} Returns itself to allow for method chaining.
      * @example
-     * const popup = new mapboxgl.Popup({className: 'some classes'})
-     * popup.removeClassName('some')
+     * const popup = new mapboxgl.Popup({className: 'some classes'});
+     * popup.removeClassName('some');
      */
     removeClassName(className: string) {
         this._classList.delete(className);
@@ -512,8 +512,8 @@ export default class Popup extends Evented {
      * @returns {boolean} If the class was removed return `false`. If the class was added, then return `true`.
      *
      * @example
-     * const popup = new mapboxgl.Popup()
-     * popup.toggleClassName('highlighted')
+     * const popup = new mapboxgl.Popup();
+     * popup.toggleClassName('highlighted');
      */
     toggleClassName(className: string) {
         let finalState: boolean;
