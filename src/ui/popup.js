@@ -487,8 +487,7 @@ export default class Popup extends Evented {
      */
     toggleClassName(className: string) {
         let finalState: boolean;
-        if (this._classList.has(className)) {
-            this._classList.delete(className);
+        if (this._classList.delete(className)) {
             finalState = false;
         } else {
             this._classList.add(className);
@@ -528,8 +527,8 @@ export default class Popup extends Evented {
         const pos: any = this._pos;
         const width = this._container.offsetWidth;
         const height = this._container.offsetHeight;
-
         let anchorComponents;
+
         if (pos.y + offset.bottom.y < height) {
             anchorComponents = ['top'];
         } else if (pos.y > this._map.transform.height - height) {
@@ -552,15 +551,15 @@ export default class Popup extends Evented {
     }
 
     _updateClassList() {
-        const classes = new Set(this._classList);
-        classes.add('mapboxgl-popup');
+        const classes = [...this._classList];
+        classes.push('mapboxgl-popup');
         if (this._anchor) {
-            classes.add(`mapboxgl-popup-anchor-${this._anchor}`);
+            classes.push(`mapboxgl-popup-anchor-${this._anchor}`);
         }
         if (this._trackPointer) {
-            classes.add('mapboxgl-popup-track-pointer');
+            classes.push('mapboxgl-popup-track-pointer');
         }
-        this._container.className = [...classes].join(' ');
+        this._container.className = classes.join(' ');
     }
 
     _update(cursor: ?PointLike) {
@@ -587,7 +586,6 @@ export default class Popup extends Evented {
 
             const offset = normalizeOffset(this.options.offset);
             const anchor = this._anchor = this._getAnchor(offset);
-            this._updateClassList();
 
             const offsetedPos = pos.add(offset[anchor]).round();
             this._map._requestDomTask(() => {
