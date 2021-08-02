@@ -81,11 +81,10 @@ function getLabelPlaneMatrix(posMatrix: mat4,
                              pitchWithMap: boolean,
                              rotateWithMap: boolean,
                              transform: Transform,
-                             pixelsToTileUnits: number,
-                             decode) {
+                             pixelsToTileUnits: number) {
     let m = mat4.create();
     if (pitchWithMap) {
-        m = transform.calculateGlobeLabelMatrix(tileID, decode);
+        m = transform.calculateGlobeLabelMatrix(tileID);
         //mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
         if (!rotateWithMap) {
             const rot = mat4.identity([]);
@@ -107,10 +106,9 @@ function getGlCoordMatrix(posMatrix: mat4,
                           pitchWithMap: boolean,
                           rotateWithMap: boolean,
                           transform: Transform,
-                          pixelsToTileUnits: number,
-                          decode) {
+                          pixelsToTileUnits: number) {
     if (pitchWithMap) {
-        const m = getLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits, decode);
+        const m = getLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits);
         mat4.invert(m, m);
         mat4.multiply(m, posMatrix, m);
         // const m = mat4.clone(posMatrix);
@@ -197,8 +195,8 @@ function updateLineLabels(bucket: SymbolBucket,
                           isText: boolean,
                           labelPlaneMatrix: mat4,
                           glCoordMatrix: mat4,
-                          globeLabelPlaneMatrix,
-                          globeGlCoordMatrix,
+                          //globeLabelPlaneMatrix,
+                          //globeGlCoordMatrix,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
                           getElevation: ?((p: Point) => Array<number>),
@@ -271,7 +269,7 @@ function updateLineLabels(bucket: SymbolBucket,
         let projectionCache = {};
 
         const getElevationForPlacement = pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
-        const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, globeGlCoordMatrix,
+        const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
             bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, labelPlaneAnchorPoint.point, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tileID);
 
         useVertical = placeUnflipped.useVertical;
@@ -279,7 +277,7 @@ function updateLineLabels(bucket: SymbolBucket,
         if (getElevationForPlacement && placeUnflipped.needsFlipping) projectionCache = {}; // Truncated points should be recalculated.
         if (placeUnflipped.notEnoughRoom || useVertical ||
             (placeUnflipped.needsFlipping &&
-             placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, labelPlaneMatrix, globeGlCoordMatrix,
+             placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
                  bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, labelPlaneAnchorPoint.point, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tileID).notEnoughRoom)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
         }

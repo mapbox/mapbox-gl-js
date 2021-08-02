@@ -248,8 +248,7 @@ export class Placement {
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
-                pixelsToTiles,
-                true);
+                pixelsToTiles);
 
         let labelToScreenMatrix = null;
 
@@ -260,8 +259,7 @@ export class Placement {
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
-                pixelsToTiles,
-                true);
+                pixelsToTiles);
 
             labelToScreenMatrix = mat4.multiply([], this.transform.labelPlaneMatrix, glMatrix);
         }

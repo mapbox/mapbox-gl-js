@@ -126,7 +126,7 @@ export class GlobeTile {
     _blUp: Array<number>;
     _brUp: Array<number>;
 
-    constructor(tileID: UnwrappedTileID) {
+    constructor(tileID: UnwrappedTileID, labelSpace = false) {
         this.tileID = tileID;
 
         // Pre-compute up vectors of each corner of the tile
@@ -141,26 +141,37 @@ export class GlobeTile {
 
         const topEcefPerMeter = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
         const bottomEcefPerMeter = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
+        //const pixelsPerMeter = mercatorZfromAltitude(1, 0.0) * (1 << tileID.canonical.z) * 512.0;
 
-        vec3.scale(this._tlUp, vec3.normalize(this._tlUp, this._tlUp), topEcefPerMeter);
-        vec3.scale(this._trUp, vec3.normalize(this._trUp, this._trUp), topEcefPerMeter);
-        vec3.scale(this._brUp, vec3.normalize(this._brUp, this._brUp), bottomEcefPerMeter);
-        vec3.scale(this._blUp, vec3.normalize(this._blUp, this._blUp), bottomEcefPerMeter);
+        if (!labelSpace) {
+            vec3.scale(this._tlUp, vec3.normalize(this._tlUp, this._tlUp), topEcefPerMeter);
+            vec3.scale(this._trUp, vec3.normalize(this._trUp, this._trUp), topEcefPerMeter);
+            vec3.scale(this._brUp, vec3.normalize(this._brUp, this._brUp), bottomEcefPerMeter);
+            vec3.scale(this._blUp, vec3.normalize(this._blUp, this._blUp), bottomEcefPerMeter);
 
-        // Normalize
-        const bounds = tileBoundsOnGlobe(tileID.canonical);
+            // Normalize
+            const bounds = tileBoundsOnGlobe(tileID.canonical);
 
-        const norm = mat4.identity(new Float64Array(16));
-        const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
-        const st = (1 << (normBitRange - 1)) - 1;
-    
-        mat4.scale(norm, norm, [st, st, st]);
-        mat4.scale(norm, norm, [maxExtInv, maxExtInv, maxExtInv]);
+            const norm = mat4.identity(new Float64Array(16));
+            const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
+            const st = (1 << (normBitRange - 1)) - 1;
 
-        vec3.transformMat4(this._tlUp, this._tlUp, norm);
-        vec3.transformMat4(this._trUp, this._trUp, norm);
-        vec3.transformMat4(this._blUp, this._blUp, norm);
-        vec3.transformMat4(this._brUp, this._brUp, norm);
+            mat4.scale(norm, norm, [st, st, st]);
+            mat4.scale(norm, norm, [maxExtInv, maxExtInv, maxExtInv]);
+
+            vec3.transformMat4(this._tlUp, this._tlUp, norm);
+            vec3.transformMat4(this._trUp, this._trUp, norm);
+            vec3.transformMat4(this._blUp, this._blUp, norm);
+            vec3.transformMat4(this._brUp, this._brUp, norm);
+        } else {
+            //const pixelsPerMeter = mercatorZfromAltitude(1, 0.0) * (1 << tileID.canonical.z) * 512.0;
+            const pixelsPerMeter = labelSpace;// mercatorZfromAltitude(1, 60.0) * labelSpace;
+
+            this._tlUp = [0, 0, pixelsPerMeter];
+            this._trUp = [0, 0, pixelsPerMeter];
+            this._brUp = [0, 0, pixelsPerMeter];
+            this._blUp = [0, 0, pixelsPerMeter];
+        }
     }
 
     upVector(u: number, v: number): Array<number> {

@@ -128,7 +128,7 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
 
         const pixelToTileScale = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.unwrappedTileID, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale, true);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.unwrappedTileID, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale);
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
 
         if (size) {
@@ -263,7 +263,14 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const variablePlacement = layer.layout.get('text-variable-anchor');
 
     const tileRenderState: Array<SymbolTileRenderState> = [];
-    const defines = null;// painter.terrain && pitchWithMap ? ['PITCH_WITH_MAP_TERRAIN'] : null;
+    let defines = painter.terrain && pitchWithMap ? ['PITCH_WITH_MAP_TERRAIN'] : null;
+
+    if (alongLine) {
+        if (defines)
+            defines.push('PROJECTED_POS_ON_VIEWPORT');
+        else
+            defines = ['PROJECTED_POS_ON_VIEWPORT'];
+    }
 
     // Compute center of the globe to find symbols on the dark side of the globe
     const globeOrigo = vec3.transformMat4([], [0, 0, 0], tr.calculateGlobeMatrix(tr.worldSize));
@@ -310,15 +317,15 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         }
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, true);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
         // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
         const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(new Float32Array(16), labelPlaneMatrix) : identityMat4;
-        const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, true);
+        const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
 
         const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
         mat4.multiply(globeMatrix, painter.transform.projMatrix, globeMatrix);
-        const globeLabelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, true);
-        const globeGlCoordMatrix = symbolProjection.getGlCoordMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s, false);
+        const globeLabelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
+        const globeGlCoordMatrix = symbolProjection.getGlCoordMatrix(globeMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&
@@ -335,7 +342,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 vec3.scale(up, up, e);
                 return up;
             }) : (_ => [0, 0, 0]);
-            symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, globeLabelPlaneMatrix, globeGlCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
+            symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, /*globeLabelPlaneMatrix, globeGlCoordMatrix,*/ pitchWithMap, keepUpright, getElevation, coord);
         } else {
             // Hide each placed point symbol that is behind the globe
             const tileGlobeMatrix = tr.calculateGlobeMatrixForTile(tile.tileID.toUnwrapped(), tr.worldSize);
@@ -384,7 +391,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 buffers.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
         }
 
-        const matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),
+        let matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),
             uLabelPlaneMatrix = (alongLine || (isText && variablePlacement) || updateTextFitIcon) ? identityMat4 : labelPlaneMatrix,
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
 
@@ -443,13 +450,14 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     if (sortFeaturesByKey) {
         tileRenderState.sort((a, b) => a.sortKey - b.sortKey);
     }
-
+//#error TODO: fiksaa pitchWithMap symboleiden rendaus :)
+//#error TODO: fiksaa precision issuet tilejen surfacen rendauksessa :)
     for (const segmentState of tileRenderState) {
         const state = segmentState.state;
 
         // HACK: force exaggeration to 0 with line aligned labels. This is because the result of updateLineLabels are already in the label space!
         // this interferes with elevation sampling as it's not limited to only z-component anymore!
-        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: false, labelPlaneMatrixInv: state.labelPlaneMatrixInv, overrideExaggeration: alongLine ? 0.0 : undefined });
+        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: false, labelPlaneMatrixInv: state.labelPlaneMatrixInv, overrideExaggeration: /*alongLine && !pitchWithMap ? 0.0 :*/ undefined, labelSpace: pitchWithMap ? tr.pixelsPerMeter : 0 });
         context.activeTexture.set(gl.TEXTURE0);
         state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
         if (state.atlasTextureIcon) {

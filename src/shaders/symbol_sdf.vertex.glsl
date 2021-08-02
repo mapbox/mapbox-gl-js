@@ -107,13 +107,18 @@ void main() {
     highp float angle_cos = cos(segment_angle + symbol_rotation);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
+#ifdef PROJECTED_POS_ON_VIEWPORT
+    vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
+#else
     vec4 projected_pos = u_label_plane_matrix * vec4(vec3(a_projected_pos.xy, anchorZ) + elevationVec, 1.0);
-    //vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, a_globe_ext.x, 1.0);
+#endif
+
     float z = 0.0;
     vec2 offset = rotation_matrix * (a_offset / 32.0 * fontScale + a_pxoffset);
 #ifdef PITCH_WITH_MAP_TERRAIN
-    vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
-    z = elevation(tile_pos.xy);
+    //vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
+    //z = elevation(tile_pos.xy);
+    z = length(elevationVec);
 #endif
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = occlusionFade(projectedPoint);

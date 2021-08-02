@@ -548,7 +548,8 @@ export class Terrain extends Elevation {
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
             morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number },
-            overrideExaggeration?: number
+            overrideExaggeration?: number,
+            labelSpace?: boolean
         }) {
         const context = this.painter.context;
         const gl = context.gl;
@@ -557,7 +558,7 @@ export class Terrain extends Elevation {
         uniforms['u_exaggeration'] = (options && options.overrideExaggeration !== undefined) ? options.overrideExaggeration : this.exaggeration();
 
         // Apply up vectors for the tile if the globe view is enabled
-        const globeTile = new GlobeTile(tile.tileID.toUnwrapped());
+        const globeTile = new GlobeTile(tile.tileID.toUnwrapped(), options ? options.labelSpace : false);
 
         uniforms['u_tile_tl_up'] = globeTile.upVector(0, 0);
         uniforms['u_tile_tr_up'] = globeTile.upVector(1, 0);
