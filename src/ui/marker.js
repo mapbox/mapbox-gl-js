@@ -6,7 +6,7 @@ import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap.js';
 import {bindAll, extend} from '../util/util.js';
-import {type Anchor, anchorTranslate, applyAnchorClass} from './anchor.js';
+import {type Anchor, anchorTranslate} from './anchor.js';
 import {Event, Evented} from '../util/evented.js';
 import type Map from './map.js';
 import type Popup from './popup.js';
@@ -233,7 +233,11 @@ export default class Marker extends Evented {
             // prevent focusing on click
             e.preventDefault();
         });
-        applyAnchorClass(this._element, this._anchor, 'marker');
+        const classList = this._element.classList;
+        for (const key in anchorTranslate) {
+            classList.remove(`mapboxgl-marker-anchor-${key}`);
+        }
+        classList.add(`mapboxgl-marker-anchor-${this._anchor}`);
 
         this._popup = null;
     }
