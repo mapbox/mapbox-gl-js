@@ -372,6 +372,40 @@ test('filter', t => {
                 t.end();
             });
 
+            t.test('it collapses dynamic case expressions to any expressions', (t) => {
+                const testCases =[
+                    {
+                        dynamic: ["case",
+                            ["<", ["pitch"], 60], true,
+                            ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], true,
+                            false
+                        ],
+                        static: ["any", true, true, false]
+                    },
+                    {
+                        dynamic: ["case",
+                            ["<", ["pitch"], 60], ["<", ["get", "filter_rank"], 2],
+                            [">", ["get", "filter_rank"], 4],
+                        ],
+                        static: ["any", ["<", ["get", "filter_rank"], 2], [">", ["get", "filter_rank"], 4]]
+                    },
+                    {
+                        dynamic: ["case",
+                            ["<", ["pitch"], 60], ["<", ["get", "filter_rank"], 2],
+                            ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], [">", ["get", "filter_rank"], 4],
+                            false
+                        ],
+                        static: ["any", ["<", ["get", "filter_rank"], 2], [">", ["get", "filter_rank"], 4], false]
+                    }
+                ];
+
+                for(const testCase of testCases) {
+                    t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                }
+
+                t.end();
+            });
+
             t.end();
         });
 

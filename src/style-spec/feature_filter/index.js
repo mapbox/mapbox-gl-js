@@ -57,11 +57,51 @@ function extractStaticFilter(filter: any): any {
         return filter;
     }
 
+    // Shallow copy so we can replace expressions in-place
+    const result = filter.slice();
+
     // 1. Union branches
+    unionDynamicBranches(result);
 
     // 2. Collapse dynamic conditions to  `true`
 
-    return true;
+    return result;
+}
+
+/**
+ * Traverses the expression and replaces all instances of branching on a
+ * `dynamic` conditional (such as `['pitch']` or `['distance-from-center']`)
+ * into an `any` expression.
+ * This ensures that all possible outcomes of a `dynamic` branch are considered
+ * when evaluating the expression upfront during filtering.
+ *
+ * @param {Array<any>} filter the filter expression. Mutated in-place.
+ */
+function unionDynamicBranches(filter: any) {
+    const tests = [];
+    const branches = [];
+
+    if (filter[0] === 'case') {
+        for (let i = 1; i < filter.length - 1; i += 2) {
+            tests.push(filter[i]);
+            branches.push(filter[i + 1]);
+        }
+
+        branches.push(filter[filter.length - 1]);
+    }
+    // TODO: add `match`
+
+    const isBranchingDynamically = tests.some((test) => isDynamicFilter(test));
+    if (isBranchingDynamically) {
+        filter.splice(0, filter.length);
+        filter.push('any');
+        filter.push(...branches);
+    }
+
+    // traverse and recurse into children
+    for (let i = 1; i < filter.length; i++) {
+        unionDynamicBranches(filter[i]);
+    }
 }
 
 
