@@ -3043,7 +3043,7 @@ class Map extends Camera {
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
             window.removeEventListener('orientationchange', this._onWindowResize, false);
-            window.addEventListener('webkitfullscreenchange', this._onWindowResize, false);
+            window.removeEventListener('webkitfullscreenchange', this._onWindowResize, false);
             window.removeEventListener('online', this._onWindowOnline, false);
         }
 
