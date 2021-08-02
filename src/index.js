@@ -64,13 +64,13 @@ const exported = {
      * `mapboxgl.clearPrewarmedResources()`. This is only necessary if your web page remains
      * active but stops using maps altogether.
      *
-     * This is primarily useful when using GL-JS maps in a single page app, wherein a user
+     * This is primarily useful when using Mapbox GL JS maps in a single page app, in which a user
      * would navigate between various views that can cause Map instances to constantly be
      * created and destroyed.
      *
      * @function prewarm
      * @example
-     * mapboxgl.prewarm()
+     * mapboxgl.prewarm();
      */
     prewarm,
     /**
@@ -81,7 +81,7 @@ const exported = {
      *
      * @function clearPrewarmedResources
      * @example
-     * mapboxgl.clearPrewarmedResources()
+     * mapboxgl.clearPrewarmedResources();
      */
     clearPrewarmedResources,
 
@@ -103,7 +103,7 @@ const exported = {
     },
 
     /**
-     * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs
+     * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs.
      *
      * @var {string} baseApiUrl
      * @returns {string} The current base API URL.
@@ -119,7 +119,7 @@ const exported = {
     },
 
     /**
-     * Gets and sets the number of web workers instantiated on a page with GL JS maps.
+     * Gets and sets the number of web workers instantiated on a page with Mapbox GL JS maps.
      * By default, it is set to 2.
      * Make sure to set this property before creating any map instances for it to have effect.
      *
@@ -137,8 +137,8 @@ const exported = {
     },
 
     /**
-     * Gets and sets the maximum number of images (raster tiles, sprites, icons) to load in parallel,
-     * which affects performance in raster-heavy maps. 16 by default.
+     * Gets and sets the maximum number of images (raster tiles, sprites, icons) to load in parallel.
+     * 16 by default. There is no maximum value, but the number of images affects performance in raster-heavy maps.
      *
      * @var {string} maxParallelImageRequests
      * @returns {number} Number of parallel requests currently configured.
@@ -199,17 +199,18 @@ const exported = {
      * Takes precedence over `mapboxgl.workerUrl`.
      *
      * @var {Object} workerClass
-     * @returns {Object|null} a Class object, an instance of which exposes the `Worker` interface.
+     * @returns {Object | null} A class that implements the `Worker` interface.
      * @example
-     * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js'
-     * import MapboxGLWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker.js'
+     * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js';
+     * import MapboxGLWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker.js';
      *
      * mapboxgl.workerClass = MapboxGLWorker;
      */
     workerClass: null,
 
     /**
-     * Sets the time used by GL JS internally for all animations. Useful for generating videos from GL JS.
+     * Sets the time used by Mapbox GL JS internally for all animations. Useful for generating videos from Mapbox GL JS.
+     *
      * @var {number} time
      */
     setNow: browser.setNow,
@@ -226,6 +227,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
 /**
  * Gets the version of Mapbox GL JS in use as specified in `package.json`,
  * `CHANGELOG.md`, and the GitHub release.
+ *
  * @var {string} version
  * @example
  * console.log(`Mapbox GL JS v${mapboxgl.version}`);
@@ -238,12 +240,13 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * @param {Object} [options]
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
  *   the function will return `false` if the performance of Mapbox GL JS would
- *   be dramatically worse than expected (e.g. a software WebGL renderer would be used).
+ *   be dramatically worse than expected (for example, a software WebGL renderer
+ *   would be used).
  * @return {boolean}
  * @example
  * // Show an alert if the browser does not support Mapbox GL
  * if (!mapboxgl.supported()) {
- *   alert('Your browser does not support Mapbox GL');
+ *     alert('Your browser does not support Mapbox GL');
  * }
  * @see [Example: Check for browser support](https://www.mapbox.com/mapbox-gl-js/example/check-for-support/)
  */
@@ -264,7 +267,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
 
 /**
   * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
-  * The status can be `unavailable` (i.e. not requested or removed), `loading`, `loaded` or `error`.
+  * The status can be `unavailable` (not requested or removed), `loading`, `loaded`, or `error`.
   * If the status is `loaded` and the plugin is requested again, an error will be thrown.
   *
   * @function getRTLTextPluginStatus

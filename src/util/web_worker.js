@@ -1,6 +1,6 @@
 // @flow
 
-// This file is intended for use in the GL-JS test suite
+// This file is intended for use in the Mapbox GL JS test suite
 // It implements a MessageBus main thread interface for use in Node environments
 // In a browser environment, this file is replaced with ./src/util/browser/web_worker.js
 // when Rollup builds the main bundle.
