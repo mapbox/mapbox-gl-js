@@ -1,15 +1,8 @@
 uniform mat4 u_globe_matrix;
 uniform float u_skirt_height;
 
-uniform vec3 u_tl_normal;
-uniform vec3 u_tr_normal;
-uniform vec3 u_br_normal;
-uniform vec3 u_bl_normal;
-
 attribute vec3 a_globe_pos;
 attribute vec2 a_uv;
-attribute vec2 a_pos;           // Mercator
-attribute vec2 a_texture_pos;
 
 varying vec2 v_pos0;
 

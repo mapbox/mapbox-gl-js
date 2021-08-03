@@ -176,23 +176,6 @@ function createGridVertices(count: number, sz, sy): any {
     return boundsArray;
 }
 
-function createFlatVertices(count): any {
-    const boundsArray = new RasterBoundsArray();
-
-    const gridExt = count;
-    const vertexExt = gridExt + 1;
-    boundsArray.reserve(count * count);
-
-    for (let y = 0; y < vertexExt; y++) {
-        const uvY = y / gridExt;
-        for (let x = 0; x < vertexExt; x++) {
-            boundsArray.emplaceBack(x / gridExt * EXTENT, y / gridExt * EXTENT, x / gridExt * EXTENT, y / gridExt * EXTENT);
-        }
-    }
-
-    return boundsArray;
-}
-
 function createGridIndices(count) {
     const indexArray = new TriangleIndexArray();
     const quadExt = count;
@@ -247,7 +230,6 @@ const gridMeshDatabase = {};
 const gridIndices = createGridIndices(gridExt);
 const poleFanDatabase = {};
 
-let flatGridBuffer = null;
 let gridBuffer = null;
 let gridIndexBuffer = null;
 let gridSegments = null;
@@ -265,7 +247,6 @@ function prepareBuffersForTileMesh(context, id: CanonicalTileID) {
     }
 
     if (!gridBuffer) {
-        flatGridBuffer = context.createVertexBuffer(createFlatVertices(gridExt), rasterBoundsAttributes.members, true);
         gridBuffer = context.createVertexBuffer(gridMesh, layout.members, true);
         gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
         gridSegments = SegmentVector.simpleSegment(0, 0, (gridExt + 1) * (gridExt + 1), gridExt * gridExt * 2);
@@ -388,7 +369,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
             program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                uniformValues, "globe_raster", gridBuffer, gridIndexBuffer, gridSegments, null, null, null, flatGridBuffer);
+                uniformValues, "globe_raster", gridBuffer, gridIndexBuffer, gridSegments, null, null, null, null);
 
             // Fill poles by extrapolating adjacent border tiles
             if (coord.canonical.y === 0 || coord.canonical.y === tiles - 1) {
@@ -429,16 +410,31 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
 
     const context = painter.context;
     const gl = context.gl;
+    const tr = painter.transform;
+
     context.clear({depth: 1});
     const program = painter.useProgram('terrainDepth');
     const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
+    const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
 
     for (const coord of tileIDs) {
+        prepareBuffersForTileMesh(context, coord.canonical);
+
         const tile = sourceCache.getTile(coord);
-        const uniformValues = terrainRasterUniformValues(coord.projMatrix, 0);
-        terrain.setupElevationDraw(tile, program);
+        const gridTileId = new CanonicalTileID(coord.canonical.z, Math.pow(2, coord.canonical.z) / 2, coord.canonical.y);
+        terrain.setupElevationDraw(tile, program, undefined, new GlobeTile(gridTileId));
+
+        const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
+        const projMatrix = mat4.multiply([], tr.projMatrix, posMatrix);
+        const uniformValues = globeRasterUniformValues(projMatrix);
+
         program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
-            uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
+            uniformValues, "globe_raster_depth", gridBuffer, gridIndexBuffer, gridSegments, null, null, null, null);
+        //const tile = sourceCache.getTile(coord);
+        //const uniformValues = terrainRasterUniformValues(coord.projMatrix, 0);
+        //terrain.setupElevationDraw(tile, program);
+        //program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
+        //    uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
     }
 }
 

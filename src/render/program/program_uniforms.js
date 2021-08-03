@@ -48,7 +48,7 @@ export const programUniforms = {
     background: backgroundUniforms,
     backgroundPattern: backgroundPatternUniforms,
     terrainRaster: terrainRasterUniforms,
-    terrainDepth: terrainRasterUniforms,
+    terrainDepth: globeRasterUniforms, //terrainRasterUniforms,
     skybox: skyboxUniforms,
     skyboxGradient: skyboxGradientUniforms,
     skyboxCapture: skyboxCaptureUniforms,

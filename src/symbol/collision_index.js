@@ -95,6 +95,8 @@ class CollisionIndex {
         const globeTile = new GlobeTile(collisionBox.tileID.canonical);
         const upVec = globeTile.upVector(collisionBox.tileAnchorX / 8192.0, collisionBox.tileAnchorY / 8192.0);
 
+
+
         const elevatedAnchorX = collisionBox.projectedAnchorX + upVec[0] * collisionBox.elevation;
         const elevatedAnchorY = collisionBox.projectedAnchorY + upVec[1] * collisionBox.elevation;
         const elevatedAnchorZ = collisionBox.projectedAnchorZ + upVec[2] * collisionBox.elevation;
@@ -158,34 +160,16 @@ class CollisionIndex {
 
         // NOTE: symbol.anchor can't be used for line aligned placement because the value is rounded!
         const elevatedAnchor = projectToGlobe(tileUnitAnchorPoint, getElevation(tileUnitAnchorPoint), tileID);
-
-        // const upVec = globeTile.upVector(symbol.tileAnchorX / 8192.0, symbol.tileAnchorY / 8192.0);
-        const elevatedAnchorX = elevatedAnchor[0]; //symbol.anchorX + elevationVec[0];
-        const elevatedAnchorY = elevatedAnchor[1]; //symbol.anchorY + elevationVec[1];
-        const elevatedAnchorZ = elevatedAnchor[2]; //symbol.anchorZ + elevationVec[2];
-
-        //const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, symbol.anchorX, symbol.anchorY, symbol.anchorZ, tileID);
-        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchorX, elevatedAnchorY, elevatedAnchorZ, tileID);
-
-        // screenAnchorPoint.point.x -= viewportPadding;
-        // screenAnchorPoint.point.y -= viewportPadding;
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2], tileID);
 
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
-
-        //const labelPlaneAnchorPoint = screenAnchorPoint.point;
-        const labelPlaneAnchorPoint = projection.project(new Point(elevatedAnchorX, elevatedAnchorY), labelPlaneMatrix, elevatedAnchorZ).point;
-
-        if (tileID.canonical.x === 10446 && tileID.canonical.y === 25299 && tileUnitAnchorPoint.x === 1247 && tileUnitAnchorPoint.y === 1749) {
-            const breakpoint = 2;
-        }
+        const labelPlaneAnchorPoint = projection.project(new Point(elevatedAnchor[0], elevatedAnchor[1]), labelPlaneMatrix, elevatedAnchor[2]).point;
 
         const projectionCache = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
-
-        const toScreen = mat4.multiply([], this.transform.labelPlaneMatrix, globeMatrix);
 
         const firstAndLastGlyph = screenAnchorPoint.signedDistanceFromCamera > 0 ? projection.placeFirstAndLastGlyph(
             labelPlaneFontScale,
@@ -197,7 +181,7 @@ class CollisionIndex {
             tileUnitAnchorPoint,
             symbol,
             lineVertexArray,
-            labelPlaneMatrix,// toScreen, //posMatrix, //labelPlaneMatrix,
+            labelPlaneMatrix,
             projectionCache,
             elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
             pitchWithMap && !!elevation,

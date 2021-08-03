@@ -244,12 +244,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const pitchWithMap  = pitchAlignment === 'map';
     const alongLine = rotateWithMap && layer.layout.get('symbol-placement') !== 'point';
 
-    let theLayer = false;
-    if (layer.id === "road-oneway-arrow-blue")
-    {
-        theLayer = true;
-    }
-
     // Line label rotation happens in `updateLineLabels`
     // Pitched point labels are automatically rotated by the labelPlaneMatrix projection
     // Unpitched point labels need to have their rotation applied after projection
@@ -271,9 +265,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         else
             defines = ['PROJECTED_POS_ON_VIEWPORT'];
     }
-
-    // Compute center of the globe to find symbols on the dark side of the globe
-    const globeOrigo = vec3.transformMat4([], [0, 0, 0], tr.calculateGlobeMatrix(tr.worldSize));
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -340,52 +331,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 return up;
             }) : (_ => [0, 0, 0]);
             symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, /*globeLabelPlaneMatrix, globeGlCoordMatrix,*/ pitchWithMap, keepUpright, getElevation, coord);
-        } else {
-            // Hide each placed point symbol that is behind the globe
-            const tileGlobeMatrix = tr.calculateGlobeMatrixForTile(tile.tileID.toUnwrapped(), tr.worldSize);
-            const fwd = tr._camera.forward();
-
-            const placedSymbols = buffers.placedSymbolArray;
-            const dynamicLayoutVertexArray = buffers.dynamicLayoutVertexArray;
-
-            let offset = 0;
-            for (let i = 0; i < placedSymbols.length; i++) {
-                const placedSymbol = placedSymbols.get(i);
-
-                const worldPosOnGlobe = vec3.transformMat4([], [placedSymbol.anchorX, placedSymbol.anchorY, placedSymbol.anchorZ], tileGlobeMatrix);
-                const normal = vec3.normalize([], vec3.sub([], worldPosOnGlobe, globeOrigo));
-                const behindGlobe = vec3.dot(normal, fwd) > 0.0;
-
-                // Modify directly the dynamic layout vertex array. We know that each glyph has 4 vertices with 3 float components each
-                if (behindGlobe) {
-                    for (let j = 0; j < placedSymbol.numGlyphs; j++) {
-                        dynamicLayoutVertexArray.float32[offset + 0] = -Infinity;
-                        dynamicLayoutVertexArray.float32[offset + 1] = -Infinity;
-                        dynamicLayoutVertexArray.float32[offset + 3] = -Infinity;
-                        dynamicLayoutVertexArray.float32[offset + 4] = -Infinity;
-                        dynamicLayoutVertexArray.float32[offset + 6] = -Infinity;
-                        dynamicLayoutVertexArray.float32[offset + 7] = -Infinity;
-                        dynamicLayoutVertexArray.float32[offset + 9] = -Infinity;
-                        dynamicLayoutVertexArray.float32[offset + 10] = -Infinity;
-                        offset+=12;
-                    }
-                } else {
-                    // Restore visibility by writing original anchor values to the dynamic layout array
-                    for (let j = 0; j < placedSymbol.numGlyphs; j++) {
-                        dynamicLayoutVertexArray.float32[offset + 0] = placedSymbol.anchorX;
-                        dynamicLayoutVertexArray.float32[offset + 1] = placedSymbol.anchorY;
-                        dynamicLayoutVertexArray.float32[offset + 3] = placedSymbol.anchorX;
-                        dynamicLayoutVertexArray.float32[offset + 4] = placedSymbol.anchorY;
-                        dynamicLayoutVertexArray.float32[offset + 6] = placedSymbol.anchorX;
-                        dynamicLayoutVertexArray.float32[offset + 7] = placedSymbol.anchorY;
-                        dynamicLayoutVertexArray.float32[offset + 9] = placedSymbol.anchorX;
-                        dynamicLayoutVertexArray.float32[offset + 10] = placedSymbol.anchorY;
-                        offset+=12;
-                    }
-                }
-            }
-            if (buffers.dynamicLayoutVertexBuffer)
-                buffers.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
         }
 
         let matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),
@@ -451,7 +396,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     for (const segmentState of tileRenderState) {
         const state = segmentState.state;
 
-        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: false, labelPlaneMatrixInv: state.labelPlaneMatrixInv}, new GlobeTile(state.tile.tileID.canonical, pitchWithMap ? tr.pixelsPerMeter: undefined));
+        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv}, new GlobeTile(state.tile.tileID.canonical, pitchWithMap ? tr.pixelsPerMeter: undefined));
         context.activeTexture.set(gl.TEXTURE0);
         state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
         if (state.atlasTextureIcon) {

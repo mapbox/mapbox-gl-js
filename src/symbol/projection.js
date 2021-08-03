@@ -195,8 +195,6 @@ function updateLineLabels(bucket: SymbolBucket,
                           isText: boolean,
                           labelPlaneMatrix: mat4,
                           glCoordMatrix: mat4,
-                          //globeLabelPlaneMatrix,
-                          //globeGlCoordMatrix,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
                           getElevation: ?((p: Point) => Array<number>),
@@ -236,9 +234,6 @@ function updateLineLabels(bucket: SymbolBucket,
         const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         const elevatedAnchor = projectToGlobe2(tileAnchorPoint, getElevation(tileAnchorPoint), tileID);
         const anchorPos = [...elevatedAnchor, 1.0];
-        // const elevation = getElevation ? getElevation({x: symbol.anchorX, y: symbol.anchorY}) : 0;
-        //const anchorPos = [symbol.anchorX, symbol.anchorY, symbol.anchorZ, 1];
-
 
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
@@ -255,17 +250,13 @@ function updateLineLabels(bucket: SymbolBucket,
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
 
         const labelPlaneAnchorPoint = project(new Point(elevatedAnchor[0], elevatedAnchor[1]), labelPlaneMatrix, elevatedAnchor[2]);
-        //const transformedTileAnchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix, symbol.anchorZ);
-        //const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
 
         // Skip labels behind the camera
         if (labelPlaneAnchorPoint.signedDistanceFromCamera <= 0.0) {
-        //if (anchorProjection.signedDistanceFromCamera <= 0.0) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
 
-        //const anchorPoint = transformedTileAnchor.point;
         let projectionCache = {};
 
         const getElevationForPlacement = pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
