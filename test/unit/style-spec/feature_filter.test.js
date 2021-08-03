@@ -396,6 +396,162 @@ test('filter', t => {
                             false
                         ],
                         static: ["any", ["<", ["get", "filter_rank"], 2], [">", ["get", "filter_rank"], 4], false]
+                    },
+                    {
+                        dynamic: ["case",
+                            ["<", ["pitch"], 60], ["<", ["get", "filter_rank"], 2],
+                            ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], [">", ["get", "filter_rank"], 4],
+                            ["any", ["==", ["get", "filter_rank"], 2], ["==", ["get", "filter_rank"], 3]]
+                        ],
+                        static: ["any",
+                            ["<", ["get", "filter_rank"], 2],
+                            [">", ["get", "filter_rank"], 4],
+                            ["any", ["==", ["get", "filter_rank"], 2], ["==", ["get", "filter_rank"], 3]]
+                        ]
+                    },
+                    {
+                        dynamic: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                "match",
+                                ["get", "worldview"],
+                                ["all", "US"],
+                                true,
+                                false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                "all",
+                                [
+                                    "==",
+                                    ["get", "disputed"],
+                                    "true"
+                                ],
+                                [
+                                    "case",
+                                    ["<", ["pitch"], 60], ["==", ["get", "worldview"], "US"],
+                                    ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], ["==", ["get", "worldview"], "IND"],
+                                    ["==", ["get", "worldview"], "INTL"]
+                                ]
+                                ],
+                                false
+                            ],
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                4
+                            ]
+                        ],
+                        static: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                "match",
+                                ["get", "worldview"],
+                                ["all", "US"],
+                                true,
+                                false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                "all",
+                                [
+                                    "==",
+                                    ["get", "disputed"],
+                                    "true"
+                                ],
+                                [
+                                    "any",
+                                    ["==", ["get", "worldview"], "US"],
+                                    ["==", ["get", "worldview"], "IND"],
+                                    ["==", ["get", "worldview"], "INTL"]
+                                ]
+                                ],
+                                false
+                            ],
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                4
+                            ]
+                        ]
+                    },
+                    {
+                        dynamic: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                "match",
+                                ["get", "worldview"],
+                                ["all", "US"],
+                                true,
+                                false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                "all",
+                                [
+                                    "==",
+                                    ["get", "disputed"],
+                                    "true"
+                                ],
+                                [
+                                    "case",
+                                    ["<", ["pitch"], 60], ["==", ["get", "worldview"], "US"],
+                                    ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], ["==", ["get", "worldview"], "IND"],
+                                    ["==", ["get", "worldview"], "INTL"]
+                                ]
+                                ],
+                                false
+                            ],
+                            [
+                                "case",
+                                ["<", ["pitch"], 60], ["<", ["get", "filterrank"], 4],
+                                [">=", ["get", "filterrank"], 5]
+                            ]
+                        ],
+                        static: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                "match",
+                                ["get", "worldview"],
+                                ["all", "US"],
+                                true,
+                                false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                "all",
+                                [
+                                    "==",
+                                    ["get", "disputed"],
+                                    "true"
+                                ],
+                                [
+                                    "any",
+                                    ["==", ["get", "worldview"], "US"],
+                                    ["==", ["get", "worldview"], "IND"],
+                                    ["==", ["get", "worldview"], "INTL"]
+                                ]
+                                ],
+                                false
+                            ],
+                            [
+                                "any",
+                                ["<", ["get", "filterrank"], 4],
+                                [">=", ["get", "filterrank"], 5]
+                            ]
+                        ]
                     }
                 ];
 

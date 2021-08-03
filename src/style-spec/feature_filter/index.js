@@ -75,7 +75,7 @@ function extractStaticFilter(filter: any): any {
  * This ensures that all possible outcomes of a `dynamic` branch are considered
  * when evaluating the expression upfront during filtering.
  *
- * @param {Array<any>} filter the filter expression. Mutated in-place.
+ * @param {Array<any>} filter the filter expression mutated in-place.
  */
 function unionDynamicBranches(filter: any) {
     const tests = [];
