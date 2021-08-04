@@ -1205,8 +1205,7 @@ class Transform {
         // h is height of space above map center to horizon.
         const h = this.height / 2 / Math.tan(this._fov / 2) / Math.tan(Math.max(this._pitch, 0.1)) + this.centerOffset.y;
         // incorporate 3% of the area above center to account for reduced precision.
-        const horizonEpsilon = 0.03;
-        const offset = this.height / 2 - h * (1 - horizonEpsilon);
+        const offset = this.height / 2 - h * (1 - this._horizonShift);
         return clampToTop ? Math.max(0, offset) : offset;
     }
 
