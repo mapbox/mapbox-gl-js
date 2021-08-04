@@ -348,7 +348,7 @@ class Transform {
     // Returns false if the elevation data is not available (yet) at the center point.
     _updateCameraOnTerrain() {
         const height = this.cameraToCenterDistance / this.worldSize;
-        const terrainElevation = mercatorZfromAltitude(this._centerAltitude, this.center.lat);
+        const terrainElevation = mercatorZfromAltitude(this._centerAltitude, this.center.lat) * this._projectionScaler;
 
         this._cameraZoom = this._zoomFromMercatorZ(terrainElevation + height);
     }
@@ -1453,7 +1453,7 @@ class Transform {
             return;
 
         // The raycast function expects z-component to be in meters
-        const metersToMerc = mercatorZfromAltitude(1.0, this._center.lat);
+        const metersToMerc = mercatorZfromAltitude(1.0, this._center.lat) * this._projectionScaler;
         start[2] /= metersToMerc;
         dir[2] /= metersToMerc;
         vec3.normalize(dir, dir);
@@ -1470,7 +1470,7 @@ class Transform {
 
             // Camera zoom has to be updated as the orbit distance might have changed
             this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
-            this._centerAltitude = altitudeFromMercatorZ(this.z, this.y);// newCenter.toAltitude();
+            this._centerAltitude = newCenter.toAltitude(); //altitudeFromMercatorZ(this.z, this.y);// newCenter.toAltitude();
             this._center = newCenter.toLngLat();
             this._updateZoomFromElevation();
             this._constrain();
