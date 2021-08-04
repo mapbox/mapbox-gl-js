@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, lngFromMercatorX} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, lngFromMercatorX, altitudeFromMercatorZ} from './mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -111,6 +111,7 @@ class Transform {
     _camera: FreeCamera;
     _centerAltitude: number;
     _horizonShift: number;
+    _projectionScaler: number;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
@@ -141,6 +142,7 @@ class Transform {
         this._centerAltitude = 0;
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
+        this._projectionScaler = 1.0;
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -1436,9 +1438,10 @@ class Transform {
     }
 
     recenterOnTerrain() {
+
         if (!this._elevation)
             return;
-//#error TODO: tää näyttää toimivan ekvaattorilla ja hyppivän mitä kauemmaksi mennään. Sama juttu ku pixelsPerMeter?
+
         const elevation: Elevation = this._elevation;
         this._updateCameraState();
 
@@ -1463,11 +1466,11 @@ class Transform {
 
             const pos = this._camera.position;
             const camToNew = [newCenter.x - pos[0], newCenter.y - pos[1], newCenter.z - pos[2]];
-            const maxAltitude = newCenter.z + vec3.length(camToNew);
+            const maxAltitude = (newCenter.z + vec3.length(camToNew));
 
             // Camera zoom has to be updated as the orbit distance might have changed
             this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
-            this._centerAltitude = newCenter.toAltitude();
+            this._centerAltitude = altitudeFromMercatorZ(this.z, this.y);// newCenter.toAltitude();
             this._center = newCenter.toLngLat();
             this._updateZoomFromElevation();
             this._constrain();
@@ -1770,21 +1773,21 @@ class Transform {
         this._camera.setPitchBearing(this._pitch, this.angle);
 
         const dir = this._camera.forward();
-        const distance = this.cameraToCenterDistance;
+        //const distance = this.cameraToCenterDistance;
         const center = this.point;
 
         // Use camera zoom (if terrain is enabled) to maintain constant altitude to sea level
         const zoom = this._cameraZoom ? this._cameraZoom : this._zoom;
         const altitude = this._mercatorZfromZoom(zoom);
-        const height = altitude - mercatorZfromAltitude(this._centerAltitude, this.center.lat);
+        const distance = altitude - mercatorZfromAltitude(this._centerAltitude, this.center.lat) * this._projectionScaler;
 
         // simplified version of: this._worldSizeFromZoom(this._zoomFromMercatorZ(height))
-        const updatedWorldSize = this.cameraToCenterDistance / height;
+        //const updatedWorldSize = this.cameraToCenterDistance / height;
 
         this._camera.position = [
-            center.x / this.worldSize - (dir[0] * distance) / updatedWorldSize,
-            center.y / this.worldSize - (dir[1] * distance) / updatedWorldSize,
-            mercatorZfromAltitude(this._centerAltitude, this._center.lat) + (-dir[2] * distance) / updatedWorldSize
+            center.x / this.worldSize - (dir[0]) * distance,
+            center.y / this.worldSize - (dir[1]) * distance,
+            mercatorZfromAltitude(this._centerAltitude, this._center.lat) * this._projectionScaler + (-dir[2]) * distance
         ];
     }
 
@@ -1816,7 +1819,7 @@ class Transform {
         const {pitch, bearing} = this._camera.getPitchBearing();
 
         // Compute zoom from the distance between camera and terrain
-        const centerAltitude = mercatorZfromAltitude(this._centerAltitude, this.center.lat);
+        const centerAltitude = mercatorZfromAltitude(this._centerAltitude, this.center.lat) * this._projectionScaler;
         const minHeight = this._mercatorZfromZoom(this._maxZoom) * Math.cos(degToRad(this._maxPitch));
         const height = Math.max((position[2] - centerAltitude) / Math.cos(pitch), minHeight);
         const zoom = this._zoomFromMercatorZ(height);
