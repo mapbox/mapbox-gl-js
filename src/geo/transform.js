@@ -415,7 +415,7 @@ class Transform {
         // Compute zoom level from the height of the camera relative to the terrain
         const cameraZoom: number = this._cameraZoom;
         const elevationAtCenter = this._elevation.getAtPointOrZero(MercatorCoordinate.fromLngLat(this.center));
-        const mercatorElevation = mercatorZfromAltitude(elevationAtCenter, this.center.lat);
+        const mercatorElevation = mercatorZfromAltitude(elevationAtCenter, this.center.lat) * this._projectionScaler;
         const altitude  = this._mercatorZfromZoom(cameraZoom);
         const minHeight = this._mercatorZfromZoom(this._maxZoom);
         const height = Math.max(altitude - mercatorElevation, minHeight);
@@ -1452,8 +1452,20 @@ class Transform {
         if (start[2] <= 0 || dir[2] >= 0)
             return;
 
+        // Compute starting position for the ray in non-skewed coordinates
+        const zoom2 = this._cameraZoom ? this._cameraZoom : this._zoom;
+        const altitude2 = this._mercatorZfromZoom(zoom2);
+        const altitude3 = this.cameraToCenterDistance / this._projectionScaler / this._worldSizeFromZoom(zoom2);
+        const altitude4 = this.cameraToCenterDistance / this._worldSizeFromZoom(zoom2);
+        const distance2 = altitude3 - mercatorZfromAltitude(this._centerAltitude, this.center.lat);
+        const center2 = this.point;
+
+        start[0] = center2.x / this.worldSize - (dir[0]) * distance2;
+        start[1] = center2.y / this.worldSize - (dir[1]) * distance2;
+        start[2] = mercatorZfromAltitude(this._centerAltitude, this._center.lat) + (-dir[2]) * distance2;
+
         // The raycast function expects z-component to be in meters
-        const metersToMerc = mercatorZfromAltitude(1.0, this._center.lat) * this._projectionScaler;
+        const metersToMerc = mercatorZfromAltitude(1.0, this._center.lat);
         start[2] /= metersToMerc;
         dir[2] /= metersToMerc;
         vec3.normalize(dir, dir);
@@ -1464,13 +1476,21 @@ class Transform {
             const point = vec3.scaleAndAdd([], start, dir, t);
             const newCenter = new MercatorCoordinate(point[0], point[1], mercatorZfromAltitude(point[2], latFromMercatorY(point[1])));
 
-            const pos = this._camera.position;
-            const camToNew = [newCenter.x - pos[0], newCenter.y - pos[1], newCenter.z - pos[2]];
-            const maxAltitude = (newCenter.z + vec3.length(camToNew));
+            //const pos = this._camera.position;
+            //const camToNew = [newCenter.x - pos[0], newCenter.y - pos[1], newCenter.z - pos[2]];
+            //const maxAltitude = (newCenter.z + vec3.length(camToNew));
+            const camToNew = [newCenter.x - start[0], newCenter.y - start[1], newCenter.z - start[2] * metersToMerc];
+            const height = vec3.length(camToNew) * this._projectionScaler;
+            const terrainElevation = newCenter.z * this._projectionScaler;
+            this._cameraZoom = this._zoomFromMercatorZ(terrainElevation + height);
+
+            //const height = this.cameraToCenterDistance / this.worldSize;
+            //const terrainElevation = mercatorZfromAltitude(this._centerAltitude, this.center.lat) * this._projectionScaler;
+            //this._cameraZoom = this._zoomFromMercatorZ(terrainElevation + height);
 
             // Camera zoom has to be updated as the orbit distance might have changed
-            this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
-            this._centerAltitude = newCenter.toAltitude(); //altitudeFromMercatorZ(this.z, this.y);// newCenter.toAltitude();
+            //this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
+            this._centerAltitude = newCenter.toAltitude();
             this._center = newCenter.toLngLat();
             this._updateZoomFromElevation();
             this._constrain();
