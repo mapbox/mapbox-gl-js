@@ -1149,11 +1149,26 @@ class Transform {
      */
     getBounds(): LngLatBounds {
         if (this._terrainEnabled()) return this._getBounds3D();
+
+        let tl = this.pointCoordinate(new Point(this._edgeInsets.left, this._edgeInsets.top));
+        let tr = this.pointCoordinate(new Point(this.width - this._edgeInsets.right, this._edgeInsets.top));
+        const br = this.pointCoordinate(new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom));
+        const bl = this.pointCoordinate(new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom));
+
+        // Snap points if off the edge of the map.
+        const slope = (p1, p2) => (p2.y - p1.y) / (p2.x - p1.x);
+
+        if (tl.y > 1 && tr.y >= 0) tl = new MercatorCoordinate((1 - bl.y) / slope(bl, tl) + bl.x, 1);
+        else if (tl.y < 0 && tr.y <= 1) tl = new MercatorCoordinate(-bl.y / slope(bl, tl) + bl.x, 0);
+
+        if (tr.y > 1 && tl.y >= 0) tr = new MercatorCoordinate((1 - br.y) / slope(bl, tl) + br.x, 1);
+        else if (tr.y < 0 && tl.y <= 1) tr = new MercatorCoordinate(-br.y / slope(br, tr) + br.x, 0);
+
         return new LngLatBounds()
-            .extend(this.pointLocation(new Point(this._edgeInsets.left, this._edgeInsets.top)))
-            .extend(this.pointLocation(new Point(this.width - this._edgeInsets.right, this._edgeInsets.top)))
-            .extend(this.pointLocation(new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom)))
-            .extend(this.pointLocation(new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom)));
+            .extend(this.coordinateLocation(tl))
+            .extend(this.coordinateLocation(tr))
+            .extend(this.coordinateLocation(bl))
+            .extend(this.coordinateLocation(br));
     }
 
     _getBounds3D(): LngLatBounds {
