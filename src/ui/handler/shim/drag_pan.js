@@ -51,7 +51,7 @@ export default class DragPanHandler {
      *     maxSpeed: 1400,
      *     deceleration: 2500
      * });
-     * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+     * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      */
     enable(options?: DragPanOptions) {
         this._inertiaOptions = options || {};
