@@ -562,6 +562,105 @@ test('filter', t => {
                 t.end();
             });
 
+            t.test('it collapses dynamic match expressions to any expressions', (t) => {
+                const testCases = [
+                    {
+                        dynamic: ["match",
+                            ["pitch"],
+                            [10, 20 , 30], [ "<", ["get", "filterrank"], 2],
+                            [70, 80], [ ">", ["get", "filterrank"], 5],
+                            ["all", [ ">", ["get", "filterrank"], 2], [ "<", ["get", "filterrank"], 5]]
+                        ],
+                        static: ["any",
+                            [ "<", ["get", "filterrank"], 2],
+                            [ ">", ["get", "filterrank"], 5],
+                            ["all", [ ">", ["get", "filterrank"], 2], [ "<", ["get", "filterrank"], 5]]
+                        ]
+                    },
+                    {
+                        dynamic: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                "match",
+                                ["get", "worldview"],
+                                ["all", "US"],
+                                true,
+                                false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                "all",
+                                [
+                                    "match",
+                                    ["distance-from-center"],
+                                    [1, 2], ["==", ["get", "worldview"], "US"],
+                                    [4, 5], ["==", ["get", "worldview"], "IND"],
+                                    ["==", ["get", "worldview"], "INTL"]
+                                ],
+                                [
+                                    "case",
+                                    ["<", ["pitch"], 60], ["==", ["get", "worldview"], "US"],
+                                    ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], ["==", ["get", "worldview"], "IND"],
+                                    ["==", ["get", "worldview"], "INTL"]
+                                ]
+                                ],
+                                false
+                            ],
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                4
+                            ]
+                        ],
+                        static: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                "match",
+                                ["get", "worldview"],
+                                ["all", "US"],
+                                true,
+                                false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                "all",
+                                [
+                                    "any",
+                                    ["==", ["get", "worldview"], "US"],
+                                    ["==", ["get", "worldview"], "IND"],
+                                    ["==", ["get", "worldview"], "INTL"]
+                                ],
+                                [
+                                    "any",
+                                    ["==", ["get", "worldview"], "US"],
+                                    ["==", ["get", "worldview"], "IND"],
+                                    ["==", ["get", "worldview"], "INTL"]
+                                ]
+                                ],
+                                false
+                            ],
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                4
+                            ]
+                        ]
+                    }
+                ]
+
+                for(const testCase of testCases) {
+                    t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                }
+
+                t.end();
+            });
+
             t.end();
         });
 

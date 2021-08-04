@@ -88,8 +88,14 @@ function unionDynamicBranches(filter: any) {
         }
 
         branches.push(filter[filter.length - 1]);
+    } else if (filter[0] === 'match') {
+        tests.push(filter[1]);
+
+        for (let i = 2; i < filter.length - 1; i +=2) {
+            branches.push(filter[i + 1]);
+        }
+        branches.push(filter[filter.length - 1]);
     }
-    // TODO: add `match`
 
     const isBranchingDynamically = tests.some((test) => isDynamicFilter(test));
     if (isBranchingDynamically) {
