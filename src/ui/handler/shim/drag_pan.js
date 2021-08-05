@@ -34,7 +34,7 @@ export default class DragPanHandler {
     }
 
     /**
-     * Enables the "drag to pan" interaction.
+     * Enables the "drag to pan" interaction and accepts options to control the behavior of the panning inertia.
      *
      * @param {Object} [options] Options object.
      * @param {number} [options.linearity=0] Factor used to scale the drag velocity.
