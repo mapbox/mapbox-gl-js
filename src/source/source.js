@@ -11,8 +11,8 @@ import type {Callback} from '../types/callback.js';
 import {CanonicalTileID} from './tile_id.js';
 
 /**
- * The `Source` interface must be implemented by each source type, including "core" types (`vector`, `raster`,
- * `video`, etc.) and all custom, third-party types.
+ * The `Source` interface must be implemented by each source type, including "core" types like `vector`, `raster`,
+ * or `video`) and all custom, third-party types.
  *
  * @private
  *
