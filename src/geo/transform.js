@@ -887,7 +887,7 @@ class Transform {
     zoomScale(zoom: number) { return Math.pow(2, zoom); }
     scaleZoom(scale: number) { return Math.log(scale) / Math.LN2; }
 
-    // World coordinates from LngLat
+    // Transform from LngLat to Point in world coordinates [-180, 180] x [90, -90] --> [0, this.worldSize] x [0, this.worldSize]
     project(lnglat: LngLat) {
         const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
         return new Point(
@@ -895,7 +895,7 @@ class Transform {
                 mercatorYfromLat(lat) * this.worldSize);
     }
 
-    // LngLat from world coordinates
+    // Transform from Point in world coordinates to LngLat [0, this.worldSize] x [0, this.worldSize] --> [-180, 180] x [90, -90]
     unproject(point: Point): LngLat {
         return new MercatorCoordinate(point.x / this.worldSize, point.y / this.worldSize).toLngLat();
     }
@@ -1361,8 +1361,8 @@ class Transform {
 
         this._constraining = true;
 
-        let minY = 0;
-        let maxY = 0;
+        let minY = Infinity;
+        let maxY = -Infinity;
         let minX, maxX, sy, sx, y2;
         const size = this.size,
             unmodified = this._unmodified;
