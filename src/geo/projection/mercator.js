@@ -1,13 +1,18 @@
 // @flow
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
+import {mercatorXfromLng, mercatorYfromLat, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
+import LngLat from '../lng_lat.js';
 
 export default {
     name: 'mercator',
-    range: [],
+    center: [0, 0],
     project(lng: number, lat: number) {
         const x = mercatorXfromLng(lng);
         const y = mercatorYfromLat(lat);
         return {x, y};
     },
-    unproject: (x: number, y: number) => new MercatorCoordinate(x, y).toLngLat()
+    unproject(x: number, y: number) {
+        return new LngLat(
+            lngFromMercatorX(x),
+            latFromMercatorY(y));
+    }
 };

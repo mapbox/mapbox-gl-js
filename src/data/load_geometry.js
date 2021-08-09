@@ -4,7 +4,7 @@ import {warnOnce, clamp} from '../util/util.js';
 
 import EXTENT from './extent.js';
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
-import projections from '../geo/projection/index.js';
+import getProjection from '../geo/projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../source/tile_id.js';
@@ -19,8 +19,8 @@ const MIN = -MAX - 1;
 
 let projection;
 
-export function setProjection(projectionName: string) {
-    projection = projections[projectionName];
+export function setProjection(config: {name: string} | string) {
+    projection = getProjection(config);
 }
 
 function clampPoint(point: Point) {
@@ -52,7 +52,7 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
     const scale = EXTENT / featureExtent;
     let cs, z2;
     if (canonical) {
-        cs = tileTransform(canonical, projection.project);
+        cs = tileTransform(canonical, projection);
         z2 = Math.pow(2, canonical.z);
     }
 

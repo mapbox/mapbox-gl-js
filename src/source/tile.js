@@ -535,7 +535,7 @@ class Tile {
         const s = Math.pow(2, -this.tileID.canonical.z);
         const x1 = (this.tileID.canonical.x) * s;
         const y1 = (this.tileID.canonical.y) * s;
-        const cs = tileTransform(this.tileID.canonical, projection.project);
+        const cs = tileTransform(this.tileID.canonical, projection);
         const increment = s / denominator;
         const x2 = x1 + x * increment;
         const y2 = y1 + y * increment;

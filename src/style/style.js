@@ -322,7 +322,7 @@ class Style extends Evented {
             this._serializedLayers[layer.id] = layer.serialize();
             this._updateLayerCount(layer, true);
         }
-        this.dispatcher.broadcast('setProjection', this.map.transform.projection.name);
+        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
