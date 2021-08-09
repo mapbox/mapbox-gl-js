@@ -58,14 +58,49 @@ function extractStaticFilter(filter: any): any {
     }
 
     // Shallow copy so we can replace expressions in-place
-    const result = filter.slice();
+    let result = filter.slice();
 
     // 1. Union branches
     unionDynamicBranches(result);
 
     // 2. Collapse dynamic conditions to  `true`
+    result = collapseDynamicBooleanExpressions(result);
 
     return result;
+}
+
+function collapseDynamicBooleanExpressions(expression: any): any {
+    if (!Array.isArray(expression)) {
+        return expression;
+    }
+
+    const collapsed = collapsedExpression(expression);
+    if (collapsed === true) {
+        return collapsed;
+    } else {
+        return collapsed.map((subExpression) => collapseDynamicBooleanExpressions(subExpression));
+    }
+}
+
+const dynamicConditionExpressions = new Set([
+    'in',
+    '==',
+    '!=',
+    '>',
+    '>=',
+    '<',
+    '<='
+]);
+
+function collapsedExpression(expression: any): any {
+    if (dynamicConditionExpressions.has(expression[0])) {
+        for(const param of expression.slice(1)) {
+            if (isDynamicFilter(param)) {
+                return true;
+            }
+        }
+    }
+    return expression;
 }
 
 /**

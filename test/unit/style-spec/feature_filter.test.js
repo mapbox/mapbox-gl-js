@@ -661,6 +661,27 @@ test('filter', t => {
                 t.end();
             });
 
+            t.test('it collapses dynamic conditionals to true', (t) => {
+                const testCases = [
+                    {
+                        dynamic: ["<", ["pitch"], 60],
+                        static: true
+                    },
+                    {
+                        dynamic: ["all", ["<", ["pitch"], 60], ["<", ["distance-from-center"], 4]],
+                        static: ["all", true, true]
+                    }
+                ];
+                debugger;
+                for (const testCase of testCases) {
+                    t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                }
+
+                t.end();
+            });
+
+
+
             t.end();
         });
 
