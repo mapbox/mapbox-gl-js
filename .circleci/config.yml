@@ -206,7 +206,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - browser-tools/install-chrome:
           chrome-version: 91.0.4472.164
       - run: yarn run test-render
@@ -219,7 +219,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - browser-tools/install-chrome:
           chrome-version: 91.0.4472.164
       - run: yarn run test-render-prod
@@ -232,7 +232,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - browser-tools/install-chrome:
           chrome-version: 91.0.4472.164
       - run: yarn run test-query
@@ -260,7 +260,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - browser-tools/install-chrome:
           chrome-version: 91.0.4472.164
       - run:
@@ -275,7 +275,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - browser-tools/install-browser-tools:
           chrome-version: 91.0.4472.164
       - run: yarn run build-dev
