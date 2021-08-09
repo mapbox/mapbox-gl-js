@@ -47,9 +47,10 @@ export default {
                 dxdphi = F * (sinlambda * sinphi2 / 4 - E * sinphi * sinlambda2),
                 dydlambda = 0.125 * F * (sinphi2 * sinlambda2 - E * sinphi * cos2phi * sinlambda),
                 dydphi = 0.5 * F * (sin2phi * coslambda2 + E * sin2lambda2 * cosphi) + 0.5,
-                denominator = dxdphi * dydlambda - dydphi * dxdlambda,
-                dlambda = (fy * dxdphi - fx * dydphi) / denominator,
-                dphi = (fx * dydlambda - fy * dxdlambda) / denominator;
+                denominator = dxdphi * dydlambda - dydphi * dxdlambda;
+
+            dlambda = (fy * dxdphi - fx * dydphi) / denominator;
+            dphi = (fx * dydlambda - fy * dxdlambda) / denominator;
             lambda -= dlambda;
             phi -= dphi;
         } while ((Math.abs(dlambda) > epsilon || Math.abs(dphi) > epsilon) && --i > 0);
