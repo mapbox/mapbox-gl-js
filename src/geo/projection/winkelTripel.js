@@ -27,7 +27,7 @@ export default {
         let phi = y;
         let i = 25;
         const epsilon = 1e-6;
-        let dlambda, dphi;
+        let dlambda = 0, dphi = 0;
         do {
             const cosphi = Math.cos(phi),
                 sinphi = Math.sin(phi),
