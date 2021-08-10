@@ -23,6 +23,7 @@ const MIN = -MAX - 1;
 export default function loadGeometry(feature: VectorTileFeature): Array<Array<Point>> {
     const scale = EXTENT / feature.extent;
     const geometry = feature.loadGeometry();
+
     for (let r = 0; r < geometry.length; r++) {
         const ring = geometry[r];
         for (let p = 0; p < ring.length; p++) {
@@ -42,5 +43,6 @@ export default function loadGeometry(feature: VectorTileFeature): Array<Array<Po
             }
         }
     }
+
     return geometry;
 }

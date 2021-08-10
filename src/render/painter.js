@@ -499,7 +499,7 @@ class Painter {
 
         // Clear buffers in preparation for drawing to the main framebuffer
         // If fog is enabled, use the fog color as default clear color.
-        let clearColor = Color.transparent;
+        let clearColor = Color.black;// Color.transparent;
         if (this.style.fog) {
             clearColor = this.style.fog.properties.get('color');
         }
@@ -529,7 +529,7 @@ class Painter {
         // They are drawn at max depth, they are drawn after opaque and before
         // translucent to fail depth testing and mix with translucent objects.
         this.renderPass = 'sky';
-        if (this.transform.isHorizonVisible()) {
+        //if (this.transform.isHorizonVisible()) {
             for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
                 const layer = this.style._layers[layerIds[this.currentLayer]];
                 const sourceCache = style._getLayerSourceCache(layer);
@@ -538,7 +538,7 @@ class Painter {
 
                 this.renderLayer(this, sourceCache, layer, coords);
             }
-        }
+        //}
 
         // Translucent pass ===============================================
         // Draw all other layers bottom-to-top.

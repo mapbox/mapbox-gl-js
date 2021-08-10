@@ -163,6 +163,7 @@ type TileLayerParameters = {
     bucket: SymbolBucket,
     layout: any,
     posMatrix: mat4,
+    globeMatrix: mat4,
     textLabelPlaneMatrix: mat4,
     labelToScreenMatrix: mat4,
     scale: number,
@@ -236,11 +237,15 @@ export class Placement {
 
         const posMatrix = this.transform.calculateProjMatrix(tile.tileID.toUnwrapped());
 
+        const globeMatrix = this.transform.calculateGlobeMatrix(this.transform.worldSize);
+        mat4.multiply(globeMatrix, this.transform.projMatrix, globeMatrix);
+
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pixelsToTiles = pixelsToTileUnits(tile, 1, this.transform.zoom);
 
         const textLabelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix,
+                tile.tileID.toUnwrapped(),
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
@@ -251,6 +256,7 @@ export class Placement {
         if (pitchWithMap) {
             const glMatrix = projection.getGlCoordMatrix(
                 posMatrix,
+                tile.tileID.toUnwrapped(),
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
@@ -273,6 +279,7 @@ export class Placement {
             bucket: symbolBucket,
             layout,
             posMatrix,
+            globeMatrix,
             textLabelPlaneMatrix,
             labelToScreenMatrix,
             scale,
@@ -355,6 +362,7 @@ export class Placement {
             bucket,
             layout,
             posMatrix,
+            globeMatrix,
             textLabelPlaneMatrix,
             labelToScreenMatrix,
             textPixelRatio,
@@ -407,7 +415,7 @@ export class Placement {
                 this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false);
                 return;
             }
-
+            //console.log(symbolInstance.dynamicAnchor);
             let placeText = false;
             let placeIcon = false;
             let offscreen = true;
@@ -602,6 +610,7 @@ export class Placement {
                         bucket.glyphOffsetArray,
                         fontSize,
                         posMatrix,
+                        globeMatrix,
                         textLabelPlaneMatrix,
                         labelToScreenMatrix,
                         showCollisionBoxes,
@@ -631,7 +640,6 @@ export class Placement {
                     const shiftPoint: Point = hasIconTextFit && shift ?
                         offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle) :
                         new Point(0, 0);
-
                     const iconScale = bucket.getSymbolInstanceIconSize(partiallyEvaluatedIconSize, this.transform.zoom, symbolIndex);
                     return this.collisionIndex.placeCollisionBox(iconScale, iconBox, shiftPoint,
                         iconAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);

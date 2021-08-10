@@ -10,6 +10,7 @@ import type Context from '../../gl/context.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type Transform from '../../geo/transform.js';
 import type Tile from '../../source/tile.js';
+import {mercatorZfromAltitude} from '../../geo/mercator_coordinate.js';
 
 export type CollisionUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -43,6 +44,7 @@ const collisionUniformValues = (
     tile: Tile
 ): UniformValues<CollisionUniformsType> => {
     const pixelRatio = EXTENT / tile.tileSize;
+
     return {
         'u_matrix': matrix,
         'u_camera_to_center_distance': transform.cameraToCenterDistance,

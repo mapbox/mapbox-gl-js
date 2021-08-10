@@ -1139,7 +1139,7 @@ class Camera extends Evented {
 
         const offsetAsPoint = Point.convert(options.offset);
         let pointAtOffset = tr.centerPoint.add(offsetAsPoint);
-        const locationAtOffset = tr.pointLocation(pointAtOffset);
+        const locationAtOffset = tr.pointCoordinateOnGlobe(pointAtOffset).toLngLat();// tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
         this._normalizeCenter(center);
 
@@ -1151,7 +1151,8 @@ class Camera extends Evented {
 
         if (options.around) {
             around = LngLat.convert(options.around);
-            aroundPoint = tr.locationPoint(around);
+            //aroundPoint = tr.locationPoint(around);
+            aroundPoint = tr.locationPointGlobe(around);
         }
 
         const currently = {

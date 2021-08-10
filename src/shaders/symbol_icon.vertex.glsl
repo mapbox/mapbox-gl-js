@@ -1,7 +1,7 @@
 attribute vec4 a_pos_offset;
 attribute vec4 a_tex_size;
 attribute vec4 a_pixeloffset;
-attribute vec4 a_posz;
+attribute vec4 a_z_tileAnchor;
 attribute vec3 a_projected_pos;
 attribute float a_fade_opacity;
 
@@ -53,8 +53,10 @@ void main() {
         size = u_size;
     }
 
-    vec3 h = elevationVector(a_pos) * elevation(a_pos);
-    vec4 projectedPoint = u_matrix * vec4(vec3(a_pos, 0) + h, 1);
+    float anchorZ = a_z_tileAnchor.x;
+    vec2 tileAnchor = a_z_tileAnchor.yz;
+    vec3 h = elevationVector(tileAnchor) * elevation(tileAnchor);
+    vec4 projectedPoint = u_matrix * vec4(vec3(a_pos, anchorZ) + h, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     // See comments in symbol_sdf.vertex
@@ -73,7 +75,7 @@ void main() {
     highp float symbol_rotation = 0.0;
     if (u_rotate_symbol) {
         // See comments in symbol_sdf.vertex
-        vec4 offsetProjectedPoint = u_matrix * vec4(vec3(a_pos + vec2(1, 0), 0) + h, 1);
+        vec4 offsetProjectedPoint = u_matrix * vec4(a_pos + vec2(1, 0), anchorZ, 1);
 
         vec2 a = projectedPoint.xy / projectedPoint.w;
         vec2 b = offsetProjectedPoint.xy / offsetProjectedPoint.w;
@@ -81,16 +83,22 @@ void main() {
         symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
     }
 
+#ifdef PROJECTED_POS_ON_VIEWPORT
+    vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
+#else
+    vec4 projected_pos = u_label_plane_matrix * vec4(vec3(a_projected_pos.xy, anchorZ) + h, 1.0);
+#endif
+
     highp float angle_sin = sin(segment_angle + symbol_rotation);
     highp float angle_cos = cos(segment_angle + symbol_rotation);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
-    vec4 projected_pos = u_label_plane_matrix * vec4(vec3(a_projected_pos.xy, 0) + h, 1.0);
     float z = 0.0;
     vec2 offset = rotation_matrix * (a_offset / 32.0 * max(a_minFontScale, fontScale) + a_pxoffset / 16.0);
 #ifdef PITCH_WITH_MAP_TERRAIN
-    vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
-    z = elevation(tile_pos.xy);
+    //vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
+    //z = elevation(tile_pos.xy);
+    z = length(h);
 #endif
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = occlusionFade(projectedPoint);

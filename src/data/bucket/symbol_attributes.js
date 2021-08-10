@@ -3,10 +3,10 @@
 import {createLayout} from '../../util/struct_array.js';
 
 export const symbolLayoutAttributes = createLayout([
-    {name: 'a_pos_offset',  components: 4, type: 'Int16'},
-    {name: 'a_tex_size',    components: 4, type: 'Uint16'},
-    {name: 'a_pixeloffset', components: 4, type: 'Int16'},
-    {name: 'a_posz',        components: 4, type: 'Int16'}
+    {name: 'a_pos_offset',   components: 4, type: 'Int16'},
+    {name: 'a_tex_size',     components: 4, type: 'Uint16'},
+    {name: 'a_pixeloffset',  components: 4, type: 'Int16'},
+    {name: 'a_z_tileAnchor', components: 4, type: 'Int16'}
 ], 4);
 
 export const dynamicLayoutAttributes = createLayout([
@@ -53,9 +53,9 @@ export const collisionBox = createLayout([
 ]);
 
 export const collisionBoxLayout = createLayout([ // used to render collision boxes for debugging purposes
-    {name: 'a_pos',        components: 2, type: 'Int16'},
-    {name: 'a_anchor_pos', components: 2, type: 'Int16'},
-    {name: 'a_extrude',    components: 2, type: 'Int16'}
+    {name: 'a_pos',             components: 3, type: 'Int16'},
+    {name: 'a_anchor_pos',      components: 2, type: 'Int16'},
+    {name: 'a_extrude',         components: 2, type: 'Int16'}
 ], 4);
 
 export const collisionCircleLayout = createLayout([ // used to render collision circles for debugging purposes
