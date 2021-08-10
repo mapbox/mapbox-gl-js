@@ -5,7 +5,7 @@ import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 
 type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
-export type FeatureFilter ={filter: FilterExpression, needGeometry: boolean};
+export type FeatureFilter ={filter: FilterExpression, dynamicFilter: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
 export {isExpressionFilter, isDynamicFilter, extractStaticFilter};
@@ -52,6 +52,58 @@ function isExpressionFilter(filter: any) {
     }
 }
 
+const filterSpec = {
+    'type': 'boolean',
+    'default': false,
+    'transition': false,
+    'property-type': 'data-driven',
+    'expression': {
+        'interpolated': false,
+        'parameters': ['zoom', 'feature', 'pitch', 'distance-from-center']
+    }
+};
+
+/**
+ * Given a filter expressed as nested arrays, return a new function
+ * that evaluates whether a given feature (with a .properties or .tags property)
+ * passes its test.
+ *
+ * @private
+ * @param {Array} filter mapbox gl filter
+ * @returns {Function} filter-evaluating function
+ */
+function createFilter(filter: any): FeatureFilter {
+    if (filter === null || filter === undefined) {
+        return {filter: () => true, dynamicFilter: () => true, needGeometry: false};
+    }
+
+    if (!isExpressionFilter(filter)) {
+        filter = convertFilter(filter);
+    }
+
+    let staticFilter = true;
+    try {
+        staticFilter = extractStaticFilter(filter);
+    } catch (e) {
+        console.warn(`Failed to extract static filter from ${JSON.stringify(filter)}. Falling back to using 'true' as a filter and evaluating entire filter dynamically`);
+    }
+    const dynamicFilter = filter === staticFilter ? true : filter;
+
+    // TODO: separate out static and dynamic filterSpec
+    const compiledStaticFilter = createExpression(staticFilter, filterSpec);
+    const compiledDynamicFilter = createExpression(dynamicFilter, filterSpec);
+    if (compiledStaticFilter.result === 'error' || compiledDynamicFilter.result === 'error') {
+        throw new Error(compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
+    } else {
+        const needGeometry = geometryNeeded(filter);
+        return {
+            filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical),
+            dynamicFilter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical)
+            needGeometry
+        };
+    }
+}
+
 function extractStaticFilter(filter: any): any {
     if (!isDynamicFilter(filter)) {
         return filter;
@@ -89,7 +141,8 @@ const dynamicConditionExpressions = new Set([
     '>',
     '>=',
     '<',
-    '<='
+    '<=',
+    'to-boolean'
 ]);
 
 function collapsedExpression(expression: any): any {
@@ -130,6 +183,12 @@ function unionDynamicBranches(filter: any) {
             branches.push(filter[i + 1]);
         }
         branches.push(filter[filter.length - 1]);
+    } else if (filter[0] === 'step') {
+        tests.push(filter[1]);
+
+        for (let i = 1; i < filter.length - 1; i +=2) {
+            branches.push(filter[i + 1]);
+        }
     }
 
     const isBranchingDynamically = tests.some((test) => isDynamicFilter(test));
@@ -170,45 +229,6 @@ function isDynamicFilter(filter: any): boolean {
 function isRootExpressionDynamic(expression: string): boolean {
     return expression === 'pitch' ||
         expression === 'distance-from-center';
-}
-
-const filterSpec = {
-    'type': 'boolean',
-    'default': false,
-    'transition': false,
-    'property-type': 'data-driven',
-    'expression': {
-        'interpolated': false,
-        'parameters': ['zoom', 'feature', 'pitch', 'distance-from-center']
-    }
-};
-
-/**
- * Given a filter expressed as nested arrays, return a new function
- * that evaluates whether a given feature (with a .properties or .tags property)
- * passes its test.
- *
- * @private
- * @param {Array} filter mapbox gl filter
- * @returns {Function} filter-evaluating function
- */
-function createFilter(filter: any): FeatureFilter {
-    if (filter === null || filter === undefined) {
-        return {filter: () => true, needGeometry: false};
-    }
-
-    if (!isExpressionFilter(filter)) {
-        filter = convertFilter(filter);
-    }
-
-    const compiled = createExpression(filter, filterSpec);
-    if (compiled.result === 'error') {
-        throw new Error(compiled.value.map(err => `${err.key}: ${ermessage}`).join(', '));
-    } else {
-        const needGeometry = geometryNeeded(filter);
-        return {filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiled.value.evaluate(globalProperties, feature, {}, canonical),
-            needGeometry};
-    }
 }
 
 // Comparison function to sort numbers and strings

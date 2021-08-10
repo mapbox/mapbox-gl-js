@@ -661,6 +661,169 @@ test('filter', t => {
                 t.end();
             });
 
+            t.test('it collapses dynamic step expressions to any expressions', (t) => {
+                const testCases = [
+                    {
+                        dynamic: [
+                                    "all",
+                                    [
+                                        "<=",
+                                        ["get", "filterrank"],
+                                        3
+                                    ],
+                                    [
+                                        "match",
+                                        ["get", "class"],
+                                        "settlement",
+                                        [
+                                        "match",
+                                        ["get", "worldview"],
+                                        ["all", "US"],
+                                        true,
+                                        false
+                                        ],
+                                        "disputed_settlement",
+                                        [
+                                        "all",
+                                        [
+                                            "==",
+                                            ["get", "disputed"],
+                                            "true"
+                                        ],
+                                        [
+                                            "match",
+                                            ["get", "worldview"],
+                                            ["all", "US"],
+                                            true,
+                                            false
+                                        ]
+                                        ],
+                                        false
+                                    ],
+                                    [
+                                        "step",
+                                        ["pitch"],
+                                        true,
+                                        10,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        10
+                                        ],
+                                        20,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        20
+                                        ],
+                                        30,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        30
+                                        ],
+                                        40,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        40
+                                        ],
+                                        50,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        50
+                                        ],
+                                        60,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        60
+                                        ]
+                                    ]
+                        ],
+                        static: [
+                                    "all",
+                                    [
+                                        "<=",
+                                        ["get", "filterrank"],
+                                        3
+                                    ],
+                                    [
+                                        "match",
+                                        ["get", "class"],
+                                        "settlement",
+                                        [
+                                        "match",
+                                        ["get", "worldview"],
+                                        ["all", "US"],
+                                        true,
+                                        false
+                                        ],
+                                        "disputed_settlement",
+                                        [
+                                        "all",
+                                        [
+                                            "==",
+                                            ["get", "disputed"],
+                                            "true"
+                                        ],
+                                        [
+                                            "match",
+                                            ["get", "worldview"],
+                                            ["all", "US"],
+                                            true,
+                                            false
+                                        ]
+                                        ],
+                                        false
+                                    ],
+                                    [
+                                        "any",
+                                        true,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        10
+                                        ],
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        20
+                                        ],
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        30
+                                        ],
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        40
+                                        ],
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        50
+                                        ],
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        60
+                                        ]
+                                    ]
+                        ]
+                    }
+                ];
+
+                for (const testCase of testCases) {
+                    t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                }
+
+                t.end();
+
+            });
+
             t.test('it collapses dynamic conditionals to true', (t) => {
                 const testCases = [
                     {
@@ -846,7 +1009,6 @@ test('filter', t => {
                         ]
                     }
                 ];
-                debugger;
                 for (const testCase of testCases) {
                     t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
                 }
