@@ -252,6 +252,7 @@ export class Placement {
         const pixelsToTiles = this.transform.calculatePixelsToTileUnitsMatrix(tile);
 
         const textLabelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix,
+                tile.tileID.canonical,
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
@@ -262,6 +263,7 @@ export class Placement {
         if (pitchWithMap) {
             const glMatrix = projection.getGlCoordMatrix(
                 posMatrix,
+                tile.tileID.canonical,
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
@@ -463,7 +465,6 @@ export class Placement {
                 this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false);
                 return;
             }
-
             let placeText = false;
             let placeIcon = false;
             let offscreen = true;
@@ -687,7 +688,6 @@ export class Placement {
                     const shiftPoint: Point = hasIconTextFit && shift ?
                         offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle) :
                         new Point(0, 0);
-
                     const iconScale = bucket.getSymbolInstanceIconSize(partiallyEvaluatedIconSize, this.transform.zoom, symbolIndex);
                     return this.collisionIndex.placeCollisionBox(iconScale, iconBox, shiftPoint,
                         iconAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);

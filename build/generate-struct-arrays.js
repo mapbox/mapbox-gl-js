@@ -50,8 +50,6 @@ function normalizeMembers(members, usedTypes) {
 // - If `includeStructAccessors`, write the fancy subclass
 // - Add an entry for `name` in the array type registry
 function createStructArrayType(name: string, layout: StructArrayLayout, includeStructAccessors: boolean = false) {
-    const hasAnchorPoint = layout.members.some(m => m.name === 'anchorPointX');
-
     // create the underlying StructArrayLayout class exists
     const layoutClass = createStructArrayLayoutType(layout);
     const arrayClass = `${camelize(name)}Array`;
@@ -64,7 +62,6 @@ function createStructArrayType(name: string, layout: StructArrayLayout, includeS
             members,
             size: layout.size,
             usedTypes,
-            hasAnchorPoint,
             layoutClass,
             includeStructAccessors
         });
@@ -178,6 +175,9 @@ createStructArrayType('placed_symbol', placement, true);
 createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
 createStructArrayType('symbol_line_vertex', lineVertex, true);
+
+import globeAttributes from '../src/terrain/globe_attributes.js';
+createStructArrayType('globe_vertex', globeAttributes);
 
 // feature index array
 createStructArrayType('feature_index', createLayout([
