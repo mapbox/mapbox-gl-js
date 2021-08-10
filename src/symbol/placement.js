@@ -2,6 +2,7 @@
 
 import CollisionIndex from './collision_index.js';
 import EXTENT from '../data/extent.js';
+import ONE_EM from './one_em.js';
 import * as symbolSize from './symbol_size.js';
 import * as projection from './projection.js';
 import {getAnchorJustification, evaluateVariableOffset} from './symbol_layout.js';
@@ -592,7 +593,8 @@ export class Placement {
                 const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
 
                 const textPixelPadding = layout.get('text-padding');
-                const circlePixelDiameter = symbolInstance.collisionCircleDiameter;
+                // Convert circle collision height into pixels
+                const circlePixelDiameter = symbolInstance.collisionCircleDiameter * fontSize / ONE_EM;
 
                 placedGlyphCircles = this.collisionIndex.placeCollisionCircles(textAllowOverlap,
                         placedSymbol,
