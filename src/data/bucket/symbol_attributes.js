@@ -4,8 +4,9 @@ import {createLayout} from '../../util/struct_array.js';
 
 export const symbolLayoutAttributes = createLayout([
     {name: 'a_pos_offset',  components: 4, type: 'Int16'},
-    {name: 'a_data',        components: 4, type: 'Uint16'},
-    {name: 'a_pixeloffset',        components: 4, type: 'Int16'}
+    {name: 'a_tex_size',    components: 4, type: 'Uint16'},
+    {name: 'a_pixeloffset', components: 4, type: 'Int16'},
+    {name: 'a_posz',        components: 4, type: 'Int16'}
 ], 4);
 
 export const dynamicLayoutAttributes = createLayout([

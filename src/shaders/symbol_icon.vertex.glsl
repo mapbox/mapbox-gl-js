@@ -1,6 +1,7 @@
 attribute vec4 a_pos_offset;
-attribute vec4 a_data;
+attribute vec4 a_tex_size;
 attribute vec4 a_pixeloffset;
+attribute vec4 a_posz;
 attribute vec3 a_projected_pos;
 attribute float a_fade_opacity;
 
@@ -34,8 +35,8 @@ void main() {
     vec2 a_pos = a_pos_offset.xy;
     vec2 a_offset = a_pos_offset.zw;
 
-    vec2 a_tex = a_data.xy;
-    vec2 a_size = a_data.zw;
+    vec2 a_tex = a_tex_size.xy;
+    vec2 a_size = a_tex_size.zw;
 
     float a_size_min = floor(a_size[0] * 0.5);
     vec2 a_pxoffset = a_pixeloffset.xy;
