@@ -488,7 +488,9 @@ class SourceCache extends Evented {
         }
 
         this.updateCacheSize(transform, tileSize);
-        this.handleWrapJump(this.transform.center.lng);
+        if (this.transform.projection.name !== 'globe') {
+            this.handleWrapJump(this.transform.center.lng);
+        }
 
         // Covered is a list of retained tiles who's areas are fully covered by other,
         // better, retained tiles. They are not drawn separately.
