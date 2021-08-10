@@ -73,7 +73,7 @@ class CollisionIndex {
 
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation, collisionBox.tileID);
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.tileAnchorX, collisionBox.tileAnchorY, collisionBox.elevation, collisionBox.tileID);
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
         const tlY = (collisionBox.y1 * scale + shift.y - collisionBox.padding) * tileToViewport + projectedPoint.point.y;
@@ -119,7 +119,7 @@ class CollisionIndex {
         const elevation = this.transform.elevation;
         const getElevation = elevation ? (p => elevation.getAtTileOffset(tileID, p.x, p.y)) : (_ => 0);
 
-        const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
+        const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         const anchorElevation = getElevation(tileUnitAnchorPoint);
         const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, anchorElevation, tileID);
         const {perspectiveRatio} = screenAnchorPoint;

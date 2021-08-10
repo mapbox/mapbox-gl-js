@@ -28,8 +28,12 @@ export const collisionVertexAttributesExt = createLayout([
 
 export const collisionBox = createLayout([
     // the box is centered around the anchor point
-    {type: 'Int16', name: 'anchorPointX'},
-    {type: 'Int16', name: 'anchorPointY'},
+    {type: 'Int16', name: 'projectedAnchorX'},
+    {type: 'Int16', name: 'projectedAnchorY'},
+    {type: 'Int16', name: 'projectedAnchorZ'},
+
+    {type: 'Int16', name: 'tileAnchorX'},
+    {type: 'Int16', name: 'tileAnchorY'},
 
     // distances to the edges from the anchor
     {type: 'Float32', name: 'x1'},
@@ -64,8 +68,11 @@ export const quadTriangle = createLayout([
 ]);
 
 export const placement = createLayout([
-    {type: 'Float32', name: 'anchorX'},
-    {type: 'Float32', name: 'anchorY'},
+    {type: 'Int16', name: 'projectedAnchorX'},
+    {type: 'Int16', name: 'projectedAnchorY'},
+    {type: 'Int16', name: 'projectedAnchorZ'},
+    {type: 'Float32', name: 'tileAnchorX'},
+    {type: 'Float32', name: 'tileAnchorY'},
     {type: 'Uint16', name: 'glyphStartIndex'},
     {type: 'Uint16', name: 'numGlyphs'},
     {type: 'Uint32', name: 'vertexStartIndex'},
@@ -85,8 +92,11 @@ export const placement = createLayout([
 ]);
 
 export const symbolInstance = createLayout([
-    {type: 'Float32', name: 'anchorX'},
-    {type: 'Float32', name: 'anchorY'},
+    {type: 'Int16', name: 'projectedAnchorX'},
+    {type: 'Int16', name: 'projectedAnchorY'},
+    {type: 'Int16', name: 'projectedAnchorZ'},
+    {type: 'Float32', name: 'tileAnchorX'},
+    {type: 'Float32', name: 'tileAnchorY'},
     {type: 'Int16', name: 'rightJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'centerJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'leftJustifiedTextSymbolIndex'},

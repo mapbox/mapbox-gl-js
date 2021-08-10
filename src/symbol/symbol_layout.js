@@ -542,7 +542,7 @@ function getDefaultHorizontalShaping(horizontalShaping: {[_: TextJustify]: Shapi
 }
 
 export function evaluateBoxCollisionFeature(collisionBoxArray: CollisionBoxArray,
-                                     anchor: Anchor,
+                                     tileAnchor: Anchor,
                                      featureIndex: number,
                                      sourceLayerIndex: number,
                                      bucketIndex: number,
@@ -594,7 +594,7 @@ export function evaluateBoxCollisionFeature(collisionBoxArray: CollisionBoxArray
         y2 = Math.max(tl.y, tr.y, bl.y, br.y);
     }
 
-    collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, padding, featureIndex, sourceLayerIndex, bucketIndex);
+    collisionBoxArray.emplaceBack(0, 0, 0, tileAnchor.x, tileAnchor.y, x1, y1, x2, y2, padding, featureIndex, sourceLayerIndex, bucketIndex);
 
     return collisionBoxArray.length - 1;
 }
@@ -805,6 +805,7 @@ function addSymbol(bucket: SymbolBucket,
     }
 
     bucket.symbolInstances.emplaceBack(
+        0, 0, 0,
         anchor.x,
         anchor.y,
         placedTextSymbolIndices.right >= 0 ? placedTextSymbolIndices.right : -1,

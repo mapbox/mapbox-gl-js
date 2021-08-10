@@ -68,8 +68,8 @@ class TileLayerIndex {
         const zDifference = childTileID.canonical.z - this.tileID.canonical.z;
         const scale = roundingFactor / Math.pow(2, zDifference);
         return {
-            x: Math.floor((childTileID.canonical.x * EXTENT + symbolInstance.anchorX) * scale),
-            y: Math.floor((childTileID.canonical.y * EXTENT + symbolInstance.anchorY) * scale)
+            x: Math.floor((childTileID.canonical.x * EXTENT + symbolInstance.tileAnchorX) * scale),
+            y: Math.floor((childTileID.canonical.y * EXTENT + symbolInstance.tileAnchorY) * scale)
         };
     }
 

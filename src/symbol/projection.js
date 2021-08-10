@@ -194,8 +194,8 @@ function updateLineLabels(bucket: SymbolBucket,
         // Awkward... but we're counting on the paired "vertical" symbol coming immediately after its horizontal counterpart
         useVertical = false;
 
-        const elevation = getElevation ? getElevation({x: symbol.anchorX, y: symbol.anchorY}) : 0;
-        const anchorPos = [symbol.anchorX, symbol.anchorY, elevation, 1];
+        const elevation = getElevation ? getElevation({x: symbol.tileAnchorX, y: symbol.tileAnchorY}) : 0;
+        const anchorPos = [symbol.tileAnchorX, symbol.tileAnchorY, elevation, 1];
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
@@ -210,7 +210,7 @@ function updateLineLabels(bucket: SymbolBucket,
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
 
-        const tileAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
+        const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         const transformedTileAnchor = project(tileAnchorPoint, labelPlaneMatrix, elevation);
 
         // Skip labels behind the camera
