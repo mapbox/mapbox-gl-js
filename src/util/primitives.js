@@ -116,23 +116,28 @@ class Aabb {
         return pointOnAabb - point[2];
     }
 
+    getCorners() {
+        const mn = this.min;
+        const mx = this.max;
+        return [
+            [mn[0], mn[1], mn[2]],
+            [mx[0], mn[1], mn[2]],
+            [mx[0], mx[1], mn[2]],
+            [mn[0], mx[1], mn[2]],
+            [mn[0], mn[1], mx[2]],
+            [mx[0], mn[1], mx[2]],
+            [mx[0], mx[1], mx[2]],
+            [mn[0], mx[1], mx[2]],
+        ];
+    }
+
     // Performs a frustum-aabb intersection test. Returns 0 if there's no intersection,
     // 1 if shapes are intersecting and 2 if the aabb if fully inside the frustum.
     intersects(frustum: Frustum): number {
         // Execute separating axis test between two convex objects to find intersections
         // Each frustum plane together with 3 major axes define the separating axes
 
-        const aabbPoints = [
-            [this.min[0], this.min[1], this.min[2], 1],
-            [this.max[0], this.min[1], this.min[2], 1],
-            [this.max[0], this.max[1], this.min[2], 1],
-            [this.min[0], this.max[1], this.min[2], 1],
-            [this.min[0], this.min[1], this.max[2], 1],
-            [this.max[0], this.min[1], this.max[2], 1],
-            [this.max[0], this.max[1], this.max[2], 1],
-            [this.min[0], this.max[1], this.max[2], 1],
-        ];
-
+        const aabbPoints = this.getCorners();
         let fullyInside = true;
 
         for (let p = 0; p < frustum.planes.length; p++) {
@@ -140,7 +145,7 @@ class Aabb {
             let pointsInside = 0;
 
             for (let i = 0; i < aabbPoints.length; i++) {
-                pointsInside += vec4.dot(plane, aabbPoints[i]) >= 0;
+                pointsInside += vec3.dot(plane, aabbPoints[i]) + plane[3] >= 0;
             }
 
             if (pointsInside === 0)
