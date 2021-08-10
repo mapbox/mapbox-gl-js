@@ -29,6 +29,12 @@ import type {ImagePosition} from '../render/image_atlas.js';
 import type {GlyphPositions} from '../render/glyph_atlas.js';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
 
+import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
+import {Aabb} from '../util/primitives.js';
+import {vec3} from 'gl-matrix';
+import {clamp} from '../util/util.js';
+import {tileLatLngCorners, latLngToECEF, normalizeECEF, tileBoundsOnGlobe} from '../geo/projection/globe.js'
+
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
 
@@ -147,6 +153,16 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
     return (offset[1] !== INVALID_TEXT_OFFSET) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
 }
 
+const reprojectTileAnchor = (p, tileID) => {
+    const tiles = Math.pow(2.0, tileID.z);
+    //const mx = (p.x / 8192.0 + tiles / 2) / tiles;
+    const mx = (p.x / 8192.0 + tileID.x) / tiles;
+    const my = (p.y / 8192.0 + tileID.y) / tiles;
+    const lat = latFromMercatorY(my);
+    const lng = lngFromMercatorX(mx);
+    return latLngToECEF(lat, lng);
+};
+
 export function performSymbolLayout(bucket: SymbolBucket,
                              glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}},
                              glyphPositions: GlyphPositions,
@@ -189,6 +205,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
     const textSize = layout.get('text-size');
+
+    //console.log(canonical);
 
     for (const feature of bucket.features) {
         const fontstack = layout.get('text-font').evaluate(feature, {}, canonical).join(',');
@@ -395,7 +413,7 @@ function addFeature(bucket: SymbolBucket,
         }
     }
 
-    const addSymbolAtAnchor = (line, anchor) => {
+    const addSymbolAtAnchor = (line, anchor, canonicalId, normalizationMatrix) => {
         if (anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT) {
             // Symbol layers are drawn across tile boundaries, We filter out symbols
             // outside our tile boundaries (which may be included in vector tile buffers)
@@ -403,12 +421,19 @@ function addFeature(bucket: SymbolBucket,
             return;
         }
 
-        addSymbol(bucket, anchor, anchor, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
+        let p = reprojectTileAnchor(anchor, canonicalId);
+        vec3.transformMat4(p, p, normalizationMatrix);
+        const projectedAnchor = new Anchor(p[0], p[1], p[2], 0, undefined);
+
+        addSymbol(bucket, anchor, projectedAnchor, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
             feature, sizes, isSDFIcon, canonical);
     };
+
+    const bounds = tileBoundsOnGlobe(canonical);
+    const normalizationMatrix = normalizeECEF(bounds);
 
     if (symbolPlacement === 'line') {
         for (const line of clipLine(feature.geometry, 0, 0, EXTENT, EXTENT)) {
@@ -426,7 +451,7 @@ function addFeature(bucket: SymbolBucket,
             for (const anchor of anchors) {
                 const shapedText = defaultShaping;
                 if (!shapedText || !anchorIsTooClose(bucket, shapedText.text, textRepeatDistance, anchor)) {
-                    addSymbolAtAnchor(line, anchor);
+                    addSymbolAtAnchor(line, anchor, canonical, normalizationMatrix);
                 }
             }
         }
@@ -443,7 +468,7 @@ function addFeature(bucket: SymbolBucket,
                     glyphSize,
                     textMaxBoxScale);
                 if (anchor) {
-                    addSymbolAtAnchor(line, anchor);
+                    addSymbolAtAnchor(line, anchor, canonical, normalizationMatrix);
                 }
             }
         }
@@ -451,17 +476,18 @@ function addFeature(bucket: SymbolBucket,
         for (const polygon of classifyRings(feature.geometry, 0)) {
             // 16 here represents 2 pixels
             const poi = findPoleOfInaccessibility(polygon, 16);
-            addSymbolAtAnchor(polygon[0], new Anchor(poi.x, poi.y, 0, 0, undefined));
+            addSymbolAtAnchor(polygon[0], new Anchor(poi.x, poi.y, 0, 0, undefined), canonical);
         }
     } else if (feature.type === 'LineString') {
+        // TODO: not implemented yet
         // https://github.com/mapbox/mapbox-gl-js/issues/3808
         for (const line of feature.geometry) {
-            addSymbolAtAnchor(line, new Anchor(line[0].x, line[0].y, 0, 0, undefined));
+            addSymbolAtAnchor(line, new Anchor(line[0].x, line[0].y, 0, 0, undefined), canonical);
         }
     } else if (feature.type === 'Point') {
         for (const points of feature.geometry) {
             for (const point of points) {
-                addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0, undefined));
+                addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0, undefined), canonical);
             }
         }
     }
@@ -644,8 +670,8 @@ function addSymbol(bucket: SymbolBucket,
                    sizes: Sizes,
                    isSDFIcon: boolean,
                    canonical: CanonicalTileID) {
+    // TODO: should be tile anchor?
     const lineArray = bucket.addToLineVertexArray(anchor, line);
-
     let textBoxIndex, iconBoxIndex, verticalTextBoxIndex, verticalIconBoxIndex;
     let textCircle, verticalTextCircle, verticalIconCircle;
 

@@ -13,6 +13,7 @@ import browser from '../../util/browser.js';
 import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import {mercatorZfromAltitude} from '../../geo/mercator_coordinate.js';
 
 export type SymbolIconUniformsType = {|
     'u_is_size_zoom_constant': Uniform1i,

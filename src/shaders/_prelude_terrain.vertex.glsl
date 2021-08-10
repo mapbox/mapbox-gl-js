@@ -44,11 +44,25 @@ uniform float u_exaggeration;
 uniform float u_meter_to_dem;
 uniform mat4 u_label_plane_matrix_inv;
 
+uniform vec3 u_tile_tl_up;
+uniform vec3 u_tile_tr_up;
+uniform vec3 u_tile_br_up;
+uniform vec3 u_tile_bl_up;
+
 uniform sampler2D u_depth;
 uniform vec2 u_depth_size_inv;
 
 vec3 elevationVector(vec2 pos) {
-    return vec3(0, 0, 1);
+    vec2 uv = pos / 8192.0;
+    float topLen = length(u_tile_tl_up);
+    float bottomLen = length(u_tile_bl_up);
+
+    vec3 up = normalize(mix(
+        mix(u_tile_tl_up, u_tile_tr_up, uv.xxx),
+        mix(u_tile_bl_up, u_tile_br_up, uv.xxx),
+        uv.yyy));
+
+    return up * mix(topLen, bottomLen, uv.y);
 }
 
 vec4 tileUvToDemSample(vec2 uv, float dem_size, float dem_scale, vec2 dem_tl) {

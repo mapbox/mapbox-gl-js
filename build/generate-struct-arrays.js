@@ -202,6 +202,12 @@ createStructArrayType('line_strip_index', createLayout([
     { type: 'Uint16', name: 'vertices', components: 1 }
 ]));
 
+// line strip index array
+createStructArrayType('globe_vertex', createLayout([
+    { type: 'Float32', name: 'a_pos', components: 3 },
+    { type: 'Float32', name: 'a_uv', components: 2 }
+]));
+
 // skybox vertex array
 createStructArrayType(`skybox_vertex`, skyboxAttributes);
 

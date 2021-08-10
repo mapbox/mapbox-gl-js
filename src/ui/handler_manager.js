@@ -517,13 +517,22 @@ class HandlerManager {
         const panVec = [0, 0, 0];
         if (panDelta) {
             assert(this._dragOrigin, '_dragOrigin should have been setup with a previous dragstart');
-            const startRay = tr.screenPointToMercatorRay(around);
-            const endRay = tr.screenPointToMercatorRay(around.sub(panDelta));
 
-            const startPoint = this._trackingEllipsoid.projectRay(startRay.dir);
-            const endPoint = this._trackingEllipsoid.projectRay(endRay.dir);
-            panVec[0] = endPoint[0] - startPoint[0];
-            panVec[1] = endPoint[1] - startPoint[1];
+            const startPoint = tr.pointCoordinateOnGlobe(around);
+            const endPoint = tr.pointCoordinateOnGlobe(around.sub(panDelta));
+
+            if (startPoint && endPoint) {
+                panVec[0] = endPoint.x - startPoint.x;
+                panVec[1] = endPoint.y - startPoint.y;
+            }
+
+            // const startRay = tr.screenPointToMercatorRay(around);
+            // const endRay = tr.screenPointToMercatorRay(around.sub(panDelta));
+
+            // const startPoint = this._trackingEllipsoid.projectRay(startRay.dir);
+            // const endPoint = this._trackingEllipsoid.projectRay(endRay.dir);
+            //panVec[0] = endPoint[0] - startPoint[0];
+            //panVec[1] = endPoint[1] - startPoint[1];
         }
 
         const originalZoom = tr.zoom;
@@ -538,14 +547,14 @@ class HandlerManager {
             const centerRay = tr.screenPointToMercatorRay(tr.centerPoint);
 
             if (aroundRay.dir[2] < 0) {
-                // Compute center point on the elevated map plane by casting a ray from the center of the screen.
-                // ZoomDelta is then subtracted from the relative zoom value and converted to a movement vector
-                const pickedAltitude = altitudeFromMercatorZ(pickedPosition[2], pickedPosition[1]);
-                const centerOnTargetPlane = tr.rayIntersectionCoordinate(tr.pointRayIntersection(tr.centerPoint, pickedAltitude));
-                const movement = tr.zoomDeltaToMovement(toVec3(centerOnTargetPlane), zoomDelta) * (centerRay.dir[2] / aroundRay.dir[2]);
+            //     // Compute center point on the elevated map plane by casting a ray from the center of the screen.
+            //     // ZoomDelta is then subtracted from the relative zoom value and converted to a movement vector
+            //     const pickedAltitude = altitudeFromMercatorZ(pickedPosition[2], pickedPosition[1]);
+            //     const centerOnTargetPlane = tr.rayIntersectionCoordinate(tr.pointRayIntersection(tr.centerPoint, pickedAltitude));
+            //     const movement = tr.zoomDeltaToMovement(toVec3(centerOnTargetPlane), zoomDelta) * (centerRay.dir[2] / aroundRay.dir[2]);
 
-                vec3.scale(zoomVec, aroundRay.dir, movement);
-            } else if (tr._terrainEnabled()) {
+            //     vec3.scale(zoomVec, aroundRay.dir, movement);
+            // } else if (tr._terrainEnabled()) {
                 // Special handling is required if the ray created from the cursor is heading up.
                 // This scenario is possible if user is trying to zoom towards a feature like a hill or a mountain.
                 // Convert zoomDelta to a movement vector as if the camera would be orbiting around the picked point

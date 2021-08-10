@@ -6,7 +6,7 @@ import PathInterpolator from './path_interpolator.js';
 
 import * as intersectionTests from '../util/intersection_tests.js';
 import Grid from './grid_index.js';
-import {mat4, vec4} from 'gl-matrix';
+import {mat4, vec3, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em.js';
 import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers.js';
 import assert from 'assert';
@@ -20,6 +20,9 @@ import type {
 } from '../data/array_types.js';
 import type {FogState} from '../style/fog_helpers.js';
 import {OverscaledTileID} from '../source/tile_id.js';
+import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
+import {degToRad} from '../util/util.js';
+import { GlobeTile, latLngToECEF, normalizeECEF, tileBoundsOnGlobe } from '../geo/projection/globe.js';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around
@@ -28,6 +31,19 @@ import {OverscaledTileID} from '../source/tile_id.js';
 // occur offscreen. Making this constant greater increases label
 // stability, but it's expensive.
 const viewportPadding = 100;
+
+function projectToGlobe(p, e, tileID) {
+    const tiles = Math.pow(2.0, tileID.canonical.z);
+    const mx = (p.x / 8192.0 + tileID.canonical.x) / tiles;
+    const my = (p.y / 8192.0 + tileID.canonical.y) / tiles;
+    const lat = latFromMercatorY(my);
+    const lng = lngFromMercatorX(mx);
+    const pg = latLngToECEF(lat, lng);
+
+    vec3.transformMat4(pg, pg, normalizeECEF(tileBoundsOnGlobe(tileID.canonical)));
+    vec3.add(pg, pg, e);
+    return pg;
+};
 
 /**
  * A collision index used to prevent symbols from overlapping. It keep tracks of
@@ -74,16 +90,18 @@ class CollisionIndex {
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
 
-        const anchorX = collisionBox.projectedAnchorX;
-        const anchorY = collisionBox.projectedAnchorY;
-        let anchorZ = collisionBox.projectedAnchorZ;
+        // anchorPoint is defined in normalized ecef coordinates when the globe view is enabled
+        // elevation is applied by finding the unit up vector in ecef space and applying it to the anchor coordinate
+        const globeTile = new GlobeTile(collisionBox.tileID.canonical);
+        const upVec = globeTile.upVector(collisionBox.tileAnchorX / 8192.0, collisionBox.tileAnchorY / 8192.0);
 
-        // Apply elevation vector to the anchor point
-        if (collisionBox.elevation) {
-            anchorZ += collisionBox.elevation;
-        }
 
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID);
+
+        const elevatedAnchorX = collisionBox.projectedAnchorX + upVec[0] * collisionBox.elevation;
+        const elevatedAnchorY = collisionBox.projectedAnchorY + upVec[1] * collisionBox.elevation;
+        const elevatedAnchorZ = collisionBox.projectedAnchorZ + upVec[2] * collisionBox.elevation;
+
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchorX, elevatedAnchorY, elevatedAnchorZ, collisionBox.tileID);
 
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
@@ -118,6 +136,7 @@ class CollisionIndex {
                           glyphOffsetArray: GlyphOffsetArray,
                           fontSize: number,
                           posMatrix: mat4,
+                          globeMatrix: mat4,
                           labelPlaneMatrix: mat4,
                           labelToScreenMatrix?: mat4,
                           showCollisionCircles: boolean,
@@ -128,15 +147,25 @@ class CollisionIndex {
                           tileID: OverscaledTileID): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
         const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
-        const getElevation = elevation ? (p => elevation.getAtTileOffset(tileID, p.x, p.y)) : (_ => 0);
+
+        const globeTile = new GlobeTile(tileID.canonical);
+        const getElevation = elevation ? (p => {
+            const e = elevation.getAtTileOffset(tileID, p.x, p.y);
+            const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
+            vec3.scale(up, up, e);
+            return up;
+        }) : (_ => [0, 0, 0]);
 
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-        const anchorElevation = getElevation(tileUnitAnchorPoint);
-        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, anchorElevation, tileID);
+
+        // NOTE: symbol.anchor can't be used for line aligned placement because the value is rounded!
+        const elevatedAnchor = projectToGlobe(tileUnitAnchorPoint, getElevation(tileUnitAnchorPoint), tileID);
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2], tileID);
+
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
-        const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix, anchorElevation).point;
+        const labelPlaneAnchorPoint = projection.project(new Point(elevatedAnchor[0], elevatedAnchor[1]), labelPlaneMatrix, elevatedAnchor[2]).point;
 
         const projectionCache = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
@@ -155,7 +184,8 @@ class CollisionIndex {
             labelPlaneMatrix,
             projectionCache,
             elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
-            pitchWithMap && !!elevation
+            pitchWithMap && !!elevation,
+            tileID
         ) : null;
 
         let collisionDetected = false;
@@ -390,6 +420,7 @@ class CollisionIndex {
             (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
             (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding
         );
+
         return {
             point: a,
             // See perspective ratio comment in symbol_sdf.vertex

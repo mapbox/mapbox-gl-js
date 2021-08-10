@@ -123,8 +123,9 @@ void main() {
     float z = 0.0;
     vec2 offset = rotation_matrix * (a_offset / 32.0 * fontScale + a_pxoffset);
 #ifdef PITCH_WITH_MAP_TERRAIN
-    vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
-    z = elevation(tile_pos.xy);
+    //vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
+    //z = elevation(tile_pos.xy);
+    z = length(h);
 #endif
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = occlusionFade(projectedPoint);

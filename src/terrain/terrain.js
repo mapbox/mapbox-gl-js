@@ -37,6 +37,7 @@ import browser from '../util/browser.js';
 import DEMData from '../data/dem_data.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
+import { GlobeTile } from '../geo/projection/globe.js';
 
 import type Map from '../ui/map.js';
 import type Painter from '../render/painter.js';
@@ -540,12 +541,21 @@ export class Terrain extends Elevation {
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
             morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number }
-        }) {
+        },
+        globeTile?: GlobeTile) {
         const context = this.painter.context;
         const gl = context.gl;
         const uniforms = defaultTerrainUniforms(((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding);
         uniforms['u_dem_size'] = this.sourceCache.getSource().tileSize;
         uniforms['u_exaggeration'] = this.exaggeration();
+
+        // Apply up vectors for the tile if the globe view is enabled
+        globeTile = globeTile || new GlobeTile(tile.tileID.canonical); new GlobeTile(tile.tileID.canonical);
+
+        uniforms['u_tile_tl_up'] = globeTile.upVector(0, 0);
+        uniforms['u_tile_tr_up'] = globeTile.upVector(1, 0);
+        uniforms['u_tile_br_up'] = globeTile.upVector(1, 1);
+        uniforms['u_tile_bl_up'] = globeTile.upVector(0, 1);
 
         let demTile = null;
         let prevDemTile = null;
@@ -570,6 +580,7 @@ export class Terrain extends Elevation {
             (demTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
             context.activeTexture.set(gl.TEXTURE4);
             (prevDemTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+
             uniforms["u_dem_lerp"] = morphingPhase;
         } else {
             demTile = this.terrainTileForTile[tile.tileID.key];
@@ -1504,6 +1515,8 @@ export type TerrainUniformsType = {|
     'u_depth_size_inv': Uniform2f,
     'u_meter_to_dem'?: Uniform1f,
     'u_label_plane_matrix_inv'?: UniformMatrix4f,
+    
+    // TODO: separate set of uniforms for the globe?
     'u_tile_tl_up': Uniform3f,
     'u_tile_tr_up': Uniform3f,
     'u_tile_br_up': Uniform3f,
