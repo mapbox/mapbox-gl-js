@@ -25,6 +25,10 @@ uniform mat4 u_label_plane_matrix_inv;
 uniform sampler2D u_depth;
 uniform vec2 u_depth_size_inv;
 
+vec3 elevationVector(vec2 pos) {
+    return vec3(0, 0, 1);
+}
+
 vec4 tileUvToDemSample(vec2 uv, float dem_size, float dem_scale, vec2 dem_tl) {
     vec2 pos = dem_size * (uv * dem_scale + dem_tl) + 1.0;
     vec2 f = fract(pos);
@@ -180,5 +184,6 @@ float elevationFromUint16(float word) {
 float elevation(vec2 pos) { return 0.0; }
 bool isOccluded(vec4 frag) { return false; }
 float occlusionFade(vec4 frag) { return 1.0; }
+vec3 elevationVector(vec2 pos) { return vec3(0, 0, 1); }
 
 #endif

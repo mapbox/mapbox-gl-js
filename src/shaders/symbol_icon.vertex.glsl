@@ -52,8 +52,8 @@ void main() {
         size = u_size;
     }
 
-    float h = elevation(a_pos);
-    vec4 projectedPoint = u_matrix * vec4(a_pos, h, 1);
+    vec3 h = elevationVector(a_pos) * elevation(a_pos);
+    vec4 projectedPoint = u_matrix * vec4(vec3(a_pos, 0) + h, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     // See comments in symbol_sdf.vertex
@@ -72,7 +72,7 @@ void main() {
     highp float symbol_rotation = 0.0;
     if (u_rotate_symbol) {
         // See comments in symbol_sdf.vertex
-        vec4 offsetProjectedPoint = u_matrix * vec4(a_pos + vec2(1, 0), h, 1);
+        vec4 offsetProjectedPoint = u_matrix * vec4(vec3(a_pos + vec2(1, 0), 0) + h, 1);
 
         vec2 a = projectedPoint.xy / projectedPoint.w;
         vec2 b = offsetProjectedPoint.xy / offsetProjectedPoint.w;
@@ -84,7 +84,7 @@ void main() {
     highp float angle_cos = cos(segment_angle + symbol_rotation);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
-    vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, h, 1.0);
+    vec4 projected_pos = u_label_plane_matrix * vec4(vec3(a_projected_pos.xy, 0) + h, 1.0);
     float z = 0.0;
     vec2 offset = rotation_matrix * (a_offset / 32.0 * max(a_minFontScale, fontScale) + a_pxoffset / 16.0);
 #ifdef PITCH_WITH_MAP_TERRAIN

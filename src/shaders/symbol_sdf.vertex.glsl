@@ -63,8 +63,8 @@ void main() {
         size = u_size;
     }
 
-    float h = elevation(a_pos);
-    vec4 projectedPoint = u_matrix * vec4(a_pos, h, 1);
+    vec3 h = elevationVector(a_pos) * elevation(a_pos);
+    vec4 projectedPoint = u_matrix * vec4(vec3(a_pos, 0) + h, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     // If the label is pitched with the map, layout is done in pitched space,
@@ -90,7 +90,7 @@ void main() {
         // Point labels with 'rotation-alignment: map' are horizontal with respect to tile units
         // To figure out that angle in projected space, we draw a short horizontal line in tile
         // space, project it, and measure its angle in projected space.
-        vec4 offsetProjectedPoint = u_matrix * vec4(a_pos + vec2(1, 0), h, 1);
+        vec4 offsetProjectedPoint = u_matrix * vec4(vec3(a_pos + vec2(1, 0), 0) + h, 1);
 
         vec2 a = projectedPoint.xy / projectedPoint.w;
         vec2 b = offsetProjectedPoint.xy / offsetProjectedPoint.w;
@@ -102,7 +102,7 @@ void main() {
     highp float angle_cos = cos(segment_angle + symbol_rotation);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
-    vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, h, 1.0);
+    vec4 projected_pos = u_label_plane_matrix * vec4(vec3(a_projected_pos.xy, 0) + h, 1.0);
     float z = 0.0;
     vec2 offset = rotation_matrix * (a_offset / 32.0 * fontScale + a_pxoffset);
 #ifdef PITCH_WITH_MAP_TERRAIN
