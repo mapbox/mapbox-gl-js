@@ -1428,7 +1428,7 @@ class Style extends Evented {
     // eslint-disable-next-line no-warning-comments
     // TODO: generic approach for root level property: light, terrain, skybox.
     // It is not done here to prevent rebasing issues.
-    setTerrain(terrainOptions: TerrainSpecification) {
+    setTerrain(terrainOptions: ?TerrainSpecification) {
         this._checkLoaded();
 
         //Disabling
@@ -1584,6 +1584,15 @@ class Style extends Evented {
         }
     }
 
+    _forceSymbolLayerUpdate() {
+        for (const layerId in this._layers) {
+            const layer = this._layers[layerId];
+            if (layer.type === 'symbol') {
+                this._updateLayer(layer);
+            }
+        }
+    }
+
     _validate(validate: Validator, key: string, value: any, props: any, options: { validate?: boolean } = {}) {
         if (options && options.validate === false) {
             return false;
@@ -1666,7 +1675,7 @@ class Style extends Evented {
                     .sort((a, b) => (b.tileID.overscaledZ - a.tileID.overscaledZ) || (a.tileID.isLessThan(b.tileID) ? -1 : 1));
             }
 
-            const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, layerTiles[styleLayer.source], transform.center.lng);
+            const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, layerTiles[styleLayer.source], transform.center.lng, transform.projection);
             symbolBucketsChanged = symbolBucketsChanged || layerBucketsChanged;
         }
         this.crossTileSymbolIndex.pruneUnusedLayers(this._order);

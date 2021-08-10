@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 import SourceCache from '../source/source_cache.js';
-import {OverscaledTileID} from '../source/tile_id.js';
+import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import Tile from '../source/tile.js';
 import boundsAttributes from '../data/bounds_attributes.js';
 import {RasterBoundsArray, TriangleIndexArray, LineIndexArray} from '../data/array_types.js';
@@ -539,13 +539,27 @@ export class Terrain extends Elevation {
             useDepthForOcclusion?: boolean,
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
-            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number }
+            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number },
+            elevationTileID?: CanonicalTileID
         }) {
         const context = this.painter.context;
         const gl = context.gl;
         const uniforms = defaultTerrainUniforms(((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding);
         uniforms['u_dem_size'] = this.sourceCache.getSource().tileSize;
         uniforms['u_exaggeration'] = this.exaggeration();
+
+        const tr = this.painter.transform;
+        const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
+
+        let id = tile.tileID.canonical;
+        if (options && options.elevationTileID) {
+            id = options.elevationTileID;
+        }
+        uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
+        uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
+        uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
+        uniforms['u_tile_bl_up'] = tileTransform.upVector(id, 0, EXTENT);
+        uniforms['u_tile_up_scale'] = tileTransform.upVectorScale(id);
 
         let demTile = null;
         let prevDemTile = null;
@@ -570,6 +584,7 @@ export class Terrain extends Elevation {
             (demTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
             context.activeTexture.set(gl.TEXTURE4);
             (prevDemTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+
             uniforms["u_dem_lerp"] = morphingPhase;
         } else {
             demTile = this.terrainTileForTile[tile.tileID.key];
@@ -1508,6 +1523,9 @@ export type TerrainUniformsType = {|
     'u_depth_size_inv': Uniform2f,
     'u_meter_to_dem'?: Uniform1f,
     'u_label_plane_matrix_inv'?: UniformMatrix4f,
+
+    // eslint-disable-next-line no-warning-comments
+    // TODO: separate set of uniforms for the globe?
     'u_tile_tl_up': Uniform3f,
     'u_tile_tr_up': Uniform3f,
     'u_tile_br_up': Uniform3f,
