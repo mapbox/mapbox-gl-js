@@ -18,7 +18,7 @@ vec3 elevationVector(vec2 pos) {
     return up * u_tile_up_scale;
 }
 
-#else 
+#else
 
 vec3 elevationVector(vec2 pos) { return vec3(0, 0, 1); }
 

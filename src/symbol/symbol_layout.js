@@ -28,6 +28,7 @@ import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type {ImagePosition} from '../render/image_atlas.js';
 import type {GlyphPositions} from '../render/glyph_atlas.js';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
+import type {Projection} from '../geo/projection/index.js';
 
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
@@ -155,7 +156,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
                              showCollisionBoxes: boolean,
                              availableImages: Array<string>,
                              canonical: CanonicalTileID,
-                             tileZoom: number) {
+                             tileZoom: number,
+                             projection: Projection) {
     bucket.createArrays();
 
     const tileSize = 512 * bucket.overscaling;
@@ -316,7 +318,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
             bucket.iconsInText = shapedText ? shapedText.iconsInText : false;
         }
         if (shapedText || shapedIcon) {
-            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, availableImages, canonical);
+            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, availableImages, canonical, projection);
         }
     }
 
@@ -358,7 +360,8 @@ function addFeature(bucket: SymbolBucket,
                     textOffset: [number, number],
                     isSDFIcon: boolean,
                     availableImages: Array<string>,
-                    canonical: CanonicalTileID) {
+                    canonical: CanonicalTileID,
+                    projection: Projection) {
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.
     // bucket calculates text-size at a high zoom level so that all tiles can
@@ -398,7 +401,7 @@ function addFeature(bucket: SymbolBucket,
         }
     }
 
-    const addSymbolAtAnchor = (line, anchor) => {
+    const addSymbolAtAnchor = (line, anchor, canonicalId) => {
         if (anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT) {
             // Symbol layers are drawn across tile boundaries, We filter out symbols
             // outside our tile boundaries (which may be included in vector tile buffers)
@@ -406,7 +409,10 @@ function addFeature(bucket: SymbolBucket,
             return;
         }
 
-        addSymbol(bucket, anchor, anchor, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
+        const {x, y, z} = projection.projectTilePoint(anchor.x, anchor.y, canonicalId);
+        const projectedAnchor = new Anchor(x, y, z, 0, undefined);
+
+        addSymbol(bucket, anchor, projectedAnchor, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
@@ -429,7 +435,7 @@ function addFeature(bucket: SymbolBucket,
             for (const anchor of anchors) {
                 const shapedText = defaultShaping;
                 if (!shapedText || !anchorIsTooClose(bucket, shapedText.text, textRepeatDistance, anchor)) {
-                    addSymbolAtAnchor(line, anchor);
+                    addSymbolAtAnchor(line, anchor, canonical);
                 }
             }
         }
@@ -446,7 +452,7 @@ function addFeature(bucket: SymbolBucket,
                     glyphSize,
                     textMaxBoxScale);
                 if (anchor) {
-                    addSymbolAtAnchor(line, anchor);
+                    addSymbolAtAnchor(line, anchor, canonical);
                 }
             }
         }
@@ -454,17 +460,17 @@ function addFeature(bucket: SymbolBucket,
         for (const polygon of classifyRings(feature.geometry, 0)) {
             // 16 here represents 2 pixels
             const poi = findPoleOfInaccessibility(polygon, 16);
-            addSymbolAtAnchor(polygon[0], new Anchor(poi.x, poi.y, 0, 0, undefined));
+            addSymbolAtAnchor(polygon[0], new Anchor(poi.x, poi.y, 0, 0, undefined), canonical);
         }
     } else if (feature.type === 'LineString') {
         // https://github.com/mapbox/mapbox-gl-js/issues/3808
         for (const line of feature.geometry) {
-            addSymbolAtAnchor(line, new Anchor(line[0].x, line[0].y, 0, 0, undefined));
+            addSymbolAtAnchor(line, new Anchor(line[0].x, line[0].y, 0, 0, undefined), canonical);
         }
     } else if (feature.type === 'Point') {
         for (const points of feature.geometry) {
             for (const point of points) {
-                addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0, undefined));
+                addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0, 0, undefined), canonical);
             }
         }
     }
@@ -651,7 +657,6 @@ function addSymbol(bucket: SymbolBucket,
                    availableImages: Array<string>,
                    canonical: CanonicalTileID) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
-
     let textBoxIndex, iconBoxIndex, verticalTextBoxIndex, verticalIconBoxIndex;
     let textCircle, verticalTextCircle, verticalIconCircle;
 

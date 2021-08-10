@@ -10,6 +10,7 @@ import {CollisionBoxArray, TileBoundsArray, PosArray, TriangleIndexArray, LineSt
 import Texture from '../render/texture.js';
 import browser from '../util/browser.js';
 import {Debug} from '../util/debug.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
 import toEvaluationFeature from '../data/evaluation_feature.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import SourceFeatureState from '../source/source_state.js';
@@ -124,6 +125,8 @@ class Tile {
     texture: any;
     fbo: ?Framebuffer;
     demTexture: ?Texture;
+    globeGridBuffer: ?VertexBuffer;
+    globePoleBuffer: ?VertexBuffer;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     resourceTiming: ?Array<PerformanceResourceTiming>;
@@ -322,6 +325,16 @@ class Tile {
             this._tileDebugIndexBuffer.destroy();
             this._tileDebugSegments.destroy();
             this._tileDebugBuffer = null;
+        }
+
+        if (this.globeGridBuffer) {
+            this.globeGridBuffer.destroy();
+            this.globeGridBuffer = null;
+        }
+
+        if (this.globePoleBuffer) {
+            this.globePoleBuffer.destroy();
+            this.globePoleBuffer = null;
         }
 
         Debug.run(() => {
