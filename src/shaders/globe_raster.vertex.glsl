@@ -11,12 +11,18 @@ attribute vec2 a_uv;
 
 varying vec2 v_pos0;
 
+const float wireframeOffset = 1e3;
+
 void main() {
     v_pos0 = a_uv;
 
     vec2 uv = a_uv * EXTENT;
     vec4 up_vector = u_up_vector_matrix * vec4(elevationVector(uv), 1.0);
     float height = elevation(uv);
+
+#ifdef TERRAIN_WIREFRAME
+    height += wireframeOffset;
+#endif
 
     vec4 globe = u_globe_matrix * vec4(a_globe_pos + up_vector.xyz * height, 1.0);
 

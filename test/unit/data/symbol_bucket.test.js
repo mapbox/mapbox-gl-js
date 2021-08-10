@@ -6,6 +6,7 @@ import {VectorTile} from '@mapbox/vector-tile';
 import SymbolBucket from '../../../src/data/bucket/symbol_bucket.js';
 import {CollisionBoxArray} from '../../../src/data/array_types.js';
 import {performSymbolLayout} from '../../../src/symbol/symbol_layout.js';
+import getProjection from '../../../src/geo/projection/index.js';
 import {Placement} from '../../../src/symbol/placement.js';
 import Transform from '../../../src/geo/transform.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
@@ -44,6 +45,7 @@ function bucketSetup(text = 'abcde') {
 test('SymbolBucket', (t) => {
     const bucketA = bucketSetup();
     const bucketB = bucketSetup();
+    const projection = getProjection('mercator');
     const options = {iconDependencies: {}, glyphDependencies: {}};
     const placement = new Placement(transform, 0, true);
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
@@ -52,7 +54,7 @@ test('SymbolBucket', (t) => {
 
     // add feature from bucket A
     bucketA.populate([{feature}], options);
-    performSymbolLayout(bucketA, stacks, glyphPositions);
+    performSymbolLayout(bucketA, stacks, glyphPositions, null, null, null, null, null, projection);
     const tileA = new Tile(tileID, 512, 0, painter);
     tileA.latestFeatureIndex = new FeatureIndex(tileID);
     tileA.buckets = {test: bucketA};
@@ -60,12 +62,12 @@ test('SymbolBucket', (t) => {
 
     // add same feature from bucket B
     bucketB.populate([{feature}], options);
-    performSymbolLayout(bucketB, stacks, glyphPositions);
+    performSymbolLayout(bucketB, stacks, glyphPositions, null, null, null, null, null, projection);
     const tileB = new Tile(tileID, 512, 0, painter);
     tileB.buckets = {test: bucketB};
     tileB.collisionBoxArray = collisionBoxArray;
 
-    crossTileSymbolIndex.addLayer(bucketA.layers[0], [tileA, tileB]);
+    crossTileSymbolIndex.addLayer(bucketA.layers[0], [tileA, tileB], 0.0, projection);
 
     const place = (layer, tile) => {
         const parts = [];
@@ -91,11 +93,12 @@ test('SymbolBucket integer overflow', (t) => {
     t.stub(SymbolBucket, 'MAX_GLYPHS').value(5);
 
     const bucket = bucketSetup();
+    const projection = getProjection('mercator');
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
     bucket.populate([{feature}], options);
     const fakeRect = {w: 10, h: 10};
-    performSymbolLayout(bucket, stacks, {'Test':  {97: fakeRect, 98: fakeRect, 99: fakeRect, 100: fakeRect, 101: fakeRect, 102: fakeRect}});
+    performSymbolLayout(bucket, stacks, {'Test':  {97: fakeRect, 98: fakeRect, 99: fakeRect, 100: fakeRect, 101: fakeRect, 102: fakeRect}}, null, null, null, null, null, projection);
 
     t.ok(console.warn.calledOnce);
     t.ok(console.warn.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));

@@ -40,6 +40,7 @@ import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
+import {GlobeSharedBuffers} from '../geo/projection/globe.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
@@ -144,6 +145,7 @@ class Painter {
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
+    globeSharedBuffers: ?GlobeSharedBuffers;
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
@@ -509,6 +511,10 @@ class Painter {
             this.opaquePassCutoff = 0;
         }
 
+        if (this.transform.projection.name === 'globe' && !this.globeSharedBuffers) {
+            this.globeSharedBuffers = new GlobeSharedBuffers(this.context);
+        }
+
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
 
@@ -574,7 +580,7 @@ class Painter {
         // They are drawn at max depth, they are drawn after opaque and before
         // translucent to fail depth testing and mix with translucent objects.
         this.renderPass = 'sky';
-        if (this.transform.isHorizonVisible()) {
+        if (this.transform.isHorizonVisible() || this.transform.projection.name === 'globe') {
             for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
                 const layer = this.style._layers[layerIds[this.currentLayer]];
                 const sourceCache = style._getLayerSourceCache(layer);
@@ -869,6 +875,9 @@ class Painter {
     destroy() {
         if (this._terrain) {
             this._terrain.destroy();
+        }
+        if (this.globeSharedBuffers) {
+            this.globeSharedBuffers.destroy();
         }
         this.emptyTexture.destroy();
         if (this.debugOverlayTexture) {
