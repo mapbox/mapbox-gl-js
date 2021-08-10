@@ -50,8 +50,6 @@ function normalizeMembers(members, usedTypes) {
 // - If `includeStructAccessors`, write the fancy subclass
 // - Add an entry for `name` in the array type registry
 function createStructArrayType(name: string, layout: StructArrayLayout, includeStructAccessors: boolean = false) {
-    const hasAnchorPoint = layout.members.some(m => m.name === 'anchorPointX');
-
     // create the underlying StructArrayLayout class exists
     const layoutClass = createStructArrayLayoutType(layout);
     const arrayClass = `${camelize(name)}Array`;
@@ -64,7 +62,6 @@ function createStructArrayType(name: string, layout: StructArrayLayout, includeS
             members,
             size: layout.size,
             usedTypes,
-            hasAnchorPoint,
             layoutClass,
             includeStructAccessors
         });
@@ -244,7 +241,6 @@ fs.writeFileSync('src/data/array_types.js',
 import assert from 'assert';
 import {Struct, StructArray} from '../util/struct_array.js';
 import {register} from '../util/web_worker_transfer.js';
-import Point from '@mapbox/point-geometry';
 
 ${layouts.map(structArrayLayoutJs).join('\n')}
 ${arraysWithStructAccessors.map(structArrayJs).join('\n')}
