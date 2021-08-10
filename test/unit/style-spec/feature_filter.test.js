@@ -670,6 +670,180 @@ test('filter', t => {
                     {
                         dynamic: ["all", ["<", ["pitch"], 60], ["<", ["distance-from-center"], 4]],
                         static: ["all", true, true]
+                    },
+                    {
+                        dynamic: ["all", ["<", ["+", ["*", ["pitch"], 2], 5], 60], ["<", ["+", ["distance-from-center"], 1], 4]],
+                        static: ["all", true, true]
+                    },
+                    {
+                        dynamic: [
+                                    "all",
+                                    [
+                                        "<=",
+                                        ["get", "filterrank"],
+                                        3
+                                    ],
+                                    [
+                                        "match",
+                                        ["get", "class"],
+                                        "settlement",
+                                        [
+                                        "match",
+                                        ["get", "worldview"],
+                                        ["all", "US"],
+                                        true,
+                                        false
+                                        ],
+                                        "disputed_settlement",
+                                        [
+                                        "all",
+                                        [
+                                            "==",
+                                            ["get", "disputed"],
+                                            "true"
+                                        ],
+                                        [
+                                            "match",
+                                            ["get", "worldview"],
+                                            ["all", "US"],
+                                            true,
+                                            false
+                                        ]
+                                        ],
+                                        false
+                                    ],
+                                    [
+                                        "step",
+                                        ["zoom"],
+                                        true,
+                                        8,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        11
+                                        ],
+                                        10,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        12
+                                        ],
+                                        11,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        13
+                                        ],
+                                        12,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        15
+                                        ],
+                                        13,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        11
+                                        ],
+                                        14,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        13
+                                        ]
+                                    ],
+                                    [
+                                        "<=",
+                                        ["pitch"],
+                                        60
+                                    ],
+                                    [
+                                        "<=",
+                                        ["distance-from-center"],
+                                        2
+                                    ]
+                        ],
+                        static: [
+                                    "all",
+                                    [
+                                        "<=",
+                                        ["get", "filterrank"],
+                                        3
+                                    ],
+                                    [
+                                        "match",
+                                        ["get", "class"],
+                                        "settlement",
+                                        [
+                                        "match",
+                                        ["get", "worldview"],
+                                        ["all", "US"],
+                                        true,
+                                        false
+                                        ],
+                                        "disputed_settlement",
+                                        [
+                                        "all",
+                                        [
+                                            "==",
+                                            ["get", "disputed"],
+                                            "true"
+                                        ],
+                                        [
+                                            "match",
+                                            ["get", "worldview"],
+                                            ["all", "US"],
+                                            true,
+                                            false
+                                        ]
+                                        ],
+                                        false
+                                    ],
+                                    [
+                                        "step",
+                                        ["zoom"],
+                                        true,
+                                        8,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        11
+                                        ],
+                                        10,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        12
+                                        ],
+                                        11,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        13
+                                        ],
+                                        12,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        15
+                                        ],
+                                        13,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        11
+                                        ],
+                                        14,
+                                        [
+                                        ">=",
+                                        ["get", "symbolrank"],
+                                        13
+                                        ]
+                                    ],
+                                    true,
+                                    true
+                        ]
                     }
                 ];
                 debugger;
