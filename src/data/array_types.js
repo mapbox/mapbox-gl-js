@@ -274,8 +274,8 @@ class StructArrayLayout4i4ui4i4i32 extends StructArray {
     }
 }
 
-StructArrayLayout4i4ui4i24.prototype.bytesPerElement = 24;
-register('StructArrayLayout4i4ui4i24', StructArrayLayout4i4ui4i24);
+StructArrayLayout4i4ui4i4i32.prototype.bytesPerElement = 32;
+register('StructArrayLayout4i4ui4i4i32', StructArrayLayout4i4ui4i4i32);
 
 /**
  * Implementation of the StructArray layout:
@@ -1178,7 +1178,7 @@ export {
     StructArrayLayout3f12,
     StructArrayLayout10ui20,
     StructArrayLayout8ui16,
-    StructArrayLayout4i4ui4i24,
+    StructArrayLayout4i4ui4i4i32,
     StructArrayLayout1ul4,
     StructArrayLayout5i4f1i1ul2ui40,
     StructArrayLayout2i2i2i12,
