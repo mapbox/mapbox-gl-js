@@ -126,7 +126,7 @@ export class Evented {
             const listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
 
             // Check if onClose is an event listener and move to front of list to fire first
-            if (listeners.length > 1 && listeners[1].name == "bound _onClose") {
+            if (listeners.length > 1 && listeners[1].name === "bound _onClose") {
                 listeners.unshift(listeners.splice(1, 1)[0]);
             }
 
