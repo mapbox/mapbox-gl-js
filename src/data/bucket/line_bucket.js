@@ -319,16 +319,17 @@ class LineBucket implements Bucket {
         const cap = layout.get('line-cap').evaluate(feature, {});
         const miterLimit = layout.get('line-miter-limit');
         const roundLimit = layout.get('line-round-limit');
+        const hasDashArray = this.layers[0].paint.get('line-dasharray').value.kind !== 'constant';
         this.lineClips = this.lineFeatureClips(feature);
 
         for (const line of geometry) {
-            this.addLine(line, feature, join, cap, miterLimit, roundLimit);
+            this.addLine(line, feature, join, cap, miterLimit, roundLimit, hasDashArray);
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
     }
 
-    addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number) {
+    addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number, hasDashArray: boolean) {
         this.distance = 0;
         this.scaledDistance = 0;
         this.totalDistance = 0;
@@ -436,7 +437,7 @@ class LineBucket implements Bucket {
             // approximate angle from cosine
             const approxAngle = 2 * Math.sqrt(2 - 2 * cosHalfAngle);
 
-            const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
+            const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex && hasDashArray;
             const lineTurnsLeft = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0;
 
             if (isSharpCorner && i > first) {
