@@ -1,6 +1,5 @@
 // @flow
 
-import { convertChangesToXML } from 'diff';
 import {extend} from './util.js';
 
 type Listener = (Object) => any;
@@ -69,7 +68,6 @@ export class Evented {
      * @returns {Object} Returns itself to allow for method chaining.
      */
     on(type: *, listener: Listener): this {
-
         this._listeners = this._listeners || {};
         _addEventListener(type, listener, this._listeners);
 
