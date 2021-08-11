@@ -319,12 +319,15 @@ class LineBucket implements Bucket {
         const cap = layout.get('line-cap').evaluate(feature, {});
         const miterLimit = layout.get('line-miter-limit');
         const roundLimit = layout.get('line-round-limit');
-        const dashArray = this.layers[0].paint.get('line-dasharray').value
-        this.lineClips = this.lineFeatureClips(feature);
+        const dashArray = this.layers[0].paint.get('line-dasharray').value;
+        const pattern = this.layers[0].paint.get('line-pattern').value;
 
         const hasDashArray = dashArray.kind !== 'constant' || !!dashArray.value;
         const hasGradient = !!this.layers[0].paint.get('line-gradient');
-        const adjustSharpCorners = hasDashArray || hasGradient;
+        const hasPattern = pattern.kind !== 'constant' || !!pattern.value;
+        const adjustSharpCorners = hasDashArray || hasGradient || hasPattern;
+
+        this.lineClips = this.lineFeatureClips(feature);
 
         for (const line of geometry) {
             this.addLine(line, feature, join, cap, miterLimit, roundLimit, adjustSharpCorners);
