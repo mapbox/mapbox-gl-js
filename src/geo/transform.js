@@ -2,7 +2,8 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, lngFromMercatorX, altitudeFromMercatorZ} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
+import getProjection from './projection/index.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -87,6 +88,8 @@ class Transform {
     // Inverse of glCoordMatrix, from NDC to screen coordinates, [-1, 1] x [-1, 1] --> [0, w] x [h, 0]
     labelPlaneMatrix: Float32Array;
 
+    _projection: Projection;
+
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
@@ -118,7 +121,7 @@ class Transform {
         this.tileSize = 512; // constant
         this.maxValidLatitude = 85.051129; // constant
 
-        this._renderWorldCopies = renderWorldCopies === undefined ? false : renderWorldCopies;
+        this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
         this._minZoom = minZoom || DEFAULT_MIN_ZOOM;
         this._maxZoom = maxZoom || 22;
 
@@ -145,6 +148,7 @@ class Transform {
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
         this._projectionScaler = 1.0;
+        this._projection = getProjection('mercator');
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -235,6 +239,14 @@ class Transform {
         }
 
         this._renderWorldCopies = renderWorldCopies;
+    }
+
+    set projection(name?: String) {
+        this._projection = getProjection(name || 'mercator');
+    }
+
+    get projection(): Projection {
+        return this._projection;
     }
 
     get worldSize(): number {
@@ -794,13 +806,13 @@ class Transform {
             return distanceSqr < distToSplitSqr;
         };
 
-        // if (this._renderWorldCopies) {
-        //     // Render copy of the globe thrice on both sides
-        //     for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
-        //         stack.push(newRootTile(-i));
-        //         stack.push(newRootTile(i));
-        //     }
-        // }
+        if (this._projection.supportsWorldCopies && this._renderWorldCopies) {
+            // Render copy of the globe thrice on both sides
+            for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
+                stack.push(newRootTile(-i));
+                stack.push(newRootTile(i));
+            }
+        }
 
         stack.push(newRootTile(0));
 

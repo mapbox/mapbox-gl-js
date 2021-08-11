@@ -8,6 +8,15 @@ import {degToRad} from '../../util/util.js';
 import {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude} from '../mercator_coordinate.js';
 import CanonicalTileID, { UnwrappedTileID } from '../../source/tile_id.js';
 
+export default {
+    name: 'globe',
+    project(lng: number, lat: number) {
+        return { x: 0, y: 0, z: 0 };
+    },
+    requiresDraping: true,
+    supportsWorldCopies: false,
+}
+
 export const globeRefRadius = EXTENT / Math.PI / 2.0;
 
 export function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {

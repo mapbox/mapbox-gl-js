@@ -65,6 +65,7 @@ import type {
     SourceSpecification
 } from '../style-spec/types.js';
 import type {ElevationQueryOptions} from '../terrain/elevation.js';
+import { NullType } from '../style-spec/expression/types';
 
 type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
@@ -349,6 +350,7 @@ class Map extends Camera {
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
+    _terrainRefCount: { String: boolean };
 
     /** @section {Interaction handlers} */
 
@@ -447,6 +449,7 @@ class Map extends Camera {
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
         this._gestureHandling = options.gestureHandling;
+        this._terrainRefCount = {};
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevation = new EasedVariable(0);
@@ -2368,8 +2371,40 @@ class Map extends Camera {
      * map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
      */
     setTerrain(terrain: TerrainSpecification) {
+        return this._setTerrain(terrain, "explicit");
+    }
+
+    setProjection(options?: { name: String }) {
+        const name = options ? options.name : null;
+        this.transform.projection = name;
+
+        if (this.transform.projection.requiresDraping) {
+            this._setTerrain(this.style.stylesheet.terrain ?? {source: 'mapbox-dem', exaggeration: 0.0}, "projection");
+        } else {
+            this._setTerrain(null, "projection");
+        }
+    }
+
+    _setTerrain(options: TerrainSpecification, user: string) {
+        // There are multiple different consumers for the terrain.
+        // For example user might toggle it on/off explicitly while some of the projections
+        // might require it without user's knowledge. For reason a simple reference counter
+        // is used to track whether the terrain used by some feature
+        const shouldEnable = !!options;
+
+        if (shouldEnable) {
+            this._terrainRefCount[user] = true;
+        } else {
+            delete this._terrainRefCount[user];
+        }
+
+        if (!shouldEnable && Object.keys(this._terrainRefCount).length !== 0) {
+            return;
+        }
+
+        console.log(shouldEnable);
         this._lazyInitEmptyStyle();
-        this.style.setTerrain(terrain);
+        this.style.setTerrain(options);
         this._averageElevationLastSampledAt = -Infinity;
         return this._update(true);
     }
