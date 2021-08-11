@@ -38,8 +38,13 @@ export class MapEventHandler {
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
     }
 
+    preclick(e: MouseEvent) {
+        this._map.fire(new MapMouseEvent(e.type, this._map, e));
+    }
+
     click(e: MouseEvent, point: Point) {
         if (this._mousedownPos && this._mousedownPos.dist(point) >= this._clickTolerance) return;
+        this.preclick(e);
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
     }
 

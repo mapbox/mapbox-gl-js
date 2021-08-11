@@ -12,7 +12,7 @@ test('Map#on adds a non-delegated event listener', (t) => {
     map.on('click', spy);
     simulate.click(map.getCanvas());
 
-    t.ok(spy.calledOnce);
+    t.ok(spy.calledTwice);
     t.end();
 });
 
@@ -47,7 +47,7 @@ test('Map#on adds a listener for an event on a given layer', (t) => {
     map.on('click', 'layer', spy);
     simulate.click(map.getCanvas());
 
-    t.ok(spy.calledOnce);
+    t.ok(spy.calledTwice);
     t.end();
 });
 
@@ -129,8 +129,8 @@ test('Map#on distinguishes distinct layers', (t) => {
     map.on('click', 'B', spyB);
     simulate.click(map.getCanvas());
 
-    t.ok(spyA.calledOnce);
-    t.ok(spyB.calledOnce);
+    t.ok(spyA.calledTwice);
+    t.ok(spyB.calledTwice);
     t.end();
 });
 
@@ -147,8 +147,8 @@ test('Map#on distinguishes distinct listeners', (t) => {
     map.on('click', 'layer', spyB);
     simulate.click(map.getCanvas());
 
-    t.ok(spyA.calledOnce);
-    t.ok(spyB.calledOnce);
+    t.ok(spyA.calledTwice);
+    t.ok(spyB.calledTwice);
     t.end();
 });
 
@@ -206,7 +206,7 @@ test('Map#off distinguishes distinct layers', (t) => {
     map.off('click', 'B', spy);
     simulate.click(map.getCanvas());
 
-    t.ok(spy.calledOnce);
+    t.ok(spy.calledTwice);
     t.end();
 });
 
@@ -224,7 +224,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
     map.off('click', 'layer', spyB);
     simulate.click(map.getCanvas());
 
-    t.ok(spyA.calledOnce);
+    t.ok(spyA.calledTwice);
     t.ok(spyB.notCalled);
     t.end();
 });
