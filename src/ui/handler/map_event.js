@@ -1,5 +1,6 @@
 // @flow
 
+import {extend} from '../../util/util.js';
 import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../events.js';
 import type Map from '../map.js';
 
@@ -38,8 +39,15 @@ export class MapEventHandler {
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
     }
 
+    preclick(e: MouseEvent) {
+        const synth = extend({}, e);
+        synth.type = 'preclick';
+        this._map.fire(new MapMouseEvent(synth.type, this._map, synth));
+    }
+
     click(e: MouseEvent, point: Point) {
         if (this._mousedownPos && this._mousedownPos.dist(point) >= this._clickTolerance) return;
+        this.preclick(e);
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
     }
 

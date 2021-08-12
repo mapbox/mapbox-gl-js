@@ -140,7 +140,7 @@ export default class Popup extends Evented {
 
         this._map = map;
         if (this.options.closeOnClick) {
-            this._map.on('click', this._onClose);
+            this._map.on('preclick', this._onClose);
         }
 
         if (this.options.closeOnMove) {

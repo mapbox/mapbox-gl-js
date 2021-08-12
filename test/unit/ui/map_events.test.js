@@ -630,3 +630,30 @@ test("Map#isMoving() returns false in mousedown/mouseup/click with no movement",
     map.remove();
     t.end();
 });
+
+test("Map#on click should fire preclick before click", (t) => {
+    const map = createMap(t);
+    const preclickSpy = t.spy(function (e) {
+        t.equal(this, map);
+        t.equal(e.type, 'preclick');
+    });
+
+    const clickSpy = t.spy(function (e) {
+        t.equal(this, map);
+        t.equal(e.type, 'click');
+    });
+
+    map.on('click', clickSpy);
+    map.on('preclick', preclickSpy);
+    map.once('preclick', () => {
+        t.ok(clickSpy.notCalled);
+    });
+
+    simulate.click(map.getCanvas());
+
+    t.ok(preclickSpy.calledOnce);
+    t.ok(clickSpy.calledOnce);
+
+    map.remove();
+    t.end();
+});
