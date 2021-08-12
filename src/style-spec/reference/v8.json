@@ -1171,6 +1171,7 @@
         "parameters": [
           "zoom",
           "feature",
+          "feature-state",
           "pitch",
           "distance-from-center"
         ]
