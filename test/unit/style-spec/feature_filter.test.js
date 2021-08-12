@@ -1016,8 +1016,6 @@ test('filter', t => {
                 t.end();
             });
 
-
-
             t.end();
         });
 

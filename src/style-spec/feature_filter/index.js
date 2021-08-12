@@ -5,7 +5,7 @@ import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 
 type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
-export type FeatureFilter ={filter: FilterExpression, dynamicFilter: FilterExpression, needGeometry: boolean};
+export type FeatureFilter = {filter: FilterExpression, dynamicFilter: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
 export {isExpressionFilter, isDynamicFilter, extractStaticFilter};
@@ -95,10 +95,10 @@ function createFilter(filter: any): FeatureFilter {
     if (compiledStaticFilter.result === 'error' || compiledDynamicFilter.result === 'error') {
         throw new Error(compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
-        const needGeometry = geometryNeeded(filter);
+        const needGeometry = geometryNeeded(staticFilter);
         return {
             filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical),
-            dynamicFilter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical)
+            dynamicFilter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical),
             needGeometry
         };
     }
@@ -210,11 +210,11 @@ function isDynamicFilter(filter: any): boolean {
     if (typeof filter === 'boolean') {
         return false;
     }
-    if (isRootExpressionDynamic(filter[0])) {
-        return true;
-    }
     if (!Array.isArray(filter)) {
         return false;
+    }
+    if (isRootExpressionDynamic(filter[0])) {
+        return true;
     }
 
     for(const child of filter.slice(1)) {
