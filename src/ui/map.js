@@ -1088,6 +1088,7 @@ class Map extends Camera {
      * | [`mousemove`](#map.event:mousemove)                       | yes                       |
      * | [`mouseenter`](#map.event:mouseenter)                     | yes (required)            |
      * | [`mouseleave`](#map.event:mouseleave)                     | yes (required)            |
+     * | [`preclick`](#map.event:preclick)                         |                           |
      * | [`click`](#map.event:click)                               | yes                       |
      * | [`dblclick`](#map.event:dblclick)                         | yes                       |
      * | [`contextmenu`](#map.event:contextmenu)                   | yes                       |
@@ -1196,7 +1197,7 @@ class Map extends Camera {
      * Adds a listener that will be called only once to a specified event type,
      * optionally limited to events occurring on features in a specified style layer.
      *
-     * @param {string} type The event type to listen for; one of `'mousedown'`, `'mouseup'`, `'click'`, `'dblclick'`,
+     * @param {string} type The event type to listen for; one of `'mousedown'`, `'mouseup'`, `'preclick'`, `'click'`, `'dblclick'`,
      * `'mousemove'`, `'mouseenter'`, `'mouseleave'`, `'mouseover'`, `'mouseout'`, `'contextmenu'`, `'touchstart'`,
      * `'touchend'`, or `'touchcancel'`. `mouseenter` and `mouseover` events are triggered when the cursor enters
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
