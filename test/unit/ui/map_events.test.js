@@ -645,7 +645,7 @@ test("Map#on click should fire preclick before click", (t) => {
 
     map.on('click', clickSpy);
     map.on('preclick', preclickSpy);
-    map.once('preclick', function () {
+    map.once('preclick', () => {
         t.ok(clickSpy.notCalled);
     });
 
