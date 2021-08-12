@@ -30,7 +30,7 @@ native SDKs. For code and issues specific to the native SDKs, see the
 
 ## License
 
-Copyright © 2020 Mapbox
+Copyright © 2021 Mapbox
 
 All rights reserved.
 
