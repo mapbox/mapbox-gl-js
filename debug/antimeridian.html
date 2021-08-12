@@ -19,7 +19,7 @@
 
 <script>
 
-var map = new mapboxgl.Map({
+var map = window.map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11',
     zoom: 6,
@@ -31,8 +31,8 @@ map.transform.center = new mapboxgl.LngLat(190, -40);
 document.addEventListener('keypress', (e) => {
     console.log(e.key);
     if (e.key === " ") {
-        console.log(map.transform.center);
-        console.log(map.transform.point);
+        console.log('map.transform.center:', map.transform.center);
+        console.log('map.transform.point:', map.transform.point);
     }
 });
 
