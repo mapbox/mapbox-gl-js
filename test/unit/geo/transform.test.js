@@ -117,6 +117,112 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('maxBounds should not jump to the wrong side when crossing 180th meridian (#10447)', (t) => {
+        t.test(' to the East', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [160, 190];
+            transform.latRange = [-55, -23];
+
+            transform.center = new LngLat(-170, -40);
+
+            t.ok(transform.center.lng < 190);
+            t.ok(transform.center.lng > 175);
+
+            t.end();
+        });
+
+        t.test('to the West', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [-190, -160];
+            transform.latRange = [-55, -23];
+
+            transform.center = new LngLat(170, -40);
+
+            t.ok(transform.center.lng > -190);
+            t.ok(transform.center.lng < -175);
+
+            t.end();
+        });
+
+        t.test('longitude 0 - 360', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [0, 360];
+            transform.latRange = [-90, 90];
+
+            transform.center = new LngLat(-155, 0);
+
+            t.same(transform.center, new LngLat(205, 0));
+
+            t.end();
+        });
+
+        t.test('longitude -360 - 0', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [-360, 0];
+            transform.latRange = [-90, 90];
+
+            transform.center = new LngLat(160, 0);
+            t.same(transform.center.lng.toFixed(10), -200);
+
+            t.end();
+        });
+
+        t.end();
+
+    });
+
+    t.test('maxBounds snaps in the correct direction (no forcing to other edge when width < 360)', (t) => {
+        const transform = new Transform();
+        transform.zoom = 6;
+        transform.resize(500, 500);
+        transform.setMaxBounds(new LngLatBounds([-160, -20], [160, 20]));
+
+        transform.center = new LngLat(170, 0);
+        t.ok(transform.center.lng > 150);
+        t.ok(transform.center.lng < 160);
+
+        transform.center = new LngLat(-170, 0);
+        t.ok(transform.center.lng > -160);
+        t.ok(transform.center.lng < -150);
+
+        t.end();
+    });
+
+    t.test('maxBounds works with unwrapped values across the 180th meridian (#6985)', (t) => {
+        const transform = new Transform();
+        transform.zoom = 6;
+        transform.resize(500, 500);
+        transform.setMaxBounds(new LngLatBounds([160, -20], [-160, 20]));  //East bound is "smaller"
+
+        const wrap = val => ((val + 360) % 360);
+
+        transform.center = new LngLat(170, 0);
+        t.same(wrap(transform.center.lng), 170);
+
+        transform.center = new LngLat(-170, 0);
+        t.same(wrap(transform.center.lng), wrap(-170));
+
+        transform.center = new LngLat(150, 0);
+        let lng = wrap(transform.center.lng);
+        t.ok(lng > 160);
+        t.ok(lng < 180);
+
+        transform.center = new LngLat(-150, 0);
+        lng = wrap(transform.center.lng);
+        t.ok(lng < 360 - 160);
+        t.ok(lng > 360 - 180);
+
+        t.end();
+    });
+
     t.test('_minZoomForBounds respects latRange and lngRange', (t) => {
         t.test('it returns 0 when latRange and lngRange are undefined', (t) => {
             const transform = new Transform();
