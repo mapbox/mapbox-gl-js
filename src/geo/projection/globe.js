@@ -52,6 +52,10 @@ class GlobeTileTransform {
         return new Aabb(min, max);
     }
 
+    upVector(id: CanonicalTileID, x: Number, y: number): vec3 {
+        return [0, 0, this._tr.pixelsPerMeter];
+    }
+
     _calculateGlobeMatrix() {
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadius = this._worldSize / (2.0 * Math.PI);
@@ -103,37 +107,6 @@ class GlobeTileTransform {
         }
 
         return numFacingAway < 4;
-        // if (numFacingAway === 4) {
-        //     continue;
-        // }
-
-        // // Tile on globe facing away from the camera
-        // if (it.zoom > 1) {
-        //     const fwd = this._camera.forward();
-        //     const [min, max] = tileLatLngCorners(id);
-
-        //     const corners = [
-        //         vec3.transformMat4([], latLngToECEF(min[0], min[1]), globeMatrix),
-        //         vec3.transformMat4([], latLngToECEF(min[0], max[1]), globeMatrix),
-        //         vec3.transformMat4([], latLngToECEF(max[0], min[1]), globeMatrix),
-        //         vec3.transformMat4([], latLngToECEF(max[0], max[1]), globeMatrix)
-        //     ];
-
-        //     let numFacingAway = 0;
-
-        //     for (let i = 0; i < corners.length; i++) {
-        //         const p = corners[i];
-        //         const dir = vec3.sub([], p, globeOrigo);
-
-        //         if (vec3.dot(dir, fwd) >= 0) {
-        //             numFacingAway++;
-        //         }
-        //     }
-
-        //     if (numFacingAway === 4) {
-        //         continue;
-        //     }
-        // }
     }
 };
 
@@ -142,6 +115,24 @@ export default {
     project(lng: number, lat: number) {
         return { x: 0, y: 0, z: 0 };
     },
+
+    projectTilePoint(x: number, y: number, id: CanonicalTileID): {x:number, y: number, z:number} {
+        const tiles = Math.pow(2.0, id.z);
+        //const mx = (p.x / 8192.0 + tiles / 2) / tiles;
+        const mx = (x / 8192.0 + id.x) / tiles;
+        const my = (y / 8192.0 + id.y) / tiles;
+        const lat = latFromMercatorY(my);
+        const lng = lngFromMercatorX(mx);
+        const pos = latLngToECEF(lat, lng);
+
+        // TODO: cached matrices!
+        const bounds = tileBoundsOnGlobe(id);
+        const normalizationMatrix = normalizeECEF(bounds);
+        vec3.transformMat4(pos, pos, normalizationMatrix);
+
+        return {x: pos[0], y: pos[1], z: pos[2]};
+    },
+
     requiresDraping: true,
     supportsWorldCopies: false,
     zAxisUnit: "pixels",

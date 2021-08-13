@@ -89,19 +89,38 @@ class CollisionIndex {
 
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
+        
+        let anchorX = collisionBox.projectedAnchorX; // + up[0] * collisionBox.elevation;
+        let anchorY = collisionBox.projectedAnchorY; // + up[1] * collisionBox.elevation;
+        let anchorZ = collisionBox.projectedAnchorZ; // + up[2] * collisionBox.elevation;
+    
+        // // Apply elevation vector to the anchor point
+        // if (collisionBox.elevation) {
+        //     const up = this.transform.projection
+        //         .createTileTransform(this.transform, this.transform.worldSize)
+        //         .upVector(collisionBox.tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
 
-        // anchorPoint is defined in normalized ecef coordinates when the globe view is enabled
-        // elevation is applied by finding the unit up vector in ecef space and applying it to the anchor coordinate
-        const globeTile = new GlobeTile(collisionBox.tileID.canonical);
-        const upVec = globeTile.upVector(collisionBox.tileAnchorX / 8192.0, collisionBox.tileAnchorY / 8192.0);
+        //     anchorX += up[0] * collisionBox.elevation;
+        //     anchorY += up[1] * collisionBox.elevation;
+        //     anchorZ += up[2] * collisionBox.elevation;
+        // }
 
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID);
 
+        // {
+        //     // anchorPoint is defined in normalized ecef coordinates when the globe view is enabled
+        //     // elevation is applied by finding the unit up vector in ecef space and applying it to the anchor coordinate
+        //     const globeTile = new GlobeTile(collisionBox.tileID.canonical);
+        //     const upVec = globeTile.upVector(collisionBox.tileAnchorX / 8192.0, collisionBox.tileAnchorY / 8192.0);
 
-        const elevatedAnchorX = collisionBox.projectedAnchorX + upVec[0] * collisionBox.elevation;
-        const elevatedAnchorY = collisionBox.projectedAnchorY + upVec[1] * collisionBox.elevation;
-        const elevatedAnchorZ = collisionBox.projectedAnchorZ + upVec[2] * collisionBox.elevation;
+        //     const elevatedAnchorX = collisionBox.projectedAnchorX + upVec[0] * collisionBox.elevation;
+        //     const elevatedAnchorY = collisionBox.projectedAnchorY + upVec[1] * collisionBox.elevation;
+        //     const elevatedAnchorZ = collisionBox.projectedAnchorZ + upVec[2] * collisionBox.elevation;
+            
+        //     const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchorX, elevatedAnchorY, elevatedAnchorZ, collisionBox.tileID);
+        // }
 
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchorX, elevatedAnchorY, elevatedAnchorZ, collisionBox.tileID);
+        // const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation, collisionBox.tileID);
 
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;

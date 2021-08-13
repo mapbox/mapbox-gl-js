@@ -17,6 +17,7 @@ import GlyphAtlas from '../render/glyph_atlas.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import {OverscaledTileID} from './tile_id.js';
 import {PerformanceUtils} from '../util/performance.js';
+import getProjection from '../geo/projection/index.js';
 
 import type {Bucket} from '../data/bucket.js';
 import type Actor from '../util/actor.js';
@@ -45,6 +46,7 @@ class WorkerTile {
     returnDependencies: boolean;
     enableTerrain: boolean;
     isSymbolTile: ?boolean;
+    projection: ?string;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -69,6 +71,7 @@ class WorkerTile {
         this.promoteId = params.promoteId;
         this.enableTerrain = !!params.enableTerrain;
         this.isSymbolTile = params.isSymbolTile;
+        this.projection = params.projection;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
@@ -230,7 +233,8 @@ class WorkerTile {
                             imageAtlas.iconPositions,
                             this.showCollisionBoxes,
                             this.tileID.canonical,
-                            this.tileZoom);
+                            this.tileZoom,
+                            getProjection(this.projection));
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||

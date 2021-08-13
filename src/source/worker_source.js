@@ -38,7 +38,8 @@ export type WorkerTileParameters = RequestedTileParameters & {
     showCollisionBoxes: boolean,
     collectResourceTiming?: boolean,
     returnDependencies?: boolean,
-    enableTerrain?: boolean
+    enableTerrain?: boolean,
+    projection?: string
 };
 
 export type WorkerDEMTileParameters = TileParameters & {
