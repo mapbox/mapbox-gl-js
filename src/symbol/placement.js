@@ -270,7 +270,7 @@ export class Placement {
 
         let clippingData = null;
         assert(!!tile.latestFeatureIndex)
-        if (tile.latestFeatureIndex) {
+        if (needsDynamicClipping && tile.latestFeatureIndex) {
 
             clippingData = {
                 unwrappedTileID,
