@@ -173,6 +173,7 @@ class Transform {
         clone._unmodified = this._unmodified;
         clone._edgeInsets = this._edgeInsets.clone();
         clone._camera = this._camera.clone();
+        clone._projection = getProjection(this._projection.name);
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
         return clone;
@@ -1448,13 +1449,13 @@ class Transform {
         return posMatrix;
     }
 
-    calculateGlobeMatrixForTile(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
-        // transform the globe from reference coordinate space to world space
-        const posMatrix = this.calculateGlobeMatrix(worldSize);
-        const decode = denormalizeECEF(tileBoundsOnGlobe(unwrappedTileID.canonical));
+    // calculateGlobeMatrixForTile(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
+    //     // transform the globe from reference coordinate space to world space
+    //     const posMatrix = this.calculateGlobeMatrix(worldSize);
+    //     const decode = denormalizeECEF(tileBoundsOnGlobe(unwrappedTileID.canonical));
 
-        return mat4.multiply([], posMatrix, decode);
-    }
+    //     return mat4.multiply([], posMatrix, decode);
+    // }
 
     calculateGlobeLabelMatrix(unwrappedTileID: UnwrappedTileID, decode) {
 

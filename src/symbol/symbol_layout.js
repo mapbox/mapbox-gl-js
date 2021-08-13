@@ -28,6 +28,7 @@ import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type {ImagePosition} from '../render/image_atlas.js';
 import type {GlyphPositions} from '../render/glyph_atlas.js';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
+import type {Projection} from '../geo/projection/index.js';
 
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
 import {Aabb} from '../util/primitives.js';
@@ -153,15 +154,15 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
     return (offset[1] !== INVALID_TEXT_OFFSET) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
 }
 
-const reprojectTileAnchor = (p, tileID) => {
-    const tiles = Math.pow(2.0, tileID.z);
-    //const mx = (p.x / 8192.0 + tiles / 2) / tiles;
-    const mx = (p.x / 8192.0 + tileID.x) / tiles;
-    const my = (p.y / 8192.0 + tileID.y) / tiles;
-    const lat = latFromMercatorY(my);
-    const lng = lngFromMercatorX(mx);
-    return latLngToECEF(lat, lng);
-};
+// const reprojectTileAnchor = (p, tileID) => {
+//     const tiles = Math.pow(2.0, tileID.z);
+//     //const mx = (p.x / 8192.0 + tiles / 2) / tiles;
+//     const mx = (p.x / 8192.0 + tileID.x) / tiles;
+//     const my = (p.y / 8192.0 + tileID.y) / tiles;
+//     const lat = latFromMercatorY(my);
+//     const lng = lngFromMercatorX(mx);
+//     return latLngToECEF(lat, lng);
+// };
 
 export function performSymbolLayout(bucket: SymbolBucket,
                              glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}},
@@ -170,7 +171,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
                              imagePositions: {[_: string]: ImagePosition},
                              showCollisionBoxes: boolean,
                              canonical: CanonicalTileID,
-                             tileZoom: number) {
+                             tileZoom: number,
+                             projection: Projection) {
     bucket.createArrays();
 
     const tileSize = 512 * bucket.overscaling;
@@ -333,7 +335,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
             bucket.iconsInText = shapedText ? shapedText.iconsInText : false;
         }
         if (shapedText || shapedIcon) {
-            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, canonical);
+            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, canonical, projection);
         }
     }
 
@@ -373,7 +375,9 @@ function addFeature(bucket: SymbolBucket,
                     layoutTextSize: number,
                     layoutIconSize: number,
                     textOffset: [number, number],
-                    isSDFIcon: boolean, canonical: CanonicalTileID) {
+                    isSDFIcon: boolean,
+                    canonical: CanonicalTileID,
+                    projection: Projection) {
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.
     // bucket calculates text-size at a high zoom level so that all tiles can
@@ -413,7 +417,7 @@ function addFeature(bucket: SymbolBucket,
         }
     }
 
-    const addSymbolAtAnchor = (line, anchor, canonicalId, normalizationMatrix) => {
+    const addSymbolAtAnchor = (line, anchor, canonicalId) => {
         if (anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT) {
             // Symbol layers are drawn across tile boundaries, We filter out symbols
             // outside our tile boundaries (which may be included in vector tile buffers)
@@ -421,9 +425,12 @@ function addFeature(bucket: SymbolBucket,
             return;
         }
 
-        let p = reprojectTileAnchor(anchor, canonicalId);
-        vec3.transformMat4(p, p, normalizationMatrix);
-        const projectedAnchor = new Anchor(p[0], p[1], p[2], 0, undefined);
+        const {x, y, z} = projection.projectTilePoint(anchor.x, anchor.y, canonicalId);
+        const projectedAnchor = new Anchor(x, y, z, 0, undefined);
+
+        //let p = reprojectTileAnchor(anchor, canonicalId);
+        //vec3.transformMat4(p, p, normalizationMatrix);
+        //const projectedAnchor = new Anchor(p[0], p[1], p[2], 0, undefined);
 
         addSymbol(bucket, anchor, projectedAnchor, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
@@ -432,8 +439,8 @@ function addFeature(bucket: SymbolBucket,
             feature, sizes, isSDFIcon, canonical);
     };
 
-    const bounds = tileBoundsOnGlobe(canonical);
-    const normalizationMatrix = normalizeECEF(bounds);
+    // const bounds = tileBoundsOnGlobe(canonical);
+    // const normalizationMatrix = normalizeECEF(bounds);
 
     if (symbolPlacement === 'line') {
         for (const line of clipLine(feature.geometry, 0, 0, EXTENT, EXTENT)) {
@@ -451,7 +458,7 @@ function addFeature(bucket: SymbolBucket,
             for (const anchor of anchors) {
                 const shapedText = defaultShaping;
                 if (!shapedText || !anchorIsTooClose(bucket, shapedText.text, textRepeatDistance, anchor)) {
-                    addSymbolAtAnchor(line, anchor, canonical, normalizationMatrix);
+                    addSymbolAtAnchor(line, anchor, canonical);
                 }
             }
         }
@@ -468,7 +475,7 @@ function addFeature(bucket: SymbolBucket,
                     glyphSize,
                     textMaxBoxScale);
                 if (anchor) {
-                    addSymbolAtAnchor(line, anchor, canonical, normalizationMatrix);
+                    addSymbolAtAnchor(line, anchor, canonical);
                 }
             }
         }

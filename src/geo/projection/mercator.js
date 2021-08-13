@@ -55,6 +55,10 @@ class MercatorTileTransform {
     cullTile(aabb: Aabb, id: CanonicalTileID, camera: FreeCamera): boolean {
         return true;
     }
+
+    upVector(id: CanonicalTileID, x: Number, y: number): vec3 {
+        return [0, 0, this._tr.pixelsPerMeter];
+    }
 };
 
 export default {
@@ -65,6 +69,11 @@ export default {
         const y = mercatorYfromLat(lat);
         return {x, y, z: 0};
     },
+
+    projectTilePoint(x: number, y: number, id: CanonicalTileID): {x:number, y: number, z:number} {
+        return { x, y, z: 0 };
+    },
+
     requiresDraping: false,
     supportsWorldCopies: true,
     zAxisUnit: "meters",
