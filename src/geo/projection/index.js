@@ -9,7 +9,11 @@ export type Projection = {
     //unproject: (x: number, y: number) => LngLat
 
     requiresDraping: boolean,
-    supportsWorldCopies: boolean
+    supportsWorldCopies: boolean,
+    supportsWorldCopies: boolean,
+    zAxisUnit: "meters" | "pixels",
+
+    pixelsPerMeter: (lat: number, worldSize: number) => Number,    
 };
 
 const projections = {

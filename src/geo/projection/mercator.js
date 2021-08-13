@@ -1,5 +1,5 @@
 // @flow
-import {mercatorXfromLng, mercatorYfromLat, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
+import {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from '../mercator_coordinate.js';
 import LngLat from '../lng_lat.js';
 
 export default {
@@ -12,6 +12,11 @@ export default {
     },
     requiresDraping: false,
     supportsWorldCopies: true,
+    zAxisUnit: "meters",
+
+    pixelsPerMeter(lat: number, worldSize: number) {
+        return mercatorZfromAltitude(1, lat) * worldSize;
+    }
 //    unproject(x: number, y: number) {
 //        return new LngLat(
 //            lngFromMercatorX(x),
