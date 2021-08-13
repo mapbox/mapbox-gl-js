@@ -1,3 +1,10 @@
+## 2.4.1
+
+### 🐞 Bug fixes
+
+* Fix a bug where Safari didn't properly resize the map when entering full screen mode. [#10905](https://github.com/mapbox/mapbox-gl-js/pull/10905)
+* Remove `engines` field from `package.json` to allow installing `mapbox-gl` with Yarn on Node v12 and earlier. [#10904](https://github.com/mapbox/mapbox-gl-js/issues/10914)
+
 ## 2.4.0
 
 ### ✨ Features and improvements

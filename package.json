@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "license": "SEE LICENSE IN LICENSE.txt",
@@ -9,9 +9,6 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
-  },
-  "engines": {
-    "node": ">=14.15.4"
   },
   "dependencies": {
     "@mapbox/geojson-rewind": "^0.5.0",
