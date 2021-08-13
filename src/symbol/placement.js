@@ -169,7 +169,6 @@ type TileLayerParameters = {
     bucket: SymbolBucket,
     layout: any,
     posMatrix: mat4,
-    globeMatrix: mat4,
     textLabelPlaneMatrix: mat4,
     labelToScreenMatrix: mat4,
     scale: number,
@@ -244,9 +243,6 @@ export class Placement {
 
         const posMatrix = this.transform.calculateProjMatrix(unwrappedTileID);
 
-        const globeMatrix = this.transform.calculateGlobeMatrix(this.transform.worldSize);
-        mat4.multiply(globeMatrix, this.transform.projMatrix, globeMatrix);
-
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
 
@@ -303,7 +299,6 @@ export class Placement {
             bucket: symbolBucket,
             layout,
             posMatrix,
-            globeMatrix,
             textLabelPlaneMatrix,
             labelToScreenMatrix,
             clippingData,
@@ -387,7 +382,6 @@ export class Placement {
             bucket,
             layout,
             posMatrix,
-            globeMatrix,
             textLabelPlaneMatrix,
             labelToScreenMatrix,
             clippingData,
@@ -667,7 +661,6 @@ export class Placement {
                         bucket.glyphOffsetArray,
                         fontSize,
                         posMatrix,
-                        globeMatrix,
                         textLabelPlaneMatrix,
                         labelToScreenMatrix,
                         showCollisionBoxes,

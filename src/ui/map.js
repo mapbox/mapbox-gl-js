@@ -2402,7 +2402,6 @@ class Map extends Camera {
             return;
         }
 
-        console.log(shouldEnable);
         this._lazyInitEmptyStyle();
         this.style.setTerrain(options);
         this._averageElevationLastSampledAt = -Infinity;

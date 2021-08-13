@@ -684,31 +684,33 @@ class Transform {
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation ? z : 0;
         
+        const tileTransform = this._projection.createTileTransform(this, numTiles);
+
         // Compute size of the globe in tiles, ie. worldSize / tileSize
         //const radiusInTiles = numTiles / (2.0 * Math.PI);
-        const globeMatrix = this.calculateGlobeMatrix(numTiles);
-        const globeOrigo = vec3.transformMat4([], [0, 0, 0], globeMatrix);
+        //const globeMatrix = this.calculateGlobeMatrix(numTiles);
+        //const globeOrigo = vec3.transformMat4([], [0, 0, 0], globeMatrix);
 
-        // Computes bounding box for a tile that is oriented properly on the screen.
-        // Better way would be to create frustum that is transformed once into the coordinate space of the globe
-        const orientedGlobeBoundsForTile = (id) => {
-            const aabb = tileBoundsOnGlobe(id);
+        // // Computes bounding box for a tile that is oriented properly on the screen.
+        // // Better way would be to create frustum that is transformed once into the coordinate space of the globe
+        // const orientedGlobeBoundsForTile = (id) => {
+        //     const aabb = tileBoundsOnGlobe(id);
 
-            // Transform corners of the aabb to the correct space
-            const corners = aabb.getCorners();
+        //     // Transform corners of the aabb to the correct space
+        //     const corners = aabb.getCorners();
 
-            const mx = Number.MAX_VALUE;
-            const max = [-mx, -mx, -mx];
-            const min = [mx, mx, mx];
+        //     const mx = Number.MAX_VALUE;
+        //     const max = [-mx, -mx, -mx];
+        //     const min = [mx, mx, mx];
 
-            for (let i = 0; i < corners.length; i++) {
-                vec3.transformMat4(corners[i], corners[i], globeMatrix);
-                vec3.min(min, min, corners[i]);
-                vec3.max(max, max, corners[i]);
-            }
+        //     for (let i = 0; i < corners.length; i++) {
+        //         vec3.transformMat4(corners[i], corners[i], globeMatrix);
+        //         vec3.min(min, min, corners[i]);
+        //         vec3.max(max, max, corners[i]);
+        //     }
 
-            return new Aabb(min, max);
-        };
+        //     return new Aabb(min, max);
+        // };
 
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).
@@ -720,11 +722,14 @@ class Transform {
             return {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
-                aabb: new Aabb([wrap * numTiles, 0, min], [(wrap + 1) * numTiles, numTiles, max]),
-                globeAabb: orientedGlobeBoundsForTile(new CanonicalTileID(0, 0, 0)),
+                //aabb: new Aabb([wrap * numTiles, 0, min], [(wrap + 1) * numTiles, numTiles, max]),
+                aabb: tileTransform.tileAabb(new UnwrappedTileID(wrap, new CanonicalTileID(0, 0, 0)), z, min, max),
+                //aabb: orientedGlobeBoundsForTile(new CanonicalTileID(0, 0, 0)),
                 zoom: 0,
                 x: 0,
                 y: 0,
+                minZ: min,
+                maxZ: max,
                 wrap,
                 fullyVisible: false
             };
@@ -745,6 +750,8 @@ class Transform {
                 aabb.min[2] = minmax.min;
                 aabb.max[2] = minmax.max;
                 aabb.center[2] = (aabb.min[2] + aabb.max[2]) / 2;
+                it.minZ = minmax.min;
+                it.maxZ = minmax.max;
             } else {
                 it.shouldSplit = shouldSplit(it);
                 if (!it.shouldSplit) {
@@ -752,6 +759,7 @@ class Transform {
                     // assume center elevation. This covers ground to horizon and prevents
                     // loading unnecessary tiles until DEM cover is fully loaded.
                     aabb.min[2] = aabb.max[2] = aabb.center[2] = this._centerAltitude;
+                    it.minZ = it.maxZ = this._centerAltitude;
                 }
             }
         };
@@ -825,8 +833,8 @@ class Transform {
 
             // Visibility of a tile is not required if any of its ancestor if fully inside the frustum
             if (!fullyVisible) {
-                //const intersectResult = it.aabb.intersects(cameraFrustum);
-                const intersectResult = it.globeAabb.intersects(cameraFrustum);
+                const intersectResult = it.aabb.intersects(cameraFrustum);
+                //const intersectResult = it.globeAabb.intersects(cameraFrustum);
 
                 if (intersectResult === 0)
                     continue;
@@ -834,32 +842,12 @@ class Transform {
                 fullyVisible = intersectResult === 2;
             }
 
-            // Tile on globe facing away from the camera
-            if (it.zoom > 1) {
-                const fwd = this._camera.forward();
-                const [min, max] = tileLatLngCorners(new CanonicalTileID(it.zoom, x, y));
+            // Perform extra culling specific to the projection mode.
+            // For example the globe view could perform additional backface culling
+            const id = new CanonicalTileID(it.zoom, x, y);
 
-                const corners = [
-                    vec3.transformMat4([], latLngToECEF(min[0], min[1]), globeMatrix),
-                    vec3.transformMat4([], latLngToECEF(min[0], max[1]), globeMatrix),
-                    vec3.transformMat4([], latLngToECEF(max[0], min[1]), globeMatrix),
-                    vec3.transformMat4([], latLngToECEF(max[0], max[1]), globeMatrix)
-                ];
-
-                let numFacingAway = 0;
-
-                for (let i = 0; i < corners.length; i++) {
-                    const p = corners[i];
-                    const dir = vec3.sub([], p, globeOrigo);
-
-                    if (vec3.dot(dir, fwd) >= 0) {
-                        numFacingAway++;
-                    }
-                }
-
-                if (numFacingAway === 4) {
-                    continue;
-                }
+            if (!tileTransform.cullTile(it.aabb, id, this._camera)) {
+                continue;
             }
 
             // Have we reached the target depth or is the tile too far away to be any split further?
@@ -882,12 +870,14 @@ class Transform {
                 const childX = (x << 1) + (i % 2);
                 const childY = (y << 1) + (i >> 1);
 
-                const aabb = it.aabb.quadrant(i);
-                const globeAabb = orientedGlobeBoundsForTile(new CanonicalTileID(it.zoom + 1, childX, childY));
-                const child = {aabb, globeAabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined};
+                //const aabb = it.aabb.quadrant(i);
+                const aabb = tileTransform.tileAabb(new UnwrappedTileID(it.wrap, new CanonicalTileID(it.zoom + 1, childX, childY)), z, it.minZ, it.maxZ);
+
+                //const aabb = orientedGlobeBoundsForTile(new CanonicalTileID(it.zoom + 1, childX, childY));
+                const child = {aabb, /*globeAabb, */zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined, minZ: it.minZ, maxZ: it.maxZ};
                 if (useElevationData) {
                     child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
-                    getAABBFromElevation(child);
+                    //getAABBFromElevation(child);
                 }
                 stack.push(child);
             }
@@ -1393,15 +1383,16 @@ class Transform {
     }
 
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
-        const canonical = unwrappedTileID.canonical;
-        const scale = worldSize / this.zoomScale(canonical.z);
-        const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
+        return this._projection.createTileTransform(this, worldSize).createTileMatrix(unwrappedTileID);
+        // const canonical = unwrappedTileID.canonical;
+        // const scale = worldSize / this.zoomScale(canonical.z);
+        // const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
 
-        const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
-        mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
+        // const posMatrix = mat4.identity(new Float64Array(16));
+        // mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
+        // mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 
-        return posMatrix;
+        // return posMatrix;
     }
 
     calculateDistanceTileData(unwrappedTileID: UnwrappedTileID): FeatureDistanceData {
@@ -1518,9 +1509,9 @@ class Transform {
      * @private
      */
     calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
-        const matrix = this.calculateGlobeMatrixForTile(unwrappedTileID, this.worldSize);
-        mat4.multiply(matrix, this.projMatrix, matrix);
-        return matrix;
+        // const matrix = this.calculateGlobeMatrixForTile(unwrappedTileID, this.worldSize);
+        // mat4.multiply(matrix, this.projMatrix, matrix);
+        // return matrix;
         const projMatrixKey = unwrappedTileID.key;
         const cache = aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
         if (cache[projMatrixKey]) {
@@ -1790,13 +1781,8 @@ class Transform {
         // Z-axis uses pixel coordinates when globe mode is enabled
         const pixelsPerMeter = this.pixelsPerMeter;
         
-        const a = mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
-        const b = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
-
-        console.log(a + " " + b);
-
-        //this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
-        this._projectionScaler = mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
+        this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
+        //this._projectionScaler = mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * this._projectionScaler;
 
         this._updateCameraState();
@@ -1835,9 +1821,9 @@ class Transform {
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
         this._nearZ = this.height / 50;
 
-        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, /*pixelsPerMeter*/ 1.0);
-        //const zUnit = this._projection.zAxisUnit === "meters" ? pixelsPerMeter : 1.0;
-        //const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
+        //const worldToCamera = this._camera.getWorldToCamera(this.worldSize, /*pixelsPerMeter*/ 1.0);
+        const zUnit = this._projection.zAxisUnit === "meters" ? pixelsPerMeter : 1.0;
+        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
 
         // Apply center of perspective offset

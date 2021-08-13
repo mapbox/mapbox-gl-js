@@ -36,9 +36,6 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
     let circleCount = 0;
     let circleOffset = 0;
 
-    const globeMatrix = painter.transform.calculateGlobeMatrix(painter.transform.worldSize);
-    mat4.multiply(globeMatrix, painter.transform.projMatrix, globeMatrix);
-
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
         const tile = sourceCache.getTile(coord);

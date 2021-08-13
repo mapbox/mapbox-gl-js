@@ -4,9 +4,138 @@ import {mat4, vec3} from 'gl-matrix';
 
 import {Aabb} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
-import {degToRad} from '../../util/util.js';
-import {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude} from '../mercator_coordinate.js';
+import {degToRad, clamp} from '../../util/util.js';
+import {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
 import CanonicalTileID, { UnwrappedTileID } from '../../source/tile_id.js';
+
+class GlobeTileTransform {
+    _tr: Transform;
+    _worldSize: number;
+    _globeMatrix: Float64Array;
+
+    constructor(tr: Transform, worldSize: number) {
+        this._tr = tr;
+        this._worldSize = worldSize;
+
+        this._globeMatrix = this._calculateGlobeMatrix();
+    }
+
+    createTileMatrix(id: UnwrappedTileID): Float64Array {
+        const decode = denormalizeECEF(tileBoundsOnGlobe(id.canonical));
+        return mat4.multiply([], this._globeMatrix, decode);
+    }
+
+    createRenderTileMatrix(id: UnwrappedTileID): Float64Array {
+
+    }
+
+    createLabelPlaneMatrix(id: UnwrappedTileID): Float64Array {
+
+    }
+
+    tileAabb(id: UnwrappedTileID, z: number, minZ: number, maxZ: number) {
+        const aabb = tileBoundsOnGlobe(id.canonical);
+
+        // Transform corners of the aabb to the correct space
+        const corners = aabb.getCorners();
+
+        const mx = Number.MAX_VALUE;
+        const max = [-mx, -mx, -mx];
+        const min = [mx, mx, mx];
+
+        for (let i = 0; i < corners.length; i++) {
+            vec3.transformMat4(corners[i], corners[i], this._globeMatrix);
+            vec3.min(min, min, corners[i]);
+            vec3.max(max, max, corners[i]);
+        }
+
+        return new Aabb(min, max);
+    }
+
+    _calculateGlobeMatrix() {
+        const localRadius = EXTENT / (2.0 * Math.PI);
+        const wsRadius = this._worldSize / (2.0 * Math.PI);
+        const s = wsRadius / localRadius;
+
+        const lat = clamp(this._tr.center.lat, -this._tr.maxValidLatitude, this._tr.maxValidLatitude);
+        const x = mercatorXfromLng(this._tr.center.lng) * this._worldSize;
+        const y = mercatorYfromLat(lat) * this._worldSize;
+
+        // transform the globe from reference coordinate space to world space
+        const posMatrix = mat4.identity(new Float64Array(16));
+        mat4.translate(posMatrix, posMatrix, [x, y, -wsRadius]);
+        mat4.scale(posMatrix, posMatrix, [s, s, s]);
+        mat4.rotateX(posMatrix, posMatrix, degToRad(-this._tr._center.lat));
+        mat4.rotateY(posMatrix, posMatrix, degToRad(-this._tr._center.lng));
+
+        return posMatrix;
+    }
+
+    cullTile(aabb: Aabb, id: CanonicalTileID, camera: FreeCamera): boolean {
+
+        // Perform backface culling to exclude tiles facing away from the camera
+        // Exclude zoom levels 0 and 1 as probability of a tile facing away is small
+        if (id.z <= 1) {
+            return true;
+        }
+
+        const fwd = camera.forward();
+        const [min, max] = tileLatLngCorners(id);
+
+        const corners = [
+            vec3.transformMat4([], latLngToECEF(min[0], min[1]), this._globeMatrix),
+            vec3.transformMat4([], latLngToECEF(min[0], max[1]), this._globeMatrix),
+            vec3.transformMat4([], latLngToECEF(max[0], min[1]), this._globeMatrix),
+            vec3.transformMat4([], latLngToECEF(max[0], max[1]), this._globeMatrix)
+        ];
+
+        const globeOrigo = vec3.transformMat4([], [0, 0, 0], this._globeMatrix);
+
+        let numFacingAway = 0;
+
+        for (let i = 0; i < corners.length; i++) {
+            const p = corners[i];
+            const dir = vec3.sub([], p, globeOrigo);
+
+            if (vec3.dot(dir, fwd) >= 0) {
+                numFacingAway++;
+            }
+        }
+
+        return numFacingAway < 4;
+        // if (numFacingAway === 4) {
+        //     continue;
+        // }
+
+        // // Tile on globe facing away from the camera
+        // if (it.zoom > 1) {
+        //     const fwd = this._camera.forward();
+        //     const [min, max] = tileLatLngCorners(id);
+
+        //     const corners = [
+        //         vec3.transformMat4([], latLngToECEF(min[0], min[1]), globeMatrix),
+        //         vec3.transformMat4([], latLngToECEF(min[0], max[1]), globeMatrix),
+        //         vec3.transformMat4([], latLngToECEF(max[0], min[1]), globeMatrix),
+        //         vec3.transformMat4([], latLngToECEF(max[0], max[1]), globeMatrix)
+        //     ];
+
+        //     let numFacingAway = 0;
+
+        //     for (let i = 0; i < corners.length; i++) {
+        //         const p = corners[i];
+        //         const dir = vec3.sub([], p, globeOrigo);
+
+        //         if (vec3.dot(dir, fwd) >= 0) {
+        //             numFacingAway++;
+        //         }
+        //     }
+
+        //     if (numFacingAway === 4) {
+        //         continue;
+        //     }
+        // }
+    }
+};
 
 export default {
     name: 'globe',
@@ -19,7 +148,33 @@ export default {
 
     pixelsPerMeter(lat: number, worldSize: number) {
         return mercatorZfromAltitude(1, 0) * worldSize;
-    }    
+    },
+
+    createTileTransform(tr: Transform, worldSize: number): TileTransform {
+        return new GlobeTileTransform(tr, worldSize);
+    },
+
+    tileAabb(id: UnwrappedTileID, z: number, min: number, max: number) {
+
+        // const aabb = tileBoundsOnGlobe(id);
+
+        // // Transform corners of the aabb to the correct space
+        // const corners = aabb.getCorners();
+
+        // const mx = Number.MAX_VALUE;
+        // const max = [-mx, -mx, -mx];
+        // const min = [mx, mx, mx];
+
+        // for (let i = 0; i < corners.length; i++) {
+        //     vec3.transformMat4(corners[i], corners[i], globeMatrix);
+        //     vec3.min(min, min, corners[i]);
+        //     vec3.max(max, max, corners[i]);
+        // }
+
+        // return new Aabb(min, max);
+
+        return null;
+    },
 }
 
 export const globeRefRadius = EXTENT / Math.PI / 2.0;
