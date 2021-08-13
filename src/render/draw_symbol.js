@@ -18,6 +18,7 @@ import ONE_EM from '../symbol/one_em.js';
 import {evaluateVariableOffset} from '../symbol/symbol_layout.js';
 import Tile from '../source/tile.js';
 import { GlobeTile } from '../geo/projection/globe.js';
+import {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 
 import {
     symbolIconUniformValues,
@@ -399,7 +400,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     for (const segmentState of tileRenderState) {
         const state = segmentState.state;
 
-        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv}, new GlobeTile(state.tile.tileID.canonical, pitchWithMap ? tr.pixelsPerMeter: undefined));
+        const pixelsPerMeter = mercatorZfromAltitude(1, tr.center.lat) * tr.worldSize;
+        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv}, new GlobeTile(state.tile.tileID.canonical, pitchWithMap ? pixelsPerMeter: undefined));
         context.activeTexture.set(gl.TEXTURE0);
         state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
         if (state.atlasTextureIcon) {

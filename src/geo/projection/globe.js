@@ -15,6 +15,11 @@ export default {
     },
     requiresDraping: true,
     supportsWorldCopies: false,
+    zAxisUnit: "pixels",
+
+    pixelsPerMeter(lat: number, worldSize: number) {
+        return mercatorZfromAltitude(1, 0) * worldSize;
+    }    
 }
 
 export const globeRefRadius = EXTENT / Math.PI / 2.0;
