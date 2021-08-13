@@ -314,9 +314,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(new Float32Array(16), labelPlaneMatrix) : identityMat4;
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
 
-        const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
-        mat4.multiply(globeMatrix, painter.transform.projMatrix, globeMatrix);
-
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&
             hasVariableAnchors &&

@@ -136,7 +136,6 @@ class CollisionIndex {
                           glyphOffsetArray: GlyphOffsetArray,
                           fontSize: number,
                           posMatrix: mat4,
-                          globeMatrix: mat4,
                           labelPlaneMatrix: mat4,
                           labelToScreenMatrix?: mat4,
                           showCollisionCircles: boolean,
