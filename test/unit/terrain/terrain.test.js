@@ -664,8 +664,6 @@ test('Raycast projection 2D/3D', t => {
         }
     });
 
-    // map.transform._horizonShift = 0;
-
     map.once('style.load', () => {
         setMockElevationTerrain(map, zeroDem, TILE_SIZE);
         map.once('render', () => {
@@ -695,8 +693,8 @@ test('Raycast projection 2D/3D', t => {
             t.ok(nearlyEquals(coord2D, coord3D, 0.001));
 
             // Screen points above horizon line should return locations on the horizon line.
-            const latLng3D = transform.pointLocation3D(skyPoint, true);
-            const latLng2D = transform.pointLocation(skyPoint, true);
+            const latLng3D = transform.pointLocation3D(skyPoint);
+            const latLng2D = transform.pointLocation(skyPoint);
 
             t.same(latLng2D.lng, latLng3D.lng);
             // Small differences in screen position, close to the horizon, becomes a large distance in latitude.
@@ -1428,7 +1426,7 @@ test('terrain getBounds', (t) => {
             callback(null);
         };
 
-        t.deepEqual(map.getBounds().getCenter().lng.toFixed(10), 29.8824416141, 'horizon, no terrain getBounds');
+        t.deepEqual(map.getBounds().getCenter().lng.toFixed(7), 0, 'horizon, no terrain getBounds');
         t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), -42.5358013246, 'horizon, no terrain getBounds');
 
         map.setTerrain({"source": "mapbox-dem"});
@@ -1447,53 +1445,82 @@ test('terrain getBounds', (t) => {
             });
         });
     });
-});
 
-function toFixed(bounds) {
-    const n = 9;
-    return [
-        [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
-        [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
-    ];
-}
+    test('recognizes padding', (t) => {
+        const style = createStyle();
+        // const map = createMap(t, {style, zoom: 1, bearing: 45, skipCSSStub: true});
+        const map = createMap(t, {style, zoom: 1, bearing: 45});
 
-test('getBounds recognizes padding', (t) => {
-    const style = createStyle();
-    // const map = createMap(t, {style, zoom: 1, bearing: 45, skipCSSStub: true});
-    const map = createMap(t, {style, zoom: 1, bearing: 45});
+        map.setPadding({
+            left: 100,
+            right: 10,
+            top: 10,
+            bottom: 10
+        });
+        map.setCenter([0, 0]);
 
-    map.setPadding({
-        left: 100,
-        right: 10,
-        top: 10,
-        bottom: 10
-    });
-    map.setCenter([0, 0]);
+        map.on('style.load', () => {
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+            map.once('render', () => {
+                t.ok(map.transform.elevation);
+                const padded = toFixed(map.getBounds().toArray());
+                map.setPadding({
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0
+                });
+                const unpadded = toFixed(map.getBounds().toArray());
+                t.notSame(padded, unpadded);
+                t.same(
+                    toFixed([[-33.5599507477, -31.7907658998], [33.5599507477, 31.7907658998]]),
+                    padded
+                );
 
-    map.on('style.load', () => {
-        setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-        map.once('render', () => {
-            t.ok(map.transform.elevation);
-            const padded = toFixed(map.getBounds().toArray());
-            map.setPadding({
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0
+                t.same(
+                    toFixed([[-49.7184455522, -44.4454158060], [49.7184455522, 44.4454158060]]),
+                    unpadded
+                );
+                t.end();
             });
-            const unpadded = toFixed(map.getBounds().toArray());
-            t.notSame(padded, unpadded);
-            t.same(
-                toFixed([[-33.5599507477, -31.7907658998], [33.5599507477, 31.7907658998]]),
-                padded
-            );
-
-            t.same(
-                toFixed([[-49.7184455522, -44.4454158060], [49.7184455522, 44.4454158060]]),
-                unpadded
-            );
-            t.end();
         });
     });
+
+    test('Does not overflow at poles', (t) => {
+        const map = createMap(t,
+            {zoom: 2, center: [0, 90], pitch: 80});
+        map.on('style.load', () => {
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+            map.once('render', () => {
+                t.ok(map.transform.elevation);
+                const bounds = map.getBounds();
+                t.same(bounds.getNorth().toFixed(6), map.transform.maxValidLatitude);
+                t.same(
+                    toFixed(bounds.toArray()),
+                    toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]])
+                );
+
+                map.setBearing(180);
+                map.setCenter({lng: 0, lat: -90});
+
+                const sBounds = map.getBounds();
+                t.same(sBounds.getSouth().toFixed(6), -map.transform.maxValidLatitude);
+                t.same(
+                    toFixed(sBounds.toArray()),
+                    toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]])
+                );
+                t.end();
+            });
+        });
+    });
+
+    function toFixed(bounds) {
+        const n = 9;
+        return [
+            [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
+            [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
+        ];
+    }
+
 });
 
