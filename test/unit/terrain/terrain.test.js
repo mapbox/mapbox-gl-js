@@ -1435,7 +1435,7 @@ test('terrain getBounds', (t) => {
 
             // As tiles above center are elevated, center of bounds is closer to camera.
             t.deepEqual(map.getBounds().getCenter().lng.toFixed(4), 0, 'horizon terrain getBounds');
-            t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), 0, 'horizon terrain getBounds');
+            t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), -42.5482497247, 'horizon terrain getBounds');
 
             map.setPitch(0);
             map.once('render', () => {
@@ -1448,7 +1448,6 @@ test('terrain getBounds', (t) => {
 
     test('recognizes padding', (t) => {
         const style = createStyle();
-        // const map = createMap(t, {style, zoom: 1, bearing: 45, skipCSSStub: true});
         const map = createMap(t, {style, zoom: 1, bearing: 45});
 
         map.setPadding({
