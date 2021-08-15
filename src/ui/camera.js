@@ -1124,7 +1124,9 @@ class Camera extends Evented {
             easing: defaultEasing
         }, options);
 
-        if (options.animate === false || (!options.essential && browser.prefersReducedMotion)) options.duration = 0;
+        if (options.animate === false || (!options.essential && browser.prefersReducedMotion)) {
+            options.duration = 100;
+        }
 
         const tr = this.transform,
             startZoom = this.getZoom(),
