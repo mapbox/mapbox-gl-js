@@ -17,11 +17,11 @@ import { FreeCamera } from '../../ui/free_camera.js';
 
 export type TileTransform = {
 
+    createLabelPlaneMatrix: (posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits) => mat4,
+
+    createGlCoordMatrix: (posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits) => mat4,
+
     createTileMatrix: (id: UnwrappedTileID) => Float64Array,
-
-    createRenderTileMatrix: (id: UnwrappedTileID) => Float64Array,
-
-    createLabelPlaneMatrix: (id: UnwrappedTileID) => Float64Array,
 
     tileAabb: (id: UnwrappedTileID, z: number, min: number, max: number) => Aabb,
 
@@ -52,6 +52,8 @@ const projections = {
     mercator
 };
 
-export default function getProjection(name: string) {
+export default function getProjection(name: ?string) {
+    if (!name || !(name in projections))
+        return projections.mercator;
     return projections[name];
 }

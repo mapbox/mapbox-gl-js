@@ -126,7 +126,7 @@ class Style extends Evented {
     light: Light;
     terrain: ?Terrain;
     fog: ?Fog;
-
+    
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
     _layers: {[_: string]: StyleLayer};

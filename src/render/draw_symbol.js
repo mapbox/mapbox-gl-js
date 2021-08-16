@@ -35,6 +35,7 @@ import type {OverscaledTileID} from '../source/tile_id.js';
 import type {UniformValues} from './uniform_binding.js';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program.js';
 import type {CrossTileID, VariableOffset} from '../symbol/placement.js';
+import extent from '../data/extent.js';
 
 export default drawSymbols;
 
@@ -119,6 +120,7 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
     const tr = painter.transform;
     const rotateWithMap = rotationAlignment === 'map';
     const pitchWithMap = pitchAlignment === 'map';
+    const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -129,7 +131,7 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
 
         const pixelToTileScale = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.unwrappedTileID, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale);
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
 
         if (size) {
@@ -139,7 +141,8 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
             const globeTile = new GlobeTile(coord.canonical);
             const getElevation = elevation ? (p => {
                 const e = elevation.getAtTileOffset(coord, p.x, p.y);
-                const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
+                //const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
+                const up = tileTransform.upVector(coord.canonical, p.x, p.y);
                 vec3.scale(up, up, e);
                 return up;
             }) : (_ => [0, 0, 0]);
@@ -240,6 +243,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
+    const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
     const rotateWithMap = rotationAlignment === 'map';
     const pitchWithMap  = pitchAlignment === 'map';
@@ -309,10 +313,10 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         }
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, s);
         // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
         const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(new Float32Array(16), labelPlaneMatrix) : identityMat4;
-        const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.projMatrix, tile.tileID.toUnwrapped(), pitchWithMap, rotateWithMap, painter.transform, s);
+        const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, s);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&
@@ -321,10 +325,11 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (alongLine) {
             const elevation = tr.elevation;
-            const globeTile = new GlobeTile(coord.canonical);
+            //const globeTile = new GlobeTile(coord.canonical);
             const getElevation = elevation ? (p => {
                 const e = elevation.getAtTileOffset(coord, p.x, p.y);
-                const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
+                //const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
+                const up = tileTransform.upVector(coord.canonical, p.x, p.y);
                 vec3.scale(up, up, e);
                 return up;
             }) : (_ => [0, 0, 0]);

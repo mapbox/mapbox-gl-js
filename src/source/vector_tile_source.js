@@ -229,8 +229,7 @@ class VectorTileSource extends Evented implements Source {
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,
             promoteId: this.promoteId,
-            isSymbolTile: tile.isSymbolTile,
-            projection: this.map.transform.projection.name
+            isSymbolTile: tile.isSymbolTile
         };
         params.request.collectResourceTiming = this._collectResourceTiming;
 
