@@ -895,7 +895,7 @@ class Transform {
     zoomScale(zoom: number) { return Math.pow(2, zoom); }
     scaleZoom(scale: number) { return Math.log(scale) / Math.LN2; }
 
-    // LngLat to MercatorCoordinate
+    // Transform from LngLat to Point in world coordinates [-180, 180] x [90, -90] --> [0, this.worldSize] x [0, this.worldSize]
     project(lnglat: LngLat) {
         const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
         return new Point(
@@ -903,11 +903,12 @@ class Transform {
                 mercatorYfromLat(lat) * this.worldSize);
     }
 
-    // MercatorCoordinate to LngLat
+    // Transform from Point in world coordinates to LngLat [0, this.worldSize] x [0, this.worldSize] --> [-180, 180] x [90, -90]
     unproject(point: Point): LngLat {
         return new MercatorCoordinate(point.x / this.worldSize, point.y / this.worldSize).toLngLat();
     }
 
+    // Point at center in world coordinates.
     get point(): Point { return this.project(this.center); }
 
     setLocationAtPoint(lnglat: LngLat, point: Point) {
@@ -1253,7 +1254,10 @@ class Transform {
      */
     setMaxBounds(bounds?: LngLatBounds) {
         if (bounds) {
-            this.lngRange = [bounds.getWest(), bounds.getEast()];
+            const eastBound = bounds.getEast();
+            const westBound = bounds.getWest();
+            // Unwrap bounds if they cross the 180th meridian
+            this.lngRange = [westBound, eastBound > westBound ? eastBound : eastBound + 360];
             this.latRange = [bounds.getSouth(), bounds.getNorth()];
             this._constrain();
         } else {
@@ -1398,11 +1402,9 @@ class Transform {
 
         this._constraining = true;
 
-        let minY = -90;
-        let maxY = 90;
-        let minX = -180;
-        let maxX = 180;
-        let sy, sx, x2, y2;
+        let minY = Infinity;
+        let maxY = -Infinity;
+        let minX, maxX, sy, sx, y2;
         const size = this.size,
             unmodified = this._unmodified;
 
@@ -1443,18 +1445,27 @@ class Transform {
             if (y + h2 > maxY) y2 = maxY - h2;
         }
 
-        if (this.lngRange) {
-            const x = point.x,
-                w2 = size.x / 2;
+        let x = point.x;
 
-            if (x - w2 < minX) x2 = minX + w2;
-            if (x + w2 > maxX) x2 = maxX - w2;
+        if (this.lngRange) {
+            // Translate to positive positions with the map center in the center position.
+            // This ensures that the map snaps to the correct edge.
+            const shift = this.worldSize / 2 - (minX + maxX) / 2;
+            x = (x + shift + this.worldSize) % this.worldSize;
+            minX += shift;
+            maxX += shift;
+
+            const w2 = size.x / 2;
+            if (x - w2 < minX) x = minX + w2;
+            if (x + w2 > maxX) x = maxX - w2;
+
+            x -= shift;
         }
 
         // pan the map if the screen goes off the range
-        if (x2 !== undefined || y2 !== undefined) {
+        if (x !== point.x || y2 !== undefined) {
             this.center = this.unproject(new Point(
-                x2 !== undefined ? x2 : point.x,
+                x,
                 y2 !== undefined ? y2 : point.y));
         }
 

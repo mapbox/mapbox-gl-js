@@ -43,6 +43,7 @@ export class MapMouseEvent extends Event {
      */
     type: 'mousedown'
         | 'mouseup'
+        | 'preclick'
         | 'click'
         | 'dblclick'
         | 'mousemove'
@@ -574,6 +575,17 @@ export type MapEvent =
      * @see [Example: Display a popup on over](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
      */
     | 'mousemove'
+
+    /**
+     * Triggered when a click event occurs and is fired before the click event.
+     * Primarily implemented to ensure closeOnClick for pop-ups is fired before any other listeners.
+     *
+     * @event preclick
+     * @memberof Map
+     * @instance
+     * @type {MapMouseEvent}
+     */
+     | 'preclick'
 
     /**
      * Fired when a pointing device (usually a mouse) is pressed and released at the same point on the map.

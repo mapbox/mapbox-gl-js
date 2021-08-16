@@ -1088,6 +1088,7 @@ class Map extends Camera {
      * | [`mousemove`](#map.event:mousemove)                       | yes                       |
      * | [`mouseenter`](#map.event:mouseenter)                     | yes (required)            |
      * | [`mouseleave`](#map.event:mouseleave)                     | yes (required)            |
+     * | [`preclick`](#map.event:preclick)                         |                           |
      * | [`click`](#map.event:click)                               | yes                       |
      * | [`dblclick`](#map.event:dblclick)                         | yes                       |
      * | [`contextmenu`](#map.event:contextmenu)                   | yes                       |
@@ -1196,7 +1197,7 @@ class Map extends Camera {
      * Adds a listener that will be called only once to a specified event type,
      * optionally limited to events occurring on features in a specified style layer.
      *
-     * @param {string} type The event type to listen for; one of `'mousedown'`, `'mouseup'`, `'click'`, `'dblclick'`,
+     * @param {string} type The event type to listen for; one of `'mousedown'`, `'mouseup'`, `'preclick'`, `'click'`, `'dblclick'`,
      * `'mousemove'`, `'mouseenter'`, `'mouseleave'`, `'mouseover'`, `'mouseout'`, `'contextmenu'`, `'touchstart'`,
      * `'touchend'`, or `'touchcancel'`. `mouseenter` and `mouseover` events are triggered when the cursor enters
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
@@ -1742,7 +1743,7 @@ class Map extends Camera {
     // eslint-disable-next-line jsdoc/require-returns
     /**
      * Add an image to the style. This image can be displayed on the map like any other icon in the style's
-     * [sprite](https://docs.mapbox.com/help/glossary/sprite/) using the image's ID with
+     * [sprite](https://docs.mapbox.com/mapbox-gl-js/style-spec/sprite/) using the image's ID with
      * [`icon-image`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layout-symbol-icon-image),
      * [`background-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-background-background-pattern),
      * [`fill-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-fill-fill-pattern),
@@ -1750,7 +1751,7 @@ class Map extends Camera {
      * A {@link Map.event:error} event will be fired if there is not enough space in the sprite to add this image.
      *
      * @param {string} id The ID of the image.
-     * @param {HTMLImageElement | ImageBitmap | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface} image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
+     * @param {HTMLImageElement | ImageBitmap | ImageData | {width: number, height: number, data: (Uint8Array | Uint8ClampedArray)} | StyleImageInterface} image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
      * properties with the same format as `ImageData`.
      * @param {Object | null} options Options object.
      * @param {number} options.pixelRatio The ratio of pixels in the image to physical pixels on the screen.
@@ -1828,7 +1829,7 @@ class Map extends Camera {
      * or [`line-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-line-line-pattern).
      *
      * @param {string} id The ID of the image.
-     * @param {HTMLImageElement | ImageBitmap | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface} image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
+     * @param {HTMLImageElement | ImageBitmap | ImageData | {width: number, height: number, data: (Uint8Array | Uint8ClampedArray)} | StyleImageInterface} image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
      * properties with the same format as `ImageData`.
      *
      * @example
@@ -3043,6 +3044,7 @@ class Map extends Camera {
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
             window.removeEventListener('orientationchange', this._onWindowResize, false);
+            window.removeEventListener('webkitfullscreenchange', this._onWindowResize, false);
             window.removeEventListener('online', this._onWindowOnline, false);
         }
 

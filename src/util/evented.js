@@ -124,6 +124,7 @@ export class Evented {
 
             // make sure adding or removing listeners inside other listeners won't cause an infinite loop
             const listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
+
             for (const listener of listeners) {
                 listener.call(this, event);
             }

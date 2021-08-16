@@ -257,9 +257,9 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  *
  * @function setRTLTextPlugin
  * @param {string} pluginURL URL pointing to the Mapbox RTL text plugin source.
- * @param {Function} callback Called with an error argument if there is an error.
- * @param {boolean} lazy If set to `true`, mapboxgl will defer loading the plugin until rtl text is encountered,
- *    rtl text will then be rendered only after the plugin finishes loading.
+ * @param {Function} callback Called with an error argument if there is an error, or no arguments if the plugin loads successfully.
+ * @param {boolean} lazy If set to `true`, MapboxGL will defer loading the plugin until right-to-left text is encountered, and
+ *    right-to-left text will be rendered only after the plugin finishes loading.
  * @example
  * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
  * @see [Example: Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
