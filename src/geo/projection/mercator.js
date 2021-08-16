@@ -15,6 +15,32 @@ class MercatorTileTransform {
         this._worldSize = worldSize;
     }
 
+    createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
+        let m = mat4.create();
+        if (pitchWithMap) {
+            mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
+            if (!rotateWithMap) {
+                mat4.rotateZ(m, m, this._tr.angle);
+            }
+        } else {
+            mat4.multiply(m, this._tr.labelPlaneMatrix, posMatrix);
+        }
+        return m;
+    }
+
+    createGlCoordMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
+        if (pitchWithMap) {
+            const m = mat4.clone(posMatrix);
+            mat4.scale(m, m, [pixelsToTileUnits, pixelsToTileUnits, 1]);
+            if (!rotateWithMap) {
+                mat4.rotateZ(m, m, -this._tr.angle);
+            }
+            return m;
+        } else {
+            return this._tr.glCoordMatrix;
+        }
+    }
+
     createTileMatrix(id: UnwrappedTileID): Float64Array {
         const canonical = id.canonical;
         const zoomScale = Math.pow(2, canonical.z);
@@ -26,14 +52,6 @@ class MercatorTileTransform {
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 
         return posMatrix;
-    }
-
-    createRenderTileMatrix(id: UnwrappedTileID): Float64Array {
-
-    }
-
-    createLabelPlaneMatrix(id: UnwrappedTileID): Float64Array {
-
     }
 
     tileAabb(id: UnwrappedTileID, z: number, min: number, max: number) {

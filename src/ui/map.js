@@ -2304,12 +2304,17 @@ class Map extends Camera {
 
     setProjection(options?: { name: String }) {
         const name = options ? options.name : null;
+        const prevName = this.transform.projection.name;
         this.transform.projection = name;
 
         if (this.transform.projection.requiresDraping) {
             this._setTerrain(this.style.stylesheet.terrain ?? {source: 'mapbox-dem', exaggeration: 0.0}, "projection");
         } else {
             this._setTerrain(null, "projection");
+        }
+
+        if (this.transform.projection.name != prevName) {
+            this.style.dispatcher.broadcast('setProjection', this.transform.projection.name);
         }
 
         return this._update(true);

@@ -241,7 +241,7 @@ export class Placement {
         const pixelsToTiles = pixelsToTileUnits(tile, 1, this.transform.zoom);
 
         const textLabelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix,
-                tile.tileID.toUnwrapped(),
+                tile.tileID.canonical,
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
@@ -252,7 +252,7 @@ export class Placement {
         if (pitchWithMap) {
             const glMatrix = projection.getGlCoordMatrix(
                 posMatrix,
-                tile.tileID.toUnwrapped(),
+                tile.tileID.canonical,
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
