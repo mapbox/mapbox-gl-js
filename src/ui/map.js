@@ -451,6 +451,7 @@ class Map extends Camera {
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
+
             if (!this._container) {
                 throw new Error(`Container '${options.container}' not found.`);
             }
@@ -2497,8 +2498,8 @@ class Map extends Camera {
         let height = 0;
 
         if (this._container) {
-            width = this._container.clientWidth || 400;
-            height = this._container.clientHeight || 300;
+            width = this._container.getBoundingClientRect().width || 400;
+            height = this._container.getBoundingClientRect().height || 300;
         }
 
         return [width, height];
