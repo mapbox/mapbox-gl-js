@@ -842,12 +842,14 @@ class Transform {
                 // we haven’t accidentally culled some of the raster tiles we need to draw on them.
                 // If we don’t do this, the terrain is default black color and may flash in and out as we move toward it.
 
-                if (this._elevation && sqDist > fogCullDistSq && horizonLineFromTop !== 0) {
+                const elevation = this._elevation;
+
+                if (elevation && sqDist > fogCullDistSq && horizonLineFromTop !== 0) {
                     const projMatrix = this.calculateProjMatrix(entry.tileID.toUnwrapped());
 
                     let minmax;
-                    if (this._elevation && !options.isTerrainDEM) {
-                        minmax = this._elevation.getMinMaxForTile(entry.tileID);
+                    if (!options.isTerrainDEM) {
+                        minmax = elevation.getMinMaxForTile(entry.tileID);
                     }
 
                     if (!minmax) { minmax = {min: minRange, max: maxRange}; }
