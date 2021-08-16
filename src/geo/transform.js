@@ -1078,7 +1078,7 @@ class Transform {
      * @param {Point} p top left origin screen point, in pixels.
      * @private
      */
-    pointCoordinate(p: Point, z?: number = this.centerAltitude): MercatorCoordinate {
+    pointCoordinate(p: Point, z?: number = this._centerAltitude): MercatorCoordinate {
         const horizonOffset = this.horizonLineFromTop(false);
         const clamped = new Point(p.x, Math.max(horizonOffset, p.y));
         return this.rayIntersectionCoordinate(this.pointRayIntersection(clamped, z));
