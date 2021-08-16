@@ -2498,8 +2498,8 @@ class Map extends Camera {
         let height = 0;
 
         if (this._container) {
-            width = this._container.getBoundingClientRect().width || 400;
-            height = this._container.getBoundingClientRect().height || 300;
+            width = Math.ceil(this._container.getBoundingClientRect().width) || 400;
+            height = Math.ceil(this._container.getBoundingClientRect().height) || 300;
         }
 
         return [width, height];
