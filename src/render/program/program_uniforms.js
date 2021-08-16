@@ -47,10 +47,11 @@ export const programUniforms = {
     background: backgroundUniforms,
     backgroundPattern: backgroundPatternUniforms,
     terrainRaster: terrainRasterUniforms,
-    terrainDepth: globeRasterUniforms, //terrainRasterUniforms,
+    terrainDepth: terrainRasterUniforms,
     skybox: skyboxUniforms,
     skyboxGradient: skyboxGradientUniforms,
     skyboxCapture: skyboxCaptureUniforms,
     globeRaster: globeRasterUniforms,
-    globeAtmosphere: atmosphereUniforms
+    globeAtmosphere: atmosphereUniforms,
+    globeDepth: globeRasterUniforms,
 };

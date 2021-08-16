@@ -549,13 +549,16 @@ export class Terrain extends Elevation {
         uniforms['u_dem_size'] = this.sourceCache.getSource().tileSize;
         uniforms['u_exaggeration'] = this.exaggeration();
 
-        // Apply up vectors for the tile if the globe view is enabled
-        globeTile = globeTile || new GlobeTile(tile.tileID.canonical); new GlobeTile(tile.tileID.canonical);
+        const tr = this.painter.transform;
+        const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
-        uniforms['u_tile_tl_up'] = globeTile.upVector(0, 0);
-        uniforms['u_tile_tr_up'] = globeTile.upVector(1, 0);
-        uniforms['u_tile_br_up'] = globeTile.upVector(1, 1);
-        uniforms['u_tile_bl_up'] = globeTile.upVector(0, 1);
+        // Apply up vectors for the tile if the globe view is enabled
+        //</TerrainUniformsType>globeTile = globeTile || new GlobeTile(tile.tileID.canonical); new GlobeTile(tile.tileID.canonical);
+
+        uniforms['u_tile_tl_up'] = tileTransform.upVector(tile.tileID.canonical, 0, 0);
+        uniforms['u_tile_tr_up'] = tileTransform.upVector(tile.tileID.canonical, EXTENT, 0);
+        uniforms['u_tile_br_up'] = tileTransform.upVector(tile.tileID.canonical, EXTENT, EXTENT);
+        uniforms['u_tile_bl_up'] = tileTransform.upVector(tile.tileID.canonical, 0, EXTENT);
 
         let demTile = null;
         let prevDemTile = null;
