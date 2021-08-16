@@ -75,7 +75,7 @@ class MercatorTileTransform {
     }
 
     upVector(id: CanonicalTileID, x: Number, y: number): vec3 {
-        return [0, 0, this._tr.pixelsPerMeter];
+        return [0, 0, 1];
     }
 };
 

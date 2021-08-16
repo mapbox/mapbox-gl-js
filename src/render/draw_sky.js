@@ -22,32 +22,91 @@ import {createLayout} from '../util/struct_array.js';
 
 export default drawSky;
 
-function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
-    const opacity = layer.paint.get('sky-opacity');
-    // if (opacity === 0) {
-    //     return;
-    // }
-
+function drawGlobeAtmosphere(painter: Painter) {
     const context = painter.context;
-    const type = layer.paint.get('sky-type');
-    const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
-    const temporalOffset = (painter.frameCounter / 1000.0) % 1;
+    const gl = context.gl;
+    const transform = painter.transform;
+    const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
 
-    if (type === 'atmosphere') {
-        if (painter.renderPass === 'offscreen') {
-            if (layer.needsSkyboxCapture(painter)) {
-                captureSkybox(painter, layer, 32, 32);
-                layer.markSkyboxValid(painter);
-            }
-        } else if (painter.renderPass === 'sky') {
-            drawSkyboxFromCapture(painter, layer, depthMode, opacity, temporalOffset);
-        }
-    } else if (type === 'gradient') {
-        if (painter.renderPass === 'sky') {
-            drawSkyboxGradient(painter, layer, depthMode, opacity, temporalOffset);
-        }
+    const program = painter.useProgram('globeAtmosphere');
+    if (!atmosphereVb) {
+        const vertices = new GlobeVertexArray();
+        const triangles = new TriangleIndexArray();
+
+        vertices.emplaceBack(-1.0, 1.0, 1.0, 0.0, 0.0);
+        vertices.emplaceBack(1.0, 1.0, 1.0, 1.0, 0.0);
+        vertices.emplaceBack(1.0, -1.0, 1.0, 1.0, 1.0);
+        vertices.emplaceBack(-1.0, -1.0, 1.0, 0.0, 1.0);
+
+        triangles.emplaceBack(0, 1, 2);
+        triangles.emplaceBack(2, 3, 0);
+
+        atmosphereVb = context.createVertexBuffer(vertices, layout.members);
+        atmosphereIb = context.createIndexBuffer(triangles);
+        atmosphereSegs = SegmentVector.simpleSegment(0, 0, 4, 2);
+    }
+
+    // Compute center and approximate radius of the globe on screen coordinates
+    const globeMatrix = transform.calculateGlobeMatrix(transform.worldSize);
+    const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1.0);
+    const viewToProj = transform._camera.getCameraToClipPerspective(transform._fov, transform.width / transform.height, transform._nearZ, transform._farZ);
+    const globeToView = mat4.mul([], viewMatrix, globeMatrix);
+    const viewToScreen = mat4.mul([], transform.labelPlaneMatrix, viewToProj);
+
+    const centerOnViewSpace = vec3.transformMat4([], [0,0,0], globeToView);
+    const radiusOnViewSpace = vec3.add([], centerOnViewSpace, [transform.worldSize / Math.PI / 2.0, 0, 0]);
+
+    const centerOnScreen = vec3.transformMat4([], centerOnViewSpace, viewToScreen);
+    const radiusOnScreen = vec3.transformMat4([], radiusOnViewSpace, viewToScreen);
+
+    const pixelRadius = vec3.length(vec3.sub([], radiusOnScreen, centerOnScreen));
+
+    const uniforms = atmosphereUniformValues(
+        centerOnScreen,
+        pixelRadius,
+        [transform.width, transform.height],
+        1.0,                        // opacity
+        2.0,                        // fadeout range
+        [1.0, 1.0, 1.0],            // start color
+        [0.0118, 0.7451, 0.9882]);  // end color
+
+    painter.prepareDrawProgram(context, program);
+
+    program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
+        ColorMode.alphaBlendedReal, CullFaceMode.backCW,
+        uniforms, "skybox", atmosphereVb, atmosphereIb, atmosphereSegs);
+}
+
+function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
+    if (painter.transform.projection.name === 'globe') {
+        drawGlobeAtmosphere(painter, layer);
     } else {
-        assert(false, `${type} is unsupported sky-type`);
+        const opacity = layer.paint.get('sky-opacity');
+        if (opacity === 0) {
+            return;
+        }
+
+        const context = painter.context;
+        const type = layer.paint.get('sky-type');
+        const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
+        const temporalOffset = (painter.frameCounter / 1000.0) % 1;
+
+        if (type === 'atmosphere') {
+            if (painter.renderPass === 'offscreen') {
+                if (layer.needsSkyboxCapture(painter)) {
+                    captureSkybox(painter, layer, 32, 32);
+                    layer.markSkyboxValid(painter);
+                }
+            } else if (painter.renderPass === 'sky') {
+                drawSkyboxFromCapture(painter, layer, depthMode, opacity, temporalOffset);
+            }
+        } else if (type === 'gradient') {
+            if (painter.renderPass === 'sky') {
+                drawSkyboxGradient(painter, layer, depthMode, opacity, temporalOffset);
+            }
+        } else {
+            assert(false, `${type} is unsupported sky-type`);
+        }
     }
 }
 
@@ -96,76 +155,76 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
     const context = painter.context;
     const gl = context.gl;
     const transform = painter.transform;
+    const program = painter.useProgram('skybox');
 
-    // Interpolate between globe atmosphere and sky layer
-    const atmosphereOpacity = 1.0 - opacity * opacity;
+    context.activeTexture.set(gl.TEXTURE0);
 
-    if (opacity > 0.0) {
-        const program = painter.useProgram('skybox');
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
 
-        context.activeTexture.set(gl.TEXTURE0);
+    const uniformValues = skyboxUniformValues(transform.skyboxMatrix, layer.getCenter(painter, false), 0, opacity, temporalOffset);
 
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
+    painter.prepareDrawProgram(context, program);
 
-        const uniformValues = skyboxUniformValues(transform.skyboxMatrix, layer.getCenter(painter, false), 0, opacity, temporalOffset);
+    program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
+        painter.colorModeForRenderPass(), CullFaceMode.backCW,
+        uniformValues, 'skybox', layer.skyboxGeometry.vertexBuffer,
+        layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
+    // // Interpolate between globe atmosphere and sky layer
+    // const atmosphereOpacity = 1.0 - opacity * opacity;
 
-        painter.prepareDrawProgram(context, program);
+    // if (opacity > 0.0) {
 
-        program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
-            painter.colorModeForRenderPass(), CullFaceMode.backCW,
-            uniformValues, 'skybox', layer.skyboxGeometry.vertexBuffer,
-            layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
-    }
+    // }
 
-    if (atmosphereOpacity > 0.0) {
-        const program = painter.useProgram('globeAtmosphere');
-        if (!atmosphereVb) {
-            const vertices = new GlobeVertexArray();
-            const triangles = new TriangleIndexArray();
+    // if (atmosphereOpacity > 0.0) {
+    //     const program = painter.useProgram('globeAtmosphere');
+    //     if (!atmosphereVb) {
+    //         const vertices = new GlobeVertexArray();
+    //         const triangles = new TriangleIndexArray();
 
-            vertices.emplaceBack(-1.0, 1.0, 1.0, 0.0, 0.0);
-            vertices.emplaceBack(1.0, 1.0, 1.0, 1.0, 0.0);
-            vertices.emplaceBack(1.0, -1.0, 1.0, 1.0, 1.0);
-            vertices.emplaceBack(-1.0, -1.0, 1.0, 0.0, 1.0);
+    //         vertices.emplaceBack(-1.0, 1.0, 1.0, 0.0, 0.0);
+    //         vertices.emplaceBack(1.0, 1.0, 1.0, 1.0, 0.0);
+    //         vertices.emplaceBack(1.0, -1.0, 1.0, 1.0, 1.0);
+    //         vertices.emplaceBack(-1.0, -1.0, 1.0, 0.0, 1.0);
 
-            triangles.emplaceBack(0, 1, 2);
-            triangles.emplaceBack(2, 3, 0);
+    //         triangles.emplaceBack(0, 1, 2);
+    //         triangles.emplaceBack(2, 3, 0);
 
-            atmosphereVb = context.createVertexBuffer(vertices, layout.members);
-            atmosphereIb = context.createIndexBuffer(triangles);
-            atmosphereSegs = SegmentVector.simpleSegment(0, 0, 4, 2);
-        }
+    //         atmosphereVb = context.createVertexBuffer(vertices, layout.members);
+    //         atmosphereIb = context.createIndexBuffer(triangles);
+    //         atmosphereSegs = SegmentVector.simpleSegment(0, 0, 4, 2);
+    //     }
 
-        // Compute center and approximate radius of the globe on screen coordinates
-        const globeMatrix = transform.calculateGlobeMatrix(transform.worldSize);
-        const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1.0);
-        const viewToProj = transform._camera.getCameraToClipPerspective(transform._fov, transform.width / transform.height, transform._nearZ, transform._farZ);
-        const globeToView = mat4.mul([], viewMatrix, globeMatrix);
-        const viewToScreen = mat4.mul([], transform.labelPlaneMatrix, viewToProj);
+    //     // Compute center and approximate radius of the globe on screen coordinates
+    //     const globeMatrix = transform.calculateGlobeMatrix(transform.worldSize);
+    //     const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1.0);
+    //     const viewToProj = transform._camera.getCameraToClipPerspective(transform._fov, transform.width / transform.height, transform._nearZ, transform._farZ);
+    //     const globeToView = mat4.mul([], viewMatrix, globeMatrix);
+    //     const viewToScreen = mat4.mul([], transform.labelPlaneMatrix, viewToProj);
 
-        const centerOnViewSpace = vec3.transformMat4([], [0,0,0], globeToView);
-        const radiusOnViewSpace = vec3.add([], centerOnViewSpace, [transform.worldSize / Math.PI / 2.0, 0, 0]);
+    //     const centerOnViewSpace = vec3.transformMat4([], [0,0,0], globeToView);
+    //     const radiusOnViewSpace = vec3.add([], centerOnViewSpace, [transform.worldSize / Math.PI / 2.0, 0, 0]);
 
-        const centerOnScreen = vec3.transformMat4([], centerOnViewSpace, viewToScreen);
-        const radiusOnScreen = vec3.transformMat4([], radiusOnViewSpace, viewToScreen);
+    //     const centerOnScreen = vec3.transformMat4([], centerOnViewSpace, viewToScreen);
+    //     const radiusOnScreen = vec3.transformMat4([], radiusOnViewSpace, viewToScreen);
 
-        const pixelRadius = vec3.length(vec3.sub([], radiusOnScreen, centerOnScreen));
+    //     const pixelRadius = vec3.length(vec3.sub([], radiusOnScreen, centerOnScreen));
 
-        const uniforms = atmosphereUniformValues(
-            centerOnScreen,
-            pixelRadius,
-            [transform.width, transform.height],
-            atmosphereOpacity,          // opacity
-            2.0,                        // fadeout range
-            [1.0, 1.0, 1.0],            // start color
-            [0.0118, 0.7451, 0.9882]);  // end color
+    //     const uniforms = atmosphereUniformValues(
+    //         centerOnScreen,
+    //         pixelRadius,
+    //         [transform.width, transform.height],
+    //         atmosphereOpacity,          // opacity
+    //         2.0,                        // fadeout range
+    //         [1.0, 1.0, 1.0],            // start color
+    //         [0.0118, 0.7451, 0.9882]);  // end color
 
-        painter.prepareDrawProgram(context, program);
+    //     painter.prepareDrawProgram(context, program);
 
-        program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
-            ColorMode.alphaBlendedReal, CullFaceMode.backCW,
-            uniforms, "skybox", atmosphereVb, atmosphereIb, atmosphereSegs);
-    }
+    //     program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
+    //         ColorMode.alphaBlendedReal, CullFaceMode.backCW,
+    //         uniforms, "skybox", atmosphereVb, atmosphereIb, atmosphereSegs);
+    // }
 }
 
 function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, faceRotate: mat4, sunDirection: vec3, i: number) {
