@@ -29,8 +29,7 @@ function getQueryVariable(variable) {
 Testem.handleConsoleMessage = function(msg) {
     // Send output over ws to testem server
     Testem.emit('tap', msg);
-
-    return false;
+    return true;
 };
 
 // Persist the current html on the page as an artifact once tests finish
