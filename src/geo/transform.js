@@ -842,11 +842,11 @@ class Transform {
                 // we haven’t accidentally culled some of the raster tiles we need to draw on them.
                 // If we don’t do this, the terrain is default black color and may flash in and out as we move toward it.
 
-                if (this.elevation && sqDist > fogCullDistSq && horizonLineFromTop !== 0) {
+                if (this._elevation && sqDist > fogCullDistSq && horizonLineFromTop !== 0) {
                     const projMatrix = this.calculateProjMatrix(entry.tileID.toUnwrapped());
 
                     let minmax;
-                    if (useElevationData && this._elevation) {
+                    if (this._elevation && !options.isTerrainDEM) {
                         minmax = this._elevation.getMinMaxForTile(entry.tileID);
                     }
 
@@ -1003,17 +1003,17 @@ class Transform {
      * Casts a ray from a point on screen and returns the Ray,
      * and the extent along it, at which it intersects the map plane.
      *
-     * @param {Point} p viewport pixel co-ordinates
-     * @param {number} z optional altitude of the map plane
-     * @returns {{ p0: vec4, p1: vec4, t: number }} p0,p1 are two points on the ray
-     * t is the fractional extent along the ray at which the ray intersects the map plane
+     * @param {Point} p Viewport pixel co-ordinates.
+     * @param {number} z Optional altitude of the map plane, defaulting to elevation at center.
+     * @returns {{ p0: vec4, p1: vec4, t: number }} p0,p1 are two points on the ray.
+     * t is the fractional extent along the ray at which the ray intersects the map plane.
      * @private
      */
     pointRayIntersection(p: Point, z: ?number): RayIntersectionResult {
         const targetZ = (z !== undefined && z !== null) ? z : this._centerAltitude;
-        // since we don't know the correct projected z value for the point,
+        // Since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that
-        // line with z=0
+        // line with z=0.
 
         const p0 = [p.x, p.y, 0, 1];
         const p1 = [p.x, p.y, 1, 1];
@@ -1044,7 +1044,7 @@ class Transform {
         vec4.scale(p0, p0, 1 / p0[3]);
         vec4.scale(p1, p1, 1 / p1[3]);
 
-        // Convert altitude from meters to pixels
+        // Convert altitude from meters to pixels.
         p0[2] = mercatorZfromAltitude(p0[2], this._center.lat) * this.worldSize;
         p1[2] = mercatorZfromAltitude(p1[2], this._center.lat) * this.worldSize;
 
@@ -1055,7 +1055,7 @@ class Transform {
     }
 
     /**
-     *  Helper method to convert the ray intersection with the map plane to MercatorCoordinate
+     *  Helper method to convert the ray intersection with the map plane to MercatorCoordinate.
      *
      * @param {RayIntersectionResult} rayIntersection
      * @returns {MercatorCoordinate}
@@ -1075,7 +1075,8 @@ class Transform {
 
     /**
      * Given a point on screen, returns MercatorCoordinate.
-     * @param {Point} p top left origin screen point, in pixels.
+     * @param {Point} p Top left origin screen point, in pixels.
+     * @param {number} z Optional altitude of the map plane, defaulting to elevation at center.
      * @private
      */
     pointCoordinate(p: Point, z?: number = this._centerAltitude): MercatorCoordinate {
@@ -1193,7 +1194,6 @@ class Transform {
         }, {min: Number.MAX_VALUE, max: 0});
         minmax.min *= elevation.exaggeration();
         minmax.max *= elevation.exaggeration();
-        // const top = this.horizonLineFromTop();
 
         const topLeft = new Point(this._edgeInsets.left, this._edgeInsets.top);
         const topRight = new Point(this.width - this._edgeInsets.right, this._edgeInsets.top);
