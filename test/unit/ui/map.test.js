@@ -12,8 +12,6 @@ import {fixedLngLat, fixedNum} from '../../util/fixed.js';
 import Fog from '../../../src/style/fog.js';
 import Color from '../../../src/style-spec/util/color.js';
 
-import MercatorCoordinate from '../../../src/geo/mercator_coordinate.js';
-
 function createStyleSource() {
     return {
         type: "geojson",
