@@ -16,6 +16,7 @@ import {skyboxCaptureUniformValues} from './program/skybox_capture_program.js';
 import SkyLayer from '../style/style_layer/sky_style_layer.js';
 import type Painter from './painter.js';
 import {vec3, mat3, mat4} from 'gl-matrix';
+import browser from '../util/browser.js';
 import assert from 'assert';
 import SegmentVector from '../data/segment.js';
 import {createLayout} from '../util/struct_array.js';
@@ -65,6 +66,7 @@ function drawGlobeAtmosphere(painter: Painter) {
         centerOnScreen,
         pixelRadius,
         [transform.width, transform.height],
+        browser.devicePixelRatio,
         1.0,                        // opacity
         2.0,                        // fadeout range
         [1.0, 1.0, 1.0],            // start color
