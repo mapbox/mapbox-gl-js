@@ -1,5 +1,4 @@
 uniform mat4 u_globe_matrix;
-uniform float u_skirt_height;
 
 attribute vec3 a_globe_pos;
 attribute vec2 a_uv;
