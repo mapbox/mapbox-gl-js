@@ -697,11 +697,8 @@ class Map extends Camera {
 
         this._resizeCanvas(width, height);
 
-        const roundedWidth = Math.ceil(width);
-        const roundedHeight = Math.ceil(height);
-
-        this.transform.resize(roundedWidth, roundedHeight);
-        this.painter.resize(roundedWidth, roundedHeight);
+        this.transform.resize(width, height);
+        this.painter.resize(Math.ceil(width), Math.ceil(height));
 
         const fireMoving = !this._moving;
         if (fireMoving) {
@@ -2554,12 +2551,9 @@ class Map extends Camera {
     _resizeCanvas(width: number, height: number) {
         const pixelRatio = browser.devicePixelRatio || 1;
 
-        const roundedWidth = Math.ceil(width);
-        const roundedHeight = Math.ceil(height);
-
-        // Request the required canvas size taking the pixelratio into account.
-        this._canvas.width = pixelRatio * roundedWidth;
-        this._canvas.height = pixelRatio * roundedHeight;
+        // Request the required canvas size (rounded up) taking the pixelratio into account.
+        this._canvas.width = pixelRatio * Math.ceil(width);
+        this._canvas.height = pixelRatio * Math.ceil(height);
 
         // Maintain the same canvas size, potentially downscaling it for HiDPI displays
         this._canvas.style.width = `${width}px`;
