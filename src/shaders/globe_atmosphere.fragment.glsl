@@ -6,9 +6,11 @@ uniform float u_opacity;
 uniform float u_fadeout_range;
 uniform vec3 u_start_color;
 uniform vec3 u_end_color;
+uniform float u_pixel_ratio;
 
 void main() {
-    vec2 fragCoord = vec2(gl_FragCoord.x, u_screen_size.y - gl_FragCoord.y);
+    vec2 fragCoord = gl_FragCoord.xy / u_pixel_ratio;
+    fragCoord.y = u_screen_size.y - fragCoord.y;
     float distFromCenter = length(fragCoord - u_center);
 
     float normDistFromCenter = length(fragCoord - u_center) / u_radius;
