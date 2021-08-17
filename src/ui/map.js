@@ -697,8 +697,8 @@ class Map extends Camera {
 
         this._resizeCanvas(width, height);
 
-        const roundedWidth = Math.floor(width);
-        const roundedHeight = Math.floor(height);
+        const roundedWidth = Math.ceil(width);
+        const roundedHeight = Math.ceil(height);
 
         this.transform.resize(roundedWidth, roundedHeight);
         this.painter.resize(roundedWidth, roundedHeight);
@@ -2554,8 +2554,8 @@ class Map extends Camera {
     _resizeCanvas(width: number, height: number) {
         const pixelRatio = browser.devicePixelRatio || 1;
 
-        const roundedWidth = Math.floor(width);
-        const roundedHeight = Math.floor(height);
+        const roundedWidth = Math.ceil(width);
+        const roundedHeight = Math.ceil(height);
 
         // Request the required canvas size taking the pixelratio into account.
         this._canvas.width = pixelRatio * roundedWidth;

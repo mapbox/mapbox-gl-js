@@ -747,8 +747,6 @@ test('Map', (t) => {
             const map = createMap(t),
                 container = map.getContainer();
 
-            // Object.defineProperty(container, 'clientWidth', {value: 250});
-            // Object.defineProperty(container, 'clientHeight', {value: 250});
             Object.defineProperty(container, 'getBoundingClientRect', {value:
                 () => {
                     return {

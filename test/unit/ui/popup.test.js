@@ -12,8 +12,6 @@ const containerHeight = 512;
 function createMap(t, options) {
     options = options || {};
     const container = window.document.createElement('div');
-    // Object.defineProperty(container, 'clientWidth', {value: options.width || containerWidth});
-    // Object.defineProperty(container, 'clientHeight', {value: options.height || containerHeight});
     Object.defineProperty(container, 'getBoundingClientRect', {value:
         () => {
             return {
