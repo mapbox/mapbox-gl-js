@@ -12,8 +12,22 @@ const containerHeight = 512;
 function createMap(t, options) {
     options = options || {};
     const container = window.document.createElement('div');
-    Object.defineProperty(container, 'clientWidth', {value: options.width || containerWidth});
-    Object.defineProperty(container, 'clientHeight', {value: options.height || containerHeight});
+    // Object.defineProperty(container, 'clientWidth', {value: options.width || containerWidth});
+    // Object.defineProperty(container, 'clientHeight', {value: options.height || containerHeight});
+    Object.defineProperty(container, 'getBoundingClientRect', {value:
+        () => {
+            return {
+                bottom: 0,
+                height: options.height || containerHeight,
+                left: 0,
+                right: 0,
+                top: 0,
+                width: options.width || containerWidth,
+                x: 0,
+                y: 0
+            };
+        }
+    });
     return globalCreateMap(t, {container});
 }
 

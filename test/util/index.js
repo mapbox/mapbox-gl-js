@@ -19,6 +19,21 @@ export function createMap(t, options, callback) {
 
     Object.defineProperty(container, 'clientWidth', {value: 200, configurable: true});
     Object.defineProperty(container, 'clientHeight', {value: 200, configurable: true});
+    Object.defineProperty(container, 'getBoundingClientRect', {value:
+        () => {
+            return {
+                bottom: 0,
+                height: 200,
+                left: 0,
+                right: 0,
+                top: 0,
+                width: 200,
+                x: 0,
+                y: 0
+            };
+        },
+    configurable: true
+    });
 
     if (!options || !options.skipCSSStub) t.stub(Map.prototype, '_detectMissingCSS');
     if (options && options.deleteStyle) delete defaultOptions.style;
