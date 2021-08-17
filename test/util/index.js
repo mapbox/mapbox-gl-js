@@ -22,14 +22,8 @@ export function createMap(t, options, callback) {
     Object.defineProperty(container, 'getBoundingClientRect', {value:
         () => {
             return {
-                bottom: 0,
                 height: 200,
-                left: 0,
-                right: 0,
-                top: 0,
-                width: 200,
-                x: 0,
-                y: 0
+                width: 200
             };
         },
     configurable: true

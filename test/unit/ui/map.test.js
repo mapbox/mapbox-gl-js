@@ -750,14 +750,8 @@ test('Map', (t) => {
             Object.defineProperty(container, 'getBoundingClientRect', {value:
                 () => {
                     return {
-                        bottom: 0,
                         height: 250,
-                        left: 0,
-                        right: 0,
-                        top: 0,
-                        width: 250,
-                        x: 0,
-                        y: 0
+                        width: 250
                     };
                 }
             });
