@@ -1,7 +1,6 @@
 // @flow
 
 import {Color} from './values.js';
-import {vec3} from 'gl-matrix';
 
 import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
 import type {FormattedSection} from './types/formatted.js';
@@ -56,10 +55,18 @@ class EvaluationContext {
 
     distanceFromCamera() {
         if (this.cameraDistanceReferencePoint && this.globals && this.globals.cameraDistanceMatrix) {
-            tempArray[0] = this.cameraDistanceReferencePoint.x;
-            tempArray[1] = this.cameraDistanceReferencePoint.y;
-            tempArray[2] = this.cameraDistanceReferencePoint.z;
-            return vec3.length(vec3.transformMat4(tempArray, tempArray, this.globals.cameraDistanceMatrix));
+
+            const m = this.globals.cameraDistanceMatrix;
+            const {x, y, z} = this.cameraDistanceReferencePoint;
+
+            //inlined vec3*mat4 multiplication to prevent importing gl-matrix as a dependency
+            let w = m[3] * x + m[7] * y + m[11] * z + m[15];
+            w = w || 1.0;
+            const x1 = (m[0] * x + m[4] * y + m[8] * z + m[12]) / w;
+            const y1 = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
+            const z1 = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
+
+            return Math.sqrt(x1*x1 + y1*y1  + z1*z1);
         }
 
         return 0;
