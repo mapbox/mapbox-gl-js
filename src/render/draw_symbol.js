@@ -36,6 +36,7 @@ import type {UniformValues} from './uniform_binding.js';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program.js';
 import type {CrossTileID, VariableOffset} from '../symbol/placement.js';
 import extent from '../data/extent.js';
+import extend from '../style-spec/util/extend.js';
 
 export default drawSymbols;
 
@@ -403,7 +404,13 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const state = segmentState.state;
 
         const pixelsPerMeter = mercatorZfromAltitude(1, tr.center.lat) * tr.worldSize;
-        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv}, new GlobeTile(state.tile.tileID.canonical, pitchWithMap ? pixelsPerMeter: undefined));
+        if (painter.terrain) {
+            const options = {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv};
+            if (pitchWithMap) {
+                extend(options, { useTileSpaceElevation: true });
+            }
+            painter.terrain.setupElevationDraw(state.tile, state.program, options);
+        }
         context.activeTexture.set(gl.TEXTURE0);
         state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
         if (state.atlasTextureIcon) {

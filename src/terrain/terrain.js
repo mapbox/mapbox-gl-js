@@ -540,9 +540,10 @@ export class Terrain extends Elevation {
             useDepthForOcclusion?: boolean,
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
-            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number }
-        },
-        globeTile?: GlobeTile) {
+            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number },
+            elevationTileID?: CanonicalTileID,
+            useTileSpaceElevation?: boolean
+        }) {
         const context = this.painter.context;
         const gl = context.gl;
         const uniforms = defaultTerrainUniforms(((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding);
@@ -552,13 +553,24 @@ export class Terrain extends Elevation {
         const tr = this.painter.transform;
         const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
-        // Apply up vectors for the tile if the globe view is enabled
-        //</TerrainUniformsType>globeTile = globeTile || new GlobeTile(tile.tileID.canonical); new GlobeTile(tile.tileID.canonical);
-
-        uniforms['u_tile_tl_up'] = tileTransform.upVector(tile.tileID.canonical, 0, 0);
-        uniforms['u_tile_tr_up'] = tileTransform.upVector(tile.tileID.canonical, EXTENT, 0);
-        uniforms['u_tile_br_up'] = tileTransform.upVector(tile.tileID.canonical, EXTENT, EXTENT);
-        uniforms['u_tile_bl_up'] = tileTransform.upVector(tile.tileID.canonical, 0, EXTENT);
+        if (options && options.useTileSpaceElevation) {
+            const up = tileTransform.tileSpaceUpVector();
+            uniforms['u_tile_tl_up'] = up;
+            uniforms['u_tile_tr_up'] = up;
+            uniforms['u_tile_br_up'] = up;
+            uniforms['u_tile_bl_up'] = up;
+        } else {
+            // Apply up vectors for the tile if the globe view is enabled
+            let id = tile.tileID.canonical;
+            if (options && options.elevationTileID) {
+                id = options.elevationTileID;
+            }
+    
+            uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
+            uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
+            uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
+            uniforms['u_tile_bl_up'] = tileTransform.upVector(id, 0, EXTENT);
+        }
 
         let demTile = null;
         let prevDemTile = null;
