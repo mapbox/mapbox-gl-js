@@ -306,7 +306,7 @@ class Painter {
 
     _renderTileClippingMasks(layer: StyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
         if (!sourceCache || this.currentStencilSource === sourceCache.id || !layer.isTileClipped() || !tileIDs || !tileIDs.length) return;
-
+        return;
         this.currentStencilSource = sourceCache.id;
 
         const context = this.context;
@@ -463,6 +463,7 @@ class Painter {
             // for depth buffer allocation per tile.
             this.opaquePassCutoff = 0;
         }
+        this.clearStencil();
 
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;

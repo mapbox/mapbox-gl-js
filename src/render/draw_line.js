@@ -2,6 +2,8 @@
 
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
+import StencilMode from '../gl/stencil_mode.js';
+import ColorMode from '../gl/color_mode.js';
 import Texture from './texture.js';
 import {
     lineUniformValues,
@@ -126,8 +128,20 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
         program.draw(context, gl.TRIANGLES, depthMode,
-            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+            StencilMode.disabled, ColorMode.disabled, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
             layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+
+        const dMode = new DepthMode(gl.GEQUAL, DepthMode.ReadOnly, [0, 1]);;
+        const mode = new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0x0, 0xFF, gl.KEEP, gl.KEEP, gl.INCR);
+        program.draw(context, gl.TRIANGLES, dMode,
+            mode, colorMode, CullFaceMode.disabled, uniformValues,
+            layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
+            layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+
+        // program.draw(context, gl.TRIANGLES, depthMode,
+        //     painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+        //     layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
+        //     layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
     }
 }
