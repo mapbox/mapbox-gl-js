@@ -1554,6 +1554,15 @@ class Style extends Evented {
         }
     }
 
+    _forceSymbolLayerUpdate() {
+        for (const layerId in this._layers) {
+            const layer = this._layers[layerId];
+            if (layer.type === 'symbol') {
+                this._updateLayer(layer);
+            }
+        }
+    }
+
     _validate(validate: Validator, key: string, value: any, props: any, options: { validate?: boolean } = {}) {
         if (options && options.validate === false) {
             return false;
