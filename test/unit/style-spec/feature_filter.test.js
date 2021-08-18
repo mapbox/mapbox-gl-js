@@ -342,7 +342,8 @@ test('filter', t => {
                 ],
                 3
             ]
-            ]
+            ],
+            ["<=", ["get", "test_param"], null]
         ]
 
         t.test('isDynamicFilter', (t) => {
