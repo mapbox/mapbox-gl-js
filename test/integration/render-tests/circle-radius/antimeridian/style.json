@@ -29,7 +29,7 @@
       "type": "circle",
       "source": "geojson",
       "paint": {
-        "circle-radius": 15
+        "circle-radius": 20
       }
     }
   ]
