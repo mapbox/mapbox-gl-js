@@ -2386,6 +2386,7 @@ class Map extends Camera {
         }
 
         if (this.transform.projection.name != prevName) {
+            this.style._forceSymbolLayerUpdate();
             this.style.dispatcher.broadcast('setProjection', this.transform.projection.name);
         }
 
