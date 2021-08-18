@@ -4,7 +4,7 @@
 # To run locally, you must be logged into AWS,
 # have built the needed files and pass the tag.
 # To build files:
-# yarn run build-prod-min && yarn run build-prod && yarn run build-csp && yarn run build-dev && yarn run build-css
+# npm run build-prod-min && npm run build-prod && npm run build-csp && npm run build-dev && npm run build-css
 # The tag should be in the form of vx.x.x:
 # ./upload.sh v2.0.0
 # You can test your setup with a dry run that prints the s3 command for each file:
@@ -43,7 +43,7 @@ declare -a files=(
 if [ ! -d "./dist" ]
 then
 	echo "Error: dist folder does not exist. Make sure you build the bundle before running this script."
-	echo: "Run: yarn run build-prod-min && yarn run build-prod && yarn run build-csp && yarn run build-dev && yarn run build-css"
+	echo: "Run: npm run build-prod-min && npm run build-prod && npm run build-csp && npm run build-dev && npm run build-css"
 	exit 1
 fi
 
@@ -56,7 +56,7 @@ do
 	if [ ! -f "./dist/${file}" ]
 	then
 		echo "Error: File ${file} does not exist in dist folder. Make sure you build the bundle before running this script."
-		echo "Run: yarn run build-prod-min && yarn run build-prod && yarn run build-csp && yarn run build-dev && yarn run build-css"
+		echo "Run: npm run build-prod-min && npm run build-prod && npm run build-csp && npm run build-dev && npm run build-css"
 		exit 1;
 	fi
 done

@@ -132,7 +132,7 @@
     "start-bench": "run-p build-token watch-benchmarks start-server",
     "start-release": "run-s build-token build-prod-min build-css print-release-url start-server",
     "diff-tarball": "build/run-node build/diff-tarball && echo \"Please confirm the above is correct [y/n]? \"; read answer; if [ \"$answer\" = \"${answer#[Yy]}\" ]; then false; fi",
-    "prepare-publish": "git clean -fdx && yarn install",
+    "prepare-publish": "git clean -fdx && npm install",
     "lint": "eslint --cache --ignore-path .gitignore src test bench debug/*.html",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
     "test": "run-s lint lint-css test-flow test-unit",

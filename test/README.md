@@ -7,14 +7,14 @@ First you must configure your development environment per [`../CONTRIBUTING.md`]
 
 There are two test suites associated with Mapbox GL JS
 
- - `yarn test` runs quick unit tests
- - `yarn run test-suite` runs slower integration tests
+ - `npm test` runs quick unit tests
+ - `npm run test-suite` runs slower integration tests
 
  To run individual tests:
 
- - Unit tests: `yarn test-unit path/to/file.test.js` where path *does not include* `test/unit/`
-   - e.g. `yarn test-unit ui/handler/scroll_zoom.test.js`
- - Render tests: `yarn test-render render-test-name` (e.g. `yarn test-render background-color/default`)
+ - Unit tests: `npm run test-unit path/to/file.test.js` where path *does not include* `test/unit/`
+   - e.g. `npm run test-unit ui/handler/scroll_zoom.test.js`
+ - Render tests: `npm run test-render render-test-name` (e.g. `npm test-render background-color/default`)
 
 ## Integration Tests
 

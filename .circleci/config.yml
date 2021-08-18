@@ -131,12 +131,12 @@ jobs:
             ~/mbx-ci aws setup
       - restore_cache:
           keys:
-            - v4-yarn-{{ checksum "yarn.lock" }}
-      - run: yarn
+            - v4-npm-{{ checksum "package-lock.json" }}
+      - run: npm
       - save_cache:
-          key: v4-yarn-{{ checksum "yarn.lock" }}
+          key: v4-npm-{{ checksum "package-lock.json" }}
           paths:
-            - '~/.yarn'
+            - '~/.npm'
             - 'node_modules'
       - persist_to_workspace:
           root: ~/
@@ -156,8 +156,8 @@ jobs:
           keys:
             - v2-lint-{{ .Branch }}
             - v2-lint
-      - run: yarn run lint
-      - run: yarn run lint-css
+      - run: npm run lint
+      - run: npm run lint-css
       - save_cache:
           key: v2-lint-{{ .Branch }}-{{ .Revision }}
           paths:
@@ -168,14 +168,14 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: yarn run build-prod-min
-      - run: yarn run build-prod
-      - run: yarn run build-csp
-      - run: yarn run build-dev
-      - run: yarn run build-css
-      - run: yarn run build-style-spec
-      - run: yarn run build-flow-types
-      - run: yarn run test-build
+      - run: npm run build-prod-min
+      - run: npm run build-prod
+      - run: npm run build-csp
+      - run: npm run build-dev
+      - run: npm run build-css
+      - run: npm run build-style-spec
+      - run: npm run build-flow-types
+      - run: npm run test-build
       - run:
           name: Check bundle size
           command: |
@@ -194,14 +194,14 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: yarn run test-flow
+      - run: npm run test-flow
 
   test-unit:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/
-      - run: yarn run test-unit
+      - run: npm run test-unit
 
   test-render:
     <<: *defaults
@@ -210,7 +210,7 @@ jobs:
           at: ~/
       - browser-tools/install-chrome:
           chrome-version: 91.0.4472.164
-      - run: yarn run test-render
+      - run: npm run test-render
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
@@ -223,7 +223,7 @@ jobs:
           at: ~/
       - browser-tools/install-chrome:
           chrome-version: 91.0.4472.164
-      - run: yarn run test-render-prod
+      - run: npm run test-render-prod
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
@@ -236,7 +236,7 @@ jobs:
           at: ~/
       - browser-tools/install-chrome:
           chrome-version: 91.0.4472.164
-      - run: yarn run test-query
+      - run: npm run test-query
       - store_test_results:
           path: test/integration/query-tests
       - store_artifacts:
@@ -251,7 +251,7 @@ jobs:
           name: Build Webpack
           command: |
             cd ./test/build/transpilation &&
-            yarn &&
+            npm &&
             npm run build &&
             rm -rf node_modules
       - store_artifacts:
@@ -279,27 +279,27 @@ jobs:
           at: ~/
       - browser-tools/install-browser-tools:
           chrome-version: 91.0.4472.164
-      - run: yarn run build-dev
-      - run: yarn run build-token
+      - run: npm run build-dev
+      - run: npm run build-token
       - run:
           name: Test Chrome
           environment:
             SELENIUM_BROWSER: chrome
             TAP_COLORS: 1
-          command: yarn run test-browser
+          command: npm run test-browser
       - run:
           name: Test Firefox
           environment:
             SELENIUM_BROWSER: firefox
             TAP_COLORS: 1
-          command: yarn run test-browser
+          command: npm run test-browser
 
   test-expressions:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/
-      - run: yarn run test-expressions
+      - run: npm run test-expressions
 
   deploy-benchmarks:
     <<: *defaults
@@ -308,7 +308,7 @@ jobs:
           at: ~/
       - run:
           name: Build
-          command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
+          command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" npm run build-benchmarks
       - aws-cli/install
       - run:
           name: Upload benchmark
