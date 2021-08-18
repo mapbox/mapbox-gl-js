@@ -46,8 +46,8 @@ export class CanonicalTileID {
     getMercatorFromTilePoint(x: number, y: number): MercatorCoordinate {
         const tilesAtZoom = Math.pow(2, this.z);
         return new MercatorCoordinate(
-            (this.x * EXTENT + x ) / (tilesAtZoom * EXTENT),
-            (this.y * EXTENT + y ) / (tilesAtZoom * EXTENT)
+            (this.x * EXTENT + x) / (tilesAtZoom * EXTENT),
+            (this.y * EXTENT + y) / (tilesAtZoom * EXTENT)
         );
     }
 

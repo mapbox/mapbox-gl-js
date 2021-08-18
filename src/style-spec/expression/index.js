@@ -200,7 +200,7 @@ export class CameraDependentExpression<Kind: EvaluationKind> {
         this._styleExpression = expression;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, ): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection,): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
 
@@ -275,8 +275,8 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
 
     if (supportsCameraStateExpression(propertySpec)) {
         return success(isFeatureConstant ?
-                (new CameraDependentExpression('composite', expression.value): CameraStateExpression) :
-                (new CameraDependentExpression('composite', expression.value): CompositeCameraStateExpression));
+            (new CameraDependentExpression('composite', expression.value): CameraStateExpression) :
+            (new CameraDependentExpression('composite', expression.value): CompositeCameraStateExpression));
     }
 
     const zoomCurve = findZoomCurve(parsed);

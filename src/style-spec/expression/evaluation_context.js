@@ -5,11 +5,9 @@ import {Color} from './values.js';
 import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
 import type {FormattedSection} from './types/formatted.js';
 import type {GlobalProperties, Feature, FeatureState} from './index.js';
-import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
+import type {CanonicalTileID} from '../../source/tile_id.js';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
-
-const tempArray = [0, 0, 0];
 
 class EvaluationContext {
     globals: GlobalProperties;
@@ -66,7 +64,7 @@ class EvaluationContext {
             const y1 = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
             const z1 = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
 
-            return Math.sqrt(x1*x1 + y1*y1  + z1*z1);
+            return Math.sqrt(x1 * x1 + y1 * y1  + z1 * z1);
         }
 
         return 0;

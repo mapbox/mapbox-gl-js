@@ -89,7 +89,6 @@ function createFilter(filter: any): FeatureFilter {
     }
     const dynamicFilter = filter === staticFilter ? true : filter;
 
-    // TODO: separate out static and dynamic filterSpec
     const compiledStaticFilter = createExpression(staticFilter, filterSpec);
     const compiledDynamicFilter = createExpression(dynamicFilter, filterSpec);
     if (compiledStaticFilter.result === 'error' || compiledDynamicFilter.result === 'error') {
@@ -148,7 +147,7 @@ const dynamicConditionExpressions = new Set([
 function collapsedExpression(expression: any): any {
     if (dynamicConditionExpressions.has(expression[0])) {
 
-        for(let i = 1; i < expression.length; i++) {
+        for (let i = 1; i < expression.length; i++) {
             const param = expression[i];
             if (isDynamicFilter(param)) {
                 return true;
@@ -181,14 +180,14 @@ function unionDynamicBranches(filter: any) {
     } else if (filter[0] === 'match') {
         isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[1]);
 
-        for (let i = 2; i < filter.length - 1; i +=2) {
+        for (let i = 2; i < filter.length - 1; i += 2) {
             branches.push(filter[i + 1]);
         }
         branches.push(filter[filter.length - 1]);
     } else if (filter[0] === 'step') {
         isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[1]);
 
-        for (let i = 1; i < filter.length - 1; i +=2) {
+        for (let i = 1; i < filter.length - 1; i += 2) {
             branches.push(filter[i + 1]);
         }
     }
@@ -204,7 +203,6 @@ function unionDynamicBranches(filter: any) {
     }
 }
 
-
 function isDynamicFilter(filter: any): boolean {
     // Base Cases
     if (typeof filter === 'boolean') {
@@ -217,9 +215,9 @@ function isDynamicFilter(filter: any): boolean {
         return true;
     }
 
-    for(let i = 1; i < filter.length; i++) {
+    for (let i = 1; i < filter.length; i++) {
         const child = filter[i];
-        if (isDynamicFilter(child)){
+        if (isDynamicFilter(child)) {
             return true;
         }
     }
