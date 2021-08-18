@@ -147,7 +147,9 @@ const dynamicConditionExpressions = new Set([
 
 function collapsedExpression(expression: any): any {
     if (dynamicConditionExpressions.has(expression[0])) {
-        for(const param of expression.slice(1)) {
+
+        for(let i = 1; i < expression.length; i++) {
+            const param = expression[i];
             if (isDynamicFilter(param)) {
                 return true;
             }
@@ -166,36 +168,34 @@ function collapsedExpression(expression: any): any {
  * @param {Array<any>} filter the filter expression mutated in-place.
  */
 function unionDynamicBranches(filter: any) {
-    const tests = [];
+    let isBranchingDynamically = false;
     const branches = [];
 
     if (filter[0] === 'case') {
         for (let i = 1; i < filter.length - 1; i += 2) {
-            tests.push(filter[i]);
+            isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[i]);
             branches.push(filter[i + 1]);
         }
 
         branches.push(filter[filter.length - 1]);
     } else if (filter[0] === 'match') {
-        tests.push(filter[1]);
+        isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[1]);
 
         for (let i = 2; i < filter.length - 1; i +=2) {
             branches.push(filter[i + 1]);
         }
         branches.push(filter[filter.length - 1]);
     } else if (filter[0] === 'step') {
-        tests.push(filter[1]);
+        isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[1]);
 
         for (let i = 1; i < filter.length - 1; i +=2) {
             branches.push(filter[i + 1]);
         }
     }
 
-    const isBranchingDynamically = tests.some((test) => isDynamicFilter(test));
     if (isBranchingDynamically) {
-        filter.splice(0, filter.length);
-        filter.push('any');
-        filter.push(...branches);
+        filter.length = 0;
+        filter.push('any', ...branches);
     }
 
     // traverse and recurse into children
@@ -217,7 +217,8 @@ function isDynamicFilter(filter: any): boolean {
         return true;
     }
 
-    for(const child of filter.slice(1)) {
+    for(let i = 1; i < filter.length; i++) {
+        const child = filter[i];
         if (isDynamicFilter(child)){
             return true;
         }
