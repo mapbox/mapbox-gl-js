@@ -407,7 +407,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
 function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: mat4, projection: Projection, getElevation: ?((p: Point) => Array<number>)): vec3 {
     const point = projection.projectTilePoint(p.x, p.y, tileID);
     if (!getElevation) {
-        return project(point, posMatrix);
+        return project(point, posMatrix, point.z);
     }
     
     const elevation = getElevation(p);

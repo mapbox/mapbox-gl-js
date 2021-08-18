@@ -24,6 +24,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import { array } from '../style-spec/expression/types.js';
 import {tileLatLngCorners, latLngToECEF, tileBoundsOnGlobe, denormalizeECEF, normalizeECEF, GlobeTile} from '../geo/projection/globe.js'
+import extend from '../style-spec/util/extend.js';
 
 export {
     drawTerrainRaster,
@@ -349,10 +350,11 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
             const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
-            let elevationOptions;
+            let elevationOptions = {};
 
             if (morph) {
-                elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
+                extend(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
+                //elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
             }
 
             const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
@@ -364,7 +366,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             setShaderMode(shaderMode, isWireframe);
 
             const gridTileId = new CanonicalTileID(coord.canonical.z, Math.pow(2, coord.canonical.z) / 2, coord.canonical.y);
-            terrain.setupElevationDraw(tile, program, elevationOptions, new GlobeTile(gridTileId));
+            elevationOptions = extend(elevationOptions, { elevationTileID: gridTileId });
+            terrain.setupElevationDraw(tile, program, elevationOptions);
 
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
@@ -496,7 +499,8 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
 
             const tile = sourceCache.getTile(coord);
             const gridTileId = new CanonicalTileID(coord.canonical.z, Math.pow(2, coord.canonical.z) / 2, coord.canonical.y);
-            terrain.setupElevationDraw(tile, program, undefined, new GlobeTile(gridTileId));
+            const elevationOptions = { elevationTileID: gridTileId };
+            terrain.setupElevationDraw(tile, program, elevationOptions);
 
             const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
             const projMatrix = mat4.multiply([], tr.projMatrix, posMatrix);

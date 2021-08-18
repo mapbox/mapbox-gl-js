@@ -77,6 +77,10 @@ class MercatorTileTransform {
     upVector(id: CanonicalTileID, x: Number, y: number): vec3 {
         return [0, 0, 1];
     }
+
+    tileSpaceUpVector(): vec3 {
+        return [0, 0, 1];
+    }
 };
 
 export default {
