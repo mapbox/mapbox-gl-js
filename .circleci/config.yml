@@ -251,7 +251,7 @@ jobs:
           name: Build Webpack
           command: |
             cd ./test/build/transpilation &&
-            npm ci &&
+            npm install &&
             npm run build &&
             rm -rf node_modules
       - store_artifacts:
