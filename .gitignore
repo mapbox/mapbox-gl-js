@@ -6,7 +6,6 @@
 *.js.map
 *.cjs.map
 node_modules
-package-lock.json
 *.sublime-*
 coverage
 flow-coverage
@@ -28,5 +27,6 @@ _batfish_tmp
 _site
 yarn-error.log
 yarn-debug.log
+yarn.lock
 npm-debug.log
 .idea
