@@ -40,6 +40,7 @@ import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
+import {GlobeSharedBuffers} from '../geo/projection/globe.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 
@@ -144,6 +145,7 @@ class Painter {
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
+    globeSharedBuffers: ?GlobeSharedBuffers;
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
@@ -824,6 +826,9 @@ class Painter {
     destroy() {
         if (this._terrain) {
             this._terrain.destroy();
+        }
+        if (this.globeSharedBuffers) {
+            this.globeSharedBuffers.destroy();
         }
         this.emptyTexture.destroy();
         if (this.debugOverlayTexture) {
