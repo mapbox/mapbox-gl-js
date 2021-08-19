@@ -132,7 +132,7 @@ jobs:
       - restore_cache:
           keys:
             - v4-npm-{{ checksum "package-lock.json" }}
-      - run: npm install
+      - run: npm ci
       - save_cache:
           key: v4-npm-{{ checksum "package-lock.json" }}
           paths:
@@ -251,7 +251,7 @@ jobs:
           name: Build Webpack
           command: |
             cd ./test/build/transpilation &&
-            npm install &&
+            npm ci &&
             npm run build &&
             rm -rf node_modules
       - store_artifacts:
