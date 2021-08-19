@@ -7,6 +7,11 @@ import EXTENT from '../../data/extent.js';
 import {degToRad, clamp} from '../../util/util.js';
 import {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
 import CanonicalTileID, { UnwrappedTileID } from '../../source/tile_id.js';
+import Context from '../../gl/context.js';
+import IndexBuffer from '../../gl/index_buffer.js';
+import VertexBuffer from '../../gl/vertex_buffer.js';
+import SegmentVector from '../../data/segment.js';
+import {TriangleIndexArray} from '../../data/array_types.js';
 
 class GlobeTileTransform {
     _tr: Transform;
@@ -124,7 +129,7 @@ class GlobeTileTransform {
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
         mat4.rotateX(posMatrix, posMatrix, degToRad(-lat));
         mat4.rotateY(posMatrix, posMatrix, degToRad(-lng));
-        
+
         return mat4.multiply([], posMatrix, denormalizeECEF(tileBoundsOnGlobe(tileID)));
     }
 
@@ -330,6 +335,64 @@ export function denormalizeECEF(bounds: Aabb): Float64Array {
     mat4.scale(m, m, [st, st, st]);
 
     return m;
+}
+
+export const GLOBE_VERTEX_GRID_SIZE = 128;
+
+export class GlobeSharedBuffers {
+    poleIndexBuffer: IndexBuffer;
+    poleSegments: SegmentVector;
+
+    gridIndexBuffer: IndexBuffer;
+    gridSegments: SegmentVector;
+
+    constructor(context: Context) {
+        const gridIndices = this._createGridIndices(GLOBE_VERTEX_GRID_SIZE);
+        this.gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
+
+        const gridPrimitives = GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE * 2;
+        const gridVertices = (GLOBE_VERTEX_GRID_SIZE + 1) * (GLOBE_VERTEX_GRID_SIZE + 1);
+        this.gridSegments = SegmentVector.simpleSegment(0, 0, gridVertices, gridPrimitives);
+
+        const poleIndices = this._createPoleTriangleIndices(GLOBE_VERTEX_GRID_SIZE);
+        this.poleIndexBuffer = context.createIndexBuffer(poleIndices, true);
+
+        const polePrimitives = GLOBE_VERTEX_GRID_SIZE;
+        const poleVertices = GLOBE_VERTEX_GRID_SIZE + 2;
+        this.poleSegments = SegmentVector.simpleSegment(0, 0, poleVertices, polePrimitives);
+    }
+
+    destroy() {
+        this.poleIndexBuffer.destroy();
+        this.gridIndexBuffer.destroy();
+        this.poleSegments.destroy();
+        this.gridSegments.destroy();
+    }
+
+    _createPoleTriangleIndices(fanSize: number): TriangleIndexArray {
+        const arr = new TriangleIndexArray();
+        for (let i = 0; i <= fanSize; i++) {
+            arr.emplaceBack(0, i + 1, i + 2);
+        }
+        return arr;
+    }
+
+    _createGridIndices(count: number): TriangleIndexArray {
+        const indexArray = new TriangleIndexArray();
+        const quadExt = count;
+        const vertexExt = quadExt + 1;
+        const quad = (i, j) => {
+            const index = j * vertexExt + i;
+            indexArray.emplaceBack(index + 1, index, index + vertexExt);
+            indexArray.emplaceBack(index + vertexExt, index + vertexExt + 1, index + 1);
+        };
+        for (let j = 0; j < quadExt; j++) {
+            for (let i = 0; i < quadExt; i++) {
+                quad(i, j);
+            }
+        }
+        return indexArray;
+    }
 }
 
 export class GlobeTile {

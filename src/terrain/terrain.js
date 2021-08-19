@@ -37,7 +37,6 @@ import browser from '../util/browser.js';
 import DEMData from '../data/dem_data.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
-import { GlobeTile } from '../geo/projection/globe.js';
 
 import type Map from '../ui/map.js';
 import type Painter from '../render/painter.js';
@@ -565,7 +564,7 @@ export class Terrain extends Elevation {
             if (options && options.elevationTileID) {
                 id = options.elevationTileID;
             }
-    
+
             uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
             uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
             uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
