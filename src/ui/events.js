@@ -73,18 +73,32 @@ export class MapMouseEvent extends Event {
      */
     lngLat: LngLat;
 
-    /**
+    /**.
      * If a `layerId` was specified when adding the event listener with {@link Map#on}, `features` will be an array of
      * [GeoJSON](http://geojson.org/) [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      * The array will contain all features from that layer that are rendered at the event's point.
      * The `features` are identical to those returned by {@link Map#queryRenderedFeatures}.
      *
+     *
+     * If [`layerId1`, `layerId2`] were specified when adding the event listener with {@link Map#on}, `features` will be an array of
+     * [GeoJSON](http://geojson.org/) [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
+     * The array will contain all features from these layers that are rendered at the event's point.
+     * The `features` are identical to those returned by {@link Map#queryRenderedFeatures}.
+     *
+     *
      * If no `layerId` was specified when adding the event listener, `features` will be `undefined`.
      * You can get the features at the point with `map.queryRenderedFeatures(e.point)`.
+     *
      *
      * @example
      * // logging features for a specific layer (with `e.features`)
      * map.on('click', 'myLayerId', (e) => {
+     *     console.log(`There are ${e.features.length} features at point ${e.point}`);
+     * });
+     *
+     * @example
+     * // logging features for a specific layer (with `e.features`)
+     * map.on('click', ['layer1', 'layer2'] , (e) => {
      *     console.log(`There are ${e.features.length} features at point ${e.point}`);
      * });
      *
