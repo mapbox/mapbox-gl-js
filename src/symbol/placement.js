@@ -349,7 +349,7 @@ export class Placement {
         }
     }
 
-    placeLayerBucketPart(bucketPart: Object, seenCrossTileIDs: { [string | number]: boolean }, showCollisionBoxes: boolean) {
+    placeLayerBucketPart(bucketPart: Object, seenCrossTileIDs: { [string | number]: boolean }, showCollisionBoxes: boolean, updateCollisionBoxIfNecessary: boolean) {
 
         const {
             bucket,
@@ -395,7 +395,7 @@ export class Placement {
             bucket.deserializeCollisionBoxes(collisionBoxArray);
         }
 
-        if (showCollisionBoxes) {
+        if (showCollisionBoxes && updateCollisionBoxIfNecessary) {
             bucket.updateCollisionDebugBuffers(this.transform.zoom, collisionBoxArray);
         }
 
