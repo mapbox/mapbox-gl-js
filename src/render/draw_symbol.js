@@ -7,7 +7,7 @@ import SegmentVector from '../data/segment.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
-import {mat4} from 'gl-matrix';
+import {mat4, vec3} from 'gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
@@ -127,13 +127,18 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
 
         const pixelToTileScale = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale);
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
 
         if (size) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
             const elevation = tr.elevation;
-            const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : (_ => 0);
+            const getElevation = elevation ? (p => {
+                const e = elevation.getAtTileOffset(coord, p.x, p.y);
+                const up = [ 0.0, 0.0, 1.0 ];
+                vec3.scale(up, up, e);
+                return up;
+            }) : (_ => [0, 0, 0]);
             updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
                                   tr, labelPlaneMatrix, coord.projMatrix, tileScale, size, updateTextFitIcon, getElevation);
         }
@@ -158,7 +163,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             // so we don't need to do the extra math to figure out what incremental shift to apply.
             symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicTextLayoutVertexArray);
         } else  {
-            const tileAnchor = new Point(symbol.anchorX, symbol.anchorY);
+            const tileAnchor = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
             const elevation = getElevation(tileAnchor);
             const projectedAnchor = symbolProjection.project(tileAnchor, pitchWithMap ? posMatrix : labelPlaneMatrix, elevation);
             const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.cameraToCenterDistance, projectedAnchor.signedDistanceFromCamera);
@@ -304,8 +309,13 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (alongLine) {
             const elevation = tr.elevation;
-            const getElevation = elevation ? (p => elevation.getAtTileOffset(coord, p.x, p.y)) : null;
-            symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, getElevation);
+            const getElevation = elevation ? (p => {
+                const e = elevation.getAtTileOffset(coord, p.x, p.y);
+                const up = [ 0.0, 0.0, 1.0 ];
+                vec3.scale(up, up, e);
+                return up;
+            }) : (_ => [0, 0, 0]);
+            symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, /*globeLabelPlaneMatrix, globeGlCoordMatrix,*/ pitchWithMap, keepUpright, getElevation);
         }
 
         const matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),

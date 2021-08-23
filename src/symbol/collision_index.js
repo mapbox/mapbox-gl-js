@@ -6,7 +6,7 @@ import PathInterpolator from './path_interpolator.js';
 
 import * as intersectionTests from '../util/intersection_tests.js';
 import Grid from './grid_index.js';
-import {mat4, vec4} from 'gl-matrix';
+import {mat4, vec3, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em.js';
 import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers.js';
 import assert from 'assert';
@@ -73,7 +73,22 @@ class CollisionIndex {
 
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation, collisionBox.tileID);
+
+        let anchorX = collisionBox.projectedAnchorX; // + up[0] * collisionBox.elevation;
+        let anchorY = collisionBox.projectedAnchorY; // + up[1] * collisionBox.elevation;
+        let anchorZ = collisionBox.projectedAnchorZ; // + up[2] * collisionBox.elevation;
+
+        // Apply elevation vector to the anchor point
+        if (collisionBox.elevation) {
+            const up = [ 0.0, 0.0, 1.0 ];
+
+            anchorX += up[0] * collisionBox.elevation;
+            anchorY += up[1] * collisionBox.elevation;
+            anchorZ += up[2] * collisionBox.elevation;
+        }
+
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID);
+
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
         const tlY = (collisionBox.y1 * scale + shift.y - collisionBox.padding) * tileToViewport + projectedPoint.point.y;
@@ -116,17 +131,26 @@ class CollisionIndex {
                           textPixelPadding: number,
                           tileID: OverscaledTileID): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
         const placedCollisionCircles = [];
-        const elevation = this.transform.elevation;
-        const getElevation = elevation ? (p => elevation.getAtTileOffset(tileID, p.x, p.y)) : (_ => 0);
 
-        const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
-        const anchorElevation = getElevation(tileUnitAnchorPoint);
-        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, anchorElevation, tileID);
+        //const globeTile = new GlobeTile(tileID.canonical);
+        const getElevation = this.transform.elevation ? (p => {
+            const e = this.transform.elevation.getAtTileOffset(tileID, p.x, p.y);
+            //const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
+            const up = [ 0.0, 0.0, 1.0 ];
+            vec3.scale(up, up, e);
+            return up;
+        }) : (_ => [0, 0, 0]);
+
+        const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
+        const projectedAnchor = {x: symbol.tileAnchorX, y: symbol.tileAnchorY, z: 0.0};
+        const elevation = getElevation(tileUnitAnchorPoint);
+        const elevatedAnchor = [projectedAnchor.x + elevation[0], projectedAnchor.y + elevation[1], projectedAnchor.z + elevation[2]];
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2], tileID);
+
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
-
-        const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix, anchorElevation).point;
+        const labelPlaneAnchorPoint = projection.project(new Point(elevatedAnchor[0], elevatedAnchor[1]), labelPlaneMatrix, elevatedAnchor[2]).point;
 
         const projectionCache = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
