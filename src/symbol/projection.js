@@ -153,7 +153,7 @@ function updateLineLabels(bucket: SymbolBucket,
                           glCoordMatrix: mat4,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
-                          getElevation: ?((p: Point) => Array<number>)) {
+                          getElevation: ?((p: Point) => number)) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
     const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform.zoom);
@@ -197,9 +197,9 @@ function updateLineLabels(bucket: SymbolBucket,
         // Project tile anchor to globe anchor
         const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         //const elevatedAnchor = projectToGlobe2(tileAnchorPoint, getElevation(tileAnchorPoint), tileID);
-        const elevation = getElevation(tileAnchorPoint);
+        const elevation = getElevation ? getElevation(tileAnchorPoint) : 0.0;
         const projectedAnchor = {x: tileAnchorPoint.x, y: tileAnchorPoint.y, z: 0.0};
-        const elevatedAnchor = [ projectedAnchor.x + elevation[0], projectedAnchor.y + elevation[1], projectedAnchor.z + elevation[2]];
+        const elevatedAnchor = [ projectedAnchor.x, projectedAnchor.y, projectedAnchor.z + elevation];
         const anchorPos = [...elevatedAnchor, 1.0];
 
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
@@ -381,17 +381,17 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
     return {};
 }
 
-function elevatePointAndProject(p: Point, posMatrix: mat4, getElevation: ?((p: Point) => Array<number>)): vec3 {
+function elevatePointAndProject(p: Point, posMatrix: mat4, getElevation: ?((p: Point) => number)): vec3 {
     const point = {x: p.x, y: p.y, z: 0.0};
     if (!getElevation) {
         return project(point, posMatrix, point.z);
     }
 
     const elevation = getElevation(p);
-    return project(new Point(point.x + elevation[0], point.y + elevation[1]), posMatrix, point.z + elevation[2]);
+    return project(new Point(point.x, point.y), posMatrix, point.z + elevation);
 }
 
-function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Point, minimumLength: number, projectionMatrix: mat4, getElevation: ?((p: Point) => Array<number>)) {
+function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Point, minimumLength: number, projectionMatrix: mat4, getElevation: ?((p: Point) => number)) {
     // We are assuming "previousTilePoint" won't project to a point within one unit of the camera plane
     // If it did, that would mean our label extended all the way out from within the viewport to a (very distant)
     // point near the plane of the camera. We wouldn't be able to render the label anyway once it crossed the
@@ -420,7 +420,7 @@ function placeGlyphAlongLine(offsetX: number,
                              lineVertexArray: SymbolLineVertexArray,
                              labelPlaneMatrix: mat4,
                              projectionCache: {[_: number]: Point},
-                             getElevation: ?((p: Point) => Array<number>),
+                             getElevation: ?((p: Point) => number),
                              returnPathInTileCoords: ?boolean,
                              endGlyph: ?boolean) {
 
