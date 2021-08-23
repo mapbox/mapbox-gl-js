@@ -9,11 +9,10 @@ import {globeRasterUniformValues} from './globe_raster_program.js';
 import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
-import {easeCubicInOut} from '../util/util.js';
 import EXTENT from '../data/extent.js';
-import {warnOnce, clamp, degToRad} from '../util/util.js';
+import {easeCubicInOut, warnOnce, wrap, clamp, degToRad} from '../util/util.js';
 import {RasterBoundsArray, GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
-import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
+import {lngFromMercatorX, mercatorXfromLng, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {createLayout} from '../util/struct_array.js';
 import SegmentVector from '../data/segment.js';
 
@@ -143,18 +142,23 @@ const layout = createLayout([
 
 const lerp = (a, b, t) => a * (1 - t) + b * t;
 
-function createGridVertices(count: number, sz, sy): any {
+function createGridVertices(painter, count: number, sx, sy, sz): any {
+    const counter = painter.frameCounter;
+    const tr = painter.transform;
     const tiles = Math.pow(2, sz);
-    const gridTileId = new CanonicalTileID(sz, tiles / 2, sy);
+    const gridTileId = new CanonicalTileID(sz, sx, sy);
     const [latLngTL, latLngBR] = tileLatLngCorners(gridTileId);
     const boundsArray = new GlobeVertexArray();
-
-    const bounds = tileBoundsOnGlobe(gridTileId);
-    const norm = normalizeECEF(bounds);
 
     const gridExt = count;
     const vertexExt = gridExt + 1;
     boundsArray.reserve(count * count);
+
+    const radius = EXTENT / Math.PI / 2.0;
+
+    const rotate = mat4.identity(new Float64Array(16))
+    mat4.rotateX(rotate, rotate, degToRad(-tr.center.lat));
+    mat4.rotateY(rotate, rotate, degToRad(-tr.center.lng));
 
     for (let y = 0; y < vertexExt; y++) {
         const lat = lerp(latLngTL[0], latLngBR[0], y / gridExt);
@@ -163,10 +167,25 @@ function createGridVertices(count: number, sz, sy): any {
         for (let x = 0; x < vertexExt; x++) {
             const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
 
-            const p = latLngToECEF(lat, lng);
-            vec3.transformMat4(p, p, norm);
+            const mercatorX = wrap(mercatorXfromLng(lng - tr.center.lng), 0.0, 1.0);
+            const mercatorY = mercatorYfromLat(lat - tr.center.lat);
 
-            boundsArray.emplaceBack(p[0], p[1], p[2], x / gridExt, uvY);
+            const p = latLngToECEF(lat, lng, radius);
+
+            vec3.transformMat4(p, p, rotate);
+
+            const pMercator = [
+                mercatorX * EXTENT - EXTENT * 0.5,
+                mercatorY * EXTENT - EXTENT * 0.5,
+                radius
+            ];
+
+            const t = Math.cos(counter/100.0) * 0.5 + 0.5;
+            const xx = lerp(p[0], pMercator[0], t);
+            const yy = lerp(p[1], pMercator[1], t);
+            const zz = lerp(p[2], pMercator[2], t);
+
+            boundsArray.emplaceBack(xx, yy, zz, x / gridExt, uvY);
         }
     }
 
@@ -197,10 +216,10 @@ function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: Overscal
     const context = painter.context;
     const id = coord.canonical;
     const tr = painter.transform;
-    if (!tile.globeGridBuffer) {
-        const gridMesh = createGridVertices(GLOBE_VERTEX_GRID_SIZE, id.z, id.y);
+    // if (!tile.globeGridBuffer) {
+        const gridMesh = createGridVertices(painter, GLOBE_VERTEX_GRID_SIZE, id.x, id.y, id.z);
         tile.globeGridBuffer = context.createVertexBuffer(gridMesh, layout.members, true);
-    }
+    // }
 
     const tiles = Math.pow(2, coord.canonical.z);
     if (!tile.globePoleBuffer && (coord.canonical.y === 0 || coord.canonical.y === tiles - 1)) {
@@ -211,24 +230,6 @@ function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: Overscal
     if (!painter.globeSharedBuffers) {
         painter.globeSharedBuffers = new GlobeSharedBuffers(context);
     }
-}
-
-function globeMatrixForTile(id: CanonicalTileID, globeMatrix) {
-    // Tile geometry is pre-generated and can be reused for each tiles on the same x-row.
-    // i.e. for each tile id (x, y, z) use pregenerated mesh of (0, y, z)
-    // For this reason the transformation matrix is rotated first by 'yRotation' to place the tile in correct longitude location.
-    // This is a HACK and very slow
-    const tileDim = Math.pow(2, id.z);
-    const xOffset = id.x - tileDim / 2;
-    const yRotation = xOffset / tileDim * Math.PI * 2.0;
-
-    const gridTileId = new CanonicalTileID(id.z, Math.pow(2, id.z) / 2, id.y);
-    const bounds = tileBoundsOnGlobe(gridTileId);
-    const decode = denormalizeECEF(bounds);
-    const posMatrix = mat4.rotateY([], globeMatrix, yRotation);
-    mat4.mul(posMatrix, posMatrix, decode);
-
-    return posMatrix;
 }
 
 function poleMatrixForTile(id: CanonicalTileID, tr) {
@@ -314,7 +315,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 //elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
             }
 
-            const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
+            const posMatrix = globeMatrix;
             const projMatrix = mat4.multiply([], tr.projMatrix, posMatrix);
 
             const tiles = Math.pow(2, coord.canonical.z);
@@ -440,7 +441,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
             const elevationOptions = { elevationTileID: gridTileId };
             terrain.setupElevationDraw(tile, program, elevationOptions);
 
-            const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
+            const posMatrix = globeMatrix;
             const projMatrix = mat4.multiply([], tr.projMatrix, posMatrix);
             const uniformValues = globeRasterUniformValues(projMatrix);
 

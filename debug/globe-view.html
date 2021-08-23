@@ -67,7 +67,7 @@ const r = 255 * 0.75;
 
 let buildingsLayerId = '3d-buildings';
 const hillshadeId = 'mapbox-dem-hillshade';
-
+map.repaint = true;
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {
         "type": "raster-dem",

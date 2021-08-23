@@ -682,7 +682,7 @@ class Transform {
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation ? z : 0;
-        
+
         const tileTransform = this._projection.createTileTransform(this, numTiles);
 
         // Compute size of the globe in tiles, ie. worldSize / tileSize
@@ -1380,8 +1380,8 @@ class Transform {
         const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
-        mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
-        mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
+        // mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
+        // mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
 
         return posMatrix;
     }
@@ -1414,7 +1414,7 @@ class Transform {
     //     mat4.scale(posMatrix, posMatrix, [s, s, s]);
     //     mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
     //     mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
-        
+
     //     return mat4.multiply([], posMatrix, denormalizeECEF(tileBoundsOnGlobe(unwrappedTileID.canonical)));
     // }
 
@@ -1711,7 +1711,7 @@ class Transform {
 
         // Z-axis uses pixel coordinates when globe mode is enabled
         const pixelsPerMeter = this.pixelsPerMeter;
-        
+
         this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
         //this._projectionScaler = mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * this._projectionScaler;
