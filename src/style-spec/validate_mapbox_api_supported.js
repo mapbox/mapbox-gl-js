@@ -106,7 +106,8 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationEr
         'draft',
         'created',
         'modified',
-        'visibility'
+        'visibility',
+        'protected'
     ];
 
     const allowedKeyErrors = getAllowedKeyErrors(style, [...specKeys, ...optionalRootProperties]);
@@ -145,6 +146,10 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationEr
     const visibilityPattern = /^(public|private)$/;
     if (!isValid(style.visibility, visibilityPattern)) {
         errors.push(new ValidationError('visibility', style.visibility, 'Style visibility must be public or private'));
+    }
+
+    if (style.protected !== undefined && getType(style.protected) !== 'boolean') {
+        errors.push(new ValidationError('protected', style.protected, 'Style protection must be true or false'));
     }
 
     return errors;
