@@ -47,12 +47,9 @@ class LayerPlacement {
             bucketParts.sort((a, b) => ((a.sortKey: any): number) - ((b.sortKey: any): number));
         }
 
-        let lastBucketID;
         while (this._currentPartIndex < bucketParts.length) {
             const bucketPart = bucketParts[this._currentPartIndex];
-            const currentBucketID = bucketPart.parameters.bucket.layerIds[0];
-            placement.placeLayerBucketPart(bucketPart, this._seenCrossTileIDs, showCollisionBoxes, lastBucketID !== currentBucketID);
-            lastBucketID = currentBucketID;
+            placement.placeLayerBucketPart(bucketPart, this._seenCrossTileIDs, showCollisionBoxes, bucketPart.symbolInstanceStart === 0);
             this._currentPartIndex++;
             if (shouldPausePlacement()) {
                 return true;
