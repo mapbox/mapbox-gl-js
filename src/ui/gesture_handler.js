@@ -16,7 +16,6 @@ const defaultOptions = {
 export type GestureHandlerOptions = {
     closeButton?: boolean,
     className?: string,
-    maxWidth?: string
 };
 
 /**
@@ -26,14 +25,9 @@ export type GestureHandlerOptions = {
  * @param {boolean} [options.closeButton=false] If `true`, a close button will appear in the
  *  top right corner of the gesture handler.
  * @param {string} [options.className] Space-separated CSS class names to add to gesture handler container.
- * @param {string} [options.maxWidth='240px'] -
- *  A string that sets the CSS property of the popup's maximum width (for example, `'300px'`).
- *  To ensure the popup resizes to fit its content, set this property to `'none'`.
- *  See the MDN documentation for the list of [available values](https://developer.mozilla.org/en-US/docs/Web/CSS/max-width).
  * @example
  * const gestureHandler = new mapboxgl.GestureHandler({className: 'my-class'})
  *     .setHTML("<h1>Hello World!</h1>")
- *     .setMaxWidth("300px")
  *     .addTo(map);
  */
 export default class GestureHandler extends Evented {
@@ -67,7 +61,7 @@ export default class GestureHandler extends Evented {
 
         this._map = map;
 
-        this._map.on('zoomstart', this._onClose);
+        this._map.on('dblclick', this._onClose);
         this._map.on('remove', this.remove);
         this._update();
 
@@ -121,13 +115,13 @@ export default class GestureHandler extends Evented {
             this._map.off('move', this._update);
             this._map.off('move', this._onClose);
             this._map.off('click', this._onClose);
-            this._map.off('zoomstart', this._onClose);
+            this._map.off('dblclick', this._onClose);
             this._map.off('remove', this.remove);
             delete this._map;
         }
 
         /**
-         * Fired when the popup is closed manually or programatically.
+         * Fired when the gesture handler is closed manually or programatically.
          *
          * @event close
          * @memberof GestureHandler
@@ -139,7 +133,7 @@ export default class GestureHandler extends Evented {
          * // Create a gesture handler
          * const gestureHandler = new mapboxgl.GestureHandler();
          * // Set an event listener that will fire
-         * // any time the popup is closed
+         * // any time the gesture handler is closed
          * gestureHandler.on('close', () => {
          *     console.log('gesture handler was closed');
          * });
@@ -191,7 +185,7 @@ export default class GestureHandler extends Evented {
      * used only with trusted content. Consider {@link GestureHandler#setText} if
      * the content is an untrusted text string.
      *
-     * @param {string} html A string representing HTML content for the popup.
+     * @param {string} html A string representing HTML content for the gesture handler.
      * @returns {GestureHandler} Returns itself to allow for method chaining.
      * @example
      * const gestureHandler = new mapboxgl.GestureHandler()
@@ -210,32 +204,6 @@ export default class GestureHandler extends Evented {
         }
 
         return this.setDOMContent(frag);
-    }
-
-    /**
-     * Returns the gesture handler's maximum width.
-     *
-     * @returns {string} The maximum width of the gesture handler.
-     * @example
-     * const maxWidth = popup.getMaxWidth();
-     */
-    getMaxWidth() {
-        return this._container && this._container.style.maxWidth;
-    }
-
-    /**
-     * Sets the gesture handler's maximum width. This is setting the CSS property `max-width`.
-     * Available values can be found here: https://developer.mozilla.org/en-US/docs/Web/CSS/max-width.
-     *
-     * @param {string} maxWidth A string representing the value for the maximum width.
-     * @returns {GestureHandler} Returns itself to allow for method chaining.
-     * @example
-     * gestureHandler.setMaxWidth('50');
-     */
-    setMaxWidth(maxWidth: string) {
-        this.options.maxWidth = maxWidth;
-        this._update();
-        return this;
     }
 
     /**
@@ -278,7 +246,7 @@ export default class GestureHandler extends Evented {
      *
      * @example
      * const gestureHandler = new mapboxgl.GestureHandler();
-     * popup.addClassName('some-class');
+     * gestureHandler.addClassName('some-class');
      */
     addClassName(className: string) {
         this._classList.add(className);
@@ -353,10 +321,6 @@ export default class GestureHandler extends Evented {
         if (!this._container) {
             this._container = DOM.create('div', 'mapboxgl-gesture-handler', this._map.getContainer());
             this._container.appendChild(this._content);
-        }
-
-        if (this.options.maxWidth && this._container.style.maxWidth !== this.options.maxWidth) {
-            this._container.style.maxWidth = this.options.maxWidth;
         }
 
         this._updateClassList();
