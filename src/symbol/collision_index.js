@@ -74,17 +74,13 @@ class CollisionIndex {
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
 
-        let anchorX = collisionBox.projectedAnchorX; // + up[0] * collisionBox.elevation;
-        let anchorY = collisionBox.projectedAnchorY; // + up[1] * collisionBox.elevation;
-        let anchorZ = collisionBox.projectedAnchorZ; // + up[2] * collisionBox.elevation;
+        const anchorX = collisionBox.projectedAnchorX;
+        const anchorY = collisionBox.projectedAnchorY;
+        let anchorZ = collisionBox.projectedAnchorZ;
 
         // Apply elevation vector to the anchor point
         if (collisionBox.elevation) {
-            const up = [ 0.0, 0.0, 1.0 ];
-
-            anchorX += up[0] * collisionBox.elevation;
-            anchorY += up[1] * collisionBox.elevation;
-            anchorZ += up[2] * collisionBox.elevation;
+            anchorZ += collisionBox.elevation;
         }
 
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID);
@@ -131,14 +127,12 @@ class CollisionIndex {
                           textPixelPadding: number,
                           tileID: OverscaledTileID): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
         const placedCollisionCircles = [];
-
         const elevation = this.transform.elevation;
         const getElevation = elevation ? (p => elevation.getAtTileOffset(tileID, p.x, p.y)) : (_ => 0);
 
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         const anchorElevation = getElevation(tileUnitAnchorPoint);
         const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, anchorElevation, tileID);
-
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;

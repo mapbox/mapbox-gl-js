@@ -1,10 +1,6 @@
 uniform sampler2D u_image0;
 varying vec2 v_pos0;
 
-#ifdef FOG
-varying float v_fog_opacity;
-#endif
-
 void main() {
     vec4 color = texture2D(u_image0, v_pos0);
     gl_FragColor = color;

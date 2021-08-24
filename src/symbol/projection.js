@@ -196,10 +196,8 @@ function updateLineLabels(bucket: SymbolBucket,
 
         // Project tile anchor to globe anchor
         const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-        //const elevatedAnchor = projectToGlobe2(tileAnchorPoint, getElevation(tileAnchorPoint), tileID);
         const elevation = getElevation ? getElevation(tileAnchorPoint) : 0.0;
-        const projectedAnchor = {x: tileAnchorPoint.x, y: tileAnchorPoint.y, z: 0.0};
-        const elevatedAnchor = [ projectedAnchor.x, projectedAnchor.y, projectedAnchor.z + elevation];
+        const elevatedAnchor = [tileAnchorPoint.x, tileAnchorPoint.y, elevation];
         const anchorPos = [...elevatedAnchor, 1.0];
 
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);

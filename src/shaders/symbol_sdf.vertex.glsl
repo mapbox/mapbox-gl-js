@@ -1,7 +1,7 @@
 attribute vec4 a_pos_offset;
 attribute vec4 a_tex_size;
 attribute vec4 a_pixeloffset;
-attribute vec4 a_z_tileAnchor;
+attribute vec4 a_z_tile_anchor;
 attribute vec3 a_projected_pos;
 attribute float a_fade_opacity;
 
@@ -64,8 +64,8 @@ void main() {
         size = u_size;
     }
 
-    float anchorZ = a_z_tileAnchor.x;
-    vec2 tileAnchor = a_z_tileAnchor.yz;
+    float anchorZ = a_z_tile_anchor.x;
+    vec2 tileAnchor = a_z_tile_anchor.yz;
     vec3 h = elevationVector(tileAnchor) * elevation(tileAnchor);
     vec4 projectedPoint = u_matrix * vec4(vec3(a_pos, anchorZ) + h, 1);
 

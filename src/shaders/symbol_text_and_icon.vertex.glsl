@@ -90,7 +90,7 @@ void main() {
         // Point labels with 'rotation-alignment: map' are horizontal with respect to tile units
         // To figure out that angle in projected space, we draw a short horizontal line in tile
         // space, project it, and measure its angle in projected space.
-        vec4 offsetProjectedPoint = u_matrix * vec4(vec3(a_pos + vec2(1, 0), 0) + h, 1);
+        vec4 offsetProjectedPoint = u_matrix * vec4(vec3(a_pos.x + 1.0, a_pos.y, 0) + h, 1);
 
         vec2 a = projectedPoint.xy / projectedPoint.w;
         vec2 b = offsetProjectedPoint.xy / offsetProjectedPoint.w;
