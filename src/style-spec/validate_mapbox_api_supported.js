@@ -94,7 +94,7 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationEr
     /*
      * The following keys are optional but fully managed by the Mapbox Styles
      * API. Values on stylesheet on POST or PATCH will be ignored: "owner",
-     * "id", "cacheControl", "draft", "created", "modified"
+     * "id", "cacheControl", "draft", "created", "modified", "protected"
      *
      * The following keys are optional. The Mapbox Styles API respects value on
      * stylesheet on PATCH, but ignores the value on POST: "visibility"
