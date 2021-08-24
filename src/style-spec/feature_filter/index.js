@@ -92,7 +92,21 @@ function createFilter(filter: any): FeatureFilter {
     const compiledStaticFilter = createExpression(staticFilter, filterSpec);
     const compiledDynamicFilter = createExpression(dynamicFilter, filterSpec);
     if (compiledStaticFilter.result === 'error' || compiledDynamicFilter.result === 'error') {
-        throw new Error(compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
+        const staticFilterErrors = compiledStaticFilter.result === 'error' ?
+            compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', ') :
+            'None';
+
+        const dynamicFilterErrors = compiledDynamicFilter.result === 'error' ?
+            compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', ') :
+            'None';
+
+        const errorMsg = `static-filter errors:
+            ${staticFilterErrors}
+
+            dynamic-filter errors:
+            ${dynamicFilterErrors}
+        `;
+        throw new Error(errorMsg);
     } else {
         const needGeometry = geometryNeeded(staticFilter);
         return {
