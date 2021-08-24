@@ -768,3 +768,39 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
         display: none;
     }
 }
+
+.mapboxgl-gesture-handler:hover {
+    opacity: 1;
+}
+
+.mapboxgl-gesture-handler {
+    opacity: 0;
+    color: #fff;
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 28px;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 461;
+}
+
+.mapboxgl-gesture-handler-close-button {
+    color: #fff;
+    font-size: 28px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    border: 0;
+    padding-top: 30px;
+    padding-right: 30px;
+    border-radius: 0 3px 0 0;
+    cursor: pointer;
+    background-color: transparent;
+}

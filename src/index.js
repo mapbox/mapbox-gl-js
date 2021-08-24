@@ -12,6 +12,7 @@ import ScaleControl from './ui/control/scale_control.js';
 import FullscreenControl from './ui/control/fullscreen_control.js';
 import Popup from './ui/popup.js';
 import Marker from './ui/marker.js';
+import GestureHandler from './ui/gesture_handler.js'
 import Style from './style/style.js';
 import LngLat from './geo/lng_lat.js';
 import LngLatBounds from './geo/lng_lat_bounds.js';
@@ -43,6 +44,7 @@ const exported = {
     FullscreenControl,
     Popup,
     Marker,
+    GestureHandler,
     Style,
     LngLat,
     LngLatBounds,
