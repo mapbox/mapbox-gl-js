@@ -769,10 +769,6 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     }
 }
 
-.mapboxgl-gesture-handler:hover {
-    opacity: 1;
-}
-
 .mapboxgl-gesture-handler {
     opacity: 0;
     color: #fff;
@@ -789,6 +785,10 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 461;
+}
+
+.mapboxgl-gesture-handler:hover {
+    opacity: 1;
 }
 
 .mapboxgl-gesture-handler-close-button {

@@ -26,12 +26,12 @@ var map = window.map = new mapboxgl.Map({
     scrollZoom: {controlled: true}
 });
 
-
 map.on('load', function() {
-    new mapboxgl.GestureHandler()
+    new mapboxgl.GestureHandler({closeButton: true})
         .setHTML()
         .addTo(map);
 });
+
 </script>
 </body>
 </html>

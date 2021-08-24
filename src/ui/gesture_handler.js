@@ -2,12 +2,10 @@
 
 import {extend, bindAll} from '../util/util.js';
 import {Event, Evented} from '../util/evented.js';
-import {MapMouseEvent} from '../ui/events.js';
 import DOM from '../util/dom.js';
 import window from '../util/window.js';
 
 import type Map from './map.js';
-import type {PointLike} from '@mapbox/point-geometry';
 
 const defaultOptions = {
     closeButton: false,
@@ -21,22 +19,12 @@ export type GestureHandlerOptions = {
     maxWidth?: string
 };
 
-const focusQuerySelector = [
-    "a[href]",
-    "[tabindex]:not([tabindex='-1'])",
-    "[contenteditable]:not([contenteditable='false'])",
-    "button:not([disabled])",
-    "input:not([disabled])",
-    "select:not([disabled])",
-    "textarea:not([disabled])",
-].join(", ");
-
 /**
  * A gesture handler component.
  *
  * @param {Object} [options]
  * @param {boolean} [options.closeButton=false] If `true`, a close button will appear in the
- *   top right corner of the gesture handler.
+ *  top right corner of the gesture handler.
  * @param {string} [options.className] Space-separated CSS class names to add to gesture handler container.
  * @param {string} [options.maxWidth='240px'] -
  *  A string that sets the CSS property of the popup's maximum width (for example, `'300px'`).
@@ -79,6 +67,7 @@ export default class GestureHandler extends Evented {
 
         this._map = map;
 
+        this._map.on('zoomstart', this._onClose);
         this._map.on('remove', this.remove);
         this._update();
 
@@ -132,10 +121,8 @@ export default class GestureHandler extends Evented {
             this._map.off('move', this._update);
             this._map.off('move', this._onClose);
             this._map.off('click', this._onClose);
+            this._map.off('zoomstart', this._onClose);
             this._map.off('remove', this.remove);
-            this._map.off('mousemove', this._onMouseMove);
-            this._map.off('mouseup', this._onMouseUp);
-            this._map.off('drag', this._onDrag);
             delete this._map;
         }
 
@@ -211,7 +198,7 @@ export default class GestureHandler extends Evented {
      *     .setHTML("<h1>Hello World!</h1>")
      *     .addTo(map);
      */
-    setHTML(html: string = 'Use CTRL + scroll to zoom the map') {
+    setHTML(html: string = 'Use ⌘ + scroll to zoom the map') {
         const frag = window.document.createDocumentFragment();
         const temp = window.document.createElement('body');
         let child;
@@ -354,25 +341,13 @@ export default class GestureHandler extends Evented {
         }
     }
 
-    _onMouseUp(event: MapMouseEvent) {
-        this._update(event.point);
-    }
-
-    _onMouseMove(event: MapMouseEvent) {
-        this._update(event.point);
-    }
-
-    _onDrag(event: MapMouseEvent) {
-        this._update(event.point);
-    }
-
     _updateClassList() {
         const classes = [...this._classList];
         classes.push('mapboxgl-gesture-handler');
         this._container.className = classes.join(' ');
     }
 
-    _update(cursor: ?PointLike) {
+    _update() {
         if (!this._map || !this._content) { return; }
 
         if (!this._container) {

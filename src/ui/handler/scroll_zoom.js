@@ -168,7 +168,7 @@ class ScrollZoomHandler {
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
-        if (this.isControlled() && !e.ctrlKey) return;
+        if (this.isControlled() && !e.ctrlKey && !e.metaKey) return;
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
         let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
