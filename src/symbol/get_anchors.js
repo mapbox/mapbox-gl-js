@@ -32,10 +32,6 @@ function getShapedLabelLength(shapedText: ?Shaping, shapedIcon: ?PositionedIcon)
         shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
 }
 
-const anchorInside = (x, y) => {
-    return x >= 0 && x <= 8192.0 && y >= 0 && y <= 8192.0;
-};
-
 function getCenterAnchor(line: Array<Point>,
                          maxAngle: number,
                          shapedText: ?Shaping,
@@ -61,7 +57,7 @@ function getCenterAnchor(line: Array<Point>,
                 x = interpolate(a.x, b.x, t),
                 y = interpolate(a.y, b.y, t);
 
-            const anchor = new Anchor(x, y, 0, b.angleTo(a), i, anchorInside(x, y));
+            const anchor = new Anchor(x, y, 0, b.angleTo(a), i);
             if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
                 return anchor;
             } else {
@@ -145,7 +141,7 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
             if (x >= 0 && x < tileExtent && y >= 0 && y < tileExtent &&
                     markedDistance - halfLabelLength >= 0 &&
                     markedDistance + halfLabelLength <= lineLength) {
-                const anchor = new Anchor(x, y, 0, angle, i, anchorInside(x, y));
+                const anchor = new Anchor(x, y, 0, angle, i);
                 anchor._round();
 
                 if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
