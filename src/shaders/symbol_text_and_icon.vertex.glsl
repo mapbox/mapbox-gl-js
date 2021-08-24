@@ -1,6 +1,5 @@
 attribute vec4 a_pos_offset;
 attribute vec4 a_tex_size;
-attribute vec4 a_posz;
 attribute vec3 a_projected_pos;
 attribute float a_fade_opacity;
 
