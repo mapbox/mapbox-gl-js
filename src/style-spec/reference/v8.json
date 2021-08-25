@@ -1154,30 +1154,6 @@
       },
       "property-type": "data-driven"
     },
-    "symbol-clip": {
-      "type": "boolean",
-      "default": false,
-      "doc": "Hides a symbol based on runtime conditions",
-      "sdk-support": {
-        "basic functionality": {
-          "js": "2.5.0"
-        },
-        "data-driven styling": {
-          "js": "2.5.0"
-        }
-      },
-      "expression": {
-        "interpolated": false,
-        "parameters": [
-          "zoom",
-          "feature",
-          "feature-state",
-          "pitch",
-          "distance-from-center"
-        ]
-      },
-      "property-type": "data-driven"
-    },
     "symbol-z-order": {
       "type": "enum",
       "values": {
