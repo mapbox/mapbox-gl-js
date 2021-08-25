@@ -85,8 +85,7 @@ class GlobeTileTransform {
     }
 
     tileSpaceUpVector(): vec3 {
-        const pixelsPerMeter = mercatorZfromAltitude(1, this._tr.center.lat) * this._tr.worldSize;
-        return [0, 0, pixelsPerMeter];
+        return [0, 0, 1];
     }
 
     _calculateGlobeMatrix() {
@@ -415,9 +414,8 @@ export class GlobeTile {
         this._brUp = latLngToECEF(br[0], br[1]);
         this._blUp = latLngToECEF(br[0], tl[1]);
 
-        const topEcefPerMeter = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
-        const bottomEcefPerMeter = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
-        //const pixelsPerMeter = mercatorZfromAltitude(1, 0.0) * (1 << tileID.canonical.z) * 512.0;
+        const topEcefPerMeter = EXTENT;
+        const bottomEcefPerMeter = EXTENT;
 
         if (!labelSpace) {
             vec3.scale(this._tlUp, vec3.normalize(this._tlUp, this._tlUp), topEcefPerMeter);
@@ -432,8 +430,7 @@ export class GlobeTile {
             const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
             const st = (1 << (normBitRange - 1)) - 1;
 
-            mat4.scale(norm, norm, [st, st, st]);
-            mat4.scale(norm, norm, [maxExtInv, maxExtInv, maxExtInv]);
+            mat4.scale(norm, norm, [st * maxExtInv, st * maxExtInv, st * maxExtInv]);
 
             vec3.transformMat4(this._tlUp, this._tlUp, norm);
             vec3.transformMat4(this._trUp, this._trUp, norm);
