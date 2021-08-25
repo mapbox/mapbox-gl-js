@@ -3,6 +3,7 @@
 import {createExpression} from '../expression/index.js';
 import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
+import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
 export type FeatureFilter = {filter: FilterExpression, dynamicFilter: FilterExpression, needGeometry: boolean};
@@ -111,7 +112,7 @@ function createFilter(filter: any): FeatureFilter {
         const needGeometry = geometryNeeded(staticFilter);
         return {
             filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical),
-            dynamicFilter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical),
+            dynamicFilter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation: ?MercatorCoordinate) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, null, null, refLocation),
             needGeometry
         };
     }
