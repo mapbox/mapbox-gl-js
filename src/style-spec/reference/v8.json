@@ -2761,7 +2761,7 @@
         }
       },
       "coalesce": {
-        "doc": "Evaluates each expression in turn until the first non-null value is obtained, and returns that value.",
+        "doc": "Evaluates each expression in turn until the first valid value is obtained. Invalid values are `null` and images that are unavailable in the style. If all values are invalid, coalesce returns the first value listed.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
