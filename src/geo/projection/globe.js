@@ -80,12 +80,19 @@ class GlobeTileTransform {
     }
 
     upVector(id: CanonicalTileID, x: number, y: number): vec3 {
+        var vec = this.normalUpVector(id, x, y);
+        const pixelsPerMeter = mercatorZfromAltitude(1, 0.0) * EXTENT;
+        vec3.scale(vec, vec, pixelsPerMeter);
+        return vec;
+    }
+
+    normalUpVector(id: CanonicalTileID, x: Number, y: number): vec3 {
         return new GlobeTile(id).upVector(x / EXTENT, y / EXTENT);
-        //return [0, 0, this._tr.pixelsPerMeter];
     }
 
     tileSpaceUpVector(): vec3 {
-        return [0, 0, 1];
+        const pixelsPerMeter = mercatorZfromAltitude(1, this._tr.center.lat) * this._tr.worldSize;
+        return [0, 0, pixelsPerMeter];
     }
 
     _calculateGlobeMatrix() {
@@ -414,14 +421,11 @@ export class GlobeTile {
         this._brUp = latLngToECEF(br[0], br[1]);
         this._blUp = latLngToECEF(br[0], tl[1]);
 
-        const topEcefPerMeter = EXTENT;
-        const bottomEcefPerMeter = EXTENT;
-
         if (!labelSpace) {
-            vec3.scale(this._tlUp, vec3.normalize(this._tlUp, this._tlUp), topEcefPerMeter);
-            vec3.scale(this._trUp, vec3.normalize(this._trUp, this._trUp), topEcefPerMeter);
-            vec3.scale(this._brUp, vec3.normalize(this._brUp, this._brUp), bottomEcefPerMeter);
-            vec3.scale(this._blUp, vec3.normalize(this._blUp, this._blUp), bottomEcefPerMeter);
+            vec3.normalize(this._tlUp, this._tlUp);
+            vec3.normalize(this._trUp, this._trUp);
+            vec3.normalize(this._brUp, this._brUp);
+            vec3.normalize(this._blUp, this._blUp);
 
             // Normalize
             const bounds = tileBoundsOnGlobe(tileID);
@@ -440,10 +444,10 @@ export class GlobeTile {
             //const pixelsPerMeter = mercatorZfromAltitude(1, 0.0) * (1 << tileID.canonical.z) * 512.0;
             const pixelsPerMeter = labelSpace;// mercatorZfromAltitude(1, 60.0) * labelSpace;
 
-            this._tlUp = [0, 0, pixelsPerMeter];
-            this._trUp = [0, 0, pixelsPerMeter];
-            this._brUp = [0, 0, pixelsPerMeter];
-            this._blUp = [0, 0, pixelsPerMeter];
+            this._tlUp = [0, 0, 1];
+            this._trUp = [0, 0, 1];
+            this._brUp = [0, 0, 1];
+            this._blUp = [0, 0, 1];
         }
     }
 

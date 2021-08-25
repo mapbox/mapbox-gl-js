@@ -558,7 +558,7 @@ export class Terrain extends Elevation {
             uniforms['u_tile_tr_up'] = up;
             uniforms['u_tile_br_up'] = up;
             uniforms['u_tile_bl_up'] = up;
-            uniforms['u_pixels_per_meter'] = mercatorZfromAltitude(1, tr.center.lat) * tr.worldSize;
+            uniforms['u_pixels_per_meter'] = tr.pixelsPerMeter;
         } else {
             // Apply up vectors for the tile if the globe view is enabled
             let id = tile.tileID.canonical;
@@ -566,11 +566,11 @@ export class Terrain extends Elevation {
                 id = options.elevationTileID;
             }
 
-            uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
-            uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
-            uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
-            uniforms['u_tile_bl_up'] = tileTransform.upVector(id, 0, EXTENT);
-            uniforms['u_pixels_per_meter'] = mercatorZfromAltitude(1, tr.center.lat);
+            uniforms['u_tile_tl_up'] = tileTransform.normalUpVector(id, 0, 0);
+            uniforms['u_tile_tr_up'] = tileTransform.normalUpVector(id, EXTENT, 0);
+            uniforms['u_tile_br_up'] = tileTransform.normalUpVector(id, EXTENT, EXTENT);
+            uniforms['u_tile_bl_up'] = tileTransform.normalUpVector(id, 0, EXTENT);
+            uniforms['u_pixels_per_meter'] = mercatorZfromAltitude(1, 0.0) * EXTENT;
         }
 
         let demTile = null;
