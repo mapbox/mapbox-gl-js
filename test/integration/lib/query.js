@@ -83,6 +83,7 @@ async function runTest(t) {
 
         //2. Initialize the Map
         map = new mapboxgl.Map({
+            projection: 'albers',
             container,
             style,
             classes: options.classes,

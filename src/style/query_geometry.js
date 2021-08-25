@@ -15,7 +15,7 @@ import type {OverscaledTileID} from '../source/tile_id.js';
 
 /**
  * A data-class that represents a screenspace query from `Map#queryRenderedFeatures`.
- * All the internal geometries and data are intented to be immutable and read-only.
+ * All the internal geometries and data are intended to be immutable and read-only.
  * Its lifetime is only for the duration of the query and fixed state of the map while the query is being processed.
  *
  * @class QueryGeometry
@@ -45,7 +45,7 @@ export class QueryGeometry {
     }
 
     /**
-     * Factory method to help contruct an instance  while accounting for current map state.
+     * Factory method to help construct an instance while accounting for current map state.
      *
      * @static
      * @param {(PointLike | [PointLike, PointLike])} geometry The query geometry.
@@ -79,10 +79,10 @@ export class QueryGeometry {
     }
 
     /**
-     * Due to data-driven styling features do not uniform size(eg `circle-radius`) and can be offset differntly
-     * from their original location(for eg. with `*-translate`). This means we have to expand our query region for
+     * Since data-driven styling features do not have a uniform size (eg `circle-radius`) and can be offset differently
+     * from their original location (for e.g. with `*-translate`), this means we have to expand our query region for
      * each tile to account for variation in these properties.
-     * Each tile calculates a tile level max padding value (in screenspace pixels) when its parsed, this function
+     * Each tile calculates a tile level max padding value (in screenspace pixels) when it's parsed; this function
      * lets us calculate a buffered version of the screenspace query geometry for each tile.
      *
      * @param {number} buffer The tile padding in screenspace pixels.
@@ -202,7 +202,7 @@ export class QueryGeometry {
             return new Ray(tilespaceCameraPosition, dir);
         });
         const pixelToTileUnitsFactor = pixelsToTileUnits(tile, 1, transform.zoom);
-
+        debugger;
         if (polygonIntersectsBox(geometryForTileCheck, 0, 0, EXTENT, EXTENT)) {
             return {
                 queryGeometry: this,

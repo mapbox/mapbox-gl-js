@@ -28,10 +28,13 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                             transform: Transform,
                             use3DQuery: boolean,
                             visualizeQueryGeometry: boolean = false) {
+    console.log('sourceCache', sourceCache);
     const tileResults = sourceCache.tilesIn(queryGeometry, use3DQuery, visualizeQueryGeometry);
     tileResults.sort(sortTilesIn);
+    console.log('tileResults: ', tileResults);
     const renderedFeatureLayers = [];
     for (const tileResult of tileResults) {
+        console.log(tileResult);
         renderedFeatureLayers.push({
             wrappedTileID: tileResult.tile.tileID.wrapped().key,
             queryResults: tileResult.tile.queryRenderedFeatures(

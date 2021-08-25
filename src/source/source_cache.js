@@ -822,7 +822,7 @@ class SourceCache extends Evented {
 
         const transform = this.transform;
         if (!transform) return tileResults;
-
+        console.log(this._tiles);
         for (const tileID in this._tiles) {
             const tile = this._tiles[tileID];
             if (visualizeQueryGeometry) {

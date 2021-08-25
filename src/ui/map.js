@@ -1313,6 +1313,7 @@ class Map extends Camera {
 
         options = options || {};
         geometry = geometry || [[0, 0], [this.transform.width, this.transform.height]];
+        console.log('this.transform', this.transform, geometry);
 
         return this.style.queryRenderedFeatures(geometry, options, this.transform);
     }
