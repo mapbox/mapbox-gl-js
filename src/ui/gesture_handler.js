@@ -41,7 +41,7 @@ export default class GestureHandler extends Evented {
     constructor(options: GestureHandlerOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
-        bindAll(['_update', '_onClose', 'remove', '_onMouseMove', '_onMouseUp', '_onDrag'], this);
+        bindAll(['_update', '_onClose', 'remove'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -61,7 +61,9 @@ export default class GestureHandler extends Evented {
 
         this._map = map;
 
-        this._map.on('dblclick', this._onClose);
+        // this._map.on('click', this._onClose);
+        // event listener needs to be for interacting with map 
+        this._map._container.addEventListener('click', this._onClose);
         this._map.on('remove', this.remove);
         this._update();
 

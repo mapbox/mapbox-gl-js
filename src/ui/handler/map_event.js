@@ -57,6 +57,14 @@ export class MapEventHandler {
         return this._firePreventable(new MapMouseEvent(e.type, this._map, e));
     }
 
+    // ctrlclick(e: MouseEvent) {
+    //     if (this._mousedownPos && this._mousedownPos.dist(point) >= this._clickTolerance) return;
+    //     console.log("CTRL CLICK")
+    //     if (e.ctrlKey || e.metaKey) {
+    //         this._map.fire(new MapMouseEvent(e.type, this._map, e));
+    //     }
+    // }
+
     mouseover(e: MouseEvent) {
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
     }
