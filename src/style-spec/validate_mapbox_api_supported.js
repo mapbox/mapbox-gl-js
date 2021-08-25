@@ -182,3 +182,4 @@ export default function validateMapboxApiSupported(style: Object): Array<?Valida
 
     return errors;
 }
+
