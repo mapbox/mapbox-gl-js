@@ -13,9 +13,3 @@ export function supportsZoomExpression(spec: StylePropertySpecification): boolea
 export function supportsInterpolation(spec: StylePropertySpecification): boolean {
     return !!spec.expression && spec.expression.interpolated;
 }
-
-export function supportsCameraStateExpression(spec: StylePropertySpecification): boolean {
-    return !!spec.expression && spec.expression.parameters.indexOf('zoom') > -1 &&
-        spec.expression.parameters.indexOf('pitch') > -1  &&
-        spec.expression.parameters.indexOf('distance-from-center') > -1;
-}
