@@ -1039,7 +1039,7 @@ class Map extends Camera {
                 mousein = false;
             };
 
-            return {layers, listener, delegates: {mousemove, mouseout}};
+            return {layers: new Set(layers), listener, delegates: {mousemove, mouseout}};
         } else if (type === 'mouseleave' || type === 'mouseout') {
             let mousein = false;
             const mousemove = (e) => {
@@ -1059,7 +1059,7 @@ class Map extends Camera {
                 }
             };
 
-            return {layers, listener, delegates: {mousemove, mouseout}};
+            return {layers: new Set(layers), listener, delegates: {mousemove, mouseout}};
         } else {
             const delegate = (e) => {
                 const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
@@ -1072,7 +1072,7 @@ class Map extends Camera {
                 }
             };
 
-            return {layers, listener, delegates: {[type]: delegate}};
+            return {layers: new Set(layers), listener, delegates: {[type]: delegate}};
         }
     }
 
@@ -1299,24 +1299,24 @@ class Map extends Camera {
         }
 
         if (!Array.isArray(layerIds)) {
-            layerIds = [layerIds];
+            layerIds = new Set([layerIds]);
+        } else {
+            layerIds = new Set(layerIds)
         }
 
-        const areLayerArraysEqual = (arr1, arr2) => {
-            if (arr1.length !== arr2.length) return false;
-            const a1Hash = new Set(arr1); // creating a set: o(n)
-            const a2Hash = new Set(arr2); // creating a set: o(n)
-            if (a2Hash.size !== a1Hash.size) return false; // at-least 1 arr has duplicate value(s)
+        const areLayerArraysEqual = (hash1, hash2) => {
+            if (hash1.size !== hash2.size) {
+                return false; // at-least 1 arr has duplicate value(s)
+            }
 
             // comparing values
-            for (let i = 0; i < arr1.length; ++i) {
-                if (!a2Hash.has(arr1[i])) return false;
+            for (const value of hash1) {
+                if (!hash2.has(value)) return false;
             }
             return true;
         };
 
-        const removeDelegatedListener = (delegatedListeners) => {
-            const listeners = delegatedListeners[type];
+        const removeDelegatedListener = (listeners: Array<any>) => {
             for (let i = 0; i < listeners.length; i++) {
                 const delegatedListener = listeners[i];
                 if (delegatedListener.listener === listener && areLayerArraysEqual(delegatedListener.layers, layerIds)) {
@@ -1329,8 +1329,9 @@ class Map extends Camera {
             }
         };
 
-        if (this._delegatedListeners && this._delegatedListeners[type]) {
-            removeDelegatedListener(this._delegatedListeners);
+        const deletegatedListeners = this._delegatedListeners ? this._delegatedListeners[type] : undefined;
+        if (deletegatedListeners) {
+            removeDelegatedListener(deletegatedListeners);
         }
 
         return this;
