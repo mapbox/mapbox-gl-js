@@ -1507,7 +1507,8 @@ export type TerrainUniformsType = {|
     'u_tile_tl_up': Uniform3f,
     'u_tile_tr_up': Uniform3f,
     'u_tile_br_up': Uniform3f,
-    'u_tile_bl_up': Uniform3f
+    'u_tile_bl_up': Uniform3f,
+    'u_tile_up_scale': Uniform1f
 |};
 
 export const terrainUniforms = (context: Context, locations: UniformLocations): TerrainUniformsType => ({
@@ -1528,7 +1529,8 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_tile_tl_up': new Uniform3f(context, locations.u_tile_tl_up),
     'u_tile_tr_up': new Uniform3f(context, locations.u_tile_tr_up),
     'u_tile_br_up': new Uniform3f(context, locations.u_tile_br_up),
-    'u_tile_bl_up': new Uniform3f(context, locations.u_tile_bl_up)
+    'u_tile_bl_up': new Uniform3f(context, locations.u_tile_bl_up),
+    'u_tile_up_scale': new Uniform1f(context, locations.u_tile_up_scale)
 });
 
 function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUniformsType> {
@@ -1548,6 +1550,7 @@ function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUni
         'u_tile_tl_up': [0, 0, 1],
         'u_tile_tr_up': [0, 0, 1],
         'u_tile_br_up': [0, 0, 1],
-        'u_tile_bl_up': [0, 0, 1]
+        'u_tile_bl_up': [0, 0, 1],
+        'u_tile_up_scale': 1
     };
 }
