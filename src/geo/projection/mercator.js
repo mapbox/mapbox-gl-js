@@ -82,8 +82,8 @@ class MercatorTileTransform {
         return 1;
     }
 
-    tileSpaceUpVector(): vec3 {
-        return [0, 0, 1];
+    tileSpaceUpVectorScale(): Number {
+        return 1;
     }
 };
 

@@ -84,14 +84,13 @@ class GlobeTileTransform {
     }
 
     upVectorScale(id: CanonicalTileID): Number {
-        const pixelsPerMeter = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
+        const pixelsPerMeterECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
         const maxTileScale = tileNormalizationScale(id);
-        return pixelsPerMeter * maxTileScale;
+        return pixelsPerMeterECEF * maxTileScale;
     }
 
-    tileSpaceUpVector(): vec3 {
-        const pixelsPerMeter = mercatorZfromAltitude(1, this._tr.center.lat) * this._tr.worldSize;
-        return [0, 0, pixelsPerMeter];
+    tileSpaceUpVectorScale(): Number {
+        return mercatorZfromAltitude(1, this._tr.center.lat) * this._tr.worldSize;
     }
 
     _calculateGlobeMatrix() {
