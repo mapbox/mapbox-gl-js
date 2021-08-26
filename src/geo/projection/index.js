@@ -20,7 +20,9 @@ export type TileTransform = {
 
     upVector: (id: CanonicalTileID, x: Number, y: number) => vec3,
 
-    tileSpaceUpVector: () => vec3,
+    upVectorScale: (id: CanonicalTileID) => Number,
+
+    tileSpaceUpVectorScale: () => Number,
 };
 
 export type Projection = {
