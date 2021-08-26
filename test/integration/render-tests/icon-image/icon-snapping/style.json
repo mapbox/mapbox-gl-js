@@ -27,16 +27,6 @@
             "properties": {
               "icon": "squares-18"
             }
-          },
-          {
-              "type": "Feature",
-              "geometry": {
-                "type": "Point",
-                "coordinates": [20, 20]
-              },
-              "properties": {
-                "icon": "dot.sdf"
-              }
           }
         ]
       }
@@ -51,11 +41,12 @@
 
     },
     {
-      "id": "sdf-icon-mix",
+      "id": "symbol-square",
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "icon-image": ["get", "icon"]
+        "icon-image": ["get", "icon"],
+        "icon-offset": [1.52, 1.52]
       }
     }
   ]
