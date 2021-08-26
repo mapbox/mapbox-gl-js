@@ -553,22 +553,22 @@ export class Terrain extends Elevation {
         const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
         if (options && options.useTileSpaceElevation) {
-            const up = tileTransform.tileSpaceUpVector();
+            const up = [0,0,1];
             uniforms['u_tile_tl_up'] = up;
             uniforms['u_tile_tr_up'] = up;
             uniforms['u_tile_br_up'] = up;
             uniforms['u_tile_bl_up'] = up;
+            uniforms['u_tile_up_scale'] = tileTransform.tileSpaceUpVectorScale();
         } else {
-            // Apply up vectors for the tile if the globe view is enabled
             let id = tile.tileID.canonical;
             if (options && options.elevationTileID) {
                 id = options.elevationTileID;
             }
-
             uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
             uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
             uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
             uniforms['u_tile_bl_up'] = tileTransform.upVector(id, 0, EXTENT);
+            uniforms['u_tile_up_scale'] = tileTransform.upVectorScale(id);
         }
 
         let demTile = null;
