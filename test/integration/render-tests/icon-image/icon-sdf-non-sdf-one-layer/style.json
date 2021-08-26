@@ -51,11 +51,19 @@
 
     },
     {
-      "id": "sdf-icon-mix",
+      "id": "symbol-circle",
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "icon-image": ["get", "icon"]
+        "icon-image": "dot.sdf"
+      }
+    },
+    {
+      "id": "symbol-square",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "squares-18"
       }
     }
   ]
