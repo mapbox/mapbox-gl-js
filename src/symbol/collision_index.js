@@ -73,7 +73,18 @@ class CollisionIndex {
 
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation, collisionBox.tileID);
+
+        const anchorX = collisionBox.projectedAnchorX;
+        const anchorY = collisionBox.projectedAnchorY;
+        let anchorZ = collisionBox.projectedAnchorZ;
+
+        // Apply elevation vector to the anchor point
+        if (collisionBox.elevation) {
+            anchorZ += collisionBox.elevation;
+        }
+
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID);
+
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
         const tlY = (collisionBox.y1 * scale + shift.y - collisionBox.padding) * tileToViewport + projectedPoint.point.y;
@@ -119,13 +130,12 @@ class CollisionIndex {
         const elevation = this.transform.elevation;
         const getElevation = elevation ? (p => elevation.getAtTileOffset(tileID, p.x, p.y)) : (_ => 0);
 
-        const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
+        const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         const anchorElevation = getElevation(tileUnitAnchorPoint);
         const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, anchorElevation, tileID);
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
-
         const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix, anchorElevation).point;
 
         const projectionCache = {};
