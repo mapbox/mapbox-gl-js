@@ -10,7 +10,7 @@ import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
 import EXTENT from '../data/extent.js';
-import {easeCubicInOut, warnOnce, wrap, clamp, degToRad} from '../util/util.js';
+import {easeCubicInOut, warnOnce, wrap, clamp, degToRad, smoothstep} from '../util/util.js';
 import {RasterBoundsArray, GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
 import {lngFromMercatorX, mercatorXfromLng, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {createLayout} from '../util/struct_array.js';
@@ -142,6 +142,9 @@ const layout = createLayout([
 
 const lerp = (a, b, t) => a * (1 - t) + b * t;
 
+const GLOBE_ZOOM_THRESHOLD_MIN = 5;
+const GLOBE_ZOOM_THRESHOLD_MAX = 6;
+
 function createGridVertices(painter, count: number, sx, sy, sz): any {
     const counter = painter.frameCounter;
     const tr = painter.transform;
@@ -180,7 +183,7 @@ function createGridVertices(painter, count: number, sx, sy, sz): any {
                 radius
             ];
 
-            const t = Math.cos(counter/100.0) * 0.5 + 0.5;
+            const t = smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, tr.zoom);
             const xx = lerp(p[0], pMercator[0], t);
             const yy = lerp(p[1], pMercator[1], t);
             const zz = lerp(p[2], pMercator[2], t);
