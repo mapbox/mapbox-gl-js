@@ -78,8 +78,8 @@ class MercatorTileTransform {
         return [0, 0, 1];
     }
 
-    normalUpVector(id: CanonicalTileID, x: Number, y: number): vec3 {
-        return [0, 0, 1];
+    upVectorScale(id: CanonicalTileID): Number {
+        return 1;
     }
 
     tileSpaceUpVector(): vec3 {

@@ -80,14 +80,13 @@ class GlobeTileTransform {
     }
 
     upVector(id: CanonicalTileID, x: number, y: number): vec3 {
-        var vec = this.normalUpVector(id, x, y);
-        const pixelsPerMeter = mercatorZfromAltitude(1, 0.0) * EXTENT;
-        vec3.scale(vec, vec, pixelsPerMeter);
-        return vec;
+        return new GlobeTile(id).upVector(x / EXTENT, y / EXTENT);
     }
 
-    normalUpVector(id: CanonicalTileID, x: Number, y: number): vec3 {
-        return new GlobeTile(id).upVector(x / EXTENT, y / EXTENT);
+    upVectorScale(id: CanonicalTileID): Number {
+        const pixelsPerMeter = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
+        const maxTileScale = tileNormalizationScale(id);
+        return pixelsPerMeter * maxTileScale;
     }
 
     tileSpaceUpVector(): vec3 {
@@ -281,6 +280,13 @@ export function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
     return new Aabb(bMin, bMax);
 }
 
+export function tileNormalizationScale(id: CanonicalTileID) {
+    const bounds = tileBoundsOnGlobe(id);
+    const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
+    const st = (1 << (normBitRange - 1)) - 1;
+    return st * maxExtInv;
+}
+
 export function tileLatLngCorners(id: CanonicalTileID, padding: ?number) {
     const tileScale = Math.pow(2, id.z);
     const left = id.x / tileScale;
@@ -426,20 +432,6 @@ export class GlobeTile {
             vec3.normalize(this._trUp, this._trUp);
             vec3.normalize(this._brUp, this._brUp);
             vec3.normalize(this._blUp, this._blUp);
-
-            // Normalize
-            const bounds = tileBoundsOnGlobe(tileID);
-
-            const norm = mat4.identity(new Float64Array(16));
-            const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
-            const st = (1 << (normBitRange - 1)) - 1;
-
-            mat4.scale(norm, norm, [st * maxExtInv, st * maxExtInv, st * maxExtInv]);
-
-            vec3.transformMat4(this._tlUp, this._tlUp, norm);
-            vec3.transformMat4(this._trUp, this._trUp, norm);
-            vec3.transformMat4(this._blUp, this._blUp, norm);
-            vec3.transformMat4(this._brUp, this._brUp, norm);
         } else {
             //const pixelsPerMeter = mercatorZfromAltitude(1, 0.0) * (1 << tileID.canonical.z) * 512.0;
             const pixelsPerMeter = labelSpace;// mercatorZfromAltitude(1, 60.0) * labelSpace;
