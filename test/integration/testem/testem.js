@@ -108,6 +108,7 @@ const ciTestemConfig = {
     "reporter": "xunit",
     "report_file": ciOutputFile,
     "xunit_intermediate_output": true,
+    "tap_quiet_logs": true,
     "browser_args": {
         "Chrome": {
             "ci": [ "--disable-backgrounding-occluded-windows", "--ignore-gpu-blocklist", "--use-gl=desktop" ]
