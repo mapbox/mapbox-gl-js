@@ -683,7 +683,7 @@ test('Raycast projection 2D/3D', t => {
             // above horizon:
             const skyPoint = new Point(cx, 0);
             // raycast implementation returns null as there is no point at the top.
-            t.equal(transform.elevation.pointCoordinate(skyPoint), null,);
+            t.equal(transform.elevation.pointCoordinate(skyPoint), null);
 
             t.ok(transform.elevation.pointCoordinate(new Point(transform.width, transform.height)));
             t.deepEqual(transform.elevation.pointCoordinate(new Point(transform.width, transform.height))[2].toFixed(10), 0);
