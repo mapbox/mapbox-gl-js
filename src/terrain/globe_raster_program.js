@@ -16,6 +16,7 @@ export type GlobeRasterUniformsType = {|
     'u_proj_matrix': UniformMatrix4f,
     'u_globe_matrix': UniformMatrix4f,
     'u_merc_matrix': UniformMatrix4f,
+    'u_zoom_transition': Uniform1f,
     'u_image0': Uniform1i
 |};
 
@@ -34,6 +35,7 @@ const globeRasterUniforms = (context: Context, locations: UniformLocations): Glo
     'u_proj_matrix': new UniformMatrix4f(context, locations.u_proj_matrix),
     'u_globe_matrix': new UniformMatrix4f(context, locations.u_globe_matrix),
     'u_merc_matrix': new UniformMatrix4f(context, locations.u_merc_matrix),
+    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
     'u_image0': new Uniform1i(context, locations.u_image0)
 });
 
@@ -51,11 +53,13 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
 const globeRasterUniformValues = (
     projMatrix: Float32Array,
     globeMatrix: Float32Array,
-    globeMercatorMatrix: Float32Array
+    globeMercatorMatrix: Float32Array,
+    zoomTransition: number,
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': projMatrix,
     'u_globe_matrix': globeMatrix,
     'u_merc_matrix': globeMercatorMatrix,
+    'u_zoom_transition': zoomTransition,
     'u_image0': 0
 });
 
