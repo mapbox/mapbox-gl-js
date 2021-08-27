@@ -1153,21 +1153,21 @@ class Transform {
             new Point(Number.MAX_VALUE, Number.MAX_VALUE);
     }
 
-    /**
-     * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
-     * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
-     *
-     * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
-     */
-    getBounds(): LngLatBounds {
-        if (this._terrainEnabled()) return this._getBounds3D();
+    _getBounds(min: number, max: number) {
 
-        let tl = this.pointCoordinate(new Point(this._edgeInsets.left, this._edgeInsets.top));
-        let tr = this.pointCoordinate(new Point(this.width - this._edgeInsets.right, this._edgeInsets.top));
-        const br = this.pointCoordinate(new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom));
-        const bl = this.pointCoordinate(new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom));
+        const topLeft = new Point(this._edgeInsets.left, this._edgeInsets.top);
+        const topRight = new Point(this.width - this._edgeInsets.right, this._edgeInsets.top);
+        const bottomRight = new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom);
+        const bottomLeft = new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom);
 
-        // Snap points if off the edge of the map.
+        // Consider far points at the maximum possible elevation
+        // and near points at the minimum to ensure full coverage.
+        let tl = this.pointCoordinate(topLeft, min);
+        let tr = this.pointCoordinate(topRight, min);
+        const br = this.pointCoordinate(bottomRight, max);
+        const bl = this.pointCoordinate(bottomLeft, max);
+
+        // Snap points if off the edges of map (Latitude is too high or low).
         const slope = (p1, p2) => (p2.y - p1.y) / (p2.x - p1.x);
 
         if (tl.y > 1 && tr.y >= 0) tl = new MercatorCoordinate((1 - bl.y) / slope(bl, tl) + bl.x, 1);
@@ -1194,36 +1194,18 @@ class Transform {
             }
             return acc;
         }, {min: Number.MAX_VALUE, max: 0});
-        minmax.min *= elevation.exaggeration();
-        minmax.max *= elevation.exaggeration();
+        return this._getBounds(minmax.min * elevation.exaggeration(), minmax.max * elevation.exaggeration());
+    }
 
-        const topLeft = new Point(this._edgeInsets.left, this._edgeInsets.top);
-        const topRight = new Point(this.width - this._edgeInsets.right, this._edgeInsets.top);
-        const bottomRight = new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom);
-        const bottomLeft = new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom);
-
-        // Consider far points at the maximum possible elevation
-        // and near points at the minimum to ensure full coverage.
-        let tl = this.pointCoordinate(topLeft, minmax.min);
-        let tr = this.pointCoordinate(topRight, minmax.min);
-        const br = this.pointCoordinate(bottomRight, minmax.max);
-        const bl = this.pointCoordinate(bottomLeft, minmax.max);
-
-        // Snap points if off the edge of the map.
-        const slope = (p1, p2) => (p2.y - p1.y) / (p2.x - p1.x);
-
-        if (tl.y > 1 && tr.y >= 0) tl = new MercatorCoordinate((1 - bl.y) / slope(bl, tl) + bl.x, 1);
-        else if (tl.y < 0 && tr.y <= 1) tl = new MercatorCoordinate(-bl.y / slope(bl, tl) + bl.x, 0);
-
-        if (tr.y > 1 && tl.y >= 0) tr = new MercatorCoordinate((1 - br.y) / slope(br, tr) + br.x, 1);
-        else if (tr.y < 0 && tl.y <= 1) tr = new MercatorCoordinate(-br.y / slope(br, tr) + br.x, 0);
-
-        return new LngLatBounds()
-            .extend(this.coordinateLocation(tl))
-            .extend(this.coordinateLocation(tr))
-            .extend(this.coordinateLocation(bl))
-            .extend(this.coordinateLocation(br));
-
+    /**
+     * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
+     * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
+     *
+     * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
+     */
+    getBounds(): LngLatBounds {
+        if (this._terrainEnabled()) return this._getBounds3D();
+        return this._getBounds(0, 0);
     }
 
     /**
