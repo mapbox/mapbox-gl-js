@@ -3,7 +3,9 @@
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {degToRad, wrap} from '../util/util.js';
 import {vec3, vec4, quat, mat4} from 'gl-matrix';
+import getProjectionAdjustments from '../geo/projection/adjustments.js';
 import type {Elevation} from '../terrain/elevation.js';
+import type Transform from '../geo/transform.js';
 
 import type {LngLatLike} from '../geo/lng_lat.js';
 
@@ -241,9 +243,9 @@ class FreeCamera {
         return [col[0], col[1], col[2]];
     }
 
-    getCameraToWorld(worldSize: number, pixelsPerMeter: number): Float64Array {
+    getCameraToWorld(worldSize: number, pixelsPerMeter: number, transform: Transform): Float64Array {
         const cameraToWorld = new Float64Array(16);
-        mat4.invert(cameraToWorld, this.getWorldToCamera(worldSize, pixelsPerMeter));
+        mat4.invert(cameraToWorld, this.getWorldToCamera(worldSize, pixelsPerMeter, transform));
         return cameraToWorld;
     }
 
@@ -261,7 +263,7 @@ class FreeCamera {
         return matrix;
     }
 
-    getWorldToCamera(worldSize: number, pixelsPerMeter: number): Float64Array {
+    getWorldToCamera(worldSize: number, pixelsPerMeter: number, transform: Transform): Float64Array {
         // transformation chain from world space to camera space:
         // 1. Height value (z) of renderables is in meters. Scale z coordinate by pixelsPerMeter
         // 2. Transform from pixel coordinates to camera space with cameraMatrix^-1
@@ -279,6 +281,15 @@ class FreeCamera {
         vec3.scale(invPosition, invPosition, -worldSize);
 
         mat4.fromQuat(matrix, invOrientation);
+
+
+        const adjustments = getProjectionAdjustments(transform.projection, transform.zoom, transform.center);
+
+        mat4.multiply(matrix, matrix, adjustments.shear);
+
+        const sa = adjustments.scale;
+        mat4.scale(matrix, matrix, [sa, sa, 1]);
+
         mat4.translate(matrix, matrix, invPosition);
 
         // Pre-multiply y (2nd row)

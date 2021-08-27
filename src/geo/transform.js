@@ -266,25 +266,12 @@ class Transform {
         return new Point(this.width, this.height);
     }
 
-    // calculates the angle between a vector pointing north in
-    // Mercator and a vector pointing north in the projection
-    // and converts the angle from radians to degrees
-    _getBearingOffset(lngLat?: LngLat): number {
-        if (this.projection.name === 'mercator') return 0;
-        const {lng, lat} = lngLat || this.center;
-        const north = {lng, lat: lat + 0.0001};
-        const projectedCenter = this.projection.project(lng, lat);
-        const projectedNorth = this.projection.project(north.lng, north.lat);
-        const northVector = {x: projectedNorth.x - projectedCenter.x, y: projectedNorth.y - projectedCenter.y};
-        return (Math.atan2(northVector.x, northVector.y) * 180 / Math.PI) + 180;
-    }
-
     get bearing(): number {
-        return wrap(this._getBearingOffset() + this.rotation, -180, 180);
+        return wrap(this.rotation, -180, 180);
     }
 
     set bearing(bearing: number) {
-        this.rotation = bearing - this._getBearingOffset();
+        this.rotation = bearing;
     }
 
     get rotation(): number {
@@ -1573,7 +1560,7 @@ class Transform {
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
         const nearZ = this.height / 50;
 
-        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
+        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter, this);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, nearZ, farZ);
 
         // Apply center of perspective offset
