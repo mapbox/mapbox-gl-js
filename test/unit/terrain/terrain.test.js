@@ -336,19 +336,19 @@ test('Elevation', (t) => {
                 changed = map._updateAverageElevation(timestamp);
                 t.true(changed);
                 t.true(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 152.33102130398143);
+                t.equal(map.transform.averageElevation, 154.15083854452925);
 
                 timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
                 changed = map._updateAverageElevation(timestamp);
                 t.true(changed);
                 t.true(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 304.66204260796286);
+                t.equal(map.transform.averageElevation, 308.3016770890585);
 
                 timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
                 changed = map._updateAverageElevation(timestamp);
                 t.false(changed);
                 t.false(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 304.66204260796286);
+                t.equal(map.transform.averageElevation, 308.3016770890585);
 
                 t.end();
             });
@@ -664,8 +664,6 @@ test('Raycast projection 2D/3D', t => {
         }
     });
 
-    map.transform._horizonShift = 0;
-
     map.once('style.load', () => {
         setMockElevationTerrain(map, zeroDem, TILE_SIZE);
         map.once('render', () => {
@@ -683,29 +681,42 @@ test('Raycast projection 2D/3D', t => {
             t.ok(nearlyEquals(fixedPoint(transform.locationPoint3D(new LngLat(0, 0))), {x: cx, y: cy}));
 
             // above horizon:
+            const skyPoint = new Point(cx, 0);
             // raycast implementation returns null as there is no point at the top.
-            t.equal(transform.elevation.pointCoordinate(new Point(cx, 0)), null);
+            t.equal(transform.elevation.pointCoordinate(skyPoint), null);
 
             t.ok(transform.elevation.pointCoordinate(new Point(transform.width, transform.height)));
             t.deepEqual(transform.elevation.pointCoordinate(new Point(transform.width, transform.height))[2].toFixed(10), 0);
 
-            const latLng3D = transform.pointLocation3D(new Point(cx, 0));
-            const latLng2D = transform.pointLocation(new Point(cx, 0));
-            // Project and get horizon line.
+            const coord2D = transform.pointCoordinate(skyPoint);
+            const coord3D = transform.pointCoordinate3D(skyPoint);
+            t.ok(nearlyEquals(coord2D, coord3D, 0.001));
+
+            // Screen points above horizon line should return locations on the horizon line.
+            const latLng3D = transform.pointLocation3D(skyPoint);
+            const latLng2D = transform.pointLocation(skyPoint);
+
+            t.same(latLng2D.lng, latLng3D.lng);
+            // Small differences in screen position, close to the horizon, becomes a large distance in latitude.
+            t.same(latLng2D.lat.toFixed(0), latLng3D.lat.toFixed(0));
 
             const horizonPoint3D = transform.locationPoint3D(latLng3D);
             const horizonPoint2D = transform.locationPoint(latLng2D);
-            t.ok(Math.abs(horizonPoint3D.x - cx) < 0.0000001);
-            t.ok(Math.abs(transform.horizonLineFromTop() - 48.68884861327036) < 0.000000001);
-            t.ok(Math.abs(horizonPoint3D.y - 48.68884861327036) < 0.000000001);
-            t.deepEqual(horizonPoint2D, horizonPoint3D); // Using the same code path for horizon.
+
+            t.same(horizonPoint3D.x.toFixed(7), cx);
+            t.same(horizonPoint2D.x.toFixed(7), cx);
+            t.same(horizonPoint2D.x.toFixed(7), horizonPoint3D.x.toFixed(7));
+
+            t.same(transform.horizonLineFromTop(), 52.39171520871443);
+            t.same(horizonPoint2D.y.toFixed(7), transform.horizonLineFromTop().toFixed(7));
+            t.same((horizonPoint2D.y / 10).toFixed(0), (horizonPoint3D.y / 10).toFixed(0));
 
             // disable terrain.
             map.setTerrain(null);
             map.once('render', () => {
                 t.notOk(map.painter.terrain);
-                const latLng = transform.pointLocation3D(new Point(cx, 0));
-                t.deepEqual(latLng, latLng2D);
+                const latLng = transform.pointLocation3D(skyPoint);
+                t.same(latLng, latLng2D);
 
                 t.deepEqual(fixedLngLat(transform.pointLocation(new Point(cx, cy))), {lng: 0, lat: 0});
                 t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0});
@@ -1415,16 +1426,16 @@ test('terrain getBounds', (t) => {
             callback(null);
         };
 
-        t.deepEqual(map.getBounds().getCenter().lng.toFixed(10), 0, 'horizon, no terrain getBounds');
-        t.ok(Math.abs(map.getBounds().getCenter().lat.toFixed(10) - 0.4076172064) < 0.0000001, 'horizon, no terrain getBounds');
+        t.deepEqual(map.getBounds().getCenter().lng.toFixed(7), 0, 'horizon, no terrain getBounds');
+        t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), -42.5358013246, 'horizon, no terrain getBounds');
 
         map.setTerrain({"source": "mapbox-dem"});
         map.once('render', () => {
             map._updateTerrain();
 
             // As tiles above center are elevated, center of bounds is closer to camera.
-            t.deepEqual(map.getBounds().getCenter().lng.toFixed(10), 0, 'horizon terrain getBounds');
-            t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), -1.2344797596, 'horizon terrain getBounds');
+            t.deepEqual(map.getBounds().getCenter().lng.toFixed(4), 0, 'horizon terrain getBounds');
+            t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), -42.5482497247, 'horizon terrain getBounds');
 
             map.setPitch(0);
             map.once('render', () => {
@@ -1434,4 +1445,81 @@ test('terrain getBounds', (t) => {
             });
         });
     });
+
+    test('recognizes padding', (t) => {
+        const style = createStyle();
+        const map = createMap(t, {style, zoom: 1, bearing: 45});
+
+        map.setPadding({
+            left: 100,
+            right: 10,
+            top: 10,
+            bottom: 10
+        });
+        map.setCenter([0, 0]);
+
+        map.on('style.load', () => {
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+            map.once('render', () => {
+                t.ok(map.transform.elevation);
+                const padded = toFixed(map.getBounds().toArray());
+                map.setPadding({
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0
+                });
+                const unpadded = toFixed(map.getBounds().toArray());
+                t.notSame(padded, unpadded);
+                t.same(
+                    toFixed([[-33.5599507477, -31.7907658998], [33.5599507477, 31.7907658998]]),
+                    padded
+                );
+
+                t.same(
+                    toFixed([[-49.7184455522, -44.4454158060], [49.7184455522, 44.4454158060]]),
+                    unpadded
+                );
+                t.end();
+            });
+        });
+    });
+
+    test('Does not overflow at poles', (t) => {
+        const map = createMap(t,
+            {zoom: 2, center: [0, 90], pitch: 80});
+        map.on('style.load', () => {
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+            map.once('render', () => {
+                t.ok(map.transform.elevation);
+                const bounds = map.getBounds();
+                t.same(bounds.getNorth().toFixed(6), map.transform.maxValidLatitude);
+                t.same(
+                    toFixed(bounds.toArray()),
+                    toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]])
+                );
+
+                map.setBearing(180);
+                map.setCenter({lng: 0, lat: -90});
+
+                const sBounds = map.getBounds();
+                t.same(sBounds.getSouth().toFixed(6), -map.transform.maxValidLatitude);
+                t.same(
+                    toFixed(sBounds.toArray()),
+                    toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]])
+                );
+                t.end();
+            });
+        });
+    });
+
+    function toFixed(bounds) {
+        const n = 9;
+        return [
+            [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
+            [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
+        ];
+    }
+
 });
+
