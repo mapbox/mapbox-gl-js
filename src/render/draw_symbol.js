@@ -158,7 +158,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             // so we don't need to do the extra math to figure out what incremental shift to apply.
             symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicTextLayoutVertexArray);
         } else  {
-            const tileAnchor = new Point(symbol.anchorX, symbol.anchorY);
+            const tileAnchor = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
             const elevation = getElevation(tileAnchor);
             const projectedAnchor = symbolProjection.project(tileAnchor, pitchWithMap ? posMatrix : labelPlaneMatrix, elevation);
             const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.cameraToCenterDistance, projectedAnchor.signedDistanceFromCamera);

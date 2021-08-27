@@ -5025,10 +5025,10 @@ flatted@^3.1.0:
   resolved "https://registry.npmjs.org/flatted/-/flatted-3.1.1.tgz"
   integrity sha512-zAoAQiudy+r5SvnSw3KJy5os/oRJYHzrzja/tBDqrZtNhUw8bt6y8OBzMWcjWr+8liV8Eb6yOhw8WZ7VFZ5ZzA==
 
-flow-bin@^0.100.0:
-  version "0.100.0"
-  resolved "https://registry.npmjs.org/flow-bin/-/flow-bin-0.100.0.tgz"
-  integrity sha512-jcethhgrslBJukH7Z7883ohFFpzLrdsOEwHxvn5NwuTWbNaE71GAl55/PEBRJwYpDvYkRlqgcNkANTv0x5XjqA==
+flow-bin@0.103.0:
+  version "0.103.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.103.0.tgz#7aec510d85e1c1b0f2b912bb988337d70035cb0f"
+  integrity sha512-Y3yrnE5ICN1Kl/y10BwjA3JSuS+gt4jVPNyUNCZb0RqmkdssMrW8QNNysJYvhgAY/JBJH8Qv7NVUf11MiwfSlA==
 
 flush-write-stream@^1.0.2:
   version "1.1.1"

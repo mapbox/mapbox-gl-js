@@ -57,7 +57,7 @@ function getCenterAnchor(line: Array<Point>,
                 x = interpolate(a.x, b.x, t),
                 y = interpolate(a.y, b.y, t);
 
-            const anchor = new Anchor(x, y, b.angleTo(a), i);
+            const anchor = new Anchor(x, y, 0, b.angleTo(a), i);
             if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
                 return anchor;
             } else {
@@ -141,7 +141,7 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
             if (x >= 0 && x < tileExtent && y >= 0 && y < tileExtent &&
                     markedDistance - halfLabelLength >= 0 &&
                     markedDistance + halfLabelLength <= lineLength) {
-                const anchor = new Anchor(x, y, angle, i);
+                const anchor = new Anchor(x, y, 0, angle, i);
                 anchor._round();
 
                 if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {

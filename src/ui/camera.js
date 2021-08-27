@@ -848,7 +848,7 @@ class Camera extends Evented {
         const raycast = this._raycastElevationBox(point0, point1);
 
         if (!raycast) {
-            if (this.transform.isHorizonVisibleForPoints(point0, point1)) {
+            if (this.transform.isCornerOffEdge(point0, point1)) {
                 return this;
             }
 

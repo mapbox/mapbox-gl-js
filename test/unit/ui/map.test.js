@@ -862,6 +862,29 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('bounds cut off at poles (#10261)', (t) => {
+            const map = createMap(t,
+                {zoom: 2, center: [0, 90], pitch: 80, skipCSSStub: true});
+            const bounds = map.getBounds();
+            t.same(bounds.getNorth().toFixed(6), map.transform.maxValidLatitude);
+            t.same(
+                toFixed(bounds.toArray()),
+                toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]])
+            );
+
+            map.setBearing(180);
+            map.setCenter({lng: 0, lat: -90});
+
+            const sBounds = map.getBounds();
+            t.same(sBounds.getSouth().toFixed(6), -map.transform.maxValidLatitude);
+            t.same(
+                toFixed(sBounds.toArray()),
+                toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]])
+            );
+
+            t.end();
+        });
+
         t.end();
 
         function toFixed(bounds) {
