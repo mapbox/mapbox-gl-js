@@ -205,6 +205,7 @@ createStructArrayType('line_strip_index', createLayout([
 // line strip index array
 createStructArrayType('globe_vertex', createLayout([
     { type: 'Float32', name: 'a_pos', components: 3 },
+    { type: 'Float32', name: 'a_pos_merc', components: 3 },
     { type: 'Float32', name: 'a_uv', components: 2 }
 ]));
 

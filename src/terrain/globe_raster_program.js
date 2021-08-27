@@ -13,7 +13,9 @@ import type Context from '../gl/context.js';
 import type {UniformValues, UniformLocations} from '../render/uniform_binding.js';
 
 export type GlobeRasterUniformsType = {|
+    'u_proj_matrix': UniformMatrix4f,
     'u_globe_matrix': UniformMatrix4f,
+    'u_merc_matrix': UniformMatrix4f,
     'u_image0': Uniform1i
 |};
 
@@ -29,7 +31,9 @@ export type AtmosphereUniformsType = {|
 |};
 
 const globeRasterUniforms = (context: Context, locations: UniformLocations): GlobeRasterUniformsType => ({
+    'u_proj_matrix': new UniformMatrix4f(context, locations.u_proj_matrix),
     'u_globe_matrix': new UniformMatrix4f(context, locations.u_globe_matrix),
+    'u_merc_matrix': new UniformMatrix4f(context, locations.u_merc_matrix),
     'u_image0': new Uniform1i(context, locations.u_image0)
 });
 
@@ -45,9 +49,13 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
 });
 
 const globeRasterUniformValues = (
-    globeMatrix: Float32Array
+    projMatrix: Float32Array,
+    globeMatrix: Float32Array,
+    globeMercatorMatrix: Float32Array
 ): UniformValues<GlobeRasterUniformsType> => ({
+    'u_proj_matrix': projMatrix,
     'u_globe_matrix': globeMatrix,
+    'u_merc_matrix': globeMercatorMatrix,
     'u_image0': 0
 });
 
