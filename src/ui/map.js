@@ -1301,7 +1301,7 @@ class Map extends Camera {
         if (!Array.isArray(layerIds)) {
             layerIds = new Set([layerIds]);
         } else {
-            layerIds = new Set(layerIds)
+            layerIds = new Set(layerIds);
         }
 
         const areLayerArraysEqual = (hash1, hash2) => {
