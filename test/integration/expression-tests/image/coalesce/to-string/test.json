@@ -17,7 +17,6 @@
     "outputs": [
       "monument-15",
       "no image found"
-
     ],
     "serialized": ["to-string", ["coalesce", ["image", "foo"], ["image", "bar"], ["image", "monument-15"], "no image found"]]
   }
