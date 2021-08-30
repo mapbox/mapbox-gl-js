@@ -67,8 +67,7 @@ function getShearAdjustment(projection, zoom, loc, interpT) {
     const pdx = p2.x - p1.x;
     const pdy = p2.y - p1.y;
 
-    const angleAdjust = - Math.atan(pdy / pdx) / Math.PI * 180;
-
+    const angleAdjust = -Math.atan(pdy / pdx) / Math.PI * 180;
 
     const mc3 = MercatorCoordinate.fromLngLat(loc);
     const offset = 1 / 40000;
@@ -86,7 +85,6 @@ function getShearAdjustment(projection, zoom, loc, interpT) {
     const pdx4 = p4.x - p1.x;
     const pdy4 = p4.y - p1.y;
     const delta4 = rotate(pdx4, pdy4, angleAdjust);
-
 
     const scale = Math.abs(delta3.x) / Math.abs(delta4.y);
 
