@@ -58,7 +58,7 @@ export default class ScrollZoomControl extends Evented {
      */
     onAdd(map: Map) {
         if (this._map) this.remove();
-        console.log("HEY");
+
         this._map = map;
 
         // this._map.on('click', this._onClose);
