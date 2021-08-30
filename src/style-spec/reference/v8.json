@@ -652,7 +652,7 @@
     },
     "filter": {
       "type": "filter",
-      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. Zoom expressions in filters are only evaluated at integer zoom levels. The `feature-state` expression is not supported in filter expressions."
+      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. Zoom expressions in filters are only evaluated at integer zoom levels. The `feature-state` expression is not supported in filter expressions.  The `['pitch']` and `['distance-from-center']` expressions are supported only for filter expressions on the `symbol` layer."
     },
     "layout": {
       "type": "layout",
@@ -2500,6 +2500,66 @@
     "value": "*",
     "doc": "A filter selects specific features from a layer."
   },
+  "filter_symbol": {
+    "type": "boolean",
+    "default": true,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature", "pitch", "distance-from-center"]
+    }
+  },
+  "filter_fill": {
+    "type": "boolean",
+    "default": true,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_line": {
+    "type": "boolean",
+    "default": true,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_circle": {
+    "type": "boolean",
+    "default": true,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_fill-extrusion": {
+    "type": "boolean",
+    "default": true,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_heatmap": {
+    "type": "boolean",
+    "default": true,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
   "filter_operator": {
     "type": "enum",
     "values": {
@@ -3149,7 +3209,7 @@
       },
       "zoom": {
         "doc": "Gets the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level \"step\" or \"interpolate\" expression.",
-        "group": "Camera",
+        "group": "Zoom",
         "sdk-support": {
           "basic functionality": {
             "js": "0.41.0",
@@ -3191,24 +3251,6 @@
             "js": "2.0.0",
             "ios": "10.0.0",
             "android": "10.0.0"
-          }
-        }
-      },
-      "pitch": {
-        "doc": "The current pitch of the map in degrees.",
-        "group": "Camera",
-        "sdk-support": {
-          "basic functionality": {
-            "js": "2.5.0"
-          }
-        }
-      },
-      "distance-from-center": {
-        "doc": "The distance of the feature from the camera",
-        "group": "Camera",
-        "sdk-support": {
-          "basic functionality": {
-            "js": "2.5.0"
           }
         }
       },
@@ -4689,9 +4731,6 @@
       "doc": "Defines a gradient with which to color a line feature. Can only be used with GeoJSON sources that specify `\"lineMetrics\": true`.",
       "transition": false,
       "requires": [
-        {
-          "!": "line-dasharray"
-        },
         {
           "!": "line-pattern"
         },

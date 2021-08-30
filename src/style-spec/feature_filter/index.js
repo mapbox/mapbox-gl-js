@@ -1,12 +1,13 @@
 // @flow
 
 import {createExpression} from '../expression/index.js';
+import latest from '../reference/latest.js';
 import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
-export type FeatureFilter = {filter: FilterExpression, dynamicFilter: FilterExpression, needGeometry: boolean};
+export type FeatureFilter = {filter: FilterExpression, dynamicFilter: ?FilterExpression, needGeometry: boolean};
 
 export default createFilter;
 export {isExpressionFilter, isDynamicFilter, extractStaticFilter};
@@ -53,17 +54,6 @@ function isExpressionFilter(filter: any) {
     }
 }
 
-const filterSpec = {
-    'type': 'boolean',
-    'default': false,
-    'transition': false,
-    'property-type': 'data-driven',
-    'expression': {
-        'interpolated': false,
-        'parameters': ['zoom', 'feature', 'pitch', 'distance-from-center']
-    }
-};
-
 /**
  * Given a filter expressed as nested arrays, return a new function
  * that evaluates whether a given feature (with a .properties or .tags property)
@@ -71,11 +61,12 @@ const filterSpec = {
  *
  * @private
  * @param {Array} filter mapbox gl filter
+ * @param {string} layerType the type of the layer this filter will be applied to.
  * @returns {Function} filter-evaluating function
  */
-function createFilter(filter: any): FeatureFilter {
+function createFilter(filter: any, layerType: string = 'fill'): FeatureFilter {
     if (filter === null || filter === undefined) {
-        return {filter: () => true, dynamicFilter: () => true, needGeometry: false};
+        return {filter: () => true, dynamicFilter: null, needGeometry: false};
     }
 
     if (!isExpressionFilter(filter)) {
@@ -88,31 +79,42 @@ function createFilter(filter: any): FeatureFilter {
     } catch (e) {
         console.warn(`Failed to extract static filter from ${JSON.stringify(filter)}. Falling back to using 'true' as a filter and evaluating entire filter dynamically`);
     }
-    const dynamicFilter = filter === staticFilter ? true : filter;
 
+    const errors = {
+        static: null,
+        dynamic: null
+    };
+
+    // Compile the static component of the filter
+    const filterSpec = latest[`filter_${layerType}`];
     const compiledStaticFilter = createExpression(staticFilter, filterSpec);
-    const compiledDynamicFilter = createExpression(dynamicFilter, filterSpec);
-    if (compiledStaticFilter.result === 'error' || compiledDynamicFilter.result === 'error') {
-        const staticFilterErrors = compiledStaticFilter.result === 'error' ?
-            compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', ') :
-            'None';
+    if (compiledStaticFilter.result === 'error') {
+        errors.static = compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', ');
+    }
 
-        const dynamicFilterErrors = compiledDynamicFilter.result === 'error' ?
-            compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', ') :
-            'None';
+    // If the static component is not equal to the entire filter then we have a dynamic component
+    // Compile the dynamic component separately
+    let compiledDynamicFilter = null;
+    if (staticFilter !== filter) {
+        compiledDynamicFilter = createExpression(filter, filterSpec);
 
+        if (compiledDynamicFilter.result === 'error') {
+            errors.dynamic = compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', ');
+        }
+    }
+    if (errors.static || errors.dynamic) {
         const errorMsg = `static-filter errors:
-            ${staticFilterErrors}
+            ${errors.static}
 
             dynamic-filter errors:
-            ${dynamicFilterErrors}
+            ${errors.dynamic}
         `;
         throw new Error(errorMsg);
     } else {
         const needGeometry = geometryNeeded(staticFilter);
         return {
             filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical),
-            dynamicFilter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation: ?MercatorCoordinate) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, null, null, refLocation),
+            dynamicFilter: compiledDynamicFilter ? (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation: ?MercatorCoordinate) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, null, null, refLocation) : null,
             needGeometry
         };
     }
