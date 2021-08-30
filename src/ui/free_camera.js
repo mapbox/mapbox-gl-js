@@ -283,12 +283,9 @@ class FreeCamera {
         mat4.fromQuat(matrix, invOrientation);
 
 
-        const adjustments = getProjectionAdjustments(transform.projection, transform.zoom, transform.center);
+        const adjustments = getProjectionAdjustments(transform);
 
-        mat4.multiply(matrix, matrix, adjustments.shear);
-
-        const sa = adjustments.scale;
-        mat4.scale(matrix, matrix, [sa, sa, 1]);
+        mat4.multiply(matrix, matrix, adjustments);
 
         mat4.translate(matrix, matrix, invPosition);
 

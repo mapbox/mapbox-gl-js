@@ -4,23 +4,36 @@ import LngLat from '../lng_lat.js';
 import MercatorCoordinate from '../mercator_coordinate.js';
 import {mat4} from 'gl-matrix';
 import type {Projection} from './index.js';
+import type Transform from '../transform.js';
 
-export default function getProjectionAdjustments(projection: Projection, zoom: number, center: LngLat) {
+export default function getProjectionAdjustments(transform: Transform) {
 
-    const width = 1024;
-    const adjust = Math.log(width / 1024) / Math.LN2;
-    const zoomA = 4 + adjust;
-    const zoomB = 7 + adjust;
-    const t = Math.max(0, Math.min(1, (zoom - zoomA) / (zoomB - zoomA)));
+    const projection = transform.projection;
 
-    const zoomAdjustment = getZoomAdjustment(projection, center);
+    const interpT = getInterpolationT(transform);
+
+    const zoomAdjustment = getZoomAdjustment(projection, transform.center);
     const zoomAdjustmentOrigin = getZoomAdjustment(projection, LngLat.convert(projection.center));
-    const scaleAdjustment = Math.pow(2, zoomAdjustment * t + (1 - t) * zoomAdjustmentOrigin);
+    const scaleAdjustment = Math.pow(2, zoomAdjustment * interpT + (1 - interpT) * zoomAdjustmentOrigin);
 
-    return {
-        shear: getShearAdjustment(projection, zoom, center, t),
-        scale: scaleAdjustment
-    };
+    const matrix = getShearAdjustment(transform.projection, transform.zoom, transform.center, interpT);
+
+    mat4.scale(matrix, matrix, [scaleAdjustment, scaleAdjustment, 1]);
+
+    return matrix;
+}
+
+function getInterpolationT(transform: Transform) {
+    const range = transform.projection.range;
+    if (!range) return 0;
+
+    const size = Math.max(transform.width, transform.height);
+    const rangeAdjustment = Math.log(size / 1024) / Math.LN2;
+    const zoomA = range[0] + rangeAdjustment;
+    const zoomB = range[1] + rangeAdjustment;
+    const t = Math.max(0, Math.min(1, (transform.zoom - zoomA) / (zoomB - zoomA)));
+
+    return t;
 }
 
 /*

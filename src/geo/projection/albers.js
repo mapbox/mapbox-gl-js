@@ -3,7 +3,7 @@ import LngLat from '../lng_lat.js';
 
 export const albers = {
     name: 'albers',
-    range: [3.5, 7],
+    range: [4, 7],
 
     center: [-96, 37.5],
     parallels: [29.5, 45.5],
@@ -42,7 +42,7 @@ export const albers = {
 export const alaska = {
     ...albers,
     name: 'alaska',
-    range: [4, 7],
+    range: [4.5, 7],
     center: [-154, 50],
     parallels: [55, 65]
 };
