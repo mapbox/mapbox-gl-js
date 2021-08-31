@@ -88,10 +88,7 @@ export default class ScrollZoomControl extends Evented {
         }
 
         if (this._map) {
-            this._map.off('move', this._update);
-            this._map.off('move', this._onClose);
             this._map.off('click', this._onClose);
-            this._map.off('dblclick', this._onClose);
             this._map.off('remove', this.remove);
             delete this._map;
         }
