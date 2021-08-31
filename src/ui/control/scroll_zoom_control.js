@@ -20,8 +20,6 @@ export type Options = {
     closeFadeOut?: boolean
 };
 
-//LEFT OFF: reuse a fadeout function? activate the control ONLY when someone starts to scroll
-
 /**
  * A scroll zoom control component.
  *
@@ -46,7 +44,7 @@ export default class ScrollZoomControl extends Evented {
     constructor(options: Options) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
-        bindAll(['_update', '_onClose', 'remove'], this);
+        bindAll(['_update', 'show', '_onClose', 'remove'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -65,7 +63,7 @@ export default class ScrollZoomControl extends Evented {
 
         this._map = map;
         this._map.on('remove', this.remove);
-        this._update();
+        this._map.on('wheel', (e) => this.preventDefault(e));
 
         return this;
     }
@@ -92,10 +90,25 @@ export default class ScrollZoomControl extends Evented {
         if (this._map) {
             this._map.off('click', this._onClose);
             this._map.off('remove', this.remove);
+            this._map.off('wheel', this.preventDefault);
             delete this._map;
         }
 
         return this;
+    }
+
+    preventDefault(e) {
+        if (!e.originalEvent.ctrlKey && !e.originalEvent.metaKey) {
+            e.preventDefault();
+            this._show();
+        }
+    }
+
+    _show() {
+        this._update();
+        this._setOpacity('1');
+        this._container.style.visibility = 'visible';
+        this._createFadeOut();
     }
 
     /**
@@ -273,7 +286,7 @@ export default class ScrollZoomControl extends Evented {
                 const timer = setInterval(() => {
                     if (op <= 0.1) {
                         clearInterval(timer);
-                        that._container.style.display = 'none';
+                        that._container.style.visibility = 'hidden';
                     }
                     that._setOpacity(String(op));
                     op -= op * 0.1;
@@ -300,8 +313,6 @@ export default class ScrollZoomControl extends Evented {
             this._container.appendChild(this._content);
         }
         this._updateClassList();
-
-        this._createFadeOut();
     }
 
     _onClose() {

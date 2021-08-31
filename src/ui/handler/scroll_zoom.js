@@ -37,7 +37,6 @@ class ScrollZoomHandler {
     _enabled: boolean;
     _active: boolean;
     _zooming: boolean;
-    _controlled: boolean;
     _aroundCenter: boolean;
     _aroundPoint: Point;
     _aroundCoord: MercatorCoordinate;
@@ -112,18 +111,6 @@ class ScrollZoomHandler {
         return !!this._enabled;
     }
 
-    /**
-     * Returns a Boolean indicating whether zoom scroll is "controlled".
-     * If scroll zoom is controlled, the CTRL key must be pressed while scrolling to activate scroll zoom.
-     *
-     * @returns {boolean} `true` if the "controlled" option is set to true.
-     * @example
-     * const isScrollZoomControlled = map.scrollZoom.isControlled();
-     */
-    isControlled() {
-        return !!this._controlled;
-    }
-
     /*
     * Active state is turned on and off with every scroll wheel event and is set back to false before the map
     * render is called, so _active is not a good candidate for determining if a scroll zoom animation is in
@@ -152,7 +139,6 @@ class ScrollZoomHandler {
         if (this.isEnabled()) return;
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
-        this._controlled = options && options.controlled === true;
     }
 
     /**
@@ -168,7 +154,6 @@ class ScrollZoomHandler {
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
-        if (this.isControlled() && !e.ctrlKey && !e.metaKey) return;
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
         let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
