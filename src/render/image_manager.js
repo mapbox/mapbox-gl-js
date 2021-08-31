@@ -1,21 +1,20 @@
-/* eslint-disable linebreak-style */
 // @flow
 
 import potpack from "potpack";
 
-import { Event, ErrorEvent, Evented } from "../util/evented.js";
-import { RGBAImage } from "../util/image.js";
-import { ImagePosition } from "./image_atlas.js";
+import {Event, ErrorEvent, Evented} from "../util/evented.js";
+import {RGBAImage} from "../util/image.js";
+import {ImagePosition} from "./image_atlas.js";
 import Texture from "./texture.js";
 import assert from "assert";
-import { renderStyleImage } from "../style/style_image.js";
-import { warnOnce } from "../util/util.js";
+import {renderStyleImage} from "../style/style_image.js";
+import {warnOnce} from "../util/util.js";
 
-import type { StyleImage } from "../style/style_image.js";
+import type {StyleImage} from "../style/style_image.js";
 import type Context from "../gl/context.js";
-import type { Bin } from "potpack";
-import type { Callback } from "../types/callback.js";
-import { map } from "d3";
+import type {Bin} from "potpack";
+import type {Callback} from "../types/callback.js";
+import {map} from "d3";
 
 type Pattern = {
     bin: Bin,
@@ -63,7 +62,7 @@ class ImageManager extends Evented {
         this.requestors = [];
 
         this.patterns = {};
-        this.atlasImage = new RGBAImage({ width: 1, height: 1 });
+        this.atlasImage = new RGBAImage({width: 1, height: 1});
         this.dirty = true;
     }
 
@@ -79,7 +78,7 @@ class ImageManager extends Evented {
         this.loaded = loaded;
 
         if (loaded) {
-            for (const { ids, callback } of this.requestors) {
+            for (const {ids, callback} of this.requestors) {
                 this._notify(ids, callback);
             }
             this.requestors = [];
@@ -107,7 +106,7 @@ class ImageManager extends Evented {
         ) {
             this.fire(
                 new ErrorEvent(
-                    new Error(`Image "${id}" has invalid "stretchX" value`)
+                    new Error(`Image '${id}' has invalid 'stretchX' value`)
                 )
             );
             valid = false;
@@ -120,7 +119,7 @@ class ImageManager extends Evented {
         ) {
             this.fire(
                 new ErrorEvent(
-                    new Error(`Image "${id}" has invalid "stretchY" value`)
+                    new Error(`Image '${id}' has invalid 'stretchY' value`)
                 )
             );
             valid = false;
@@ -128,7 +127,7 @@ class ImageManager extends Evented {
         if (!this._validateContent(image.content, image)) {
             this.fire(
                 new ErrorEvent(
-                    new Error(`Image "${id}" has invalid "content" value`)
+                    new Error(`Image '${id}' has invalid 'content' value`)
                 )
             );
             valid = false;
@@ -222,7 +221,7 @@ class ImageManager extends Evented {
         if (this.isLoaded() || hasAllDependencies) {
             this._notify(ids, callback);
         } else {
-            this.requestors.push({ ids, callback });
+            this.requestors.push({ids, callback});
         }
     }
 
@@ -234,7 +233,7 @@ class ImageManager extends Evented {
 
         for (const id of ids) {
             if (!this.images[id]) {
-                this.fire(new Event("styleimagemissing", { id }));
+                this.fire(new Event("styleimagemissing", {id}));
             }
             const image = this.images[id];
             if (image) {
@@ -253,7 +252,7 @@ class ImageManager extends Evented {
                 };
             } else {
                 warnOnce(
-                    `Image "${id}" could not be loaded. Please make sure you have added the image with map.addImage() or a "sprite" property in your style. You can provide missing images by listening for the "styleimagemissing" map event.`
+                    `Image '${id}' could not be loaded. Please make sure you have added the image with map.addImage() or a 'sprite' property in your style. You can provide missing images by listening for the 'styleimagemissing' map event.`
                 );
             }
         }
@@ -264,8 +263,8 @@ class ImageManager extends Evented {
     // Pattern stuff
 
     getPixelSize() {
-        const { width, height } = this.atlasImage;
-        return { width, height };
+        const {width, height} = this.atlasImage;
+        return {width, height};
     }
 
     getPattern(id: string): ?ImagePosition {
@@ -283,9 +282,9 @@ class ImageManager extends Evented {
         if (!pattern) {
             const w = image.data.width + padding * 2;
             const h = image.data.height + padding * 2;
-            const bin = { w, h, x: 0, y: 0 };
+            const bin = {w, h, x: 0, y: 0};
             const position = new ImagePosition(bin, image);
-            this.patterns[id] = { bin, position };
+            this.patterns[id] = {bin, position};
         } else {
             pattern.position.version = image.version;
         }
@@ -313,13 +312,13 @@ class ImageManager extends Evented {
             bins.push(this.patterns[id].bin);
         }
 
-        const { w, h } = potpack(bins);
+        const {w, h} = potpack(bins);
 
         const dst = this.atlasImage;
-        dst.resize({ width: w || 1, height: h || 1 });
+        dst.resize({width: w || 1, height: h || 1});
 
         for (const id in this.patterns) {
-            const { bin } = this.patterns[id];
+            const {bin} = this.patterns[id];
             const x = bin.x + padding;
             const y = bin.y + padding;
             const src = this.images[id].data;
@@ -329,39 +328,39 @@ class ImageManager extends Evented {
             RGBAImage.copy(
                 src,
                 dst,
-                { x: 0, y: 0 },
-                { x, y },
-                { width: w, height: h }
+                {x: 0, y: 0},
+                {x, y},
+                {width: w, height: h}
             );
 
             // Add 1 pixel wrapped padding on each side of the image.
             RGBAImage.copy(
                 src,
                 dst,
-                { x: 0, y: h - 1 },
-                { x, y: y - 1 },
-                { width: w, height: 1 }
+                {x: 0, y: h - 1},
+                {x, y: y - 1},
+                {width: w, height: 1}
             ); // T
             RGBAImage.copy(
                 src,
                 dst,
-                { x: 0, y: 0 },
-                { x, y: y + h },
-                { width: w, height: 1 }
+                {x: 0, y: 0},
+                {x, y: y + h},
+                {width: w, height: 1}
             ); // B
             RGBAImage.copy(
                 src,
                 dst,
-                { x: w - 1, y: 0 },
-                { x: x - 1, y },
-                { width: 1, height: h }
+                {x: w - 1, y: 0},
+                {x: x - 1, y},
+                {width: 1, height: h}
             ); // L
             RGBAImage.copy(
                 src,
                 dst,
-                { x: 0, y: 0 },
-                { x: x + w, y },
-                { width: 1, height: h }
+                {x: 0, y: 0},
+                {x: x + w, y},
+                {width: 1, height: h}
             ); // R
         }
 
