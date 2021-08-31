@@ -70,17 +70,6 @@ export default class ScrollZoomControl extends Evented {
         return this;
     }
 
-    // add(){
-    //     if (this._map) this.remove();
-
-    //     this._map = map;
-    //     this._map.on('wheel', this.add);
-    //     this._map.on('remove', this.remove);
-    //     this._update();
-
-    //     return this;
-    // }
-
     /**
      * Removes the scroll zoom control from the map it has been added to.
      *
@@ -284,7 +273,7 @@ export default class ScrollZoomControl extends Evented {
                 const timer = setInterval(() => {
                     if (op <= 0.1) {
                         clearInterval(timer);
-                        if (that._container) that._container.style.display = 'none';
+                        that._container.style.display = 'none';
                     }
                     that._setOpacity(String(op));
                     op -= op * 0.1;

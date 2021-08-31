@@ -26,6 +26,8 @@ var map = window.map = new mapboxgl.Map({
     scrollZoom: {controlled: true}
 });
 
+const scrollZoomControl = new mapboxgl.ScrollZoomControl({closeButton: false}).setHTML();
+map.addControl(scrollZoomControl);
 
 </script>
 </body>
