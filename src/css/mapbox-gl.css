@@ -785,17 +785,3 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     background: rgba(0, 0, 0, 0.5);
     z-index: 461;
 }
-
-.mapboxgl-scroll-zoom-control-close-button {
-    color: #fff;
-    font-size: 28px;
-    position: absolute;
-    right: 0;
-    top: 0;
-    border: 0;
-    padding-top: 30px;
-    padding-right: 30px;
-    border-radius: 0 3px 0 0;
-    cursor: pointer;
-    background-color: transparent;
-}

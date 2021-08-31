@@ -6,25 +6,24 @@ import DOM from '../../util/dom.js';
 import window from '../../util/window.js';
 
 import type Map from './../map.js';
+import type {MapWheelEvent} from './../events.js';
 
 const defaultOptions = {
-    closeButton: false,
-    className: ' ',
-    showAlert: true
+    showAlert: true,
+    className: ' '
 };
 
 export type Options = {
-    closeButton?: boolean,
-    className?: string,
-    showAlert?: boolean
+    showAlert?: boolean,
+    className?: string
 };
 
 /**
  * A scroll zoom control component.
  *
  * @param {Object} [options]
- * @param {boolean} [options.closeButton=false] If `true`, a close button will appear in the
- *  top right corner of the scroll zoom control alert.
+ * @param {boolean} [options.showAlert=true] If `true`, an alert will appear when a user
+ * attempts to scroll zoom without pressing ctrl or  ⌘ keys.
  * @param {string} [options.className] Space-separated CSS class names to add to scroll zoom control container.
  * @example
  * const scrollZoomControl = new mapboxgl.ScrollZoomControl({closeButton: true})
@@ -36,14 +35,13 @@ export default class ScrollZoomControl extends Evented {
     options: Options;
     _content: HTMLElement;
     _container: HTMLElement;
-    _closeButton: HTMLElement;
     _showAlert: any;
     _classList: Set<string>;
 
     constructor(options: Options) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
-        bindAll(['_update', '_show', '_onClose', 'remove'], this);
+        bindAll(['_update', '_show', 'remove'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -87,7 +85,6 @@ export default class ScrollZoomControl extends Evented {
         }
 
         if (this._map) {
-            this._map.off('click', this._onClose);
             this._map.off('remove', this.remove);
             this._map.off('wheel', this.preventDefault);
             delete this._map;
@@ -96,7 +93,7 @@ export default class ScrollZoomControl extends Evented {
         return this;
     }
 
-    preventDefault(e) {
+    preventDefault(e: MapWheelEvent) {
         if (!e.originalEvent.ctrlKey && !e.originalEvent.metaKey) {
             e.preventDefault();
             if (this.options.showAlert) {
@@ -199,9 +196,7 @@ export default class ScrollZoomControl extends Evented {
             this._content = DOM.create('div', 'mapboxgl-scroll-zoom-control-content', this._container);
         }
 
-        // The close button should be the last tabbable element inside the scroll zoom control for a good keyboard UX.
         this._content.appendChild(htmlNode);
-        this._createCloseButton();
         this._update();
         return this;
     }
@@ -267,16 +262,6 @@ export default class ScrollZoomControl extends Evented {
         return finalState;
     }
 
-    _createCloseButton() {
-        if (this.options.closeButton) {
-            this._closeButton = DOM.create('button', 'mapboxgl-scroll-zoom-control-close-button', this._content);
-            this._closeButton.type = 'button';
-            this._closeButton.setAttribute('aria-label', 'Close scroll zoom control alert');
-            this._closeButton.innerHTML = '&#215;';
-            this._closeButton.addEventListener('click', this._onClose);
-        }
-    }
-
     _createFadeOut() {
         const that = this;
 
@@ -314,10 +299,6 @@ export default class ScrollZoomControl extends Evented {
             this._container.appendChild(this._content);
         }
         this._updateClassList();
-    }
-
-    _onClose() {
-        this.remove();
     }
 
 }
