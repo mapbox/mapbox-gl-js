@@ -20,6 +20,8 @@ export type Options = {
     closeFadeOut?: boolean
 };
 
+//LEFT OFF: reuse a fadeout function? activate the control ONLY when someone starts to scroll
+
 /**
  * A scroll zoom control component.
  *
@@ -67,6 +69,17 @@ export default class ScrollZoomControl extends Evented {
 
         return this;
     }
+
+    // add(){
+    //     if (this._map) this.remove();
+
+    //     this._map = map;
+    //     this._map.on('wheel', this.add);
+    //     this._map.on('remove', this.remove);
+    //     this._update();
+
+    //     return this;
+    // }
 
     /**
      * Removes the scroll zoom control from the map it has been added to.
@@ -271,13 +284,17 @@ export default class ScrollZoomControl extends Evented {
                 const timer = setInterval(() => {
                     if (op <= 0.1) {
                         clearInterval(timer);
-                        that._container.style.display = 'none';
+                        if (that._container) that._container.style.display = 'none';
                     }
-                    that._container.style.opacity = String(op);
+                    that._setOpacity(String(op));
                     op -= op * 0.1;
                 }, 30);
             }, 3000);
         }
+    }
+
+    _setOpacity(opacity: string) {
+        if (this._content) this._content.style.opacity = opacity;
     }
 
     _updateClassList() {

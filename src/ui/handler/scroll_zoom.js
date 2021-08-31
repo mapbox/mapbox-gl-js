@@ -168,7 +168,10 @@ class ScrollZoomHandler {
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
-        if (this.isControlled() && !e.ctrlKey && !e.metaKey) return;
+        if (this.isControlled() && !e.ctrlKey && !e.metaKey) {
+            const scrollZoomControl = new mapboxgl.ScrollZoomControl({closeButton: false}).setHTML();
+            map.addControl(scrollZoomControl);
+        }
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
         let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
