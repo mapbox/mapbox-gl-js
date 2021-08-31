@@ -276,7 +276,7 @@ export default class ScrollZoomControl extends Evented {
                         clearInterval(timer);
                         that._container.style.display = 'none';
                     }
-                    that._container.style.opacity = op;
+                    that._container.style.opacity = String(op);
                     op -= op * 0.1;
                 }, 30);
             }, 3000);
