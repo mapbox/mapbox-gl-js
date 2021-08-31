@@ -2502,7 +2502,8 @@
   },
   "filter_symbol": {
     "type": "boolean",
-    "default": true,
+    "doc": "Expression used to determine whether a symbol is being displayed or not. Symbols support `dynamic-filtering`, so this expression can account for the current state of the view by incorporating `[\"pitch\"]` and `[\"distance-from-center\"]` as part of the expression.",
+    "default": false,
     "transition": false,
     "property-type": "data-driven",
     "expression": {
@@ -2512,7 +2513,8 @@
   },
   "filter_fill": {
     "type": "boolean",
-    "default": true,
+    "doc": "Expression used to determine whether a polygon is being displayed or not. Fill layer does NOT support `dynamic-filtering`, so this expression can NOT account for the current state of the view by incorporating `[\"pitch\"]` and `[\"distance-from-center\"]` as part of the expression.",
+    "default": false,
     "transition": false,
     "property-type": "data-driven",
     "expression": {
@@ -2522,7 +2524,8 @@
   },
   "filter_line": {
     "type": "boolean",
-    "default": true,
+    "doc": "Expression used to determine whether a LineString or a Polygon is being displayed or not. Line layer does NOT support `dynamic-filtering`, so this expression can NOT account for the current state of the view by incorporating `[\"pitch\"]` and `[\"distance-from-center\"]` as part of the expression.",
+    "default": false,
     "transition": false,
     "property-type": "data-driven",
     "expression": {
@@ -2532,7 +2535,8 @@
   },
   "filter_circle": {
     "type": "boolean",
-    "default": true,
+    "doc": "Expression used to determine whether a circle is being displayed or not. Circle layer does NOT support `dynamic-filtering`, so this expression can NOT account for the current state of the view by incorporating `[\"pitch\"]` and `[\"distance-from-center\"]` as part of the expression.",
+    "default": false,
     "transition": false,
     "property-type": "data-driven",
     "expression": {
@@ -2542,7 +2546,8 @@
   },
   "filter_fill-extrusion": {
     "type": "boolean",
-    "default": true,
+    "doc": "Expression used to determine whether a polygon is being displayed or not. Fill-extrusion layer does NOT support `dynamic-filtering`, so this expression can NOT account for the current state of the view by incorporating `[\"pitch\"]` and `[\"distance-from-center\"]` as part of the expression.",
+    "default": false,
     "transition": false,
     "property-type": "data-driven",
     "expression": {
@@ -2552,7 +2557,8 @@
   },
   "filter_heatmap": {
     "type": "boolean",
-    "default": true,
+    "doc": "Expression used to determine whether a point is being displayed or not. Heatmap layer does NOT support `dynamic-filtering`, so this expression can NOT account for the current state of the view by incorporating `[\"pitch\"]` and `[\"distance-from-center\"]` as part of the expression.",
+    "default": false,
     "transition": false,
     "property-type": "data-driven",
     "expression": {
@@ -3209,13 +3215,31 @@
       },
       "zoom": {
         "doc": "Gets the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level \"step\" or \"interpolate\" expression.",
-        "group": "Zoom",
+        "group": "Camera",
         "sdk-support": {
           "basic functionality": {
             "js": "0.41.0",
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          }
+        }
+      },
+      "pitch": {
+        "doc": "Gets the current pitch in degrees. [\"pitch\"] may only be used in the `filter` expression for a `symbol` layer.",
+        "group": "Camera",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "2.6.0"
+          }
+        }
+      },
+      "distance-from-center": {
+        "doc": "Returns the distance of a `symbol` instance from the center of the map. The distance is measured in pixels but normalized by the height of the map container. It measures 0 at the center, decreases towards the camera and increase away from the camera. For example, if the height of the map is 1000px, a value of -1 means 1000px away from the center towards the camera, and a value of 1 means a distance of 1000px away from the camera from the center.[\"distance-from-center\"] may only be used in the `filter` expression for a `symbol` layer.",
+        "group": "Camera",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "2.6.0"
           }
         }
       },
