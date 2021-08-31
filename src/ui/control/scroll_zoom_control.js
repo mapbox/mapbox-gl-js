@@ -10,7 +10,6 @@ import type Map from './../map.js';
 const defaultOptions = {
     closeButton: false,
     className: ' ',
-    maxWidth: 500,
     closeFadeOut: true
 };
 
