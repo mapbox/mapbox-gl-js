@@ -1,7 +1,7 @@
 // @flow
 
 import {extend, bindAll} from '../../util/util.js';
-import {Event, Evented} from '../../util/evented.js';
+import {Evented} from '../../util/evented.js';
 import DOM from '../../util/dom.js';
 import window from '../../util/window.js';
 
@@ -10,12 +10,14 @@ import type Map from './../map.js';
 const defaultOptions = {
     closeButton: false,
     className: ' ',
-    maxWidth: 500
+    maxWidth: 500,
+    closeFadeOut: true
 };
 
 export type Options = {
     closeButton?: boolean,
     className?: string,
+    closeFadeOut?: boolean
 };
 
 /**
@@ -36,6 +38,7 @@ export default class ScrollZoomControl extends Evented {
     _content: HTMLElement;
     _container: HTMLElement;
     _closeButton: HTMLElement;
+    _closeFadeOut: any;
     _classList: Set<string>;
 
     constructor(options: Options) {
@@ -52,47 +55,17 @@ export default class ScrollZoomControl extends Evented {
      * @param {Map} map The Mapbox GL JS map to add the scroll zoom control to.
      * @returns {ScrollZoomControl} Returns itself to allow for method chaining.
      * @example
-     * new mapboxgl.scrollZoomControl()
-     *     .setHTML();
+     * new mapboxgl.ScrollZoomControl().setHTML();
      * map.addControl(scrollZoomControl);
      */
     onAdd(map: Map) {
         if (this._map) this.remove();
 
         this._map = map;
-
-        // this._map.on('click', this._onClose);
-        // event listener needs to be for interacting with map 
-        this._map._container.addEventListener('click', this._onClose);
         this._map.on('remove', this.remove);
         this._update();
 
-        this._map.on('move', this._update);
-
-        /**
-         * Fired when the scroll zoom control is opened manually or programatically.
-         *
-         * @event open
-         * @memberof scrollZoomControl
-         * @instance
-         * @type {Object}
-         * @property {ScrollZoomControl} scrollZoomControl Object that was opened.
-         *
-         */
-        this.fire(new Event('open'));
-
         return this;
-    }
-
-    /**
-     * Checks if a scroll zoom control is open.
-     *
-     * @returns {boolean} `true` if the scroll zoom control is open, `false` if it is closed.
-     * @example
-     * const isScrollZoomControlOpen = scrollZoomControl.isOpen();
-     */
-    isOpen() {
-        return !!this._map;
     }
 
     /**
@@ -122,27 +95,6 @@ export default class ScrollZoomControl extends Evented {
             this._map.off('remove', this.remove);
             delete this._map;
         }
-
-        /**
-         * Fired when the scroll zoom control is closed manually or programatically.
-         *
-         * @event close
-         * @memberof ScrollZoomControl
-         * @instance
-         * @type {Object}
-         * @property {ScrollZoomControl} scrollZoomControl Object that was closed.
-         *
-         * @example
-         * // Create a scroll zoom control
-         * const scrollZoomControl = new mapboxgl.scrollZoomControl();
-         * // Set an event listener that will fire
-         * // any time the scroll zoom control alert is closed
-         * scrollZoomControl.on('close', () => {
-         *     console.log('scroll zoom control was closed');
-         * });
-         *
-         */
-        this.fire(new Event('close'));
 
         return this;
     }
@@ -223,7 +175,6 @@ export default class ScrollZoomControl extends Evented {
      * map.addControl(scrollZoomControl);
      */
     setDOMContent(htmlNode: Node) {
-
         if (this._content) {
             // Clear out children first.
             while (this._content.hasChildNodes()) {
@@ -313,6 +264,25 @@ export default class ScrollZoomControl extends Evented {
         }
     }
 
+    _createFadeOut() {
+        const that = this;
+
+        if (this.options.closeFadeOut) {
+            setTimeout(() => {
+                // initial opacity
+                let op = 1;
+                const timer = setInterval(() => {
+                    if (op <= 0.1) {
+                        clearInterval(timer);
+                        that._container.style.display = 'none';
+                    }
+                    that._container.style.opacity = op;
+                    op -= op * 0.1;
+                }, 30);
+            }, 3000);
+        }
+    }
+
     _updateClassList() {
         const classes = [...this._classList];
         classes.push('mapboxgl-scroll-zoom-control');
@@ -326,15 +296,13 @@ export default class ScrollZoomControl extends Evented {
             this._container = DOM.create('div', 'mapboxgl-scroll-zoom-control', this._map.getContainer());
             this._container.appendChild(this._content);
         }
-
         this._updateClassList();
+
+        this._createFadeOut();
     }
 
     _onClose() {
         this.remove();
     }
 
-    _setOpacity(opacity: string) {
-        if (this._content) this._content.style.opacity = opacity;
-    }
 }
