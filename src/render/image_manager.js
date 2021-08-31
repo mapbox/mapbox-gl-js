@@ -1,23 +1,25 @@
+/* eslint-disable linebreak-style */
 // @flow
 
-import potpack from 'potpack';
+import potpack from "potpack";
 
-import {Event, ErrorEvent, Evented} from '../util/evented.js';
-import {RGBAImage} from '../util/image.js';
-import {ImagePosition} from './image_atlas.js';
-import Texture from './texture.js';
-import assert from 'assert';
-import {renderStyleImage} from '../style/style_image.js';
-import {warnOnce} from '../util/util.js';
+import { Event, ErrorEvent, Evented } from "../util/evented.js";
+import { RGBAImage } from "../util/image.js";
+import { ImagePosition } from "./image_atlas.js";
+import Texture from "./texture.js";
+import assert from "assert";
+import { renderStyleImage } from "../style/style_image.js";
+import { warnOnce } from "../util/util.js";
 
-import type {StyleImage} from '../style/style_image.js';
-import type Context from '../gl/context.js';
-import type {Bin} from 'potpack';
-import type {Callback} from '../types/callback.js';
+import type { StyleImage } from "../style/style_image.js";
+import type Context from "../gl/context.js";
+import type { Bin } from "potpack";
+import type { Callback } from "../types/callback.js";
+import { map } from "d3";
 
 type Pattern = {
     bin: Bin,
-    position: ImagePosition
+    position: ImagePosition,
 };
 
 // When copied into the atlas texture, image data is padded by one pixel on each side. Icon
@@ -38,13 +40,16 @@ const padding = 1;
     to refactor this.
 */
 class ImageManager extends Evented {
-    images: {[_: string]: StyleImage};
-    updatedImages: {[_: string]: boolean};
-    callbackDispatchedThisFrame: {[_: string]: boolean};
+    images: { [_: string]: StyleImage };
+    updatedImages: { [_: string]: boolean };
+    callbackDispatchedThisFrame: { [_: string]: boolean };
     loaded: boolean;
-    requestors: Array<{ids: Array<string>, callback: Callback<{[_: string]: StyleImage}>}>;
+    requestors: Array<{
+        ids: Array<string>,
+        callback: Callback<{ [_: string]: StyleImage }>,
+    }>;
 
-    patterns: {[_: string]: Pattern};
+    patterns: { [_: string]: Pattern };
     atlasImage: RGBAImage;
     atlasTexture: ?Texture;
     dirty: boolean;
@@ -58,7 +63,7 @@ class ImageManager extends Evented {
         this.requestors = [];
 
         this.patterns = {};
-        this.atlasImage = new RGBAImage({width: 1, height: 1});
+        this.atlasImage = new RGBAImage({ width: 1, height: 1 });
         this.dirty = true;
     }
 
@@ -74,7 +79,7 @@ class ImageManager extends Evented {
         this.loaded = loaded;
 
         if (loaded) {
-            for (const {ids, callback} of this.requestors) {
+            for (const { ids, callback } of this.requestors) {
                 this._notify(ids, callback);
             }
             this.requestors = [];
@@ -94,16 +99,38 @@ class ImageManager extends Evented {
 
     _validate(id: string, image: StyleImage) {
         let valid = true;
-        if (!this._validateStretch(image.stretchX, image.data && image.data.width)) {
-            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchX" value`)));
+        if (
+            !this._validateStretch(
+                image.stretchX,
+                image.data && image.data.width
+            )
+        ) {
+            this.fire(
+                new ErrorEvent(
+                    new Error(`Image "${id}" has invalid "stretchX" value`)
+                )
+            );
             valid = false;
         }
-        if (!this._validateStretch(image.stretchY, image.data && image.data.height)) {
-            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchY" value`)));
+        if (
+            !this._validateStretch(
+                image.stretchY,
+                image.data && image.data.height
+            )
+        ) {
+            this.fire(
+                new ErrorEvent(
+                    new Error(`Image "${id}" has invalid "stretchY" value`)
+                )
+            );
             valid = false;
         }
         if (!this._validateContent(image.content, image)) {
-            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "content" value`)));
+            this.fire(
+                new ErrorEvent(
+                    new Error(`Image "${id}" has invalid "content" value`)
+                )
+            );
             valid = false;
         }
         return valid;
@@ -113,13 +140,17 @@ class ImageManager extends Evented {
         if (!stretch) return true;
         let last = 0;
         for (const part of stretch) {
-            if (part[0] < last || part[1] < part[0] || size < part[1]) return false;
+            if (part[0] < last || part[1] < part[0] || size < part[1])
+                return false;
             last = part[1];
         }
         return true;
     }
 
-    _validateContent(content: ?[number, number, number, number] | void, image: StyleImage) {
+    _validateContent(
+        content: ?[number, number, number, number] | void,
+        image: StyleImage
+    ) {
         if (!content) return true;
         if (content.length !== 4) return false;
         if (content[0] < 0 || image.data.width < content[0]) return false;
@@ -152,11 +183,30 @@ class ImageManager extends Evented {
         }
     }
 
+    setImage(id: String, image: StyleImage, opts = {}) {
+        if (map.hasImage(id)) {
+            if (this.imageSizeChanged(id, image)) {
+                // Detect if icon size has changed, and if so,
+                // use remove/add instead of updateImage, since
+                // updateImage disallows size changes
+                map.removeImage(id);
+                map.addImage(id, image, opts);
+            } else {
+                map.updateImage(id, image);
+            }
+        } else {
+            map.addImage(id, image, opts);
+        }
+    }
+
     listImages(): Array<string> {
         return Object.keys(this.images);
     }
 
-    getImages(ids: Array<string>, callback: Callback<{[_: string]: StyleImage}>) {
+    getImages(
+        ids: Array<string>,
+        callback: Callback<{ [_: string]: StyleImage }>
+    ) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
         // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
@@ -172,16 +222,19 @@ class ImageManager extends Evented {
         if (this.isLoaded() || hasAllDependencies) {
             this._notify(ids, callback);
         } else {
-            this.requestors.push({ids, callback});
+            this.requestors.push({ ids, callback });
         }
     }
 
-    _notify(ids: Array<string>, callback: Callback<{[_: string]: StyleImage}>) {
+    _notify(
+        ids: Array<string>,
+        callback: Callback<{ [_: string]: StyleImage }>
+    ) {
         const response = {};
 
         for (const id of ids) {
             if (!this.images[id]) {
-                this.fire(new Event('styleimagemissing', {id}));
+                this.fire(new Event("styleimagemissing", { id }));
             }
             const image = this.images[id];
             if (image) {
@@ -194,10 +247,14 @@ class ImageManager extends Evented {
                     stretchX: image.stretchX,
                     stretchY: image.stretchY,
                     content: image.content,
-                    hasRenderCallback: Boolean(image.userImage && image.userImage.render)
+                    hasRenderCallback: Boolean(
+                        image.userImage && image.userImage.render
+                    ),
                 };
             } else {
-                warnOnce(`Image "${id}" could not be loaded. Please make sure you have added the image with map.addImage() or a "sprite" property in your style. You can provide missing images by listening for the "styleimagemissing" map event.`);
+                warnOnce(
+                    `Image "${id}" could not be loaded. Please make sure you have added the image with map.addImage() or a "sprite" property in your style. You can provide missing images by listening for the "styleimagemissing" map event.`
+                );
             }
         }
 
@@ -207,8 +264,8 @@ class ImageManager extends Evented {
     // Pattern stuff
 
     getPixelSize() {
-        const {width, height} = this.atlasImage;
-        return {width, height};
+        const { width, height } = this.atlasImage;
+        return { width, height };
     }
 
     getPattern(id: string): ?ImagePosition {
@@ -226,9 +283,9 @@ class ImageManager extends Evented {
         if (!pattern) {
             const w = image.data.width + padding * 2;
             const h = image.data.height + padding * 2;
-            const bin = {w, h, x: 0, y: 0};
+            const bin = { w, h, x: 0, y: 0 };
             const position = new ImagePosition(bin, image);
-            this.patterns[id] = {bin, position};
+            this.patterns[id] = { bin, position };
         } else {
             pattern.position.version = image.version;
         }
@@ -256,26 +313,56 @@ class ImageManager extends Evented {
             bins.push(this.patterns[id].bin);
         }
 
-        const {w, h} = potpack(bins);
+        const { w, h } = potpack(bins);
 
         const dst = this.atlasImage;
-        dst.resize({width: w || 1, height: h || 1});
+        dst.resize({ width: w || 1, height: h || 1 });
 
         for (const id in this.patterns) {
-            const {bin} = this.patterns[id];
+            const { bin } = this.patterns[id];
             const x = bin.x + padding;
             const y = bin.y + padding;
             const src = this.images[id].data;
             const w = src.width;
             const h = src.height;
 
-            RGBAImage.copy(src, dst, {x: 0, y: 0}, {x, y}, {width: w, height: h});
+            RGBAImage.copy(
+                src,
+                dst,
+                { x: 0, y: 0 },
+                { x, y },
+                { width: w, height: h }
+            );
 
             // Add 1 pixel wrapped padding on each side of the image.
-            RGBAImage.copy(src, dst, {x: 0, y: h - 1}, {x, y: y - 1}, {width: w, height: 1}); // T
-            RGBAImage.copy(src, dst, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: 1}); // B
-            RGBAImage.copy(src, dst, {x: w - 1, y: 0}, {x: x - 1, y}, {width: 1, height: h}); // L
-            RGBAImage.copy(src, dst, {x: 0,     y: 0}, {x: x + w, y}, {width: 1, height: h}); // R
+            RGBAImage.copy(
+                src,
+                dst,
+                { x: 0, y: h - 1 },
+                { x, y: y - 1 },
+                { width: w, height: 1 }
+            ); // T
+            RGBAImage.copy(
+                src,
+                dst,
+                { x: 0, y: 0 },
+                { x, y: y + h },
+                { width: w, height: 1 }
+            ); // B
+            RGBAImage.copy(
+                src,
+                dst,
+                { x: w - 1, y: 0 },
+                { x: x - 1, y },
+                { width: 1, height: h }
+            ); // L
+            RGBAImage.copy(
+                src,
+                dst,
+                { x: 0, y: 0 },
+                { x: x + w, y },
+                { width: 1, height: h }
+            ); // R
         }
 
         this.dirty = true;
@@ -287,7 +374,6 @@ class ImageManager extends Evented {
 
     dispatchRenderCallbacks(ids: Array<string>) {
         for (const id of ids) {
-
             // the callback for the image was already dispatched for a different frame
             if (this.callbackDispatchedThisFrame[id]) continue;
             this.callbackDispatchedThisFrame[id] = true;
