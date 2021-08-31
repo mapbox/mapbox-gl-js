@@ -25,12 +25,8 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/streets-v10',
     scrollZoom: {controlled: true}
 });
-
-map.on('load', function() {
-    new mapboxgl.GestureHandler({closeButton: true})
-        .setHTML()
-        .addTo(map);
-});
+const scrollZoomControl = new mapboxgl.ScrollZoomControl({closeButton: false}).setHTML();
+map.addControl(scrollZoomControl);
 
 </script>
 </body>
