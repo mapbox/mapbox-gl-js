@@ -20,11 +20,13 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
-    center: [-122.4194, 37.7749],
-    style: 'mapbox://styles/mapbox/streets-v10',
-    hash: true
+    zoom: 3,
+    center: [-100, 40],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    // projection: 'winkel'
 });
+
+map.showTileBoundaries = true;
 
 </script>
 </body>

@@ -9,7 +9,7 @@ import EXTENT from '../data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import SegmentVector from '../data/segment.js';
 import {PosArray, TileBoundsArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
-import {values, MAX_SAFE_INTEGER, NUM_OF_SEGMENTS} from '../util/util.js';
+import {values, MAX_SAFE_INTEGER} from '../util/util.js';
 import {isMapAuthenticated} from '../util/mapbox.js';
 import posAttributes from '../data/pos_attributes.js';
 import boundsAttributes from '../data/bounds_attributes.js';
@@ -112,15 +112,13 @@ class Painter {
     tileExtentBuffer: VertexBuffer;
     tileExtentSegments: SegmentVector;
     debugBuffer: VertexBuffer;
+    debugIndexBuffer: IndexBuffer;
     debugSegments: SegmentVector;
     viewportBuffer: VertexBuffer;
     viewportSegments: SegmentVector;
     quadTriangleIndexBuffer: IndexBuffer;
-    tileDebugIndexBuffer: IndexBuffer;
-    tileDebugSegments: SegmentVector;
     mercatorBoundsBuffer: VertexBuffer;
     mercatorBoundsSegments: SegmentVector;
-    nonmercatorBoundsSegments: SegmentVector;
     _tileClippingMaskIDs: {[_: number]: number };
     stencilClearMode: StencilMode;
     style: Style;
@@ -253,22 +251,15 @@ class Painter {
         tileBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
         this.mercatorBoundsBuffer = context.createVertexBuffer(tileBoundsArray, boundsAttributes.members);
         this.mercatorBoundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
-        const n2 = NUM_OF_SEGMENTS * NUM_OF_SEGMENTS;
-        this.nonmercatorBoundsSegments = SegmentVector.simpleSegment(0, 0, 4 * n2, 2 * n2);
-
-        const n = 4 * NUM_OF_SEGMENTS;
-        const tileDebugIndices = new LineStripIndexArray();
-        for (let i = 0; i < n; i++) {
-            tileDebugIndices.emplaceBack(i);
-        }
-        tileDebugIndices.emplaceBack(0);
-        this.tileDebugIndexBuffer = context.createIndexBuffer(tileDebugIndices);
-        this.tileDebugSegments = SegmentVector.simpleSegment(0, 0, tileDebugIndices.length, tileDebugIndices.length);
 
         const quadTriangleIndices = new TriangleIndexArray();
         quadTriangleIndices.emplaceBack(0, 1, 2);
         quadTriangleIndices.emplaceBack(2, 1, 3);
         this.quadTriangleIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
+
+        const tileLineStripIndices = new LineStripIndexArray();
+        for (const i of [0, 1, 3, 2, 0]) tileLineStripIndices.emplaceBack(i);
+        this.debugIndexBuffer = context.createIndexBuffer(tileLineStripIndices);
 
         this.emptyTexture = new Texture(context, {
             width: 1,
@@ -288,7 +279,7 @@ class Painter {
         if (tile._tileBoundsBuffer) {
             tileBoundsBuffer = tile._tileBoundsBuffer;
             tileBoundsIndexBuffer = tile._tileBoundsIndexBuffer;
-            tileBoundsSegments = this.nonmercatorBoundsSegments;
+            tileBoundsSegments = tile._tileBoundsSegments;
         } else {
             tileBoundsBuffer = this.mercatorBoundsBuffer;
             tileBoundsIndexBuffer = this.quadTriangleIndexBuffer;
