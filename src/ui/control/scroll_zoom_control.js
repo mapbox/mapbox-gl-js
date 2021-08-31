@@ -10,13 +10,13 @@ import type Map from './../map.js';
 const defaultOptions = {
     closeButton: false,
     className: ' ',
-    closeFadeOut: true
+    showAlert: true
 };
 
 export type Options = {
     closeButton?: boolean,
     className?: string,
-    closeFadeOut?: boolean
+    showAlert?: boolean
 };
 
 /**
@@ -37,13 +37,13 @@ export default class ScrollZoomControl extends Evented {
     _content: HTMLElement;
     _container: HTMLElement;
     _closeButton: HTMLElement;
-    _closeFadeOut: any;
+    _showAlert: any;
     _classList: Set<string>;
 
     constructor(options: Options) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
-        bindAll(['_update', 'show', '_onClose', 'remove'], this);
+        bindAll(['_update', '_show', '_onClose', 'remove'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -99,7 +99,9 @@ export default class ScrollZoomControl extends Evented {
     preventDefault(e) {
         if (!e.originalEvent.ctrlKey && !e.originalEvent.metaKey) {
             e.preventDefault();
-            this._show();
+            if (this.options.showAlert) {
+                this._show();
+            }
         }
     }
 
@@ -278,7 +280,7 @@ export default class ScrollZoomControl extends Evented {
     _createFadeOut() {
         const that = this;
 
-        if (this.options.closeFadeOut) {
+        if (this.options.showAlert) {
             setTimeout(() => {
                 // initial opacity
                 let op = 1;
