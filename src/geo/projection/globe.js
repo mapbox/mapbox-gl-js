@@ -206,28 +206,6 @@ export default {
     createTileTransform(tr: Transform, worldSize: number): TileTransform {
         return new GlobeTileTransform(tr, worldSize);
     },
-
-    tileAabb(id: UnwrappedTileID, z: number, min: number, max: number) {
-
-        // const aabb = tileBoundsOnGlobe(id);
-
-        // // Transform corners of the aabb to the correct space
-        // const corners = aabb.getCorners();
-
-        // const mx = Number.MAX_VALUE;
-        // const max = [-mx, -mx, -mx];
-        // const min = [mx, mx, mx];
-
-        // for (let i = 0; i < corners.length; i++) {
-        //     vec3.transformMat4(corners[i], corners[i], globeMatrix);
-        //     vec3.min(min, min, corners[i]);
-        //     vec3.max(max, max, corners[i]);
-        // }
-
-        // return new Aabb(min, max);
-
-        return null;
-    },
 }
 
 export const globeRefRadius = EXTENT / Math.PI / 2.0;
@@ -325,8 +303,8 @@ export function normalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
-export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
+export const GLOBE_ZOOM_THRESHOLD_MIN = 8;
+export const GLOBE_ZOOM_THRESHOLD_MAX = 9;
 
 export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);

@@ -331,6 +331,7 @@ class Map extends Camera {
     _crossFadingFactor: number;
     _collectResourceTiming: boolean;
     _optimizeForTerrain: boolean;
+    _transitionFromGlobe: boolean;
     _renderTaskQueue: TaskQueue;
     _domRenderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
@@ -2303,10 +2304,23 @@ class Map extends Camera {
         return this._setTerrain(terrain, "explicit");
     }
 
+    _updateProjection() {
+        const proj = this.transform.projection;
+        const zoom = this.transform.zoom;
+
+        if (proj.name === 'globe' && zoom >= GLOBE_ZOOM_THRESHOLD_MAX && !this._transitionFromGlobe) {
+            this.setProjection({name: 'mercator'});
+            this._transitionFromGlobe = true;
+        } else if (this._transitionFromGlobe && zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
+            this.setProjection({name: 'globe'});
+        }
+    }
+
     setProjection(options?: { name: String }) {
         const name = options ? options.name : null;
         const prevName = this.transform.projection.name;
         this.transform.projection = name;
+        this._transitionFromGlobe = false;
 
         if (this.transform.projection.requiresDraping) {
             this._setTerrain(this.style.stylesheet.terrain ?? {source: 'mapbox-dem', exaggeration: 0.0}, "projection");
@@ -2762,13 +2776,7 @@ class Map extends Camera {
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
 
-        if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX - 0.01) {
-            this.transform.projection = null;
-            this.style.dispatcher.broadcast('setProjection', null);
-        } else {
-            this.transform.projection = 'globe';
-            this.style.dispatcher.broadcast('setProjection', this.transform.projection.name);
-        }
+        this._updateProjection();
 
         let crossFading = false;
         const fadeDuration = this._isInitialLoad ? 0 : this._fadeDuration;
