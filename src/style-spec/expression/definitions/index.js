@@ -204,7 +204,7 @@ CompoundExpression.register(expressions, {
     'pitch': [
         NumberType,
         [],
-        (ctx) => ctx.globals.pitch
+        (ctx) => ctx.globals.pitch || 0
     ],
     'distance-from-center': [
         NumberType,

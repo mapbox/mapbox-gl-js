@@ -41,7 +41,7 @@ export type FeatureState = {[_: string]: any};
 
 export type GlobalProperties = $ReadOnly<{
     zoom: number,
-    pitch: number,
+    pitch?: number,
     cameraDistanceMatrix?: number[],
     heatmapDensity?: number,
     lineProgress?: number,

@@ -2673,9 +2673,11 @@ class Map extends Camera {
             const now = browser.now();
             this.style.zoomHistory.update(zoom, now);
 
-            const parameters = new EvaluationParameters(zoom, pitch, cameraDistanceMatrix, {
+            const parameters = new EvaluationParameters(zoom, {
                 now,
                 fadeDuration,
+                pitch,
+                cameraDistanceMatrix,
                 zoomHistory: this.style.zoomHistory,
                 transition: this.style.getTransition()
             });

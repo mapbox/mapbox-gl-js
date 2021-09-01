@@ -3,6 +3,7 @@
 import ZoomHistory from './zoom_history.js';
 import {isStringInSupportedScript} from '../util/script_detection.js';
 import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin.js';
+import {mat4} from 'gl-matrix';
 
 import type {TransitionSpecification} from '../style-spec/types.js';
 
@@ -22,21 +23,23 @@ class EvaluationParameters {
     transition: TransitionSpecification;
 
     // "options" may also be another EvaluationParameters to copy, see CrossFadedProperty.possiblyEvaluate
-    constructor(zoom: number, pitch: number, cameraDistanceMatrix: number[],  options?: *) {
+    constructor(zoom: number, options?: *) {
         this.zoom = zoom;
-        this.pitch = pitch;
-        this.cameraDistanceMatrix = cameraDistanceMatrix;
 
         if (options) {
             this.now = options.now;
             this.fadeDuration = options.fadeDuration;
             this.zoomHistory = options.zoomHistory;
             this.transition = options.transition;
+            this.pitch = options.pitch;
+            this.cameraDistanceMatrix = options.cameraDistanceMatrix;
         } else {
             this.now = 0;
             this.fadeDuration = 0;
             this.zoomHistory = new ZoomHistory();
             this.transition = {};
+            this.pitch = 0;
+            this.cameraDistanceMatrix = mat4.identity(mat4.create());
         }
     }
 
