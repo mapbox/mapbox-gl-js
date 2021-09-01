@@ -70,8 +70,8 @@ class MercatorTileTransform {
             [xMax, yMax, max]);
     }
 
-    cullTile(aabb: Aabb, id: CanonicalTileID, camera: FreeCamera): boolean {
-        return true;
+    cullTile(aabb: Aabb, id: CanonicalTileID, zoom: number, camera: FreeCamera): boolean {
+        return false;
     }
 
     upVector(id: CanonicalTileID, x: Number, y: number): vec3 {

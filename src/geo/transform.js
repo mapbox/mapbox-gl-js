@@ -845,7 +845,7 @@ class Transform {
             // For example the globe view could perform additional backface culling
             const id = new CanonicalTileID(it.zoom, x, y);
 
-            if (!tileTransform.cullTile(it.aabb, id, this._camera)) {
+            if (tileTransform.cullTile(it.aabb, id, this.zoom, this._camera)) {
                 continue;
             }
 
@@ -1387,18 +1387,14 @@ class Transform {
     }
 
     calculateGlobeMercatorMatrix(worldSize: number): Float64Array {
-        const localRadius = EXTENT / (2.0 * Math.PI);
-        const wsRadius = worldSize / (2.0 * Math.PI);
-        const s = wsRadius / localRadius;
-
         const lat = clamp(this.center.lat, -this.maxValidLatitude, this.maxValidLatitude);
         const point = new Point(
             mercatorXfromLng(this.center.lng) * worldSize,
             mercatorYfromLat(lat) * worldSize);
 
         const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
-        mat4.scale(posMatrix, posMatrix, [s, s, s]);
+        mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
+        mat4.scale(posMatrix, posMatrix, [worldSize, worldSize, worldSize]);
 
         return posMatrix;
     }

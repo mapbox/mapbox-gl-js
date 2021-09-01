@@ -30,6 +30,7 @@ import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
+import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -2760,6 +2761,14 @@ class Map extends Camera {
         this._domRenderTaskQueue.run(paintStartTimeStamp);
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
+
+        if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX - 0.01) {
+            this.transform.projection = null;
+            this.style.dispatcher.broadcast('setProjection', null);
+        } else {
+            this.transform.projection = 'globe';
+            this.style.dispatcher.broadcast('setProjection', this.transform.projection.name);
+        }
 
         let crossFading = false;
         const fadeDuration = this._isInitialLoad ? 0 : this._fadeDuration;

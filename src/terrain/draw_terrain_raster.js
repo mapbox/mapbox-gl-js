@@ -10,7 +10,7 @@ import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
 import EXTENT from '../data/extent.js';
-import {easeCubicInOut, warnOnce, wrap, clamp, degToRad, smoothstep} from '../util/util.js';
+import {easeCubicInOut, warnOnce, wrap, clamp, degToRad} from '../util/util.js';
 import {RasterBoundsArray, GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
 import {lngFromMercatorX, mercatorXfromLng, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {createLayout} from '../util/struct_array.js';
@@ -22,7 +22,16 @@ import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import { array } from '../style-spec/expression/types.js';
-import {tileLatLngCorners, latLngToECEF, tileBoundsOnGlobe, denormalizeECEF, normalizeECEF, GlobeSharedBuffers, GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe.js'
+import {
+    tileLatLngCorners,
+    latLngToECEF,
+    tileBoundsOnGlobe,
+    denormalizeECEF,
+    normalizeECEF,
+    GlobeSharedBuffers,
+    GLOBE_VERTEX_GRID_SIZE,
+    globeToMercatorTransition
+} from '../geo/projection/globe.js'
 import extend from '../style-spec/util/extend.js';
 
 export {
@@ -143,13 +152,6 @@ const layout = createLayout([
 
 const lerp = (a, b, t) => a * (1 - t) + b * t;
 
-const GLOBE_ZOOM_THRESHOLD_MIN = 5;
-const GLOBE_ZOOM_THRESHOLD_MAX = 6;
-
-function globeToMercatorTransition(zoom: number): number {
-    return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
-}
-
 function createGridVertices(painter, count: number, sx, sy, sz): any {
     const counter = painter.frameCounter;
     const tr = painter.transform;
@@ -171,16 +173,11 @@ function createGridVertices(painter, count: number, sx, sy, sz): any {
         for (let x = 0; x < vertexExt; x++) {
             const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
 
-            const mercatorX = wrap(mercatorXfromLng(lng - tr.center.lng), 0.0, 1.0);
-            const mercatorY = mercatorYfromLat(lat - tr.center.lat);
+            const mercatorX = mercatorXfromLng(lng) - mercatorXfromLng(tr.center.lng);
+            const mercatorY = mercatorYfromLat(lat) - mercatorYfromLat(tr.center.lat);
 
             const pGlobe = latLngToECEF(lat, lng, radius);
-
-            const pMercator = [
-                mercatorX * EXTENT - EXTENT * 0.5,
-                mercatorY * EXTENT - EXTENT * 0.5,
-                radius
-            ];
+            const pMercator = [wrap(mercatorX, -0.5, 0.5), mercatorY, 0.0];
 
             boundsArray.emplaceBack(
                 pGlobe[0], pGlobe[1], pGlobe[2],
@@ -218,7 +215,7 @@ function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: Overscal
     const tr = painter.transform;
     // if (!tile.globeGridBuffer) {
         const gridMesh = createGridVertices(painter, GLOBE_VERTEX_GRID_SIZE, id.x, id.y, id.z);
-        tile.globeGridBuffer = context.createVertexBuffer(gridMesh, layout.members, false);
+        tile.globeGridBuffer = context.createVertexBuffer(gridMesh, layout.members, true);
     // }
 
     const tiles = Math.pow(2, coord.canonical.z);
