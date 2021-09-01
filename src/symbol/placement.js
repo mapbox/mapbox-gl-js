@@ -1055,7 +1055,7 @@ export class Placement {
                             }
                         }
 
-                        if (hasClipping){
+                        if (hasClipping) {
                             used = !opacityState.clipped;
                         }
 

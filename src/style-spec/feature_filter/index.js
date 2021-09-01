@@ -81,48 +81,41 @@ function createFilter(filter: any, layerType?: string = 'fill'): FeatureFilter {
         console.warn(`Failed to extract static filter from ${JSON.stringify(filterExp)}. Falling back to using 'true' as a filter and evaluating entire filter dynamically`);
     }
 
-    const errors = {
-        static: '',
-        dynamic: ''
-    };
-
     // Compile the static component of the filter
     const filterSpec = latest[`filter_${layerType}`];
     const compiledStaticFilter = createExpression(staticFilter, filterSpec);
+
+    let filterFunc = null;
     if (compiledStaticFilter.result === 'error') {
-        errors.static = compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', ');
+        throw new Error(compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
+    } else {
+        filterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical);
     }
 
     // If the static component is not equal to the entire filter then we have a dynamic component
     // Compile the dynamic component separately
-    let compiledDynamicFilter = null;
+    let dynamicFilterFunc = null;
     if (staticFilter !== filterExp) {
-        compiledDynamicFilter = createExpression(filterExp, filterSpec);
+        const compiledDynamicFilter = createExpression(filterExp, filterSpec);
 
         if (compiledDynamicFilter.result === 'error') {
-            errors.dynamic = compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', ');
+            throw new Error(compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
+        } else {
+            dynamicFilterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation?: MercatorCoordinate) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, undefined, undefined, refLocation);
         }
     }
-    if (errors.static.length > 0 || errors.dynamic.length > 0) {
-        const errorMsg = `static-filter errors:
-            ${errors.static}
 
-            dynamic-filter errors:
-            ${errors.dynamic}
-        `;
-        throw new Error(errorMsg);
-    } else {
+    if (filterFunc) {
         const needGeometry = geometryNeeded(staticFilter);
-        let dynamicFilter = undefined;
-        if (compiledDynamicFilter) {
-            dynamicFilter = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation?: MercatorCoordinate) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, undefined, undefined, refLocation);
-        }
 
         return {
-            filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical),
-            dynamicFilter,
+            filter: filterFunc,
+            dynamicFilter: dynamicFilterFunc ? dynamicFilterFunc : undefined,
             needGeometry
         };
+    } else {
+        // This branch cannot happen but need to keep flow happy :(
+        return {filter: () => true, needGeometry: false};
     }
 }
 
