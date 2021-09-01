@@ -173,11 +173,11 @@ function createGridVertices(painter, count: number, sx, sy, sz): any {
         for (let x = 0; x < vertexExt; x++) {
             const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
 
-            const mercatorX = mercatorXfromLng(lng) - mercatorXfromLng(tr.center.lng);
-            const mercatorY = mercatorYfromLat(lat) - mercatorYfromLat(tr.center.lat);
+            const mercatorX = mercatorXfromLng(lng);
+            const mercatorY = mercatorYfromLat(lat);
 
             const pGlobe = latLngToECEF(lat, lng, radius);
-            const pMercator = [wrap(mercatorX, -0.5, 0.5), mercatorY, 0.0];
+            const pMercator = [mercatorX, mercatorY, 0.0];
 
             boundsArray.emplaceBack(
                 pGlobe[0], pGlobe[1], pGlobe[2],
@@ -213,10 +213,10 @@ function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: Overscal
     const context = painter.context;
     const id = coord.canonical;
     const tr = painter.transform;
-    // if (!tile.globeGridBuffer) {
+    if (!tile.globeGridBuffer) {
         const gridMesh = createGridVertices(painter, GLOBE_VERTEX_GRID_SIZE, id.x, id.y, id.z);
-        tile.globeGridBuffer = context.createVertexBuffer(gridMesh, layout.members, true);
-    // }
+        tile.globeGridBuffer = context.createVertexBuffer(gridMesh, layout.members, false);
+    }
 
     const tiles = Math.pow(2, coord.canonical.z);
     if (!tile.globePoleBuffer && (coord.canonical.y === 0 || coord.canonical.y === tiles - 1)) {
@@ -275,7 +275,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
     const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
     const globeMercatorMatrix = tr.calculateGlobeMercatorMatrix(tr.worldSize);
-
+    const mercCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const batches = showWireframe ? [false, true] : [false];
 
     batches.forEach(isWireframe => {
@@ -318,7 +318,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const tiles = Math.pow(2, coord.canonical.z);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, posMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom));
+                globeToMercatorTransition(tr.zoom),
+                mercCenter);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -328,7 +329,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
-            program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                 uniformValues, "globe_raster", tile.globeGridBuffer, painter.globeSharedBuffers.gridIndexBuffer, painter.globeSharedBuffers.gridSegments, null, null, null, null);
 
             // Fill poles by extrapolating adjacent border tiles
@@ -337,9 +338,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 const poleUniforms = globeRasterUniformValues(
                     tr.projMatrix, poleMatrix, poleMatrix,
-                    0.0);
+                    0.0, mercCenter);
 
-                program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                     poleUniforms, "globe_pole_raster", tile.globePoleBuffer, painter.globeSharedBuffers.poleIndexBuffer, painter.globeSharedBuffers.poleSegments);
             }
         }
@@ -432,6 +433,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
         const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
         const globeMercatorMatrix = tr.calculateGlobeMercatorMatrix(tr.worldSize);
         const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
+        const mercCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
         for (const coord of tileIDs) {
             const tile = sourceCache.getTile(coord);
@@ -444,7 +446,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
             const posMatrix = globeMatrix;
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, posMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom));
+                globeToMercatorTransition(tr.zoom), mercCenter);
 
             program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
                 uniformValues, "globe_raster_depth", tile.globeGridBuffer, painter.globeSharedBuffers.gridIndexBuffer, painter.globeSharedBuffers.gridSegments, null, null, null, null);
