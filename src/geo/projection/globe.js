@@ -303,8 +303,8 @@ export function normalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export const GLOBE_ZOOM_THRESHOLD_MIN = 8;
-export const GLOBE_ZOOM_THRESHOLD_MAX = 9;
+export const GLOBE_ZOOM_THRESHOLD_MIN = 7;
+export const GLOBE_ZOOM_THRESHOLD_MAX = 8;
 
 export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
