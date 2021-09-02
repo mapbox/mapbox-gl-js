@@ -160,11 +160,12 @@ function createGridVertices(painter, count: number, sx, sy, sz): any {
     const [latLngTL, latLngBR] = tileLatLngCorners(gridTileId);
     const boundsArray = new GlobeVertexArray();
 
+    const bounds = tileBoundsOnGlobe(new CanonicalTileID(sz, tiles / 2, sy));
+    const norm = normalizeECEF(bounds);
+
     const gridExt = count;
     const vertexExt = gridExt + 1;
     boundsArray.reserve(count * count);
-
-    const radius = EXTENT / Math.PI / 2.0;
 
     for (let y = 0; y < vertexExt; y++) {
         const lat = lerp(latLngTL[0], latLngBR[0], y / gridExt);
@@ -173,10 +174,12 @@ function createGridVertices(painter, count: number, sx, sy, sz): any {
         for (let x = 0; x < vertexExt; x++) {
             const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
 
+            const pGlobe = latLngToECEF(lat, lng);
+            vec3.transformMat4(pGlobe, pGlobe, norm);
+
             const mercatorX = mercatorXfromLng(lng);
             const mercatorY = mercatorYfromLat(lat);
 
-            const pGlobe = latLngToECEF(lat, lng, radius);
             const pMercator = [mercatorX, mercatorY, 0.0];
 
             boundsArray.emplaceBack(
@@ -227,6 +230,16 @@ function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: Overscal
     if (!painter.globeSharedBuffers) {
         painter.globeSharedBuffers = new GlobeSharedBuffers(context);
     }
+}
+
+function globeMatrixForTile(id: CanonicalTileID, globeMatrix) {
+    const gridTileId = new CanonicalTileID(id.z, Math.pow(2, id.z) / 2, id.y);
+    const bounds = tileBoundsOnGlobe(gridTileId);
+    const decode = denormalizeECEF(bounds);
+    const posMatrix = mat4.clone(globeMatrix);
+    mat4.mul(posMatrix, posMatrix, decode);
+
+    return posMatrix;
 }
 
 function poleMatrixForTile(id: CanonicalTileID, tr) {
@@ -313,7 +326,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 //elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
             }
 
-            const posMatrix = globeMatrix;
+            const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
 
             const tiles = Math.pow(2, coord.canonical.z);
             const uniformValues = globeRasterUniformValues(
@@ -443,7 +456,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
             const elevationOptions = { elevationTileID: gridTileId };
             terrain.setupElevationDraw(tile, program, elevationOptions);
 
-            const posMatrix = globeMatrix;
+            const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, posMatrix, globeMercatorMatrix,
                 globeToMercatorTransition(tr.zoom), mercCenter);
