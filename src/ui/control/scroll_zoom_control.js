@@ -61,8 +61,7 @@ export default class ScrollZoomControl extends Evented {
         this._map = map;
         this._map.on('remove', this.remove);
         this._map.on('wheel', (e) => this.preventDefault(e));
-
-        return this;
+        return this._container;
     }
 
     /**
@@ -97,16 +96,24 @@ export default class ScrollZoomControl extends Evented {
         if (!e.originalEvent.ctrlKey && !e.originalEvent.metaKey) {
             e.preventDefault();
             if (this.options.showAlert) {
-                this._show();
+                this._update();
+                this._showAlert();
+                this._fadeOutAlert();
             }
         }
     }
 
-    _show() {
-        this._update();
-        this._setOpacity('1');
+    _showAlert() {
+        this.removeClassName('mapboxgl-scroll-zoom-control-fade');
         this._container.style.visibility = 'visible';
-        this._createFadeOut();
+        this._container.style.opacity = '1';
+    }
+
+    _fadeOutAlert() {
+        setTimeout(() => {
+            this.addClassName('mapboxgl-scroll-zoom-control-fade');
+            this._container.style.opacity = '0';
+        }, 3000);
     }
 
     /**
@@ -260,25 +267,6 @@ export default class ScrollZoomControl extends Evented {
             this._updateClassList();
         }
         return finalState;
-    }
-
-    _createFadeOut() {
-        const that = this;
-
-        if (this.options.showAlert) {
-            setTimeout(() => {
-                // initial opacity
-                let op = 1;
-                const timer = setInterval(() => {
-                    if (op <= 0.1) {
-                        clearInterval(timer);
-                        that._container.style.visibility = 'hidden';
-                    }
-                    that._setOpacity(String(op));
-                    op -= op * 0.1;
-                }, 30);
-            }, 3000);
-        }
     }
 
     _setOpacity(opacity: string) {
