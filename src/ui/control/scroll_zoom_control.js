@@ -76,6 +76,7 @@ export default class ScrollZoomControl extends Evented {
     remove() {
         if (this._content) {
             DOM.remove(this._content);
+            delete this._content;
         }
 
         if (this._container) {
@@ -89,7 +90,7 @@ export default class ScrollZoomControl extends Evented {
             delete this._map;
         }
 
-        return this;
+        return this._container;
     }
 
     preventDefault(e: MapWheelEvent) {
