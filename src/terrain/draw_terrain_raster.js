@@ -188,16 +188,17 @@ function createPoleTriangleVertices(fanSize, tiles, ws, topCap) {
     const radius = ws / Math.PI / 2.0;
 
     // Place the tip
-    arr.emplaceBack(0, -radius, 0, 0.5, topCap ? 0.0 : 1.0);
+    arr.emplaceBack(0, -radius, 0, 0, 0, 0.5, topCap ? 0.0 : 1.0);
 
     const startAngle = 0;
     const endAngle = 360.0 / tiles;
 
     for (let i = 0; i <= fanSize; i++) {
-        const angle = lerp(startAngle, endAngle, i / fanSize);
+        const uvX = i / fanSize;
+        const angle = lerp(startAngle, endAngle, uvX);
         const p = latLngToECEF(85, angle, radius);
 
-        arr.emplaceBack(p[0], p[1], p[2], 0, 0, i / fanSize, topCap ? 0.0 : 1.0);
+        arr.emplaceBack(p[0], p[1], p[2], 0, 0, uvX, topCap ? 0.0 : 1.0);
     }
 
     return arr;
