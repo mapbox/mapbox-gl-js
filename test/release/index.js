@@ -135,6 +135,11 @@ const pages = [
         "key": "skybox-gradient",
         "title": "Skybox gradient",
         "url": "./skybox-gradient.html"
+    },
+    {
+        "key": "zoom_control",
+        "title": "Scroll zoom blocker control",
+        "url": "./zoom_control.html"
     }
 ];
 
