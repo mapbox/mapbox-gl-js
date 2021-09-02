@@ -16,6 +16,12 @@ precision highp float;
 
 #endif
 
+float wrap(float n, float min, float max) {
+    float d = max - min;
+    float w = mod(mod(n - min, d) + d, d) + min;
+    return (w == min) ? max : w;
+}
+
 // Unpack a pair of values that have been packed into a single float.
 // The packed values are assumed to be 8-bit unsigned integers, and are
 // packed like so:

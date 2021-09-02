@@ -10,16 +10,11 @@ attribute vec2 a_uv;
 
 varying vec2 v_pos0;
 
-float wrap(float n, float min, float max) {
-    float d = max - min;
-    float w = mod(mod(n - min, d) + d, d) + min;
-    return (w == min) ? max : w;
-}
-
 void main() {
     v_pos0 = a_uv;
 
-    vec3 height = elevationVector(a_uv * 8192.0) * elevation(a_uv * 8192.0);
+    vec2 uv = a_uv * EXTENT;
+    vec3 height = elevationVector(uv) * elevation(uv);
 
     vec4 globe = u_globe_matrix * vec4(a_globe_pos + height, 1.0);
 
