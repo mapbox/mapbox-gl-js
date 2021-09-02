@@ -772,7 +772,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 .mapboxgl-scroll-zoom-control {
     color: #fff;
     font-family: "Roboto", Arial, sans-serif;
-    font-size: 28px;
+    font-size: 110%;
     justify-content: center;
     display: flex;
     align-items: center;
