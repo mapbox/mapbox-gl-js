@@ -96,13 +96,14 @@ class CollisionIndex {
     
         // Apply elevation vector to the anchor point
         if (collisionBox.elevation) {
-            const up = this.transform.projection
+            const tileTransform = this.transform.projection
                 .createTileTransform(this.transform, this.transform.worldSize)
-                .upVector(collisionBox.tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
+            const up = tileTransform.upVector(collisionBox.tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
+            const upScale = tileTransform.upVectorScale(collisionBox.tileID.canonical);
 
-            anchorX += up[0] * collisionBox.elevation;
-            anchorY += up[1] * collisionBox.elevation;
-            anchorZ += up[2] * collisionBox.elevation;
+            anchorX += up[0] * collisionBox.elevation * upScale;
+            anchorY += up[1] * collisionBox.elevation * upScale;
+            anchorZ += up[2] * collisionBox.elevation * upScale;
         }
 
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID);
@@ -171,7 +172,8 @@ class CollisionIndex {
             const e = this.transform.elevation.getAtTileOffset(tileID, p.x, p.y);
             //const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
             const up = tileTransform.upVector(tileID.canonical, p.x, p.y);
-            vec3.scale(up, up, e);
+            const upScale = tileTransform.upVectorScale(tileID.canonical);
+            vec3.scale(up, up, e * upScale);
             return up;
         }) : (_ => [0, 0, 0]);
 
