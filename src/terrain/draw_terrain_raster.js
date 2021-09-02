@@ -10,6 +10,7 @@ import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
 import EXTENT from '../data/extent.js';
+import {members as globeLayoutAttributes} from './globe_attributes.js';
 import {easeCubicInOut, warnOnce, wrap, clamp, degToRad} from '../util/util.js';
 import {RasterBoundsArray, GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
 import {lngFromMercatorX, mercatorXfromLng, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
@@ -144,12 +145,6 @@ const shaderDefines = {
     "2": 'TERRAIN_WIREFRAME'
 };
 
-const layout = createLayout([
-    { type: 'Float32', name: 'a_globe_pos', components: 3 },
-    { type: 'Float32', name: 'a_merc_pos', components: 3 },
-    { type: 'Float32', name: 'a_uv', components: 2 }
-]);
-
 const lerp = (a, b, t) => a * (1 - t) + b * t;
 
 function createGridVertices(painter, count: number, sx, sy, sz): any {
@@ -172,7 +167,8 @@ function createGridVertices(painter, count: number, sx, sy, sz): any {
         const mercY = clamp(mercatorYfromLat(lat), 0, 1);
         const uvY = (mercY * tiles) - sy;
         for (let x = 0; x < vertexExt; x++) {
-            const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
+            const uvX = x / gridExt;
+            const lng = lerp(latLngTL[1], latLngBR[1], uvX);
 
             const pGlobe = latLngToECEF(lat, lng);
             vec3.transformMat4(pGlobe, pGlobe, norm);
@@ -180,12 +176,7 @@ function createGridVertices(painter, count: number, sx, sy, sz): any {
             const mercatorX = mercatorXfromLng(lng);
             const mercatorY = mercatorYfromLat(lat);
 
-            const pMercator = [mercatorX, mercatorY, 0.0];
-
-            boundsArray.emplaceBack(
-                pGlobe[0], pGlobe[1], pGlobe[2],
-                pMercator[0], pMercator[1], pMercator[2],
-                x / gridExt, uvY);
+            boundsArray.emplaceBack(pGlobe[0], pGlobe[1], pGlobe[2], mercatorX, mercatorY, uvX, uvY);
         }
     }
 
@@ -206,7 +197,7 @@ function createPoleTriangleVertices(fanSize, tiles, ws, topCap) {
         const angle = lerp(startAngle, endAngle, i / fanSize);
         const p = latLngToECEF(85, angle, radius);
 
-        arr.emplaceBack(p[0], p[1], p[2], 0, 0, 0, i / fanSize, topCap ? 0.0 : 1.0);
+        arr.emplaceBack(p[0], p[1], p[2], 0, 0, i / fanSize, topCap ? 0.0 : 1.0);
     }
 
     return arr;
@@ -218,13 +209,13 @@ function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: Overscal
     const tr = painter.transform;
     if (!tile.globeGridBuffer) {
         const gridMesh = createGridVertices(painter, GLOBE_VERTEX_GRID_SIZE, id.x, id.y, id.z);
-        tile.globeGridBuffer = context.createVertexBuffer(gridMesh, layout.members, false);
+        tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
     }
 
     const tiles = Math.pow(2, coord.canonical.z);
     if (!tile.globePoleBuffer && (coord.canonical.y === 0 || coord.canonical.y === tiles - 1)) {
         const poleMesh = createPoleTriangleVertices(GLOBE_VERTEX_GRID_SIZE, tiles, tr.tileSize * tiles, coord.canonical.y === 0);
-        tile.globePoleBuffer = context.createVertexBuffer(poleMesh, layout.members, false);
+        tile.globePoleBuffer = context.createVertexBuffer(poleMesh, globeLayoutAttributes, false);
     }
 
     if (!painter.globeSharedBuffers) {
