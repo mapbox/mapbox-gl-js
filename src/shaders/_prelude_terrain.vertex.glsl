@@ -49,6 +49,7 @@ uniform vec3 u_tile_tr_up;
 uniform vec3 u_tile_br_up;
 uniform vec3 u_tile_bl_up;
 uniform float u_tile_up_scale;
+uniform float u_label_space_scale;
 
 uniform sampler2D u_depth;
 uniform vec2 u_depth_size_inv;
@@ -60,6 +61,10 @@ vec3 elevationVector(vec2 pos) {
         mix(u_tile_bl_up, u_tile_br_up, uv.xxx),
         uv.yyy));
     return up * u_tile_up_scale;
+}
+
+float labelSpaceUpVector() {
+    return u_label_space_scale;
 }
 
 vec4 tileUvToDemSample(vec2 uv, float dem_size, float dem_scale, vec2 dem_tl) {
@@ -218,5 +223,6 @@ float elevation(vec2 pos) { return 0.0; }
 bool isOccluded(vec4 frag) { return false; }
 float occlusionFade(vec4 frag) { return 1.0; }
 vec3 elevationVector(vec2 pos) { return vec3(0, 0, 1); }
+float labelSpaceUpVector() { return 1.0; }
 
 #endif

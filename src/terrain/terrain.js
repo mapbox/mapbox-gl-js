@@ -553,23 +553,20 @@ export class Terrain extends Elevation {
         const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
         if (options && options.useTileSpaceElevation) {
-            const up = [0,0,1];
-            uniforms['u_tile_tl_up'] = up;
-            uniforms['u_tile_tr_up'] = up;
-            uniforms['u_tile_br_up'] = up;
-            uniforms['u_tile_bl_up'] = up;
-            uniforms['u_tile_up_scale'] = tileTransform.tileSpaceUpVectorScale();
+            uniforms['u_label_space_scale'] = tileTransform.tileSpaceUpVectorScale();
         } else {
-            let id = tile.tileID.canonical;
-            if (options && options.elevationTileID) {
-                id = options.elevationTileID;
-            }
-            uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
-            uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
-            uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
-            uniforms['u_tile_bl_up'] = tileTransform.upVector(id, 0, EXTENT);
-            uniforms['u_tile_up_scale'] = tileTransform.upVectorScale(id);
+            uniforms['u_label_space_scale'] = 1.0;
         }
+
+        let id = tile.tileID.canonical;
+        if (options && options.elevationTileID) {
+            id = options.elevationTileID;
+        }
+        uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
+        uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
+        uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
+        uniforms['u_tile_bl_up'] = tileTransform.upVector(id, 0, EXTENT);
+        uniforms['u_tile_up_scale'] = tileTransform.upVectorScale(id);
 
         let demTile = null;
         let prevDemTile = null;
@@ -1535,7 +1532,8 @@ export type TerrainUniformsType = {|
     'u_tile_tr_up': Uniform3f,
     'u_tile_br_up': Uniform3f,
     'u_tile_bl_up': Uniform3f,
-    'u_tile_up_scale': Uniform1f
+    'u_tile_up_scale': Uniform1f,
+    'u_label_space_scale': Uniform1f
 |};
 
 export const terrainUniforms = (context: Context, locations: UniformLocations): TerrainUniformsType => ({
@@ -1557,7 +1555,8 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_tile_tr_up': new Uniform3f(context, locations.u_tile_tr_up),
     'u_tile_br_up': new Uniform3f(context, locations.u_tile_br_up),
     'u_tile_bl_up': new Uniform3f(context, locations.u_tile_bl_up),
-    'u_tile_up_scale': new Uniform1f(context, locations.u_tile_up_scale)
+    'u_tile_up_scale': new Uniform1f(context, locations.u_tile_up_scale),
+    'u_label_space_scale': new Uniform1f(context, locations.u_label_space_scale)
 });
 
 function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUniformsType> {
@@ -1578,6 +1577,7 @@ function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUni
         'u_tile_tr_up': [0, 0, 1],
         'u_tile_br_up': [0, 0, 1],
         'u_tile_bl_up': [0, 0, 1],
-        'u_tile_up_scale': 1
+        'u_tile_up_scale': 1,
+        'u_label_space_scale': 1
     };
 }
