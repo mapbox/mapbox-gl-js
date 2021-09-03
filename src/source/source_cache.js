@@ -5,7 +5,6 @@ import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import TileCache from './tile_cache.js';
 import {keysDifference, values} from '../util/util.js';
 import Context from '../gl/context.js';
-import Point from '@mapbox/point-geometry';
 import browser from '../util/browser.js';
 import {OverscaledTileID} from './tile_id.js';
 import assert from 'assert';
@@ -178,15 +177,6 @@ class SourceCache extends Evented {
         const renderables: Array<Tile> = [];
         for (const id in this._tiles) {
             if (this._isIdRenderable(+id, symbolLayer)) renderables.push(this._tiles[id]);
-        }
-        if (symbolLayer) {
-            return renderables.sort((a_: Tile, b_: Tile) => {
-                const a = a_.tileID;
-                const b = b_.tileID;
-                const rotatedA = (new Point(a.canonical.x, a.canonical.y))._rotate(this.transform.angle);
-                const rotatedB = (new Point(b.canonical.x, b.canonical.y))._rotate(this.transform.angle);
-                return a.overscaledZ - b.overscaledZ || rotatedB.y - rotatedA.y || rotatedB.x - rotatedA.x;
-            }).map(tile => tile.tileID.key);
         }
         return renderables.map(tile => tile.tileID).sort(compareTileId).map(id => id.key);
     }
