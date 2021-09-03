@@ -66,7 +66,8 @@ void main() {
 
     float anchorZ = a_z_tileAnchor.x;
     vec2 tileAnchor = a_z_tileAnchor.yz;
-    vec3 h = elevationVector(tileAnchor) * elevation(tileAnchor);
+    float anchorElevation = elevation(tileAnchor);
+    vec3 h = elevationVector(tileAnchor) * anchorElevation;
     vec4 projectedPoint = u_matrix * vec4(vec3(a_pos, anchorZ) + h, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
@@ -116,7 +117,7 @@ void main() {
 #ifdef PITCH_WITH_MAP_TERRAIN
     //vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
     //z = elevation(tile_pos.xy);
-    z = length(h);
+    z = labelSpaceUpVector() * anchorElevation;
 #endif
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = occlusionFade(projectedPoint);
