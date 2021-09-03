@@ -144,7 +144,8 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
                 const e = elevation.getAtTileOffset(coord, p.x, p.y);
                 //const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
                 const up = tileTransform.upVector(coord.canonical, p.x, p.y);
-                vec3.scale(up, up, e);
+                const upScale = tileTransform.upVectorScale(coord.canonical);
+                vec3.scale(up, up, e * upScale);
                 return up;
             }) : (_ => [0, 0, 0]);
             updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
@@ -331,7 +332,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 const e = elevation.getAtTileOffset(coord, p.x, p.y);
                 //const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
                 const up = tileTransform.upVector(coord.canonical, p.x, p.y);
-                vec3.scale(up, up, e);
+                const upScale = tileTransform.upVectorScale(coord.canonical);
+                vec3.scale(up, up, e * upScale);
                 return up;
             }) : (_ => [0, 0, 0]);
             symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, /*globeLabelPlaneMatrix, globeGlCoordMatrix,*/ pitchWithMap, keepUpright, getElevation, coord);
