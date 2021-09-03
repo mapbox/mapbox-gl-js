@@ -277,6 +277,14 @@ export function getGlyphQuads(anchor: Anchor,
             let isSDF = true;
             let pixelRatio = 1.0;
             let lineOffset = 0.0;
+            if (positionedGlyph.imageName) {
+                const image = imageMap[positionedGlyph.imageName];
+                if (!image) continue;
+                if (image.sdf) continue; // Don't render sdf image inside text
+                isSDF = false;
+                pixelRatio = image.pixelRatio;
+                rectBuffer = IMAGE_PADDING / pixelRatio;
+            }
 
             const rotateVerticalGlyph = (alongLine || allowVerticalPlacement) && positionedGlyph.vertical;
             const halfAdvance = positionedGlyph.metrics.advance * positionedGlyph.scale / 2;
@@ -289,14 +297,6 @@ export function getGlyphQuads(anchor: Anchor,
                 // image's advance for vertical shaping is its height, so that we have to take the difference into
                 // account after image glyph is rotated
                 lineOffset = positionedGlyph.imageName ? halfAdvance - positionedGlyph.metrics.width * positionedGlyph.scale / 2.0 : 0;
-            }
-
-            if (positionedGlyph.imageName) {
-                const image = imageMap[positionedGlyph.imageName];
-                if (!image) continue;
-                isSDF = image.sdf;
-                pixelRatio = image.pixelRatio;
-                rectBuffer = IMAGE_PADDING / pixelRatio;
             }
 
             const glyphOffset = alongLine ?
