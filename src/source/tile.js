@@ -18,6 +18,7 @@ import {TileSpaceDebugBuffer} from '../data/debug_viz.js';
 import Color from '../style-spec/util/color.js';
 import loadGeometry, {setProjection} from '../data/load_geometry.js';
 import earcut from 'earcut';
+import getTileMesh from './tile_mesh.js';
 
 import boundsAttributes from '../data/bounds_attributes.js';
 import EXTENT from '../data/extent.js';
@@ -103,6 +104,7 @@ class Tile {
     actor: ?Actor;
     vtLayers: {[_: string]: VectorTileLayer};
     isSymbolTile: ?boolean;
+    isRaster: ?boolean;
 
     neighboringTiles: ?Object;
     dem: ?DEMData;
@@ -138,7 +140,7 @@ class Tile {
      * @param size
      * @private
      */
-    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter: any) {
+    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter: any, isRaster?: boolean) {
         this.tileID = tileID;
         this.uid = uniqueId();
         this.uses = 0;
@@ -150,6 +152,7 @@ class Tile {
         this.hasSymbolBuckets = false;
         this.hasRTLText = false;
         this.dependencies = {};
+        this.isRaster = isRaster;
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
@@ -553,36 +556,48 @@ class Tile {
     _makeTileBoundsBuffers(context: Context, projection: Projection) {
         if (this._tileBoundsBuffer || !projection || projection.name === 'mercator') return;
 
-        const boundsVertices = new TileBoundsArray();
-        const boundsIndices = new TriangleIndexArray();
-
-        const debugVertices = new PosArray();
-        const debugIndices = new LineStripIndexArray();
-
+        // reproject tile outline with adaptive resampling
         const boundsLine = loadGeometry(BOUNDS_FEATURE, this.tileID.canonical)[0];
-        const flattened = [];
 
-        for (let i = 0; i < boundsLine.length; i++) {
-            const {x, y} = boundsLine[i];
-            boundsVertices.emplaceBack(x, y, x, y);
-            debugVertices.emplaceBack(x, y);
-            debugIndices.emplaceBack(i);
-            flattened.push(x, y);
+        let boundsVertices, boundsIndices;
+        if (this.isRaster) {
+            // for raster tiles, generate an adaptive MARTINI mesh
+            const mesh = getTileMesh(this.tileID.canonical, projection);
+            boundsVertices = mesh.vertices;
+            boundsIndices = mesh.indices;
+
+        } else {
+            // for vector tiles, generate an Earcut triangulation of the outline
+            boundsVertices = new TileBoundsArray();
+            boundsIndices = new TriangleIndexArray();
+
+            for (const {x, y} of boundsLine) {
+                boundsVertices.emplaceBack(x, y, 0, 0);
+            }
+            const indices = earcut(boundsVertices.int16, undefined, 4);
+            for (let i = 0; i < indices.length; i += 3) {
+                boundsIndices.emplaceBack(indices[i], indices[i + 1], indices[i + 2]);
+            }
         }
-        debugIndices.emplaceBack(0);
-
-        const indices = earcut(flattened);
-        for (let i = 0; i < indices.length; i += 3) {
-            boundsIndices.emplaceBack(indices[i], indices[i + 1], indices[i + 2]);
-        }
-
-        this._tileDebugIndexBuffer = context.createIndexBuffer(debugIndices);
-        this._tileDebugBuffer = context.createVertexBuffer(debugVertices, boundsAttributes.members);
-        this._tileDebugSegments = SegmentVector.simpleSegment(0, 0, debugVertices.length, debugIndices.length);
 
         this._tileBoundsBuffer = context.createVertexBuffer(boundsVertices, boundsAttributes.members);
         this._tileBoundsIndexBuffer = context.createIndexBuffer(boundsIndices);
         this._tileBoundsSegments = SegmentVector.simpleSegment(0, 0, boundsVertices.length, boundsIndices.length);
+
+        // generate vertices for debugging tile boundaries
+        const debugVertices = new PosArray();
+        const debugIndices = new LineStripIndexArray();
+
+        for (let i = 0; i < boundsLine.length; i++) {
+            const {x, y} = boundsLine[i];
+            debugVertices.emplaceBack(x, y);
+            debugIndices.emplaceBack(i);
+        }
+        debugIndices.emplaceBack(0);
+
+        this._tileDebugIndexBuffer = context.createIndexBuffer(debugIndices);
+        this._tileDebugBuffer = context.createVertexBuffer(debugVertices, boundsAttributes.members);
+        this._tileDebugSegments = SegmentVector.simpleSegment(0, 0, debugVertices.length, debugIndices.length);
     }
 }
 
