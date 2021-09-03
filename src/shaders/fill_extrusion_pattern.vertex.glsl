@@ -77,7 +77,7 @@ void main() {
     vec3 p = vec3(pos_nx.xy, z);
 #endif
 
-    float hidden = float(a_centroid_pos.x == 0.0 && a_centroid_pos.y == 1.0);
+    float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     gl_Position = mix(u_matrix * vec4(p, 1), AWAY, hidden);
 
     vec2 pos = normal.z == 1.0
