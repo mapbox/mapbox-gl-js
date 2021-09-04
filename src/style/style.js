@@ -1558,7 +1558,14 @@ class Style extends Evented {
         for (const layerId in this._layers) {
             const layer = this._layers[layerId];
             if (layer.type === 'symbol') {
-                this._updateLayer(layer);
+                // this._updatedLayers[layer.id] = true;
+                const sourceCache = this._getLayerSourceCache(layer);
+                // this._updatedSources[layer.source] = 'reload';
+                // FIXME: Figure out why some tiles have stale transforms
+                // after the zoom transition
+                sourceCache.clearTiles();
+                // this._changed = true;
+                // this._updateLayer(layer);
             }
         }
     }
