@@ -16,6 +16,8 @@ export type TileTransform = {
 
     createTileMatrix: (id: UnwrappedTileID) => Float64Array,
 
+    createInversionMatrix: (id: UnwrappedTileID) => Float64Array,
+
     tileAabb: (id: UnwrappedTileID, z: number, min: number, max: number) => Aabb,
 
     upVector: (id: CanonicalTileID, x: Number, y: number) => vec3,

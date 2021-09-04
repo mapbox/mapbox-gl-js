@@ -9,10 +9,13 @@ import {Aabb} from '../../util/primitives.js';
 class MercatorTileTransform {
     _tr: Transform;
     _worldSize: number;
+    _identity: Float64Array;
 
     constructor(tr: Transform, worldSize: number) {
         this._tr = tr;
         this._worldSize = worldSize;
+        // TODO: Cache this elsewhere?
+        this._identity = mat4.identity(new Float64Array(16));
     }
 
     createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
@@ -39,6 +42,10 @@ class MercatorTileTransform {
         } else {
             return this._tr.glCoordMatrix;
         }
+    }
+
+    createInversionMatrix(id: UnwrappedTileID): Float64Array {
+         return this._identity;
     }
 
     createTileMatrix(id: UnwrappedTileID): Float64Array {
