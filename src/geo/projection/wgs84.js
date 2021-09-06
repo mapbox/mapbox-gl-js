@@ -1,5 +1,7 @@
 // @flow
 import LngLat from '../lng_lat.js';
+import {clamp} from '../../util/util.js';
+import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 
 export default {
     name: 'wgs84',
@@ -10,8 +12,8 @@ export default {
         return {x, y};
     },
     unproject(x: number, y: number) {
-        return new LngLat(
-            (x - 0.5) * 360,
-            (0.5 - y) * 360);
+        const lng = (x - 0.5) * 360;
+        const lat = clamp((0.5 - y) * 360, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+        return new LngLat(lng, lat);
     }
 };

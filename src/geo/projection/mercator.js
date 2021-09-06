@@ -1,5 +1,6 @@
 // @flow
-import {mercatorXfromLng, mercatorYfromLat, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
+import {mercatorXfromLng, mercatorYfromLat, lngFromMercatorX, latFromMercatorY, MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
+import {clamp} from '../../util/util.js';
 import LngLat from '../lng_lat.js';
 
 export default {
@@ -11,8 +12,8 @@ export default {
         return {x, y};
     },
     unproject(x: number, y: number) {
-        return new LngLat(
-            lngFromMercatorX(x),
-            latFromMercatorY(y));
+        const lng = lngFromMercatorX(x);
+        const lat = clamp(latFromMercatorY(y), -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+        return new LngLat(lng, lat);
     }
 };

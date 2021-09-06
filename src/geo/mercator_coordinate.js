@@ -40,6 +40,8 @@ export function altitudeFromMercatorZ(z: number, y: number) {
     return z * circumferenceAtLatitude(latFromMercatorY(y));
 }
 
+export const MAX_MERCATOR_LATITUDE = 85.051129;
+
 /**
  * Determine the Mercator scale factor for a given latitude, see
  * https://en.wikipedia.org/wiki/Mercator_projection#Scale_factor

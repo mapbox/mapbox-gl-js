@@ -5,7 +5,7 @@ import LngLat from '../../../src/geo/lng_lat.js';
 import {OverscaledTileID, CanonicalTileID} from '../../../src/source/tile_id.js';
 import {fixedNum, fixedLngLat, fixedCoord, fixedPoint, fixedVec3, fixedVec4} from '../../util/fixed.js';
 import {FreeCameraOptions} from '../../../src/ui/free_camera.js';
-import MercatorCoordinate, {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate.js';
+import MercatorCoordinate, {mercatorZfromAltitude, MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
 import {vec3, quat} from 'gl-matrix';
 import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
 import {degToRad} from '../../../src/util/util.js';
@@ -16,7 +16,6 @@ test('transform', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
         t.equal(transform.unmodified, true);
-        t.equal(transform.maxValidLatitude, 85.051129);
         t.equal(transform.tileSize, 512, 'tileSize');
         t.equal(transform.worldSize, 512, 'worldSize');
         t.equal(transform.width, 500, 'width');
@@ -901,8 +900,8 @@ test('transform', (t) => {
     t.test('clamps latitude', (t) => {
         const transform = new Transform();
 
-        t.deepEqual(transform.project(new LngLat(0, -90)), transform.project(new LngLat(0, -transform.maxValidLatitude)));
-        t.deepEqual(transform.project(new LngLat(0, 90)), transform.project(new LngLat(0, transform.maxValidLatitude)));
+        t.deepEqual(transform.project(new LngLat(0, -90)), transform.project(new LngLat(0, -MAX_MERCATOR_LATITUDE)));
+        t.deepEqual(transform.project(new LngLat(0, 90)), transform.project(new LngLat(0, MAX_MERCATOR_LATITUDE)));
         t.end();
     });
 
@@ -1193,7 +1192,7 @@ test('transform', (t) => {
         t.test('clamp to bounds', (t) => {
             const transform = new Transform();
             transform.resize(100, 100);
-            transform.setMaxBounds(new LngLatBounds(new LngLat(-180, -transform.maxValidLatitude), new LngLat(180, transform.maxValidLatitude)));
+            transform.setMaxBounds(new LngLatBounds(new LngLat(-180, -MAX_MERCATOR_LATITUDE), new LngLat(180, MAX_MERCATOR_LATITUDE)));
             transform.zoom = 8.56;
             const options = new FreeCameraOptions();
 

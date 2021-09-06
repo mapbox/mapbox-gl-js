@@ -1,5 +1,7 @@
 // @flow
 import LngLat from '../lng_lat.js';
+import {clamp} from '../../util/util.js';
+import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 
 export default {
     name: 'winkel',
@@ -55,6 +57,9 @@ export default {
             phi -= dphi;
         } while ((Math.abs(dlambda) > epsilon || Math.abs(dphi) > epsilon) && --i > 0);
 
-        return new LngLat(lambda * 180 / Math.PI, phi * 180 / Math.PI);
+        const lng = clamp(lambda * 180 / Math.PI, -180, 180);
+        const lat = clamp(phi * 180 / Math.PI, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+
+        return new LngLat(lng, lat);
     }
 };
