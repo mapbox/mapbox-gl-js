@@ -173,10 +173,10 @@ class SourceCache extends Evented {
         return values((this._tiles: any)).map((tile: Tile) => tile.tileID).sort(compareTileId).map(id => id.key);
     }
 
-    getRenderableIds(symbolLayer?: boolean): Array<number> {
+    getRenderableIds(allLayers?: boolean): Array<number> {
         const renderables: Array<Tile> = [];
         for (const id in this._tiles) {
-            if (this._isIdRenderable(+id, symbolLayer)) renderables.push(this._tiles[id]);
+            if (this._isIdRenderable(+id, allLayers)) renderables.push(this._tiles[id]);
         }
         return renderables.map(tile => tile.tileID).sort(compareTileId).map(id => id.key);
     }
@@ -831,8 +831,8 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    getVisibleCoordinates(symbolLayer?: boolean): Array<OverscaledTileID> {
-        const coords = this.getRenderableIds(symbolLayer).map((id) => this._tiles[id].tileID);
+    getVisibleCoordinates(includeAllLayers?: boolean): Array<OverscaledTileID> {
+        const coords = this.getRenderableIds(includeAllLayers).map((id) => this._tiles[id].tileID);
         for (const coord of coords) {
             coord.projMatrix = this.transform.calculateProjMatrix(coord.toUnwrapped());
         }

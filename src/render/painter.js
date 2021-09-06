@@ -445,7 +445,7 @@ class Painter {
             const sourceCache = sourceCaches[id];
             coordsAscending[id] = sourceCache.getVisibleCoordinates();
             coordsDescending[id] = coordsAscending[id].slice().reverse();
-            coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
+            coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true);
         }
 
         this.opaquePassCutoff = Infinity;
