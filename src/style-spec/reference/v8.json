@@ -5215,7 +5215,7 @@
       "type": "color",
       "default": "#000000",
       "transition": true,
-      "doc": "The color of the icon. This can only be used with [SDF icons](/help/troubleshooting/using-recolorable-images-in-mapbox-maps).",
+      "doc": "The color of the icon. This can only be used with [SDF icons](/help/troubleshooting/using-recolorable-images-in-mapbox-maps/).",
       "requires": [
         "icon-image"
       ],
@@ -5247,7 +5247,7 @@
       "type": "color",
       "default": "rgba(0, 0, 0, 0)",
       "transition": true,
-      "doc": "The color of the icon's halo. Icon halos can only be used with [SDF icons](/help/troubleshooting/using-recolorable-images-in-mapbox-maps).",
+      "doc": "The color of the icon's halo. Icon halos can only be used with [SDF icons](/help/troubleshooting/using-recolorable-images-in-mapbox-maps/).",
       "requires": [
         "icon-image"
       ],
