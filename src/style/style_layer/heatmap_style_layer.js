@@ -7,12 +7,21 @@ import {RGBAImage} from '../../util/image.js';
 import properties from './heatmap_style_layer_properties.js';
 import {renderColorRamp} from '../../util/color_ramp.js';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
+import {queryIntersectsCircle} from './circle_style_layer.js';
+import {getMaximumPaintValue} from '../query_utils.js';
+import Point from '@mapbox/point-geometry';
 
+import type {Bucket, BucketParameters} from '../../data/bucket.js';
 import type Texture from '../../render/texture.js';
 import type Framebuffer from '../../gl/framebuffer.js';
 import type {PaintProps} from './heatmap_style_layer_properties.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import ProgramConfiguration from '../../data/program_configuration.js';
+import type {TilespaceQueryGeometry} from '../query_geometry.js';
+import type {DEMSampler} from '../../terrain/elevation.js';
+import type {FeatureState} from '../../style-spec/expression/index.js';
+import type Transform from '../../geo/transform.js';
+import type CircleBucket from '../../data/bucket/circle_bucket.js';
 
 class HeatmapStyleLayer extends StyleLayer {
 
@@ -24,8 +33,8 @@ class HeatmapStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    createBucket(options: any) {
-        return new HeatmapBucket(options);
+    createBucket(parameters: BucketParameters<*>) {
+        return new HeatmapBucket(parameters);
     }
 
     constructor(layer: LayerSpecification) {
@@ -58,12 +67,23 @@ class HeatmapStyleLayer extends StyleLayer {
         }
     }
 
-    queryRadius(): number {
-        return 0;
+    queryRadius(bucket: Bucket): number {
+        return getMaximumPaintValue('heatmap-radius', this, ((bucket: any): CircleBucket<*>));
     }
 
-    queryIntersectsFeature(): boolean  {
-        return false;
+    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
+                           feature: VectorTileFeature,
+                           featureState: FeatureState,
+                           geometry: Array<Array<Point>>,
+                           zoom: number,
+                           transform: Transform,
+                           pixelPosMatrix: Float32Array,
+                           elevationHelper: ?DEMSampler): boolean {
+
+        const size = this.paint.get('heatmap-radius').evaluate(feature, featureState);
+        return queryIntersectsCircle(
+            queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
+            true, true, new Point(0, 0), size);
     }
 
     hasOffscreenPass() {
