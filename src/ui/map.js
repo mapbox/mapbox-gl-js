@@ -37,6 +37,7 @@ import type {PointLike} from '@mapbox/point-geometry';
 import type {RequestTransformFunction} from '../util/mapbox.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+import type {ProjectionOptions} from '../geo/projection/index.js';
 import type {StyleOptions, StyleSetterOptions} from '../style/style.js';
 import type {MapEvent, MapDataEvent} from './events.js';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer.js';
@@ -118,7 +119,7 @@ type MapOptions = {
     accessToken: string,
     testMode: ?boolean,
     locale?: Object,
-    projection?: string
+    projection?: ProjectionOptions | string
 };
 
 const defaultMinZoom = -2;
@@ -268,7 +269,8 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
- * @param {string} [options.projection='mercator'] The map projection to use when creating a map. Defaults to the Web Mercator ('mercator') projection. Other options are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equalEarth'), Equirectangular/Plate Carrée/WGS84 ('equirectangular'), Lambert Conic Conformal ('lambertConformalConic'), Natural Earth ('naturalEarth') and Winkel Tripel ('winkelTripel').
+ * @param {ProjectionOptions} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equal-earth'), Equirectangular/WGS84 ('equirectangular'), Globe ('globe'), Lambert ('lambert'), Mercator ('mercator'), Natural Earth ('natural-earth'), and Winkel Tripel ('winkel'). 
+ *  Conical projections such as Albers and Lambert have configurable `center` and `parallels` properties that allow developers to define the region in which the projection has minimal distortion; see the example for how to configure these properties.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -276,7 +278,11 @@ const defaultOptions = {
  *   zoom: 13,
  *   style: style_object,
  *   hash: true,
- *   projection: 'winkel',
+ *   projection: {
+ *     "name": "albers",
+ *     "center": [-154, 50],
+ *     "parallels": [55, 65]
+ *   },
  *   transformRequest: (url, resourceType)=> {
  *     if(resourceType === 'Source' && url.startsWith('http://myHost')) {
  *       return {

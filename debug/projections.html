@@ -43,6 +43,10 @@
         <fieldset>
             <label>Projection:</label>
             <select id="projName">
+                <option value="mercator">Mercator</option>
+                <option value="winkel">Winkel Tripel</option>
+                <option value="wgs84">WGS84</option>
+                <option value="albers" selected>Albers USA</option>
                 <option value="alaska">Albers Alaska</option>
                 <option value="albers" selected>Albers USA</option>
                 <option value="equalEarth">Equal Earth</option>
@@ -105,7 +109,7 @@ function makeMap() {
         naturalEarth: [0, 0],
         winkelTripel: [0, 0]
     };
-    const projection = el.options[el.selectedIndex].value;
+    const projection = {name: el.options[el.selectedIndex].value};
     const zoom = zooms[projection] || 2;
     const center = centers[projection] || [-97.48, 40.16];
     const styles = {
