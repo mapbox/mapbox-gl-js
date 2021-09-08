@@ -43,7 +43,7 @@ export default class ScrollZoomControl extends Evented {
         super();
         this.options = extend({}, defaultOptions, options);
 
-        bindAll(['_update', '_showAlert','_fadeOutAlert'], this);
+        bindAll(['_update', '_showAlert', '_fadeOutAlert'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -58,10 +58,10 @@ export default class ScrollZoomControl extends Evented {
      * map.addControl(scrollZoomControl);
      */
     onAdd(map: Map) {
-        if (this._map) this.remove();
+        if (this._map) this.onRemove();
         this._map = map;
         this._update();
-        this._map.on('remove', this.remove);
+        this._map.on('remove', this.onRemove);
         this._map.on('wheel', (e) => this.preventDefault(e));
         return this._container;
     }
@@ -87,7 +87,7 @@ export default class ScrollZoomControl extends Evented {
         }
 
         if (this._map) {
-            this._map.off('remove', this.remove);
+            this._map.off('remove', this.onRemove);
             this._map.off('wheel', this.preventDefault);
             delete this._map;
         }
@@ -107,7 +107,7 @@ export default class ScrollZoomControl extends Evented {
     }
 
     getDefaultPosition() {
-        return 'fullscreen';
+        return 'full-container';
     }
 
     /**

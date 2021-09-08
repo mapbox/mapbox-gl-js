@@ -59,7 +59,13 @@
 .mapboxgl-ctrl-top-right    { top: 0; right: 0; }
 .mapboxgl-ctrl-bottom-left  { bottom: 0; left: 0; }
 .mapboxgl-ctrl-bottom-right { right: 0; bottom: 0; }
-.mapboxgl-ctrl-fullscreen {top: 0; left: 0; right: 0; bottom: 0 }
+
+.mapboxgl-ctrl-full-container {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
 
 .mapboxgl-ctrl {
     clear: both;
