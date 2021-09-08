@@ -776,7 +776,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     }
 }
 
-.mapboxgl-scroll-zoom-control {
+.mapboxgl-scroll-zoom-blocker-control {
     color: #fff;
     font-family: "Roboto", Arial, sans-serif;
     font-size: 110%;
@@ -797,6 +797,6 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     transition: none !important;
 }
 
-.mapboxgl-scroll-zoom-control-fade {
+.mapboxgl-scroll-zoom-blocker-control-fade {
     transition: opacity 3s ease-in-out !important;
 }

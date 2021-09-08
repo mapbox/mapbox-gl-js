@@ -10,7 +10,7 @@ import GeolocateControl from './ui/control/geolocate_control.js';
 import AttributionControl from './ui/control/attribution_control.js';
 import ScaleControl from './ui/control/scale_control.js';
 import FullscreenControl from './ui/control/fullscreen_control.js';
-import ScrollZoomControl from './ui/control/scroll_zoom_control.js';
+import ScrollZoomBlockerControl from './ui/control/scroll_zoom_control.js';
 import Popup from './ui/popup.js';
 import Marker from './ui/marker.js';
 import Style from './style/style.js';
@@ -42,7 +42,7 @@ const exported = {
     AttributionControl,
     ScaleControl,
     FullscreenControl,
-    ScrollZoomControl,
+    ScrollZoomBlockerControl,
     Popup,
     Marker,
     Style,

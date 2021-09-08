@@ -19,19 +19,19 @@ export type Options = {
 };
 
 /**
- * A scroll zoom control component.
+ * A scroll zoom blocker control component.
  *
  * @implements {IControl}
  * @param {Object} [options]
  * @param {boolean} [options.showAlert=true] If `true`, an alert will appear when a user
  * attempts to scroll zoom without pressing ctrl or  ⌘ keys.
- * @param {string} [options.className] Space-separated CSS class names to add to scroll zoom control container.
+ * @param {string} [options.className] Space-separated CSS class names to add to scroll zoom blocker control container.
  * @example
- * const scrollZoomControl = new mapboxgl.ScrollZoomControl({closeButton: true})
+ * const ScrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl({closeButton: true})
  *     .setHTML("<h1>'Use ⌘ + scroll to zoom the map'</h1>")
  *     .addTo(map);
  */
-export default class ScrollZoomControl extends Evented {
+export default class ScrollZoomBlockerControl extends Evented {
     _map: Map;
     options: Options;
     _content: HTMLElement;
@@ -49,13 +49,13 @@ export default class ScrollZoomControl extends Evented {
     }
 
     /**
-     * Adds the scroll zoom control alert to a map.
+     * Adds the scroll zoom blocker control alert to a map.
      *
-     * @param {Map} map The Mapbox GL JS map to add the scroll zoom control to.
-     * @returns {ScrollZoomControl} Returns itself to allow for method chaining.
+     * @param {Map} map The Mapbox GL JS map to add the scroll zoom blocker control to.
+     * @returns {ScrollZoomBlockerControl} Returns itself to allow for method chaining.
      * @example
-     * new mapboxgl.ScrollZoomControl().setHTML();
-     * map.addControl(scrollZoomControl);
+     * const ScrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl().setHTML();
+     * map.addControl(ScrollZoomBlockerControl);
      */
     onAdd(map: Map) {
         if (this._map) this.onRemove();
@@ -67,13 +67,13 @@ export default class ScrollZoomControl extends Evented {
     }
 
     /**
-     * Removes the scroll zoom control from the map it has been added to.
+     * Removes the scroll zoom blocker control from the map it has been added to.
      *
      * @example
-     * const scrollZoomControl = new mapboxgl.ScrollZoomControl();
-     * map.addControl(scrollZoomControl);
-     * scrollZoomControl.onRemove();
-     * @returns {ScrollZoomControl} Returns itself to allow for method chaining.
+     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl();
+     * map.addControl(scrollZoomBlockerControl);
+     * scrollZoomBlockerControl.onRemove();
+     * @returns {ScrollZoomBlockerControl} Returns itself to allow for method chaining.
      */
     onRemove() {
         if (this._content) {
@@ -111,15 +111,15 @@ export default class ScrollZoomControl extends Evented {
     }
 
     /**
-     * Returns the `ScrollZoomControl`'s HTML element.
+     * Returns the `ScrollZoomBlockerControl`'s HTML element.
      *
      * @example
-     * // Change the `ScrollZoomControl` element's font size
-     * const scrollZoomControl = new mapboxgl.ScrollZoomControl()
+     * // Change the `ScrollZoomBlockerControl` element's font size
+     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl()
      *     .setHTML("<p>Use ⌘ + scroll to zoom the map</p>");
-     * map.addControl(scrollZoomControl);
-     * const scrollZoomControlElem = scrollZoomControl.getElement();
-     * scrollZoomControl.style.fontSize = "25px";
+     * map.addControl(scrollZoomBlockerControl);
+     * const scrollZoomBlockerControlElem = scrollZoomBlockerControl.getElement();
+     * scrollZoomBlockerControl.style.fontSize = "25px";
      * @returns {HTMLElement} Returns container element.
      */
     getElement() {
@@ -127,36 +127,36 @@ export default class ScrollZoomControl extends Evented {
     }
 
     /**
-     * Sets the scroll zoom control's content to a string of text.
+     * Sets the scroll zoom blocker control's content to a string of text.
      *
      * This function creates a [Text](https://developer.mozilla.org/en-US/docs/Web/API/Text) node in the DOM,
      * so it cannot insert raw HTML. Use this method for security against XSS
-     * if the scroll zoom control content is user-provided.
+     * if the scroll zoom blocker control content is user-provided.
      *
-     * @param {string} text Textual content for the scroll zoom control alert.
-     * @returns {ScrollZoomControl} Returns itself to allow for method chaining.
+     * @param {string} text Textual content for the scroll zoom blocker control alert.
+     * @returns {ScrollZoomBlockerControl} Returns itself to allow for method chaining.
      * @example
-     * const scrollZoomControl = new mapboxgl.ScrollZoomControl()
+     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl()
      *     .setText('Hello, world!');
-     * map.addControl(scrollZoomControl);
+     * map.addControl(scrollZoomBlockerControl);
      */
     setText(text: string) {
         return this.setDOMContent(window.document.createTextNode(text));
     }
 
     /**
-     * Sets the scroll zoom control's content to the HTML provided as a string.
+     * Sets the scroll zoom blocker control's content to the HTML provided as a string.
      *
      * This method does not perform HTML filtering or sanitization, and must be
-     * used only with trusted content. Consider {@link ScrollZoomControl#setText} if
+     * used only with trusted content. Consider {@link ScrollZoomBlockerControl#setText} if
      * the content is an untrusted text string.
      *
-     * @param {string} html A string representing HTML content for the scroll zoom control.
-     * @returns {ScrollZoomControl} Returns itself to allow for method chaining.
+     * @param {string} html A string representing HTML content for the scroll zoom blocker control.
+     * @returns {ScrollZoomBlockerControl} Returns itself to allow for method chaining.
      * @example
-     * const scrollZoomControl = new mapboxgl.ScrollZoomControl()
+     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl()
      *     .setHTML("<h1>Use ⌘ + scroll to zoom the map</h1>");
-     * map.addControl(scrollZoomControl);
+     * map.addControl(scrollZoomBlockerControl);
      */
     setHTML(html: string = 'Use ⌘ + scroll to zoom the map') {
         const frag = window.document.createDocumentFragment();
@@ -173,17 +173,17 @@ export default class ScrollZoomControl extends Evented {
     }
 
     /**
-     * Sets the scroll zoom control's content to the element provided as a DOM node.
+     * Sets the scroll zoom blocker control's content to the element provided as a DOM node.
      *
-     * @param {Element} htmlNode A DOM node to be used as content for the scroll zoom control alert.
-     * @returns {ScrollZoomControl} Returns itself to allow for method chaining.
+     * @param {Element} htmlNode A DOM node to be used as content for the scroll zoom blocker control alert.
+     * @returns {ScrollZoomBlockerControl} Returns itself to allow for method chaining.
      * @example
-     * // create an element with the scroll zoom control content
+     * // create an element with the scroll zoom blocker control content
      * const div = window.document.createElement('div');
      * div.innerHTML = 'Use ⌘ + scroll to zoom the map';
-     * const scrollZoomControl = new mapboxgl.ScrollZoomControl()
+     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl()
      *     .setDOMContent(div);
-     * map.addControl(scrollZoomControl);
+     * map.addControl(scrollZoomBlockerControl);
      */
     setDOMContent(htmlNode: Node) {
         if (this._content) {
@@ -194,7 +194,7 @@ export default class ScrollZoomControl extends Evented {
                 }
             }
         } else {
-            this._content = DOM.create('div', 'mapboxgl-scroll-zoom-control-content', this._container);
+            this._content = DOM.create('div', 'mapboxgl-scroll-zoom-blocker-control-content', this._container);
         }
 
         this._content.appendChild(htmlNode);
@@ -203,14 +203,14 @@ export default class ScrollZoomControl extends Evented {
     }
 
     /**
-     * Adds a CSS class to the scroll zoom control container element.
+     * Adds a CSS class to the scroll zoom blocker control container element.
      *
-     * @param {string} className Non-empty string with CSS class name to add to scroll zoom control container.
-     * @returns {ScrollZoomControl} Returns itself to allow for method chaining.
+     * @param {string} className Non-empty string with CSS class name to add to scroll zoom blocker control container.
+     * @returns {ScrollZoomBlockerControl} Returns itself to allow for method chaining.
      *
      * @example
-     * const scrollZoomControl = new mapboxgl.ScrollZoomControl();
-     * scrollZoomControl.addClassName('some-class');
+     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl();
+     * scrollZoomBlockerControl.addClassName('some-class');
      */
     addClassName(className: string) {
         this._classList.add(className);
@@ -221,14 +221,14 @@ export default class ScrollZoomControl extends Evented {
     }
 
     /**
-     * Removes a CSS class from the scroll zoom control container element.
+     * Removes a CSS class from the scroll zoom blocker control container element.
      *
-     * @param {string} className Non-empty string with CSS class name to remove from scroll zoom control container.
+     * @param {string} className Non-empty string with CSS class name to remove from scroll zoom blocker control container.
      *
-     * @returns {ScrollZoomControl} Returns itself to allow for method chaining.
+     * @returns {ScrollZoomBlockerControl} Returns itself to allow for method chaining.
      * @example
-     * const scrollZoomControl = new mapboxgl.ScrollZoomControl({className: 'some classes'});
-     * scrollZoomControl.removeClassName('some');
+     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl({className: 'some classes'});
+     * scrollZoomBlockerControl.removeClassName('some');
      */
     removeClassName(className: string) {
         this._classList.delete(className);
@@ -239,15 +239,15 @@ export default class ScrollZoomControl extends Evented {
     }
 
     /**
-     * Add or remove the given CSS class on the scrollZoomControl container, depending on whether the container currently has that class.
+     * Add or remove the given CSS class on the scrollZoomBlockerControl container, depending on whether the container currently has that class.
      *
      * @param {string} className Non-empty string with CSS class name to add/remove.
      *
      * @returns {boolean} If the class was removed return `false`. If the class was added, then return `true`.
      *
      * @example
-     * const scrollZoomControl = new mapboxgl.ScrollZoomControl();
-     * scrollZoomControl.toggleClassName('highlighted');
+     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl();
+     * scrollZoomBlockerControl.toggleClassName('highlighted');
      */
     toggleClassName(className: string) {
         let finalState: boolean;
@@ -268,21 +268,21 @@ export default class ScrollZoomControl extends Evented {
     }
 
     _showAlert() {
-        this.removeClassName('mapboxgl-scroll-zoom-control-fade');
+        this.removeClassName('mapboxgl-scroll-zoom-blocker-control-fade');
         this._container.style.visibility = 'visible';
         this._container.style.opacity = '1';
     }
 
     _fadeOutAlert() {
         setTimeout(() => {
-            this.addClassName('mapboxgl-scroll-zoom-control-fade');
+            this.addClassName('mapboxgl-scroll-zoom-blocker-control-fade');
             this._container.style.opacity = '0';
         }, 2000);
     }
 
     _updateClassList() {
         const classes = [...this._classList];
-        classes.push('mapboxgl-scroll-zoom-control');
+        classes.push('mapboxgl-scroll-zoom-blocker-control');
         this._container.className = classes.join(' ');
     }
 
