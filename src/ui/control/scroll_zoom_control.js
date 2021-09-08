@@ -21,6 +21,7 @@ export type Options = {
 /**
  * A scroll zoom control component.
  *
+ * @implements {IControl}
  * @param {Object} [options]
  * @param {boolean} [options.showAlert=true] If `true`, an alert will appear when a user
  * attempts to scroll zoom without pressing ctrl or  ⌘ keys.
@@ -40,8 +41,9 @@ export default class ScrollZoomControl extends Evented {
 
     constructor(options: Options) {
         super();
-        this.options = extend(Object.create(defaultOptions), options);
-        bindAll(['_update', '_show', 'remove'], this);
+        this.options = extend({}, defaultOptions, options);
+
+        bindAll(['_update', '_showAlert','_fadeOutAlert'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -57,8 +59,8 @@ export default class ScrollZoomControl extends Evented {
      */
     onAdd(map: Map) {
         if (this._map) this.remove();
-
         this._map = map;
+        this._update();
         this._map.on('remove', this.remove);
         this._map.on('wheel', (e) => this.preventDefault(e));
         return this._container;
@@ -70,10 +72,10 @@ export default class ScrollZoomControl extends Evented {
      * @example
      * const scrollZoomControl = new mapboxgl.ScrollZoomControl();
      * map.addControl(scrollZoomControl);
-     * scrollZoomControl.remove();
+     * scrollZoomControl.onRemove();
      * @returns {ScrollZoomControl} Returns itself to allow for method chaining.
      */
-    remove() {
+    onRemove() {
         if (this._content) {
             DOM.remove(this._content);
             delete this._content;
@@ -104,17 +106,8 @@ export default class ScrollZoomControl extends Evented {
         }
     }
 
-    _showAlert() {
-        this.removeClassName('mapboxgl-scroll-zoom-control-fade');
-        this._container.style.visibility = 'visible';
-        this._container.style.opacity = '1';
-    }
-
-    _fadeOutAlert() {
-        setTimeout(() => {
-            this.addClassName('mapboxgl-scroll-zoom-control-fade');
-            this._container.style.opacity = '0';
-        }, 3000);
+    getDefaultPosition() {
+        return 'fullscreen';
     }
 
     /**
@@ -274,6 +267,19 @@ export default class ScrollZoomControl extends Evented {
         if (this._content) this._content.style.opacity = opacity;
     }
 
+    _showAlert() {
+        this.removeClassName('mapboxgl-scroll-zoom-control-fade');
+        this._container.style.visibility = 'visible';
+        this._container.style.opacity = '1';
+    }
+
+    _fadeOutAlert() {
+        setTimeout(() => {
+            this.addClassName('mapboxgl-scroll-zoom-control-fade');
+            this._container.style.opacity = '0';
+        }, 2000);
+    }
+
     _updateClassList() {
         const classes = [...this._classList];
         classes.push('mapboxgl-scroll-zoom-control');
@@ -284,8 +290,8 @@ export default class ScrollZoomControl extends Evented {
         if (!this._map || !this._content) { return; }
 
         if (!this._container) {
-            this._container = DOM.create('div', 'mapboxgl-scroll-zoom-control', this._map.getContainer());
-            this._container.appendChild(this._content);
+            this._container = DOM.create('div', 'mapboxgl-ctrl');
+            this._container.append(this._content);
         }
         this._updateClassList();
     }

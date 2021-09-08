@@ -571,11 +571,14 @@ class Map extends Camera {
             return this.fire(new ErrorEvent(new Error(
                 'Invalid argument to map.addControl(). Argument must be a control with onAdd and onRemove methods.')));
         }
+
         const controlElement = control.onAdd(this);
+
         this._controls.push(control);
 
         const positionContainer = this._controlPositions[position];
         if (position.indexOf('bottom') !== -1) {
+            this._controlPositions[position]
             positionContainer.insertBefore(controlElement, positionContainer.firstChild);
         } else {
             positionContainer.appendChild(controlElement);
@@ -2539,7 +2542,7 @@ class Map extends Camera {
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         const positions = this._controlPositions = {};
-        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((positionName) => {
+        ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'fullscreen'].forEach((positionName) => {
             positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
         });
 
