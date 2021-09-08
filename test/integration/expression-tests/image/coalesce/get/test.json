@@ -1,0 +1,40 @@
+{
+  "expression":
+  ["==", "missing",
+    ["to-string", ["coalesce",
+      ["image", ["get", "x"]],
+      "missing"
+      ]
+    ]
+  ],
+  "propertySpec": {
+    "type": "boolean"
+  },
+  "inputs": [
+    [
+      {"availableImages": ["monument-15"]},
+      {"properties": {"x": "monument-15"}}
+    ],
+    [{}, {"properties": {"x": "monument-15"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [
+      false,
+      true
+    ],
+    "serialized":
+    ["==", "missing",
+      ["to-string", ["coalesce",
+        ["image", ["string", ["get", "x"]]],
+        "missing"
+        ]
+      ]
+    ]
+  }
+}
