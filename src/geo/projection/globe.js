@@ -4,7 +4,7 @@ import {mat4, vec3} from 'gl-matrix';
 
 import {Aabb} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
-import {degToRad, clamp} from '../../util/util.js';
+import {degToRad, smoothstep, clamp} from '../../util/util.js';
 import {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
 import CanonicalTileID, { UnwrappedTileID } from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
@@ -137,12 +137,16 @@ class GlobeTileTransform {
         return mat4.multiply([], posMatrix, denormalizeECEF(tileBoundsOnGlobe(tileID)));
     }
 
-    cullTile(aabb: Aabb, id: CanonicalTileID, camera: FreeCamera): boolean {
+    cullTile(aabb: Aabb, id: CanonicalTileID, zoom: number, camera: FreeCamera): boolean {
+
+        if (zoom >= GLOBE_ZOOM_THRESHOLD_MIN) {
+            return false;
+        }
 
         // Perform backface culling to exclude tiles facing away from the camera
         // Exclude zoom levels 0 and 1 as probability of a tile facing away is small
         if (id.z <= 1) {
-            return true;
+            return false;
         }
 
         const fwd = camera.forward();
@@ -168,7 +172,7 @@ class GlobeTileTransform {
             }
         }
 
-        return numFacingAway < 4;
+        return numFacingAway === 4;
     }
 };
 
@@ -200,33 +204,11 @@ export default {
     zAxisUnit: "pixels",
 
     pixelsPerMeter(lat: number, worldSize: number) {
-        return mercatorZfromAltitude(1, 0) * worldSize;
+        return mercatorZfromAltitude(1, lat) * worldSize;
     },
 
     createTileTransform(tr: Transform, worldSize: number): TileTransform {
         return new GlobeTileTransform(tr, worldSize);
-    },
-
-    tileAabb(id: UnwrappedTileID, z: number, min: number, max: number) {
-
-        // const aabb = tileBoundsOnGlobe(id);
-
-        // // Transform corners of the aabb to the correct space
-        // const corners = aabb.getCorners();
-
-        // const mx = Number.MAX_VALUE;
-        // const max = [-mx, -mx, -mx];
-        // const min = [mx, mx, mx];
-
-        // for (let i = 0; i < corners.length; i++) {
-        //     vec3.transformMat4(corners[i], corners[i], globeMatrix);
-        //     vec3.min(min, min, corners[i]);
-        //     vec3.max(max, max, corners[i]);
-        // }
-
-        // return new Aabb(min, max);
-
-        return null;
     },
 }
 
@@ -330,6 +312,13 @@ export function normalizeECEF(bounds: Aabb): Float64Array {
     mat4.translate(m, m, vec3.negate([], bounds.min));
 
     return m;
+}
+
+export const GLOBE_ZOOM_THRESHOLD_MIN = 7;
+export const GLOBE_ZOOM_THRESHOLD_MAX = 8;
+
+export function globeToMercatorTransition(zoom: number): number {
+    return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
 }
 
 export function denormalizeECEF(bounds: Aabb): Float64Array {

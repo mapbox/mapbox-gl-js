@@ -682,7 +682,7 @@ class Transform {
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation ? z : 0;
-        
+
         const tileTransform = this._projection.createTileTransform(this, numTiles);
 
         // Compute size of the globe in tiles, ie. worldSize / tileSize
@@ -845,7 +845,7 @@ class Transform {
             // For example the globe view could perform additional backface culling
             const id = new CanonicalTileID(it.zoom, x, y);
 
-            if (!tileTransform.cullTile(it.aabb, id, this._camera)) {
+            if (tileTransform.cullTile(it.aabb, id, this.zoom, this._camera)) {
                 continue;
             }
 
@@ -1386,6 +1386,19 @@ class Transform {
         return posMatrix;
     }
 
+    calculateGlobeMercatorMatrix(worldSize: number): Float64Array {
+        const lat = clamp(this.center.lat, -this.maxValidLatitude, this.maxValidLatitude);
+        const point = new Point(
+            mercatorXfromLng(this.center.lng) * worldSize,
+            mercatorYfromLat(lat) * worldSize);
+
+        const posMatrix = mat4.identity(new Float64Array(16));
+        mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
+        mat4.scale(posMatrix, posMatrix, [worldSize, worldSize, worldSize]);
+
+        return posMatrix;
+    }
+
     // calculateGlobeMatrixForTile(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
     //     // transform the globe from reference coordinate space to world space
     //     const posMatrix = this.calculateGlobeMatrix(worldSize);
@@ -1414,7 +1427,7 @@ class Transform {
     //     mat4.scale(posMatrix, posMatrix, [s, s, s]);
     //     mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
     //     mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
-        
+
     //     return mat4.multiply([], posMatrix, denormalizeECEF(tileBoundsOnGlobe(unwrappedTileID.canonical)));
     // }
 
@@ -1711,7 +1724,7 @@ class Transform {
 
         // Z-axis uses pixel coordinates when globe mode is enabled
         const pixelsPerMeter = this.pixelsPerMeter;
-        
+
         this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
         //this._projectionScaler = mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * this._projectionScaler;

@@ -9,11 +9,11 @@ import {globeRasterUniformValues} from './globe_raster_program.js';
 import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
-import {easeCubicInOut} from '../util/util.js';
 import EXTENT from '../data/extent.js';
-import {warnOnce, clamp, degToRad} from '../util/util.js';
+import {members as globeLayoutAttributes} from './globe_attributes.js';
+import {easeCubicInOut, warnOnce, wrap, clamp, degToRad} from '../util/util.js';
 import {RasterBoundsArray, GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
-import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
+import {lngFromMercatorX, mercatorXfromLng, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {createLayout} from '../util/struct_array.js';
 import SegmentVector from '../data/segment.js';
 
@@ -23,7 +23,16 @@ import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import { array } from '../style-spec/expression/types.js';
-import {tileLatLngCorners, latLngToECEF, tileBoundsOnGlobe, denormalizeECEF, normalizeECEF, GlobeSharedBuffers, GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe.js'
+import {
+    tileLatLngCorners,
+    latLngToECEF,
+    tileBoundsOnGlobe,
+    denormalizeECEF,
+    normalizeECEF,
+    GlobeSharedBuffers,
+    GLOBE_VERTEX_GRID_SIZE,
+    globeToMercatorTransition
+} from '../geo/projection/globe.js'
 import extend from '../style-spec/util/extend.js';
 
 export {
@@ -136,20 +145,17 @@ const shaderDefines = {
     "2": 'TERRAIN_WIREFRAME'
 };
 
-const layout = createLayout([
-    { type: 'Float32', name: 'a_globe_pos', components: 3 },
-    { type: 'Float32', name: 'a_uv', components: 2 }
-]);
-
 const lerp = (a, b, t) => a * (1 - t) + b * t;
 
-function createGridVertices(count: number, sz, sy): any {
+function createGridVertices(painter, count: number, sx, sy, sz): any {
+    const counter = painter.frameCounter;
+    const tr = painter.transform;
     const tiles = Math.pow(2, sz);
-    const gridTileId = new CanonicalTileID(sz, tiles / 2, sy);
+    const gridTileId = new CanonicalTileID(sz, sx, sy);
     const [latLngTL, latLngBR] = tileLatLngCorners(gridTileId);
     const boundsArray = new GlobeVertexArray();
 
-    const bounds = tileBoundsOnGlobe(gridTileId);
+    const bounds = tileBoundsOnGlobe(new CanonicalTileID(sz, tiles / 2, sy));
     const norm = normalizeECEF(bounds);
 
     const gridExt = count;
@@ -161,12 +167,16 @@ function createGridVertices(count: number, sz, sy): any {
         const mercY = clamp(mercatorYfromLat(lat), 0, 1);
         const uvY = (mercY * tiles) - sy;
         for (let x = 0; x < vertexExt; x++) {
-            const lng = lerp(latLngTL[1], latLngBR[1], x / gridExt);
+            const uvX = x / gridExt;
+            const lng = lerp(latLngTL[1], latLngBR[1], uvX);
 
-            const p = latLngToECEF(lat, lng);
-            vec3.transformMat4(p, p, norm);
+            const pGlobe = latLngToECEF(lat, lng);
+            vec3.transformMat4(pGlobe, pGlobe, norm);
 
-            boundsArray.emplaceBack(p[0], p[1], p[2], x / gridExt, uvY);
+            const mercatorX = mercatorXfromLng(lng);
+            const mercatorY = mercatorYfromLat(lat);
+
+            boundsArray.emplaceBack(pGlobe[0], pGlobe[1], pGlobe[2], mercatorX, mercatorY, uvX, uvY);
         }
     }
 
@@ -178,16 +188,17 @@ function createPoleTriangleVertices(fanSize, tiles, ws, topCap) {
     const radius = ws / Math.PI / 2.0;
 
     // Place the tip
-    arr.emplaceBack(0, -radius, 0, 0.5, topCap ? 0.0 : 1.0);
+    arr.emplaceBack(0, -radius, 0, 0, 0, 0.5, topCap ? 0.0 : 1.0);
 
     const startAngle = 0;
     const endAngle = 360.0 / tiles;
 
     for (let i = 0; i <= fanSize; i++) {
-        const angle = lerp(startAngle, endAngle, i / fanSize);
+        const uvX = i / fanSize;
+        const angle = lerp(startAngle, endAngle, uvX);
         const p = latLngToECEF(85, angle, radius);
 
-        arr.emplaceBack(p[0], p[1], p[2], i / fanSize, topCap ? 0.0 : 1.0);
+        arr.emplaceBack(p[0], p[1], p[2], 0, 0, uvX, topCap ? 0.0 : 1.0);
     }
 
     return arr;
@@ -198,14 +209,14 @@ function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: Overscal
     const id = coord.canonical;
     const tr = painter.transform;
     if (!tile.globeGridBuffer) {
-        const gridMesh = createGridVertices(GLOBE_VERTEX_GRID_SIZE, id.z, id.y);
-        tile.globeGridBuffer = context.createVertexBuffer(gridMesh, layout.members, true);
+        const gridMesh = createGridVertices(painter, GLOBE_VERTEX_GRID_SIZE, id.x, id.y, id.z);
+        tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
     }
 
     const tiles = Math.pow(2, coord.canonical.z);
     if (!tile.globePoleBuffer && (coord.canonical.y === 0 || coord.canonical.y === tiles - 1)) {
         const poleMesh = createPoleTriangleVertices(GLOBE_VERTEX_GRID_SIZE, tiles, tr.tileSize * tiles, coord.canonical.y === 0);
-        tile.globePoleBuffer = context.createVertexBuffer(poleMesh, layout.members, true);
+        tile.globePoleBuffer = context.createVertexBuffer(poleMesh, globeLayoutAttributes, false);
     }
 
     if (!painter.globeSharedBuffers) {
@@ -214,18 +225,10 @@ function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: Overscal
 }
 
 function globeMatrixForTile(id: CanonicalTileID, globeMatrix) {
-    // Tile geometry is pre-generated and can be reused for each tiles on the same x-row.
-    // i.e. for each tile id (x, y, z) use pregenerated mesh of (0, y, z)
-    // For this reason the transformation matrix is rotated first by 'yRotation' to place the tile in correct longitude location.
-    // This is a HACK and very slow
-    const tileDim = Math.pow(2, id.z);
-    const xOffset = id.x - tileDim / 2;
-    const yRotation = xOffset / tileDim * Math.PI * 2.0;
-
     const gridTileId = new CanonicalTileID(id.z, Math.pow(2, id.z) / 2, id.y);
     const bounds = tileBoundsOnGlobe(gridTileId);
     const decode = denormalizeECEF(bounds);
-    const posMatrix = mat4.rotateY([], globeMatrix, yRotation);
+    const posMatrix = mat4.clone(globeMatrix);
     mat4.mul(posMatrix, posMatrix, decode);
 
     return posMatrix;
@@ -276,7 +279,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const tr = painter.transform;
     const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
     const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
-
+    const globeMercatorMatrix = tr.calculateGlobeMercatorMatrix(tr.worldSize);
+    const mercCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const batches = showWireframe ? [false, true] : [false];
 
     batches.forEach(isWireframe => {
@@ -315,10 +319,12 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             }
 
             const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
-            const projMatrix = mat4.multiply([], tr.projMatrix, posMatrix);
 
             const tiles = Math.pow(2, coord.canonical.z);
-            const uniformValues = globeRasterUniformValues(projMatrix);
+            const uniformValues = globeRasterUniformValues(
+                tr.projMatrix, posMatrix, globeMercatorMatrix,
+                globeToMercatorTransition(tr.zoom),
+                mercCenter);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -328,18 +334,18 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
-            program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                 uniformValues, "globe_raster", tile.globeGridBuffer, painter.globeSharedBuffers.gridIndexBuffer, painter.globeSharedBuffers.gridSegments, null, null, null, null);
 
             // Fill poles by extrapolating adjacent border tiles
             if (coord.canonical.y === 0 || coord.canonical.y === tiles - 1) {
                 const poleMatrix = poleMatrixForTile(coord.canonical, tr);
-                mat4.multiply(poleMatrix, tr.projMatrix, poleMatrix);
 
                 const poleUniforms = globeRasterUniformValues(
-                    poleMatrix);
+                    tr.projMatrix, poleMatrix, poleMatrix,
+                    0.0, mercCenter);
 
-                program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                     poleUniforms, "globe_pole_raster", tile.globePoleBuffer, painter.globeSharedBuffers.poleIndexBuffer, painter.globeSharedBuffers.poleSegments);
             }
         }
@@ -430,7 +436,9 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
         context.clear({depth: 1});
         const program = painter.useProgram('globeDepth');
         const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
+        const globeMercatorMatrix = tr.calculateGlobeMercatorMatrix(tr.worldSize);
         const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
+        const mercCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
         for (const coord of tileIDs) {
             const tile = sourceCache.getTile(coord);
@@ -441,8 +449,9 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
             terrain.setupElevationDraw(tile, program, elevationOptions);
 
             const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
-            const projMatrix = mat4.multiply([], tr.projMatrix, posMatrix);
-            const uniformValues = globeRasterUniformValues(projMatrix);
+            const uniformValues = globeRasterUniformValues(
+                tr.projMatrix, posMatrix, globeMercatorMatrix,
+                globeToMercatorTransition(tr.zoom), mercCenter);
 
             program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
                 uniformValues, "globe_raster_depth", tile.globeGridBuffer, painter.globeSharedBuffers.gridIndexBuffer, painter.globeSharedBuffers.gridSegments, null, null, null, null);
