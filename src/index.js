@@ -61,12 +61,14 @@ const exported = {
      * resources will be created ahead of time, and will not be cleared when the last `Map`
      * is removed from the page. This allows them to be re-used by new `Map` instances that
      * are created later. They can be manually cleared by calling
-     * `mapboxgl.clearPrewarmedResources()`. This is only necessary if your web page remains
-     * active but stops using maps altogether. `prewarm()` is idempotent and has guards against being executed multiple times, and any resources called by `prewarm()` are called synchronously.
+     * `mapboxgl.clearPrewarmedResources()`. This is only necessary if your web page
+     * remains active but stops using maps altogether. `prewarm()` is idempotent
+     * and has guards against being executed multiple times, and any resources
+     * called by `prewarm()` are called synchronously.
      *
-     * This is primarily useful when using Mapbox GL JS maps in a single page app, in which a user
-     * would navigate between various views that can cause `Map` instances to constantly be
-     * created and destroyed.
+     * This is primarily useful when using Mapbox GL JS maps in a single page app,
+     * in which a user would navigate between various views that can cause
+     * Map` instances to constantly be created and destroyed.
      *
      * @function prewarm
      * @example
