@@ -94,6 +94,15 @@
         "delay": 0
       }
     },
+    "projection": {
+      "type": "projection",
+      "doc": "The projection the map should be rendered in. Possible projections are Albers USA, Albers Alaska, Equal Earth, Equirectangular (WGS84), Globe, Lambert, Mercator, Natural Earth, and Winkel Tripel.",
+      "example": {
+        "name": "albers",
+        "center": [-154, 50],
+        "parallels": [55, 65]
+      }
+    },
     "layers": {
       "required": true,
       "type": "array",
@@ -3860,6 +3869,21 @@
           "macos": "0.5.0"
         }
       }
+    }
+  },
+  "projection": {
+    "name": {
+      "type": "string",
+      "default": "mercator",
+      "doc": "The name of the projection to be used for rendering the map. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equal-earth'), Equirectangular/WGS84 ('equirectangular'), Globe ('globe'), Lambert ('lambert'), Mercator ('mercator'), Natural Earth ('natural-earth'), and Winkel Tripel ('winkel')."
+    },
+    "center": {
+      "type": "array",
+      "doc": "The reference longitude and latitude of the projection. `center` takes the form of [lng, lat]. This property is only configurable for conical projections (Albers and Lambert). All other projections are centered on [0, 0]."
+    },
+    "parallels": {
+      "type": "array",
+      "doc": "The standard parallels of the projection, denoting the desired latitude range with minimal distortion. `parallels` takes the form of [lat0, lat1]. This property is only configurable for conical projections (Albers and Lambert)."
     }
   },
   "terrain" : {
