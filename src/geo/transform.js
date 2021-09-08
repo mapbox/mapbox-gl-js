@@ -228,7 +228,9 @@ class Transform {
         this.pitch = Math.min(this.pitch, pitch);
     }
 
-    get renderWorldCopies(): boolean { return this._renderWorldCopies; }
+    get renderWorldCopies(): boolean {
+        return this.projection.name === 'mercator' && this._renderWorldCopies;
+    }
     set renderWorldCopies(renderWorldCopies?: ?boolean) {
         if (renderWorldCopies === undefined) {
             renderWorldCopies = true;
@@ -955,18 +957,14 @@ class Transform {
         const a = this.pointCoordinate(point);
         const b = this.pointCoordinate(this.centerPoint);
         const loc = this.locationCoordinate(lnglat);
-        const newCenter = new MercatorCoordinate(
-                loc.x - (a.x - b.x),
-                loc.y - (a.y - b.y));
-        this.center = this.coordinateLocation(newCenter);
-        if (this._renderWorldCopies) {
-            this.center = this.center.wrap();
-        }
+        this.setLocation(new MercatorCoordinate(
+            loc.x - (a.x - b.x),
+            loc.y - (a.y - b.y)));
     }
 
     setLocation(location: MercatorCoordinate) {
         this.center = this.coordinateLocation(location);
-        if (this._renderWorldCopies) {
+        if (this.renderWorldCopies) {
             this.center = this.center.wrap();
         }
     }
