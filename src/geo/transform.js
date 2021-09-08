@@ -97,7 +97,7 @@ class Transform {
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
     _averageElevation: number;
-    projectionOptions: {name: string} | string;
+    projectionOptions: ProjectionOptions;
     projection: Projection;
     _elevation: ?Elevation;
     _fov: number;
@@ -121,7 +121,7 @@ class Transform {
     _centerAltitude: number;
     _horizonShift: number;
 
-    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection: string) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection: ProjectionOptions) {
         this.tileSize = 512; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
@@ -133,7 +133,7 @@ class Transform {
 
         this.setMaxBounds();
 
-        if (!projection) projection = 'mercator';
+        if (typeof projection === 'string') projection = {name: projection};
         this.projectionOptions = projection;
         this.projection = getProjection(projection);
 
@@ -159,7 +159,7 @@ class Transform {
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.projection.name);
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.projectionOptions);
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone.tileSize = this.tileSize;

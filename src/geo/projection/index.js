@@ -10,10 +10,17 @@ import LngLat from '../lng_lat.js';
 
 export type Projection = {
     name: string,
-    center: [number, number],
+    center: Array<number>,
+    parallels?: Array<number>,
     range?: Array<number>,
     project: (lng: number, lat: number) => {x: number, y: number},
     unproject: (x: number, y: number) => LngLat
+};
+
+export type ProjectionOptions = {
+    name: string,
+    center?: Array<number>, 
+    parallels?: Array<number>
 };
 
 const projections = {
@@ -27,9 +34,6 @@ const projections = {
     winkelTripel
 };
 
-export default function getProjection(config: {name: string} | string) {
-    if (typeof config === 'string') {
-        return projections[config];
-    }
+export default function getProjection(config: ProjectionOptions) {
     return {...projections[config.name], ...config};
 }

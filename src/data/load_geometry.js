@@ -5,6 +5,7 @@ import {warnOnce, clamp} from '../util/util.js';
 import EXTENT from './extent.js';
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
+
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
 
