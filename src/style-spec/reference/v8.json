@@ -2761,7 +2761,7 @@
         }
       },
       "coalesce": {
-        "doc": "Evaluates each expression in turn until the first valid value is obtained. Invalid values are `null` and [`'image'`](#types-image) expressions that are unavailable in the style. If all values are invalid, coalesce returns the first value listed.",
+        "doc": "Evaluates each expression in turn until the first valid value is obtained. Invalid values are `null` and [`'image'`](#types-image) expressions that are unavailable in the style. If all values are invalid, `coalesce` returns the first value listed.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2959,7 +2959,7 @@
         }
       },
       "image": {
-        "doc": "Returns a [`ResolvedImage`](../types/#resolvedimage) for use in [`icon-image`](../layers/#layout-symbol-icon-image), `*-pattern` entries and as a section in the [`'format'`](#types-format) expression. A [`'coalesce'`](#coalesce) expression containing `image` expressions will evaluate to the first listed image that is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `'image'` argument.",
+        "doc": "Returns a [`ResolvedImage`](/mapbox-gl-js/style-spec/types/#resolvedimage) for use in [`icon-image`](/mapbox-gl-js/style-spec/layers/#layout-symbol-icon-image), `*-pattern` entries, and as a section in the [`'format'`](#types-format) expression. A [`'coalesce'`](#coalesce) expression containing `image` expressions will evaluate to the first listed image that is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `'image'` argument.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
