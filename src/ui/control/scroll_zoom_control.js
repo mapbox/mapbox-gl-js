@@ -27,7 +27,7 @@ export type Options = {
  * attempts to scroll zoom without pressing ctrl or  ⌘ keys.
  * @param {string} [options.className] Space-separated CSS class names to add to scroll zoom blocker control container.
  * @example
- * const ScrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl({closeButton: true})
+ * const ScrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl()
  *     .setHTML("<h1>'Use ⌘ + scroll to zoom the map'</h1>")
  *     .addTo(map);
  */
@@ -70,7 +70,7 @@ export default class ScrollZoomBlockerControl extends Evented {
      * Removes the scroll zoom blocker control from the map it has been added to.
      *
      * @example
-     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl();
+     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl().setHTML();
      * map.addControl(scrollZoomBlockerControl);
      * scrollZoomBlockerControl.onRemove();
      * @returns {ScrollZoomBlockerControl} Returns itself to allow for method chaining.
