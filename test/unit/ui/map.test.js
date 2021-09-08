@@ -747,8 +747,15 @@ test('Map', (t) => {
             const map = createMap(t),
                 container = map.getContainer();
 
-            Object.defineProperty(container, 'clientWidth', {value: 250});
-            Object.defineProperty(container, 'clientHeight', {value: 250});
+            Object.defineProperty(container, 'getBoundingClientRect', {value:
+                () => {
+                    return {
+                        height: 250,
+                        width: 250
+                    };
+                }
+            });
+
             map.resize();
 
             t.equal(map.transform.width, 250);
@@ -2466,8 +2473,15 @@ test('Map', (t) => {
 
         map.flyTo({center: [200, 0], duration: 100});
 
-        Object.defineProperty(container, 'clientWidth', {value: 250});
-        Object.defineProperty(container, 'clientHeight', {value: 250});
+        Object.defineProperty(container, 'getBoundingClientRect', {value:
+            () => {
+                return {
+                    height: 250,
+                    width: 250
+                };
+            }
+        });
+
         map.resize();
 
         t.ok(map.isMoving(), 'map is still moving after resize due to camera animation');

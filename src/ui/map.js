@@ -451,6 +451,7 @@ class Map extends Camera {
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
+
             if (!this._container) {
                 throw new Error(`Container '${options.container}' not found.`);
             }
@@ -695,8 +696,9 @@ class Map extends Camera {
         const height = dimensions[1];
 
         this._resizeCanvas(width, height);
+
         this.transform.resize(width, height);
-        this.painter.resize(width, height);
+        this.painter.resize(Math.ceil(width), Math.ceil(height));
 
         const fireMoving = !this._moving;
         if (fireMoving) {
@@ -2497,8 +2499,8 @@ class Map extends Camera {
         let height = 0;
 
         if (this._container) {
-            width = this._container.clientWidth || 400;
-            height = this._container.clientHeight || 300;
+            width = this._container.getBoundingClientRect().width || 400;
+            height = this._container.getBoundingClientRect().height || 300;
         }
 
         return [width, height];
@@ -2549,9 +2551,9 @@ class Map extends Camera {
     _resizeCanvas(width: number, height: number) {
         const pixelRatio = browser.devicePixelRatio || 1;
 
-        // Request the required canvas size taking the pixelratio into account.
-        this._canvas.width = pixelRatio * width;
-        this._canvas.height = pixelRatio * height;
+        // Request the required canvas size (rounded up) taking the pixelratio into account.
+        this._canvas.width = pixelRatio * Math.ceil(width);
+        this._canvas.height = pixelRatio * Math.ceil(height);
 
         // Maintain the same canvas size, potentially downscaling it for HiDPI displays
         this._canvas.style.width = `${width}px`;
