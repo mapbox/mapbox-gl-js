@@ -5033,7 +5033,7 @@
       "minimum": 1,
       "transition": true,
       "units": "pixels",
-      "doc": "Radius of influence of one heatmap point in pixels. Increasing the value makes the heatmap smoother, but less detailed.",
+      "doc": "Radius of influence of one heatmap point in pixels. Increasing the value makes the heatmap smoother, but less detailed. `queryRenderedFeatures` on heatmap layers will return points within this radius.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.41.0",
