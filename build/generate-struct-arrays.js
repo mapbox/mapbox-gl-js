@@ -175,6 +175,9 @@ createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
 createStructArrayType('symbol_line_vertex', lineVertex, true);
 
+import globeAttributes from '../src/terrain/globe_attributes.js';
+createStructArrayType('globe_vertex', globeAttributes);
+
 // feature index array
 createStructArrayType('feature_index', createLayout([
     // the index of the feature in the original vectortile
@@ -200,12 +203,6 @@ createStructArrayType('line_index', createLayout([
 // line strip index array
 createStructArrayType('line_strip_index', createLayout([
     { type: 'Uint16', name: 'vertices', components: 1 }
-]));
-
-// line strip index array
-createStructArrayType('globe_vertex', createLayout([
-    { type: 'Float32', name: 'a_pos', components: 3 },
-    { type: 'Float32', name: 'a_uv', components: 2 }
 ]));
 
 // skybox vertex array
