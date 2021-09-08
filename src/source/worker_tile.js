@@ -235,6 +235,7 @@ class WorkerTile {
                             this.tileID.canonical,
                             this.tileZoom,
                             getProjection(this.projection));
+                        bucket.projection = this.projection;
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||

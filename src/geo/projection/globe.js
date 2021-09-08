@@ -68,8 +68,9 @@ class GlobeTileTransform {
 
         const decode = denormalizeECEF(tileBoundsOnGlobe(id.canonical));
 
-        mat4.multiply(matrix, matrix, decode)
+        mat4.multiply(matrix, matrix, decode);
 
+        // TODO: Optimize this function to prevent the inversion step
         return mat4.invert(matrix, matrix);
     }
 
@@ -349,7 +350,7 @@ export function denormalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export const GLOBE_VERTEX_GRID_SIZE = 16;
+export const GLOBE_VERTEX_GRID_SIZE = 128;
 
 export class GlobeSharedBuffers {
     poleIndexBuffer: IndexBuffer;

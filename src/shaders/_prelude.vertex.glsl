@@ -47,8 +47,7 @@ float wrap(float n, float min, float max) {
 }
 
 vec3 mix_globe_mercator(mat4 matrix, vec2 tile_anchor, vec3 position, vec3 tile_id, vec2 mercator_center, float t) {
-    if (t >= 1.0) { return position; }
-
+#ifdef PROJECTION_GLOBE_VIEW
     float tiles = pow(2.0, tile_id.z);
 
     vec2 mercator = (tile_anchor / EXTENT + tile_id.xy) / tiles;
@@ -59,6 +58,9 @@ vec3 mix_globe_mercator(mat4 matrix, vec2 tile_anchor, vec3 position, vec3 tile_
     mercator_tile = matrix * mercator_tile;
 
     return mix(position, mercator_tile.xyz, vec3(t));
+#else
+    return position;
+#endif
 }
 
 // Unpack a pair of values that have been packed into a single float.

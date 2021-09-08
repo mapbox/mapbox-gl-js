@@ -132,7 +132,9 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         const bucket: SymbolBucket = (tile.getBucket(layer): any);
-        if (!bucket || !bucket.text || !bucket.text.segments.get().length) continue;
+        if (!bucket || bucket.projection !== tr.projection.name || !bucket.text || !bucket.text.segments.get().length) {
+            continue;
+        }
 
         const sizeData = bucket.textSizeData;
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
@@ -271,11 +273,17 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         mercatorYfromLat(tr.center.lat)
     ];
     const variablePlacement = layer.layout.get('text-variable-anchor');
+    const isGlobeProjection = tr.projection.name === 'globe';
+    const globeToMercator = isGlobeProjection ?
+        globeToMercatorTransition(tr.zoom) : 0.0;
     const tileRenderState: Array<SymbolTileRenderState> = [];
 
     const defines = ([]: any);
     if (painter.terrain && pitchWithMap) {
         defines.push('PITCH_WITH_MAP_TERRAIN');
+    }
+    if (isGlobeProjection) {
+        defines.push('PROJECTION_GLOBE_VIEW');
     }
     if (alongLine) {
         defines.push('PROJECTED_POS_ON_VIEWPORT');
@@ -284,7 +292,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         const bucket: SymbolBucket = (tile.getBucket(layer): any);
-        if (!bucket) continue;
+        if (!bucket || bucket.projection !== tr.projection.name) continue;
         const buffers = isText ? bucket.text : bucket.icon;
         if (!buffers || !buffers.segments.get().length) continue;
         const programConfiguration = buffers.programConfigurations.get(layer.id);
@@ -356,8 +364,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         let uniformValues;
         const invMatrix = tileTransform.createInversionMatrix(coord.toUnwrapped());
-        const globeToMercator = tr.projection.name === 'globe'
-            ? globeToMercatorTransition(tr.zoom) : 0.0;
+
         if (isSDF) {
             if (!bucket.iconsInText) {
                 uniformValues = symbolSDFUniformValues(sizeData.kind,
