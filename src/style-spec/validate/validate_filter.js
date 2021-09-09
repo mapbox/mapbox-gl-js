@@ -10,7 +10,8 @@ import latest from '../reference/latest.js';
 
 export default function validateFilter(options) {
     if (isExpressionFilter(deepUnbundle(options.value))) {
-        const layerType = deepUnbundle(options.object.type);
+        const layer = deepUnbundle(options.object);
+        const layerType = layer ? layer.type : 'fill';
         return validateExpression(extend({}, options, {
             expressionContext: 'filter',
             valueSpec: latest[`filter_${layerType}`]
