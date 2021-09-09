@@ -33,6 +33,7 @@ import getWorkerPool from '../util/global_worker_pool.js';
 import deref from '../style-spec/deref.js';
 import emptyStyle from '../style-spec/empty.js';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff.js';
+import featureFilter from '../style-spec/feature_filter/index.js';
 import {
     registerForPluginStateChange,
     evented as rtlTextPluginEvented,
@@ -1194,6 +1195,8 @@ class Style extends Evented {
             sourceCache.pause();
         }
         this._changed = true;
+        layer._featureFilter = featureFilter(layer.filter);
+
     }
 
     _flattenAndSortRenderedFeatures(sourceResults: Array<any>) {

@@ -6,15 +6,14 @@ import getType from '../util/get_type.js';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
 import extend from '../util/extend.js';
 import {isExpressionFilter} from '../feature_filter/index.js';
-import latest from '../reference/latest.js';
 
 export default function validateFilter(options) {
     if (isExpressionFilter(deepUnbundle(options.value))) {
-        const layer = deepUnbundle(options.object);
-        const layerType = layer ? layer.type : 'fill';
+        const layerId = deepUnbundle(options.key).split('.')[1];
+        const layerType = options.style.layers.filter((layer) => layer.id === layerId)[0].type;
         return validateExpression(extend({}, options, {
             expressionContext: 'filter',
-            valueSpec: latest[`filter_${layerType}`]
+            valueSpec: options.styleSpec[`filter_${layerType}`]
         }));
     } else {
         return validateNonExpressionFilter(options);
