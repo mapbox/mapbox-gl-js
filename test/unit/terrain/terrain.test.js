@@ -1393,7 +1393,7 @@ test('Marker interaction and raycast', (t) => {
                     t.same(update.callCount, 1);
                     t.end();
                 });
-            })
+            });
 
             t.test(`Marker updates position on adding terrain (#10982)`, (t) => {
                 const update = t.spy(marker, "_update");
@@ -1402,7 +1402,7 @@ test('Marker interaction and raycast', (t) => {
                     t.same(update.callCount, 1);
                     t.end();
                 });
-            })
+            });
 
             t.end();
         });
