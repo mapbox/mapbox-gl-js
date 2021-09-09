@@ -61,10 +61,16 @@
 .mapboxgl-ctrl-bottom-right { right: 0; bottom: 0; }
 
 .mapboxgl-ctrl-full-container {
+    position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
 }
 
 .mapboxgl-ctrl {
@@ -784,19 +790,17 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     display: flex;
     align-items: center;
     padding: 15px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    pointer-events: none;
     visibility: hidden;
     opacity: 0;
+    /* opacity: 1; */
     z-index: 461;
     transition: none !important;
+    /* transition: opacity .5s ease-out !important; */
 }
 
 .mapboxgl-scroll-zoom-blocker-control-fade {
-    transition: opacity 3s ease-in-out !important;
+    transition: opacity .75s ease-out !important;
 }

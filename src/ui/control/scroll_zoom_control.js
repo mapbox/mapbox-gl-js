@@ -43,7 +43,7 @@ export default class ScrollZoomBlockerControl extends Evented {
         super();
         this.options = extend({}, defaultOptions, options);
 
-        bindAll(['_update', '_showAlert', '_fadeOutAlert'], this);
+        bindAll(['_showAlert', '_fadeOutAlert', '_update', '_updateClassList'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -59,10 +59,13 @@ export default class ScrollZoomBlockerControl extends Evented {
      */
     onAdd(map: Map) {
         if (this._map) this.onRemove();
+
         this._map = map;
+
         this._update();
         this._map.on('remove', this.onRemove);
         this._map.on('wheel', (e) => this.preventDefault(e));
+
         return this._container;
     }
 
@@ -263,10 +266,6 @@ export default class ScrollZoomBlockerControl extends Evented {
         return finalState;
     }
 
-    _setOpacity(opacity: string) {
-        if (this._content) this._content.style.opacity = opacity;
-    }
-
     _showAlert() {
         this.removeClassName('mapboxgl-scroll-zoom-blocker-control-fade');
         this._container.style.visibility = 'visible';
@@ -277,7 +276,7 @@ export default class ScrollZoomBlockerControl extends Evented {
         setTimeout(() => {
             this.addClassName('mapboxgl-scroll-zoom-blocker-control-fade');
             this._container.style.opacity = '0';
-        }, 2000);
+        }, 1000);
     }
 
     _updateClassList() {
@@ -293,6 +292,7 @@ export default class ScrollZoomBlockerControl extends Evented {
             this._container = DOM.create('div', 'mapboxgl-ctrl');
             this._container.append(this._content);
         }
+
         this._updateClassList();
     }
 
