@@ -795,10 +795,8 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     background: rgba(0, 0, 0, 0.5);
     visibility: hidden;
     opacity: 0;
-    /* opacity: 1; */
     z-index: 461;
     transition: none !important;
-    /* transition: opacity .5s ease-out !important; */
 }
 
 .mapboxgl-scroll-zoom-blocker-control-fade {
