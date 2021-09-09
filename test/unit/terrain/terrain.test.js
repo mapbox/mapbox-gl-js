@@ -1380,7 +1380,6 @@ test('Marker interaction and raycast', (t) => {
                 const bottomLngLat = tr.pointLocation3D(new Point(terrainTop.x, tr.height));
                 // Raycast returns distance to closer point evaluates to occluded marker.
                 t.stub(tr, 'pointLocation3D').returns(bottomLngLat);
-                // setTimeout(() => {
                 map.once('render', () => {
                     t.deepEqual(marker.getElement().style.opacity, 0.2);
                     t.end();
