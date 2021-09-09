@@ -1,6 +1,6 @@
 attribute vec4 a_pos_offset;
 attribute vec4 a_tex_size;
-attribute vec4 a_posz;
+attribute vec4 a_z_tile_anchor;
 attribute vec3 a_projected_pos;
 attribute float a_fade_opacity;
 
@@ -27,6 +27,10 @@ uniform highp float u_camera_to_center_distance;
 uniform float u_fade_change;
 uniform vec2 u_texsize;
 uniform vec2 u_texsize_icon;
+uniform mat4 u_inv_rot_matrix;
+uniform vec2 u_merc_center;
+uniform vec3 u_tile_id;
+uniform float u_zoom_transition;
 
 varying vec4 v_data0;
 varying vec4 v_data1;
@@ -64,8 +68,14 @@ void main() {
         size = u_size;
     }
 
-    vec3 h = elevationVector(a_pos) * elevation(a_pos);
-    vec4 projectedPoint = u_matrix * vec4(vec3(a_pos, 0) + h, 1);
+    float anchorZ = a_z_tile_anchor.x;
+    vec2 tileAnchor = a_z_tile_anchor.yz;
+    vec3 h = elevationVector(tileAnchor) * elevation(tileAnchor);
+    vec3 world_pos = mix_globe_mercator(
+        u_inv_rot_matrix, tileAnchor, vec3(a_pos, anchorZ) + h,
+        u_tile_id, u_merc_center, u_zoom_transition);
+
+    vec4 projectedPoint = u_matrix * vec4(world_pos, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     // If the label is pitched with the map, layout is done in pitched space,
@@ -91,7 +101,7 @@ void main() {
         // Point labels with 'rotation-alignment: map' are horizontal with respect to tile units
         // To figure out that angle in projected space, we draw a short horizontal line in tile
         // space, project it, and measure its angle in projected space.
-        vec4 offsetProjectedPoint = u_matrix * vec4(vec3(a_pos + vec2(1, 0), 0) + h, 1);
+        vec4 offsetProjectedPoint = u_matrix * vec4(a_pos + vec2(1, 0), anchorZ, 1);
 
         vec2 a = projectedPoint.xy / projectedPoint.w;
         vec2 b = offsetProjectedPoint.xy / offsetProjectedPoint.w;
@@ -99,11 +109,20 @@ void main() {
         symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
     }
 
+    vec3 proj_pos = mix_globe_mercator(
+        u_inv_rot_matrix, tileAnchor, vec3(a_projected_pos.xy, anchorZ),
+        u_tile_id, u_merc_center, u_zoom_transition);
+
+#ifdef PROJECTED_POS_ON_VIEWPORT
+    vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos.xy, 0.0, 1.0);
+#else
+    vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos.xyz + h, 1.0);
+#endif
+
     highp float angle_sin = sin(segment_angle + symbol_rotation);
     highp float angle_cos = cos(segment_angle + symbol_rotation);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
-    vec4 projected_pos = u_label_plane_matrix * vec4(vec3(a_projected_pos.xy, 0) + h, 1.0);
     float z = 0.0;
     vec2 offset = rotation_matrix * (a_offset / 32.0 * fontScale);
 #ifdef PITCH_WITH_MAP_TERRAIN

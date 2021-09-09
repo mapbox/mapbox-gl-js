@@ -226,13 +226,10 @@ const symbolSDFUniformValues = (
 
     return extend(symbolIconUniformValues(functionType, size,
         rotateInShader, pitchWithMap, painter, matrix, labelPlaneMatrix,
-        glCoordMatrix, isText, texSize), {
+        glCoordMatrix, isText, texSize, tileID, zoomTransition,
+        invRotMatrix, mercCenter), {
         'u_gamma_scale': pitchWithMap ? cameraToCenterDistance * Math.cos(painter.terrain ? 0 : _pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
-        'u_tile_id': tileID,
-        'u_zoom_transition': zoomTransition,
-        'u_inv_rot_matrix': invRotMatrix,
-        'u_merc_center': mercCenter,
         'u_is_halo': +isHalo
     });
 };
@@ -247,11 +244,16 @@ const symbolTextAndIconUniformValues = (
     labelPlaneMatrix: Float32Array,
     glCoordMatrix: Float32Array,
     texSizeSDF: [number, number],
-    texSizeIcon: [number, number]
+    texSizeIcon: [number, number],
+    tileID: [number, number, number],
+    zoomTransition: number,
+    invRotMatrix: Float32Array,
+    mercCenter: [number, number]
 ): UniformValues<SymbolIconUniformsType> => {
     return extend(symbolSDFUniformValues(functionType, size,
         rotateInShader, pitchWithMap, painter, matrix, labelPlaneMatrix,
-        glCoordMatrix, true, texSizeSDF, true), {
+        glCoordMatrix, true, texSizeSDF, true, tileID, zoomTransition,
+        invRotMatrix, mercCenter), {
         'u_texsize_icon': texSizeIcon,
         'u_texture_icon': 1
     });
