@@ -9,8 +9,7 @@ import {isExpressionFilter} from '../feature_filter/index.js';
 
 export default function validateFilter(options) {
     if (isExpressionFilter(deepUnbundle(options.value))) {
-        const layerId = deepUnbundle(options.key).split('.')[1];
-        const layerType = options.style.layers.filter((layer) => layer.id === layerId)[0].type;
+        const layerType = deepUnbundle(options.layerType);
         return validateExpression(extend({}, options, {
             expressionContext: 'filter',
             valueSpec: options.styleSpec[`filter_${layerType}`]
