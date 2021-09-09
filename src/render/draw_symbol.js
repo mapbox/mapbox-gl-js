@@ -375,7 +375,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 uniformValues = symbolTextAndIconUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
                 uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon,
-                coordId, 0.0, painter.identityMat, mercCenter);
+                coordId, globeToMercator, invMatrix, mercCenter);
             }
         } else {
             uniformValues = symbolIconUniformValues(sizeData.kind,

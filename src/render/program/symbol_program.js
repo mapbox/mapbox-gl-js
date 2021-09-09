@@ -230,10 +230,6 @@ const symbolSDFUniformValues = (
         invRotMatrix, mercCenter), {
         'u_gamma_scale': pitchWithMap ? cameraToCenterDistance * Math.cos(painter.terrain ? 0 : _pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
-        'u_tile_id': tileID,
-        'u_zoom_transition': zoomTransition,
-        'u_inv_rot_matrix': invRotMatrix,
-        'u_merc_center': mercCenter,
         'u_is_halo': +isHalo
     });
 };
