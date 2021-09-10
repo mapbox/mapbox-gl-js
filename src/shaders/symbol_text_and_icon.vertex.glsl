@@ -137,7 +137,12 @@ void main() {
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
     float interpolated_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
 
+    float projection_transition_fade = 1.0;
+#if defined(PROJECTED_POS_ON_VIEWPORT) && defined(PROJECTION_GLOBE_VIEW)
+    projection_transition_fade = 1.0 - step(EPSILON, u_zoom_transition);
+#endif
+
     v_data0.xy = a_tex / u_texsize;
     v_data0.zw = a_tex / u_texsize_icon;
-    v_data1 = vec4(gamma_scale, size, interpolated_fade_opacity, is_sdf);
+    v_data1 = vec4(gamma_scale, size, interpolated_fade_opacity * projection_transition_fade, is_sdf);
 }
