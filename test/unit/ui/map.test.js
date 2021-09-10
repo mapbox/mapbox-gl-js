@@ -1119,7 +1119,7 @@ test('Map', (t) => {
             t.end();
         });
 
-        t.test('respects projection options', (t) => {
+        t.test('respects projection options object', (t) => {
             const options = {
                 name: 'albers',
                 center: [12, 34],
@@ -1127,6 +1127,16 @@ test('Map', (t) => {
             };
             const map = createMap(t, {projection: options});
             t.deepEqual(map.getProjection(), options);
+            t.end();
+        });
+
+        t.test('respects projection options string', (t) => {
+            const map = createMap(t, {projection: 'albers'});
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [-96, 37.5],
+                parallels: [29.5, 45.5]
+            });
             t.end();
         });
 
@@ -1157,6 +1167,7 @@ test('Map', (t) => {
             });
             t.end();
         });
+
         t.test('sets projection by options object', (t) => {
             const options = {
                 name: 'albers',
@@ -1166,6 +1177,17 @@ test('Map', (t) => {
             const map = createMap(t);
             map.setProjection(options);
             t.deepEqual(map.getProjection(), options);
+            t.end();
+        });
+
+        t.test('sets projection by options object with just name', (t) => {
+            const map = createMap(t);
+            map.setProjection({name: 'albers'});
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [-96, 37.5],
+                parallels: [29.5, 45.5]
+            });
             t.end();
         });
         t.end();

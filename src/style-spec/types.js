@@ -94,6 +94,12 @@ export type FogSpecification = {|
     "horizon-blend"?: PropertyValueSpecification<number>
 |}
 
+export type ProjectionSpecification = {|
+    "name": string,
+    "center"?: [number, number],
+    "parallels"?: [number, number]
+|}
+
 export type VectorSourceSpecification = {
     "type": "vector",
     "url"?: string,
