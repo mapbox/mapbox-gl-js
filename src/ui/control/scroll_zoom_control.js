@@ -63,6 +63,9 @@ export default class ScrollZoomBlockerControl extends Evented {
         this._map = map;
 
         this._update();
+
+        if (!this._content) this._setDefaultAlertHTML();
+
         this._map.on('remove', this.onRemove);
         this._map.on('wheel', (e) => this.preventDefault(e));
 
@@ -161,7 +164,8 @@ export default class ScrollZoomBlockerControl extends Evented {
      *     .setHTML("<h1>Use ⌘ + scroll to zoom the map</h1>");
      * map.addControl(scrollZoomBlockerControl);
      */
-    setHTML(html: string = 'Use ⌘ + scroll to zoom the map') {
+
+    setHTML(html: string) {
         const frag = window.document.createDocumentFragment();
         const temp = window.document.createElement('body');
         let child;
@@ -264,6 +268,16 @@ export default class ScrollZoomBlockerControl extends Evented {
             this._updateClassList();
         }
         return finalState;
+    }
+
+    _setDefaultAlertHTML() {
+        // If setHTML isn't implemented by client, setHTML with corresponding default alert.
+        if (window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
+            // If operating system is a mac, use alert with CMD key
+            this.setHTML('Use ⌘ + scroll to zoom the map');
+        } else {
+            this.setHTML('Use CTRL + scroll to zoom the map');
+        }
     }
 
     _showAlert() {
