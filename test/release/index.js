@@ -137,6 +137,11 @@ const pages = [
         "url": "./skybox-gradient.html"
     },
     {
+        "key": "canvas-size",
+        "title": "Canvas Size",
+        "url": "./canvas-size.html"
+    },
+    {
         "key": "zoom_control",
         "title": "Scroll zoom blocker control",
         "url": "./zoom_control.html"

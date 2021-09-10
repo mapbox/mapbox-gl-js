@@ -10,9 +10,6 @@
     "type": "git",
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
-  "engines": {
-    "node": ">=14.15.4"
-  },
   "dependencies": {
     "@mapbox/geojson-rewind": "^0.5.0",
     "@mapbox/geojson-types": "^1.0.2",
