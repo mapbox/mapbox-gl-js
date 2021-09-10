@@ -800,5 +800,5 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 }
 
 .mapboxgl-scroll-zoom-blocker-control-fade {
-    transition: opacity 0.75s ease-in-out !important;
+    transition: opacity 0.5s ease-in-out !important;
 }

@@ -201,7 +201,7 @@ test('scrollZoomBlockerControl removeControl removes scrollZoomBlockerControl', 
     const zoomSpy = t.spy();
     map.on('zoom', zoomSpy);
 
-    map.on('.load', () => {
+    map.on('load', () => {
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
 
         map.removeControl(scrollZoomBlockerControl);

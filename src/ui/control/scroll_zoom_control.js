@@ -18,7 +18,8 @@ export type Options = {
 };
 
 /**
- * A scroll zoom blocker control component.
+ * A `ScrollZoomBlockerControl` control requires pressing CTRL or CMD key while scrolling to zoom.
+ * Add this control to a map using {@link Map#addControl}.
  *
  * @implements {IControl}
  * @param {Object} [options]
@@ -283,7 +284,7 @@ export default class ScrollZoomBlockerControl {
         setTimeout(() => {
             this.addClassName('mapboxgl-scroll-zoom-blocker-control-fade');
             this._container.style.opacity = '0';
-        }, 1000);
+        }, 1500);
     }
 
     _updateClassList() {
