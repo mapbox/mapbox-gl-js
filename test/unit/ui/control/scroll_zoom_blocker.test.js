@@ -14,15 +14,6 @@ function createMap(t, options) {
     }, options));
 }
 
-test('ScrollZoomBlockerControl with no options', (t) => {
-    const map = createMap(t);
-
-    const scrollZoomBlockerControl = new ScrollZoomBlockerControl().setHTML();
-    map.addControl(scrollZoomBlockerControl);
-
-    t.end();
-});
-
 test('ScrollZoomBlocker#onAdd adds a .mapboxgl-scroll-zoom-blocker-control element', (t) => {
     const map = createMap(t);
 
@@ -91,7 +82,7 @@ test('ScrollZoomBlockerControl#onAdd prevents scroll zoom when CTRL or CMD key a
 test('ScrollZoomBlockerControl#onAdd allows scroll zoom when CTRL key is pressed during wheel event', (t) => {
     const map = createMap(t);
 
-    const scrollZoomBlockerControl = new ScrollZoomBlockerControl({showAlert: false}).setHTML();
+    const scrollZoomBlockerControl = new ScrollZoomBlockerControl().setHTML();
     map.addControl(scrollZoomBlockerControl);
 
     const zoomSpy = t.spy();
@@ -108,7 +99,7 @@ test('ScrollZoomBlockerControl#onAdd allows scroll zoom when CTRL key is pressed
 test('ScrollZoomBlockerControl#onAdd allows scroll zoom when CMD key is pressed during wheel event', (t) => {
     const map = createMap(t);
 
-    const scrollZoomBlockerControl = new ScrollZoomBlockerControl({showAlert: false}).setHTML();
+    const scrollZoomBlockerControl = new ScrollZoomBlockerControl().setHTML();
     map.addControl(scrollZoomBlockerControl);
 
     const zoomSpy = t.spy();
