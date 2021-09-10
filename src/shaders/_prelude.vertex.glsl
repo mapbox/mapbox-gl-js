@@ -47,7 +47,7 @@ float wrap(float n, float min, float max) {
 }
 
 vec3 mix_globe_mercator(mat4 matrix, vec2 tile_anchor, vec3 position, vec3 tile_id, vec2 mercator_center, float t) {
-#ifdef PROJECTION_GLOBE_VIEW
+#if defined(PROJECTION_GLOBE_VIEW) && !defined(PROJECTED_POS_ON_VIEWPORT)
     float tiles = pow(2.0, tile_id.z);
 
     vec2 mercator = (tile_anchor / EXTENT + tile_id.xy) / tiles;
