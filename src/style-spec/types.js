@@ -72,6 +72,7 @@ export type StyleSpecification = {|
     "sprite"?: string,
     "glyphs"?: string,
     "transition"?: TransitionSpecification,
+    "projection"?: ProjectionSpecification,
     "layers": Array<LayerSpecification>
 |}
 

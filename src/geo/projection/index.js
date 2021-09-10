@@ -19,7 +19,7 @@ export type Projection = {
 
 export type ProjectionOptions = {
     name: string,
-    center?: Array<number>, 
+    center?: Array<number>,
     parallels?: Array<number>
 };
 

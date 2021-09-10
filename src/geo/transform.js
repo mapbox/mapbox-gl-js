@@ -101,7 +101,7 @@ class Transform {
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
     _averageElevation: number;
-    projectionOptions: ProjectionOptions;
+    _projectionOptions: ProjectionOptions;
     projection: Projection;
     _elevation: ?Elevation;
     _fov: number;
@@ -135,9 +135,7 @@ class Transform {
         this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
         this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
 
-        if (!projection) projection = 'mercator';
-        this.projectionOptions = projection;
-        this.projection = getProjection(projection);
+        this.setProjection(projection);
 
         this.setMaxBounds();
 
@@ -163,7 +161,7 @@ class Transform {
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.projectionOptions);
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this._projectionOptions);
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone.tileSize = this.tileSize;
@@ -207,6 +205,23 @@ class Transform {
         if (constrainCameraOverTerrain) {
             this._constrainCameraAltitude();
         }
+        this._calcMatrices();
+    }
+
+    getProjection() {
+        const {center, parallels} = this.projection;
+
+        return {
+            ...{center},
+            ...{parallels},
+            ...this._projectionOptions
+        };
+    }
+
+    setProjection(projection?: ProjectionOptions | string) {
+        if (typeof projection === 'string' || !projection) projection = {name: projection || 'mercator'};
+        this._projectionOptions = projection;
+        this.projection = getProjection(projection);
         this._calcMatrices();
     }
 
