@@ -895,10 +895,27 @@ class Map extends Camera {
         return this._update();
     }
 
+    /**
+     * Returns a {@link ProjectionOptions} object that defines the current map projection.
+     * @returns {ProjectionOptions} The {@link ProjectionOptions} defining the current map projection
+     */
     getProjection() {
         return this.transform.getProjection();
     }
 
+    /**
+     * Sets the map's projection.
+     * 
+     * @param {ProjectionOptions | string} projection The projection that the map should be rendered in.
+     * This can be a {@link ProjectionOptions} object or a string of the projection's name.
+     * @example
+     * map.setProjection('albers');
+     * map.setProjection({
+     *   name: 'albers',
+     *   center: [35, 55],
+     *   parallels: [20, 60]
+     * });
+     */
     setProjection(projection: ProjectionOptions | string) {
         this.transform.setProjection(projection);
         this.style._setProjection();
