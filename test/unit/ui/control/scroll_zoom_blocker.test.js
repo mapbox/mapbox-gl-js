@@ -192,23 +192,24 @@ test('scrollZoomBlockerControl className option and addClassName both add classe
     t.end();
 });
 
-test('scrollZoomBlockerControl#onRemove removes scrollZoomBlockerControl', (t) => {
+test('scrollZoomBlockerControl removeControl removes scrollZoomBlockerControl', (t) => {
     const map = createMap(t);
 
-    const scrollZoomBlockerControl = new ScrollZoomBlockerControl({showAlert: false});
+    const scrollZoomBlockerControl = new ScrollZoomBlockerControl();
     map.addControl(scrollZoomBlockerControl);
 
     const zoomSpy = t.spy();
     map.on('zoom', zoomSpy);
 
-    simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+    map.on('.load', () => {
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
 
-    scrollZoomBlockerControl.onRemove();
+        map.removeControl(scrollZoomBlockerControl);
 
-    simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
 
-    map._renderTaskQueue.run();
+        t.equal(zoomSpy.callCount, 1);
+    });
 
-    t.equal(zoomSpy.callCount, 1);
     t.end();
 });

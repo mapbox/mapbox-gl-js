@@ -74,7 +74,7 @@ export default class ScrollZoomBlockerControl {
      * @example
      * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl();
      * map.addControl(scrollZoomBlockerControl);
-     * scrollZoomBlockerControl.onRemove();
+     * map.removeControl(scrollZoomBlockerControl);
      * @returns {ScrollZoomBlockerControl} Returns itself to allow for method chaining.
      */
     onRemove() {
@@ -96,7 +96,7 @@ export default class ScrollZoomBlockerControl {
 
     preventDefault(e: MapWheelEvent) {
         //Can't remove wheel event listener once added, so also checks if container exists before preventing zoom
-        if (!e.originalEvent.ctrlKey && !e.originalEvent.metaKey && this._container) {
+        if (!e.originalEvent.ctrlKey && !e.originalEvent.metaKey && !!this._container) {
             e.preventDefault();
             if (this.options.showAlert) {
                 this._update();
