@@ -1112,6 +1112,65 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#getProjection', (t) => {
+        t.test('map defaults to Mercator', (t) => {
+            const map = createMap(t);
+            t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
+            t.end();
+        });
+
+        t.test('respects projection options', (t) => {
+            const options = {
+                name: 'albers',
+                center: [12, 34],
+                parallels: [10, 42]
+            };
+            const map = createMap(t, {projection: options});
+            t.deepEqual(map.getProjection(), options);
+            t.end();
+        });
+
+        t.test('composites user and default projection options', (t) => {
+            const options = {
+                name: 'albers',
+                center: [12, 34]
+            };
+            const map = createMap(t, {projection: options});
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [12, 34],
+                parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+        t.end();
+    });
+
+    t.test('#setProjection', (t) => {
+        t.test('sets projection by string', (t) => {
+            const map = createMap(t);
+            map.setProjection('albers');
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [-96, 37.5],
+                parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+        t.test('sets projection by options object', (t) => {
+            const options = {
+                name: 'albers',
+                center: [12, 34],
+                parallels: [10, 42]
+            };
+            const map = createMap(t);
+            map.setProjection(options);
+            t.deepEqual(map.getProjection(), options);
+            t.end();
+        });
+        t.end();
+    });
+
     t.test('#remove', (t) => {
         const map = createMap(t);
         t.equal(map.getContainer().childNodes.length, 3);
