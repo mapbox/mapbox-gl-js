@@ -64,6 +64,21 @@ test('ScrollZoomBlockerControl alert is visible when wheel event occurs without 
     t.end();
 });
 
+test('ScrollZoomBlockerControl alert, when showAlert option is set to false, does not display when wheel event occurs without CTRL/CMD key pressed', (t) => {
+    const map = createMap(t);
+
+    const scrollZoomBlockerControl = new ScrollZoomBlockerControl({showAlert: false}).setHTML();
+    map.addControl(scrollZoomBlockerControl);
+
+    map.on('wheel', () => {
+        t.equal(scrollZoomBlockerControl.getElement().style.length, 0);
+    });
+
+    simulate.wheel(map.getCanvas());
+
+    t.end();
+});
+
 test('ScrollZoomBlockerControl#onAdd prevents scroll zoom when CTRL or CMD key are not pressed during wheel event', (t) => {
     const map = createMap(t);
 
