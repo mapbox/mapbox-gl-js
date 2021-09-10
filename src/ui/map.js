@@ -905,7 +905,7 @@ class Map extends Camera {
 
     /**
      * Sets the map's projection.
-     * 
+     *
      * @param {ProjectionOptions | string} projection The projection that the map should be rendered in.
      * This can be a {@link ProjectionOptions} object or a string of the projection's name.
      * @example

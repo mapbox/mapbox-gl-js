@@ -3874,16 +3874,47 @@
   "projection": {
     "name": {
       "type": "string",
-      "default": "mercator",
-      "doc": "The name of the projection to be used for rendering the map. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equal-earth'), Equirectangular/WGS84 ('equirectangular'), Globe ('globe'), Lambert ('lambert'), Mercator ('mercator'), Natural Earth ('natural-earth'), and Winkel Tripel ('winkel')."
+      "doc": "The name of the projection to be used for rendering the map. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equal-earth'), Equirectangular/WGS84 ('equirectangular'), Globe ('globe'), Lambert ('lambert'), Mercator ('mercator'), Natural Earth ('natural-earth'), and Winkel Tripel ('winkel').",
+      "required": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.5.0"
+        }
+      }
     },
     "center": {
       "type": "array",
-      "doc": "The reference longitude and latitude of the projection. `center` takes the form of [lng, lat]. This property is only configurable for conical projections (Albers and Lambert). All other projections are centered on [0, 0]."
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": false,
+      "doc": "The reference longitude and latitude of the projection. `center` takes the form of [lng, lat]. This property is only configurable for conical projections (Albers and Lambert). All other projections are centered on [0, 0].",
+      "example": [
+        -96,
+        37.5
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.5.0"
+        }
+      }
     },
     "parallels": {
       "type": "array",
-      "doc": "The standard parallels of the projection, denoting the desired latitude range with minimal distortion. `parallels` takes the form of [lat0, lat1]. This property is only configurable for conical projections (Albers and Lambert)."
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": false,
+      "doc":  "The standard parallels of the projection, denoting the desired latitude range with minimal distortion. `parallels` takes the form of [lat0, lat1]. This property is only configurable for conical projections (Albers and Lambert).",
+      "example": [
+        29.5,
+        45.5
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.5.0"
+        }
+      }
     }
   },
   "terrain" : {
