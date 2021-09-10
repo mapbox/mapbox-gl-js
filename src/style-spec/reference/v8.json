@@ -1738,7 +1738,7 @@
       "type": "formatted",
       "default": "",
       "tokens": true,
-      "doc": "Value to use for a text label. If a plain `string` is provided, it will be treated as a `formatted` with default/inherited formatting options.",
+      "doc": "Value to use for a text label. If a plain `string` is provided, it will be treated as a `formatted` with default/inherited formatting options. SDF images are not supported in formatted text and will be ignored.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
