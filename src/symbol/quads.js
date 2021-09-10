@@ -13,6 +13,7 @@ import type {Feature} from '../style-spec/expression/index.js';
 import type {StyleImage} from '../style/style_image.js';
 import {isVerticalClosePunctuation, isVerticalOpenPunctuation} from '../util/verticalize_punctuation.js';
 import ONE_EM from './one_em.js';
+import {warnOnce} from '../util/util.js';
 
 /**
  * A textured quad for rendering a single icon or glyph.
@@ -280,7 +281,10 @@ export function getGlyphQuads(anchor: Anchor,
             if (positionedGlyph.imageName) {
                 const image = imageMap[positionedGlyph.imageName];
                 if (!image) continue;
-                if (image.sdf) continue; // Don't render sdf image inside text
+                if (image.sdf) {
+                    warnOnce("SDF images are not supported in formatted text and will be ignored.");
+                    continue;
+                }
                 isSDF = false;
                 pixelRatio = image.pixelRatio;
                 rectBuffer = IMAGE_PADDING / pixelRatio;
