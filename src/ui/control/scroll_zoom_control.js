@@ -90,15 +90,13 @@ export default class ScrollZoomBlockerControl {
 
         if (this._map) {
             this._map.off('remove', this.onRemove);
-            this._map.off('wheel', this.preventDefault);
             delete this._map;
         }
-
-        return this._container;
     }
 
     preventDefault(e: MapWheelEvent) {
-        if (!e.originalEvent.ctrlKey && !e.originalEvent.metaKey) {
+        //Can't remove wheel event listener once added, so also checks if container exists before preventing zoom
+        if (!e.originalEvent.ctrlKey && !e.originalEvent.metaKey && this._container) {
             e.preventDefault();
             if (this.options.showAlert) {
                 this._update();
