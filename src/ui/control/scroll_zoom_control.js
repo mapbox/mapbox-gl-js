@@ -1,7 +1,6 @@
 // @flow
 
 import {extend, bindAll} from '../../util/util.js';
-import {Evented} from '../../util/evented.js';
 import DOM from '../../util/dom.js';
 import window from '../../util/window.js';
 
@@ -27,10 +26,10 @@ export type Options = {
  * attempts to scroll zoom without pressing ctrl or  ⌘ keys.
  * @param {string} [options.className] Space-separated CSS class names to add to scroll zoom blocker control container.
  * @example
- * const ScrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl()
+ * const ScrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl();
  * map.addControl(scrollZoomBlockerControl);
  */
-export default class ScrollZoomBlockerControl extends Evented {
+export default class ScrollZoomBlockerControl {
     _map: Map;
     options: Options;
     _content: HTMLElement;
@@ -38,7 +37,6 @@ export default class ScrollZoomBlockerControl extends Evented {
     _classList: Set<string>;
 
     constructor(options: Options) {
-        super();
         this.options = extend({}, defaultOptions, options);
 
         bindAll(['_showAlert', '_fadeOutAlert', '_setDefaultAlertHTML', '_update', '_updateClassList'], this);
