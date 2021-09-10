@@ -322,7 +322,8 @@ class Style extends Evented {
             this._serializedLayers[layer.id] = layer.serialize();
             this._updateLayerCount(layer, true);
         }
-        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
+
+        this._setProjection();
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
@@ -336,6 +337,13 @@ class Style extends Evented {
 
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
+    }
+
+    _setProjection() {
+        for (const id in this._sourceCaches) {
+            this._sourceCaches[id].clearTiles();
+        }
+        this.dispatcher.broadcast('setProjection', this.map.transform._projectionOptions);
     }
 
     _loadSprite(url: string) {

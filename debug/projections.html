@@ -139,8 +139,12 @@ function update() {
     map.transform._calcMatrices();
     map.triggerRepaint();
 }
+map.on('click', function () {
+    console.log('projection', map.getProjection());
+});
 document.getElementById('projName').addEventListener('change', (e) => {
-    makeMap();
+    const el = document.getElementById('projName');
+    map.setProjection(el.options[el.selectedIndex].value);
 });
 document.getElementById('styleName').addEventListener('change', (e) => {
     makeMap();

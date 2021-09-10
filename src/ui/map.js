@@ -269,7 +269,7 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
- * @param {ProjectionOptions} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equal-earth'), Equirectangular/WGS84 ('equirectangular'), Globe ('globe'), Lambert ('lambert'), Mercator ('mercator'), Natural Earth ('natural-earth'), and Winkel Tripel ('winkel'). 
+ * @param {ProjectionOptions} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equal-earth'), Equirectangular/WGS84 ('equirectangular'), Globe ('globe'), Lambert ('lambert'), Mercator ('mercator'), Natural Earth ('natural-earth'), and Winkel Tripel ('winkel').
  *  Conical projections such as Albers and Lambert have configurable `center` and `parallels` properties that allow developers to define the region in which the projection has minimal distortion; see the example for how to configure these properties.
  * @example
  * var map = new mapboxgl.Map({
@@ -893,6 +893,17 @@ class Map extends Camera {
     setRenderWorldCopies(renderWorldCopies?: ?boolean) {
         this.transform.renderWorldCopies = renderWorldCopies;
         return this._update();
+    }
+
+    getProjection() {
+        return this.transform.getProjection();
+    }
+
+    setProjection(projection: ProjectionOptions | string) {
+        this.transform.setProjection(projection);
+        this.style._setProjection();
+        this._update(true);
+        this.triggerRepaint();
     }
 
     /**
