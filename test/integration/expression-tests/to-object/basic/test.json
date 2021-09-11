@@ -1,0 +1,22 @@
+{
+  "expression": ["to-object", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": "{}"}}],
+    [{}, {"properties": {"x": "true"}}],
+    [{}, {"properties": {"x": "foo"}}],
+    [{}, {"properties": {"x": "[1,5,\"false\"]"}}],
+    [{}, {"properties": {"x": "null"}}],
+    [{}, {"properties": {"x": "{"}}],
+    [{}, {"properties": {"x": "{\"foo\":{\"bar\":1}}"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "object"
+    },
+    "outputs": [{}, true, "foo", [1,5,false], null,  {"error": "Uncaught SyntaxError: Unexpected end of JSON input"}, {"foo":{"bar":1}}],
+    "serialized": ["to-object", ["get", "x"]]
+  }
+}
