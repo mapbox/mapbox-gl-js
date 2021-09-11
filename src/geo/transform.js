@@ -1455,9 +1455,12 @@ class Transform {
             mercatorXfromLng(this.center.lng) * worldSize,
             mercatorYfromLat(lat) * worldSize);
 
+        const tileTransform = this.projection.createTileTransform(this, worldSize);
+        const zScale = tileTransform.tileSpaceUpVectorScale();
+
         const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
-        mat4.scale(posMatrix, posMatrix, [worldSize, worldSize, worldSize]);
+        mat4.scale(posMatrix, posMatrix, [worldSize, worldSize, zScale]);
 
         return posMatrix;
     }

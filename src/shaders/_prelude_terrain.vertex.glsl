@@ -55,7 +55,7 @@ uniform sampler2D u_depth;
 uniform vec2 u_depth_size_inv;
 
 vec3 elevationVector(vec2 pos) {
-    vec2 uv = pos / 8192.0;
+    vec2 uv = pos / EXTENT;
     vec3 up = normalize(mix(
         mix(u_tile_tl_up, u_tile_tr_up, uv.xxx),
         mix(u_tile_bl_up, u_tile_br_up, uv.xxx),
