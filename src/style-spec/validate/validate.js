@@ -22,6 +22,7 @@ import validateFog from './validate_fog.js';
 import validateString from './validate_string.js';
 import validateFormatted from './validate_formatted.js';
 import validateImage from './validate_image.js';
+import validateProjection from './validate_projection.js';
 
 const VALIDATORS = {
     '*'() {
@@ -43,7 +44,8 @@ const VALIDATORS = {
     'fog': validateFog,
     'string': validateString,
     'formatted': validateFormatted,
-    'resolvedImage': validateImage
+    'resolvedImage': validateImage,
+    'projection': validateProjection
 };
 
 // Main recursive validation function. Tracks:
