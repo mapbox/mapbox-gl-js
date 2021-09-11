@@ -73,7 +73,7 @@ export class MapMouseEvent extends Event {
      */
     lngLat: LngLat;
 
-    /**.
+    /**
      * If a `layerId` was specified when adding the event listener with {@link Map#on}, `features` will be an array of
      * [GeoJSON](http://geojson.org/) [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      * The array will contain all features from that layer that are rendered at the event's point.
@@ -97,7 +97,7 @@ export class MapMouseEvent extends Event {
      * });
      *
      * @example
-     * // logging features for a specific layer (with `e.features`)
+     * // logging features for two layers (with `e.features`)
      * map.on('click', ['layer1', 'layer2'] , (e) => {
      *     console.log(`There are ${e.features.length} features at point ${e.point}`);
      * });
