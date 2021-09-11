@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-import {BooleanType, ColorType, NumberType, StringType, ValueType} from '../types.js';
+import {BooleanType, ColorType, NumberType, ObjectType, StringType, ValueType} from '../types.js';
 import {Color, toString as valueToString, validateRGBA} from '../values.js';
 import RuntimeError from '../runtime_error.js';
 import Formatted from '../types/formatted.js';
@@ -19,7 +19,8 @@ const types = {
     'to-boolean': BooleanType,
     'to-color': ColorType,
     'to-number': NumberType,
-    'to-string': StringType
+    'to-string': StringType,
+    'to-object': ObjectType,
 };
 
 /**
@@ -45,7 +46,7 @@ class Coercion implements Expression {
         const name: string = (args[0]: any);
         assert(types[name], name);
 
-        if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
+        if ((name === 'to-boolean' || name === 'to-string' || name === 'to-object') && args.length !== 2)
             return context.error(`Expected one argument.`);
 
         const type = types[name];
@@ -102,6 +103,8 @@ class Coercion implements Expression {
             return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'resolvedImage') {
             return ResolvedImage.fromString(valueToString(this.args[0].evaluate(ctx)));
+        } else if (this.type.kind === 'object') {
+            return JSON.parse(this.args[0].evaluate(ctx));
         } else {
             return valueToString(this.args[0].evaluate(ctx));
         }
