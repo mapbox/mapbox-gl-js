@@ -153,6 +153,7 @@ jobs:
           root: ~/
           paths:
             - mapbox-gl-js
+            - .ssh
 
   install-mbx-ci:
     <<: *defaults
