@@ -17,6 +17,8 @@ workflows:
           filters:
             tags:
               only: /.*/
+            branches:
+              ignore: /.*:.*/
       - lint:
           requires:
             - prepare
@@ -26,6 +28,14 @@ workflows:
       - build:
           requires:
             - prepare
+          filters:
+            tags:
+              only: /.*/
+      - check-bundle-size:
+          requires:
+            - prepare
+            - install-mbx-ci
+            - build
           filters:
             tags:
               only: /.*/
@@ -203,6 +213,16 @@ jobs:
           root: ~/
           paths:
             - mapbox-gl-js/dist
+
+  check-bundle-size:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Check bundle size
+          command: |
+            node build/check-bundle-size.js
 
   test-flow:
     <<: *defaults
