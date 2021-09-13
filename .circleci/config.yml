@@ -11,6 +11,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - install-mbx-ci:
+          requires:
+              - prepare
+          filters:
+            tags:
+              only: /.*/
       - lint:
           requires:
             - prepare
@@ -74,6 +80,7 @@ workflows:
       - collect-stats:
           requires:
             - build
+            - install-mbx-ci
           filters:
             tags:
               ignore: /.*/
@@ -81,6 +88,7 @@ workflows:
               only: main
       - deploy-benchmarks:
           requires:
+            - install-mbx-ci
             - lint
             - build
             - test-flow
@@ -98,6 +106,7 @@ workflows:
                 - /release-.*/
       - deploy-release:
           requires:
+            - install-mbx-ci
             - lint
             - build
             - test-flow
@@ -123,12 +132,6 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run:
-          name: Install mbx-ci
-          command: |
-            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > ~/mbx-ci &&
-            chmod 755 ~/mbx-ci &&
-            ~/mbx-ci aws setup
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
@@ -142,10 +145,22 @@ jobs:
           root: ~/
           paths:
             - mapbox-gl-js
+
+  install-mbx-ci:
+    <<: *defaults
+    steps:
+      - run:
+          name: Install mbx-ci
+          command: |
+            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > ~/mbx-ci &&
+            chmod 755 ~/mbx-ci &&
+            ~/mbx-ci aws setup
+      - persist_to_workspace:
+          root: ~/
+          paths:
             - .ssh
             - .aws
             - mbx-ci
-
 
   lint:
     <<: *defaults
