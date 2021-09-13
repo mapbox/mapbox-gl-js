@@ -59,6 +59,7 @@ export default class ScrollZoomBlockerControl {
 
         this._map = map;
 
+        //to do: check if mobile device first (currently not supported)
         this._update();
 
         if (!this._content) this._setDefaultAlertHTML();
@@ -269,7 +270,7 @@ export default class ScrollZoomBlockerControl {
         if (window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
             // If operating system is a mac, use alert with CMD key
             this.setHTML('Use ⌘ + scroll to zoom the map');
-        } else {
+        } else if (/WIN32|WIN32|WINDOWS|WINCE|LINUX/i.test(window.navigator.platform.toUpperCase())) {
             this.setHTML('Use CTRL + scroll to zoom the map');
         }
     }
