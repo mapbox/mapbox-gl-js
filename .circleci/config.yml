@@ -16,7 +16,7 @@ workflows:
               - prepare
           filters:
             branches:
-              ignore: /.*:.*/
+              ignore: /pull\/[0-9]*/
       - lint:
           requires:
             - prepare
