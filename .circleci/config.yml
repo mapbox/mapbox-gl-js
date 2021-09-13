@@ -12,6 +12,8 @@ workflows:
             tags:
               only: /.*/
       - install-mbx-ci:
+          requires:
+              - prepare
           filters:
             tags:
               only: /.*/
