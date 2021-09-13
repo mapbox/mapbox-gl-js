@@ -15,8 +15,6 @@ workflows:
           requires:
               - prepare
           filters:
-            tags:
-              only: /.*/
             branches:
               ignore: /.*:.*/
       - lint:
