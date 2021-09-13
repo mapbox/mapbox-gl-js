@@ -50,6 +50,7 @@ var map = new mapboxgl.Map({
 map.on('click', function(e) {
     map.setPaintProperty("circle", "circle-color", "red");
     map.setPaintProperty("circle", "circle-translate", [50, 50]);
+    console.log(e)
 });
 
 </script>
