@@ -14,6 +14,9 @@ function createMap(t, options) {
     }, options));
 }
 
+//mock MacIntel as window.navigator.platform for tests
+Object.defineProperty(window.navigator, 'platform', {value: 'MacIntel', configurable: true});
+
 test('ScrollZoomBlocker#onAdd adds a .mapboxgl-scroll-zoom-blocker-control element', (t) => {
     const map = createMap(t);
 
