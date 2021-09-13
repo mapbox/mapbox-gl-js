@@ -201,10 +201,6 @@ jobs:
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
       - run: yarn run test-build
-      - run:
-          name: Check bundle size
-          command: |
-            node build/check-bundle-size.js
       - store_artifacts:
           path: "dist"
       - store_artifacts:
