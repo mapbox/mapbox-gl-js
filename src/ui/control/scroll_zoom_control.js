@@ -40,7 +40,7 @@ export default class ScrollZoomBlockerControl {
     constructor(options: Options) {
         this.options = extend({}, defaultOptions, options);
 
-        bindAll(['_showAlert', '_fadeOutAlert', '_setDefaultAlertHTML', '_update', '_updateClassList', '_preventDefault', 'getMetaKeyName'], this);
+        bindAll(['_showAlert', '_fadeOutAlert', '_setDefaultAlertHTML', '_update', '_updateClassList', '_preventDefault'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -254,28 +254,8 @@ export default class ScrollZoomBlockerControl {
         return finalState;
     }
 
-    /**
-     * Returns the corresponding metakey name depending on the device platform.
-     *
-     * @returns {string} Returns string name of the meta key, such as '⌘' or 'CTRL'.
-     * @example
-     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl();
-     * const metaKeyName = scrollZoomBlockerControl.getMetaKeyName();
-     * scrollZoomBlockerControl.setHTML(`${metaKeyName} + scroll to zoom the map`);
-     * map.addControl(scrollZoomBlockerControl);
-     */
-    getMetaKeyName() {
-        if (window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
-            return '⌘';
-        } else if (/iPad/.test(window.navigator.platform)) {
-            return '⌘';
-        }
-        return 'CTRL';
-    }
-
     _setDefaultAlertHTML() {
-        const metaKeyName = this.getMetaKeyName();
-        this.setHTML(`${metaKeyName} + scroll to zoom the map`);
+        this.setHTML("CMD/CTRL + scroll to zoom the map");
     }
 
     _preventDefault(e: MapWheelEvent) {
