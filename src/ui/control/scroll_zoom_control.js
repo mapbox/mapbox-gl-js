@@ -40,7 +40,7 @@ export default class ScrollZoomBlockerControl {
     constructor(options: Options) {
         this.options = extend({}, defaultOptions, options);
 
-        bindAll(['_showAlert', '_fadeOutAlert', '_setDefaultAlertHTML', '_update', '_updateClassList'], this);
+        bindAll(['_showAlert', '_fadeOutAlert', '_setDefaultAlertHTML', '_update', '_updateClassList', '_preventDefault', 'getMetaKeyName'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -59,13 +59,12 @@ export default class ScrollZoomBlockerControl {
 
         this._map = map;
 
-        //to do: check if mobile device first (currently not supported)
         this._update();
 
         if (!this._content) this._setDefaultAlertHTML();
 
         this._map.on('remove', this.onRemove);
-        this._map.on('wheel', (e) => this.preventDefault(e));
+        this._map.on('wheel', this._preventDefault);
 
         return this._container;
     }
@@ -92,19 +91,8 @@ export default class ScrollZoomBlockerControl {
 
         if (this._map) {
             this._map.off('remove', this.onRemove);
+            this._map.off('wheel', this._preventDefault);
             delete this._map;
-        }
-    }
-
-    preventDefault(e: MapWheelEvent) {
-        //Can't remove wheel event listener once added, so also checks if container exists before preventing zoom
-        if (!e.originalEvent.ctrlKey && !e.originalEvent.metaKey && !!this._container) {
-            e.preventDefault();
-            if (this.options.showAlert) {
-                this._update();
-                this._showAlert();
-                this._fadeOutAlert();
-            }
         }
     }
 
@@ -161,6 +149,7 @@ export default class ScrollZoomBlockerControl {
      */
 
     setHTML(html: string) {
+        // expose here for setting HTML based on key used (get the metakey code function)
         const frag = window.document.createDocumentFragment();
         const temp = window.document.createElement('body');
         let child;
@@ -265,13 +254,38 @@ export default class ScrollZoomBlockerControl {
         return finalState;
     }
 
-    _setDefaultAlertHTML() {
-        // If setHTML isn't implemented by client, setHTML with corresponding default alert.
+    /**
+     * Returns the corresponding metakey name depending on the device platform.
+     *
+     * @returns {string} Returns string name of the meta key, such as '⌘' or 'CTRL'.
+     * @example
+     * const scrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl();
+     * const metaKeyName = scrollZoomBlockerControl.getMetaKeyName();
+     * scrollZoomBlockerControl.setHTML(`${metaKeyName} + scroll to zoom the map`);
+     * map.addControl(scrollZoomBlockerControl);
+     */
+    getMetaKeyName() {
         if (window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
-            // If operating system is a mac, use alert with CMD key
-            this.setHTML('Use ⌘ + scroll to zoom the map');
-        } else if (/WIN32|WIN32|WINDOWS|WINCE|LINUX/i.test(window.navigator.platform.toUpperCase())) {
-            this.setHTML('Use CTRL + scroll to zoom the map');
+            return '⌘';
+        } else if (/iPad/.test(window.navigator.platform)) {
+            return '⌘';
+        }
+        return 'CTRL';
+    }
+
+    _setDefaultAlertHTML() {
+        const metaKeyName = this.getMetaKeyName();
+        this.setHTML(`${metaKeyName} + scroll to zoom the map`);
+    }
+
+    _preventDefault(e: MapWheelEvent) {
+        if (!e.originalEvent.metaKey && !e.originalEvent.ctrlKey) {
+            e.preventDefault();
+            if (this.options.showAlert) {
+                this._update();
+                this._showAlert();
+                this._fadeOutAlert();
+            }
         }
     }
 
@@ -285,7 +299,7 @@ export default class ScrollZoomBlockerControl {
         setTimeout(() => {
             this.addClassName('mapboxgl-scroll-zoom-blocker-control-fade');
             this._container.style.opacity = '0';
-        }, 1500);
+        }, 2000);
     }
 
     _updateClassList() {

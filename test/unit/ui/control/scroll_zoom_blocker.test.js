@@ -14,9 +14,6 @@ function createMap(t, options) {
     }, options));
 }
 
-//mock MacIntel as window.navigator.platform for tests
-Object.defineProperty(window.navigator, 'platform', {value: 'MacIntel', configurable: true});
-
 test('ScrollZoomBlocker#onAdd adds a .mapboxgl-scroll-zoom-blocker-control element', (t) => {
     const map = createMap(t);
 
@@ -135,7 +132,7 @@ test('ScrollZoomBlockerControl#onAdd allows scroll zoom when CTRL key is pressed
     t.end();
 });
 
-test('ScrollZoomBlockerControl#onAdd allows scroll zoom when CMD key is pressed during wheel event', (t) => {
+test('ScrollZoomBlockerControl#onAdd allows scroll zoom when meta key is pressed during wheel event', (t) => {
     const map = createMap(t);
 
     const scrollZoomBlockerControl = new ScrollZoomBlockerControl();
