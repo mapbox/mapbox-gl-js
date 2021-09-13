@@ -217,7 +217,7 @@ export default {
     zAxisUnit: "pixels",
 
     pixelsPerMeter(lat: number, worldSize: number) {
-        return mercatorZfromAltitude(1, lat) * worldSize;
+        return mercatorZfromAltitude(1, 0) * worldSize;
     },
 
     createTileTransform(tr: Transform, worldSize: number): TileTransform {

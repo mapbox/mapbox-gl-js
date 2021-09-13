@@ -1455,12 +1455,15 @@ class Transform {
             mercatorXfromLng(this.center.lng) * worldSize,
             mercatorYfromLat(lat) * worldSize);
 
+        const mercatorZ = mercatorZfromAltitude(1, this.center.lat) * worldSize;
+        const projectionScaler = mercatorZ / this.pixelsPerMeter;
         const tileTransform = this.projection.createTileTransform(this, worldSize);
-        const zScale = tileTransform.tileSpaceUpVectorScale();
+        const zScale = tileTransform.tileSpaceUpVectorScale() / projectionScaler;
+        const ws = worldSize / projectionScaler;
 
         const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
-        mat4.scale(posMatrix, posMatrix, [worldSize, worldSize, zScale]);
+        mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
 
         return posMatrix;
     }
