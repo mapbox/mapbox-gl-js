@@ -1146,8 +1146,27 @@ test('Map', (t) => {
 
     t.test('#setMinPitch', (t) => {
         const map = createMap(t, {pitch: 20});
+
+        const onPitchStart = t.spy();
+        const onPitch = t.spy();
+        const onPitchEnd = t.spy();
+
+        map.on('pitchstart', onPitchStart);
+        map.on('pitch', onPitch);
+        map.on('pitchend', onPitchEnd);
+
         map.setMinPitch(10);
+
+        t.ok(onPitchStart.calledOnce);
+        t.ok(onPitch.calledOnce);
+        t.ok(onPitchEnd.calledOnce);
+
         map.setPitch(0);
+
+        t.equal(onPitchStart.callCount, 2);
+        t.equal(onPitch.callCount, 2);
+        t.equal(onPitchEnd.callCount, 2);
+
         t.equal(map.getPitch(), 10);
         t.end();
     });
@@ -1180,8 +1199,27 @@ test('Map', (t) => {
 
     t.test('#setMaxPitch', (t) => {
         const map = createMap(t, {pitch: 0});
+
+        const onPitchStart = t.spy();
+        const onPitch = t.spy();
+        const onPitchEnd = t.spy();
+
+        map.on('pitchstart', onPitchStart);
+        map.on('pitch', onPitch);
+        map.on('pitchend', onPitchEnd);
+
         map.setMaxPitch(10);
+
+        t.ok(onPitchStart.calledOnce);
+        t.ok(onPitch.calledOnce);
+        t.ok(onPitchEnd.calledOnce);
+
         map.setPitch(20);
+
+        t.equal(onPitchStart.callCount, 2);
+        t.equal(onPitch.callCount, 2);
+        t.equal(onPitchEnd.callCount, 2);
+
         t.equal(map.getPitch(), 10);
         t.end();
     });
