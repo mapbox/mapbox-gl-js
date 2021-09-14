@@ -61,17 +61,31 @@ class GlobeTileTransform {
     }
 
     createInversionMatrix(id: UnwrappedTileID): Float64Array {
-        const matrix = mat4.identity(new Float64Array(16));
+        const center = this._tr.center;
+        const localRadius = EXTENT / (2.0 * Math.PI);
+        const wsRadiusGlobe = this._worldSize / (2.0 * Math.PI);
+        const sGlobe = wsRadiusGlobe / localRadius;
 
-        mat4.rotateX(matrix, matrix, degToRad(-this._tr._center.lat));
-        mat4.rotateY(matrix, matrix, degToRad(-this._tr._center.lng));
+        const matrix = mat4.identity(new Float64Array(16));
+        mat4.scale(matrix, matrix, [sGlobe, sGlobe, 1.0]);
+        mat4.rotateX(matrix, matrix, degToRad(-center.lat));
+        mat4.rotateY(matrix, matrix, degToRad(-center.lng));
 
         const decode = denormalizeECEF(tileBoundsOnGlobe(id.canonical));
-
         mat4.multiply(matrix, matrix, decode);
+        mat4.invert(matrix, matrix);
 
-        // TODO: Optimize this function to prevent the inversion step
-        return mat4.invert(matrix, matrix);
+        const z = mercatorZfromAltitude(1, center.lat) * this._worldSize;
+        const projectionScaler = z / this._tr.pixelsPerMeter;
+
+        const ws = this._worldSize / projectionScaler;
+        const wsRadiusScaled = ws / (2.0 * Math.PI);
+        const sMercator = wsRadiusScaled / localRadius;
+
+        const scaling = mat4.identity(new Float64Array(16));
+        mat4.scale(scaling, scaling, [sMercator, sMercator, 1.0]);
+
+        return mat4.multiply(matrix, matrix, scaling);
     }
 
     tileAabb(id: UnwrappedTileID, z: number, minZ: number, maxZ: number) {
