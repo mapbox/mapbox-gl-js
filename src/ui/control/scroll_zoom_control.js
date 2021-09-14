@@ -259,7 +259,7 @@ export default class ScrollZoomBlockerControl {
     }
 
     _preventDefault(e: MapWheelEvent) {
-        if (!e.originalEvent.metaKey && !e.originalEvent.ctrlKey) {
+        if (!e.originalEvent.metaKey && !e.originalEvent.ctrlKey  && !this._map.isZooming()) {
             e.preventDefault();
             if (this.options.showAlert) {
                 this._update();
