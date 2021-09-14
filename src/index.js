@@ -68,7 +68,7 @@ const exported = {
      *
      * This is primarily useful when using Mapbox GL JS maps in a single page app,
      * in which a user navigates between various views, resulting in
-    * constant creation and destruction of `Map` instances.
+     * constant creation and destruction of `Map` instances.
      *
      * @function prewarm
      * @example
