@@ -86,7 +86,14 @@ function createFilter(filter: any): FeatureFilter {
     try {
         staticFilter = extractStaticFilter(filter);
     } catch (e) {
-        console.warn(`Failed to extract static filter from ${JSON.stringify(filter)}. Falling back to using 'true' as a filter and evaluating entire filter dynamically`);
+        console.warn(
+`Failed to extract static filter. Filter will continue working, but at higher memory usage and slower framerate.
+This is most likely a bug, please report this via https://github.com/mapbox/mapbox-gl-js/issues/new?assignees=&labels=&template=Bug_report.md
+and paste the contents of this message in the report.
+Thank you!
+Filter Expression:
+${JSON.stringify(filter, null, 2)}
+        `);
     }
     const dynamicFilter = filter === staticFilter ? true : filter;
 
@@ -220,9 +227,6 @@ function unionDynamicBranches(filter: any) {
 
 function isDynamicFilter(filter: any): boolean {
     // Base Cases
-    if (typeof filter === 'boolean') {
-        return false;
-    }
     if (!Array.isArray(filter)) {
         return false;
     }
