@@ -1026,8 +1026,27 @@ test('Map', (t) => {
 
     t.test('#setMinZoom', (t) => {
         const map = createMap(t, {zoom:5});
+
+        const onZoomStart = t.spy();
+        const onZoom = t.spy();
+        const onZoomEnd = t.spy();
+
+        map.on('zoomstart', onZoomStart);
+        map.on('zoom', onZoom);
+        map.on('zoomend', onZoomEnd);
+
         map.setMinZoom(3.5);
+
+        t.ok(onZoomStart.calledOnce);
+        t.ok(onZoom.calledOnce);
+        t.ok(onZoomEnd.calledOnce);
+
         map.setZoom(1);
+
+        t.equal(onZoomStart.callCount, 2);
+        t.equal(onZoom.callCount, 2);
+        t.equal(onZoomEnd.callCount, 2);
+
         t.equal(map.getZoom(), 3.5);
         t.end();
     });
@@ -1060,8 +1079,27 @@ test('Map', (t) => {
 
     t.test('#setMaxZoom', (t) => {
         const map = createMap(t, {zoom:0});
+
+        const onZoomStart = t.spy();
+        const onZoom = t.spy();
+        const onZoomEnd = t.spy();
+
+        map.on('zoomstart', onZoomStart);
+        map.on('zoom', onZoom);
+        map.on('zoomend', onZoomEnd);
+
         map.setMaxZoom(3.5);
+
+        t.ok(onZoomStart.calledOnce);
+        t.ok(onZoom.calledOnce);
+        t.ok(onZoomEnd.calledOnce);
+
         map.setZoom(4);
+
+        t.equal(onZoomStart.callCount, 2);
+        t.equal(onZoom.callCount, 2);
+        t.equal(onZoomEnd.callCount, 2);
+
         t.equal(map.getZoom(), 3.5);
         t.end();
     });

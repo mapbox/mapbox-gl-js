@@ -791,6 +791,10 @@ class Map extends Camera {
 
             if (this.getZoom() < minZoom) this.setZoom(minZoom);
 
+            this.fire(new Event('zoomstart'))
+                .fire(new Event('zoom'))
+                .fire(new Event('zoomend'));
+
             return this;
 
         } else throw new Error(`minZoom must be between ${defaultMinZoom} and the current maxZoom, inclusive`);
@@ -825,6 +829,10 @@ class Map extends Camera {
             this._update();
 
             if (this.getZoom() > maxZoom) this.setZoom(maxZoom);
+
+            this.fire(new Event('zoomstart'))
+                .fire(new Event('zoom'))
+                .fire(new Event('zoomend'));
 
             return this;
 
