@@ -2766,6 +2766,8 @@ class Map extends Camera {
             this.painter._updateFog(this.style);
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             this.style._updateSources(this.transform);
+            // Update positions of markers on enabling/disabling terrain
+            this._forceMarkerUpdate();
         }
 
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
@@ -2875,6 +2877,12 @@ class Map extends Camera {
         }
 
         return this;
+    }
+
+    _forceMarkerUpdate() {
+        for (const marker of this._markers) {
+            marker._update();
+        }
     }
 
     /**

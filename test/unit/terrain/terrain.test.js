@@ -1380,10 +1380,28 @@ test('Marker interaction and raycast', (t) => {
                 const bottomLngLat = tr.pointLocation3D(new Point(terrainTop.x, tr.height));
                 // Raycast returns distance to closer point evaluates to occluded marker.
                 t.stub(tr, 'pointLocation3D').returns(bottomLngLat);
-                setTimeout(() => {
+                map.once('render', () => {
                     t.deepEqual(marker.getElement().style.opacity, 0.2);
                     t.end();
-                }, 100);
+                });
+            });
+
+            t.test(`Marker updates position on removing terrain (#10982)`, (t) => {
+                const update = t.spy(marker, "_update");
+                map.setTerrain(null);
+                map.once('render', () => {
+                    t.same(update.callCount, 1);
+                    t.end();
+                });
+            });
+
+            t.test(`Marker updates position on adding terrain (#10982)`, (t) => {
+                const update = t.spy(marker, "_update");
+                map.setTerrain({"source": "mapbox-dem"});
+                map.once('render', () => {
+                    t.same(update.callCount, 1);
+                    t.end();
+                });
             });
 
             t.end();
