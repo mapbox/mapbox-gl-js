@@ -797,7 +797,6 @@ class Map extends Camera {
                     .fire(new Event('zoomend'));
             }
 
-
             return this;
 
         } else throw new Error(`minZoom must be between ${defaultMinZoom} and the current maxZoom, inclusive`);
