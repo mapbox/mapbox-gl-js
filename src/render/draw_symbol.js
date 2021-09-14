@@ -248,7 +248,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const variablePlacement = layer.layout.get('text-variable-anchor');
     const tileRenderState: Array<SymbolTileRenderState> = [];
 
-    let defines = [];
+    let defines = ([]: any);
     if (painter.terrain && pitchWithMap) {
         defines.push('PITCH_WITH_MAP_TERRAIN');
     }
