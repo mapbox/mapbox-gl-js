@@ -16,6 +16,37 @@ precision highp float;
 
 #endif
 
+#ifndef EXTENT
+#define EXTENT 8192.0
+#endif
+
+#ifndef PI
+#define PI 3.141592653589793
+#endif
+
+float wrap(float n, float min, float max) {
+    float d = max - min;
+    float w = mod(mod(n - min, d) + d, d) + min;
+    return (w == min) ? max : w;
+}
+
+vec3 mix_globe_mercator(mat4 matrix, vec2 tile_anchor, vec3 position, vec3 tile_id, vec2 mercator_center, float t) {
+#if defined(PROJECTION_GLOBE_VIEW) && !defined(PROJECTED_POS_ON_VIEWPORT)
+    float tiles = pow(2.0, tile_id.z);
+
+    vec2 mercator = (tile_anchor / EXTENT + tile_id.xy) / tiles;
+    mercator -= mercator_center;
+    mercator.x = wrap(mercator.x, -0.5, 0.5);
+
+    vec4 mercator_tile = vec4(mercator.xy * EXTENT, EXTENT / (2.0 * PI), 1.0);
+    mercator_tile = matrix * mercator_tile;
+
+    return mix(position, mercator_tile.xyz, vec3(t));
+#else
+    return position;
+#endif
+}
+
 // Unpack a pair of values that have been packed into a single float.
 // The packed values are assumed to be 8-bit unsigned integers, and are
 // packed like so:
