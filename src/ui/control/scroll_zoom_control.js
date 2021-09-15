@@ -30,6 +30,7 @@ export type Options = {
  * const ScrollZoomBlockerControl = new mapboxgl.ScrollZoomBlockerControl();
  * map.addControl(scrollZoomBlockerControl);
  */
+
 export default class ScrollZoomBlockerControl {
     _map: Map;
     options: Options;
@@ -255,17 +256,25 @@ export default class ScrollZoomBlockerControl {
     }
 
     _setDefaultAlertHTML() {
-        this.setHTML("CMD/CTRL + scroll to zoom the map");
+        if (/(Mac|iPad)/i.test(navigator.platform)) {
+            this.setHTML("⌘ + scroll to zoom the map");
+        } else {
+            this.setHTML("CTRL + scroll to zoom the map");
+        }
+
     }
 
     _preventDefault(e: MapWheelEvent) {
-        if (!e.originalEvent.metaKey && !e.originalEvent.ctrlKey  && !this._map.isZooming()) {
+        if (!e.originalEvent.metaKey && !e.originalEvent.ctrlKey && !this._map.scrollZoom.isZooming()) {
             e.preventDefault();
             if (this.options.showAlert) {
                 this._update();
                 this._showAlert();
                 this._fadeOutAlert();
             }
+        } else if (this._container.style.visibility = 'visible') {
+            // immediately hide alert if it is visible when metakey or ctrl are pressed while scroll zooming.
+            this._container.style.visibility = 'hidden';
         }
     }
 

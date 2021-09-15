@@ -785,7 +785,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 .mapboxgl-scroll-zoom-blocker-control {
     color: #fff;
     font-family: "Roboto", Arial, sans-serif;
-    font-size: 110%;
+    font-size: 100%;
     justify-content: center;
     display: flex;
     align-items: center;
@@ -800,5 +800,5 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 }
 
 .mapboxgl-scroll-zoom-blocker-control-fade {
-    transition: opacity 0.5s ease-in-out !important;
+    transition: opacity .75s ease-in-out !important;
 }
