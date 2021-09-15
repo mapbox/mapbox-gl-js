@@ -5,7 +5,8 @@
 * Added `queryRenderedFeatures` support to heatmap layers. ([#10996](https://github.com/mapbox/mapbox-gl-js/pull/10996))
 * Added support for combined usage of `line-gradient` and `line-dasharray` paint properties. ([#10894](https://github.com/mapbox/mapbox-gl-js/pull/10894))
 * Added `preclick` event allowing popups to close and open in a new location on one click. ([#10926](https://github.com/mapbox/mapbox-gl-js/pull/10926))
-* Added support for Popup className methods while the popup is not on the map. Direct modifications to the popup container CSS class no longer persist.  ([#10889](https://github.com/mapbox/mapbox-gl-js/pull/10889))
+* Added support for Popup `addClassName`, `removeClassName` and `toggleClassName` methods while the popup is not on the map.  ([#10889](https://github.com/mapbox/mapbox-gl-js/pull/10889))
+  * ⚠️ Note: Direct modifications to the popup container CSS class no longer persist. These methods should be used instead.
 * Improved collision detection for labels along lines. ([#10918](https://github.com/mapbox/mapbox-gl-js/pull/10918))
 * Added `protected` field to mapbox-api-supported validation. ([#10968](https://github.com/mapbox/mapbox-gl-js/pull/10968))
 
