@@ -256,7 +256,7 @@ export default class ScrollZoomBlockerControl {
     }
 
     _setDefaultAlertHTML() {
-        if (/(Mac|iPad)/i.test(navigator.platform)) {
+        if (/(Mac|iPad)/i.test(window.navigator.platform)) {
             this.setHTML("⌘ + scroll to zoom the map");
         } else {
             this.setHTML("CTRL + scroll to zoom the map");
@@ -272,7 +272,7 @@ export default class ScrollZoomBlockerControl {
                 this._showAlert();
                 this._fadeOutAlert();
             }
-        } else if (this._container.style.visibility = 'visible') {
+        } else if (this._container.style.visibility === 'visible') {
             // immediately hide alert if it is visible when metakey or ctrl are pressed while scroll zooming.
             this._container.style.visibility = 'hidden';
         }
