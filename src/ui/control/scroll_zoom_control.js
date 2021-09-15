@@ -41,7 +41,7 @@ export default class ScrollZoomBlockerControl {
     constructor(options: Options) {
         this.options = extend({}, defaultOptions, options);
 
-        bindAll(['_showAlert', '_fadeOutAlert', '_setDefaultAlertHTML', '_update', '_updateClassList', '_preventDefault'], this);
+        bindAll(['_showAlert', '_fadeOutAlert', '_setDefaultAlertHTML', '_update', '_updateClassList', '_handleScrollZoom'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -65,7 +65,7 @@ export default class ScrollZoomBlockerControl {
         if (!this._content) this._setDefaultAlertHTML();
 
         this._map.on('remove', this.onRemove);
-        this._map.on('wheel', this._preventDefault);
+        this._map.on('wheel', this._handleScrollZoom);
 
         return this._container;
     }
@@ -92,7 +92,7 @@ export default class ScrollZoomBlockerControl {
 
         if (this._map) {
             this._map.off('remove', this.onRemove);
-            this._map.off('wheel', this._preventDefault);
+            this._map.off('wheel', this._handleScrollZoom);
             delete this._map;
         }
     }
@@ -257,14 +257,13 @@ export default class ScrollZoomBlockerControl {
 
     _setDefaultAlertHTML() {
         if (/(Mac|iPad)/i.test(window.navigator.platform)) {
-            this.setHTML("⌘ + scroll to zoom the map");
+            this.setHTML('⌘ + scroll to zoom the map');
         } else {
-            this.setHTML("CTRL + scroll to zoom the map");
+            this.setHTML('CTRL + scroll to zoom the map');
         }
-
     }
 
-    _preventDefault(e: MapWheelEvent) {
+    _handleScrollZoom(e: MapWheelEvent) {
         if (!e.originalEvent.metaKey && !e.originalEvent.ctrlKey && !this._map.scrollZoom.isZooming()) {
             e.preventDefault();
             if (this.options.showAlert) {
