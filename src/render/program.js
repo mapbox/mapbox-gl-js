@@ -78,8 +78,8 @@ class Program<Us: UniformBindings> {
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
 
-        const fragmentSource = defines.concat(prelude.fragmentSource, preludeCommonSource, preludeFog.fragmentSource, source.fragmentSource).join('\n');
-        const vertexSource = defines.concat(prelude.vertexSource, preludeCommonSource, preludeFog.vertexSource, preludeTerrain.vertexSource, source.vertexSource).join('\n');
+        const fragmentSource = defines.concat(preludeCommonSource, prelude.fragmentSource, preludeFog.fragmentSource, source.fragmentSource).join('\n');
+        const vertexSource = defines.concat(preludeCommonSource, prelude.vertexSource, preludeFog.vertexSource, preludeTerrain.vertexSource, source.vertexSource).join('\n');
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         if (gl.isContextLost()) {
             this.failedToCreate = true;

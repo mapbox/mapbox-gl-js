@@ -23,8 +23,7 @@ void main() {
     mercator.x = wrap(mercator.x, -0.5, 0.5);
     mercator = u_merc_matrix * mercator;
 
-    vec3 t = vec3(u_zoom_transition);
-    vec3 position = mix(globe.xyz, mercator.xyz, t);
+    vec3 position = mix(globe.xyz, mercator.xyz, u_zoom_transition);
 
     gl_Position = u_proj_matrix * vec4(position, 1.0);
 

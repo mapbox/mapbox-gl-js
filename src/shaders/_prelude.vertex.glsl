@@ -16,14 +16,6 @@ precision highp float;
 
 #endif
 
-#ifndef EXTENT
-#define EXTENT 8192.0
-#endif
-
-#ifndef PI
-#define PI 3.141592653589793
-#endif
-
 float wrap(float n, float min, float max) {
     float d = max - min;
     float w = mod(mod(n - min, d) + d, d) + min;
@@ -41,7 +33,7 @@ vec3 mix_globe_mercator(mat4 matrix, vec2 tile_anchor, vec3 position, vec3 tile_
     vec4 mercator_tile = vec4(mercator.xy * EXTENT, EXTENT / (2.0 * PI), 1.0);
     mercator_tile = matrix * mercator_tile;
 
-    return mix(position, mercator_tile.xyz, vec3(t));
+    return mix(position, mercator_tile.xyz, t);
 #else
     return position;
 #endif
