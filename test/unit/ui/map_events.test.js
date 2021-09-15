@@ -658,7 +658,6 @@ test("Map#on click should fire preclick before click", (t) => {
     t.end();
 });
 
-// omer start
 test('Map#on adds a listener for an event on multiple layers which do not exist', (t) => {
     const map = createMap(t);
     const features = [{}];

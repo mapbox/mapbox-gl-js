@@ -1221,10 +1221,10 @@ class Map extends Camera {
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
      * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
-     * @param {string | Array<string>} layerIds (optional) The ID(s) of a style layer(s). If you provide a `layerIds`,
+     * @param {string | Array<string>} layerIds (optional) The ID(s) of a style layer(s). If you provide `layerIds`,
      * the listener will be triggered only if its location is within a visible feature in these layers,
      * and the event will have a `features` property containing an array of the matching features.
-     * If you do not provide a `layerIds`, the listener will be triggered by a corresponding event
+     * If you do not provide `layerIds`, the listener will be triggered by a corresponding event
      * happening anywhere on the map, and the event will not have a `features` property.
      * Note that many event types are not compatible with the optional `layerIds` parameter.
      * @param {Function} listener The function to be called when the event is fired.
@@ -1298,12 +1298,7 @@ class Map extends Camera {
             return super.off(type, layerIds);
         }
 
-        if (!Array.isArray(layerIds)) {
-            layerIds = new Set([layerIds]);
-        } else {
-            layerIds = new Set(layerIds);
-        }
-
+        layerIds = new Set(Array.isArray(layerIds) ? layerIds : [layerIds]);
         const areLayerArraysEqual = (hash1, hash2) => {
             if (hash1.size !== hash2.size) {
                 return false; // at-least 1 arr has duplicate value(s)
@@ -1316,7 +1311,7 @@ class Map extends Camera {
             return true;
         };
 
-        const removeDelegatedListener = (listeners: Array<any>) => {
+        const removeDelegatedListeners = (listeners: Array<any>) => {
             for (let i = 0; i < listeners.length; i++) {
                 const delegatedListener = listeners[i];
                 if (delegatedListener.listener === listener && areLayerArraysEqual(delegatedListener.layers, layerIds)) {
@@ -1329,9 +1324,9 @@ class Map extends Camera {
             }
         };
 
-        const deletegatedListeners = this._delegatedListeners ? this._delegatedListeners[type] : undefined;
-        if (deletegatedListeners) {
-            removeDelegatedListener(deletegatedListeners);
+        const delegatedListeners = this._delegatedListeners ? this._delegatedListeners[type] : undefined;
+        if (delegatedListeners) {
+            removeDelegatedListeners(delegatedListeners);
         }
 
         return this;
