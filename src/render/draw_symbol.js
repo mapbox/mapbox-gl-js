@@ -271,7 +271,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration, defines);
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
-        const coordId = [coord.canonical.x, coord.canonical.y, coord.canonical.z];
+        const coordId = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
 
         let texSize: [number, number];
         let texSizeIcon: [number, number] = [0, 0];
