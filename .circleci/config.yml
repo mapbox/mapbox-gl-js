@@ -17,6 +17,8 @@ workflows:
           filters:
             tags:
               only: /.*/
+            # We can't install mbx-ci on CI runs from PR's that reference forks from external contributors
+            # This is because fork's can not access our AWS credentials setup in CircleCI environment variables
             branches:
               ignore: /pull\/[0-9]*/
       - lint:
@@ -166,6 +168,7 @@ jobs:
             curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > ~/mbx-ci &&
             chmod 755 ~/mbx-ci &&
             ~/mbx-ci aws setup
+      # mbx-ci stores credentials in these directories, so they must be explictly passed along to dependent jobs via workspaces
       - persist_to_workspace:
           root: ~/
           paths:
