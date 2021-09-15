@@ -79,6 +79,43 @@ preludeFog = compile(preludeFogFrag, preludeFogVert, true);
 export const prelude = compile(preludeFrag, preludeVert);
 export const preludeCommonSource = preludeCommon;
 
+export const preludeVertPrecisionQualifiers = `
+#ifdef GL_ES
+precision highp float;
+#else
+
+#if !defined(lowp)
+#define lowp
+#endif
+
+#if !defined(mediump)
+#define mediump
+#endif
+
+#if !defined(highp)
+#define highp
+#endif
+
+#endif`;
+export const preludeFragPrecisionQualifiers = `
+#ifdef GL_ES
+precision mediump float;
+#else
+
+#if !defined(lowp)
+#define lowp
+#endif
+
+#if !defined(mediump)
+#define mediump
+#endif
+
+#if !defined(highp)
+#define highp
+#endif
+
+#endif`;
+
 export default {
     background: compile(backgroundFrag, backgroundVert),
     backgroundPattern: compile(backgroundPatternFrag, backgroundPatternVert),

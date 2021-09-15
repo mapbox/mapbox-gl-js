@@ -1,6 +1,13 @@
 // @flow
 
-import {prelude, preludeTerrain, preludeFog, preludeCommonSource} from '../shaders/shaders.js';
+import {
+    prelude,
+    preludeFragPrecisionQualifiers,
+    preludeVertPrecisionQualifiers,
+    preludeTerrain,
+    preludeFog,
+    preludeCommonSource
+} from '../shaders/shaders.js';
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration.js';
 import VertexArrayObject from './vertex_array_object.js';
@@ -79,47 +86,13 @@ class Program<Us: UniformBindings> {
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
 
         const fragmentSource = defines.concat(
-            `#ifdef GL_ES
-            precision mediump float;
-            #else
-
-            #if !defined(lowp)
-            #define lowp
-            #endif
-
-            #if !defined(mediump)
-            #define mediump
-            #endif
-
-            #if !defined(highp)
-            #define highp
-            #endif
-
-            #endif`,
+            preludeFragPrecisionQualifiers,
             preludeCommonSource,
             prelude.fragmentSource,
             preludeFog.fragmentSource,
             source.fragmentSource).join('\n');
         const vertexSource = defines.concat(
-            `#ifdef GL_ES
-
-            precision highp float;
-
-            #else
-
-            #if !defined(lowp)
-            #define lowp
-            #endif
-
-            #if !defined(mediump)
-            #define mediump
-            #endif
-
-            #if !defined(highp)
-            #define highp
-            #endif
-
-            #endif`,
+            preludeVertPrecisionQualifiers,
             preludeCommonSource,
             prelude.vertexSource,
             preludeFog.vertexSource,
