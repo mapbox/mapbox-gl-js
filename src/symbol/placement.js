@@ -269,13 +269,13 @@ export class Placement {
         }
 
         let clippingData = null;
-        assert(!!tile.latestFeatureIndex)
-        if (tile.latestFeatureIndex) {
+        assert(!!tile.latestFeatureIndex);
+        if (needsDynamicClipping && tile.latestFeatureIndex) {
 
             clippingData = {
                 unwrappedTileID,
                 featureIndex: tile.latestFeatureIndex
-            }
+            };
         }
 
         // As long as this placement lives, we have to hold onto this bucket's
@@ -432,11 +432,9 @@ export class Placement {
             });
         };
 
-
         const placeSymbol = (symbolInstance: SymbolInstance, symbolIndex: number, collisionArrays: CollisionArrays) => {
             if (clippingData) {
                 const clipExpression = layout.get('symbol-clip');
-                // TODO: feature state support, image expression support
                 clipExpression.parameters.zoom = this.transform.zoom;
                 clipExpression.parameters.pitch = this.transform.pitch;
                 clipExpression.parameters.cameraDistanceMatrix = this.transform.mercatorFogMatrix;

@@ -263,7 +263,7 @@ class FeatureIndex {
     }
 
     loadFeature(featureIndexData: FeatureIndices): VectorTileFeature {
-        const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
+        const {featureIndex, sourceLayerIndex} = featureIndexData;
 
         this.loadVTLayers();
         const sourceLayerName = this.sourceLayerCoder.decode(sourceLayerIndex);

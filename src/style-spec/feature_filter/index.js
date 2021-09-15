@@ -3,12 +3,13 @@
 import {createExpression} from '../expression/index.js';
 import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
+import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
-export type FeatureFilter ={filter: FilterExpression, needGeometry: boolean};
+export type FeatureFilter = {filter: FilterExpression, dynamicFilter: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
-export {isExpressionFilter};
+export {isExpressionFilter, isDynamicFilter, extractStaticFilter};
 
 function isExpressionFilter(filter: any) {
     if (filter === true || filter === false) {
@@ -59,7 +60,7 @@ const filterSpec = {
     'property-type': 'data-driven',
     'expression': {
         'interpolated': false,
-        'parameters': ['zoom', 'feature']
+        'parameters': ['zoom', 'feature', 'pitch', 'distance-from-center']
     }
 };
 
@@ -74,21 +75,178 @@ const filterSpec = {
  */
 function createFilter(filter: any): FeatureFilter {
     if (filter === null || filter === undefined) {
-        return {filter: () => true, needGeometry: false};
+        return {filter: () => true, dynamicFilter: () => true, needGeometry: false};
     }
 
     if (!isExpressionFilter(filter)) {
         filter = convertFilter(filter);
     }
 
-    const compiled = createExpression(filter, filterSpec);
-    if (compiled.result === 'error') {
-        throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
-    } else {
-        const needGeometry = geometryNeeded(filter);
-        return {filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiled.value.evaluate(globalProperties, feature, {}, canonical),
-            needGeometry};
+    let staticFilter = true;
+    try {
+        staticFilter = extractStaticFilter(filter);
+    } catch (e) {
+        console.warn(
+`Failed to extract static filter. Filter will continue working, but at higher memory usage and slower framerate.
+This is most likely a bug, please report this via https://github.com/mapbox/mapbox-gl-js/issues/new?assignees=&labels=&template=Bug_report.md
+and paste the contents of this message in the report.
+Thank you!
+Filter Expression:
+${JSON.stringify(filter, null, 2)}
+        `);
     }
+    const dynamicFilter = filter === staticFilter ? true : filter;
+
+    const compiledStaticFilter = createExpression(staticFilter, filterSpec);
+    const compiledDynamicFilter = createExpression(dynamicFilter, filterSpec);
+    if (compiledStaticFilter.result === 'error' || compiledDynamicFilter.result === 'error') {
+        const staticFilterErrors = compiledStaticFilter.result === 'error' ?
+            compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', ') :
+            'None';
+
+        const dynamicFilterErrors = compiledDynamicFilter.result === 'error' ?
+            compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', ') :
+            'None';
+
+        const errorMsg = `static-filter errors:
+            ${staticFilterErrors}
+
+            dynamic-filter errors:
+            ${dynamicFilterErrors}
+        `;
+        throw new Error(errorMsg);
+    } else {
+        const needGeometry = geometryNeeded(staticFilter);
+        return {
+            filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical),
+            dynamicFilter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation: ?MercatorCoordinate) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, null, null, refLocation),
+            needGeometry
+        };
+    }
+}
+
+function extractStaticFilter(filter: any): any {
+    if (!isDynamicFilter(filter)) {
+        return filter;
+    }
+
+    // Shallow copy so we can replace expressions in-place
+    let result = filter.slice();
+
+    // 1. Union branches
+    unionDynamicBranches(result);
+
+    // 2. Collapse dynamic conditions to  `true`
+    result = collapseDynamicBooleanExpressions(result);
+
+    return result;
+}
+
+function collapseDynamicBooleanExpressions(expression: any): any {
+    if (!Array.isArray(expression)) {
+        return expression;
+    }
+
+    const collapsed = collapsedExpression(expression);
+    if (collapsed === true) {
+        return collapsed;
+    } else {
+        return collapsed.map((subExpression) => collapseDynamicBooleanExpressions(subExpression));
+    }
+}
+
+const dynamicConditionExpressions = new Set([
+    'in',
+    '==',
+    '!=',
+    '>',
+    '>=',
+    '<',
+    '<=',
+    'to-boolean'
+]);
+
+function collapsedExpression(expression: any): any {
+    if (dynamicConditionExpressions.has(expression[0])) {
+
+        for (let i = 1; i < expression.length; i++) {
+            const param = expression[i];
+            if (isDynamicFilter(param)) {
+                return true;
+            }
+        }
+    }
+    return expression;
+}
+
+/**
+ * Traverses the expression and replaces all instances of branching on a
+ * `dynamic` conditional (such as `['pitch']` or `['distance-from-center']`)
+ * into an `any` expression.
+ * This ensures that all possible outcomes of a `dynamic` branch are considered
+ * when evaluating the expression upfront during filtering.
+ *
+ * @param {Array<any>} filter the filter expression mutated in-place.
+ */
+function unionDynamicBranches(filter: any) {
+    let isBranchingDynamically = false;
+    const branches = [];
+
+    if (filter[0] === 'case') {
+        for (let i = 1; i < filter.length - 1; i += 2) {
+            isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[i]);
+            branches.push(filter[i + 1]);
+        }
+
+        branches.push(filter[filter.length - 1]);
+    } else if (filter[0] === 'match') {
+        isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[1]);
+
+        for (let i = 2; i < filter.length - 1; i += 2) {
+            branches.push(filter[i + 1]);
+        }
+        branches.push(filter[filter.length - 1]);
+    } else if (filter[0] === 'step') {
+        isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[1]);
+
+        for (let i = 1; i < filter.length - 1; i += 2) {
+            branches.push(filter[i + 1]);
+        }
+    }
+
+    if (isBranchingDynamically) {
+        filter.length = 0;
+        filter.push('any', ...branches);
+    }
+
+    // traverse and recurse into children
+    for (let i = 1; i < filter.length; i++) {
+        unionDynamicBranches(filter[i]);
+    }
+}
+
+function isDynamicFilter(filter: any): boolean {
+    // Base Cases
+    if (!Array.isArray(filter)) {
+        return false;
+    }
+    if (isRootExpressionDynamic(filter[0])) {
+        return true;
+    }
+
+    for (let i = 1; i < filter.length; i++) {
+        const child = filter[i];
+        if (isDynamicFilter(child)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function isRootExpressionDynamic(expression: string): boolean {
+    return expression === 'pitch' ||
+        expression === 'distance-from-center';
 }
 
 // Comparison function to sort numbers and strings
