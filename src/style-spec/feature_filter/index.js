@@ -78,7 +78,14 @@ function createFilter(filter: any, layerType?: string = 'fill'): FeatureFilter {
     try {
         staticFilter = extractStaticFilter(filterExp);
     } catch (e) {
-        console.warn(`Failed to extract static filter from ${JSON.stringify(filterExp)}. Falling back to using 'true' as a filter and evaluating entire filter dynamically`);
+        console.warn(
+`Failed to extract static filter. Filter will continue working, but at higher memory usage and slower framerate.
+This is most likely a bug, please report this via https://github.com/mapbox/mapbox-gl-js/issues/new?assignees=&labels=&template=Bug_report.md
+and paste the contents of this message in the report.
+Thank you!
+Filter Expression:
+${JSON.stringify(filter, null, 2)}
+        `);
     }
 
     // Compile the static component of the filter
@@ -147,29 +154,6 @@ function collapseDynamicBooleanExpressions(expression: any): any {
     } else {
         return collapsed.map((subExpression) => collapseDynamicBooleanExpressions(subExpression));
     }
-}
-
-const dynamicConditionExpressions = new Set([
-    'in',
-    '==',
-    '!=',
-    '>',
-    '>=',
-    '<',
-    '<=',
-    'to-boolean'
-]);
-
-function collapsedExpression(expression: any): any {
-    if (dynamicConditionExpressions.has(expression[0])) {
-
-        for (let i = 1; i < expression.length; i++) {
-            const param = expression[i];
-            if (isDynamicFilter(param)) {
-                return true;
-            }
-        }
-    }
     return expression;
 }
 
@@ -221,9 +205,6 @@ function unionDynamicBranches(filter: any) {
 
 function isDynamicFilter(filter: any): boolean {
     // Base Cases
-    if (typeof filter === 'boolean') {
-        return false;
-    }
     if (!Array.isArray(filter)) {
         return false;
     }
@@ -244,6 +225,30 @@ function isDynamicFilter(filter: any): boolean {
 function isRootExpressionDynamic(expression: string): boolean {
     return expression === 'pitch' ||
         expression === 'distance-from-center';
+}
+
+const dynamicConditionExpressions = new Set([
+    'in',
+    '==',
+    '!=',
+    '>',
+    '>=',
+    '<',
+    '<=',
+    'to-boolean'
+]);
+
+function collapsedExpression(expression: any): any {
+    if (dynamicConditionExpressions.has(expression[0])) {
+
+        for (let i = 1; i < expression.length; i++) {
+            const param = expression[i];
+            if (isDynamicFilter(param)) {
+                return true;
+            }
+        }
+    }
+    return expression;
 }
 
 // Comparison function to sort numbers and strings
