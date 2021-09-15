@@ -1,20 +1,4 @@
-#ifdef GL_ES
-precision highp float;
-#else
-
-#if !defined(lowp)
-#define lowp
-#endif
-
-#if !defined(mediump)
-#define mediump
-#endif
-
-#if !defined(highp)
-#define highp
-#endif
-
-#endif
+// NOTE: This prelude is injected in the vertex shader only
 
 float wrap(float n, float min, float max) {
     float d = max - min;

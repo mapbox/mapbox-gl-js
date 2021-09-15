@@ -78,8 +78,53 @@ class Program<Us: UniformBindings> {
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
 
-        const fragmentSource = defines.concat(preludeCommonSource, prelude.fragmentSource, preludeFog.fragmentSource, source.fragmentSource).join('\n');
-        const vertexSource = defines.concat(preludeCommonSource, prelude.vertexSource, preludeFog.vertexSource, preludeTerrain.vertexSource, source.vertexSource).join('\n');
+        const fragmentSource = defines.concat(
+            `#ifdef GL_ES
+            precision mediump float;
+            #else
+
+            #if !defined(lowp)
+            #define lowp
+            #endif
+
+            #if !defined(mediump)
+            #define mediump
+            #endif
+
+            #if !defined(highp)
+            #define highp
+            #endif
+
+            #endif`,
+            preludeCommonSource,
+            prelude.fragmentSource,
+            preludeFog.fragmentSource,
+            source.fragmentSource).join('\n');
+        const vertexSource = defines.concat(
+            `#ifdef GL_ES
+
+            precision highp float;
+
+            #else
+
+            #if !defined(lowp)
+            #define lowp
+            #endif
+
+            #if !defined(mediump)
+            #define mediump
+            #endif
+
+            #if !defined(highp)
+            #define highp
+            #endif
+
+            #endif`,
+            preludeCommonSource,
+            prelude.vertexSource,
+            preludeFog.vertexSource,
+            preludeTerrain.vertexSource,
+            source.vertexSource).join('\n');
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         if (gl.isContextLost()) {
             this.failedToCreate = true;
