@@ -84,7 +84,7 @@ This is most likely a bug, please report this via https://github.com/mapbox/mapb
 and paste the contents of this message in the report.
 Thank you!
 Filter Expression:
-${JSON.stringify(filter, null, 2)}
+${JSON.stringify(filterExp, null, 2)}
         `);
     }
 
@@ -154,7 +154,6 @@ function collapseDynamicBooleanExpressions(expression: any): any {
     } else {
         return collapsed.map((subExpression) => collapseDynamicBooleanExpressions(subExpression));
     }
-    return expression;
 }
 
 /**
