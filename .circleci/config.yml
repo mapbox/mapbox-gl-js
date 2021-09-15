@@ -19,6 +19,8 @@ workflows:
               only: /.*/
             # We can't install mbx-ci on CI runs from PR's that reference forks from external contributors
             # This is because fork's can not access our AWS credentials setup in CircleCI environment variables
+            # Branch names for external contributor forks are are reported in the format pull/{PR_NUMBER} to CircleCI,
+            # This RegEx is setup to ignore that.
             branches:
               ignore: /pull\/[0-9]*/
       - lint:
