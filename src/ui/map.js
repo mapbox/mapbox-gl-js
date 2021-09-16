@@ -2681,7 +2681,7 @@ class Map extends Camera {
     _requestDomTask(callback: () => void) {
         // This condition means that the map is idle: the callback needs to be called right now as
         // there won't be a triggered render to run the queue.
-        if (!this.isMoving() && this.loaded()) {
+        if (!this.loaded() || (this.loaded() && !this.isMoving())) {
             callback();
         } else {
             this._domRenderTaskQueue.add(callback);
