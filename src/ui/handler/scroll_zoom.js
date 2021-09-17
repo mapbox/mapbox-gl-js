@@ -60,6 +60,9 @@ class ScrollZoomHandler {
     _defaultZoomRate: number;
     _wheelZoomRate: number;
 
+    _requireCtrl: boolean;
+    _container: HTMLElement;
+
     /**
      * @private
      */
@@ -73,7 +76,8 @@ class ScrollZoomHandler {
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
 
-        bindAll(['_onTimeout'], this);
+        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_showBlockerAlert', '_fadeOutBlockerAlert'], this);
+
     }
 
     /**
@@ -134,11 +138,16 @@ class ScrollZoomHandler {
      * map.scrollZoom.enable();
      * @example
      * map.scrollZoom.enable({around: 'center'});
+     * map.scrollZoom.enable({requireCtrl: true});
      */
     enable(options: any) {
         if (this.isEnabled()) return;
         this._enabled = true;
-        this._aroundCenter = options && options.around === 'center';
+        this._aroundCenter = !!options && options.around === 'center';
+        this._requireCtrl = !!options && options.requireCtrl === true;
+        if (this._requireCtrl) {
+            this._addScrollZoomBlocker();
+        }
     }
 
     /**
@@ -154,6 +163,17 @@ class ScrollZoomHandler {
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
+
+        if (this._requireCtrl && !e.ctrlKey && !this.isZooming()) {
+            this._showBlockerAlert();
+            this._fadeOutBlockerAlert();
+            return;
+        }
+
+        if (this._container.style.visibility === 'visible') {
+            // immediately hide alert if it is visible when metakey or ctrl are pressed while scroll zooming.
+            this._container.style.visibility = 'hidden';
+        }
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
         let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
@@ -248,6 +268,7 @@ class ScrollZoomHandler {
         this._frameId = null;
 
         if (!this.isActive()) return;
+
         const tr = this._map.transform;
 
         const startingZoom = () => {
@@ -356,6 +377,50 @@ class ScrollZoomHandler {
     reset() {
         this._active = false;
     }
+
+    /**
+     * Returns the scroll zoom blocker alert's HTML element.
+     *
+     * @example
+     * // Change the scroll zoom blocker element's font size
+     * map.scrollZoom.getScrollZoomBlockerElement();
+     * scrollZoomBlockerElem.style.fontSize = "25px";
+     * @returns {HTMLElement} Returns container element.
+     */
+
+    getScrollZoomBlockerElement() {
+        if (this._container) {
+            return this._container;
+        }
+    }
+
+    _addScrollZoomBlocker() {
+        if (!this._map) { return; }
+        if (!this._container) {
+            this._container = DOM.create('div', 'mapboxgl-scroll-zoom-blocker-control', this._map._container);
+            const frag = window.document.createTextNode('CTRL + zoom to scroll the map');
+            this._container.appendChild(frag);
+        }
+    }
+
+    _showBlockerAlert() {
+        const scrollZoomBlockerEl = this.getScrollZoomBlockerElement();
+        console.log(scrollZoomBlockerEl.classList)
+        scrollZoomBlockerEl.classList.remove('mapboxgl-scroll-zoom-blocker-control-fade');
+        this._container.style.opacity = '1';
+        this._container.style.visibility = 'visible';
+
+    }
+
+    _fadeOutBlockerAlert() {
+        setTimeout(() => {
+            const scrollZoomBlockerEl = this.getScrollZoomBlockerElement();
+            console.log(scrollZoomBlockerEl.classList)
+            scrollZoomBlockerEl.classList.add('mapboxgl-scroll-zoom-blocker-control-fade');
+            this._container.style.opacity = '0';
+        }, 2000);
+    }
+
 }
 
 export default ScrollZoomHandler;
