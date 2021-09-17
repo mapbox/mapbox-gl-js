@@ -1457,8 +1457,7 @@ class Transform {
 
         const mercatorZ = mercatorZfromAltitude(1, this.center.lat) * worldSize;
         const projectionScaler = mercatorZ / this.pixelsPerMeter;
-        const tileTransform = this.projection.createTileTransform(this, worldSize);
-        const zScale = tileTransform.tileSpaceUpVectorScale() / projectionScaler;
+        const zScale = this.pixelsPerMeter;
         const ws = worldSize / projectionScaler;
 
         const posMatrix = mat4.identity(new Float64Array(16));
