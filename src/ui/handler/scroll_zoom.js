@@ -170,7 +170,7 @@ class ScrollZoomHandler {
             return;
         }
 
-        if (this._container.style.visibility === 'visible') {
+        if (this._container && this._container.style.visibility === 'visible') {
             // immediately hide alert if it is visible when ctrl is pressed while scroll zooming.
             this._container.style.visibility = 'hidden';
         }
