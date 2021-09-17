@@ -404,19 +404,14 @@ class ScrollZoomHandler {
     }
 
     _showBlockerAlert() {
-        const scrollZoomBlockerEl = this.getScrollZoomBlockerElement();
-        console.log(scrollZoomBlockerEl.classList)
-        scrollZoomBlockerEl.classList.remove('mapboxgl-scroll-zoom-blocker-control-fade');
+        this._container.classList.remove('mapboxgl-scroll-zoom-blocker-control-fade');
         this._container.style.opacity = '1';
         this._container.style.visibility = 'visible';
-
     }
 
     _fadeOutBlockerAlert() {
         setTimeout(() => {
-            const scrollZoomBlockerEl = this.getScrollZoomBlockerElement();
-            console.log(scrollZoomBlockerEl.classList)
-            scrollZoomBlockerEl.classList.add('mapboxgl-scroll-zoom-blocker-control-fade');
+            this._container.classList.add('mapboxgl-scroll-zoom-blocker-control-fade');
             this._container.style.opacity = '0';
         }, 2000);
     }
