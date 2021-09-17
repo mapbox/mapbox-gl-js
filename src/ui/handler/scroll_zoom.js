@@ -171,7 +171,7 @@ class ScrollZoomHandler {
         }
 
         if (this._container.style.visibility === 'visible') {
-            // immediately hide alert if it is visible when metakey or ctrl are pressed while scroll zooming.
+            // immediately hide alert if it is visible when ctrl is pressed while scroll zooming.
             this._container.style.visibility = 'hidden';
         }
 
