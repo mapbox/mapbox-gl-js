@@ -1498,6 +1498,7 @@ class Map extends Camera {
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
         options = extend({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily}, options);
 
+        this._loaded = false;
         if ((options.diff !== false &&
             options.localIdeographFontFamily === this._localIdeographFontFamily &&
             options.localFontFamily === this._localFontFamily) && this.style && style) {

@@ -134,20 +134,20 @@ test('Map', (t) => {
     });
 
     t.test('emits load event after a style is set', (t) => {
-        t.stub(Map.prototype, '_detectMissingCSS');
-        t.stub(Map.prototype, '_authenticate');
-        const map = new Map({container: window.document.createElement('div'), testMode: true});
+        const style = createStyle();
+        const map = createMap(t, {style});
 
-        map.on('load', fail);
+        map.on('load', firstLoad);
 
-        setTimeout(() => {
-            map.off('load', fail);
-            map.on('load', pass);
-            map.setStyle(createStyle());
-        }, 1);
-
-        function fail() { t.ok(false); }
-        function pass() { t.end(); }
+        function firstLoad() {
+            t.ok(true);
+            map.off('load', firstLoad);
+            map.on('load', secondLoad);
+            map.setStyle(createSatelliteStyle());
+        }
+        function secondLoad() {
+            t.end();
+        }
     });
 
     t.test('#setStyle', (t) => {
@@ -1693,23 +1693,7 @@ test('Map', (t) => {
 
         t.test('sets visibility on raster layer', (t) => {
             const map = createMap(t, {
-                style: {
-                    "version": 8,
-                    "sources": {
-                        "mapbox://mapbox.satellite": {
-                            "type": "raster",
-                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
-                        }
-                    },
-                    "layers": [{
-                        "id": "satellite",
-                        "type": "raster",
-                        "source": "mapbox://mapbox.satellite",
-                        "layout": {
-                            "visibility": "none"
-                        }
-                    }]
-                }
+                style: createSatelliteStyle()
             });
 
             // Suppress errors because we're not loading tiles from a real URL.
@@ -2548,5 +2532,25 @@ function createStyle() {
         pitch: 50,
         sources: {},
         layers: []
+    };
+}
+
+function createSatelliteStyle() {
+    return {
+        "version": 8,
+        "sources": {
+            "mapbox://mapbox.satellite": {
+                "type": "raster",
+                "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+            }
+        },
+        "layers": [{
+            "id": "satellite",
+            "type": "raster",
+            "source": "mapbox://mapbox.satellite",
+            "layout": {
+                "visibility": "none"
+            }
+        }]
     };
 }
