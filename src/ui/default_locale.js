@@ -15,7 +15,8 @@ const defaultLocale = {
     'ScaleControl.Meters': 'm',
     'ScaleControl.Kilometers': 'km',
     'ScaleControl.Miles': 'mi',
-    'ScaleControl.NauticalMiles': 'nm'
+    'ScaleControl.NauticalMiles': 'nm',
+    'ScrollZoomBlocker.Message': 'CTRL + zoom to scroll the map'
 
 };
 

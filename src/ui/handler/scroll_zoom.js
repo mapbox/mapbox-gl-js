@@ -76,7 +76,7 @@ class ScrollZoomHandler {
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
 
-        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_showBlockerAlert', '_fadeOutBlockerAlert'], this);
+        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_getBlockerAlertMessage', '_showBlockerAlert', '_fadeOutBlockerAlert'], this);
 
     }
 
@@ -142,12 +142,12 @@ class ScrollZoomHandler {
      */
     enable(options: any) {
         if (this.isEnabled()) return;
+
         this._enabled = true;
         this._aroundCenter = !!options && options.around === 'center';
         this._requireCtrl = !!options && options.requireCtrl === true;
-        if (this._requireCtrl) {
-            this._addScrollZoomBlocker();
-        }
+
+        if (this._requireCtrl) this._addScrollZoomBlocker();
     }
 
     /**
@@ -164,15 +164,15 @@ class ScrollZoomHandler {
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
 
-        if (this._requireCtrl && !e.ctrlKey && !this.isZooming()) {
-            this._showBlockerAlert();
-            this._fadeOutBlockerAlert();
-            return;
-        }
-
-        if (this._container && this._container.style.visibility === 'visible') {
-            // immediately hide alert if it is visible when ctrl is pressed while scroll zooming.
-            this._container.style.visibility = 'hidden';
+        if (this._requireCtrl) {
+            if (!e.ctrlKey && !this.isZooming()) {
+                this._showBlockerAlert();
+                this._fadeOutBlockerAlert();
+                return;
+            } else if (this._container && this._container.style.visibility === 'visible') {
+                // immediately hide alert if it is visible when ctrl is pressed while scroll zooming.
+                this._container.style.visibility = 'hidden';
+            }
         }
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
@@ -398,9 +398,14 @@ class ScrollZoomHandler {
         if (!this._map) { return; }
         if (!this._container) {
             this._container = DOM.create('div', 'mapboxgl-scroll-zoom-blocker-control', this._map._container);
-            const frag = window.document.createTextNode('CTRL + zoom to scroll the map');
-            this._container.appendChild(frag);
+            const alertMessage = this._getBlockerAlertMessage();
+            const textNode = window.document.createTextNode(alertMessage);
+            this._container.appendChild(textNode);
         }
+    }
+
+    _getBlockerAlertMessage() {
+        return this._map._getUIString('ScrollZoomBlocker.Message');
     }
 
     _showBlockerAlert() {
