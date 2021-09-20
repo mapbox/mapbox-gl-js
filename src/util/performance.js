@@ -17,7 +17,8 @@ export type PerformanceMetrics = {
     workerInitialization: number,
     workerEvaluateScript: number,
     workerIdle: number,
-    workerIdlePercent: number
+    workerIdlePercent: number,
+    placementTime: number
 };
 
 export const PerformanceMarkers = {
@@ -28,6 +29,8 @@ export const PerformanceMarkers = {
 
 let lastFrameTime = null;
 let frameTimes = [];
+let placementTimes = [];
+let lastPlacementStart = null;
 const frameSequences = [frameTimes];
 let i = 0;
 
@@ -60,6 +63,14 @@ export const PerformanceUtils = {
     endMeasure(m: { name: string, mark: string }) {
         performance.measure(m.name, m.mark);
     },
+    markPlacementStart() {
+        lastPlacementStart = performance.now();
+    },
+    markPlacementEnd() {
+        if (lastPlacementStart != null) {
+            placementTimes.push(performance.now() - lastPlacementStart);
+        }
+    },
     frame(timestamp: number, isRenderFrame: boolean) {
         const currTimestamp = timestamp;
         if (lastFrameTime != null) {
@@ -78,6 +89,9 @@ export const PerformanceUtils = {
     clearMetrics() {
         lastFrameTime = null;
         frameTimes = [];
+        lastPlacementStart = null;
+        placementTimes = [];
+
         performance.clearMeasures('loadTime');
         performance.clearMeasures('fullLoadTime');
 
@@ -148,6 +162,8 @@ export const PerformanceUtils = {
         for (const renderFrame of renderFrames) {
             metrics.cpuFrameBudgetExceeded += Math.max(0, renderFrame.duration - CPU_FRAME_BUDGET);
         }
+
+        metrics.placementTime = placementTimes.reduce((prev, curr) => prev + curr, 0)/placementTimes.length;
 
         return metrics;
     },

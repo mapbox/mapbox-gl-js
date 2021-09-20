@@ -3,6 +3,7 @@
 import browser from '../util/browser.js';
 
 import {Placement} from '../symbol/placement.js';
+import {PerformanceUtils} from '../util/performance.js';
 
 import type Transform from '../geo/transform.js';
 import type StyleLayer from './style_layer.js';
@@ -80,6 +81,7 @@ class PauseablePlacement {
         this._forceFullPlacement = forceFullPlacement;
         this._showCollisionBoxes = showCollisionBoxes;
         this._done = false;
+        PerformanceUtils.markPlacementStart();
     }
 
     isDone(): boolean {
@@ -122,6 +124,7 @@ class PauseablePlacement {
         }
 
         this._done = true;
+        PerformanceUtils.markPlacementEnd();
     }
 
     commit(now: number) {
