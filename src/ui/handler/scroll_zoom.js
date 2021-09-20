@@ -133,6 +133,7 @@ class ScrollZoomHandler {
      *
      * @param {Object} [options] Options object.
      * @param {string} [options.around] If "center" is passed, map will zoom around center of map.
+     * @param {boolean} [options.requireCtrl] If set to true, ctrl key must be pressed while scrolling to zoom.
      *
      * @example
      * map.scrollZoom.enable();
@@ -142,11 +143,9 @@ class ScrollZoomHandler {
      */
     enable(options: any) {
         if (this.isEnabled()) return;
-
         this._enabled = true;
-        this._aroundCenter = !!options && options.around === 'center';
-        this._requireCtrl = !!options && options.requireCtrl === true;
-
+        this._aroundCenter = options && options.around === 'center';
+        this._requireCtrl = options && options.requireCtrl === true;
         if (this._requireCtrl) this._addScrollZoomBlocker();
     }
 
@@ -167,9 +166,8 @@ class ScrollZoomHandler {
         if (this._requireCtrl) {
             if (!e.ctrlKey && !this.isZooming()) {
                 this._showBlockerAlert();
-                this._fadeOutBlockerAlert();
                 return;
-            } else if (this._container && this._container.style.visibility === 'visible') {
+            } else if (this._container && this._container.classList.contains('mapboxgl-scroll-zoom-blocker-control-fade')) {
                 // immediately hide alert if it is visible when ctrl is pressed while scroll zooming.
                 this._container.style.visibility = 'hidden';
             }
@@ -389,13 +387,11 @@ class ScrollZoomHandler {
      */
 
     getScrollZoomBlockerElement() {
-        if (this._container) {
-            return this._container;
-        }
+        if (this._container) return this._container;
     }
 
     _addScrollZoomBlocker() {
-        if (!this._map) { return; }
+        if (!this._map) return;
         if (!this._container) {
             this._container = DOM.create('div', 'mapboxgl-scroll-zoom-blocker-control', this._map._container);
             const alertMessage = this._getBlockerAlertMessage();
@@ -409,16 +405,14 @@ class ScrollZoomHandler {
     }
 
     _showBlockerAlert() {
+        if (this._container.style.visibility === 'hidden') this._container.style.visibility = 'visible';
         this._container.classList.remove('mapboxgl-scroll-zoom-blocker-control-fade');
         this._container.style.opacity = '1';
-        this._container.style.visibility = 'visible';
-    }
 
-    _fadeOutBlockerAlert() {
-        setTimeout(() => {
+        this._container.ontransitionend = () => {
             this._container.classList.add('mapboxgl-scroll-zoom-blocker-control-fade');
             this._container.style.opacity = '0';
-        }, 2000);
+        };
     }
 
 }

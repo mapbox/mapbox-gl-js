@@ -772,7 +772,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
 .mapboxgl-scroll-zoom-blocker-control {
     color: #fff;
-    font-family: "Roboto", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     font-size: 100%;
     justify-content: center;
     position: absolute;
@@ -783,13 +783,13 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    visibility: hidden;
     opacity: 0;
     z-index: 3;
     pointer-events: none;
-    transition: none !important;
+    transition: opacity 0.1s ease-in-out;
 }
 
 .mapboxgl-scroll-zoom-blocker-control-fade {
-    transition: opacity 0.75s ease-in-out !important;
+    transition: opacity 0.75s ease-in-out;
+    transition-delay: 1s;
 }
