@@ -14,6 +14,10 @@ uniform highp float u_pitch;
 uniform bool u_rotate_symbol;
 uniform highp float u_aspect_ratio;
 uniform float u_fade_change;
+uniform mat4 u_inv_rot_matrix;
+uniform vec2 u_merc_center;
+uniform vec3 u_tile_id;
+uniform float u_zoom_transition;
 
 uniform mat4 u_matrix;
 uniform mat4 u_label_plane_matrix;
@@ -56,7 +60,10 @@ void main() {
     float anchorZ = a_z_tile_anchor.x;
     vec2 tileAnchor = a_z_tile_anchor.yz;
     vec3 h = elevationVector(tileAnchor) * elevation(tileAnchor);
-    vec4 projectedPoint = u_matrix * vec4(vec3(a_pos, anchorZ) + h, 1);
+    vec3 mercator_pos = mercator_tile_position(u_inv_rot_matrix, tileAnchor, u_tile_id, u_merc_center);
+    vec3 world_pos = mix_globe_mercator(vec3(a_pos, anchorZ) + h, mercator_pos, u_zoom_transition);
+
+    vec4 projectedPoint = u_matrix * vec4(world_pos, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     // See comments in symbol_sdf.vertex
@@ -83,10 +90,12 @@ void main() {
         symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
     }
 
+    vec3 proj_pos = mix_globe_mercator(vec3(a_projected_pos.xy, anchorZ), mercator_pos, u_zoom_transition);
+
 #ifdef PROJECTED_POS_ON_VIEWPORT
-    vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
+    vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos.xy, 0.0, 1.0);
 #else
-    vec4 projected_pos = u_label_plane_matrix * vec4(vec3(a_projected_pos.xy, anchorZ) + h, 1.0);
+    vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos.xyz + h, 1.0);
 #endif
 
     highp float angle_sin = sin(segment_angle + symbol_rotation);
@@ -103,8 +112,13 @@ void main() {
     float occlusion_fade = occlusionFade(projectedPoint);
     gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projectedPoint.w <= 0.0 || occlusion_fade == 0.0));
 
+    float projection_transition_fade = 1.0;
+#if defined(PROJECTED_POS_ON_VIEWPORT) && defined(PROJECTION_GLOBE_VIEW)
+    projection_transition_fade = 1.0 - step(EPSILON, u_zoom_transition);
+#endif
+
     v_tex = a_tex / u_texsize;
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
-    v_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
+    v_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change)) * projection_transition_fade;
 }

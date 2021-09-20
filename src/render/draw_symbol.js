@@ -244,11 +244,17 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     let sortFeaturesByKey = false;
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
-
+    const mercCenter = [0, 0];
     const variablePlacement = layer.layout.get('text-variable-anchor');
-
     const tileRenderState: Array<SymbolTileRenderState> = [];
-    const defines = painter.terrain && pitchWithMap ? ['PITCH_WITH_MAP_TERRAIN'] : null;
+
+    const defines = ([]: any);
+    if (painter.terrain && pitchWithMap) {
+        defines.push('PITCH_WITH_MAP_TERRAIN');
+    }
+    if (alongLine) {
+        defines.push('PROJECTED_POS_ON_VIEWPORT');
+    }
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -265,6 +271,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration, defines);
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
+        const coordId = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
 
         let texSize: [number, number];
         let texSizeIcon: [number, number] = [0, 0];
@@ -319,16 +326,19 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             if (!bucket.iconsInText) {
                 uniformValues = symbolSDFUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true);
+                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true,
+                coordId, 0.0, painter.identityMat, mercCenter);
             } else {
                 uniformValues = symbolTextAndIconUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon);
+                uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon,
+                coordId, 0.0, painter.identityMat, mercCenter);
             }
         } else {
             uniformValues = symbolIconUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize);
+                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize,
+                coordId, 0.0, painter.identityMat, mercCenter);
         }
 
         const state = {

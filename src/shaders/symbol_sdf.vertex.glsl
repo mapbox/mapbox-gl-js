@@ -18,6 +18,8 @@ uniform highp float u_size_t; // used to interpolate between zoom stops when siz
 uniform highp float u_size; // used when size is both zoom and feature constant
 uniform mat4 u_matrix;
 uniform mat4 u_label_plane_matrix;
+uniform mat4 u_inv_rot_matrix;
+uniform vec2 u_merc_center;
 uniform mat4 u_coord_matrix;
 uniform bool u_is_text;
 uniform bool u_pitch_with_map;
@@ -27,6 +29,8 @@ uniform highp float u_aspect_ratio;
 uniform highp float u_camera_to_center_distance;
 uniform float u_fade_change;
 uniform vec2 u_texsize;
+uniform vec3 u_tile_id;
+uniform float u_zoom_transition;
 
 varying vec2 v_data0;
 varying vec3 v_data1;
@@ -67,7 +71,10 @@ void main() {
     float anchorZ = a_z_tile_anchor.x;
     vec2 tileAnchor = a_z_tile_anchor.yz;
     vec3 h = elevationVector(tileAnchor) * elevation(tileAnchor);
-    vec4 projectedPoint = u_matrix * vec4(vec3(a_pos, anchorZ) + h, 1);
+    vec3 mercator_pos = mercator_tile_position(u_inv_rot_matrix, tileAnchor, u_tile_id, u_merc_center);
+    vec3 world_pos = mix_globe_mercator(vec3(a_pos, anchorZ) + h, mercator_pos, u_zoom_transition);
+
+    vec4 projectedPoint = u_matrix * vec4(world_pos, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     // If the label is pitched with the map, layout is done in pitched space,
@@ -101,10 +108,12 @@ void main() {
         symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
     }
 
+    vec3 proj_pos = mix_globe_mercator(vec3(a_projected_pos.xy, anchorZ), mercator_pos, u_zoom_transition);
+
 #ifdef PROJECTED_POS_ON_VIEWPORT
-    vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
+    vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos.xy, 0.0, 1.0);
 #else
-    vec4 projected_pos = u_label_plane_matrix * vec4(vec3(a_projected_pos.xy, anchorZ) + h, 1.0);
+    vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos.xyz + h, 1.0);
 #endif
 
     highp float angle_sin = sin(segment_angle + symbol_rotation);
@@ -122,10 +131,15 @@ void main() {
     gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projectedPoint.w <= 0.0 || occlusion_fade == 0.0));
     float gamma_scale = gl_Position.w;
 
+    float projection_transition_fade = 1.0;
+#if defined(PROJECTED_POS_ON_VIEWPORT) && defined(PROJECTION_GLOBE_VIEW)
+    projection_transition_fade = 1.0 - step(EPSILON, u_zoom_transition);
+#endif
+
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
     float interpolated_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
 
     v_data0 = a_tex / u_texsize;
-    v_data1 = vec3(gamma_scale, size, interpolated_fade_opacity);
+    v_data1 = vec3(gamma_scale, size, interpolated_fade_opacity * projection_transition_fade);
 }

@@ -1,20 +1,4 @@
-#ifdef GL_ES
-precision mediump float;
-#else
-
-#if !defined(lowp)
-#define lowp
-#endif
-
-#if !defined(mediump)
-#define mediump
-#endif
-
-#if !defined(highp)
-#define highp
-#endif
-
-#endif
+// NOTE: This prelude is injected in the fragment shader only
 
 highp vec3 hash(highp vec2 p) {
     highp vec3 p3 = fract(p.xyx * vec3(443.8975, 397.2973, 491.1871));
