@@ -41,13 +41,20 @@ function pointToLineDist(px, py, ax, ay, bx, by) {
     return Math.abs((ay - py) * dx - (ax - px) * dy) / Math.hypot(dx, dy);
 }
 
+// a subset of VectorTileGeometry
+type FeatureWithGeometry = {
+    extent: number;
+    type: 1 | 2 | 3;
+    loadGeometry(): Array<Array<Point>>;
+}
+
 /**
  * Loads a geometry from a VectorTileFeature and scales it to the common extent
  * used internally.
  * @param {VectorTileFeature} feature
  * @private
  */
-export default function loadGeometry(feature: VectorTileFeature, canonical?: CanonicalTileID): Array<Array<Point>> {
+export default function loadGeometry(feature: FeatureWithGeometry, canonical?: CanonicalTileID): Array<Array<Point>> {
     const featureExtent = feature.extent;
     const scale = EXTENT / featureExtent;
     let cs, z2;
@@ -64,14 +71,16 @@ export default function loadGeometry(feature: VectorTileFeature, canonical?: Can
             const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
             const {x, y} = projection.project(lng, lat);
             return new Point(
-                (x * cs.scale - cs.x) * EXTENT,
-                (y * cs.scale - cs.y) * EXTENT
+                Math.round((x * cs.scale - cs.x) * EXTENT),
+                Math.round((y * cs.scale - cs.y) * EXTENT)
             );
         }
     }
 
     function addResampled(resampled, startMerc, endMerc, startProj, endProj) {
-        const midMerc = new Point((startMerc.x + endMerc.x) / 2, (startMerc.y + endMerc.y) / 2);
+        const midMerc = new Point(
+            (startMerc.x + endMerc.x) / 2,
+            (startMerc.y + endMerc.y) / 2);
         const midProj = reproject(midMerc);
         const err = pointToLineDist(midProj.x, midProj.y, startProj.x, startProj.y, endProj.x, endProj.y);
 

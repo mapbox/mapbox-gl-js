@@ -1,12 +1,12 @@
 // @flow
 
-import {uniqueId, parseCacheControl, NUM_OF_SEGMENTS} from '../util/util.js';
+import {uniqueId, parseCacheControl} from '../util/util.js';
 import {deserialize as deserializeBucket} from '../data/bucket.js';
 import FeatureIndex from '../data/feature_index.js';
 import GeoJSONFeature from '../util/vectortile_to_geojson.js';
 import featureFilter from '../style-spec/feature_filter/index.js';
 import SymbolBucket from '../data/bucket/symbol_bucket.js';
-import {CollisionBoxArray, TileBoundsArray, PosArray, TriangleIndexArray} from '../data/array_types.js';
+import {CollisionBoxArray, TileBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
 import Texture from '../render/texture.js';
 import browser from '../util/browser.js';
 import {Debug} from '../util/debug.js';
@@ -16,11 +16,14 @@ import SourceFeatureState from '../source/source_state.js';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin.js';
 import {TileSpaceDebugBuffer} from '../data/debug_viz.js';
 import Color from '../style-spec/util/color.js';
+import loadGeometry, {setProjection} from '../data/load_geometry.js';
+import earcut from 'earcut';
+import getTileMesh from './tile_mesh.js';
 
 import boundsAttributes from '../data/bounds_attributes.js';
 import EXTENT from '../data/extent.js';
-import MercatorCoordinate from '../geo/mercator_coordinate.js';
-import tileTransform from '../geo/projection/tile_transform.js';
+import Point from '@mapbox/point-geometry';
+import SegmentVector from '../data/segment.js';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -53,6 +56,20 @@ export type TileState =
     | 'errored'   // Tile data was not loaded because of an error.
     | 'expired';  /* Tile data was previously loaded, but has expired per its
                    * HTTP headers and is in the process of refreshing. */
+
+// a tile bounds outline used for getting reprojected tile geometry in non-mercator projections
+const BOUNDS_FEATURE = (() => {
+    const c0 = new Point(0, 0);
+    const c1 = new Point(EXTENT, 0);
+    const c2 = new Point(EXTENT, EXTENT);
+    const c3 = new Point(0, EXTENT);
+    const coords = [[c0, c1, c2, c3, c0]];
+    return {
+        type: 2,
+        extent: EXTENT,
+        loadGeometry() { return coords.slice(); }
+    };
+})();
 
 /**
  * A tile object is the combination of a Coordinate, which defines
@@ -87,6 +104,7 @@ class Tile {
     actor: ?Actor;
     vtLayers: {[_: string]: VectorTileLayer};
     isSymbolTile: ?boolean;
+    isRaster: ?boolean;
 
     neighboringTiles: ?Object;
     dem: ?DEMData;
@@ -110,16 +128,19 @@ class Tile {
     queryGeometryDebugViz: TileSpaceDebugBuffer;
     queryBoundsDebugViz: TileSpaceDebugBuffer;
 
-    _tileDebugBoundsBuffer: VertexBuffer;
+    _tileDebugBuffer: VertexBuffer;
     _tileBoundsBuffer: VertexBuffer;
+    _tileDebugIndexBuffer: IndexBuffer;
     _tileBoundsIndexBuffer: IndexBuffer;
+    _tileDebugSegments: SegmentVector;
+    _tileBoundsSegments: SegmentVector;
 
     /**
      * @param {OverscaledTileID} tileID
      * @param size
      * @private
      */
-    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter: any) {
+    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter: any, isRaster?: boolean) {
         this.tileID = tileID;
         this.uid = uniqueId();
         this.uses = 0;
@@ -131,6 +152,7 @@ class Tile {
         this.hasSymbolBuckets = false;
         this.hasRTLText = false;
         this.dependencies = {};
+        this.isRaster = isRaster;
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
@@ -141,8 +163,8 @@ class Tile {
         this.state = 'loading';
 
         if (painter) {
-            const projection = painter && painter.transform && painter.transform.projection;
-            this._makeTileDebugBuffer(painter.context, projection);
+            const {projection, projectionOptions} = painter.transform;
+            setProjection(projectionOptions);
             this._makeTileBoundsBuffers(painter.context, projection);
         }
     }
@@ -531,75 +553,51 @@ class Tile {
         });
     }
 
-    _add(x: number, y: number, denominator: number, projection: Projection) {
-        const s = Math.pow(2, -this.tileID.canonical.z);
-        const x1 = (this.tileID.canonical.x) * s;
-        const y1 = (this.tileID.canonical.y) * s;
-        const cs = tileTransform(this.tileID.canonical, projection);
-        const increment = s / denominator;
-        const x2 = x1 + x * increment;
-        const y2 = y1 + y * increment;
-        const l = new MercatorCoordinate(x2, y2).toLngLat();
-        const xy = ((projection.project(l.lng, l.lat)));
-        const x_ = (xy.x * cs.scale - cs.x) * EXTENT;
-        const y_ = (xy.y * cs.scale - cs.y) * EXTENT;
-        const a = x / denominator * EXTENT;
-        const b = y / denominator * EXTENT;
-        return {x_, y_, a, b};
-    }
-
-    _makeTileDebugBuffer(context: Context, projection: Projection) {
-        if (this._tileDebugBoundsBuffer || !projection) return;
-
-        const debugBoundsArray = new PosArray();
-
-        const add = (x, y) => {
-            const {x_, y_} = this._add(x, y, EXTENT, projection);
-            debugBoundsArray.emplaceBack(x_, y_);
-        };
-
-        const stride = EXTENT / NUM_OF_SEGMENTS;
-        const SIDES = [
-            {start: [0, 0], step: [stride, 0]},
-            {start: [EXTENT, 0], step: [0, stride]},
-            {start: [EXTENT, EXTENT], step: [-stride, 0]},
-            {start: [0, EXTENT], step: [0, -stride]}
-        ];
-
-        for (const {start, step} of SIDES) {
-            for (let i = 0; i < NUM_OF_SEGMENTS; i++) {
-                add(start[0] + (i * step[0]), start[1] + (i * step[1]));
-            }
-        }
-
-        this._tileDebugBoundsBuffer = context.createVertexBuffer(debugBoundsArray, boundsAttributes.members);
-    }
-
     _makeTileBoundsBuffers(context: Context, projection: Projection) {
         if (this._tileBoundsBuffer || !projection || projection.name === 'mercator') return;
 
-        const tileBoundsArray = new TileBoundsArray();
-        const quadTriangleIndices = new TriangleIndexArray();
+        // reproject tile outline with adaptive resampling
+        const boundsLine = loadGeometry(BOUNDS_FEATURE, this.tileID.canonical)[0];
 
-        const add = (x, y) => {
-            const {x_, y_, a, b} = this._add(x, y, NUM_OF_SEGMENTS, projection);
-            tileBoundsArray.emplaceBack(x_, y_, a, b);
-        };
+        let boundsVertices, boundsIndices;
+        if (this.isRaster) {
+            // for raster tiles, generate an adaptive MARTINI mesh
+            const mesh = getTileMesh(this.tileID.canonical, projection);
+            boundsVertices = mesh.vertices;
+            boundsIndices = mesh.indices;
 
-        for (let xi = 0; xi < NUM_OF_SEGMENTS; xi++) {
-            for (let yi = 0; yi < NUM_OF_SEGMENTS; yi++) {
-                const offset = tileBoundsArray.length;
-                add(xi, yi);
-                add(xi + 1, yi);
-                add(xi, yi + 1);
-                add(xi + 1, yi + 1);
-                quadTriangleIndices.emplaceBack(offset + 0, offset + 1, offset + 2);
-                quadTriangleIndices.emplaceBack(offset + 2, offset + 1, offset + 3);
+        } else {
+            // for vector tiles, generate an Earcut triangulation of the outline
+            boundsVertices = new TileBoundsArray();
+            boundsIndices = new TriangleIndexArray();
+
+            for (const {x, y} of boundsLine) {
+                boundsVertices.emplaceBack(x, y, 0, 0);
+            }
+            const indices = earcut(boundsVertices.int16, undefined, 4);
+            for (let i = 0; i < indices.length; i += 3) {
+                boundsIndices.emplaceBack(indices[i], indices[i + 1], indices[i + 2]);
             }
         }
 
-        this._tileBoundsBuffer = context.createVertexBuffer(tileBoundsArray, boundsAttributes.members);
-        this._tileBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
+        this._tileBoundsBuffer = context.createVertexBuffer(boundsVertices, boundsAttributes.members);
+        this._tileBoundsIndexBuffer = context.createIndexBuffer(boundsIndices);
+        this._tileBoundsSegments = SegmentVector.simpleSegment(0, 0, boundsVertices.length, boundsIndices.length);
+
+        // generate vertices for debugging tile boundaries
+        const debugVertices = new PosArray();
+        const debugIndices = new LineStripIndexArray();
+
+        for (let i = 0; i < boundsLine.length; i++) {
+            const {x, y} = boundsLine[i];
+            debugVertices.emplaceBack(x, y);
+            debugIndices.emplaceBack(i);
+        }
+        debugIndices.emplaceBack(0);
+
+        this._tileDebugIndexBuffer = context.createIndexBuffer(debugIndices);
+        this._tileDebugBuffer = context.createVertexBuffer(debugVertices, boundsAttributes.members);
+        this._tileDebugSegments = SegmentVector.simpleSegment(0, 0, debugVertices.length, debugIndices.length);
     }
 }
 
