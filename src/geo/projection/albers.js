@@ -1,7 +1,6 @@
 // @flow
 import LngLat from '../lng_lat.js';
 import {clamp} from '../../util/util.js';
-import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 
 export const albers = {
     name: 'albers',
@@ -37,7 +36,7 @@ export const albers = {
         const lng = clamp((theta / n * 180 / Math.PI) + this.center[0], -180, 180);
         const a = x_ / Math.sin(theta);
         const s = clamp((Math.pow(a / r * n, 2) - c) / (-2 * n), -1, 1);
-        const lat = clamp(Math.asin(s) * 180 / Math.PI, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+        const lat = clamp(Math.asin(s) * 180 / Math.PI, -90, 90);
         return new LngLat(lng, lat);
     }
 };
