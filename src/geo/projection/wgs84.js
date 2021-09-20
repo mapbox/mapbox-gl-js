@@ -1,5 +1,6 @@
 // @flow
 import LngLat from '../lng_lat.js';
+import {clamp} from '../../util/util.js';
 
 export default {
     name: 'wgs84',
@@ -10,8 +11,8 @@ export default {
         return {x, y};
     },
     unproject(x: number, y: number) {
-        return new LngLat(
-            (x - 0.5) * 360,
-            (0.5 - y) * 360);
+        const lng = (x - 0.5) * 360;
+        const lat = clamp((0.5 - y) * 360, -90, 90);
+        return new LngLat(lng, lat);
     }
 };

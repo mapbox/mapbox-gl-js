@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE} from './mercator_coordinate.js';
 import getProjection from './projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
@@ -36,7 +36,6 @@ class Transform {
     tileZoom: number;
     lngRange: ?[number, number];
     latRange: ?[number, number];
-    maxValidLatitude: number;
 
     // 2^zoom (worldSize = tileSize * scale)
     scale: number;
@@ -118,7 +117,6 @@ class Transform {
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection: string) {
         this.tileSize = 512; // constant
-        this.maxValidLatitude = 85.051129; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
         this._minZoom = minZoom || DEFAULT_MIN_ZOOM;
@@ -230,7 +228,9 @@ class Transform {
         this.pitch = Math.min(this.pitch, pitch);
     }
 
-    get renderWorldCopies(): boolean { return this._renderWorldCopies; }
+    get renderWorldCopies(): boolean {
+        return this.projection.name === 'mercator' && this._renderWorldCopies;
+    }
     set renderWorldCopies(renderWorldCopies?: ?boolean) {
         if (renderWorldCopies === undefined) {
             renderWorldCopies = true;
@@ -940,7 +940,7 @@ class Transform {
     scaleZoom(scale: number) { return Math.log(scale) / Math.LN2; }
 
     project(lnglat: LngLat) {
-        const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
+        const lat = clamp(lnglat.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
         const projectedLngLat = this.projection.project(lnglat.lng, lat);
         return new Point(
                 projectedLngLat.x * this.worldSize,
@@ -957,18 +957,14 @@ class Transform {
         const a = this.pointCoordinate(point);
         const b = this.pointCoordinate(this.centerPoint);
         const loc = this.locationCoordinate(lnglat);
-        const newCenter = new MercatorCoordinate(
-                loc.x - (a.x - b.x),
-                loc.y - (a.y - b.y));
-        this.center = this.coordinateLocation(newCenter);
-        if (this._renderWorldCopies) {
-            this.center = this.center.wrap();
-        }
+        this.setLocation(new MercatorCoordinate(
+            loc.x - (a.x - b.x),
+            loc.y - (a.y - b.y)));
     }
 
     setLocation(location: MercatorCoordinate) {
         this.center = this.coordinateLocation(location);
-        if (this._renderWorldCopies) {
+        if (this.renderWorldCopies) {
             this.center = this.center.wrap();
         }
     }
@@ -1275,7 +1271,7 @@ class Transform {
             this._constrain();
         } else {
             this.lngRange = null;
-            this.latRange = [-this.maxValidLatitude, this.maxValidLatitude];
+            this.latRange = [-MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE];
         }
     }
 

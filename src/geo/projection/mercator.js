@@ -11,8 +11,8 @@ export default {
         return {x, y};
     },
     unproject(x: number, y: number) {
-        return new LngLat(
-            lngFromMercatorX(x),
-            latFromMercatorY(y));
+        const lng = lngFromMercatorX(x);
+        const lat = latFromMercatorY(y);
+        return new LngLat(lng, lat);
     }
 };
