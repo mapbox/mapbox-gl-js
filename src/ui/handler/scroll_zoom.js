@@ -76,7 +76,7 @@ class ScrollZoomHandler {
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
 
-        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_getBlockerAlertMessage', '_showBlockerAlert', '_fadeOutBlockerAlert'], this);
+        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_showBlockerAlert'], this);
 
     }
 
