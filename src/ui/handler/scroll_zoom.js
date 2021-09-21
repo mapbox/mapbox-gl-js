@@ -391,10 +391,10 @@ class ScrollZoomHandler {
         this._container.classList.remove('mapboxgl-scroll-zoom-blocker-control-fade');
         this._container.style.opacity = '1';
 
-        this._container.ontransitionend = () => {
+        this._container.addEventListener('transitionend', () => {
             this._container.classList.add('mapboxgl-scroll-zoom-blocker-control-fade');
             this._container.style.opacity = '0';
-        };
+        });
     }
 
 }
