@@ -1,6 +1,13 @@
 // @flow
 
-import {prelude, preludeTerrain, preludeFog, preludeCommonSource} from '../shaders/shaders.js';
+import {
+    prelude,
+    preludeFragPrecisionQualifiers,
+    preludeVertPrecisionQualifiers,
+    preludeTerrain,
+    preludeFog,
+    preludeCommonSource
+} from '../shaders/shaders.js';
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration.js';
 import VertexArrayObject from './vertex_array_object.js';
@@ -78,8 +85,19 @@ class Program<Us: UniformBindings> {
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
 
-        const fragmentSource = defines.concat(prelude.fragmentSource, preludeCommonSource, preludeFog.fragmentSource, source.fragmentSource).join('\n');
-        const vertexSource = defines.concat(prelude.vertexSource, preludeCommonSource, preludeFog.vertexSource, preludeTerrain.vertexSource, source.vertexSource).join('\n');
+        const fragmentSource = defines.concat(
+            preludeFragPrecisionQualifiers,
+            preludeCommonSource,
+            prelude.fragmentSource,
+            preludeFog.fragmentSource,
+            source.fragmentSource).join('\n');
+        const vertexSource = defines.concat(
+            preludeVertPrecisionQualifiers,
+            preludeCommonSource,
+            prelude.vertexSource,
+            preludeFog.vertexSource,
+            preludeTerrain.vertexSource,
+            source.vertexSource).join('\n');
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         if (gl.isContextLost()) {
             this.failedToCreate = true;

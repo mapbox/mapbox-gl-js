@@ -2,6 +2,28 @@
 #define ELEVATION_SCALE 7.0
 #define ELEVATION_OFFSET 450.0
 
+#ifdef PROJECTION_GLOBE_VIEW
+
+uniform vec3 u_tile_tl_up;
+uniform vec3 u_tile_tr_up;
+uniform vec3 u_tile_br_up;
+uniform vec3 u_tile_bl_up;
+uniform float u_tile_up_scale;
+vec3 elevationVector(vec2 pos) {
+    vec2 uv = pos / EXTENT;
+    vec3 up = normalize(mix(
+        mix(u_tile_tl_up, u_tile_tr_up, uv.xxx),
+        mix(u_tile_bl_up, u_tile_br_up, uv.xxx),
+        uv.yyy));
+    return up * u_tile_up_scale;
+}
+
+#else 
+
+vec3 elevationVector(vec2 pos) { return vec3(0, 0, 1); }
+
+#endif
+
 #ifdef TERRAIN
 
 #ifdef TERRAIN_DEM_FLOAT_FORMAT

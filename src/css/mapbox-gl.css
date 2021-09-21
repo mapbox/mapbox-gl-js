@@ -97,6 +97,7 @@
     box-sizing: border-box;
     background-color: transparent;
     cursor: pointer;
+    overflow: hidden;
 }
 
 .mapboxgl-ctrl-group button + button {

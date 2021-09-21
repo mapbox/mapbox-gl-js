@@ -451,6 +451,7 @@ class Map extends Camera {
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
+
             if (!this._container) {
                 throw new Error(`Container '${options.container}' not found.`);
             }
@@ -695,8 +696,9 @@ class Map extends Camera {
         const height = dimensions[1];
 
         this._resizeCanvas(width, height);
+
         this.transform.resize(width, height);
-        this.painter.resize(width, height);
+        this.painter.resize(Math.ceil(width), Math.ceil(height));
 
         const fireMoving = !this._moving;
         if (fireMoving) {
@@ -2537,8 +2539,8 @@ class Map extends Camera {
         let height = 0;
 
         if (this._container) {
-            width = this._container.clientWidth || 400;
-            height = this._container.clientHeight || 300;
+            width = this._container.getBoundingClientRect().width || 400;
+            height = this._container.getBoundingClientRect().height || 300;
         }
 
         return [width, height];
@@ -2589,9 +2591,9 @@ class Map extends Camera {
     _resizeCanvas(width: number, height: number) {
         const pixelRatio = browser.devicePixelRatio || 1;
 
-        // Request the required canvas size taking the pixelratio into account.
-        this._canvas.width = pixelRatio * width;
-        this._canvas.height = pixelRatio * height;
+        // Request the required canvas size (rounded up) taking the pixelratio into account.
+        this._canvas.width = pixelRatio * Math.ceil(width);
+        this._canvas.height = pixelRatio * Math.ceil(height);
 
         // Maintain the same canvas size, potentially downscaling it for HiDPI displays
         this._canvas.style.width = `${width}px`;
@@ -2719,7 +2721,7 @@ class Map extends Camera {
     _requestDomTask(callback: () => void) {
         // This condition means that the map is idle: the callback needs to be called right now as
         // there won't be a triggered render to run the queue.
-        if (!this.isMoving() && this.loaded()) {
+        if (!this.loaded() || (this.loaded() && !this.isMoving())) {
             callback();
         } else {
             this._domRenderTaskQueue.add(callback);
@@ -2804,6 +2806,8 @@ class Map extends Camera {
             this.painter._updateFog(this.style);
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             this.style._updateSources(this.transform);
+            // Update positions of markers on enabling/disabling terrain
+            this._forceMarkerUpdate();
         }
 
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
@@ -2913,6 +2917,12 @@ class Map extends Camera {
         }
 
         return this;
+    }
+
+    _forceMarkerUpdate() {
+        for (const marker of this._markers) {
+            marker._update();
+        }
     }
 
     /**

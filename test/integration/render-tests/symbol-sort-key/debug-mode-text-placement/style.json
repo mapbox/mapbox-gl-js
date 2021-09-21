@@ -1,0 +1,91 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug" : true,
+      "height": 150,
+      "width": 150,
+      "allowed": 0.0003
+    }
+  },
+  "center": [0, 0],
+  "zoom": 4,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "yellow",
+              "sort-key": 0,
+              "image": "bank-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "red",
+              "sort-key": 2,
+              "image": "bank-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                1.1,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "blue",
+              "sort-key": 1,
+              "image": "fav-campsite-18"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -1.1,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {"id" : "bg",
+    "type": "background",
+    "paint": {
+      "background-color": "white"
+  }},
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-allow-overlap": true,
+        "symbol-sort-key": ["get", "sort-key"],
+        "text-field": ["get", "sort-key"],
+        "text-size": 20,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

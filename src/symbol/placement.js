@@ -349,7 +349,7 @@ export class Placement {
         }
     }
 
-    placeLayerBucketPart(bucketPart: Object, seenCrossTileIDs: { [string | number]: boolean }, showCollisionBoxes: boolean) {
+    placeLayerBucketPart(bucketPart: Object, seenCrossTileIDs: { [string | number]: boolean }, showCollisionBoxes: boolean, updateCollisionBoxIfNecessary: boolean) {
 
         const {
             bucket,
@@ -395,7 +395,7 @@ export class Placement {
             bucket.deserializeCollisionBoxes(collisionBoxArray);
         }
 
-        if (showCollisionBoxes) {
+        if (showCollisionBoxes && updateCollisionBoxIfNecessary) {
             bucket.updateCollisionDebugBuffers(this.transform.zoom, collisionBoxArray);
         }
 
@@ -437,7 +437,7 @@ export class Placement {
                 if (!this.transform.elevation && !box.elevation) return;
                 box.elevation = this.transform.elevation ? this.transform.elevation.getAtTileOffset(
                     this.retainedQueryData[bucket.bucketInstanceId].tileID,
-                    box.anchorPointX, box.anchorPointY) : 0;
+                    box.tileAnchorX, box.tileAnchorY) : 0;
             };
 
             const textBox = collisionArrays.textBox;

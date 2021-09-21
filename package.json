@@ -10,9 +10,6 @@
     "type": "git",
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
-  "engines": {
-    "node": ">=14.15.4"
-  },
   "dependencies": {
     "@mapbox/geojson-rewind": "^0.5.0",
     "@mapbox/geojson-types": "^1.0.2",
@@ -70,7 +67,7 @@
     "eslint-plugin-html": "^6.1.1",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsdoc": "^32.3.4",
-    "flow-bin": "^0.100.0",
+    "flow-bin": "0.103.0",
     "gl": "^4.9.0",
     "glob": "^7.1.6",
     "is-builtin-module": "^3.0.0",

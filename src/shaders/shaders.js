@@ -63,6 +63,12 @@ import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
+import globeFrag from './globe_raster.fragment.glsl';
+import globeVert from './globe_raster.vertex.glsl';
+import globeDepthFrag from './globe_depth.fragment.glsl';
+import globeDepthVert from './globe_depth.vertex.glsl';
+import atmosphereFrag from './globe_atmosphere.fragment.glsl';
+import atmosphereVert from './globe_atmosphere.vertex.glsl';
 
 export let preludeTerrain = {};
 export let preludeFog = {};
@@ -72,6 +78,43 @@ preludeFog = compile(preludeFogFrag, preludeFogVert, true);
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const preludeCommonSource = preludeCommon;
+
+export const preludeVertPrecisionQualifiers = `
+#ifdef GL_ES
+precision highp float;
+#else
+
+#if !defined(lowp)
+#define lowp
+#endif
+
+#if !defined(mediump)
+#define mediump
+#endif
+
+#if !defined(highp)
+#define highp
+#endif
+
+#endif`;
+export const preludeFragPrecisionQualifiers = `
+#ifdef GL_ES
+precision mediump float;
+#else
+
+#if !defined(lowp)
+#define lowp
+#endif
+
+#if !defined(mediump)
+#define mediump
+#endif
+
+#if !defined(highp)
+#define highp
+#endif
+
+#endif`;
 
 export default {
     background: compile(backgroundFrag, backgroundVert),
@@ -101,7 +144,10 @@ export default {
     terrainDepth: compile(terrainDepthFrag, terrainDepthVert),
     skybox: compile(skyboxFrag, skyboxVert),
     skyboxGradient: compile(skyboxGradientFrag, skyboxVert),
-    skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert)
+    skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert),
+    globeRaster: compile(globeFrag, globeVert),
+    globeAtmosphere: compile(atmosphereFrag, atmosphereVert),
+    globeDepth: compile(globeDepthFrag, globeDepthVert)
 };
 
 // Expand #pragmas to #ifdefs.

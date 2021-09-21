@@ -11,6 +11,18 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - install-mbx-ci:
+          requires:
+              - prepare
+          filters:
+            tags:
+              only: /.*/
+            # We can't install mbx-ci on CI runs from PR's that reference forks from external contributors
+            # This is because fork's can not access our AWS credentials setup in CircleCI environment variables
+            # Branch names for external contributor forks are are reported in the format pull/{PR_NUMBER} to CircleCI,
+            # This RegEx is setup to ignore that.
+            branches:
+              ignore: /pull\/[0-9]*/
       - lint:
           requires:
             - prepare
@@ -20,6 +32,14 @@ workflows:
       - build:
           requires:
             - prepare
+          filters:
+            tags:
+              only: /.*/
+      - check-bundle-size:
+          requires:
+            - prepare
+            - install-mbx-ci
+            - build
           filters:
             tags:
               only: /.*/
@@ -74,6 +94,7 @@ workflows:
       - collect-stats:
           requires:
             - build
+            - install-mbx-ci
           filters:
             tags:
               ignore: /.*/
@@ -81,6 +102,7 @@ workflows:
               only: main
       - deploy-benchmarks:
           requires:
+            - install-mbx-ci
             - lint
             - build
             - test-flow
@@ -98,6 +120,7 @@ workflows:
                 - /release-.*/
       - deploy-release:
           requires:
+            - install-mbx-ci
             - lint
             - build
             - test-flow
@@ -123,12 +146,6 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run:
-          name: Install mbx-ci
-          command: |
-            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > ~/mbx-ci &&
-            chmod 755 ~/mbx-ci &&
-            ~/mbx-ci aws setup
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
@@ -143,9 +160,23 @@ jobs:
           paths:
             - mapbox-gl-js
             - .ssh
+
+  install-mbx-ci:
+    <<: *defaults
+    steps:
+      - run:
+          name: Install mbx-ci
+          command: |
+            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > ~/mbx-ci &&
+            chmod 755 ~/mbx-ci &&
+            ~/mbx-ci aws setup
+      # mbx-ci stores credentials in these directories, so they must be explictly passed along to dependent jobs via workspaces
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - .ssh
             - .aws
             - mbx-ci
-
 
   lint:
     <<: *defaults
@@ -176,10 +207,6 @@ jobs:
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
       - run: yarn run test-build
-      - run:
-          name: Check bundle size
-          command: |
-            node build/check-bundle-size.js
       - store_artifacts:
           path: "dist"
       - store_artifacts:
@@ -188,6 +215,16 @@ jobs:
           root: ~/
           paths:
             - mapbox-gl-js/dist
+
+  check-bundle-size:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Check bundle size
+          command: |
+            node build/check-bundle-size.js
 
   test-flow:
     <<: *defaults

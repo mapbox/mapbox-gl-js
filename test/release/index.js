@@ -135,6 +135,11 @@ const pages = [
         "key": "skybox-gradient",
         "title": "Skybox gradient",
         "url": "./skybox-gradient.html"
+    },
+    {
+        "key": "canvas-size",
+        "title": "Canvas Size",
+        "url": "./canvas-size.html"
     }
 ];
 
