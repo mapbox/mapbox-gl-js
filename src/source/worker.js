@@ -25,7 +25,7 @@ import type {
 
 import type {WorkerGlobalScopeInterface} from '../util/web_worker.js';
 import type {Callback} from '../types/callback.js';
-import type {LayerSpecification} from '../style-spec/types.js';
+import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types.js';
 import type {PluginState} from './rtl_text_plugin.js';
 import type {Projection} from '../geo/projection/index.js';
 
@@ -120,8 +120,14 @@ export default class Worker {
         callback();
     }
 
+<<<<<<< HEAD
     setProjection(mapId: string, config: {name: string} | string) {
         this.projections[mapId] = getProjection(config);
+=======
+    setProjection(mapId: string, config: ProjectionSpecification) {
+        debugger;
+        setProjection(config);
+>>>>>>> be4cd82af (Update handling stylesheet projections)
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {

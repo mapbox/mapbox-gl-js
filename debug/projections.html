@@ -119,6 +119,14 @@ function makeMap() {
     const styleEl = document.getElementById('styleName');
     const styleName = styleEl.options[styleEl.selectedIndex].value;
     const style = styles[styleName];
+    // const style = {
+    //     "version": 8,
+    //     "sources": {},
+    //     "layers": [],
+    //     "projection": {
+    //         "name": "albers"
+    //     }
+    // };
 
     map = new mapboxgl.Map({
         projection,
