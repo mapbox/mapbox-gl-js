@@ -101,8 +101,7 @@ export const PerformanceUtils = {
     clearMetrics() {
         lastFrameTime = null;
         frameTimes = [];
-        lastPlacementStart = null;
-        placementTimes = [];
+        placementTimes = {};
         fullLoadFinished = false;
 
         performance.clearMeasures('loadTime');
