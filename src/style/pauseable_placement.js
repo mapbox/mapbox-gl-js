@@ -12,8 +12,6 @@ import type Tile from '../source/tile.js';
 import type {BucketPart} from '../symbol/placement.js';
 import type {FogState} from './fog_helpers.js';
 
-let placementId = 1;
-
 class LayerPlacement {
     _sortAcrossTiles: boolean;
     _currentTileIndex: number;
@@ -63,7 +61,6 @@ class LayerPlacement {
 
 class PauseablePlacement {
     placement: Placement;
-    _id: number;
     _done: boolean;
     _currentPlacementIndex: number;
     _forceFullPlacement: boolean;
@@ -83,7 +80,6 @@ class PauseablePlacement {
         this._forceFullPlacement = forceFullPlacement;
         this._showCollisionBoxes = showCollisionBoxes;
         this._done = false;
-        this._id = placementId++;
     }
 
     isDone(): boolean {
@@ -113,7 +109,7 @@ class PauseablePlacement {
                 const pausePlacement = this._inProgressLayer.continuePlacement(layerTiles[layer.source], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement);
 
                 if (pausePlacement) {
-                    PerformanceUtils.recordPlacementTime(this._id, browser.now() - startTime);
+                    PerformanceUtils.recordPlacementTime(browser.now() - startTime);
                     // We didn't finish placing all layers within 2ms,
                     // but we can keep rendering with a partial placement
                     // We'll resume here on the next frame
@@ -125,7 +121,7 @@ class PauseablePlacement {
 
             this._currentPlacementIndex--;
         }
-        PerformanceUtils.recordPlacementTime(this._id, browser.now() - startTime);
+        PerformanceUtils.recordPlacementTime(browser.now() - startTime);
         this._done = true;
     }
 

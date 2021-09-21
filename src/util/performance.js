@@ -30,7 +30,7 @@ export const PerformanceMarkers = {
 let lastFrameTime = null;
 let fullLoadFinished = false;
 let frameTimes = [];
-let placementTimes = {};
+let placementTime = 0;
 const frameSequences = [frameTimes];
 let i = 0;
 
@@ -67,16 +67,13 @@ export const PerformanceUtils = {
     endMeasure(m: { name: string, mark: string }) {
         performance.measure(m.name, m.mark);
     },
-    recordPlacementTime(id: number, time: number) {
+    recordPlacementTime(time: number) {
         // Ignore placementTimes during loading
         if (!fullLoadFinished) {
             return;
         }
-        if (placementTimes[id] == null) {
-            placementTimes[id] = [];
-        }
 
-        placementTimes[id].push(time);
+        placementTime += time;
     },
     frame(timestamp: number, isRenderFrame: boolean) {
         // Ignore frametimes during loading
@@ -101,7 +98,7 @@ export const PerformanceUtils = {
     clearMetrics() {
         lastFrameTime = null;
         frameTimes = [];
-        placementTimes = {};
+        placementTime = 0;
         fullLoadFinished = false;
 
         performance.clearMeasures('loadTime');
@@ -175,10 +172,6 @@ export const PerformanceUtils = {
             metrics.cpuFrameBudgetExceeded += Math.max(0, renderFrame.duration - CPU_FRAME_BUDGET);
         }
 
-        let placementTime = 0;
-        for (const placement in placementTimes) {
-            placementTime += placementTimes[placement].reduce((prev, curr) => prev + curr, 0);
-        }
         metrics.placementTime = placementTime;
 
         return metrics;
