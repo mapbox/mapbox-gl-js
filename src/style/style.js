@@ -66,7 +66,8 @@ import type {
     LightSpecification,
     SourceSpecification,
     TerrainSpecification,
-    FogSpecification
+    FogSpecification,
+    ProjectionSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator} from './validate_style.js';
@@ -323,7 +324,10 @@ class Style extends Evented {
             this._updateLayerCount(layer, true);
         }
 
-        this._setProjection();
+        if (this.stylesheet.projection) {
+            this._setProjection(this.stylesheet.projection);
+        }
+
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
@@ -339,11 +343,15 @@ class Style extends Evented {
         this.fire(new Event('style.load'));
     }
 
-    _setProjection() {
+    _setProjection(projection: ProjectionSpecification) {
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
         }
+
+        this.map.transform.setProjection(projection);
         this.dispatcher.broadcast('setProjection', this.map.transform._projectionOptions);
+        this.map._update(true);
+        this.map.triggerRepaint();
     }
 
     _loadSprite(url: string) {

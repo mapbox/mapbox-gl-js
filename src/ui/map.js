@@ -30,6 +30,7 @@ import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
+import {getProjectionOptions} from '../geo/projection/index.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -37,7 +38,6 @@ import type {PointLike} from '@mapbox/point-geometry';
 import type {RequestTransformFunction} from '../util/mapbox.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
-import type {ProjectionOptions} from '../geo/projection/index.js';
 import type {StyleOptions, StyleSetterOptions} from '../style/style.js';
 import type {MapEvent, MapDataEvent} from './events.js';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer.js';
@@ -63,7 +63,8 @@ import type {
     LightSpecification,
     TerrainSpecification,
     FogSpecification,
-    SourceSpecification
+    SourceSpecification,
+    ProjectionSpecification
 } from '../style-spec/types.js';
 import type {ElevationQueryOptions} from '../terrain/elevation.js';
 
@@ -119,7 +120,7 @@ type MapOptions = {
     accessToken: string,
     testMode: ?boolean,
     locale?: Object,
-    projection?: ProjectionOptions | string
+    projection?: ProjectionSpecification | string
 };
 
 const defaultMinZoom = -2;
@@ -269,7 +270,7 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
- * @param {ProjectionOptions} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equal-earth'), Equirectangular/WGS84 ('equirectangular'), Globe ('globe'), Lambert ('lambert'), Mercator ('mercator'), Natural Earth ('natural-earth'), and Winkel Tripel ('winkel').
+ * @param {ProjectionSpecification} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equal-earth'), Equirectangular/WGS84 ('equirectangular'), Globe ('globe'), Lambert ('lambert'), Mercator ('mercator'), Natural Earth ('natural-earth'), and Winkel Tripel ('winkel').
  *  Conical projections such as Albers and Lambert have configurable `center` and `parallels` properties that allow developers to define the region in which the projection has minimal distortion; see the example for how to configure these properties.
  * @example
  * var map = new mapboxgl.Map({
@@ -424,7 +425,7 @@ class Map extends Camera {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
         }
 
-        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, options.projection);
+        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, getProjectionOptions(options.projection));
         super(transform, options);
 
         this._interactive = options.interactive;
@@ -896,18 +897,18 @@ class Map extends Camera {
     }
 
     /**
-     * Returns a {@link ProjectionOptions} object that defines the current map projection.
-     * @returns {ProjectionOptions} The {@link ProjectionOptions} defining the current map projection
+     * Returns a {@link ProjectionSpecification} object that defines the current map projection.
+     * @returns {ProjectionSpecification} The {@link ProjectionSpecification} defining the current map projection
      */
     getProjection() {
         return this.transform.getProjection();
     }
 
     /**
-     * Sets the map's projection.
+     * Sets the map's projection. If called with no projection, the map will default to Mercator.
      *
-     * @param {ProjectionOptions | string} projection The projection that the map should be rendered in.
-     * This can be a {@link ProjectionOptions} object or a string of the projection's name.
+     * @param {ProjectionSpecification | string} projection The projection that the map should be rendered in.
+     * This can be a {@link ProjectionSpecification} object or a string of the projection's name.
      * @example
      * map.setProjection('albers');
      * map.setProjection({
@@ -916,11 +917,9 @@ class Map extends Camera {
      *   parallels: [20, 60]
      * });
      */
-    setProjection(projection: ProjectionOptions | string) {
-        this.transform.setProjection(projection);
-        this.style._setProjection();
-        this._update(true);
-        this.triggerRepaint();
+    setProjection(projection?: ProjectionSpecification | string) {
+        projection = getProjectionOptions(projection);
+        this.style._setProjection(projection);
     }
 
     /**

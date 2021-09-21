@@ -2,7 +2,7 @@ import ValidationError from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import validate from './validate.js';
 
-export default function validateImage(options) {
+export default function validateProjection(options) {
     const projection = options.value;
     const styleSpec = options.styleSpec;
     const projectionSpec = styleSpec.projection;
