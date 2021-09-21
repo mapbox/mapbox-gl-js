@@ -139,6 +139,7 @@ class ScrollZoomHandler {
      * map.scrollZoom.enable();
      * @example
      * map.scrollZoom.enable({around: 'center'});
+     * @example
      * map.scrollZoom.enable({requireCtrl: true});
      */
     enable(options: any) {
@@ -376,32 +377,13 @@ class ScrollZoomHandler {
         this._active = false;
     }
 
-    /**
-     * Returns the scroll zoom blocker alert's HTML element.
-     *
-     * @example
-     * // Change the scroll zoom blocker element's font size
-     * map.scrollZoom.getScrollZoomBlockerElement();
-     * scrollZoomBlockerElem.style.fontSize = "25px";
-     * @returns {HTMLElement} Returns container element.
-     */
-
-    getScrollZoomBlockerElement() {
-        if (this._container) return this._container;
-    }
-
     _addScrollZoomBlocker() {
-        if (!this._map) return;
-        if (!this._container) {
+        if (this._map && !this._container) {
             this._container = DOM.create('div', 'mapboxgl-scroll-zoom-blocker-control', this._map._container);
-            const alertMessage = this._getBlockerAlertMessage();
+            const alertMessage = this._map._getUIString('ScrollZoomBlocker.Message');
             const textNode = window.document.createTextNode(alertMessage);
             this._container.appendChild(textNode);
         }
-    }
-
-    _getBlockerAlertMessage() {
-        return this._map._getUIString('ScrollZoomBlocker.Message');
     }
 
     _showBlockerAlert() {

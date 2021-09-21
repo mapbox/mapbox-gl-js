@@ -775,6 +775,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     font-size: 100%;
     justify-content: center;
+    text-align: center;
     position: absolute;
     display: flex;
     align-items: center;
@@ -784,7 +785,6 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     opacity: 0;
-    z-index: 3;
     pointer-events: none;
     transition: opacity 0.1s ease-in-out;
 }
