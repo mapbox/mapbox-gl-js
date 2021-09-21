@@ -28,9 +28,9 @@ export const PerformanceMarkers = {
 };
 
 let lastFrameTime = null;
+let fullLoadFinished = false;
 let frameTimes = [];
-let placementTimes = [];
-let lastPlacementStart = null;
+let placementTimes = {};
 const frameSequences = [frameTimes];
 let i = 0;
 
@@ -48,6 +48,10 @@ const frameTimeTarget = 1000 / framerateTarget;
 export const PerformanceUtils = {
     mark(marker: $Keys<typeof PerformanceMarkers>) {
         performance.mark(marker);
+
+        if (marker === PerformanceMarkers.fullLoad) {
+            fullLoadFinished = true;
+        }
     },
     measure(name: string, begin?: string, end?: string) {
         performance.measure(name, begin, end);
@@ -63,15 +67,23 @@ export const PerformanceUtils = {
     endMeasure(m: { name: string, mark: string }) {
         performance.measure(m.name, m.mark);
     },
-    markPlacementStart() {
-        lastPlacementStart = performance.now();
-    },
-    markPlacementEnd() {
-        if (lastPlacementStart != null) {
-            placementTimes.push(performance.now() - lastPlacementStart);
+    recordPlacementTime(id: number, time: number) {
+        // Ignore placementTimes during loading
+        if (!fullLoadFinished) {
+            return;
         }
+        if (placementTimes[id] == null) {
+            placementTimes[id] = [];
+        }
+
+        placementTimes[id].push(time);
     },
     frame(timestamp: number, isRenderFrame: boolean) {
+        // Ignore frametimes during loading
+        if (!fullLoadFinished) {
+            return;
+        }
+
         const currTimestamp = timestamp;
         if (lastFrameTime != null) {
             const frameTime = currTimestamp - lastFrameTime;
@@ -91,6 +103,7 @@ export const PerformanceUtils = {
         frameTimes = [];
         lastPlacementStart = null;
         placementTimes = [];
+        fullLoadFinished = false;
 
         performance.clearMeasures('loadTime');
         performance.clearMeasures('fullLoadTime');
@@ -163,7 +176,11 @@ export const PerformanceUtils = {
             metrics.cpuFrameBudgetExceeded += Math.max(0, renderFrame.duration - CPU_FRAME_BUDGET);
         }
 
-        metrics.placementTime = placementTimes.reduce((prev, curr) => prev + curr, 0)/placementTimes.length;
+        let placementTime = 0;
+        for (const placement in placementTimes) {
+            placementTime += placementTimes[placement].reduce((prev, curr) => prev + curr, 0);
+        }
+        metrics.placementTime = placementTime;
 
         return metrics;
     },
