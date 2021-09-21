@@ -73,7 +73,7 @@ export class MapMouseEvent extends Event {
      */
     lngLat: LngLat;
 
-    /**
+    /**.
      * If a `layerId` was specified when adding the event listener with {@link Map#on}, `features` will be an array of
      * [GeoJSON](http://geojson.org/) [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      * The array will contain all features from that layer that are rendered at the event's point.
