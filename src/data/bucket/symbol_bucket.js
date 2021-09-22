@@ -634,6 +634,7 @@ class SymbolBucket implements Bucket {
                lineStartIndex: number,
                lineLength: number,
                associatedIconIndex: number,
+               availableImages: Array<string>,
                canonical: CanonicalTileID) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
@@ -667,7 +668,7 @@ class SymbolBucket implements Bucket {
             this.glyphOffsetArray.emplaceBack(glyphOffset[0]);
 
             if (i === quads.length - 1 || sectionIndex !== quads[i + 1].sectionIndex) {
-                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, canonical, sections && sections[sectionIndex]);
+                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, sections && sections[sectionIndex]);
             }
         }
 

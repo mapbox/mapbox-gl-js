@@ -152,7 +152,8 @@ class WorkerTile {
                     collisionBoxArray: this.collisionBoxArray,
                     sourceLayerIndex,
                     sourceID: this.source,
-                    enableTerrain: this.enableTerrain
+                    enableTerrain: this.enableTerrain,
+                    availableImages
                 });
 
                 bucket.populate(features, options, this.tileID.canonical);
@@ -229,6 +230,7 @@ class WorkerTile {
                             iconMap,
                             imageAtlas.iconPositions,
                             this.showCollisionBoxes,
+                            availableImages,
                             this.tileID.canonical,
                             this.tileZoom);
                     } else if (bucket.hasPattern &&

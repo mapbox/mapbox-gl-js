@@ -174,9 +174,10 @@ class SourceExpressionBinder implements AttributeBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
+    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
         const start = this.paintVertexArray.length;
-        const value = this.expression.evaluate(new EvaluationParameters(0), feature, {}, canonical, [], formattedSection);
+        assert(Array.isArray(availableImages));
+        const value = this.expression.evaluate(new EvaluationParameters(0), feature, {}, canonical, availableImages, formattedSection);
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, value);
     }
@@ -455,11 +456,11 @@ export default class ProgramConfiguration {
         return binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ? binder.maxValue : 0;
     }
 
-    populatePaintArrays(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
+    populatePaintArrays(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof CrossFadedCompositeBinder)
-                (binder: AttributeBinder).populatePaintArray(newLength, feature, imagePositions, canonical, formattedSection);
+                (binder: AttributeBinder).populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, formattedSection);
         }
     }
     setConstantPatternPositions(posTo: ImagePosition, posFrom: ImagePosition) {
@@ -608,9 +609,9 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         this._bufferOffset = 0;
     }
 
-    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: {[_: string]: ImagePosition}, canonical: CanonicalTileID, formattedSection?: FormattedSection) {
+    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical: CanonicalTileID, formattedSection?: FormattedSection) {
         for (const key in this.programConfigurations) {
-            this.programConfigurations[key].populatePaintArrays(length, feature, imagePositions, canonical, formattedSection);
+            this.programConfigurations[key].populatePaintArrays(length, feature, imagePositions, availableImages, canonical, formattedSection);
         }
 
         if (feature.id !== undefined) {

@@ -65,6 +65,7 @@ class FillBucket implements Bucket {
         this.index = options.index;
         this.hasPattern = false;
         this.patternFeatures = [];
+        this.availableImages = options.availableImages;
 
         this.layoutVertexArray = new FillLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -220,7 +221,7 @@ class FillBucket implements Bucket {
             triangleSegment.vertexLength += numVertices;
             triangleSegment.primitiveLength += indices.length / 3;
         }
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, this.availableImages, canonical);
     }
 }
 
