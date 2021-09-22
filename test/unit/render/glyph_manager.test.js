@@ -19,10 +19,14 @@ const TinySDF = class {
         this.fontWeight = '400';
     }
     // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
-    drawWithMetrics() {
+    draw() {
         return {
-            alphaChannel: new Uint8ClampedArray(900),
-            metrics: {width: 48, height: 48, sdfWidth: 30, sdfHeight: 30, advance: 48}
+            data: new Uint8ClampedArray(900),
+            glyphWidth: 48,
+            glyphHeight: 48,
+            width: 30,
+            height: 30,
+            glyphAdvance: 48
         };
     }
 };
@@ -168,11 +172,15 @@ test('GlyphManager caches locally generated glyphs', (t) => {
             this.fontWeight = '400';
         }
         // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
-        drawWithMetrics() {
+        draw() {
             drawCallCount++;
             return {
-                alphaChannel: new Uint8ClampedArray(900),
-                metrics: {width: 48, height: 48, sdfWidth: 30, sdfHeight: 30, advance: 48}
+                data: new Uint8ClampedArray(900),
+                glyphWidth: 48,
+                glyphHeight: 48,
+                width: 30,
+                height: 30,
+                glyphAdvance: 48
             };
         }
     });
@@ -195,11 +203,15 @@ test('GlyphManager locally generates latin glyphs', (t) => {
         constructor() {
             this.fontWeight = '400';
         }
-        // Return empty 18x24 bitmap (made up glyph size + 3 * 2 buffer)
-        drawWithMetrics() {
+        // Return empty 20x24 bitmap (made up glyph size + 3 * 2 buffer)
+        draw() {
             return {
-                alphaChannel: new Uint8ClampedArray(480),
-                metrics: {width: 28, height: 36, sdfWidth: 20, sdfHeight: 24, advance: 20}
+                data: new Uint8ClampedArray(480),
+                glyphWidth: 28,
+                glyphHeight: 36,
+                width: 20,
+                height: 24,
+                glyphAdvance: 20
             };
         }
     });
