@@ -747,8 +747,15 @@ test('Map', (t) => {
             const map = createMap(t),
                 container = map.getContainer();
 
-            Object.defineProperty(container, 'clientWidth', {value: 250});
-            Object.defineProperty(container, 'clientHeight', {value: 250});
+            Object.defineProperty(container, 'getBoundingClientRect', {value:
+                () => {
+                    return {
+                        height: 250,
+                        width: 250
+                    };
+                }
+            });
+
             map.resize();
 
             t.equal(map.transform.width, 250);
@@ -857,6 +864,29 @@ test('Map', (t) => {
             t.deepEqual(
                 toFixed([[-33.5599507477, -31.7907658998], [33.5599507477, 31.7907658998]]),
                 toFixed(map.getBounds().toArray())
+            );
+
+            t.end();
+        });
+
+        t.test('bounds cut off at poles (#10261)', (t) => {
+            const map = createMap(t,
+                {zoom: 2, center: [0, 90], pitch: 80, skipCSSStub: true});
+            const bounds = map.getBounds();
+            t.same(bounds.getNorth().toFixed(6), map.transform.maxValidLatitude);
+            t.same(
+                toFixed(bounds.toArray()),
+                toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]])
+            );
+
+            map.setBearing(180);
+            map.setCenter({lng: 0, lat: -90});
+
+            const sBounds = map.getBounds();
+            t.same(sBounds.getSouth().toFixed(6), -map.transform.maxValidLatitude);
+            t.same(
+                toFixed(sBounds.toArray()),
+                toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]])
             );
 
             t.end();
@@ -2443,8 +2473,15 @@ test('Map', (t) => {
 
         map.flyTo({center: [200, 0], duration: 100});
 
-        Object.defineProperty(container, 'clientWidth', {value: 250});
-        Object.defineProperty(container, 'clientHeight', {value: 250});
+        Object.defineProperty(container, 'getBoundingClientRect', {value:
+            () => {
+                return {
+                    height: 250,
+                    width: 250
+                };
+            }
+        });
+
         map.resize();
 
         t.ok(map.isMoving(), 'map is still moving after resize due to camera animation');

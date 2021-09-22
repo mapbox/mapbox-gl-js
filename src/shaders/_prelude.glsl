@@ -4,6 +4,7 @@
 
 #define EPSILON 0.0000001
 #define PI 3.141592653589793
+#define EXTENT 8192.0
 
 #ifdef FOG
 

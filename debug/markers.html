@@ -100,7 +100,7 @@ map.on('load', function() {
 });
 
 document.getElementById('terrain-checkbox').onclick = function() {
-    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
+    map.setTerrain(this.checked ? {"source": "mapbox-dem", "exaggeration": 10} : null);
 };
 
 </script>

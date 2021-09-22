@@ -56,5 +56,6 @@
     "owner": "Cyrus",
     "visibility": "private",
     "cacheControl": "s-max-age=200",
-    "draft": true
+    "draft": true,
+    "protected": true
 }

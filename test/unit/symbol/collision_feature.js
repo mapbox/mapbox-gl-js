@@ -17,9 +17,9 @@ test('CollisionFeature', (t) => {
 
     test('point label', (t) => {
         const point = new Point(500, 0);
-        const anchor = new Anchor(point.x, point.y, 0, undefined);
+        const anchor = new Anchor(point.x, point.y, 0, 0, undefined);
 
-        const index = evaluateBoxCollisionFeature(collisionBoxArray, anchor, 0, 0, 0, shapedText, 1, 0);
+        const index = evaluateBoxCollisionFeature(collisionBoxArray, anchor, anchor, 0, 0, 0, shapedText, 1, 0);
         t.equal(index, 0);
 
         const box = collisionBoxArray.get(index);
