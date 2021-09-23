@@ -244,7 +244,7 @@ class FillExtrusionBucket implements Bucket {
             if (this.hasPattern) {
                 this.features.push(addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, options));
             } else {
-                this.addFeature(bucketFeature, bucketFeature.geometry, index, canonical, {});
+                this.addFeature(bucketFeature, bucketFeature.geometry, index, canonical, {}, options.availableImages);
             }
 
             options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
@@ -252,10 +252,10 @@ class FillExtrusionBucket implements Bucket {
         this.sortBorders();
     }
 
-    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
+    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>) {
         for (const feature of this.features) {
             const {geometry} = feature;
-            this.addFeature(feature, geometry, feature.index, canonical, imagePositions);
+            this.addFeature(feature, geometry, feature.index, canonical, imagePositions, availableImages);
         }
         this.sortBorders();
     }
@@ -301,7 +301,7 @@ class FillExtrusionBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>) {
         const metadata = this.enableTerrain ? new PartMetadata() : null;
 
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
@@ -432,7 +432,7 @@ class FillExtrusionBucket implements Bucket {
             assert(!this.centroidVertexArray.length || this.centroidVertexArray.length === this.layoutVertexArray.length);
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical);
     }
 
     sortBorders() {

@@ -80,7 +80,7 @@ function packColor(color: Color): [number, number] {
  */
 
 interface AttributeBinder {
-    populatePaintArray(length: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, canonical?: CanonicalTileID, formattedSection?: FormattedSection): void;
+    populatePaintArray(length: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection): void;
     updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState, imagePositions: {[_: string]: ImagePosition}): void;
     upload(Context): void;
     destroy(): void;
@@ -246,7 +246,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
+    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
         const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, canonical, [], formattedSection);
         const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, canonical, [], formattedSection);
         const start = this.paintVertexArray.length;
