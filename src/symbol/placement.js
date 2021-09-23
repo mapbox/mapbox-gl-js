@@ -444,7 +444,7 @@ export class Placement {
 
                 const feature = getSymbolFeature(symbolInstance);
                 const canonicalTileId = this.retainedQueryData[bucket.bucketInstanceId].tileID.canonical;
-                const shouldClip = !filterFunc(globals, feature, canonicalTileId, clippingData.unwrappedTileID.getMercatorFromTilePoint(symbolInstance.anchorX, symbolInstance.anchorY));
+                const shouldClip = !filterFunc(globals, feature, canonicalTileId, clippingData.unwrappedTileID.getMercatorFromTilePoint(symbolInstance.tileAnchorX, symbolInstance.tileAnchorY));
 
                 if (shouldClip) {
                     this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false, true);
