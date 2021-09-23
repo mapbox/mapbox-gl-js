@@ -127,20 +127,21 @@ ${JSON.stringify(filterExp, null, 2)}
 }
 
 function extractStaticFilter(filter: any): any {
-    if (!isDynamicFilter(filter)) {
-        return filter;
-    }
+    return filter;
+    // if (!isDynamicFilter(filter)) {
+    //     return filter;
+    // }
 
-    // Shallow copy so we can replace expressions in-place
-    let result = filter.slice();
+    // // Shallow copy so we can replace expressions in-place
+    // let result = filter.slice();
 
-    // 1. Union branches
-    unionDynamicBranches(result);
+    // // 1. Union branches
+    // unionDynamicBranches(result);
 
-    // 2. Collapse dynamic conditions to  `true`
-    result = collapseDynamicBooleanExpressions(result);
+    // // 2. Collapse dynamic conditions to  `true`
+    // result = collapseDynamicBooleanExpressions(result);
 
-    return result;
+    // return result;
 }
 
 function collapseDynamicBooleanExpressions(expression: any): any {
