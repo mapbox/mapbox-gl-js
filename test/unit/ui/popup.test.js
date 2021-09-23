@@ -480,13 +480,13 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
     t.end();
 });
 
-test('Popup automatically anchors to its sticky position if no offset would push it off-screen', (t) => {
+test('Popup automatically anchors to the user specified preferred position if will be on-screen', (t) => {
     const map = createMap(t);
     const point = new Point(containerWidth / 2, containerHeight / 2);
     const options = {offset: {
         'bottom': [0, 0],
         'top': [0, 0]
-    }, stickyAnchor: 'left'};
+    }, anchorPreference: 'left'};
     const popup = new Popup(options)
         .setLngLat([0, 0])
         .setText('Test')

@@ -20,7 +20,7 @@ const defaultOptions = {
     focusAfterOpen: true,
     className: '',
     maxWidth: "240px",
-    stickyAnchor: 'bottom'
+    anchorPreference: 'bottom'
 };
 
 export type Offset = number | PointLike | {[_: Anchor]: PointLike};
@@ -34,7 +34,7 @@ export type PopupOptions = {
     offset?: Offset,
     className?: string,
     maxWidth?: string,
-    stickyAnchor: Anchor
+    anchorPreference: Anchor
 };
 
 const focusQuerySelector = [
@@ -59,7 +59,7 @@ const focusQuerySelector = [
  *   map moves.
  * @param {boolean} [options.focusAfterOpen=true] If `true`, the popup will try to focus the
  *   first focusable element inside the popup.
- * @param {string} [options.stickyAnchor='bottom'] - A string to set the preference for where the anchor will be
+ * @param {string} [options.anchorPreference='bottom'] - A string to set the preference for where the anchor will be
  *   dynamically set. Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`,
  *   `'bottom-left'`, and `'bottom-right'`.
  * @param {string} [options.anchor] - A string indicating the part of the popup that should
@@ -580,7 +580,7 @@ export default class Popup extends Evented {
         }
 
         if (anchorComponents.length === 0) {
-            return this.options.stickyAnchor;
+            return this.options.anchorPreference;
         }
         return ((anchorComponents.join('-'): any): Anchor);
 
