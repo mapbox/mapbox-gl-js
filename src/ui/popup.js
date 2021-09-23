@@ -2,7 +2,7 @@
 
 import {extend, bindAll} from '../util/util.js';
 import {Event, Evented} from '../util/evented.js';
-import {MapMouseEvent} from '../ui/events.js';
+import {MapMouseEvent} from './events.js';
 import DOM from '../util/dom.js';
 import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
@@ -19,7 +19,8 @@ const defaultOptions = {
     closeOnClick: true,
     focusAfterOpen: true,
     className: '',
-    maxWidth: "240px"
+    maxWidth: "240px",
+    stickyAnchor: 'bottom'
 };
 
 export type Offset = number | PointLike | {[_: Anchor]: PointLike};
@@ -32,7 +33,8 @@ export type PopupOptions = {
     anchor?: Anchor,
     offset?: Offset,
     className?: string,
-    maxWidth?: string
+    maxWidth?: string,
+    stickyAnchor: Anchor
 };
 
 const focusQuerySelector = [
@@ -57,6 +59,9 @@ const focusQuerySelector = [
  *   map moves.
  * @param {boolean} [options.focusAfterOpen=true] If `true`, the popup will try to focus the
  *   first focusable element inside the popup.
+ * @param {string} [options.stickyAnchor='bottom'] - A string to set the preference for where the anchor will be
+ *   dynamically set. Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`,
+ *   `'bottom-left'`, and `'bottom-right'`.
  * @param {string} [options.anchor] - A string indicating the part of the popup that should
  *   be positioned closest to the coordinate, set via {@link Popup#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
@@ -67,7 +72,7 @@ const focusQuerySelector = [
  *  A pixel offset applied to the popup's location specified as:
  *   - a single number specifying a distance from the popup's location
  *   - a {@link PointLike} specifying a constant offset
- *   - an object of {@link Point}s specifing an offset for each anchor position.
+ *   - an object of {@link Point}s specifying an offset for each anchor position.
  *
  *  Negative offsets indicate left and up.
  * @param {string} [options.className] Space-separated CSS class names to add to popup container.
@@ -575,7 +580,7 @@ export default class Popup extends Evented {
         }
 
         if (anchorComponents.length === 0) {
-            return 'bottom';
+            return this.options.stickyAnchor;
         }
         return ((anchorComponents.join('-'): any): Anchor);
 

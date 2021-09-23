@@ -480,6 +480,30 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
     t.end();
 });
 
+test('Popup automatically anchors to its sticky position if no offset would push it off-screen', (t) => {
+    const map = createMap(t);
+    const point = new Point(containerWidth / 2, containerHeight / 2);
+    const options = {offset: {
+        'bottom': [0, 0],
+        'top': [0, 0]
+    }, stickyAnchor: 'left'};
+    const popup = new Popup(options)
+        .setLngLat([0, 0])
+        .setText('Test')
+        .addTo(map);
+    map._domRenderTaskQueue.run();
+
+    Object.defineProperty(popup.getElement(), 'offsetWidth', {value: containerWidth / 2});
+    Object.defineProperty(popup.getElement(), 'offsetHeight', {value: containerHeight / 2});
+
+    t.stub(map, 'project').returns(point);
+    popup.setLngLat([0, 0]);
+    map._domRenderTaskQueue.run();
+
+    t.ok(popup.getElement().classList.contains('mapboxgl-popup-anchor-left'));
+    t.end();
+});
+
 test('Popup is offset via a PointLike offset option', (t) => {
     const map = createMap(t);
     t.stub(map, 'project').returns(new Point(0, 0));
