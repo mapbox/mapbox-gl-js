@@ -125,7 +125,6 @@ export default class Worker {
         this.projections[mapId] = getProjection(config);
 =======
     setProjection(mapId: string, config: ProjectionSpecification) {
-        debugger;
         setProjection(config);
 >>>>>>> be4cd82af (Update handling stylesheet projections)
     }

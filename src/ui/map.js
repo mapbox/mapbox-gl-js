@@ -425,7 +425,7 @@ class Map extends Camera {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
         }
 
-        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, getProjectionOptions(options.projection));
+        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
         this._interactive = options.interactive;
@@ -497,6 +497,13 @@ class Map extends Camera {
 
         this.handlers = new HandlerManager(this, options);
 
+        
+        this._localFontFamily = options.localFontFamily;
+        this._localIdeographFontFamily = options.localIdeographFontFamily;
+        
+        if (options.style) this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
+        this.setProjection(getProjectionOptions(options.projection));
+
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         this._hash = options.hash && (new Hash(hashName)).addTo(this);
         // don't set position from options if set through hash
@@ -515,11 +522,6 @@ class Map extends Camera {
         }
 
         this.resize();
-
-        this._localFontFamily = options.localFontFamily;
-        this._localIdeographFontFamily = options.localIdeographFontFamily;
-
-        if (options.style) this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
 
         if (options.attributionControl)
             this.addControl(new AttributionControl({customAttribution: options.customAttribution}));
