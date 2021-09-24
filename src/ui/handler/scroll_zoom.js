@@ -400,8 +400,7 @@ class ScrollZoomHandler {
 
         setTimeout(() => {
             this._container.classList.remove('mapboxgl-scroll-zoom-blocker-show');
-        }, 200)
-
+        }, 200);
     }
 
 }
