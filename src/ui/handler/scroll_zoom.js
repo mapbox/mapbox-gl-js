@@ -61,7 +61,7 @@ class ScrollZoomHandler {
     _wheelZoomRate: number;
 
     _requireCtrl: boolean;
-    _container: HTMLElement;
+    _alertContainer: HTMLElement;
 
     /**
      * @private
@@ -159,7 +159,7 @@ class ScrollZoomHandler {
     disable() {
         if (!this.isEnabled()) return;
         this._enabled = false;
-        if (this._requireCtrl) this._container.remove();
+        if (this._requireCtrl) this._alertContainer.remove();
     }
 
     wheel(e: WheelEvent) {
@@ -169,9 +169,9 @@ class ScrollZoomHandler {
             if (!e.ctrlKey && !e.metaKey && !this.isZooming()) {
                 this._showBlockerAlert();
                 return;
-            } else if (this._container) {
+            } else if (this._alertContainer) {
                 // immediately hide alert if it is visible when ctrl is pressed while scroll zooming.
-                this._container.style.visibility = 'hidden';
+                this._alertContainer.style.visibility = 'hidden';
             }
         }
 
@@ -379,8 +379,8 @@ class ScrollZoomHandler {
     }
 
     _addScrollZoomBlocker() {
-        if (this._map && !this._container) {
-            this._container = DOM.create('div', 'mapboxgl-scroll-zoom-blocker', this._map._container);
+        if (this._map && !this._alertContainer) {
+            this._alertContainer = DOM.create('div', 'mapboxgl-scroll-zoom-blocker', this._map._container);
             let alertMessage = '';
 
             if (/(Mac|iPad)/i.test(window.navigator.userAgent)) {
@@ -389,17 +389,16 @@ class ScrollZoomHandler {
                 alertMessage = this._map._getUIString('ScrollZoomBlocker.CtrlMessage');
             }
 
-            const textNode = window.document.createTextNode(alertMessage);
-            this._container.appendChild(textNode);
+            this._alertContainer.textContent = alertMessage;
         }
     }
 
     _showBlockerAlert() {
-        if (this._container.style.visibility === 'hidden') this._container.style.visibility = 'visible';
-        this._container.classList.add('mapboxgl-scroll-zoom-blocker-show');
+        if (this._alertContainer.style.visibility === 'hidden') this._alertContainer.style.visibility = 'visible';
+        this._alertContainer.classList.add('mapboxgl-scroll-zoom-blocker-show');
 
         setTimeout(() => {
-            this._container.classList.remove('mapboxgl-scroll-zoom-blocker-show');
+            this._alertContainer.classList.remove('mapboxgl-scroll-zoom-blocker-show');
         }, 200);
     }
 
