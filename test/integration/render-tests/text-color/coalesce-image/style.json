@@ -8,7 +8,7 @@
   },
   "center": [ 0, 0 ],
   "zoom": 0,
-  "sprite": "local://sprites/mapbox/basic-v9",
+  "sprite": "local://sprites/sprite",
   "sources": {
     "geojson": {
       "type": "geojson",
@@ -17,7 +17,7 @@
         "features": [
           {
             "type": "Feature",
-            "properties": { "icon": "missing-icon"},
+            "properties": { "icon": "fav-bicycle-18"},
             "geometry": {
               "type": "Point",
               "coordinates": [
@@ -28,7 +28,7 @@
           },
           {
             "type": "Feature",
-            "properties": { "icon": "museum-15"},
+            "properties": { "icon": "missing-icon"},
             "geometry": {
               "type": "Point",
               "coordinates": [
@@ -53,7 +53,7 @@
         "icon-image": [
             "coalesce",
             ["image", ["get", "icon"]],
-            ["image", "rocket-15"]
+            ["image", "park"]
         ],
         "text-field": ["to-string",
             ["coalesce",
