@@ -199,14 +199,8 @@ class GlyphManager {
     }
 
     _tinySDF(entry: Entry, stack: string, id: number): ?StyleGlyph {
-        const family = this.localFontFamily;
-        if (!family) {
-            return;
-        }
-
-        if (!this._doesCharSupportLocalGlyph(id)) {
-            return;
-        }
+        const fontFamily = this.localFontFamily;
+        if (!fontFamily || !this._doesCharSupportLocalGlyph(id)) return;
 
         let tinySDF = entry.tinySDF;
         if (!tinySDF) {
@@ -218,15 +212,20 @@ class GlyphManager {
             } else if (/light/i.test(stack)) {
                 fontWeight = '200';
             }
-            tinySDF = entry.tinySDF = new GlyphManager.TinySDF(24 * SDF_SCALE, 3 * SDF_SCALE, 8 * SDF_SCALE, .25, family, fontWeight);
+
+            const fontSize = 24 * SDF_SCALE;
+            const buffer = 3 * SDF_SCALE;
+            const radius = 8 * SDF_SCALE;
+            tinySDF = entry.tinySDF = new GlyphManager.TinySDF({fontFamily, fontWeight, fontSize, buffer, radius});
+            tinySDF.fontWeight = fontWeight;
         }
 
         if (this.localGlyphs[tinySDF.fontWeight][id]) {
             return this.localGlyphs[tinySDF.fontWeight][id];
         }
 
-        const {data, metrics} = tinySDF.drawWithMetrics(String.fromCharCode(id));
-        const {sdfWidth, sdfHeight, width, height, left, top, advance} = metrics;
+        const char = String.fromCharCode(id);
+        const {data, width, height, glyphWidth, glyphHeight, glyphLeft, glyphTop, glyphAdvance} = tinySDF.draw(char);
         /*
         TinySDF's "top" is the distance from the alphabetic baseline to the
          top of the glyph.
@@ -248,16 +247,13 @@ class GlyphManager {
 
         const glyph = this.localGlyphs[tinySDF.fontWeight][id] = {
             id,
-            bitmap: new AlphaImage({
-                width: sdfWidth,
-                height: sdfHeight
-            }, data),
+            bitmap: new AlphaImage({width, height}, data),
             metrics: {
-                width: width / SDF_SCALE,
-                height: height / SDF_SCALE,
-                left: left / SDF_SCALE,
-                top: top / SDF_SCALE - baselineAdjustment,
-                advance: advance / SDF_SCALE,
+                width: glyphWidth / SDF_SCALE,
+                height: glyphHeight / SDF_SCALE,
+                left: glyphLeft / SDF_SCALE,
+                top: glyphTop / SDF_SCALE - baselineAdjustment,
+                advance: glyphAdvance / SDF_SCALE,
                 localGlyph: true
             }
         };
