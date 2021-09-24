@@ -133,7 +133,7 @@ class ScrollZoomHandler {
      *
      * @param {Object} [options] Options object.
      * @param {string} [options.around] If "center" is passed, map will zoom around center of map.
-     * @param {boolean} [options.requireCtrl] If set to true, ctrl key must be pressed while scrolling to zoom.
+     * @param {boolean} [options.requireCtrl] If set to true, ctrl (or ⌘ in OS devices) must be pressed while scrolling to zoom.
      *
      * @example
      * map.scrollZoom.enable();
@@ -159,16 +159,17 @@ class ScrollZoomHandler {
     disable() {
         if (!this.isEnabled()) return;
         this._enabled = false;
+        if (this._requireCtrl) this._container.remove();
     }
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
 
         if (this._requireCtrl) {
-            if (!e.ctrlKey && !this.isZooming()) {
+            if (!e.ctrlKey && !e.metaKey && !this.isZooming()) {
                 this._showBlockerAlert();
                 return;
-            } else if (this._container && this._container.classList.contains('mapboxgl-scroll-zoom-blocker-control-fade')) {
+            } else if (this._container) {
                 // immediately hide alert if it is visible when ctrl is pressed while scroll zooming.
                 this._container.style.visibility = 'hidden';
             }
@@ -379,8 +380,15 @@ class ScrollZoomHandler {
 
     _addScrollZoomBlocker() {
         if (this._map && !this._container) {
-            this._container = DOM.create('div', 'mapboxgl-scroll-zoom-blocker-control', this._map._container);
-            const alertMessage = this._map._getUIString('ScrollZoomBlocker.Message');
+            this._container = DOM.create('div', 'mapboxgl-scroll-zoom-blocker', this._map._container);
+            let alertMessage = '';
+
+            if (/(Mac|iPad)/i.test(window.navigator.userAgent)) {
+                alertMessage = this._map._getUIString('ScrollZoomBlocker.CmdMessage');
+            } else {
+                alertMessage = this._map._getUIString('ScrollZoomBlocker.CtrlMessage');
+            }
+
             const textNode = window.document.createTextNode(alertMessage);
             this._container.appendChild(textNode);
         }
@@ -388,13 +396,11 @@ class ScrollZoomHandler {
 
     _showBlockerAlert() {
         if (this._container.style.visibility === 'hidden') this._container.style.visibility = 'visible';
-        this._container.classList.remove('mapboxgl-scroll-zoom-blocker-control-fade');
-        this._container.style.opacity = '1';
+        this._container.classList.add('mapboxgl-scroll-zoom-blocker-show');
 
         this._container.addEventListener('transitionend', () => {
-            this._container.classList.add('mapboxgl-scroll-zoom-blocker-control-fade');
-            this._container.style.opacity = '0';
-        });
+            this._container.classList.remove('mapboxgl-scroll-zoom-blocker-show');
+        }, {once: true});
     }
 
 }
