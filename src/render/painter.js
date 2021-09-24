@@ -915,6 +915,10 @@ class Painter {
         }
         return newTiles;
     }
+
+    clearBackgroundTiles() {
+        this._backgroundTiles = {};
+    }
 }
 
 export default Painter;

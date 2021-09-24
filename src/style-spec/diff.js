@@ -106,8 +106,12 @@ const operations = {
     /*
      *  { command: 'setFog', args: [fogProperties] }
      */
-    setFog: 'setFog'
+    setFog: 'setFog',
 
+    /*
+     *  { command: 'setProjection', args: [projectionProperties] }
+     */
+    setProjection: 'setProjection'
 };
 
 function addSource(sourceId, after, commands) {
@@ -362,6 +366,9 @@ function diffStyles(before, after) {
         }
         if (!isEqual(before.fog, after.fog)) {
             commands.push({command: operations.setFog, args: [after.fog]});
+        }
+        if (!isEqual(before.projection, after.projection)) {
+            commands.push({command: operations.setProjection, args: [after.projection]});
         }
 
         // Handle changes to `sources`

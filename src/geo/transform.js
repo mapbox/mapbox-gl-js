@@ -101,7 +101,7 @@ class Transform {
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
     _averageElevation: number;
-    _projectionOptions: ProjectionSpecification;
+    projectionOptions: ProjectionSpecification;
     projection: Projection;
     _elevation: ?Elevation;
     _fov: number;
@@ -125,7 +125,7 @@ class Transform {
     _centerAltitude: number;
     _horizonShift: number;
 
-    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection: ProjectionSpecification) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ProjectionSpecification) {
         this.tileSize = 512; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
@@ -135,9 +135,9 @@ class Transform {
         this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
         this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
 
-        this.setProjection(projection);
-
         this.setMaxBounds();
+
+        this.setProjection();
 
         this.width = 0;
         this.height = 0;
@@ -161,7 +161,7 @@ class Transform {
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this._projectionOptions);
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.projectionOptions);
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone.tileSize = this.tileSize;
@@ -214,10 +214,8 @@ class Transform {
 
     setProjection(projection: ProjectionSpecification) {
         projection = getProjectionOptions(projection);
-        console.log('projection: ', projection);
-        this._projectionOptions = projection;
+        this.projectionOptions = projection;
         this.projection = getProjection(projection);
-        console.log('this.projection: ', this.projection);
         this._calcMatrices();
     }
 

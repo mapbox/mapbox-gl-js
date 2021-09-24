@@ -87,7 +87,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setTransition',
     'setGeoJSONSourceData',
     'setTerrain',
-    'setFog'
+    'setFog',
+    'setProjection'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -344,12 +345,13 @@ class Style extends Evented {
     }
 
     _setProjection(projection: ProjectionSpecification) {
+        this.map.painter.clearBackgroundTiles();
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
         }
 
         this.map.transform.setProjection(projection);
-        this.dispatcher.broadcast('setProjection', this.map.transform._projectionOptions);
+        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
         this.map._update(true);
         this.map.triggerRepaint();
     }
