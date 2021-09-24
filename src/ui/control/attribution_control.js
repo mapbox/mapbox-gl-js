@@ -61,7 +61,7 @@ class AttributionControl {
         this._compactButton.addEventListener('click', this._toggleAttribution);
         this._setElementTitle(this._compactButton, 'ToggleAttribution');
         this._innerContainer = DOM.create('div', 'mapboxgl-ctrl-attrib-inner', this._container);
-        this._innerContainer.setAttribute('role', 'list');
+        this._innerContainer.setAttribute('role', 'listitem');
 
         if (compact) {
             this._container.classList.add('mapboxgl-compact');
@@ -103,10 +103,10 @@ class AttributionControl {
     _toggleAttribution() {
         if (this._container.classList.contains('mapboxgl-compact-show')) {
             this._container.classList.remove('mapboxgl-compact-show');
-            this._compactButton.setAttribute('aria-pressed', 'false');
+            this._compactButton.setAttribute('aria-expanded', 'false');
         } else {
             this._container.classList.add('mapboxgl-compact-show');
-            this._compactButton.setAttribute('aria-pressed', 'true');
+            this._compactButton.setAttribute('aria-expanded', 'true');
         }
     }
 
