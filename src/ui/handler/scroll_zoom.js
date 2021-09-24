@@ -398,9 +398,10 @@ class ScrollZoomHandler {
         if (this._container.style.visibility === 'hidden') this._container.style.visibility = 'visible';
         this._container.classList.add('mapboxgl-scroll-zoom-blocker-show');
 
-        this._container.addEventListener('transitionend', () => {
+        setTimeout(() => {
             this._container.classList.remove('mapboxgl-scroll-zoom-blocker-show');
-        }, {once: true});
+        }, 200)
+
     }
 
 }
