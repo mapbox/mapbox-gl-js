@@ -295,10 +295,12 @@ export default class Marker extends Evented {
             delete this._map;
         }
         this._clearFadeTimer();
+
+        DOM.remove(this._element);
+
         if (this._popup) {
             this._popup.remove();
         }
-        DOM.remove(this._element);
 
         return this;
     }
@@ -462,13 +464,14 @@ export default class Marker extends Evented {
         const popup = this._popup;
 
         if (!popup) {
+            this._element.setAttribute('aria-expanded', 'false');
             return this;
         } else if (popup.isOpen()) {
-            popup.remove();
             this._element.setAttribute('aria-expanded', 'false');
+            popup.remove();
         } else {
-            popup.addTo(this._map);
             this._element.setAttribute('aria-expanded', 'true');
+            popup.addTo(this._map);
             return this;
         }
     }
