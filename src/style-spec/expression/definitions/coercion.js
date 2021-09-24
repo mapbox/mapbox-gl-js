@@ -20,7 +20,7 @@ const types = {
     'to-color': ColorType,
     'to-number': NumberType,
     'to-string': StringType,
-    'to-object': ObjectType,
+    'to-object': ObjectType
 };
 
 /**
