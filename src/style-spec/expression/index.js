@@ -27,7 +27,6 @@ import type {PropertyValueSpecification} from '../types.js';
 import type {FormattedSection} from './types/formatted.js';
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../source/tile_id.js';
-import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -42,7 +41,6 @@ export type FeatureState = {[_: string]: any};
 export type GlobalProperties = $ReadOnly<{
     zoom: number,
     pitch?: number,
-    cameraDistanceMatrix?: number[],
     heatmapDensity?: number,
     lineProgress?: number,
     skyRadialProgress?: number,
@@ -66,26 +64,28 @@ export class StyleExpression {
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, refLocation?: MercatorCoordinate): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, featureTileCoord?: Point, featureDistanceMatrix?: number[]): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
         this._evaluator.canonical = canonical;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection;
-        this._evaluator.cameraDistanceReferencePoint = refLocation || null;
+        this._evaluator.featureTileCoord = featureTileCoord || null;
+        this._evaluator.featureDistanceMatrix = featureDistanceMatrix || null;
 
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, refLocation?: MercatorCoordinate): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, featureTileCoord?: Point, featureDistanceMatrix?: number[]): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;
         this._evaluator.canonical = canonical;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection || null;
-        this._evaluator.cameraDistanceReferencePoint = refLocation || null;
+        this._evaluator.featureTileCoord = featureTileCoord || null;
+        this._evaluator.featureDistanceMatrix = featureDistanceMatrix || null;
 
         try {
             const val = this.expression.evaluate(this._evaluator);

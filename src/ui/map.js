@@ -2733,7 +2733,6 @@ class Map extends Camera {
 
             const zoom = this.transform.zoom;
             const pitch = this.transform.pitch;
-            const cameraDistanceMatrix = this.transform.mercatorFogMatrix;
             const now = browser.now();
             this.style.zoomHistory.update(zoom, now);
 
@@ -2741,7 +2740,6 @@ class Map extends Camera {
                 now,
                 fadeDuration,
                 pitch,
-                cameraDistanceMatrix,
                 zoomHistory: this.style.zoomHistory,
                 transition: this.style.getTransition()
             });
