@@ -789,7 +789,13 @@ class Map extends Camera {
             this.transform.minZoom = minZoom;
             this._update();
 
-            if (this.getZoom() < minZoom) this.setZoom(minZoom);
+            if (this.getZoom() < minZoom) {
+                this.setZoom(minZoom);
+            } else {
+                this.fire(new Event('zoomstart'))
+                    .fire(new Event('zoom'))
+                    .fire(new Event('zoomend'));
+            }
 
             return this;
 
@@ -824,7 +830,13 @@ class Map extends Camera {
             this.transform.maxZoom = maxZoom;
             this._update();
 
-            if (this.getZoom() > maxZoom) this.setZoom(maxZoom);
+            if (this.getZoom() > maxZoom) {
+                this.setZoom(maxZoom);
+            } else {
+                this.fire(new Event('zoomstart'))
+                    .fire(new Event('zoom'))
+                    .fire(new Event('zoomend'));
+            }
 
             return this;
 
@@ -862,7 +874,13 @@ class Map extends Camera {
             this.transform.minPitch = minPitch;
             this._update();
 
-            if (this.getPitch() < minPitch) this.setPitch(minPitch);
+            if (this.getPitch() < minPitch) {
+                this.setPitch(minPitch);
+            } else {
+                this.fire(new Event('pitchstart'))
+                    .fire(new Event('pitch'))
+                    .fire(new Event('pitchend'));
+            }
 
             return this;
 
@@ -901,7 +919,13 @@ class Map extends Camera {
             this.transform.maxPitch = maxPitch;
             this._update();
 
-            if (this.getPitch() > maxPitch) this.setPitch(maxPitch);
+            if (this.getPitch() > maxPitch) {
+                this.setPitch(maxPitch);
+            } else {
+                this.fire(new Event('pitchstart'))
+                    .fire(new Event('pitch'))
+                    .fire(new Event('pitchend'));
+            }
 
             return this;
 
