@@ -26,6 +26,37 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
+map.once('load', () => {
+    // map.setFilter('building-number-label',
+    // ["case",
+    //     ["<", ["pitch"], 60], true,
+    //     ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], true,
+    //     false
+    // ]
+    // );
+
+    // map.setLayoutProperty('poi-label', 'symbol-clip',
+    //     ["case",
+    //         ["<", ["pitch"], 60], false,
+    //         ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 4]], false,
+    //         true
+    //     ]
+    // );
+
+    // map.setLayoutProperty('transit-label', 'symbol-clip',
+    // ["case",
+    //     ["<", ["pitch"], 60], false,
+    //     ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 3]], false,
+    //     true
+    // ]
+    // );
+
+    // map.once('idle', () => {
+    //     map.panTo([-122.4199724, 37.7687162], {duration: 50000});
+    // });
+});
+
+
 </script>
 </body>
 </html>
