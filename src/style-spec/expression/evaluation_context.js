@@ -67,7 +67,7 @@ class EvaluationContext {
             const y1 = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
             const z1 = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
 
-            return Math.sqrt(x1 * x1 + y1 * y1  + z1 * z1);
+            return -Math.sign(y1) * Math.sqrt(x1 * x1 + y1 * y1  + z1 * z1);
         }
 
         return 0;
