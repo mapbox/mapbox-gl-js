@@ -60,8 +60,8 @@ class ScrollZoomHandler {
     _defaultZoomRate: number;
     _wheelZoomRate: number;
 
-    _requireCtrl: boolean;
-    _alertContainer: HTMLElement;
+    _requireCtrl: boolean; // used to require pressing meta key or ctrl key with scroll to scroll zoom
+    _alertContainer: HTMLElement; // used to display the scroll zoom blocker alert
 
     /**
      * @private
@@ -381,15 +381,15 @@ class ScrollZoomHandler {
     _addScrollZoomBlocker() {
         if (this._map && !this._alertContainer) {
             this._alertContainer = DOM.create('div', 'mapboxgl-scroll-zoom-blocker', this._map._container);
-            let alertMessage = '';
 
             if (/(Mac|iPad)/i.test(window.navigator.userAgent)) {
-                alertMessage = this._map._getUIString('ScrollZoomBlocker.CmdMessage');
+                this._alertContainer.textContent = this._map._getUIString('ScrollZoomBlocker.CmdMessage');
             } else {
-                alertMessage = this._map._getUIString('ScrollZoomBlocker.CtrlMessage');
+                this._alertContainer.textContent = this._map._getUIString('ScrollZoomBlocker.CtrlMessage');
             }
 
-            this._alertContainer.textContent = alertMessage;
+            // dynamically set the font size of the scroll zoom blocker alert message
+            this._alertContainer.style.fontSize = `${Math.max(10, Math.min(30, Math.floor(this._el.clientWidth * 0.045)))}px`;
         }
     }
 
