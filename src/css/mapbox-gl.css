@@ -773,7 +773,6 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 .mapboxgl-scroll-zoom-blocker {
     color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    /* font-size: 100%; */
     justify-content: center;
     text-align: center;
     position: absolute;
