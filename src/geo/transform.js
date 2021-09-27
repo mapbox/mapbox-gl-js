@@ -1669,7 +1669,7 @@ class Transform {
 
         const m = new Float64Array(16);
         const windowScaleFactor = 1 / this.height;
-        mat4.fromScaling(m, [windowScaleFactor, windowScaleFactor, windowScaleFactor]);
+        mat4.fromScaling(m, [windowScaleFactor, -windowScaleFactor, windowScaleFactor]);
         mat4.rotateZ(m, m, this.angle);
         mat4.translate(m, m, [-center.x, -center.y, 0]);
 
