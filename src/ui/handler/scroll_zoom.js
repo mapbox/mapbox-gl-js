@@ -12,6 +12,7 @@ import Point from '@mapbox/point-geometry';
 import type Map from '../map.js';
 import type HandlerManager from '../handler_manager.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
+import FullscreenControl from '../control/fullscreen_control.js';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
@@ -166,7 +167,7 @@ class ScrollZoomHandler {
         if (!this.isEnabled()) return;
 
         if (this._requireCtrl) {
-            if (!e.ctrlKey && !e.metaKey && !this.isZooming()) {
+            if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !this._checkIfFullscreen()) {
                 this._showBlockerAlert();
                 return;
             } else if (this._alertContainer) {
@@ -390,6 +391,13 @@ class ScrollZoomHandler {
 
             // dynamically set the font size of the scroll zoom blocker alert message
             this._alertContainer.style.fontSize = `${Math.max(10, Math.min(24, Math.floor(this._el.clientWidth * 0.045)))}px`;
+        }
+    }
+
+    _checkIfFullscreen() {
+        // scroll zoom blocker should be prevented if map is fullscreen
+        for (const control of this._map._controls) {
+            if (control instanceof FullscreenControl) return control._fullscreen;
         }
     }
 
