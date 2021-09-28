@@ -112,18 +112,14 @@ ${JSON.stringify(filterExp, null, 2)}
         }
     }
 
-    if (filterFunc) {
-        const needGeometry = geometryNeeded(staticFilter);
+    filterFunc = ((filterFunc: any): FilterExpression);
+    const needGeometry = geometryNeeded(staticFilter);
 
-        return {
-            filter: filterFunc,
-            dynamicFilter: dynamicFilterFunc ? dynamicFilterFunc : undefined,
-            needGeometry
-        };
-    } else {
-        // This branch cannot happen but need to keep flow happy :(
-        return {filter: () => true, needGeometry: false};
-    }
+    return {
+        filter: filterFunc,
+        dynamicFilter: dynamicFilterFunc ? dynamicFilterFunc : undefined,
+        needGeometry
+    };
 }
 
 function extractStaticFilter(filter: any): any {
