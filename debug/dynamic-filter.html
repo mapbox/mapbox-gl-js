@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gl-matrix@3.3.0/gl-matrix-min.js"></script>
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #tooltip {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            background-color: white;
+            z-index: 5;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'>
+    <div id='tooltip'></div>
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true
+});
+
+function generateDistanceScales() {
+    const center = map.getCenter();
+    const bearing = map.getBearing();
+    const rings = 10;
+    const step = 0.25;
+
+    const matrix = glMatrix.mat4.invert([], map.transform.mercatorCenterDistanceMatrix);
+    const circles = []
+    for(let i=1; i <= rings ; i++) {
+        const radius = step * i;
+        const farCoord = new mapboxgl.MercatorCoordinate(...glMatrix.vec3.transformMat4([], [0, radius, 0], matrix)).toLngLat();
+        const radiusKm = turf.distance(turf.point([center.lng, center.lat]), turf.point([farCoord.lng, farCoord.lat]));
+        const circleTop = turf.lineArc(turf.point([center.lng, center.lat]), radiusKm, bearing - 90, bearing + 90, {steps: 36});
+        const circleBtm = turf.lineArc(turf.point([center.lng, center.lat]), radiusKm, bearing + 90, bearing + 270, {steps: 36});
+        circleTop.properties['distance'] = `+${radius}`;
+        circleBtm.properties['distance'] = `-${radius}`;
+
+        circles.push(circleTop, circleBtm);
+    }
+
+    return turf.featureCollection(circles);
+}
+
+map.on('idle',() => {
+    const scale = generateDistanceScales();
+    map.getSource('rings').setData(scale);
+});
+
+
+const tooltip = document.getElementById('tooltip');
+map.on('mousemove', (e) => {
+    const loc = map.unproject(e.point);
+    const m = map.transform.mercatorCenterDistanceMatrix;
+    const {x, y, z} = mapboxgl.MercatorCoordinate.fromLngLat(loc);
+    const v = glMatrix.vec3.transformMat4([], [x, y, z], m);
+
+    const dist = Math.sign(v[1]) * glMatrix.vec3.length(v);
+    tooltip.innerText = dist.toFixed(2);
+    tooltip.style.transform = `translate(${e.point.x + 10}px,${e.point.y + 10}px)`;
+});
+
+map.once('load', () => {
+    map.setFilter('building-number-label',
+    ["case",
+        ["<", ["pitch"], 60], true,
+        ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 0]], true,
+        false
+    ]
+    );
+
+    map.addSource('rings',{
+        type: 'geojson',
+        data: {
+            "type": "FeatureCollection",
+            "features": []
+        }
+    });
+
+    map.addLayer({
+        type: 'line',
+        id: 'rings-layer',
+        source: 'rings',
+        paint: {
+            "line-width": ['abs',['*', 20, ['to-number', ['get', 'distance']]]]
+        }
+    });
+
+    map.addLayer({
+        type: 'symbol',
+        id: 'rings-labels',
+        source: 'rings',
+        layout: {
+            "symbol-placement": 'line',
+            "text-field": ["get", "distance"],
+            "text-pitch-alignment": "viewport",
+            "text-allow-overlap": true
+        },
+        paint: {
+            "text-color": 'red',
+            "text-halo-color": 'white',
+            "text-halo-width": 2
+        }
+    });
+});
+
+</script>
+</body>
+</html>
