@@ -29,6 +29,8 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
+/*global glMatrix, turf*/
+
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
@@ -44,8 +46,8 @@ function generateDistanceScales() {
     const step = 0.25;
 
     const matrix = glMatrix.mat4.invert([], map.transform.mercatorCenterDistanceMatrix);
-    const circles = []
-    for(let i=1; i <= rings ; i++) {
+    const circles = [];
+    for (let i = 1; i <= rings; i++) {
         const radius = step * i;
         const farCoord = new mapboxgl.MercatorCoordinate(...glMatrix.vec3.transformMat4([], [0, radius, 0], matrix)).toLngLat();
         const radiusKm = turf.distance(turf.point([center.lng, center.lat]), turf.point([farCoord.lng, farCoord.lat]));
@@ -60,11 +62,10 @@ function generateDistanceScales() {
     return turf.featureCollection(circles);
 }
 
-map.on('idle',() => {
+map.on('idle', () => {
     const scale = generateDistanceScales();
     map.getSource('rings').setData(scale);
 });
-
 
 const tooltip = document.getElementById('tooltip');
 map.on('mousemove', (e) => {
@@ -87,7 +88,7 @@ map.once('load', () => {
     ]
     );
 
-    map.addSource('rings',{
+    map.addSource('rings', {
         type: 'geojson',
         data: {
             "type": "FeatureCollection",
@@ -100,7 +101,7 @@ map.once('load', () => {
         id: 'rings-layer',
         source: 'rings',
         paint: {
-            "line-width": ['abs',['*', 20, ['to-number', ['get', 'distance']]]]
+            "line-width": ['abs', ['*', 20, ['to-number', ['get', 'distance']]]]
         }
     });
 
