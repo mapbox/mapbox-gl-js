@@ -27,8 +27,7 @@ var map = window.map = new mapboxgl.Map({
     scrollZoom: {requireCtrl: true}
 });
 
-const fullscreen = new mapboxgl.FullscreenControl();
-map.addControl(fullscreen);
+map.addControl(new mapboxgl.FullscreenControl());
 
 </script>
 </body>
