@@ -2,6 +2,8 @@
 
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
+import StencilMode from '../gl/stencil_mode.js';
+import ColorMode from '../gl/color_mode.js';
 import Texture from './texture.js';
 import {
     lineUniformValues,
@@ -125,9 +127,29 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
-        program.draw(context, gl.TRIANGLES, depthMode,
-            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
-            layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-            layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+        if (opacity.constantOr(1.0) === 1.0 || image) {
+            const stencilMode = painter.stencilModeForClipping(coord);
+
+            program.draw(context, gl.TRIANGLES, depthMode,
+                stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
+                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
+                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+        } else {
+            const stencilIdPass1 = painter._tileClippingMaskIDs[coord.key];
+            const stencilIdPass2 = ~stencilIdPass1 & 255;
+            const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
+            const stencilModePass1 = new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT);
+            const stencilModePass2 = new StencilMode(stencilFunc, stencilIdPass2, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT);
+
+            program.draw(context, gl.TRIANGLES, depthMode,
+                stencilModePass1, colorMode, CullFaceMode.disabled, uniformValues,
+                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
+                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+
+            program.draw(context, gl.TRIANGLES, depthMode,
+                stencilModePass2, ColorMode.disabled, CullFaceMode.disabled, uniformValues,
+                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
+                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+        }
     }
 }
