@@ -457,6 +457,7 @@ export default class Marker extends Evented {
      */
     togglePopup() {
         const popup = this._popup;
+
         if (!popup) {
             return this;
         } else if (popup.isOpen()) {
@@ -465,8 +466,8 @@ export default class Marker extends Evented {
         } else {
             popup.addTo(this._map);
             this._element.setAttribute('aria-expanded', 'true');
-            return this;
         }
+        return this;
     }
 
     _evaluateOpacity() {
