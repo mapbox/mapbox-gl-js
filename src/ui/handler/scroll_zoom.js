@@ -77,7 +77,7 @@ class ScrollZoomHandler {
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
 
-        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_showBlockerAlert'], this);
+        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_showBlockerAlert', '_isFullscreen'], this);
 
     }
 
@@ -167,7 +167,7 @@ class ScrollZoomHandler {
         if (!this.isEnabled()) return;
 
         if (this._requireCtrl) {
-            if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !this._checkIfFullscreen()) {
+            if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !this._isFullscreen()) {
                 this._showBlockerAlert();
                 return;
             } else if (this._alertContainer) {
@@ -390,11 +390,11 @@ class ScrollZoomHandler {
             }
 
             // dynamically set the font size of the scroll zoom blocker alert message
-            this._alertContainer.style.fontSize = `${Math.max(10, Math.min(24, Math.floor(this._el.clientWidth * 0.045)))}px`;
+            this._alertContainer.style.fontSize = `${Math.max(10, Math.min(24, Math.floor(this._el.clientWidth * 0.05)))}px`;
         }
     }
 
-    _checkIfFullscreen() {
+    _isFullscreen() {
         // scroll zoom blocker should be prevented if map is fullscreen
         for (const control of this._map._controls) {
             if (control instanceof FullscreenControl) return control._fullscreen;
