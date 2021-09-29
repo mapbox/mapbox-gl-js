@@ -96,7 +96,6 @@ class AttributionControl {
 
     _setElementTitle(element: HTMLElement, title: string) {
         const str = this._map._getUIString(`AttributionControl.${title}`);
-        element.title = str;
         element.setAttribute('aria-label', str);
     }
 

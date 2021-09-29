@@ -459,7 +459,6 @@ export default class Marker extends Evented {
      */
     togglePopup() {
         const popup = this._popup;
-
         if (!popup) {
             return this;
         } else if (popup.isOpen()) {

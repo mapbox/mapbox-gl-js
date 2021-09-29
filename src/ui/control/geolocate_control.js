@@ -379,7 +379,6 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
                 this._geolocateButton.disabled = true;
                 const title = this._map._getUIString('GeolocateControl.LocationNotAvailable');
-                this._geolocateButton.title = title;
                 this._geolocateButton.setAttribute('aria-label', title);
 
                 if (this._geolocationWatchID !== undefined) {
@@ -420,11 +419,9 @@ class GeolocateControl extends Evented {
             warnOnce('Geolocation support is not available so the GeolocateControl will be disabled.');
             const title = this._map._getUIString('GeolocateControl.LocationNotAvailable');
             this._geolocateButton.disabled = true;
-            this._geolocateButton.title = title;
             this._geolocateButton.setAttribute('aria-label', title);
         } else {
             const title = this._map._getUIString('GeolocateControl.FindMyLocation');
-            this._geolocateButton.title = title;
             this._geolocateButton.setAttribute('aria-label', title);
         }
 
