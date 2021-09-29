@@ -3169,7 +3169,7 @@
         }
       },
       "properties": {
-        "doc": "Returns the feature properties object.  Note that in some cases, it may be more efficient to use [\"get\", \"property_name\"] directly.",
+        "doc": "Returns the feature properties object.  Note that in some cases, it may be more efficient to use `[\"get\", \"property_name\"]` directly.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
