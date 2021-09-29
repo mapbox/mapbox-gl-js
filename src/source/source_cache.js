@@ -66,11 +66,11 @@ class SourceCache extends Evented {
         source.on('data', (e) => {
             // this._sourceLoaded signifies that the TileJSON is loaded if applicable.
             // if the source type does not come with a TileJSON, the flag signifies the
-            // source data has loaded (i.e geojson has been tiled on the worker and is ready)
+            // source data has loaded (in other words, GeoJSON has been tiled on the worker and is ready)
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') this._sourceLoaded = true;
 
             // for sources with mutable data, this event fires when the underlying data
-            // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
+            // to a source is changed (for example, using [GeoJSONSource#setData](https://docs.mapbox.com/mapbox-gl-js/api/sources/#geojsonsource#setdata) or [ImageSource#setCoordinates](https://docs.mapbox.com/mapbox-gl-js/api/sources/#imagesource#setcoordinates))
             if (this._sourceLoaded && !this._paused && e.dataType === "source" && e.sourceDataType === 'content') {
                 this.reload();
                 if (this.transform) {
@@ -636,7 +636,7 @@ class SourceCache extends Evented {
                     continue; // tile is covered by overzoomed child
                 }
             } else {
-                // check if all 4 immediate children are loaded (i.e. the missing ideal tile is covered)
+                // Check if all 4 immediate children are loaded (in other words, the missing ideal tile is covered)
                 const children = tileID.children(this._source.maxzoom);
 
                 if (retain[children[0].key] &&
@@ -795,7 +795,8 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Remove all tiles from this pyramid
+     * Remove all tiles from this pyramid.
+     * @private
      */
     clearTiles() {
         this._shouldReloadOnResume = false;

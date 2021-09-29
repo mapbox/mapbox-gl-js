@@ -77,6 +77,10 @@ map.on('load', function() {
         "tileSize": 512,
         "maxzoom": 14
     });
+
+    map.on('click', 'heatmap', (e) => {
+        console.log(e.features);
+    });
 });
 
 document.getElementById('terrain').onclick = function() {

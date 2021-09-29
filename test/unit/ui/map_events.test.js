@@ -532,7 +532,7 @@ test(`Map#on mousedown can have default behavior prevented and still fire subseq
     map.on('click', click);
 
     simulate.click(map.getCanvas());
-    t.ok(click.callCount, 1);
+    t.equal(click.callCount, 1);
 
     map.remove();
     t.end();
@@ -626,6 +626,33 @@ test("Map#isMoving() returns false in mousedown/mouseup/click with no movement",
     t.equal(click, false);
     map._renderTaskQueue.run();
     t.equal(click, false);
+
+    map.remove();
+    t.end();
+});
+
+test("Map#on click should fire preclick before click", (t) => {
+    const map = createMap(t);
+    const preclickSpy = t.spy(function (e) {
+        t.equal(this, map);
+        t.equal(e.type, 'preclick');
+    });
+
+    const clickSpy = t.spy(function (e) {
+        t.equal(this, map);
+        t.equal(e.type, 'click');
+    });
+
+    map.on('click', clickSpy);
+    map.on('preclick', preclickSpy);
+    map.once('preclick', () => {
+        t.ok(clickSpy.notCalled);
+    });
+
+    simulate.click(map.getCanvas());
+
+    t.ok(preclickSpy.calledOnce);
+    t.ok(clickSpy.calledOnce);
 
     map.remove();
     t.end();

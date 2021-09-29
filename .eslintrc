@@ -15,7 +15,8 @@
   "plugins": [
     "flowtype",
     "import",
-    "jsdoc"
+    "jsdoc",
+    "eslint-plugin-jsdoc"
   ],
   "rules": {
     // no-duplicate-imports doesn't play well with Flow
@@ -81,19 +82,25 @@
     "no-multiple-empty-lines": [ "error", {
         "max": 1
     }],
-    "jsdoc/check-param-names": "warn",
-    "jsdoc/require-param": "warn",
-    "jsdoc/require-param-description": "warn",
-    "jsdoc/require-param-name": "warn",
-    "jsdoc/require-returns": "warn",
-    "jsdoc/require-returns-description": "warn"
   },
   "settings": {
     "jsdoc":{
-      "ignorePrivate": true
+      "ignorePrivate": true,
+      "preferredTypes": {
+        "object": "Object"
+      }
     }
   },
   "overrides": [
+    {
+      "files": ["src/fake_filename_for_jsdoc_examples"],
+      "rules": {
+        "flowtype/require-valid-file-annotation": "off"
+      },
+      "globals": {
+        "map": true
+      }
+    },
     {
       "files": ["debug/**", "bench/**", "test/**", "src/style-spec/**"],
       "rules": {
@@ -103,7 +110,64 @@
         "jsdoc/require-param-description": "off",
         "jsdoc/require-param-name": "off",
         "jsdoc/require-returns": "off",
-        "jsdoc/require-returns-description": "off"
+        "jsdoc/require-returns-description": "off",
+        "jsdoc/require-property": "off",
+        "jsdoc/require-description-complete-sentence": "off",
+        "jsdoc/check-access": "off",
+        "jsdoc/check-examples": "off",
+        "jsdoc/check-line-alignment": "off",
+        "jsdoc/check-property-names": "off",
+        "jsdoc/check-types": "off",
+        "jsdoc/newline-after-description": "off",
+        "jsdoc/require-description": "off",
+        "jsdoc/require-example": "off",
+        "jsdoc/require-param-type": "off",
+        "jsdoc/require-property-description": "off",
+        "jsdoc/require-property-name": "off",
+        "jsdoc/require-property-type": "off",
+        "jsdoc/require-returns-type": "off",
+      }
+    },
+    {
+      "files": [
+        "src/index.js",
+        "src/ui/map.js",
+        "src/ui/camera.js",
+        "src/ui/marker.js",
+        "src/ui/popup.js",
+        "src/ui/events.js",
+        "src/ui/control/**",
+        "src/ui/handler/**",
+        "src/geo/lng_lat.js",
+        "src/geo/lng_lat_bounds.js",
+        "src/geo/mercator_coordinate.js",
+        "src/source/**",
+      ],
+      "rules": {
+        "jsdoc/check-param-names": "error",
+        "jsdoc/require-param": "error",
+        "jsdoc/require-param-description": "error",
+        "jsdoc/require-param-name": "error",
+        "jsdoc/require-returns": "error",
+        "jsdoc/require-returns-description": "error",
+        "jsdoc/require-property": "error",
+        "jsdoc/require-description-complete-sentence": "error",
+        "jsdoc/check-access": "error",
+        "jsdoc/check-examples": ["error", {
+            "matchingFileName": "src/fake_filename_for_jsdoc_examples",
+            "rejectExampleCodeRegex": "<script>"
+        }],
+        "jsdoc/check-line-alignment": "error",
+        "jsdoc/check-property-names": "error",
+        "jsdoc/check-types": "error",
+        "jsdoc/newline-after-description": "error",
+        "jsdoc/require-description": "error",
+        "jsdoc/require-example": "error",
+        "jsdoc/require-param-type": "error",
+        "jsdoc/require-property-description": "error",
+        "jsdoc/require-property-name": "error",
+        "jsdoc/require-property-type": "error",
+        "jsdoc/require-returns-type": "error",
       }
     }
   ],

@@ -35,20 +35,24 @@ void main() {
 
     float t = top_up_ny.x;
 
+    vec2 centroid_pos = vec2(0.0);
+#if defined(HAS_CENTROID) || defined(TERRAIN)
+    centroid_pos = a_centroid_pos;
+#endif
+
 #ifdef TERRAIN
-    vec2 centroid_pos = a_centroid_pos;
-    bool flat_roof = centroid_pos.x != 0.0;
+    bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
     float ele = elevation(pos_nx.xy);
-    float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
     float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
     vec3 pos = vec3(pos_nx.xy, h);
-    gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
 #else
     vec3 pos = vec3(pos_nx.xy, t > 0.0 ? height : base);
-    gl_Position = u_matrix * vec4(pos, 1);
 #endif
+
+    float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
+    gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
 
     // Relative luminance (how dark/bright is the surface color?)
     float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;

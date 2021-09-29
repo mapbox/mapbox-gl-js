@@ -4,6 +4,7 @@ import {
     Uniform1i,
     Uniform1f,
     Uniform2f,
+    Uniform3f,
     UniformMatrix4f
 } from '../uniform_binding.js';
 import {extend} from '../../util/util.js';
@@ -29,6 +30,10 @@ export type SymbolIconUniformsType = {|
     'u_is_text': Uniform1i,
     'u_pitch_with_map': Uniform1i,
     'u_texsize': Uniform2f,
+    'u_tile_id': Uniform3f,
+    'u_zoom_transition': Uniform1f,
+    'u_inv_rot_matrix': UniformMatrix4f,
+    'u_merc_center': Uniform2f,
     'u_texture': Uniform1i
 |};
 
@@ -51,6 +56,10 @@ export type SymbolSDFUniformsType = {|
     'u_texture': Uniform1i,
     'u_gamma_scale': Uniform1f,
     'u_device_pixel_ratio': Uniform1f,
+    'u_tile_id': Uniform3f,
+    'u_zoom_transition': Uniform1f,
+    'u_inv_rot_matrix': UniformMatrix4f,
+    'u_merc_center': Uniform2f,
     'u_is_halo': Uniform1i
 |};
 
@@ -96,6 +105,10 @@ const symbolIconUniforms = (context: Context, locations: UniformLocations): Symb
     'u_is_text': new Uniform1i(context, locations.u_is_text),
     'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
+    'u_tile_id': new Uniform3f(context, locations.u_tile_id),
+    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
+    'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
+    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
     'u_texture': new Uniform1i(context, locations.u_texture)
 });
 
@@ -118,6 +131,10 @@ const symbolSDFUniforms = (context: Context, locations: UniformLocations): Symbo
     'u_texture': new Uniform1i(context, locations.u_texture),
     'u_gamma_scale': new Uniform1f(context, locations.u_gamma_scale),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
+    'u_tile_id': new Uniform3f(context, locations.u_tile_id),
+    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
+    'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
+    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
     'u_is_halo': new Uniform1i(context, locations.u_is_halo)
 });
 
@@ -155,7 +172,11 @@ const symbolIconUniformValues = (
     labelPlaneMatrix: Float32Array,
     glCoordMatrix: Float32Array,
     isText: boolean,
-    texSize: [number, number]
+    texSize: [number, number],
+    tileID: [number, number, number],
+    zoomTransition: number,
+    invRotMatrix: Float32Array,
+    mercCenter: [number, number]
 ): UniformValues<SymbolIconUniformsType> => {
     const transform = painter.transform;
 
@@ -175,6 +196,10 @@ const symbolIconUniformValues = (
         'u_is_text': +isText,
         'u_pitch_with_map': +pitchWithMap,
         'u_texsize': texSize,
+        'u_tile_id': tileID,
+        'u_zoom_transition': zoomTransition,
+        'u_inv_rot_matrix': invRotMatrix,
+        'u_merc_center': mercCenter,
         'u_texture': 0
     };
 };
@@ -190,13 +215,18 @@ const symbolSDFUniformValues = (
     glCoordMatrix: Float32Array,
     isText: boolean,
     texSize: [number, number],
-    isHalo: boolean
+    isHalo: boolean,
+    tileID: [number, number, number],
+    zoomTransition: number,
+    invRotMatrix: Float32Array,
+    mercCenter: [number, number]
 ): UniformValues<SymbolSDFUniformsType> => {
     const {cameraToCenterDistance, _pitch} = painter.transform;
 
     return extend(symbolIconUniformValues(functionType, size,
         rotateInShader, pitchWithMap, painter, matrix, labelPlaneMatrix,
-        glCoordMatrix, isText, texSize), {
+        glCoordMatrix, isText, texSize, tileID, zoomTransition,
+        invRotMatrix, mercCenter), {
         'u_gamma_scale': pitchWithMap ? cameraToCenterDistance * Math.cos(painter.terrain ? 0 : _pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo
@@ -213,11 +243,16 @@ const symbolTextAndIconUniformValues = (
     labelPlaneMatrix: Float32Array,
     glCoordMatrix: Float32Array,
     texSizeSDF: [number, number],
-    texSizeIcon: [number, number]
+    texSizeIcon: [number, number],
+    tileID: [number, number, number],
+    zoomTransition: number,
+    invRotMatrix: Float32Array,
+    mercCenter: [number, number]
 ): UniformValues<SymbolIconUniformsType> => {
     return extend(symbolSDFUniformValues(functionType, size,
         rotateInShader, pitchWithMap, painter, matrix, labelPlaneMatrix,
-        glCoordMatrix, true, texSizeSDF, true), {
+        glCoordMatrix, true, texSizeSDF, true, tileID, zoomTransition,
+        invRotMatrix, mercCenter), {
         'u_texsize_icon': texSizeIcon,
         'u_texture_icon': 1
     });
