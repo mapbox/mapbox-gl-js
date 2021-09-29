@@ -59,6 +59,7 @@ function getZoomAdjustment(projection: Projection, loc: LngLat) {
 
 function getShearAdjustment(projection, zoom, loc, interpT) {
 
+    // create a location a tiny amount (~1km) east of the given location
     const loc2 = new LngLat(loc.lng + 360 / 40000, loc.lat);
 
     const p1 = projection.project(loc.lng, loc.lat);
@@ -67,8 +68,17 @@ function getShearAdjustment(projection, zoom, loc, interpT) {
     const pdx = p2.x - p1.x;
     const pdy = p2.y - p1.y;
 
+    // Calculate how much the map would need to be rotated to make east-west in
+    // projected coordinates be left-right
     const angleAdjust = -Math.atan(pdy / pdx) / Math.PI * 180;
 
+    // Find the projected coordinates of two locations, one slightly north and one slightly east.
+    // Then calculate the transform that would make the projected coordinates of the two locations be:
+    // - equal distances from the original location
+    // - perpendicular to one another
+    //
+    // Only the position of the coordinate to the north is adjusted.
+    // The coordinate to the east stays where it is.
     const mc3 = MercatorCoordinate.fromLngLat(loc);
     const offset = 1 / 40000;
     mc3.x += offset;
