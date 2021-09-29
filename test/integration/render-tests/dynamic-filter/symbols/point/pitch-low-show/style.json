@@ -2,10 +2,8 @@
     "version": 8,
     "metadata": {
       "test": {
-        "collisionDebug": true,
         "height": 256,
         "width": 400,
-        "allowed": 0.00075,
         "operations": [["wait"]]
       }
     },
