@@ -3235,7 +3235,7 @@
         }
       },
       "distance-from-center": {
-        "doc": "Returns the distance of a `symbol` instance from the center of the map. The distance is measured in pixels divided by the height of the map container. It measures 0 at the center, decreases towards the camera and increase away from the camera. For example, if the height of the map is 1000px, a value of -1 means 1000px away from the center towards the camera, and a value of 1 means a distance of 1000px away from the camera from the center. [\"distance-from-center\"] may only be used in the `filter` expression for a `symbol` layer.",
+        "doc": "Returns the distance of a `symbol` instance from the center of the map. The distance is measured in pixels divided by the height of the map container. It measures 0 at the center, decreases towards the camera and increase away from the camera. For example, if the height of the map is 1000px, a value of -1 means 1000px away from the center towards the camera, and a value of 1 means a distance of 1000px away from the camera from the center. `[\"distance-from-center\"]` may only be used in the `filter` expression for a `symbol` layer.",
         "group": "Camera",
         "sdk-support": {
           "basic functionality": {
