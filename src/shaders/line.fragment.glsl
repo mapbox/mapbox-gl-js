@@ -62,6 +62,12 @@ void main() {
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
+#ifdef RENDER_LINE_ALPHA_DISCARD
+    if (alpha < 1.0) {
+        discard;
+    }
+#endif
+
     gl_FragColor = out_color * (alpha * opacity);
 
 #ifdef OVERDRAW_INSPECTOR
