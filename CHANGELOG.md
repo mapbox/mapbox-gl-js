@@ -1,4 +1,4 @@
-## 2.5.0-beta.1
+## 2.5.0
 
 ### Features ✨ and improvements 🏁
 
@@ -16,6 +16,7 @@
 * Fixed markers not updating position when toggling terrain. ([#10985](https://github.com/mapbox/mapbox-gl-js/pull/10985))
 * Fixed gap on edge of map on retina displays. ([#10936](https://github.com/mapbox/mapbox-gl-js/pull/10936))
 * Fixed SDF images rendering inside text. ([#10989](https://github.com/mapbox/mapbox-gl-js/pull/10989))
+* Fixed an issue with slow tile loading performance on maps with CJK glyphs on certain Chrome/GPU combinations. ([#11047](https://github.com/mapbox/mapbox-gl-js/pull/11047))
 
 ## 2.4.0
 
