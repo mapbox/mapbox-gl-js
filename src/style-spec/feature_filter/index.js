@@ -1,12 +1,13 @@
 // @flow
 
 import {createExpression} from '../expression/index.js';
+import latest from '../reference/latest.js';
 import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
-type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
-export type FeatureFilter = {filter: FilterExpression, dynamicFilter: FilterExpression, needGeometry: boolean};
+type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation?: MercatorCoordinate) => boolean;
+export type FeatureFilter = {filter: FilterExpression, dynamicFilter?: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
 export {isExpressionFilter, isDynamicFilter, extractStaticFilter};
@@ -53,17 +54,6 @@ function isExpressionFilter(filter: any) {
     }
 }
 
-const filterSpec = {
-    'type': 'boolean',
-    'default': false,
-    'transition': false,
-    'property-type': 'data-driven',
-    'expression': {
-        'interpolated': false,
-        'parameters': ['zoom', 'feature', 'pitch', 'distance-from-center']
-    }
-};
-
 /**
  * Given a filter expressed as nested arrays, return a new function
  * that evaluates whether a given feature (with a .properties or .tags property)
@@ -71,20 +61,22 @@ const filterSpec = {
  *
  * @private
  * @param {Array} filter mapbox gl filter
+ * @param {string} layerType the type of the layer this filter will be applied to.
  * @returns {Function} filter-evaluating function
  */
-function createFilter(filter: any): FeatureFilter {
+function createFilter(filter: any, layerType?: string = 'fill'): FeatureFilter {
     if (filter === null || filter === undefined) {
-        return {filter: () => true, dynamicFilter: () => true, needGeometry: false};
+        return {filter: () => true, needGeometry: false};
     }
 
     if (!isExpressionFilter(filter)) {
         filter = convertFilter(filter);
     }
+    const filterExp = ((filter: any): string[] | string | boolean);
 
     let staticFilter = true;
     try {
-        staticFilter = extractStaticFilter(filter);
+        staticFilter = extractStaticFilter(filterExp);
     } catch (e) {
         console.warn(
 `Failed to extract static filter. Filter will continue working, but at higher memory usage and slower framerate.
@@ -92,37 +84,42 @@ This is most likely a bug, please report this via https://github.com/mapbox/mapb
 and paste the contents of this message in the report.
 Thank you!
 Filter Expression:
-${JSON.stringify(filter, null, 2)}
+${JSON.stringify(filterExp, null, 2)}
         `);
     }
-    const dynamicFilter = filter === staticFilter ? true : filter;
 
+    // Compile the static component of the filter
+    const filterSpec = latest[`filter_${layerType}`];
     const compiledStaticFilter = createExpression(staticFilter, filterSpec);
-    const compiledDynamicFilter = createExpression(dynamicFilter, filterSpec);
-    if (compiledStaticFilter.result === 'error' || compiledDynamicFilter.result === 'error') {
-        const staticFilterErrors = compiledStaticFilter.result === 'error' ?
-            compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', ') :
-            'None';
 
-        const dynamicFilterErrors = compiledDynamicFilter.result === 'error' ?
-            compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', ') :
-            'None';
-
-        const errorMsg = `static-filter errors:
-            ${staticFilterErrors}
-
-            dynamic-filter errors:
-            ${dynamicFilterErrors}
-        `;
-        throw new Error(errorMsg);
+    let filterFunc = null;
+    if (compiledStaticFilter.result === 'error') {
+        throw new Error(compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
-        const needGeometry = geometryNeeded(staticFilter);
-        return {
-            filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical),
-            dynamicFilter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation: ?MercatorCoordinate) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, null, null, refLocation),
-            needGeometry
-        };
+        filterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical);
     }
+
+    // If the static component is not equal to the entire filter then we have a dynamic component
+    // Compile the dynamic component separately
+    let dynamicFilterFunc = null;
+    if (staticFilter !== filterExp) {
+        const compiledDynamicFilter = createExpression(filterExp, filterSpec);
+
+        if (compiledDynamicFilter.result === 'error') {
+            throw new Error(compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
+        } else {
+            dynamicFilterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation?: MercatorCoordinate) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, undefined, undefined, refLocation);
+        }
+    }
+
+    filterFunc = ((filterFunc: any): FilterExpression);
+    const needGeometry = geometryNeeded(staticFilter);
+
+    return {
+        filter: filterFunc,
+        dynamicFilter: dynamicFilterFunc ? dynamicFilterFunc : undefined,
+        needGeometry
+    };
 }
 
 function extractStaticFilter(filter: any): any {
@@ -153,30 +150,6 @@ function collapseDynamicBooleanExpressions(expression: any): any {
     } else {
         return collapsed.map((subExpression) => collapseDynamicBooleanExpressions(subExpression));
     }
-}
-
-const dynamicConditionExpressions = new Set([
-    'in',
-    '==',
-    '!=',
-    '>',
-    '>=',
-    '<',
-    '<=',
-    'to-boolean'
-]);
-
-function collapsedExpression(expression: any): any {
-    if (dynamicConditionExpressions.has(expression[0])) {
-
-        for (let i = 1; i < expression.length; i++) {
-            const param = expression[i];
-            if (isDynamicFilter(param)) {
-                return true;
-            }
-        }
-    }
-    return expression;
 }
 
 /**
@@ -247,6 +220,30 @@ function isDynamicFilter(filter: any): boolean {
 function isRootExpressionDynamic(expression: string): boolean {
     return expression === 'pitch' ||
         expression === 'distance-from-center';
+}
+
+const dynamicConditionExpressions = new Set([
+    'in',
+    '==',
+    '!=',
+    '>',
+    '>=',
+    '<',
+    '<=',
+    'to-boolean'
+]);
+
+function collapsedExpression(expression: any): any {
+    if (dynamicConditionExpressions.has(expression[0])) {
+
+        for (let i = 1; i < expression.length; i++) {
+            const param = expression[i];
+            if (isDynamicFilter(param)) {
+                return true;
+            }
+        }
+    }
+    return expression;
 }
 
 // Comparison function to sort numbers and strings

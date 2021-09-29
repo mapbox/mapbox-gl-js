@@ -33,6 +33,7 @@ import getWorkerPool from '../util/global_worker_pool.js';
 import deref from '../style-spec/deref.js';
 import emptyStyle from '../style-spec/empty.js';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff.js';
+import featureFilter from '../style-spec/feature_filter/index.js';
 import {
     registerForPluginStateChange,
     evented as rtlTextPluginEvented,
@@ -999,7 +1000,7 @@ class Style extends Evented {
             return;
         }
 
-        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, null, options)) {
+        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, {layerType: layer.type}, options)) {
             return;
         }
 
@@ -1194,6 +1195,8 @@ class Style extends Evented {
             sourceCache.pause();
         }
         this._changed = true;
+        layer._featureFilter = featureFilter(layer.filter);
+
     }
 
     _flattenAndSortRenderedFeatures(sourceResults: Array<any>) {
@@ -1266,7 +1269,7 @@ class Style extends Evented {
 
     queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: any, transform: Transform) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, null, params);
+            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, {layerType: 'fill'}, params);
         }
 
         const includedSources = {};
@@ -1334,7 +1337,7 @@ class Style extends Evented {
 
     querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter, null, params);
+            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter, {layerType: 'fill'}, params);
         }
         const sourceCaches = this._getSourceCaches(sourceID);
         let results = [];

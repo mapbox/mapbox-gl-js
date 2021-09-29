@@ -234,8 +234,6 @@ export class Placement {
             return;
 
         const layout = symbolBucket.layers[0].layout;
-        const clipAll = layout.get('symbol-clip').constantOr(false);
-        if (clipAll) return;
 
         const collisionBoxArray = tile.collisionBoxArray;
         const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
@@ -246,7 +244,7 @@ export class Placement {
 
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
-        const needsDynamicClipping = layout.get('symbol-clip').constantOr(true);
+        const dynamicFilter = styleLayer._featureFilter.dynamicFilter;
         const pixelsToTiles = pixelsToTileUnits(tile, 1, this.transform.zoom);
 
         const textLabelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix,
@@ -270,10 +268,11 @@ export class Placement {
 
         let clippingData = null;
         assert(!!tile.latestFeatureIndex);
-        if (needsDynamicClipping && tile.latestFeatureIndex) {
+        if (!!dynamicFilter && tile.latestFeatureIndex) {
 
             clippingData = {
                 unwrappedTileID,
+                dynamicFilter,
                 featureIndex: tile.latestFeatureIndex
             };
         }
@@ -434,13 +433,17 @@ export class Placement {
 
         const placeSymbol = (symbolInstance: SymbolInstance, symbolIndex: number, collisionArrays: CollisionArrays) => {
             if (clippingData) {
-                const clipExpression = layout.get('symbol-clip');
-                clipExpression.parameters.zoom = this.transform.zoom;
-                clipExpression.parameters.pitch = this.transform.pitch;
-                clipExpression.parameters.cameraDistanceMatrix = this.transform.mercatorFogMatrix;
+                const globals = {
+                    zoom: this.transform.zoom,
+                    pitch: this.transform.pitch,
+                    cameraDistanceMatrix: this.transform.mercatorFogMatrix
+                };
+
+                const filterFunc = clippingData.dynamicFilter;
+
                 const feature = getSymbolFeature(symbolInstance);
                 const canonicalTileId = this.retainedQueryData[bucket.bucketInstanceId].tileID.canonical;
-                const shouldClip = clipExpression.evaluate(feature, {}, canonicalTileId, null, clippingData.unwrappedTileID.getMercatorFromTilePoint(symbolInstance.anchorX, symbolInstance.anchorY));
+                const shouldClip = !filterFunc(globals, feature, canonicalTileId, clippingData.unwrappedTileID.getMercatorFromTilePoint(symbolInstance.anchorX, symbolInstance.anchorY));
 
                 if (shouldClip) {
                     this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false, true);
@@ -910,6 +913,7 @@ export class Placement {
         if (bucket.hasTextCollisionBoxData()) bucket.textCollisionBox.collisionVertexArray.clear();
 
         const layout = bucket.layers[0].layout;
+        const hasClipping = !!bucket.layers[0]._featureFilter.dynamicFilter;
         const duplicateOpacityState = new JointOpacityState(null, 0, false, false, true);
         const textAllowOverlap = layout.get('text-allow-overlap');
         const iconAllowOverlap = layout.get('icon-allow-overlap');
@@ -917,7 +921,6 @@ export class Placement {
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
-        const hasClipping = layout.get('symbol-clip').constantOr(true);
         // If allow-overlap is true, we can show symbols before placement runs on them
         // But we have to wait for placement if we potentially depend on a paired icon/text
         // with allow-overlap: false.
