@@ -2,6 +2,7 @@
 ### ✨ Features and improvements
 
 * Added `protected` field to mapbox-api-supported validation. ([#10968](https://github.com/mapbox/mapbox-gl-js/pull/10968))
+
 # 13.21.0
 
 ### ✨ Features and improvements
