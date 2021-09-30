@@ -78,7 +78,7 @@ class Transform {
 
     // From world coordinates to, relative-to-center coordinates.
     // Relative-to-center coordinates are centered at the current map center, and rotated by the map bearing.
-    // +x basis goes towards the right, -y basis point away from the center, +z basis points up from the map.
+    // +x basis goes towards the right, +y basis point away from the camera, +z basis points up from the map.
     centerDistanceMatrix: Float64Array;
     // From Mercator coordinates to relative to center coordinates
     mercatorCenterDistanceMatrix: Float64Array;
