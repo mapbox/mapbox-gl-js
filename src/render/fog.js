@@ -40,7 +40,7 @@ export const fogUniformValues = (
     ];
     return {
         'u_fog_matrix': tileID ? painter.transform.calculateFogTileMatrix(tileID) : painter.identityMat,
-        'u_fog_range': fog.getFovAdjustedRange(painter.transform._fov),
+        'u_fog_range': fog.getFovAdjustedRange(painter.transform._fov, painter.transform._pitch),
         'u_fog_color': fogColorUnpremultiplied,
         'u_fog_horizon_blend': fog.properties.get('horizon-blend'),
         'u_fog_temporal_offset': temporalOffset

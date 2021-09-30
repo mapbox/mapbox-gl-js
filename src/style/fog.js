@@ -78,8 +78,8 @@ class Fog extends Evented {
         return getFogOpacityAtLngLat(this.state, lngLat, transform);
     }
 
-    getFovAdjustedRange(fov: number): [number, number] {
-        return getFovAdjustedFogRange(this.state, fov);
+    getFovAdjustedRange(fov: number, pitch: number): [number, number] {
+        return getFovAdjustedFogRange(this.state, fov, pitch);
     }
 
     updateTransitions(parameters: TransitionParameters) {

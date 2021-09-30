@@ -34,13 +34,14 @@ export function getFogOpacity(state: FogState, pos: Array<number>, pitch: number
     return falloff * fogPitchOpacity * state.alpha;
 }
 
-export function getFovAdjustedFogRange(state: FogState, fov: number): [number, number] {
+export function getFovAdjustedFogRange(state: FogState, fov: number, pitch: number): [number, number] {
     // This function computes a shifted fog range so that the appearance is unchanged
     // when the fov changes. We define range=0 starting at the camera position given
     // the default fov. We avoid starting the fog range at the camera center so that
     // ranges aren't generally negative unless the FOV is modified.
     const shift = 0.5 / Math.tan(fov * 0.5);
-    return [state.range[0] + shift, state.range[1] + shift];
+    const extension = 1 / Math.cos(pitch);
+    return [state.range[0] * extension + shift, state.range[1] * extension + shift];
 }
 
 export function getFogOpacityAtTileCoord(state: FogState, x: number, y: number, z: number, tileId: UnwrappedTileID, transform: Transform): number {
