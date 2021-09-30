@@ -6,8 +6,8 @@ import type LngLat from '../geo/lng_lat.js';
 import type {UnwrappedTileID} from '../source/tile_id.js';
 import type Transform from '../geo/transform.js';
 
-export const FOG_PITCH_START = 45;
-export const FOG_PITCH_END = 65;
+export const FOG_PITCH_START = -2;
+export const FOG_PITCH_END = -1;
 export const FOG_SYMBOL_CLIPPING_THRESHOLD = 0.9;
 
 export type FogState = {

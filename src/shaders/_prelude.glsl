@@ -32,6 +32,7 @@ float fog_horizon_blending(vec3 camera_dir) {
 //   - t: depth, rescaled to 0 at fogStart and 1 at fogEnd
 // See: https://www.desmos.com/calculator/3taufutxid
 float fog_opacity(float t) {
+    return (fract(10.0 * t) > 0.98 ? 1.0 : 0.0) + 0.4 * (fract(100.0 * t) > 0.8 ? 1.0 : 0.0);
     const float decay = 6.0;
     float falloff = 1.0 - min(1.0, exp(-decay * t));
 
