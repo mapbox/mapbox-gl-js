@@ -24,12 +24,12 @@ function createMap(t) {
     });
 }
 
-function createMapWithRequireCtrl(t) {
+function createMapWithGestureHandling(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
     t.stub(Map.prototype, '_authenticate');
     return new Map({
         container: DOM.create('div', '', window.document.body),
-        scrollZoom: {requireCtrl: true},
+        gestureHandling: true
     });
 }
 
@@ -376,15 +376,15 @@ test('ScrollZoomHandler', (t) => {
     t.end();
 });
 
-test('When requireCtrl option is set to true, a .mapboxgl-scroll-zoom-blocker element is added to map', (t) => {
-    const map = createMapWithRequireCtrl(t);
+test('When gestureHandling option is set to true, a .mapboxgl-scroll-zoom-blocker element is added to map', (t) => {
+    const map = createMapWithGestureHandling(t);
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-scroll-zoom-blocker').length, 1);
     t.end();
 });
 
-test('When requireCtrl option is set to true, scroll zoom is prevented when the ctrl key or meta key is not pressed during wheel event', (t) => {
-    const map = createMapWithRequireCtrl(t);
+test('When gestureHandling option is set to true, scroll zoom is prevented when the ctrl key or meta key is not pressed during wheel event', (t) => {
+    const map = createMapWithGestureHandling(t);
 
     const zoomSpy = t.spy();
     map.on('zoom', zoomSpy);
@@ -395,8 +395,8 @@ test('When requireCtrl option is set to true, scroll zoom is prevented when the 
     t.end();
 });
 
-test('When requireCtrl option is set to true, scroll zoom is activated when ctrl key is pressed during wheel event', (t) => {
-    const map = createMapWithRequireCtrl(t);
+test('When gestureHandling option is set to true, scroll zoom is activated when ctrl key is pressed during wheel event', (t) => {
+    const map = createMapWithGestureHandling(t);
 
     const zoomSpy = t.spy();
     map.on('zoom', zoomSpy);
@@ -409,8 +409,8 @@ test('When requireCtrl option is set to true, scroll zoom is activated when ctrl
     t.end();
 });
 
-test('When requireCtrl option is set to true, scroll zoom is activated when meta key is pressed during wheel event', (t) => {
-    const map = createMapWithRequireCtrl(t);
+test('When gestureHandling option is set to true, scroll zoom is activated when meta key is pressed during wheel event', (t) => {
+    const map = createMapWithGestureHandling(t);
 
     const zoomSpy = t.spy();
     map.on('zoom', zoomSpy);
@@ -424,7 +424,7 @@ test('When requireCtrl option is set to true, scroll zoom is activated when meta
 });
 
 test('Disabling scrollZoom removes scroll zoom blocker container', (t) => {
-    const map = createMapWithRequireCtrl(t);
+    const map = createMapWithGestureHandling(t);
 
     map.scrollZoom.disable();
 

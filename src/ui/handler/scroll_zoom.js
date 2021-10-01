@@ -61,7 +61,6 @@ class ScrollZoomHandler {
     _defaultZoomRate: number;
     _wheelZoomRate: number;
 
-    _requireCtrl: boolean; // used to require pressing meta key or ctrl key with scroll to scroll zoom
     _alertContainer: HTMLElement; // used to display the scroll zoom blocker alert
 
     /**
@@ -134,21 +133,17 @@ class ScrollZoomHandler {
      *
      * @param {Object} [options] Options object.
      * @param {string} [options.around] If "center" is passed, map will zoom around center of map.
-     * @param {boolean} [options.requireCtrl] If set to true, ctrl (or ⌘ in OS devices) must be pressed while scrolling to zoom.
      *
      * @example
      * map.scrollZoom.enable();
      * @example
      * map.scrollZoom.enable({around: 'center'});
-     * @example
-     * map.scrollZoom.enable({requireCtrl: true});
      */
     enable(options: any) {
         if (this.isEnabled()) return;
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
-        this._requireCtrl = options && options.requireCtrl === true;
-        if (this._requireCtrl) this._addScrollZoomBlocker();
+        if (this._map._gestureHandling) this._addScrollZoomBlocker();
     }
 
     /**
@@ -160,13 +155,13 @@ class ScrollZoomHandler {
     disable() {
         if (!this.isEnabled()) return;
         this._enabled = false;
-        if (this._requireCtrl) this._alertContainer.remove();
+        if (this._map._gestureHandling) this._alertContainer.remove();
     }
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
 
-        if (this._requireCtrl) {
+        if (this._map._gestureHandling) {
             if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !this._isFullscreen()) {
                 this._showBlockerAlert();
                 return;

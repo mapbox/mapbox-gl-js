@@ -24,7 +24,7 @@ var map = window.map = new mapboxgl.Map({
     zoom: 12.5,
     center: [-77.01866, 38.888],
     style: 'mapbox://styles/mapbox/streets-v10',
-    scrollZoom: {requireCtrl: true}
+    gestureHandling: true
 });
 
 map.addControl(new mapboxgl.FullscreenControl());
