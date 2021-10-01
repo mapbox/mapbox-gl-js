@@ -319,6 +319,7 @@ class Style extends Evented {
         for (let layer of layers) {
             layer = createStyleLayer(layer);
             layer.setEventedParent(this, {layer: {id: layer.id}});
+            layer._featureFilter = featureFilter(layer.filter);
             this._layers[layer.id] = layer;
             this._serializedLayers[layer.id] = layer.serialize();
             this._updateLayerCount(layer, true);

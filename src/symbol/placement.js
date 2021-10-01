@@ -437,14 +437,13 @@ export class Placement {
                 const globals = {
                     zoom: this.transform.zoom,
                     pitch: this.transform.pitch,
-                    cameraDistanceMatrix: this.transform.mercatorFogMatrix
                 };
 
                 const filterFunc = clippingData.dynamicFilter;
 
                 const feature = getSymbolFeature(symbolInstance);
                 const canonicalTileId = this.retainedQueryData[bucket.bucketInstanceId].tileID.canonical;
-                const shouldClip = !filterFunc(globals, feature, canonicalTileId, clippingData.unwrappedTileID.getMercatorFromTilePoint(symbolInstance.anchorX, symbolInstance.anchorY));
+                const shouldClip = !filterFunc(globals, feature, canonicalTileId, new Point(symbolInstance.tileAnchorX, symbolInstance.tileAnchorY), this.transform.calculateDistanceTileMatrix(clippingData.unwrappedTileID));
 
                 if (shouldClip) {
                     this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false, true);

@@ -4,9 +4,9 @@ import {createExpression} from '../expression/index.js';
 import latest from '../reference/latest.js';
 import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
-import type MercatorCoordinate from '../../geo/mercator_coordinate.js';
+import type Point from '@mapbox/point-geometry';
 
-type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation?: MercatorCoordinate) => boolean;
+type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceMatrix?: number[]) => boolean;
 export type FeatureFilter = {filter: FilterExpression, dynamicFilter?: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
@@ -108,7 +108,7 @@ ${JSON.stringify(filterExp, null, 2)}
         if (compiledDynamicFilter.result === 'error') {
             throw new Error(compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
         } else {
-            dynamicFilterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, refLocation?: MercatorCoordinate) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, undefined, undefined, refLocation);
+            dynamicFilterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceMatrix?: number[]) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, undefined, undefined, featureTileCoord, featureDistanceMatrix);
         }
     }
 

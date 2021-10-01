@@ -209,7 +209,7 @@ CompoundExpression.register(expressions, {
     'distance-from-center': [
         NumberType,
         [],
-        (ctx) => ctx.distanceFromCamera()
+        (ctx) => ctx.distanceFromCenter()
     ],
     'heatmap-density': [
         NumberType,

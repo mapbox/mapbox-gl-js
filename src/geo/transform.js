@@ -76,6 +76,13 @@ class Transform {
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
 
+    // From world coordinates to, relative-to-center coordinates.
+    // Relative-to-center coordinates are centered at the current map center, and rotated by the map bearing.
+    // +x basis goes towards the right, +y basis point away from the camera, +z basis points up from the map.
+    centerDistanceMatrix: Float64Array;
+    // From Mercator coordinates to relative to center coordinates
+    mercatorCenterDistanceMatrix: Float64Array;
+
     worldToFogMatrix: Float64Array;
     skyboxMatrix: Float32Array;
 
@@ -107,6 +114,7 @@ class Transform {
     _projMatrixCache: {[_: number]: Float32Array};
     _alignedProjMatrixCache: {[_: number]: Float32Array};
     _fogTileMatrixCache: {[_: number]: Float32Array};
+    _distanceMatrixCache: {[_: number]: Float32Array};
     _camera: FreeCamera;
     _centerAltitude: number;
     _horizonShift: number;
@@ -136,6 +144,7 @@ class Transform {
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
         this._fogTileMatrixCache = {};
+        this._distanceMatrixCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this._averageElevation = 0;
@@ -1262,6 +1271,20 @@ class Transform {
         return posMatrix;
     }
 
+    calculateDistanceTileMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+        const fogTileMatrixKey = unwrappedTileID.key;
+        const cache = this._distanceMatrixCache;
+        if (cache[fogTileMatrixKey]) {
+            return cache[fogTileMatrixKey];
+        }
+
+        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
+        mat4.multiply(posMatrix, this.centerDistanceMatrix, posMatrix);
+
+        cache[fogTileMatrixKey] = new Float32Array(posMatrix);
+        return cache[fogTileMatrixKey];
+    }
+
     /**
      * Calculate the fogTileMatrix that, given a tile coordinate, can be used to
      * calculate its position relative to the camera in units of pixels divided
@@ -1600,6 +1623,7 @@ class Transform {
         this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
         this._calcFogMatrices();
+        this._calcDistanceMatrices();
 
         // inverse matrix for conversion from screen coordinates to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
@@ -1637,6 +1661,20 @@ class Transform {
         // The worldToFogMatrix can be used for conversion from world coordinates to relative camera position in
         // units of fractions of the map height. Later composed with tile position to construct the fog tile matrix.
         this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
+    }
+
+    _calcDistanceMatrices() {
+        this._distanceMatrixCache = {};
+        const center = this.point;
+
+        const m = new Float64Array(16);
+        const windowScaleFactor = 1 / this.height;
+        mat4.fromScaling(m, [windowScaleFactor, -windowScaleFactor, windowScaleFactor]);
+        mat4.rotateZ(m, m, this.angle);
+        mat4.translate(m, m, [-center.x, -center.y, 0]);
+
+        this.centerDistanceMatrix = m;
+        this.mercatorCenterDistanceMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, 1]);
     }
 
     _updateCameraState() {
