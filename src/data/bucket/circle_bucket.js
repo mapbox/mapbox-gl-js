@@ -103,7 +103,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 type: feature.type,
                 sourceLayerIndex,
                 index,
-                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature),
+                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical),
                 patterns: {},
                 sortKey
             };
