@@ -4,7 +4,9 @@ import {warnOnce, clamp} from '../util/util.js';
 
 import EXTENT from './extent.js';
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
+import resample from '../geo/projection/resample.js';
 import Point from '@mapbox/point-geometry';
+
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
 
@@ -28,12 +30,6 @@ function clampPoint(point: Point) {
     return point;
 }
 
-function pointToLineDist(px, py, ax, ay, bx, by) {
-    const dx = ax - bx;
-    const dy = ay - by;
-    return Math.abs((ay - py) * dx - (ax - px) * dy) / Math.hypot(dx, dy);
-}
-
 // a subset of VectorTileGeometry
 type FeatureWithGeometry = {
     extent: number;
@@ -51,23 +47,20 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
     const featureExtent = feature.extent;
     const scale = EXTENT / featureExtent;
     const projection = tileTransform ? tileTransform.projection : undefined;
-    let z2;
     const isMercator = !projection || projection.name === 'mercator';
-    if (canonical && !isMercator) {
-        z2 = Math.pow(2, canonical.z);
-    }
 
     function reproject(p) {
         if (isMercator || !canonical || !tileTransform || !projection) {
-            return new Point(Math.round(p.x * scale), Math.round(p.y * scale));
+            return clampPoint(new Point(Math.round(p.x * scale), Math.round(p.y * scale)));
         } else {
+            const z2 = 1 << canonical.z;
             const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
             const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
             const {x, y} = projection.project(lng, lat);
-            return new Point(
+            return clampPoint(new Point(
                 Math.round((x * tileTransform.scale - tileTransform.x) * EXTENT),
                 Math.round((y * tileTransform.scale - tileTransform.y) * EXTENT)
-            );
+            ));
         }
     }
 
@@ -90,25 +83,10 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
 
     const geometry = feature.loadGeometry();
 
-    for (let r = 0; r < geometry.length; r++) {
-        const ring = geometry[r];
-        const resampled = [];
-
-        for (let i = 0, prevMerc, prevProj; i < ring.length; i++) {
-            const pointMerc = ring[i];
-            const pointProj = reproject(ring[i]);
-
-            if (projection && projection.name !== 'mercator' && prevMerc && prevProj && feature.type !== 1) {
-                addResampled(resampled, prevMerc, pointMerc, prevProj, pointProj);
-            } else {
-                resampled.push(clampPoint(pointProj));
-            }
-
-            prevMerc = pointMerc;
-            prevProj = pointProj;
-        }
-
-        geometry[r] = resampled;
+    for (let i = 0; i < geometry.length; i++) {
+        geometry[i] = !isMercator && feature.type !== 1 ?
+            resample(geometry[i], reproject, 1) :
+            geometry[i].map(reproject);
     }
 
     return geometry;
