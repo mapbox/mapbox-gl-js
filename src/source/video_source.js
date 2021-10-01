@@ -79,6 +79,9 @@ class VideoSource extends ImageSource {
                 this.video = video;
                 this.video.loop = true;
 
+                // Prevent the video from taking over the screen in iOS
+                this.video.setAttribute('playsinline', '');
+
                 // Start repainting when video starts playing. hasTransition() will then return
                 // true to trigger additional frames as long as the videos continues playing.
                 this.video.addEventListener('playing', () => {
