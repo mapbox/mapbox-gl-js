@@ -58,13 +58,14 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
     const featureExtent = feature.extent;
     const scale = EXTENT / featureExtent;
     let cs, z2;
-    if (canonical) {
+    const isMercator = !projection || projection.name === 'mercator';
+    if (canonical && !isMercator) {
         cs = tileTransform(canonical, projection);
         z2 = Math.pow(2, canonical.z);
     }
 
     function reproject(p) {
-        if (projection && projection.name === 'mercator' || !canonical) {
+        if (isMercator || !canonical) {
             return new Point(Math.round(p.x * scale), Math.round(p.y * scale));
         } else {
             const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
