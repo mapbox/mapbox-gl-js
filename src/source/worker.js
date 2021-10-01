@@ -38,7 +38,7 @@ export default class Worker {
     workerSourceTypes: {[_: string]: Class<WorkerSource> };
     workerSources: {[_: string]: {[_: string]: {[_: string]: WorkerSource } } };
     demWorkerSources: {[_: string]: {[_: string]: RasterDEMTileWorkerSource } };
-    isSpriteLoaded: boolean;
+    isSpriteLoaded: {[_: string]: boolean };
     referrer: ?string;
     terrain: ?boolean;
 
@@ -49,7 +49,7 @@ export default class Worker {
 
         this.layerIndexes = {};
         this.availableImages = {};
-        this.isSpriteLoaded = false;
+        this.isSpriteLoaded = {};
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
@@ -88,7 +88,9 @@ export default class Worker {
     }
 
     spriteLoaded(mapId: string, bool: boolean) {
-        this.isSpriteLoaded = bool;
+        console.log("Worker.SpriteLoaded called. Set to:");
+        console.log(bool);
+        this.isSpriteLoaded[mapId] = bool;
         for (const workerSource in this.workerSources[mapId]) {
             const ws = this.workerSources[mapId][workerSource];
             for (const source in ws) {
@@ -240,7 +242,7 @@ export default class Worker {
                 },
                 scheduler: this.actor.scheduler
             };
-            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId), this.getAvailableImages(mapId), this.isSpriteLoaded);
+            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId), this.getAvailableImages(mapId), this.isSpriteLoaded[mapId]);
         }
 
         return this.workerSources[mapId][type][source];
