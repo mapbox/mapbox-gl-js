@@ -234,7 +234,7 @@ class FillExtrusionBucket implements Bucket {
                 id,
                 sourceLayerIndex,
                 index,
-                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature),
+                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical),
                 properties: feature.properties,
                 type: feature.type,
                 patterns: {}
