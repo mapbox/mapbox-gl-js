@@ -11,9 +11,14 @@ float fog_opacity(vec3 pos) {
 
 vec3 fog_apply(vec3 color, vec3 pos) {
     float depth = length(pos);
-    float opacity = fog_opacity(fog_range(depth));
+    float t = fog_range(depth);
+    float opacity = fog_opacity(t);
     opacity *= fog_horizon_blending(pos / depth);
-    return mix(color, u_fog_color.rgb, opacity);
+    vec3 c = color;
+    c = mix(c, t > 0.0 ? vec3(0, 0, 1) : vec3(1, 0, 0), 0.2);
+    c = mix(c, u_fog_color.rgb, opacity);
+    return c;
+
 }
 
 // Apply fog computed in the vertex shader

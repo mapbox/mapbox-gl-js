@@ -13,7 +13,7 @@ export type FogUniformsType = {|
     'u_fog_color': Uniform4f,
     'u_fog_horizon_blend': Uniform1f,
     'u_fog_temporal_offset': Uniform1f,
-
+    'u_pixel_ratio': Uniform1f,
 |};
 
 export const fogUniforms = (context: Context, locations: UniformLocations): FogUniformsType => ({
@@ -22,6 +22,7 @@ export const fogUniforms = (context: Context, locations: UniformLocations): FogU
     'u_fog_color': new Uniform4f(context, locations.u_fog_color),
     'u_fog_horizon_blend': new Uniform1f(context, locations.u_fog_horizon_blend),
     'u_fog_temporal_offset': new Uniform1f(context, locations.u_fog_temporal_offset),
+    'u_pixel_ratio': new Uniform1f(context, locations.u_pixel_ratio),
 });
 
 export const fogUniformValues = (
@@ -43,6 +44,7 @@ export const fogUniformValues = (
         'u_fog_range': fog.getFovAdjustedRange(painter.transform._fov, painter.transform._pitch),
         'u_fog_color': fogColorUnpremultiplied,
         'u_fog_horizon_blend': fog.properties.get('horizon-blend'),
-        'u_fog_temporal_offset': temporalOffset
+        'u_fog_temporal_offset': temporalOffset,
+        'u_pixel_ratio': window.devicePixelRatio
     };
 };

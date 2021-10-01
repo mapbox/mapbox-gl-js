@@ -86,6 +86,7 @@ class Program<Us: UniformBindings> {
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
 
         const fragmentSource = defines.concat(
+            `#extension GL_OES_standard_derivatives : enable`,
             preludeFragPrecisionQualifiers,
             preludeCommonSource,
             prelude.fragmentSource,

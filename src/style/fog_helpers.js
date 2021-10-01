@@ -40,7 +40,7 @@ export function getFovAdjustedFogRange(state: FogState, fov: number, pitch: numb
     // the default fov. We avoid starting the fog range at the camera center so that
     // ranges aren't generally negative unless the FOV is modified.
     const shift = 0.5 / Math.tan(fov * 0.5);
-    const extension = 1 / Math.cos(pitch);
+    const extension = window.cosineCorrection ? 1 / Math.cos(pitch) : 1;
     return [state.range[0] * extension + shift, state.range[1] * extension + shift];
 }
 

@@ -25,3 +25,20 @@ highp vec4 pack_depth(highp float ndc_z) {
 }
 
 #endif
+
+#ifdef FOG
+
+float gridFactor (float parameter, float width, float feather) {
+  float w1 = width - feather * 0.5;
+  float d = fwidth(parameter);
+  float looped = (0.5 - abs(mod(parameter, 1.0) - 0.5)) / u_pixel_ratio;
+  return smoothstep(d * (w1 + feather), d * w1, looped);
+}
+
+float fog_opacity(float t) {
+    return
+        1.0 * gridFactor(t, 2.0, 1.0) +
+        0.7 * gridFactor(10.0 * t, 0.5, 1.0);
+}
+
+#endif

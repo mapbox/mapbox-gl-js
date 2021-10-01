@@ -89,3 +89,22 @@ vec2 get_pattern_pos(const vec2 pixel_coord_upper, const vec2 pixel_coord_lower,
 }
 
 const vec4 AWAY = vec4(-1000.0, -1000.0, -1000.0, 1); // Normalized device coordinate that is not rendered.
+
+
+#ifdef FOG
+// Compute a ramp for fog opacity
+//   - t: depth, rescaled to 0 at fogStart and 1 at fogEnd
+// See: https://www.desmos.com/calculator/3taufutxid
+float fog_opacity(float t) {
+    return (fract(10.0 * t) > 0.98 ? 1.0 : 0.0) + 0.4 * (fract(100.0 * t) > 0.8 ? 1.0 : 0.0);
+    const float decay = 6.0;
+    float falloff = 1.0 - min(1.0, exp(-decay * t));
+
+    // Cube without pow() to smooth the onset
+    falloff *= falloff * falloff;
+
+    // Scale and clip to 1 at the far limit
+    return u_fog_color.a * min(1.0, 1.00747 * falloff);
+}
+
+#endif

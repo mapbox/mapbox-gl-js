@@ -5,6 +5,7 @@
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <script src="./webgl-error-reporter.js"></script>
     <style>
         body { margin: 0; padding: 0 }
         html, body, #map { height: 100%; }
@@ -42,6 +43,7 @@ var GUIParams = function() {
     this.showCollisionBoxes = false;
     this.fov = 36.86989764584402;
 };
+window.cosineCorrection = true;
 
 var guiParams = new GUIParams();
 
@@ -164,8 +166,6 @@ var marker = new mapboxgl.Marker({
     .setLngLat(map.getCenter())
     .setPopup(popup)
     .addTo(map);
-
-marker.togglePopup();
 
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {
