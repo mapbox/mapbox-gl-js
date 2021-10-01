@@ -12,7 +12,6 @@ import Point from '@mapbox/point-geometry';
 import type Map from '../map.js';
 import type HandlerManager from '../handler_manager.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
-import FullscreenControl from '../control/fullscreen_control.js';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
@@ -62,6 +61,7 @@ class ScrollZoomHandler {
     _wheelZoomRate: number;
 
     _alertContainer: HTMLElement; // used to display the scroll zoom blocker alert
+    _alertTimer: TimeoutID;
 
     /**
      * @private
@@ -165,9 +165,10 @@ class ScrollZoomHandler {
             if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !this._isFullscreen()) {
                 this._showBlockerAlert();
                 return;
-            } else if (this._alertContainer) {
-                // immediately hide alert if it is visible when ctrl is pressed while scroll zooming.
+            } else if (this._alertContainer.style.visibility !== 'hidden') {
+                // immediately hide alert if it is visible when ctrl or ⌘ is pressed while scroll zooming.
                 this._alertContainer.style.visibility = 'hidden';
+                clearTimeout(this._alertTimer);
             }
         }
 
@@ -390,17 +391,16 @@ class ScrollZoomHandler {
     }
 
     _isFullscreen() {
-        // scroll zoom blocker should be prevented if map is fullscreen
-        for (const control of this._map._controls) {
-            if (control instanceof FullscreenControl) return control._fullscreen;
-        }
+        return window.document.fullscreenElement !== null;
     }
 
     _showBlockerAlert() {
         if (this._alertContainer.style.visibility === 'hidden') this._alertContainer.style.visibility = 'visible';
         this._alertContainer.classList.add('mapboxgl-scroll-zoom-blocker-show');
 
-        setTimeout(() => {
+        clearTimeout(this._alertTimer);
+
+        this._alertTimer = setTimeout(() => {
             this._alertContainer.classList.remove('mapboxgl-scroll-zoom-blocker-show');
         }, 200);
     }
