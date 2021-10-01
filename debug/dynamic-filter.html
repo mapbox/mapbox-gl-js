@@ -33,39 +33,35 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
-    center: [-122.4194, 37.7749],
+    zoom: 10.852,
+    center: [-120.30344797631889, 38.11726797649675],
     style: 'mapbox://styles/mapbox/streets-v11',
-    hash: true
+    // hash: true
 });
 
 function generateDistanceScales() {
     const center = map.getCenter();
     const bearing = map.getBearing();
-    const rings = 10;
+    const numSteps = 10;
     const step = 0.25;
 
     const matrix = glMatrix.mat4.invert([], map.transform.mercatorCenterDistanceMatrix);
-    const circles = [];
-    for (let i = 1; i <= rings; i++) {
-        const radius = step * i;
-        const farCoord = new mapboxgl.MercatorCoordinate(...glMatrix.vec3.transformMat4([], [0, radius, 0], matrix)).toLngLat();
-        const radiusKm = turf.distance(turf.point([center.lng, center.lat]), turf.point([farCoord.lng, farCoord.lat]));
-        const circleTop = turf.lineArc(turf.point([center.lng, center.lat]), radiusKm, bearing - 90, bearing + 90, {steps: 36});
-        const circleBtm = turf.lineArc(turf.point([center.lng, center.lat]), radiusKm, bearing + 90, bearing + 270, {steps: 36});
-        circleTop.properties['distance'] = `+${radius}`;
-        circleBtm.properties['distance'] = `-${radius}`;
-
-        circles.push(circleTop, circleBtm);
+    const lines = [];
+    for (let i = -numSteps; i <= numSteps; i++) {
+        const distance = step * i;
+        const v0 = [-2, distance, 0];
+        const v1 = [0, distance, 0];
+        const v2 = [2, distance, 0];
+        const p0 = new mapboxgl.MercatorCoordinate(...glMatrix.vec3.transformMat4([], v0, matrix)).toLngLat();
+        const p1 = new mapboxgl.MercatorCoordinate(...glMatrix.vec3.transformMat4([], v1, matrix)).toLngLat();
+        const p2 = new mapboxgl.MercatorCoordinate(...glMatrix.vec3.transformMat4([], v2, matrix)).toLngLat();
+        const line = turf.lineString([[p0.lng, p0.lat], [p1.lng, p1.lat], [p2.lng, p2.lat]], {distance: `${distance.toFixed(2)}`});
+        lines.push(line);
     }
 
-    return turf.featureCollection(circles);
+    return turf.featureCollection(lines);
 }
 
-map.on('idle', () => {
-    const scale = generateDistanceScales();
-    map.getSource('rings').setData(scale);
-});
 
 const tooltip = document.getElementById('tooltip');
 map.on('mousemove', (e) => {
@@ -74,7 +70,7 @@ map.on('mousemove', (e) => {
     const {x, y, z} = mapboxgl.MercatorCoordinate.fromLngLat(loc);
     const v = glMatrix.vec3.transformMat4([], [x, y, z], m);
 
-    const dist = Math.sign(v[1]) * glMatrix.vec3.length(v);
+    const dist = v[1];
     tooltip.innerText = dist.toFixed(2);
     tooltip.style.transform = `translate(${e.point.x + 10}px,${e.point.y + 10}px)`;
 });
@@ -101,7 +97,7 @@ map.once('load', () => {
         id: 'rings-layer',
         source: 'rings',
         paint: {
-            "line-width": ['abs', ['*', 20, ['to-number', ['get', 'distance']]]]
+            "line-width": 10
         }
     });
 
@@ -121,6 +117,12 @@ map.once('load', () => {
             "text-halo-width": 2
         }
     });
+
+    map.on('idle', () => {
+        const scale = generateDistanceScales();
+        map.getSource('rings').setData(scale);
+    });
+
 });
 
 </script>

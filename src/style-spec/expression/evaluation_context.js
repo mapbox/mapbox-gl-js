@@ -53,7 +53,7 @@ class EvaluationContext {
         return this.feature && this.feature.properties || {};
     }
 
-    distanceFromCamera() {
+    distanceFromCenter() {
         if (this.featureTileCoord && this.featureDistanceMatrix) {
 
             const m = this.featureDistanceMatrix;
@@ -63,11 +63,9 @@ class EvaluationContext {
             //inlined vec3*mat4 multiplication to prevent importing gl-matrix as a dependency
             let w = m[3] * x + m[7] * y + m[11] * z + m[15];
             w = w || 1.0;
-            const x1 = (m[0] * x + m[4] * y + m[8] * z + m[12]) / w;
             const y1 = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
-            const z1 = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
 
-            return Math.sign(y1) * Math.sqrt(x1 * x1 + y1 * y1  + z1 * z1);
+            return y1;
         }
 
         return 0;

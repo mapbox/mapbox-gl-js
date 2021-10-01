@@ -3,7 +3,7 @@
     "metadata": {
       "test": {
         "collisionDebug": true,
-        "height": 256,
+        "height": 264,
         "width": 400,
         "operations": [["wait"]]
       }
@@ -41,8 +41,8 @@
         "id": "rings-labels",
         "source": "rings",
         "filter": ["case",
-            ["<", ["pitch"], 60], ["in", ["get", "distance"], ["literal", ["+0.25", "-0.75", "+1.5"]]],
-            ["all", [">=", ["pitch"], 60], [">", ["distance-from-center"], 0]], ["in", ["get", "distance"], ["literal", ["+1", "+2"]]],
+            ["<", ["pitch"], 60], ["in", ["get", "distance"], ["literal", ["0.25", "-0.75", "1.50"]]],
+            ["all", [">=", ["pitch"], 60], [">", ["distance-from-center"], 0]], ["in", ["get", "distance"], ["literal", ["1.00", "2.00"]]],
             false
         ],
         "layout": {
