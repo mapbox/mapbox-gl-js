@@ -62,7 +62,6 @@ function generateDistanceScales() {
     return turf.featureCollection(lines);
 }
 
-
 const tooltip = document.getElementById('tooltip');
 map.on('mousemove', (e) => {
     const loc = map.unproject(e.point);
