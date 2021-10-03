@@ -28,7 +28,7 @@
           },
           {
             "type": "Feature",
-            "properties": { "icon": "park"},
+            "properties": { "icon": "missing-icon"},
             "geometry": {
               "type": "Point",
               "coordinates": [
