@@ -118,18 +118,18 @@ function makeMap() {
     };
     const styleEl = document.getElementById('styleName');
     const styleName = styleEl.options[styleEl.selectedIndex].value;
-    const style = styles[styleName];
-    // const style = {
-    //     "version": 8,
-    //     "sources": {},
-    //     "layers": [],
-    //     "projection": {
-    //         "name": "albers"
-    //     }
-    // };
+    // const style = styles[styleName];
+    const style = {
+        "version": 8,
+        "sources": {},
+        "layers": [],
+        "projection": {
+            "name": "winkel"
+        }
+    };
 
     map = new mapboxgl.Map({
-        projection,
+        // projection,
         container: 'map',
         zoom,
         center,
@@ -139,7 +139,6 @@ function makeMap() {
     map.showTileBoundaries = true;
     map.transform.unskew = !!document.getElementById('unskew').checked;
     map.transform.unrotate = !!document.getElementById('unrotate').checked;
-    update();
     addGraticule();
 }
 
@@ -149,6 +148,9 @@ function update() {
 }
 map.on('click', function () {
     console.log('projection', map.getProjection());
+});
+map.on('moveend', function (e) {
+    console.log('moveend', e);
 });
 document.getElementById('projName').addEventListener('change', (e) => {
     const el = document.getElementById('projName');

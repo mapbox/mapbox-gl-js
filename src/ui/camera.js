@@ -342,6 +342,8 @@ class Camera extends Evented {
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     getBearing(): number {
+        console.log('bearing', this.transform.bearing);
+        // debugger;
         return this.transform.bearing;
     }
 
