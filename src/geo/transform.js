@@ -1272,17 +1272,17 @@ class Transform {
     }
 
     calculateDistanceTileMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
-        const fogTileMatrixKey = unwrappedTileID.key;
+        const matrixKey = unwrappedTileID.key;
         const cache = this._distanceMatrixCache;
-        if (cache[fogTileMatrixKey]) {
-            return cache[fogTileMatrixKey];
+        if (cache[matrixKey]) {
+            return cache[matrixKey];
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
         mat4.multiply(posMatrix, this.centerDistanceMatrix, posMatrix);
 
-        cache[fogTileMatrixKey] = new Float32Array(posMatrix);
-        return cache[fogTileMatrixKey];
+        cache[matrixKey] = new Float32Array(posMatrix);
+        return cache[matrixKey];
     }
 
     /**
