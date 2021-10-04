@@ -59,6 +59,7 @@ class FeatureIndex {
     bucketLayerIDs: Array<Array<string>>;
 
     vtLayers: {[_: string]: VectorTileLayer};
+    vtFeatures: {[_: string]: VectorTileFeature[]};
     sourceLayerCoder: DictionaryCoder;
 
     constructor(tileID: OverscaledTileID, promoteId?: ?PromoteIdSpecification) {
@@ -102,6 +103,10 @@ class FeatureIndex {
         if (!this.vtLayers) {
             this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
             this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
+            this.vtFeatures = {};
+            for (const layer in this.vtLayers) {
+                this.vtFeatures[layer] = [];
+            }
         }
         return this.vtLayers;
     }
@@ -267,8 +272,14 @@ class FeatureIndex {
 
         this.loadVTLayers();
         const sourceLayerName = this.sourceLayerCoder.decode(sourceLayerIndex);
+
+        const featureCache = this.vtFeatures[sourceLayerName];
+        if (!!featureCache[featureIndex]) {
+            return featureCache[featureIndex];
+        }
         const sourceLayer = this.vtLayers[sourceLayerName];
         const feature = sourceLayer.feature(featureIndex);
+        featureCache[featureIndex] = feature;
 
         return feature;
     }
