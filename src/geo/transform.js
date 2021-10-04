@@ -214,6 +214,11 @@ class Transform {
         projection = getProjectionOptions(projection);
         this.projectionOptions = projection;
         this.projection = getProjection(projection);
+        // this.projection = {
+        //     name: 'winkel',
+        //     project: function() {return {x: 0, y: 0}},
+        //     unproject: function() {return {lng: 0, lat: 0}}
+        // };
         this._calcMatrices();
     }
 

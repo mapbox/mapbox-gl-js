@@ -345,6 +345,7 @@ class Style extends Evented {
     }
 
     _setProjection(projection: ProjectionSpecification) {
+        console.log('style setprojection', projection);
         this.map.painter.clearBackgroundTiles();
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
@@ -353,7 +354,6 @@ class Style extends Evented {
         this.map.transform.setProjection(projection);
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
         this.map._update(true);
-        this.map.triggerRepaint();
     }
 
     _loadSprite(url: string) {
