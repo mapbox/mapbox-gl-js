@@ -29,7 +29,7 @@ export type LineUniformsType = {|
 
 export type LineGradientUniformsType = {|
     'u_matrix': UniformMatrix4f,
-    'u_ratio': Uniform1f,
+    'u_pixels_to_tile_units': UniformMatrix2f,
     'u_device_pixel_ratio': Uniform1f,
     'u_units_to_pixels': Uniform2f,
     'u_image': Uniform1i,
@@ -39,7 +39,7 @@ export type LineGradientUniformsType = {|
 export type LinePatternUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_texsize': Uniform2f,
-    'u_ratio': Uniform1f,
+    'u_pixels_to_tile_units': UniformMatrix2f,
     'u_device_pixel_ratio': Uniform1f,
     'u_units_to_pixels': Uniform2f,
     'u_image': Uniform1i,
@@ -50,7 +50,7 @@ export type LinePatternUniformsType = {|
 export type LineSDFUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_texsize': Uniform2f,
-    'u_ratio': Uniform1f,
+    'u_pixels_to_tile_units': UniformMatrix2f,
     'u_device_pixel_ratio': Uniform1f,
     'u_units_to_pixels': Uniform2f,
     'u_scale': Uniform3f,
@@ -67,7 +67,7 @@ const lineUniforms = (context: Context, locations: UniformLocations): LineUnifor
 
 const lineGradientUniforms = (context: Context, locations: UniformLocations): LineGradientUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_ratio': new Uniform1f(context, locations.u_ratio),
+    'u_pixels_to_tile_units': new UniformMatrix2f(context, locations.u_pixels_to_tile_units),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
     'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
     'u_image': new Uniform1i(context, locations.u_image),
@@ -77,7 +77,7 @@ const lineGradientUniforms = (context: Context, locations: UniformLocations): Li
 const linePatternUniforms = (context: Context, locations: UniformLocations): LinePatternUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_ratio': new Uniform1f(context, locations.u_ratio),
+    'u_pixels_to_tile_units': new UniformMatrix2f(context, locations.u_pixels_to_tile_units),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
     'u_image': new Uniform1i(context, locations.u_image),
     'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
@@ -88,7 +88,7 @@ const linePatternUniforms = (context: Context, locations: UniformLocations): Lin
 const lineSDFUniforms = (context: Context, locations: UniformLocations): LineSDFUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_ratio': new Uniform1f(context, locations.u_ratio),
+    'u_pixels_to_tile_units': new UniformMatrix2f(context, locations.u_pixels_to_tile_units),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
     'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
     'u_image': new Uniform1i(context, locations.u_image),

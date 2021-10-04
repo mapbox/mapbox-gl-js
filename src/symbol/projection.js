@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 
-import {mat4, vec4} from 'gl-matrix';
+import {mat2, mat4, vec4} from 'gl-matrix';
 import * as symbolSize from './symbol_size.js';
 import {addDynamicAttributes} from '../data/bucket/symbol_bucket.js';
 
