@@ -17,6 +17,7 @@ import GlyphAtlas from '../render/glyph_atlas.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import {CanonicalTileID, OverscaledTileID} from './tile_id.js';
 import {PerformanceUtils} from '../util/performance.js';
+import tileTransform from '../geo/projection/tile_transform.js';
 
 import type {Bucket} from '../data/bucket.js';
 import type Actor from '../util/actor.js';
@@ -29,6 +30,7 @@ import type {
     WorkerTileCallback,
 } from '../source/worker_source.js';
 import type {PromoteIdSpecification} from '../style-spec/types.js';
+import type {TileTransform} from '../geo/projection/tile_transform.js';
 
 class WorkerTile {
     tileID: OverscaledTileID;
@@ -46,6 +48,7 @@ class WorkerTile {
     returnDependencies: boolean;
     enableTerrain: boolean;
     isSymbolTile: ?boolean;
+    tileTransform: TileTransform;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -71,6 +74,12 @@ class WorkerTile {
         this.promoteId = params.promoteId;
         this.enableTerrain = !!params.enableTerrain;
         this.isSymbolTile = params.isSymbolTile;
+        if (params.projection) {
+            this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
+        } else {
+            // silence flow
+            assert(params.projection);
+        }
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
@@ -158,7 +167,7 @@ class WorkerTile {
                     enableTerrain: this.enableTerrain
                 });
 
-                bucket.populate(features, options, this.tileID.canonical);
+                bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
                 featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
             }
         }

@@ -61,6 +61,7 @@ import type {SymbolQuad} from '../../symbol/quads.js';
 import type {SizeData} from '../../symbol/symbol_size.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
+import type {TileTransform} from '../../geo/projection/tile_transform.js';
 export type SingleCollisionBox = {
     x1: number;
     y1: number;
@@ -417,7 +418,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID) {
+    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         const layer = this.layers[0];
         const layout = layer.layout;
 
@@ -455,7 +456,7 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
-            if (!needGeometry)  evaluationFeature.geometry = loadGeometry(feature, canonical);
+            if (!needGeometry)  evaluationFeature.geometry = loadGeometry(feature, canonical, tileTransform);
 
             let text: Formatted | void;
             if (hasText) {

@@ -8,6 +8,7 @@ import getProjection from '../geo/projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../source/tile_id.js';
+import type {TileTransform} from '../geo/projection/tile_transform.js';
 
 // These bounds define the minimum and maximum supported coordinate values.
 // While visible coordinates are within [0, EXTENT], tiles may theoretically
@@ -16,12 +17,6 @@ import type {CanonicalTileID} from '../source/tile_id.js';
 const BITS = 15;
 const MAX = Math.pow(2, BITS - 1) - 1;
 const MIN = -MAX - 1;
-
-let projection;
-
-export function setProjection(config: {name: string} | string) {
-    projection = getProjection(config);
-}
 
 function clampPoint(point: Point) {
     const {x, y} = point;
@@ -54,10 +49,11 @@ type FeatureWithGeometry = {
  * @param {VectorTileFeature} feature
  * @private
  */
-export default function loadGeometry(feature: FeatureWithGeometry, canonical?: CanonicalTileID): Array<Array<Point>> {
+export default function loadGeometry(feature: FeatureWithGeometry, canonical?: CanonicalTileID, cs: TileTransform): Array<Array<Point>> {
     const featureExtent = feature.extent;
     const scale = EXTENT / featureExtent;
-    let cs, z2;
+    const {projection} = cs;
+    let z2;
     const isMercator = !projection || projection.name === 'mercator';
     if (canonical && !isMercator) {
         cs = tileTransform(canonical, projection);

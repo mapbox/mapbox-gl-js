@@ -23,3 +23,4 @@ export default function toEvaluationFeature(feature: VectorTileFeature, needGeom
         properties:feature.properties,
         geometry: needGeometry ? loadGeometry(feature) : []};
 }
+//TODO fix

@@ -31,6 +31,7 @@ import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
+import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
 class FillBucket implements Bucket {
     index: number;
@@ -75,7 +76,7 @@ class FillBucket implements Bucket {
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
     }
 
-    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID) {
+    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         this.hasPattern = hasPattern('fill', this.layers, options);
         const fillSortKey = this.layers[0].layout.get('fill-sort-key');
         const bucketFeatures = [];
@@ -96,7 +97,7 @@ class FillBucket implements Bucket {
                 type: feature.type,
                 sourceLayerIndex,
                 index,
-                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical),
+                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
                 patterns: {},
                 sortKey
             };

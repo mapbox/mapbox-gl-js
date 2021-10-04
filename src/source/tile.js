@@ -16,9 +16,10 @@ import SourceFeatureState from '../source/source_state.js';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin.js';
 import {TileSpaceDebugBuffer} from '../data/debug_viz.js';
 import Color from '../style-spec/util/color.js';
-import loadGeometry, {setProjection} from '../data/load_geometry.js';
+import loadGeometry from '../data/load_geometry.js';
 import earcut from 'earcut';
 import getTileMesh from './tile_mesh.js';
+import tileTransform from '../geo/projection/tile_transform.js';
 
 import boundsAttributes from '../data/bounds_attributes.js';
 import EXTENT from '../data/extent.js';
@@ -47,6 +48,7 @@ import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type IndexBuffer from '../gl/index_buffer.js';
 import type {Projection} from '../geo/projection/index.js';
+import type {TileTransform} from '../geo/projection/tile_transform.js';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -105,6 +107,7 @@ class Tile {
     vtLayers: {[_: string]: VectorTileLayer};
     isSymbolTile: ?boolean;
     isRaster: ?boolean;
+    tileTransform: TileTransform;
 
     neighboringTiles: ?Object;
     dem: ?DEMData;
@@ -163,8 +166,8 @@ class Tile {
         this.state = 'loading';
 
         if (painter) {
-            const {projection, projectionOptions} = painter.transform;
-            setProjection(projectionOptions);
+            const {projection} = painter.transform;
+            this.tileTransform = tileTransform(tileID.canonical, projection);
             this._makeTileBoundsBuffers(painter.context, projection);
         }
     }
@@ -557,7 +560,7 @@ class Tile {
         if (this._tileBoundsBuffer || !projection || projection.name === 'mercator') return;
 
         // reproject tile outline with adaptive resampling
-        const boundsLine = loadGeometry(BOUNDS_FEATURE, this.tileID.canonical)[0];
+        const boundsLine = loadGeometry(BOUNDS_FEATURE, this.tileID.canonical, this.tileTransform)[0];
 
         let boundsVertices, boundsIndices;
         if (this.isRaster) {
