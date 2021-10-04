@@ -79,7 +79,7 @@ class Transform {
     // From world coordinates to, relative-to-center coordinates.
     // Relative-to-center coordinates are centered at the current map center, and rotated by the map bearing.
     // +x basis goes towards the right, +y basis point away from the camera, +z basis points up from the map.
-    centerDistanceMatrix: Float64Array;
+    worldToCenterDistanceMatrix: Float64Array;
     // From Mercator coordinates to relative to center coordinates
     mercatorCenterDistanceMatrix: Float64Array;
 
@@ -114,7 +114,7 @@ class Transform {
     _projMatrixCache: {[_: number]: Float32Array};
     _alignedProjMatrixCache: {[_: number]: Float32Array};
     _fogTileMatrixCache: {[_: number]: Float32Array};
-    _distanceMatrixCache: {[_: number]: Float32Array};
+    _distanceTileMatrixCache: {[_: number]: Float32Array};
     _camera: FreeCamera;
     _centerAltitude: number;
     _horizonShift: number;
@@ -144,7 +144,7 @@ class Transform {
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
         this._fogTileMatrixCache = {};
-        this._distanceMatrixCache = {};
+        this._distanceTileMatrixCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this._averageElevation = 0;
@@ -1273,13 +1273,13 @@ class Transform {
 
     calculateDistanceTileMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
         const matrixKey = unwrappedTileID.key;
-        const cache = this._distanceMatrixCache;
+        const cache = this._distanceTileMatrixCache;
         if (cache[matrixKey]) {
             return cache[matrixKey];
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
-        mat4.multiply(posMatrix, this.centerDistanceMatrix, posMatrix);
+        mat4.multiply(posMatrix, this.worldToCenterDistanceMatrix, posMatrix);
 
         cache[matrixKey] = new Float32Array(posMatrix);
         return cache[matrixKey];
@@ -1664,7 +1664,7 @@ class Transform {
     }
 
     _calcDistanceMatrices() {
-        this._distanceMatrixCache = {};
+        this._distanceTileMatrixCache = {};
         const center = this.point;
 
         const m = new Float64Array(16);
@@ -1673,7 +1673,7 @@ class Transform {
         mat4.rotateZ(m, m, this.angle);
         mat4.translate(m, m, [-center.x, -center.y, 0]);
 
-        this.centerDistanceMatrix = m;
+        this.worldToCenterDistanceMatrix = m;
         this.mercatorCenterDistanceMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, 1]);
     }
 
