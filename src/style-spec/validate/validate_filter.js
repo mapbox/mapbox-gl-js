@@ -12,7 +12,8 @@ export default function validateFilter(options) {
         const layerType = deepUnbundle(options.layerType);
         return validateExpression(extend({}, options, {
             expressionContext: 'filter',
-            valueSpec: options.styleSpec[`filter_${layerType}`]
+            // We default to a layerType of `fill` because that points to a non-dynamic filter definition within the style-spec.
+            valueSpec: options.styleSpec[`filter_${layerType || 'fill'}`]
         }));
     } else {
         return validateNonExpressionFilter(options);

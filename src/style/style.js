@@ -1270,7 +1270,7 @@ class Style extends Evented {
 
     queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: any, transform: Transform) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, {layerType: 'fill'}, params);
+            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
 
         const includedSources = {};
@@ -1338,7 +1338,7 @@ class Style extends Evented {
 
     querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter, {layerType: 'fill'}, params);
+            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter, null, params);
         }
         const sourceCaches = this._getSourceCaches(sourceID);
         let results = [];
