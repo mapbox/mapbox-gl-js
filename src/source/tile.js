@@ -168,7 +168,9 @@ class Tile {
         if (painter) {
             const {projection} = painter.transform;
             this.tileTransform = tileTransform(tileID.canonical, projection);
-            this._makeTileBoundsBuffers(painter.context, projection);
+            if (painter.context) {
+                this._makeTileBoundsBuffers(painter.context, projection);
+            }
         }
     }
 
