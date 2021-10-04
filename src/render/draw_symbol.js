@@ -4,7 +4,6 @@ import Point from '@mapbox/point-geometry';
 import drawCollisionDebug from './draw_collision_debug.js';
 
 import SegmentVector from '../data/segment.js';
-import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
 import {mat4} from 'gl-matrix';
