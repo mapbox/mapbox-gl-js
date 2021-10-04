@@ -1283,7 +1283,7 @@ class Transform {
             scale = 1;
             scaledX = cs.x;
             scaledY = cs.y;
-            mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, 1]);
+            mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, this.pixelsPerMeter / this.worldSize]);
         }
 
         mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);
