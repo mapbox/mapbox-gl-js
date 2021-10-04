@@ -770,7 +770,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     }
 }
 
-.mapboxgl-scroll-zoom-blocker {
+.mapboxgl-touch-pan-blocker, .mapboxgl-scroll-zoom-blocker {
     color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     justify-content: center;
@@ -789,7 +789,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     transition-delay: 1s;
 }
 
-.mapboxgl-scroll-zoom-blocker-show {
+.mapboxgl-touch-pan-blocker-show, .mapboxgl-scroll-zoom-blocker-show {
     opacity: 1;
     transition: opacity 0.1s ease-in-out;
 }
