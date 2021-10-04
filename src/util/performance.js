@@ -76,11 +76,6 @@ export const PerformanceUtils = {
         placementTime += time;
     },
     frame(timestamp: number, isRenderFrame: boolean) {
-        // Ignore frametimes during loading
-        if (!fullLoadFinished) {
-            return;
-        }
-
         const currTimestamp = timestamp;
         if (lastFrameTime != null) {
             const frameTime = currTimestamp - lastFrameTime;
