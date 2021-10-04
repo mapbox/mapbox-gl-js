@@ -1,13 +1,14 @@
 // @flow
 
 import {createExpression} from '../expression/index.js';
+import {isFeatureConstant} from '../expression/is_constant.js';
 import latest from '../reference/latest.js';
 import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type Point from '@mapbox/point-geometry';
 
 type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceMatrix?: number[]) => boolean;
-export type FeatureFilter = {filter: FilterExpression, dynamicFilter?: FilterExpression, needGeometry: boolean};
+export type FeatureFilter = {filter: FilterExpression, dynamicFilter?: FilterExpression, needGeometry: boolean, needFeature: boolean};
 
 export default createFilter;
 export {isExpressionFilter, isDynamicFilter, extractStaticFilter};
@@ -66,7 +67,7 @@ function isExpressionFilter(filter: any) {
  */
 function createFilter(filter: any, layerType?: string = 'fill'): FeatureFilter {
     if (filter === null || filter === undefined) {
-        return {filter: () => true, needGeometry: false};
+        return {filter: () => true, needGeometry: false, needFeature: false};
     }
 
     if (!isExpressionFilter(filter)) {
@@ -102,6 +103,7 @@ ${JSON.stringify(filterExp, null, 2)}
     // If the static component is not equal to the entire filter then we have a dynamic component
     // Compile the dynamic component separately
     let dynamicFilterFunc = null;
+    let needFeature = null;
     if (staticFilter !== filterExp) {
         const compiledDynamicFilter = createExpression(filterExp, filterSpec);
 
@@ -109,6 +111,7 @@ ${JSON.stringify(filterExp, null, 2)}
             throw new Error(compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
         } else {
             dynamicFilterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceMatrix?: number[]) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, undefined, undefined, featureTileCoord, featureDistanceMatrix);
+            needFeature = !isFeatureConstant(compiledDynamicFilter.value.expression);
         }
     }
 
@@ -118,7 +121,8 @@ ${JSON.stringify(filterExp, null, 2)}
     return {
         filter: filterFunc,
         dynamicFilter: dynamicFilterFunc ? dynamicFilterFunc : undefined,
-        needGeometry
+        needGeometry,
+        needFeature: !!needFeature
     };
 }
 

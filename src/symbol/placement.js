@@ -246,6 +246,7 @@ export class Placement {
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const dynamicFilter = styleLayer._featureFilter.dynamicFilter;
+        const dynamicFilterNeedsFeature = styleLayer._featureFilter.needFeature;
         const pixelsToTiles = pixelsToTileUnits(tile, 1, this.transform.zoom);
 
         const textLabelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix,
@@ -274,6 +275,7 @@ export class Placement {
             clippingData = {
                 unwrappedTileID,
                 dynamicFilter,
+                dynamicFilterNeedsFeature,
                 featureIndex: tile.latestFeatureIndex
             };
         }
@@ -441,7 +443,7 @@ export class Placement {
 
                 const filterFunc = clippingData.dynamicFilter;
 
-                const feature = getSymbolFeature(symbolInstance);
+                const feature = clippingData.dynamicFilterNeedsFeature ? getSymbolFeature(symbolInstance) : null;
                 const canonicalTileId = this.retainedQueryData[bucket.bucketInstanceId].tileID.canonical;
                 const shouldClip = !filterFunc(globals, feature, canonicalTileId, new Point(symbolInstance.tileAnchorX, symbolInstance.tileAnchorY), this.transform.calculateDistanceTileMatrix(clippingData.unwrappedTileID));
 
