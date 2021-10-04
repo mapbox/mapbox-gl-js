@@ -125,9 +125,9 @@ export default class TouchPanHandler {
         if (this._map && !this._alertContainer) {
             this._alertContainer = DOM.create('div', 'mapboxgl-touch-pan-blocker', this._map._container);
 
-            this._alertContainer.textContent = 'Use two fingers to move map';
+            this._alertContainer.textContent = this._map._getUIString('TouchPanBlocker.Message');
 
-            // dynamically set the font size of the scroll zoom blocker alert message
+            // dynamically set the font size of the touch pan blocker alert message
             this._alertContainer.style.fontSize = `${Math.max(10, Math.min(24, Math.floor(this._el.clientWidth * 0.05)))}px`;
         }
     }
