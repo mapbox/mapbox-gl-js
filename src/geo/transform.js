@@ -703,10 +703,6 @@ class Transform {
             if (isNaN(tx) || isNaN(tx2) || isNaN(ty) || isNaN(ty2)) {
                 assert(false);
             }
-            //assert(!isNaN(tx));
-            //assert(!isNaN(tx2));
-            //assert(!isNaN(ty));
-            //assert(!isNaN(ty2));
             const ret = new Aabb(
                 [(wrap + tx) * numTiles, numTiles * ty, min],
                 [(wrap  + tx2) * numTiles, numTiles * ty2, max]);
@@ -716,11 +712,13 @@ class Transform {
         const newRootTile = (wrap: number): any => {
             const max = maxRange;
             const min = minRange;
+            const aabb = this.projection.name === 'mercator' ?
+                new Aabb([wrap * numTiles, 0, min], [(wrap + 1) * numTiles, numTiles, max]) :
+                aabbForTile(0, 0, 0, wrap, min, max);
             return {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
-                aabb1: new Aabb([wrap * numTiles, 0, min], [(wrap + 1) * numTiles, numTiles, max]),
-                aabb: aabbForTile(0, 0, 0, wrap, min, max),
+                aabb,
                 zoom: 0,
                 x: 0,
                 y: 0,

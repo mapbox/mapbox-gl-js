@@ -41,6 +41,9 @@ export default function tileTransform(id: Object, projection: Projection) {
         maxY = Math.max(maxY, p.y);
     }
 
+    // we pick an error threshold for calculating the bbox that balances between performance and precision
+    const maxErr = s / 16;
+
     function processSegment(pa, pb, ax, ay, bx, by) {
         const mx = (ax + bx) / 2;
         const my = (ay + by) / 2;
@@ -48,7 +51,7 @@ export default function tileTransform(id: Object, projection: Projection) {
         const pm = projection.project(lngFromMercatorX(mx), latFromMercatorY(my));
         const err = Math.hypot((pa.x + pb.x) / 2 - pm.x, (pa.y + pb.y) / 2 - pm.y);
 
-        if (err >= 1 / 8) { // TODO better heuristic for adaptive bbox measurement
+        if (err >= maxErr) { // needs better heuristic for adaptive bbox measurement
             processSegment(pa, pm, ax, ay, mx, my);
             processSegment(pm, pb, mx, my, bx, by);
         } else {
@@ -60,6 +63,12 @@ export default function tileTransform(id: Object, projection: Projection) {
     processSegment(p1, p2, x2, y1, x2, y2);
     processSegment(p2, p3, x2, y2, x1, y2);
     processSegment(p3, p0, x1, y2, x1, y1);
+
+    // extend the bbox by max error to make sure coords don't go past tile extent
+    minX -= maxErr;
+    minY -= maxErr;
+    maxX += maxErr;
+    maxY += maxErr;
 
     const max = Math.max(maxX - minX, maxY - minY);
     const scale = 1 / max;
