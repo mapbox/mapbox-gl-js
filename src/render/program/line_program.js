@@ -8,7 +8,7 @@ import {
     UniformMatrix2f,
     UniformMatrix4f
 } from '../uniform_binding.js';
-import pixelsToTileUnits, {getPixelsToTileUnitsMatrix} from '../../source/pixels_to_tile_units.js';
+import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
 import {extend} from '../../util/util.js';
 import browser from '../../util/browser.js';
 
@@ -103,7 +103,7 @@ const lineUniformValues = (
     matrix: ?Float32Array
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
-    const pixelsToTileUnits = getPixelsToTileUnitsMatrix(tile, transform);
+    const pixelsToTileUnits = transform.calculatePixelsToTileUnitsMatrix(tile);
 
     return {
         'u_matrix': calculateMatrix(painter, tile, layer, matrix),
@@ -142,7 +142,7 @@ const linePatternUniformValues = (
         'u_matrix': calculateMatrix(painter, tile, layer, matrix),
         'u_texsize': tile.imageAtlasTexture.size,
         // camera zoom ratio
-        'u_ratio': 1 / pixelsToTileUnits(tile, 1, transform.zoom),
+        'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile),
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_image': 0,
         'u_scale': [tileZoomRatio, crossfade.fromScale, crossfade.toScale],

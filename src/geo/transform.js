@@ -15,11 +15,13 @@ import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted} from './projection/adjustments.js';
+import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
 import type {Projection} from './projection/index.js';
+import type Tile from '../source/tile.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -113,6 +115,7 @@ class Transform {
     _constraining: boolean;
     _projMatrixCache: {[_: number]: Float32Array};
     _alignedProjMatrixCache: {[_: number]: Float32Array};
+    _pixelsToTileUnitsCache: {[_: number]: Float32Array};
     _fogTileMatrixCache: {[_: number]: Float32Array};
     _camera: FreeCamera;
     _centerAltitude: number;
@@ -1332,6 +1335,18 @@ class Transform {
         return cache[projMatrixKey];
     }
 
+    calculatePixelsToTileUnitsMatrix(tile: Tile): Float32Array {
+        const key = tile.tileID.key;
+        const cache = this._pixelsToTileUnitsCache;
+        if (cache[key]) {
+            return cache[key];
+        }
+
+        const matrix = getPixelsToTileUnitsMatrix(tile, this);
+        cache[key] = matrix;
+        return cache[key];
+    }
+
     customLayerMatrix(): Array<number> {
         return this.mercatorMatrix.slice();
     }
@@ -1643,6 +1658,7 @@ class Transform {
 
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
+        this._pixelsToTileUnitsCache = {};
     }
 
     _calcFogMatrices() {
