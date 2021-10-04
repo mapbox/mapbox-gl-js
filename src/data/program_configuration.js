@@ -247,8 +247,8 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     }
 
     populatePaintArray(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
-        const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, canonical, [], formattedSection);
-        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, canonical, [], formattedSection);
+        const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, canonical, availableImages, formattedSection);
+        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, canonical, availableImages, formattedSection);
         const start = this.paintVertexArray.length;
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, min, max);
