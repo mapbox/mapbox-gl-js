@@ -14,6 +14,7 @@ import {Aabb, Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
+import getProjectionAdjustments, {getProjectionAdjustmentInverted} from './projection/adjustments.js';
 
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
@@ -87,6 +88,8 @@ class Transform {
 
     // Inverse of glCoordMatrix, from NDC to screen coordinates, [-1, 1] x [-1, 1] --> [0, w] x [h, 0]
     labelPlaneMatrix: Float32Array;
+
+    inverseAdjustmentMatrix: Array<number>;
 
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
@@ -1556,7 +1559,7 @@ class Transform {
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
         const nearZ = this.height / 50;
 
-        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter, this);
+        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, nearZ, farZ);
 
         // Apply center of perspective offset
@@ -1564,6 +1567,20 @@ class Transform {
         cameraToClip[9] = offset.y * 2 / this.height;
 
         let m = mat4.mul([], cameraToClip, worldToCamera);
+
+        if (this.projection.name !== 'mercator') {
+            // Projections undistort as you zoom in (shear, scale, rotate).
+            // Apply the undistortion around the center of the map.
+            const mc = this.locationCoordinate(this.center);
+            const adjustments = mat4.identity([]);
+            mat4.translate(adjustments, adjustments, [mc.x * this.worldSize, mc.y * this.worldSize, 0]);
+            mat4.multiply(adjustments, adjustments, getProjectionAdjustments(this));
+            mat4.translate(adjustments, adjustments, [-mc.x * this.worldSize, -mc.y * this.worldSize, 0]);
+            mat4.multiply(m, m, adjustments);
+            this.inverseAdjustmentMatrix = getProjectionAdjustmentInverted(this);
+        } else {
+            this.inverseAdjustmentMatrix = [1, 0, 0, 1];
+        }
 
         // The mercatorMatrix can be used to transform points from mercator coordinates
         // ([0, 0] nw, [1, 1] se) to GL coordinates.
