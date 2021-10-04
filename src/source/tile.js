@@ -378,7 +378,8 @@ class Tile {
             tileResult,
             pixelPosMatrix,
             transform,
-            params
+            params,
+            tileTransform: this.tileTransform
         }, layers, serializedLayers, sourceFeatureState);
     }
 
