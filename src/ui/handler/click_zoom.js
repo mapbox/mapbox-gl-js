@@ -16,6 +16,10 @@ export default class ClickZoomHandler {
         this._active = false;
     }
 
+    blur(e: Event) {
+        this.reset();
+    }
+
     dblclick(e: MouseEvent, point: Point) {
         e.preventDefault();
         return {

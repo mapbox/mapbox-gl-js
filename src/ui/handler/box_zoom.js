@@ -153,6 +153,10 @@ class BoxZoomHandler {
         }
     }
 
+    blur(e: Event) {
+        this.reset();
+    }
+
     reset() {
         this._active = false;
 
