@@ -149,6 +149,7 @@ export default class Worker {
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
+        p.projection = this.projections[mapId];
         this.getWorkerSource(mapId, params.type, params.source).reloadTile(p, callback);
     }
 
