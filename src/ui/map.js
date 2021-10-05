@@ -700,7 +700,7 @@ class Map extends Camera {
 
         const fireMoving = !this._moving;
         if (fireMoving) {
-            this.stop();
+            //this.stop();
             this.fire(new Event('movestart', eventData))
                 .fire(new Event('move', eventData));
         }

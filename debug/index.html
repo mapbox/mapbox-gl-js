@@ -7,7 +7,7 @@
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
-        html, body, #map { height: 100%; }
+        html, body, #map { height: 200px }
     </style>
 </head>
 
@@ -25,6 +25,18 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/streets-v10',
     hash: true
 });
+
+const div = document.getElementById('map');
+
+window.setInterval(() => {
+        const t = 4000;
+        const v = 100;
+        const h = 300 + Math.abs(((Date.now() % t) - t/2)) / (t/2) * v;
+    div.style.height = h + 'px';
+    map.resize();
+}, 100);
+
+
 
 </script>
 </body>
