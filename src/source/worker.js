@@ -88,8 +88,6 @@ export default class Worker {
     }
 
     spriteLoaded(mapId: string, bool: boolean) {
-        console.log("Worker.SpriteLoaded called. Set to:");
-        console.log(bool);
         this.isSpriteLoaded[mapId] = bool;
         for (const workerSource in this.workerSources[mapId]) {
             const ws = this.workerSources[mapId][workerSource];
