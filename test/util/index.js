@@ -17,6 +17,8 @@ export function createMap(t, options, callback) {
         }
     };
 
+    Object.defineProperty(container, 'offsetWidth', {value: 200, configurable: true});
+    Object.defineProperty(container, 'offsetHeight', {value: 200, configurable: true});
     Object.defineProperty(container, 'getBoundingClientRect', {value:
         () => {
             return {

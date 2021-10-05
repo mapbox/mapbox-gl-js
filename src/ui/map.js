@@ -703,7 +703,7 @@ class Map extends Camera {
         this._resizeCanvas(width, height);
 
         this.transform.resize(width, height);
-        this.painter.resize(Math.ceil(width), Math.ceil(height));
+        this.painter.resize(width, height);
 
         const fireMoving = !this._moving;
         if (fireMoving) {
@@ -2528,8 +2528,8 @@ class Map extends Camera {
         let height = 0;
 
         if (this._container) {
-            width = this._container.getBoundingClientRect().width || 400;
-            height = this._container.getBoundingClientRect().height || 300;
+            width = this._container.offsetWidth || 400;
+            height = this._container.offsetHeight || 300;
         }
 
         return [width, height];
@@ -2581,8 +2581,8 @@ class Map extends Camera {
         const pixelRatio = browser.devicePixelRatio || 1;
 
         // Request the required canvas size (rounded up) taking the pixelratio into account.
-        this._canvas.width = pixelRatio * Math.ceil(width);
-        this._canvas.height = pixelRatio * Math.ceil(height);
+        this._canvas.width = pixelRatio * width;
+        this._canvas.height = pixelRatio * height;
 
         // Maintain the same canvas size, potentially downscaling it for HiDPI displays
         this._canvas.style.width = `${width}px`;
