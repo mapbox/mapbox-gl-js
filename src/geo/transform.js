@@ -46,8 +46,11 @@ class Transform {
     width: number;
     height: number;
 
-    // Bearing, radians, in [-pi, pi]
+    // Bearing of the projected plane, radians, in [-pi, pi]
     angle: number;
+
+    // Bearing of the map, degrees.
+    _bearing: number;
 
     // 2D rotation matrix in the horizontal plane, as a function of bearing
     rotationMatrix: Float64Array;
@@ -144,6 +147,7 @@ class Transform {
         this._center = new LngLat(0, 0);
         this.zoom = 0;
         this.angle = 0;
+        this._bearing = 0;
         this._fov = 0.6435011087932844;
         this._pitch = 0;
         this._unmodified = true;
