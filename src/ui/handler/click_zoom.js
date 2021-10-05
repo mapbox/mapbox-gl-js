@@ -16,7 +16,7 @@ export default class ClickZoomHandler {
         this._active = false;
     }
 
-    blur(e: Event) {
+    blur() {
         this.reset();
     }
 

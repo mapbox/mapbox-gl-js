@@ -31,7 +31,7 @@ class MouseHandler {
         this._clickTolerance = options.clickTolerance || 1;
     }
 
-    blur(e: Event) {
+    blur() {
         this.reset();
     }
 

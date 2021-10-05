@@ -371,7 +371,7 @@ class ScrollZoomHandler {
         return easing;
     }
 
-    blur(e: Event) {
+    blur() {
         this.reset();
     }
 

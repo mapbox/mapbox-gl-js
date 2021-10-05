@@ -45,7 +45,7 @@ class KeyboardHandler {
         this._rotationDisabled = false;
     }
 
-    blur(e: Event) {
+    blur() {
         this.reset();
     }
 
