@@ -115,7 +115,7 @@ class Transform {
     _projMatrixCache: {[_: number]: Float32Array};
     _alignedProjMatrixCache: {[_: number]: Float32Array};
     _fogTileMatrixCache: {[_: number]: Float32Array};
-    _distanceTileMatrixCache: {[_: number]: Float32Array};
+    _distanceTileDataCache: {[_: number]: FeatureDistanceData};
     _camera: FreeCamera;
     _centerAltitude: number;
     _horizonShift: number;
@@ -145,7 +145,7 @@ class Transform {
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
         this._fogTileMatrixCache = {};
-        this._distanceTileMatrixCache = {};
+        this._distanceTileDataCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this._averageElevation = 0;
@@ -1273,6 +1273,12 @@ class Transform {
     }
 
     calculateDistanceTileData(unwrappedTileID: UnwrappedTileID): FeatureDistanceData {
+        const distanceDataKey = unwrappedTileID.key;
+        const cache = this._distanceTileDataCache;
+        if (cache[distanceDataKey]) {
+            return cache[distanceDataKey];
+        }
+
         const canonical = unwrappedTileID.canonical;
         const windowScaleFactor = 1 / this.height;
         const scale = this.cameraWorldSize / this.zoomScale(canonical.z);
@@ -1284,26 +1290,14 @@ class Transform {
 
         const cX = center.x - tX;
         const cY = center.y - tY;
-        return {
+        cache[distanceDataKey] = {
             angle: this.angle,
             center: [cX, cY],
             scale: scale / EXTENT,
             windowScaleFactor
         };
-    }
 
-    calculateDistanceTileMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
-        const matrixKey = unwrappedTileID.key;
-        const cache = this._distanceTileMatrixCache;
-        if (cache[matrixKey]) {
-            return cache[matrixKey];
-        }
-
-        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
-        mat4.multiply(posMatrix, this.worldToCenterDistanceMatrix, posMatrix);
-
-        cache[matrixKey] = new Float32Array(posMatrix);
-        return cache[matrixKey];
+        return cache[distanceDataKey];
     }
 
     /**
@@ -1685,7 +1679,7 @@ class Transform {
     }
 
     _calcDistanceMatrices() {
-        this._distanceTileMatrixCache = {};
+        this._distanceTileDataCache = {};
         const center = this.point;
 
         const m = new Float64Array(16);
