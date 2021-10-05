@@ -422,29 +422,29 @@ export class Placement {
             bucket.updateCollisionDebugBuffers(this.transform.zoom, collisionBoxArray);
         }
 
-        const getSymbolFeature = (symbolInstance: SymbolInstance): VectorTileFeature => {
-            assert(clippingData);
-            const featureIndex = clippingData.featureIndex;
-            const retainedQueryData = this.retainedQueryData[bucket.bucketInstanceId];
-            return featureIndex.loadFeature({
-                featureIndex: symbolInstance.featureIndex,
-                bucketIndex: retainedQueryData.bucketIndex,
-                sourceLayerIndex: retainedQueryData.sourceLayerIndex,
-                layoutVertexArrayOffset: 0
-            });
-        };
-
         const placeSymbol = (symbolInstance: SymbolInstance, symbolIndex: number, collisionArrays: CollisionArrays) => {
             if (clippingData) {
+                // Setup globals
                 const globals = {
                     zoom: this.transform.zoom,
                     pitch: this.transform.pitch,
                 };
 
-                const filterFunc = clippingData.dynamicFilter;
-
-                const feature = clippingData.dynamicFilterNeedsFeature ? getSymbolFeature(symbolInstance) : null;
+                // Deserialize feature only if necessary
+                let feature = null;
+                if (clippingData.dynamicFilterNeedsFeature) {
+                    const featureIndex = clippingData.featureIndex;
+                    const retainedQueryData = this.retainedQueryData[bucket.bucketInstanceId];
+                    feature = featureIndex.loadFeature({
+                        featureIndex: symbolInstance.featureIndex,
+                        bucketIndex: retainedQueryData.bucketIndex,
+                        sourceLayerIndex: retainedQueryData.sourceLayerIndex,
+                        layoutVertexArrayOffset: 0
+                    });
+                }
                 const canonicalTileId = this.retainedQueryData[bucket.bucketInstanceId].tileID.canonical;
+
+                const filterFunc = clippingData.dynamicFilter;
                 const shouldClip = !filterFunc(globals, feature, canonicalTileId, new Point(symbolInstance.tileAnchorX, symbolInstance.tileAnchorY), this.transform.calculateDistanceTileData(clippingData.unwrappedTileID));
 
                 if (shouldClip) {
