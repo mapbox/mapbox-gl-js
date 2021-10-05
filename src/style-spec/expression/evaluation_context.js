@@ -59,19 +59,15 @@ class EvaluationContext {
 
             const c = this.featureDistanceData.center;
             const scale = this.featureDistanceData.scale;
-            const angle = this.featureDistanceData.angle;
             const {x, y} = this.featureTileCoord;
 
-            // Calculate the distance vector `d`
+            // Calculate the distance vector `d` (left handed)
             const dX = (x * scale - c[0]) * this.featureDistanceData.windowScaleFactor;
             const dY = (y * scale - c[1]) * this.featureDistanceData.windowScaleFactor;
 
-            // Calculate the bearing vector `v` by rotating unit vector clockwise
-            const b = [0, -1];
-            const cos = Math.cos(-angle);
-            const sin = Math.sin(-angle);
-            const bX = cos * b[0] - sin * b[1];
-            const bY = sin * b[0] + cos * b[1];
+            // The bearing vector `b` (left handed)
+            const bX = this.featureDistanceData.bearing[0];
+            const bY = this.featureDistanceData.bearing[1];
 
             // Distance is calculated as `dot(d, v)`
             const dist = (bX * dX + bY * dY);

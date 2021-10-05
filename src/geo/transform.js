@@ -1279,6 +1279,7 @@ class Transform {
             return cache[distanceDataKey];
         }
 
+        //Calculate the offset of the tile
         const canonical = unwrappedTileID.canonical;
         const windowScaleFactor = 1 / this.height;
         const scale = this.cameraWorldSize / this.zoomScale(canonical.z);
@@ -1288,10 +1289,15 @@ class Transform {
 
         const center = this.point;
 
+        // Calculate the bearing vector by rotating unit vector [0, -1] clockwise
+        const angle = this.angle;
+        const bX = Math.sin(-angle);
+        const bY = -Math.cos(-angle);
+
         const cX = center.x - tX;
         const cY = center.y - tY;
         cache[distanceDataKey] = {
-            angle: this.angle,
+            bearing: [bX, bY],
             center: [cX, cY],
             scale: scale / EXTENT,
             windowScaleFactor
