@@ -9,16 +9,10 @@ import simulate from '../../util/simulate_interaction.js';
 
 function createMap(t, options = {}) {
     const container = window.document.createElement('div');
+
     Object.defineProperty(container, 'offsetWidth', {value: 512});
     Object.defineProperty(container, 'offsetHeight', {value: 512});
-    // Object.defineProperty(container, 'getBoundingClientRect', {value:
-    //     () => {
-    //         return {
-    //             height: 512,
-    //             width: 512
-    //         };
-    //     }
-    // });
+
     return globalCreateMap(t, {container, ...options});
 }
 

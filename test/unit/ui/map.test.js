@@ -2549,14 +2549,8 @@ test('Map', (t) => {
 
         map.flyTo({center: [200, 0], duration: 100});
 
-        Object.defineProperty(container, 'getBoundingClientRect', {value:
-            () => {
-                return {
-                    height: 250,
-                    width: 250
-                };
-            }
-        });
+        Object.defineProperty(container, 'offsetWidth', {value: 250, configurable: true});
+        Object.defineProperty(container, 'offsetHeight', {value: 250, configurable: true});
 
         map.resize();
 
