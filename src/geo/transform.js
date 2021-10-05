@@ -14,11 +14,14 @@ import {Aabb, Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
+import getProjectionAdjustments, {getProjectionAdjustmentInverted} from './projection/adjustments.js';
+import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
 import type {Projection} from './projection/index.js';
+import type Tile from '../source/tile.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -88,6 +91,8 @@ class Transform {
     // Inverse of glCoordMatrix, from NDC to screen coordinates, [-1, 1] x [-1, 1] --> [0, w] x [h, 0]
     labelPlaneMatrix: Float32Array;
 
+    inverseAdjustmentMatrix: Array<number>;
+
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
@@ -110,6 +115,7 @@ class Transform {
     _constraining: boolean;
     _projMatrixCache: {[_: number]: Float32Array};
     _alignedProjMatrixCache: {[_: number]: Float32Array};
+    _pixelsToTileUnitsCache: {[_: number]: Float32Array};
     _fogTileMatrixCache: {[_: number]: Float32Array};
     _camera: FreeCamera;
     _centerAltitude: number;
@@ -1277,7 +1283,7 @@ class Transform {
             scale = 1;
             scaledX = cs.x;
             scaledY = cs.y;
-            mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, 1]);
+            mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, this.pixelsPerMeter / this.worldSize]);
         }
 
         mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);
@@ -1327,6 +1333,18 @@ class Transform {
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
         return cache[projMatrixKey];
+    }
+
+    calculatePixelsToTileUnitsMatrix(tile: Tile): Float32Array {
+        const key = tile.tileID.key;
+        const cache = this._pixelsToTileUnitsCache;
+        if (cache[key]) {
+            return cache[key];
+        }
+
+        const matrix = getPixelsToTileUnitsMatrix(tile, this);
+        cache[key] = matrix;
+        return cache[key];
     }
 
     customLayerMatrix(): Array<number> {
@@ -1556,7 +1574,7 @@ class Transform {
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
         const nearZ = this.height / 50;
 
-        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter, this);
+        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, nearZ, farZ);
 
         // Apply center of perspective offset
@@ -1564,6 +1582,20 @@ class Transform {
         cameraToClip[9] = offset.y * 2 / this.height;
 
         let m = mat4.mul([], cameraToClip, worldToCamera);
+
+        if (this.projection.name !== 'mercator') {
+            // Projections undistort as you zoom in (shear, scale, rotate).
+            // Apply the undistortion around the center of the map.
+            const mc = this.locationCoordinate(this.center);
+            const adjustments = mat4.identity([]);
+            mat4.translate(adjustments, adjustments, [mc.x * this.worldSize, mc.y * this.worldSize, 0]);
+            mat4.multiply(adjustments, adjustments, getProjectionAdjustments(this));
+            mat4.translate(adjustments, adjustments, [-mc.x * this.worldSize, -mc.y * this.worldSize, 0]);
+            mat4.multiply(m, m, adjustments);
+            this.inverseAdjustmentMatrix = getProjectionAdjustmentInverted(this);
+        } else {
+            this.inverseAdjustmentMatrix = [1, 0, 0, 1];
+        }
 
         // The mercatorMatrix can be used to transform points from mercator coordinates
         // ([0, 0] nw, [1, 1] se) to GL coordinates.
@@ -1626,6 +1658,7 @@ class Transform {
 
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
+        this._pixelsToTileUnitsCache = {};
     }
 
     _calcFogMatrices() {

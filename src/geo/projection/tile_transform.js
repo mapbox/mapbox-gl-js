@@ -3,6 +3,15 @@ import {lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import type {Projection} from './index.js';
 
+export type TileTransform = {
+    scale: number,
+    x: number,
+    y: number,
+    x2: number,
+    y2: number,
+    projection: Projection
+};
+
 export default function tileTransform(id: Object, projection: Projection) {
     const s = Math.pow(2, -id.z);
     const x1 = (id.x) * s;
@@ -41,6 +50,7 @@ export default function tileTransform(id: Object, projection: Projection) {
         x: minX * scale,
         y: minY * scale,
         x2: maxX * scale,
-        y2: maxY * scale
+        y2: maxY * scale,
+        projection
     };
 }

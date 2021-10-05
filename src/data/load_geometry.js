@@ -4,10 +4,9 @@ import {warnOnce, clamp} from '../util/util.js';
 
 import EXTENT from './extent.js';
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
-import getProjection from '../geo/projection/index.js';
-import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../source/tile_id.js';
+import type {TileTransform} from '../geo/projection/tile_transform.js';
 
 // These bounds define the minimum and maximum supported coordinate values.
 // While visible coordinates are within [0, EXTENT], tiles may theoretically
@@ -16,12 +15,6 @@ import type {CanonicalTileID} from '../source/tile_id.js';
 const BITS = 15;
 const MAX = Math.pow(2, BITS - 1) - 1;
 const MIN = -MAX - 1;
-
-let projection;
-
-export function setProjection(config: {name: string} | string) {
-    projection = getProjection(config);
-}
 
 function clampPoint(point: Point) {
     const {x, y} = point;
@@ -54,26 +47,26 @@ type FeatureWithGeometry = {
  * @param {VectorTileFeature} feature
  * @private
  */
-export default function loadGeometry(feature: FeatureWithGeometry, canonical?: CanonicalTileID): Array<Array<Point>> {
+export default function loadGeometry(feature: FeatureWithGeometry, canonical?: CanonicalTileID, tileTransform?: TileTransform): Array<Array<Point>> {
     const featureExtent = feature.extent;
     const scale = EXTENT / featureExtent;
-    let cs, z2;
+    const projection = tileTransform ? tileTransform.projection : undefined;
+    let z2;
     const isMercator = !projection || projection.name === 'mercator';
     if (canonical && !isMercator) {
-        cs = tileTransform(canonical, projection);
         z2 = Math.pow(2, canonical.z);
     }
 
     function reproject(p) {
-        if (isMercator || !canonical) {
+        if (isMercator || !canonical || !tileTransform || !projection) {
             return new Point(Math.round(p.x * scale), Math.round(p.y * scale));
         } else {
             const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
             const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
             const {x, y} = projection.project(lng, lat);
             return new Point(
-                Math.round((x * cs.scale - cs.x) * EXTENT),
-                Math.round((y * cs.scale - cs.y) * EXTENT)
+                Math.round((x * tileTransform.scale - tileTransform.x) * EXTENT),
+                Math.round((y * tileTransform.scale - tileTransform.y) * EXTENT)
             );
         }
     }

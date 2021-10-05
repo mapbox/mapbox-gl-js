@@ -2,7 +2,6 @@
 
 import Actor from '../util/actor.js';
 
-import {setProjection} from '../data/load_geometry.js';
 import StyleLayerIndex from '../style/style_layer_index.js';
 import VectorTileWorkerSource from './vector_tile_worker_source.js';
 import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source.js';
@@ -13,6 +12,7 @@ import {enforceCacheSizeLimit} from '../util/tile_request_cache.js';
 import {extend} from '../util/util.js';
 import {PerformanceUtils} from '../util/performance.js';
 import {Event} from '../util/evented.js';
+import getProjection from '../geo/projection/index.js';
 
 import type {
     WorkerSource,
@@ -27,6 +27,7 @@ import type {WorkerGlobalScopeInterface} from '../util/web_worker.js';
 import type {Callback} from '../types/callback.js';
 import type {LayerSpecification} from '../style-spec/types.js';
 import type {PluginState} from './rtl_text_plugin.js';
+import type {Projection} from '../geo/projection/index.js';
 
 /**
  * @private
@@ -39,6 +40,7 @@ export default class Worker {
     workerSourceTypes: {[_: string]: Class<WorkerSource> };
     workerSources: {[_: string]: {[_: string]: {[_: string]: WorkerSource } } };
     demWorkerSources: {[_: string]: {[_: string]: RasterDEMTileWorkerSource } };
+    projections: {[_: string]: Projection };
     isSpriteLoaded: boolean;
     referrer: ?string;
     terrain: ?boolean;
@@ -49,6 +51,7 @@ export default class Worker {
         this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
+        this.projections = {};
         this.availableImages = {};
         this.isSpriteLoaded = false;
 
@@ -118,7 +121,7 @@ export default class Worker {
     }
 
     setProjection(mapId: string, config: {name: string} | string) {
-        setProjection(config);
+        this.projections[mapId] = getProjection(config);
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
@@ -134,6 +137,7 @@ export default class Worker {
     loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
+        p.projection = this.projections[mapId];
         this.getWorkerSource(mapId, params.type, params.source).loadTile(p, callback);
     }
 
@@ -145,6 +149,7 @@ export default class Worker {
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
+        p.projection = this.projections[mapId];
         this.getWorkerSource(mapId, params.type, params.source).reloadTile(p, callback);
     }
 

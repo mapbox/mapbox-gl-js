@@ -2,12 +2,11 @@
 
 import LngLat from '../lng_lat.js';
 import MercatorCoordinate from '../mercator_coordinate.js';
-import {mat4} from 'gl-matrix';
+import {mat4, mat2} from 'gl-matrix';
 import type {Projection} from './index.js';
 import type Transform from '../transform.js';
 
-export default function getProjectionAdjustments(transform: Transform) {
-
+export default function getProjectionAdjustments(transform: Transform, withoutRotation?: boolean) {
     const projection = transform.projection;
 
     const interpT = getInterpolationT(transform);
@@ -16,11 +15,18 @@ export default function getProjectionAdjustments(transform: Transform) {
     const zoomAdjustmentOrigin = getZoomAdjustment(projection, LngLat.convert(projection.center));
     const scaleAdjustment = Math.pow(2, zoomAdjustment * interpT + (1 - interpT) * zoomAdjustmentOrigin);
 
-    const matrix = getShearAdjustment(transform.projection, transform.zoom, transform.center, interpT);
+    const matrix = getShearAdjustment(transform.projection, transform.zoom, transform.center, interpT, withoutRotation);
 
     mat4.scale(matrix, matrix, [scaleAdjustment, scaleAdjustment, 1]);
 
     return matrix;
+}
+
+export function getProjectionAdjustmentInverted(transform: Transform) {
+    const m = getProjectionAdjustments(transform, true);
+    return mat2.invert([], [
+        m[0], m[1],
+        m[4], m[5]]);
 }
 
 function getInterpolationT(transform: Transform) {
@@ -57,7 +63,7 @@ function getZoomAdjustment(projection: Projection, loc: LngLat) {
     return Math.log(scale) / Math.LN2;
 }
 
-function getShearAdjustment(projection, zoom, loc, interpT) {
+function getShearAdjustment(projection, zoom, loc, interpT, withoutRotation?: boolean) {
 
     // create a location a tiny amount (~1km) east of the given location
     const loc2 = new LngLat(loc.lng + 360 / 40000, loc.lat);
@@ -99,7 +105,7 @@ function getShearAdjustment(projection, zoom, loc, interpT) {
     const scale = Math.abs(delta3.x) / Math.abs(delta4.y);
 
     const unrotate = mat4.identity([]);
-    mat4.rotateZ(unrotate, unrotate, -angleAdjust / 180 * Math.PI * (1 - interpT));
+    mat4.rotateZ(unrotate, unrotate, -angleAdjust / 180 * Math.PI * (1 - (withoutRotation ? 0 : interpT)));
 
     // unskew
     const shear = mat4.identity([]);
