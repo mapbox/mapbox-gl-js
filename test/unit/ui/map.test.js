@@ -765,8 +765,7 @@ test('Map', (t) => {
         });
 
         t.test('does nothing if container size is the same', (t) => {
-            const map = createMap(t),
-                container = map.getContainer();
+            const map = createMap(t);
 
             t.spy(map.transform, 'resize');
             t.spy(map.painter, 'resize');
