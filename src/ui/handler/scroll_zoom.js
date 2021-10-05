@@ -391,7 +391,7 @@ class ScrollZoomHandler {
     }
 
     _isFullscreen() {
-        return window.document.fullscreenElement !== null;
+        return !!window.document.fullscreenElement;
     }
 
     _showBlockerAlert() {
