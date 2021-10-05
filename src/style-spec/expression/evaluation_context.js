@@ -62,8 +62,8 @@ class EvaluationContext {
             const {x, y} = this.featureTileCoord;
 
             // Calculate the distance vector `d` (left handed)
-            const dX = (x * scale - c[0]) * this.featureDistanceData.windowScaleFactor;
-            const dY = (y * scale - c[1]) * this.featureDistanceData.windowScaleFactor;
+            const dX = x * scale - c[0];
+            const dY = y * scale - c[1];
 
             // The bearing vector `b` (left handed)
             const bX = this.featureDistanceData.bearing[0];

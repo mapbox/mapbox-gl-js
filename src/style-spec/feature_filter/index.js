@@ -7,7 +7,7 @@ import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type Point from '@mapbox/point-geometry';
 
-export type FeatureDistanceData = {bearing: [number, number], center: [number, number], scale: number, windowScaleFactor: number};
+export type FeatureDistanceData = {bearing: [number, number], center: [number, number], scale: number};
 type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData) => boolean;
 export type FeatureFilter = {filter: FilterExpression, dynamicFilter?: FilterExpression, needGeometry: boolean, needFeature: boolean};
 

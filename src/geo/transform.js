@@ -1294,13 +1294,12 @@ class Transform {
         const bX = Math.sin(-angle);
         const bY = -Math.cos(-angle);
 
-        const cX = center.x - tX;
-        const cY = center.y - tY;
+        const cX = (center.x - tX) * windowScaleFactor;
+        const cY = (center.y - tY) * windowScaleFactor;
         cache[distanceDataKey] = {
             bearing: [bX, bY],
             center: [cX, cY],
-            scale: scale / EXTENT,
-            windowScaleFactor
+            scale: (scale / EXTENT) * windowScaleFactor
         };
 
         return cache[distanceDataKey];
