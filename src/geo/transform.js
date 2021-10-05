@@ -16,6 +16,7 @@ import assert from 'assert';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
+import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -1269,6 +1270,26 @@ class Transform {
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 
         return posMatrix;
+    }
+
+    calculateDistanceTileData(unwrappedTileID: UnwrappedTileID): FeatureDistanceData {
+        const canonical = unwrappedTileID.canonical;
+        const windowScaleFactor = 1 / this.height;
+        const scale = this.cameraWorldSize / this.zoomScale(canonical.z);
+        const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
+        const tX = unwrappedX * scale;
+        const tY = canonical.y * scale;
+
+        const center = this.point;
+
+        const cX = center.x - tX;
+        const cY = center.y - tY;
+        return {
+            angle: this.angle,
+            center: [cX, cY],
+            scale: scale / EXTENT,
+            windowScaleFactor
+        };
     }
 
     calculateDistanceTileMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {

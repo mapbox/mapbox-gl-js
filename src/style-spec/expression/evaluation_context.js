@@ -6,6 +6,7 @@ import type Point from '@mapbox/point-geometry';
 import type {FormattedSection} from './types/formatted.js';
 import type {GlobalProperties, Feature, FeatureState} from './index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
+import type {FeatureDistanceData} from '../feature_filter/index.js';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
@@ -17,7 +18,7 @@ class EvaluationContext {
     availableImages: ?Array<string>;
     canonical: ?CanonicalTileID;
     featureTileCoord: ?Point;
-    featureDistanceMatrix: ?number[];
+    featureDistanceData: ?FeatureDistanceData;
 
     _parseColorCache: {[_: string]: ?Color};
 
@@ -30,7 +31,7 @@ class EvaluationContext {
         this.availableImages = null;
         this.canonical = null;
         this.featureTileCoord = null;
-        this.featureDistanceMatrix = null;
+        this.featureDistanceData = null;
     }
 
     id() {
@@ -54,18 +55,27 @@ class EvaluationContext {
     }
 
     distanceFromCenter() {
-        if (this.featureTileCoord && this.featureDistanceMatrix) {
+        if (this.featureTileCoord && this.featureDistanceData) {
 
-            const m = this.featureDistanceMatrix;
+            const c = this.featureDistanceData.center;
+            const scale = this.featureDistanceData.scale;
+            const angle = this.featureDistanceData.angle;
             const {x, y} = this.featureTileCoord;
-            const z = 0;
 
-            //inlined vec3*mat4 multiplication to prevent importing gl-matrix as a dependency
-            let w = m[3] * x + m[7] * y + m[11] * z + m[15];
-            w = w || 1.0;
-            const y1 = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
+            // Calculate the distance vector `d`
+            const dX = (x * scale - c[0]) * this.featureDistanceData.windowScaleFactor;
+            const dY = (y * scale - c[1]) * this.featureDistanceData.windowScaleFactor;
 
-            return y1;
+            // Calculate the bearing vector `v` by rotating unit vector clockwise
+            const b = [0, -1];
+            const cos = Math.cos(-angle);
+            const sin = Math.sin(-angle);
+            const bX = cos * b[0] - sin * b[1];
+            const bY = sin * b[0] + cos * b[1];
+
+            // Distance is calculated as `dot(d, v)`
+            const dist = (bX * dX + bY * dY);
+            return dist;
         }
 
         return 0;

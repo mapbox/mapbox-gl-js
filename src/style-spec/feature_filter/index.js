@@ -7,7 +7,8 @@ import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type Point from '@mapbox/point-geometry';
 
-type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceMatrix?: number[]) => boolean;
+export type FeatureDistanceData = {angle: number, center: [number, number], scale: number, windowScaleFactor: number};
+type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData) => boolean;
 export type FeatureFilter = {filter: FilterExpression, dynamicFilter?: FilterExpression, needGeometry: boolean, needFeature: boolean};
 
 export default createFilter;
@@ -110,7 +111,7 @@ ${JSON.stringify(filterExp, null, 2)}
         if (compiledDynamicFilter.result === 'error') {
             throw new Error(compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
         } else {
-            dynamicFilterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceMatrix?: number[]) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, undefined, undefined, featureTileCoord, featureDistanceMatrix);
+            dynamicFilterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, undefined, undefined, featureTileCoord, featureDistanceData);
             needFeature = !isFeatureConstant(compiledDynamicFilter.value.expression);
         }
     }

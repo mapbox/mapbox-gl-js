@@ -27,6 +27,7 @@ import type {PropertyValueSpecification} from '../types.js';
 import type {FormattedSection} from './types/formatted.js';
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../source/tile_id.js';
+import type {FeatureDistanceData} from '../feature_filter/index.js';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -64,7 +65,7 @@ export class StyleExpression {
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, featureTileCoord?: Point, featureDistanceMatrix?: number[]): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
@@ -72,12 +73,12 @@ export class StyleExpression {
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection;
         this._evaluator.featureTileCoord = featureTileCoord || null;
-        this._evaluator.featureDistanceMatrix = featureDistanceMatrix || null;
+        this._evaluator.featureDistanceData = featureDistanceData || null;
 
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, featureTileCoord?: Point, featureDistanceMatrix?: number[]): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;
@@ -85,7 +86,7 @@ export class StyleExpression {
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection || null;
         this._evaluator.featureTileCoord = featureTileCoord || null;
-        this._evaluator.featureDistanceMatrix = featureDistanceMatrix || null;
+        this._evaluator.featureDistanceData = featureDistanceData || null;
 
         try {
             const val = this.expression.evaluate(this._evaluator);

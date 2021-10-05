@@ -274,7 +274,7 @@ class FeatureIndex {
         const sourceLayerName = this.sourceLayerCoder.decode(sourceLayerIndex);
 
         const featureCache = this.vtFeatures[sourceLayerName];
-        if (!!featureCache[featureIndex]) {
+        if (featureCache[featureIndex]) {
             return featureCache[featureIndex];
         }
         const sourceLayer = this.vtLayers[sourceLayerName];
