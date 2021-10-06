@@ -139,10 +139,18 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const stencilIdPass2 = ~stencilIdPass1 & 255;
             const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
             const stencilModePass1 = new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT);
+            const stencilModePass3 = new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP);
             const stencilModePass2 = new StencilMode(stencilFunc, stencilIdPass2, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT);
 
+            uniformValues.u_alpha_discard_threshold = 0.9;
             program.draw(context, gl.TRIANGLES, depthMode,
                 stencilModePass1, colorMode, CullFaceMode.disabled, uniformValues,
+                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
+                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+
+            uniformValues.u_alpha_discard_threshold = 0.0;
+            program.draw(context, gl.TRIANGLES, depthMode,
+                stencilModePass3, colorMode, CullFaceMode.disabled, uniformValues,
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
                 layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
 
