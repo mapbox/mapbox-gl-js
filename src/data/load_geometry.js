@@ -64,23 +64,6 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
         }
     }
 
-    function addResampled(resampled, startMerc, endMerc, startProj, endProj) {
-        const midMerc = new Point(
-            (startMerc.x + endMerc.x) / 2,
-            (startMerc.y + endMerc.y) / 2);
-        const midProj = reproject(midMerc);
-        const err = pointToLineDist(midProj.x, midProj.y, startProj.x, startProj.y, endProj.x, endProj.y);
-
-        if (err >= 1) {
-            // we're very unlikely to hit max call stack exceeded here,
-            // but we might want to safeguard against it in the future
-            addResampled(resampled, startMerc, midMerc, startProj, midProj);
-            addResampled(resampled, midMerc, endMerc, midProj, endProj);
-        } else {
-            resampled.push(clampPoint(endProj));
-        }
-    }
-
     const geometry = feature.loadGeometry();
 
     for (let i = 0; i < geometry.length; i++) {
