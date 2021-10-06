@@ -1425,6 +1425,9 @@ class Transform {
     _constrain() {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
+        // temporarily disable constraining for non-Mercator projections
+        if (this.projection.name !== 'mercator') return;
+
         this._constraining = true;
 
         let minY = -90;
