@@ -497,8 +497,19 @@ function determineLineBreaks(logicalInput: TaggedString,
 
     for (let i = 0; i < logicalInput.length(); i++) {
         const section = logicalInput.getSection(i);
+        // Add glyph advance of previous invisible codePoint in case it is not zero, such as white space ' '
+        if (i > 0) {
+            const lastCodePoint = logicalInput.getCharCode(i - 1);
+            if (whitespace[lastCodePoint]) {
+                currentX += getGlyphAdvance(lastCodePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
+            }
+        }
         const codePoint = logicalInput.getCharCode(i);
-        currentX += getGlyphAdvance(codePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
+        // Do not add glyph advance for invisible codePoint in current iteration as we try to break line here, and invisible
+        // codePoint shouldn't affect the decision
+        if (!whitespace[codePoint]) {
+            currentX += getGlyphAdvance(codePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
+        }
 
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
         // surrounding spaces.
