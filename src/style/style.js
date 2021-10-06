@@ -33,7 +33,6 @@ import getWorkerPool from '../util/global_worker_pool.js';
 import deref from '../style-spec/deref.js';
 import emptyStyle from '../style-spec/empty.js';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff.js';
-import featureFilter from '../style-spec/feature_filter/index.js';
 import {
     registerForPluginStateChange,
     evented as rtlTextPluginEvented,
@@ -319,7 +318,6 @@ class Style extends Evented {
         for (let layer of layers) {
             layer = createStyleLayer(layer);
             layer.setEventedParent(this, {layer: {id: layer.id}});
-            layer._featureFilter = featureFilter(layer.filter);
             this._layers[layer.id] = layer;
             this._serializedLayers[layer.id] = layer.serialize();
             this._updateLayerCount(layer, true);
@@ -1196,7 +1194,7 @@ class Style extends Evented {
             sourceCache.pause();
         }
         this._changed = true;
-        layer._featureFilter = featureFilter(layer.filter);
+        layer.invalidateCompiledFilter();
 
     }
 

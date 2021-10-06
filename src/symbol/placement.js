@@ -245,8 +245,11 @@ export class Placement {
 
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
-        const dynamicFilter = styleLayer._featureFilter.dynamicFilter;
-        const dynamicFilterNeedsFeature = styleLayer._featureFilter.needFeature;
+
+        styleLayer.compileFilter();
+
+        const dynamicFilter = styleLayer.dynamicFilter();
+        const dynamicFilterNeedsFeature = styleLayer.dynamicFilterNeedsFeature();
         const pixelsToTiles = pixelsToTileUnits(tile, 1, this.transform.zoom);
 
         const textLabelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix,
@@ -916,7 +919,7 @@ export class Placement {
         if (bucket.hasTextCollisionBoxData()) bucket.textCollisionBox.collisionVertexArray.clear();
 
         const layout = bucket.layers[0].layout;
-        const hasClipping = !!bucket.layers[0]._featureFilter.dynamicFilter;
+        const hasClipping = !!bucket.layers[0].dynamicFilter();
         const duplicateOpacityState = new JointOpacityState(null, 0, false, false, true);
         const textAllowOverlap = layout.get('text-allow-overlap');
         const iconAllowOverlap = layout.get('icon-allow-overlap');
