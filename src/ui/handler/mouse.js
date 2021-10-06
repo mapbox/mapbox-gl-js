@@ -31,6 +31,10 @@ class MouseHandler {
         this._clickTolerance = options.clickTolerance || 1;
     }
 
+    blur() {
+        this.reset();
+    }
+
     reset() {
         this._active = false;
         this._moved = false;
