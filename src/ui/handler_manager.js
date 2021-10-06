@@ -291,11 +291,6 @@ class HandlerManager {
 
     handleEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
 
-        if (e.type === 'blur') {
-            this.stop(true);
-            return;
-        }
-
         this._updatingCamera = true;
         assert(e.timeStamp !== undefined);
 
