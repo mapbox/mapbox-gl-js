@@ -1,4 +1,5 @@
 uniform lowp float u_device_pixel_ratio;
+uniform float u_alpha_discard_threshold;
 
 varying vec2 v_width2;
 varying vec2 v_normal;
@@ -63,7 +64,7 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_ALPHA_DISCARD
-    if (alpha < 1.0) {
+    if (alpha < u_alpha_discard_threshold) {
         discard;
     }
 #endif
