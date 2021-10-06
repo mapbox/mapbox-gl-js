@@ -3,7 +3,7 @@ import LngLat from '../lng_lat.js';
 import {clamp} from '../../util/util.js';
 
 export default {
-    name: 'wgs84',
+    name: 'equirectangular',
     center: [0, 0],
     project(lng: number, lat: number) {
         const x = 0.5 + lng / 360;

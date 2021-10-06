@@ -1,7 +1,10 @@
 // @flow
-import {albers, alaska} from './albers.js';
+import {alaska, albers} from './albers.js';
+import equalEarth from './equalEarth.js';
+import equirectangular from './equirectangular.js';
+import lambert from './lambert.js';
 import mercator from './mercator.js';
-import wgs84 from './wgs84.js';
+import naturalEarth from './naturalEarth.js';
 import winkel from './winkelTripel.js';
 import LngLat from '../lng_lat.js';
 
@@ -14,10 +17,13 @@ export type Projection = {
 };
 
 const projections = {
-    albers,
     alaska,
+    albers,
+    equalEarth,
+    equirectangular,
+    lambert,
     mercator,
-    wgs84,
+    naturalEarth,
     winkel
 };
 
