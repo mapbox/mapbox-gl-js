@@ -19,6 +19,10 @@ export default function tileTransform(id: Object, projection: Projection) {
     const y1 = (id.y) * s;
     const y2 = (id.y + 1) * s;
 
+    if (projection.name === 'mercator') {
+        return {scale: 1 << id.z, x: 0, y: 0, x2: 1, y2: 1, projection};
+    }
+
     const lng1 = lngFromMercatorX(x1);
     const lng2 = lngFromMercatorX(x2);
     const lat1 = latFromMercatorY(y1);
