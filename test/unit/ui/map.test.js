@@ -551,6 +551,9 @@ test('Map', (t) => {
         t.test('does not call stop on resize', (t) => {
             const map = createMap(t);
 
+            Object.defineProperty(container, 'clientWidth', {value: 250});
+            Object.defineProperty(container, 'clientHeight', {value: 250});
+
             t.spy(map, 'stop');
 
             map.resize();
@@ -563,6 +566,9 @@ test('Map', (t) => {
         t.test('fires movestart, move, resize, and moveend events', (t) => {
             const map = createMap(t),
                 events = [];
+
+            Object.defineProperty(container, 'clientWidth', {value: 250});
+            Object.defineProperty(container, 'clientHeight', {value: 250});
 
             ['movestart', 'move', 'resize', 'moveend'].forEach((event) => {
                 map.on(event, (e) => {
