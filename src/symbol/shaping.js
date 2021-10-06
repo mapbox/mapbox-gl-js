@@ -498,7 +498,7 @@ function determineLineBreaks(logicalInput: TaggedString,
     for (let i = 0; i < logicalInput.length(); i++) {
         const section = logicalInput.getSection(i);
         const codePoint = logicalInput.getCharCode(i);
-        if (!whitespace[codePoint]) currentX += getGlyphAdvance(codePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
+        currentX += getGlyphAdvance(codePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
 
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
         // surrounding spaces.
