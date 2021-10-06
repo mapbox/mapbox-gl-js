@@ -8,12 +8,12 @@ function tany(y) {
     return Math.tan((halfPi + y) / 2);
 }
 
-function getParams(parallels) {
-    const cy0 = Math.cos(parallels[0]);
-    const n = parallels[0] === parallels[1] ?
-        Math.sin(parallels[0]) :
-        Math.log(cy0 / Math.cos(parallels[1])) / Math.log(tany(parallels[1]) / tany(parallels[0]));
-    const f = cy0 * Math.pow(tany(parallels[0]), n) / n;
+function getParams([lat0, lat1]) {
+    const y0 = lat0 * Math.PI / 180;
+    const y1 = lat1 * Math.PI / 180;
+    const cy0 = Math.cos(y0);
+    const n = y0 === y1 ? Math.sin(y0) : Math.log(cy0 / Math.cos(y1)) / Math.log(tany(y1) / tany(y0));
+    const f = cy0 * Math.pow(tany(y0), n) / n;
 
     return {n, f};
 }
