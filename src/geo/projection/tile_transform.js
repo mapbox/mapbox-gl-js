@@ -29,10 +29,10 @@ export default function tileTransform(id: Object, projection: Projection) {
     const p2 = projection.project(lng2, lat2);
     const p3 = projection.project(lng1, lat2);
 
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
+    let minX = Math.min(p0.x, p1.x, p2.x, p3.x);
+    let minY = Math.min(p0.y, p1.y, p2.y, p3.y);
+    let maxX = Math.max(p0.x, p1.x, p2.x, p3.x);
+    let maxY = Math.max(p0.y, p1.y, p2.y, p3.y);
 
     function extendBox(p) {
         minX = Math.min(minX, p.x);
@@ -49,13 +49,16 @@ export default function tileTransform(id: Object, projection: Projection) {
         const my = (ay + by) / 2;
 
         const pm = projection.project(lngFromMercatorX(mx), latFromMercatorY(my));
-        const err = Math.hypot((pa.x + pb.x) / 2 - pm.x, (pa.y + pb.y) / 2 - pm.y);
+        const err = Math.max(0, minX - pm.x, minY - pm.y, pm.x - maxX, pm.y - maxY);
 
-        if (err >= maxErr) { // needs better heuristic for adaptive bbox measurement
+        minX = Math.min(minX, pm.x);
+        maxX = Math.max(maxX, pm.x);
+        minY = Math.min(minY, pm.y);
+        maxY = Math.max(maxY, pm.y);
+
+        if (err > maxErr) {
             processSegment(pa, pm, ax, ay, mx, my);
             processSegment(pm, pb, mx, my, bx, by);
-        } else {
-            extendBox(pb);
         }
     }
 
