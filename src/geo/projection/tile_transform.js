@@ -34,13 +34,6 @@ export default function tileTransform(id: Object, projection: Projection) {
     let maxX = Math.max(p0.x, p1.x, p2.x, p3.x);
     let maxY = Math.max(p0.y, p1.y, p2.y, p3.y);
 
-    function extendBox(p) {
-        minX = Math.min(minX, p.x);
-        maxX = Math.max(maxX, p.x);
-        minY = Math.min(minY, p.y);
-        maxY = Math.max(maxY, p.y);
-    }
-
     // we pick an error threshold for calculating the bbox that balances between performance and precision
     const maxErr = s / 16;
 
