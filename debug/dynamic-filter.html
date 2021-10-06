@@ -39,13 +39,26 @@ var map = window.map = new mapboxgl.Map({
     // hash: true
 });
 
+function calcMercatorDistanceMatrix() {
+    const center = map.transform.point;
+
+    const m = new Float64Array(16);
+    const worldSize = map.transform.worldSize;
+    const windowScaleFactor = 1 / map.transform.height;
+    glMatrix.mat4.fromScaling(m, [windowScaleFactor, -windowScaleFactor, windowScaleFactor]);
+    glMatrix.mat4.rotateZ(m, m, map.transform.angle);
+    glMatrix.mat4.translate(m, m, [-center.x, -center.y, 0]);
+
+    return glMatrix.mat4.scale([], m, [worldSize, worldSize, 1]);
+}
+
 function generateDistanceScales() {
     const center = map.getCenter();
     const bearing = map.getBearing();
     const numSteps = 10;
     const step = 0.25;
 
-    const matrix = glMatrix.mat4.invert([], map.transform.mercatorCenterDistanceMatrix);
+    const matrix = glMatrix.mat4.invert([], calcMercatorDistanceMatrix());
     const lines = [];
     for (let i = -numSteps; i <= numSteps; i++) {
         const distance = step * i;
@@ -65,7 +78,7 @@ function generateDistanceScales() {
 const tooltip = document.getElementById('tooltip');
 map.on('mousemove', (e) => {
     const loc = map.unproject(e.point);
-    const m = map.transform.mercatorCenterDistanceMatrix;
+    const m = calcMercatorDistanceMatrix();
     const {x, y, z} = mapboxgl.MercatorCoordinate.fromLngLat(loc);
     const v = glMatrix.vec3.transformMat4([], [x, y, z], m);
 

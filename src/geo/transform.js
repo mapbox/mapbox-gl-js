@@ -77,13 +77,6 @@ class Transform {
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
 
-    // From world coordinates to, relative-to-center coordinates.
-    // Relative-to-center coordinates are centered at the current map center, and rotated by the map bearing.
-    // +x basis goes towards the right, +y basis point away from the camera, +z basis points up from the map.
-    worldToCenterDistanceMatrix: Float64Array;
-    // From Mercator coordinates to relative to center coordinates
-    mercatorCenterDistanceMatrix: Float64Array;
-
     worldToFogMatrix: Float64Array;
     skyboxMatrix: Float32Array;
 
@@ -1643,7 +1636,7 @@ class Transform {
         this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
         this._calcFogMatrices();
-        this._calcDistanceMatrices();
+        this._distanceTileDataCache = {};
 
         // inverse matrix for conversion from screen coordinates to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
@@ -1681,20 +1674,6 @@ class Transform {
         // The worldToFogMatrix can be used for conversion from world coordinates to relative camera position in
         // units of fractions of the map height. Later composed with tile position to construct the fog tile matrix.
         this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
-    }
-
-    _calcDistanceMatrices() {
-        this._distanceTileDataCache = {};
-        const center = this.point;
-
-        const m = new Float64Array(16);
-        const windowScaleFactor = 1 / this.height;
-        mat4.fromScaling(m, [windowScaleFactor, -windowScaleFactor, windowScaleFactor]);
-        mat4.rotateZ(m, m, this.angle);
-        mat4.translate(m, m, [-center.x, -center.y, 0]);
-
-        this.worldToCenterDistanceMatrix = m;
-        this.mercatorCenterDistanceMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, 1]);
     }
 
     _updateCameraState() {
