@@ -1,8 +1,11 @@
 // @flow
-import {albers, alaska} from './albers.js';
+import {alaska, albers} from './albers.js';
+import equalEarth from './equalEarth.js';
+import equirectangular from './equirectangular.js';
+import lambertConformalConic from './lambert.js';
 import mercator from './mercator.js';
-import wgs84 from './wgs84.js';
-import winkel from './winkelTripel.js';
+import naturalEarth from './naturalEarth.js';
+import winkelTripel from './winkelTripel.js';
 import LngLat from '../lng_lat.js';
 
 export type Projection = {
@@ -14,11 +17,14 @@ export type Projection = {
 };
 
 const projections = {
-    albers,
     alaska,
+    albers,
+    equalEarth,
+    equirectangular,
+    lambertConformalConic,
     mercator,
-    wgs84,
-    winkel
+    naturalEarth,
+    winkelTripel
 };
 
 export default function getProjection(config: {name: string} | string) {
