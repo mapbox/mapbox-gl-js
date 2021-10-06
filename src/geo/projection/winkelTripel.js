@@ -3,7 +3,7 @@ import LngLat from '../lng_lat.js';
 import {clamp} from '../../util/util.js';
 
 export default {
-    name: 'winkel',
+    name: 'winkelTripel',
     center: [0, 0],
     range: [3.5, 7],
 

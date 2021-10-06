@@ -2,10 +2,10 @@
 import {alaska, albers} from './albers.js';
 import equalEarth from './equalEarth.js';
 import equirectangular from './equirectangular.js';
-import lambert from './lambert.js';
+import lambertConicConformal from './lambert.js';
 import mercator from './mercator.js';
 import naturalEarth from './naturalEarth.js';
-import winkel from './winkelTripel.js';
+import winkelTripel from './winkelTripel.js';
 import LngLat from '../lng_lat.js';
 
 export type Projection = {
@@ -21,10 +21,10 @@ const projections = {
     albers,
     equalEarth,
     equirectangular,
-    lambert,
+    lambertConicConformal,
     mercator,
     naturalEarth,
-    winkel
+    winkelTripel
 };
 
 export default function getProjection(config: {name: string} | string) {
