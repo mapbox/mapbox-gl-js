@@ -127,22 +127,22 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
-        if (opacity.constantOr(1.0) === 1.0 || image) {
-            const stencilMode = painter.stencilModeForClipping(coord);
+        // TODO: Move to bucket to evaluate when injecting the define
+        const useStencilMaskRenderPass = !image &&
+            opacity.constantOr(1.0) < 1.0 &&
+            width.constantOr(1.0) > 1.0;
 
-            program.draw(context, gl.TRIANGLES, depthMode,
-                stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
-                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
-        } else {
+        if (useStencilMaskRenderPass) {
             const stencilIdPass1 = painter._tileClippingMaskIDs[coord.key];
             const stencilIdPass2 = ~stencilIdPass1 & 255;
-            const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
-            const stencilModePass1 = new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT);
-            const stencilModePass3 = new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP);
-            const stencilModePass2 = new StencilMode(stencilFunc, stencilIdPass2, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT);
 
-            uniformValues.u_alpha_discard_threshold = 0.9;
+            const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
+
+            const stencilModePass1 = new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT);
+            const stencilModePass2 = new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP);
+            const stencilModePass3 = new StencilMode(stencilFunc, stencilIdPass2, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT);
+
+            uniformValues.u_alpha_discard_threshold = 0.75;
             program.draw(context, gl.TRIANGLES, depthMode,
                 stencilModePass1, colorMode, CullFaceMode.disabled, uniformValues,
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
@@ -150,12 +150,19 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
             uniformValues.u_alpha_discard_threshold = 0.0;
             program.draw(context, gl.TRIANGLES, depthMode,
-                stencilModePass3, colorMode, CullFaceMode.disabled, uniformValues,
+                stencilModePass2, colorMode, CullFaceMode.disabled, uniformValues,
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
                 layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
 
             program.draw(context, gl.TRIANGLES, depthMode,
-                stencilModePass2, ColorMode.disabled, CullFaceMode.disabled, uniformValues,
+                stencilModePass3, ColorMode.disabled, CullFaceMode.disabled, uniformValues,
+                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
+                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+        } else {
+            const stencilMode = painter.stencilModeForClipping(coord);
+
+            program.draw(context, gl.TRIANGLES, depthMode,
+                stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
                 layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
         }
