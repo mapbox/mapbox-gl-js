@@ -1,3 +1,10 @@
+## 2.5.1
+
+### 🐞 Bug fixes
+
+* Fix an iOS 15 issue where the iOS Safari tab bar interrupt touch interactions. ([#11084](https://github.com/mapbox/mapbox-gl-js/pull/11084))
+
+###
 ## 2.5.0
 
 ### Features ✨ and improvements 🏁
