@@ -332,7 +332,7 @@ class GeolocateControl extends Evented {
 
     _updateCircleRadius() {
         assert(this._circleElement);
-        const y = this._map._container.offsetHeight / 2;
+        const y = parseFloat(window.getComputedStyle(this._map._container).height) / 2;
         const a = this._map.unproject([0, y]);
         const b = this._map.unproject([100, y]);
         const metersPerPixel = a.distanceTo(b) / 100;

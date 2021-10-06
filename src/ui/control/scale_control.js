@@ -2,6 +2,7 @@
 
 import DOM from '../../util/dom.js';
 import {extend, bindAll} from '../../util/util.js';
+import window from '../../util/window.js';
 
 import type Map from '../map.js';
 
@@ -92,7 +93,8 @@ function updateScale(map, container, options) {
     // found between the two coordinates.
     const maxWidth = options && options.maxWidth || 100;
 
-    const y = map._container.offsetHeight / 2;
+    const y = parseFloat(window.getComputedStyle(map._container).height) / 2;
+    
     const left = map.unproject([0, y]);
     const right = map.unproject([maxWidth, y]);
     const maxMeters = left.distanceTo(right);
