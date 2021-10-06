@@ -19,7 +19,7 @@ function getParams([lat0, lat1]) {
 }
 
 export default {
-    name: 'lambertConicConformal',
+    name: 'lambertConformalConic',
     range: [3.5, 7],
 
     center: [0, 30],

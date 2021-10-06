@@ -2,7 +2,7 @@
 import {alaska, albers} from './albers.js';
 import equalEarth from './equalEarth.js';
 import equirectangular from './equirectangular.js';
-import lambertConicConformal from './lambert.js';
+import lambertConformalConic from './lambert.js';
 import mercator from './mercator.js';
 import naturalEarth from './naturalEarth.js';
 import winkelTripel from './winkelTripel.js';
@@ -21,7 +21,7 @@ const projections = {
     albers,
     equalEarth,
     equirectangular,
-    lambertConicConformal,
+    lambertConformalConic,
     mercator,
     naturalEarth,
     winkelTripel
