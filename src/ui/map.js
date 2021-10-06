@@ -2528,8 +2528,8 @@ class Map extends Camera {
         let height = 0;
 
         if (this._container) {
-            width = this._container.offsetWidth || 400;
-            height = this._container.offsetHeight || 300;
+            width = this._container.getBoundingClientRect().width || 400;
+            height = this._container.getBoundingClientRect().height || 300;
         }
 
         return [width, height];
@@ -2580,7 +2580,7 @@ class Map extends Camera {
     _resizeCanvas(width: number, height: number) {
         const pixelRatio = browser.devicePixelRatio || 1;
 
-        // Request the required canvas size (rounded up) taking the pixelratio into account.
+        // Request the required canvas size taking the pixelratio into account.
         this._canvas.width = pixelRatio * width;
         this._canvas.height = pixelRatio * height;
 
