@@ -682,7 +682,7 @@ class Map extends Camera {
      * var maxBounds = map.getMaxBounds();
      */
     getMaxBounds(): LngLatBounds | null {
-        return this.transform.getMaxBounds();
+        return this.transform.getMaxBounds() || null;
     }
 
     /**

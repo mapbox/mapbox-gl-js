@@ -37,8 +37,7 @@ type ElevationReference = "sea" | "ground";
 class Transform {
     tileSize: number;
     tileZoom: number;
-    lngRange: ?[number, number];
-    latRange: ?[number, number];
+    maxBounds: ?LngLatBounds;
 
     // 2^zoom (worldSize = tileSize * scale)
     scale: number;
@@ -92,6 +91,11 @@ class Transform {
     labelPlaneMatrix: Float32Array;
 
     inverseAdjustmentMatrix: Array<number>;
+
+    minMercX: number;
+    maxMercX: number;
+    minMercY: number;
+    maxMercY: number;
 
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
@@ -163,7 +167,7 @@ class Transform {
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone.tileSize = this.tileSize;
-        clone.latRange = this.latRange;
+        clone.setMaxBounds(this.getMaxBounds());
         clone.width = this.width;
         clone.height = this.height;
         clone.cameraElevationReference = this.cameraElevationReference;
@@ -1244,26 +1248,35 @@ class Transform {
      * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
      * @returns {LngLatBounds} {@link LngLatBounds}
      */
-    getMaxBounds(): LngLatBounds | null {
-        if (!this.latRange || this.latRange.length !== 2 ||
-            !this.lngRange || this.lngRange.length !== 2) return null;
-
-        return new LngLatBounds([this.lngRange[0], this.latRange[0]], [this.lngRange[1], this.latRange[1]]);
+    getMaxBounds(): ?LngLatBounds {
+        return this.maxBounds;
     }
 
     /**
      * Sets or clears the map's geographical constraints.
      * @param {LngLatBounds} bounds A {@link LngLatBounds} object describing the new geographic boundaries of the map.
      */
-    setMaxBounds(bounds?: LngLatBounds) {
+    setMaxBounds(bounds: ?LngLatBounds) {
+        this.maxBounds = bounds;
+
+        let minLat = -MAX_MERCATOR_LATITUDE;
+        let maxLat = MAX_MERCATOR_LATITUDE;
+        let minLng = -180;
+        let maxLng = 180;
+
         if (bounds) {
-            this.lngRange = [bounds.getWest(), bounds.getEast()];
-            this.latRange = [bounds.getSouth(), bounds.getNorth()];
-            this._constrain();
-        } else {
-            this.lngRange = null;
-            this.latRange = [-MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE];
+            minLat = bounds.getSouth();
+            maxLat = bounds.getNorth();
+            minLng = bounds.getWest();
+            maxLng = bounds.getEast();
         }
+
+        this.minMercX = mercatorXfromLng(minLng) * this.tileSize;
+        this.maxMercX = mercatorXfromLng(maxLng) * this.tileSize;
+        this.minMercY = mercatorYfromLat(maxLat) * this.tileSize;
+        this.maxMercY = mercatorYfromLat(minLat) * this.tileSize;
+
+        this._constrain();
     }
 
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
@@ -1430,99 +1443,64 @@ class Transform {
 
         this._constraining = true;
 
-        let minY = -90;
-        let maxY = 90;
-        let minX = -180;
-        let maxX = 180;
-        let sy, sx, x2, y2;
-        const size = this.size,
-            unmodified = this._unmodified;
+        const unmodified = this._unmodified;
+        const {x, y} = this.point;
+        let s = 0;
+        let x2 = x;
+        let y2 = y;
+        const w2 = this.width / 2;
+        const h2 = this.height / 2;
 
-        if (this.latRange) {
-            const latRange = this.latRange;
-            minY = mercatorYfromLat(latRange[1]) * this.worldSize;
-            maxY = mercatorYfromLat(latRange[0]) * this.worldSize;
-            sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
+        const minY = this.minMercY * this.scale;
+        const maxY = this.maxMercY * this.scale;
+        if (y - h2 < minY) y2 = minY + h2;
+        if (y + h2 > maxY) y2 = maxY - h2;
+        if (maxY - minY < this.height) {
+            s = Math.max(s, this.height / (maxY - minY));
+            y2 = (maxY + minY) / 2;
         }
 
-        if (this.lngRange) {
-            const lngRange = this.lngRange;
-            minX = mercatorXfromLng(lngRange[0]) * this.worldSize;
-            maxX = mercatorXfromLng(lngRange[1]) * this.worldSize;
-            sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
-        }
-
-        const point = this.point;
-
-        // how much the map should scale to fit the screen into given latitude/longitude ranges
-        const s = Math.max(sx || 0, sy || 0);
-
-        if (s) {
-            this.center = this.unproject(new Point(
-                sx ? (maxX + minX) / 2 : point.x,
-                sy ? (maxY + minY) / 2 : point.y));
-            this.zoom += this.scaleZoom(s);
-            this._unmodified = unmodified;
-            this._constraining = false;
-            return;
-        }
-
-        if (this.latRange) {
-            const y = point.y,
-                h2 = size.y / 2;
-
-            if (y - h2 < minY) y2 = minY + h2;
-            if (y + h2 > maxY) y2 = maxY - h2;
-        }
-
-        if (this.lngRange) {
-            const x = point.x,
-                w2 = size.x / 2;
+        if (this.maxBounds) {
+            const minX = this.minMercX * this.scale;
+            const maxX = this.maxMercX * this.scale;
 
             if (x - w2 < minX) x2 = minX + w2;
             if (x + w2 > maxX) x2 = maxX - w2;
+            if (maxX - minX < this.width) {
+                s = Math.max(s, this.width / (maxX - minX));
+                x2 = (maxX + minX) / 2;
+            }
         }
 
-        // pan the map if the screen goes off the range
-        if (x2 !== undefined || y2 !== undefined) {
-            this.center = this.unproject(new Point(
-                x2 !== undefined ? x2 : point.x,
-                y2 !== undefined ? y2 : point.y));
+        if (x2 !== x || y2 !== y) { // pan the map to fit the range
+            this.center = this.unproject(new Point(x2, y2));
+        }
+        if (s) { // scale the map to fit the range
+            this.zoom += this.scaleZoom(s);
         }
 
         this._constrainCameraAltitude();
-
         this._unmodified = unmodified;
         this._constraining = false;
     }
 
     /**
-     * Returns the minimum zoom at which `this.width` can fit `this.lngRange`
-     * and `this.height` can fit `this.latRange`.
+     * Returns the minimum zoom at which `this.width` can fit max longitude range
+     * and `this.height` can fit max latitude range.
      *
      * @returns {number} The zoom value.
      */
     _minZoomForBounds(): number {
-        const minZoomForDim = (dim: number, range: [number, number]): number => {
-            return Math.log2(dim / (this.tileSize * Math.abs(range[1] - range[0])));
-        };
-        let minLatZoom = DEFAULT_MIN_ZOOM;
-        if (this.latRange) {
-            const latRange = this.latRange;
-            minLatZoom = minZoomForDim(this.height, [mercatorYfromLat(latRange[0]), mercatorYfromLat(latRange[1])]);
+        let minZoom = Math.max(0, this.scaleZoom(this.height / (this.maxMercY - this.minMercY)));
+        if (this.maxBounds) {
+            minZoom = Math.max(minZoom, this.scaleZoom(this.width / (this.maxMercX - this.minMercX)));
         }
-        let minLngZoom = DEFAULT_MIN_ZOOM;
-        if (this.lngRange) {
-            const lngRange = this.lngRange;
-            minLngZoom = minZoomForDim(this.width, [mercatorXfromLng(lngRange[0]), mercatorXfromLng(lngRange[1])]);
-        }
-
-        return Math.max(minLatZoom, minLngZoom);
+        return minZoom;
     }
 
     /**
      * Returns the maximum distance of the camera from the center of the bounds, such that
-     * `this.width` can fit `this.lngRange` and `this.height` can fit `this.latRange`.
+     * `this.width` can fit max longitude range and `this.height` can fit max latitude range.
      * In mercator units.
      *
      * @returns {number} The mercator z coordinate.
@@ -1718,7 +1696,7 @@ class Transform {
 
     /**
      * Apply a 3d translation to the camera position, but clamping it so that
-     * it respects the bounds set by `this.latRange` and `this.lngRange`.
+     * it respects the maximum longitude and latitude range set.
      *
      * @param {vec3} translation The translation vector.
      */

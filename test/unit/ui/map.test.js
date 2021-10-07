@@ -4,6 +4,7 @@ import window from '../../../src/util/window.js';
 import Map from '../../../src/ui/map.js';
 import {createMap} from '../../util/index.js';
 import LngLat from '../../../src/geo/lng_lat.js';
+import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
 import Tile from '../../../src/source/tile.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import {Event, ErrorEvent} from '../../../src/util/evented.js';
@@ -232,10 +233,10 @@ test('Map', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
             t.stub(Map.prototype, '_authenticate');
             const map = new Map({container: window.document.createElement('div'), testMode: true});
-            map.transform.lngRange = [-120, 140];
-            map.transform.latRange = [-60, 80];
+
+            map.transform.setMaxBounds(LngLatBounds.convert([-120, -60, 140, 80]));
             map.transform.resize(600, 400);
-            t.equal(map.transform.zoom, 0.6983039737971012, 'map transform is constrained');
+            t.ok(map.transform.zoom, 0.698303973797101, 'map transform is constrained');
             t.ok(map.transform.unmodified, 'map transform is not modified');
             map.setStyle(createStyle());
             map.on('style.load', () => {
