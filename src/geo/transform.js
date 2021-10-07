@@ -92,10 +92,10 @@ class Transform {
 
     inverseAdjustmentMatrix: Array<number>;
 
-    minMercX: number;
-    maxMercX: number;
-    minMercY: number;
-    maxMercY: number;
+    worldMinX: number;
+    worldMaxX: number;
+    worldMinY: number;
+    worldMaxY: number;
 
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
@@ -135,11 +135,11 @@ class Transform {
         this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
         this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
 
-        this.setMaxBounds();
-
         if (!projection) projection = 'mercator';
         this.projectionOptions = projection;
         this.projection = getProjection(projection);
+
+        this.setMaxBounds();
 
         this.width = 0;
         this.height = 0;
@@ -1271,10 +1271,10 @@ class Transform {
             maxLng = bounds.getEast();
         }
 
-        this.minMercX = mercatorXfromLng(minLng) * this.tileSize;
-        this.maxMercX = mercatorXfromLng(maxLng) * this.tileSize;
-        this.minMercY = mercatorYfromLat(maxLat) * this.tileSize;
-        this.maxMercY = mercatorYfromLat(minLat) * this.tileSize;
+        this.worldMinX = mercatorXfromLng(minLng) * this.tileSize;
+        this.worldMaxX = mercatorXfromLng(maxLng) * this.tileSize;
+        this.worldMinY = mercatorYfromLat(maxLat) * this.tileSize;
+        this.worldMaxY = mercatorYfromLat(minLat) * this.tileSize;
 
         this._constrain();
     }
@@ -1451,8 +1451,8 @@ class Transform {
         const w2 = this.width / 2;
         const h2 = this.height / 2;
 
-        const minY = this.minMercY * this.scale;
-        const maxY = this.maxMercY * this.scale;
+        const minY = this.worldMinY * this.scale;
+        const maxY = this.worldMaxY * this.scale;
         if (y - h2 < minY) y2 = minY + h2;
         if (y + h2 > maxY) y2 = maxY - h2;
         if (maxY - minY < this.height) {
@@ -1461,8 +1461,8 @@ class Transform {
         }
 
         if (this.maxBounds) {
-            const minX = this.minMercX * this.scale;
-            const maxX = this.maxMercX * this.scale;
+            const minX = this.worldMinX * this.scale;
+            const maxX = this.worldMaxX * this.scale;
 
             if (x - w2 < minX) x2 = minX + w2;
             if (x + w2 > maxX) x2 = maxX - w2;
@@ -1491,9 +1491,9 @@ class Transform {
      * @returns {number} The zoom value.
      */
     _minZoomForBounds(): number {
-        let minZoom = Math.max(0, this.scaleZoom(this.height / (this.maxMercY - this.minMercY)));
+        let minZoom = Math.max(0, this.scaleZoom(this.height / (this.worldMaxY - this.worldMinY)));
         if (this.maxBounds) {
-            minZoom = Math.max(minZoom, this.scaleZoom(this.width / (this.maxMercX - this.minMercX)));
+            minZoom = Math.max(minZoom, this.scaleZoom(this.width / (this.worldMaxX - this.worldMinX)));
         }
         return minZoom;
     }
