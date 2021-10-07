@@ -5,67 +5,143 @@
 /* global mapboxgl */
 /* global mapboxglVersions */
 
-const pages = {
-    "geojson-markers": {
+const pages = [
+    {
+        "key": "geojson-markers",
         "title": "Add GeoJSON marker"
     },
-    "animate-point-along-line": {
+    {
+        "key": "animate-point-along-line",
         "title": "Animate point"
     },
-    "queryrenderedfeatures": {
+    {
+        "key": "queryrenderedfeatures",
         "title": "Get features under the mouse pointer"
     },
-    "scroll-fly-to": {
+    {
+        "key": "scroll-fly-to",
         "title": "Fly to a location based on scroll position"
     },
-    "popup-on-click": {
+    {
+        "key": "popup-on-click",
         "title": "Display a popup on click"
     },
-    "hover-styles": {
+    {
+        "key": "hover-styles",
         "title": "Create a hover effect"
     },
-    "satellite-map": {
+    {
+        "key": "satellite-map",
         "title": "Display a satellite map"
     },
-    "custom-marker-icons": {
+    {
+        "key": "custom-marker-icons",
         "title": "Add custom icons with Markers"
     },
-    "filter-features-within-map-view": {
+    {
+        "key": "filter-features-within-map-view",
         "title": "Filter features within map view"
     },
-    "video-on-a-map": {
+    {
+        "key": "video-on-a-map",
         "title": "Add a video"
     },
-    "custom-style-layer": {
+    {
+        "key": "custom-style-layer",
         "title": "Add a custom style layer"
     },
-    "adjust-layer-opacity": {
+    {
+        "key": "adjust-layer-opacity",
         "title": "Adjust a layer's opacity"
     },
-    "check-for-support": {
+    {
+        "key": "check-for-support",
         "title": "Check for browser support"
     },
-    "mapbox-gl-geocoder": {
+    {
+        "key": "mapbox-gl-geocoder",
         "title": "Add a geocoder"
     },
-    "mapbox-gl-directions": {
+    {
+        "key": "mapbox-gl-directions",
         "title": "Display driving directions"
     },
-    "mapbox-gl-draw": {
+    {
+        "key": "mapbox-gl-draw",
         "title": "Show drawn polygon area"
     },
-    "mapbox-gl-compare": {
+    {
+        "key": "mapbox-gl-compare",
         "title": "Swipe between maps"
     },
-    "mapbox-gl-rtl-text": {
+    {
+        "key": "mapbox-gl-rtl-text",
         "title": "Add support for right-to-left scripts"
     },
-    "heatmap-layer": {
+    {
+        "key": "heatmap-layer",
         "title": "Add a heatmap layer"
+    },
+    {
+        "key": "add-terrain",
+        "title": "Add Terrain"
+    },
+    {
+        "key": "atmospheric-sky",
+        "title": "Atmospheric Sky"
+    },
+    {
+        "key": "free-camera-point",
+        "title": "Free Camera Point"
+    },
+    {
+        "key": "three-js-antenna",
+        "title": "Add a 3d model on terrain with ThreeJS",
+        "url": "./three-js-antenna.html"
+    },
+    {
+        "key": "free-camera-path",
+        "title": "Animate the camera along a path"
+    },
+    {
+        "key": "image-on-a-map",
+        "title": "Image Source"
+    },
+    {
+        "key": "locate-user",
+        "title": "Locate the user"
+    },
+    {
+        "key": "extrusion-query",
+        "url": "./extrusion-query.html",
+        "title": "Fill extrusion querying with terrain"
+    },
+    {
+        "key": "3d-playground",
+        "title": "3D Playground",
+        "url": "./3d-playground.html"
+    },
+    {
+        "key": "fog-demo",
+        "title": "Fog Demo",
+        "url": "./fog-demo.html"
+    },
+    {
+        "key": "fog",
+        "title": "Fog",
+        "url": "./fog.html"
+    },
+    {
+        "key": "skybox-gradient",
+        "title": "Skybox gradient",
+        "url": "./skybox-gradient.html"
+    },
+    {
+        "key": "canvas-size",
+        "title": "Canvas Size",
+        "url": "./canvas-size.html"
     }
-};
-
-const pageKeys = Object.keys(pages);
+];
 
 const versions = {
     'latest': {}
@@ -98,8 +174,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     const params = {
-        page: pages[0],
-        version: 'latest'
+        page: pages[0].key,
+        version: 'latest',
+        index: 0
     };
 
     location.hash.substr(1).split('&').forEach(function (param) {
@@ -115,31 +192,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    let pageIndex = pageKeys.indexOf(params.page);
-    if (pageIndex < 0) pageIndex = 0;
-    params.page = pageKeys[pageIndex];
-
     titleElement.addEventListener('click', function() {
         versionItem.classList.remove('active');
         titleItem.classList[titleItem.classList.contains('active') ? 'remove' : 'add']('active');
     });
 
-    Object.keys(pages).forEach(function(page) {
+    let pageIndex = 0;
+    for (let i = 0; i < pages.length; i++) {
+        if (params.page === pages[i].key) {
+            pageIndex = i;
+            break;
+        }
+    }
+    params.index = pageIndex;
+    params.page = pages[pageIndex].key;
+
+    for (let i = 0; i < pages.length; ++i) {
+        const page = pages[i];
         const item = document.createElement('a');
         item.classList.add('dropdown-item');
-        const metadata = pages[page];
-        item.innerHTML = '<span class="item-title">' + metadata.title + '</span>';
+        item.innerHTML = '<span class="item-title">' + page.title + '</span>';
         item.dataset.page = page;
+        item.dataset.index = i;
         item.addEventListener('click', function() {
-            params.page = this.dataset.page;
-            pageIndex = pageKeys.indexOf(this.dataset.page);
+            pageIndex = this.dataset.index;
             if (pageIndex < 0) pageIndex = 0;
-            params.page = pageKeys[pageIndex];
+            params.page = pages[pageIndex].key;
+            params.index = pageIndex;
             titleItem.classList.remove('active');
             load();
         });
         titleDropdown.appendChild(item);
-    });
+    }
 
     if (!(params.version in versions)) {
         params.version = 'latest';
@@ -178,17 +262,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         while (container.firstChild) container.removeChild(container.firstChild);
 
-        params.page = pageKeys[pageIndex];
-        const page = params.page;
+        params.page = pages[pageIndex].key;
         const version = params.version;
 
-        const metadata = pages[page];
-        titleElement.innerText = metadata.title;
+        const page = pages[pageIndex];
+        titleElement.innerText = page.title;
         versionNumber.innerText = params.version;
 
         req = new XMLHttpRequest();
         req.addEventListener("load", loadedHTML);
-        url = metadata.url ? metadata.url : 'https://docs.mapbox.com/mapbox-gl-js/assets/' + page + '-demo.html';
+
+        url = page.url ? page.url : 'https://docs.mapbox.com/mapbox-gl-js/assets/' + page.key + '-demo.html';
         req.open("GET", url);
         req.send();
 
@@ -204,32 +288,41 @@ document.addEventListener('DOMContentLoaded', function() {
             const js = version === 'latest' ? jsLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.js';
             const css = version === 'latest' ? cssLatest.href : 'https://api.mapbox.com/mapbox-gl-js/' + version + '/mapbox-gl.css';
 
-            iframeDoc.write([
-                '<!DOCTYPE html>',
-                '<html>',
-                '<head>',
-                '    <title>Mapbox GL JS debug page</title>',
-                '    <meta charset="utf-8">',
-                '    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">',
-                '    <script src="' + js + '"><\/script>',
-                '    <script>mapboxgl.accessToken = "' + params.access_token + '";<\/script>',
-                '    <link rel="stylesheet" href="' + css + '" />',
-                '    <style>',
-                '        body { margin: 0; padding: 0; }',
-                '        html, body, #map { height: 100%; }',
-                '    </style>',
-                '</head>',
-                '<body>',
-                req.response,
-                '</body>',
-                '</html>' ].join(''));
+            let doc = req.response;
+
+            if (!page.url) { // Perform cleanups for pages hosted on docs.mapbox.com, otherwise directly use demo code
+                const versionLibRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]+\.[0-9]+\.[0-9]+\/mapbox-gl\.js/g;
+                const versionCSSRegex = /https:\/\/api\.mapbox\.com\/mapbox-gl-js\/v[0-9]+\.[0-9]+\.[0-9]+\/mapbox-gl\.css/g;
+                const sentryRegex = /<script src="https:\/\/js\.sentry-cdn\.com\/[0-9a-f]*\.min\.js"\s*crossorigin="anonymous"><\/script>/g;
+                const instrumentileRegex = /<script>if\(window\.map instanceof mapboxgl\.Map\)var i=new instrumentile.*<\/script>/g;
+                const apiKeyRegex = /pk\..*?"/g;
+
+                // Update versions + api key
+                doc = doc.replace(versionLibRegex, js);
+                doc = doc.replace(versionCSSRegex, css);
+                doc = doc.replace(apiKeyRegex, params.access_token + '"');
+
+                // Remove extraneous analytics
+                doc = doc.replace(instrumentileRegex, '');
+                doc = doc.replace(sentryRegex, '');
+            } else { // Perform cleanups of pages locally referenced
+                const versionLibRegex = /<script src='(.*)mapbox-gl(.*)\.js'><\/script>/g;
+                const versionCSSRegex = /<link rel='stylesheet'(.*)mapbox-gl\.css'(.*)\/>/g;
+                const apiKeyRegex = /<script(.*)access_token_generated\.js(.*)\/script>/g;
+
+                doc = doc.replace(versionLibRegex, '<script src="' + js + '"></script>');
+                doc = doc.replace(versionCSSRegex, '<link rel="stylesheet" href="' + css + '" />');
+                doc = doc.replace(apiKeyRegex, '<script>mapboxgl.accessToken="' + params.access_token + '"</script>');
+            }
+
+            iframeDoc.write([doc].join(''));
             iframeDoc.close();
         }
 
         prevButton.classList[(pageIndex === 0) ? 'add' : 'remove']('disabled');
-        nextButton.classList[(pageIndex + 1 === pageKeys.length) ? 'add' : 'remove']('disabled');
+        nextButton.classList[(pageIndex + 1 === pages.length) ? 'add' : 'remove']('disabled');
 
-        let hash = 'page=' + page;
+        let hash = 'page=' + page.key;
         if (version !== 'latest') {
             hash += '&version=' + version;
         }
@@ -247,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     nextButton.addEventListener('click', function() {
-        if (pageIndex + 1 <= pageKeys.length) {
+        if (pageIndex + 1 < pages.length) {
             pageIndex++;
             load();
         }
