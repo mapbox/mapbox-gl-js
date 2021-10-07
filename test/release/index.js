@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         req = new XMLHttpRequest();
         req.addEventListener("load", loadedHTML);
-        url = metadata.url ? metadata.url : 'https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/example/' + page + '.html';
+        url = metadata.url ? metadata.url : 'https://docs.mapbox.com/mapbox-gl-js/assets/' + page + '-demo.html';
         req.open("GET", url);
         req.send();
 
