@@ -16,6 +16,7 @@ import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_ca
 import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
+import resample from '../geo/projection/resample.js';
 
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
@@ -96,6 +97,7 @@ class Transform {
     worldMaxX: number;
     worldMinY: number;
     worldMaxY: number;
+    constrainX: boolean;
 
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
@@ -1271,10 +1273,37 @@ class Transform {
             maxLng = bounds.getEast();
         }
 
-        this.worldMinX = mercatorXfromLng(minLng) * this.tileSize;
-        this.worldMaxX = mercatorXfromLng(maxLng) * this.tileSize;
-        this.worldMinY = mercatorYfromLat(maxLat) * this.tileSize;
-        this.worldMaxY = mercatorYfromLat(minLat) * this.tileSize;
+        this.constrainX = !!bounds || this.projection.name !== 'mercator';
+
+        if (this.projection.name === 'mercator') {
+            this.worldMinX = mercatorXfromLng(minLng) * this.tileSize;
+            this.worldMaxX = mercatorXfromLng(maxLng) * this.tileSize;
+            this.worldMinY = mercatorYfromLat(maxLat) * this.tileSize;
+            this.worldMaxY = mercatorYfromLat(minLat) * this.tileSize;
+
+        } else {
+            const boundsPoly = [
+                new Point(minLng, minLat),
+                new Point(maxLng, minLat),
+                new Point(maxLng, maxLat),
+                new Point(minLng, maxLat),
+                new Point(minLng, minLat)
+            ];
+            const resampled = resample(boundsPoly, (p) => this.projection.project(p.x, p.y), 0.01);
+            this.worldMinX = Infinity;
+            this.worldMinY = Infinity;
+            this.worldMaxX = -Infinity;
+            this.worldMaxY = -Infinity;
+
+            const scale = this.tileSize;
+
+            for (const p of resampled) {
+                this.worldMinX = Math.min(this.worldMinX, p.x * scale);
+                this.worldMinY = Math.min(this.worldMinY, p.y * scale);
+                this.worldMaxX = Math.max(this.worldMaxX, p.x * scale);
+                this.worldMaxY = Math.max(this.worldMaxY, p.y * scale);
+            }
+        }
 
         this._constrain();
     }
@@ -1439,7 +1468,7 @@ class Transform {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
         // temporarily disable constraining for non-Mercator projections
-        if (this.projection.name !== 'mercator') return;
+        // if (this.projection.name !== 'mercator') return;
 
         this._constraining = true;
 
@@ -1460,7 +1489,7 @@ class Transform {
             y2 = (maxY + minY) / 2;
         }
 
-        if (this.maxBounds) {
+        if (this.constrainX) {
             const minX = this.worldMinX * this.scale;
             const maxX = this.worldMaxX * this.scale;
 
@@ -1492,7 +1521,7 @@ class Transform {
      */
     _minZoomForBounds(): number {
         let minZoom = Math.max(0, this.scaleZoom(this.height / (this.worldMaxY - this.worldMinY)));
-        if (this.maxBounds) {
+        if (this.constrainX) {
             minZoom = Math.max(minZoom, this.scaleZoom(this.width / (this.worldMaxX - this.worldMinX)));
         }
         return minZoom;
