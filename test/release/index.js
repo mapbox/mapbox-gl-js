@@ -83,63 +83,12 @@ const pages = [
         "title": "Add a heatmap layer"
     },
     {
-        "key": "add-terrain",
-        "title": "Add Terrain"
-    },
-    {
-        "key": "atmospheric-sky",
-        "title": "Atmospheric Sky"
-    },
-    {
-        "key": "free-camera-point",
-        "title": "Free Camera Point"
-    },
-    {
-        "key": "three-js-antenna",
-        "title": "Add a 3d model on terrain with ThreeJS",
-        "url": "./three-js-antenna.html"
-    },
-    {
-        "key": "free-camera-path",
-        "title": "Animate the camera along a path"
-    },
-    {
         "key": "image-on-a-map",
         "title": "Image Source"
     },
     {
         "key": "locate-user",
         "title": "Locate the user"
-    },
-    {
-        "key": "extrusion-query",
-        "url": "./extrusion-query.html",
-        "title": "Fill extrusion querying with terrain"
-    },
-    {
-        "key": "3d-playground",
-        "title": "3D Playground",
-        "url": "./3d-playground.html"
-    },
-    {
-        "key": "fog-demo",
-        "title": "Fog Demo",
-        "url": "./fog-demo.html"
-    },
-    {
-        "key": "fog",
-        "title": "Fog",
-        "url": "./fog.html"
-    },
-    {
-        "key": "skybox-gradient",
-        "title": "Skybox gradient",
-        "url": "./skybox-gradient.html"
-    },
-    {
-        "key": "canvas-size",
-        "title": "Canvas Size",
-        "url": "./canvas-size.html"
     }
 ];
 
