@@ -2761,12 +2761,14 @@ class Map extends Camera {
             this._styleDirty = false;
 
             const zoom = this.transform.zoom;
+            const pitch = this.transform.pitch;
             const now = browser.now();
             this.style.zoomHistory.update(zoom, now);
 
             const parameters = new EvaluationParameters(zoom, {
                 now,
                 fadeDuration,
+                pitch,
                 zoomHistory: this.style.zoomHistory,
                 transition: this.style.getTransition()
             });

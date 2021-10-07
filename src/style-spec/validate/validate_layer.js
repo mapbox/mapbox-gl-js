@@ -98,7 +98,9 @@ export default function validateLayer(options) {
                     objectKey: 'type'
                 });
             },
-            filter: validateFilter,
+            filter(options) {
+                return validateFilter(extend({layerType: type}, options));
+            },
             layout(options) {
                 return validateObject({
                     layer,
