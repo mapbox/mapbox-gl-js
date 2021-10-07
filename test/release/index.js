@@ -89,6 +89,11 @@ const pages = [
     {
         "key": "locate-user",
         "title": "Locate the user"
+    },
+    {
+        "key": "ios-test",
+        "title": "iOS Panning Test",
+        "url": "./ios-test.html"
     }
 ];
 
