@@ -441,7 +441,8 @@ function evaluateBreak(breakIndex: number,
                        targetWidth: number,
                        potentialBreaks: Array<Break>,
                        penalty: number,
-                       isLastBreak: boolean): Break {
+                       isLastBreak: boolean,
+                       tailWhiteSpace: number = 0): Break {
     // We could skip evaluating breaks where the line length (breakX - priorBreak.x) > maxWidth
     //  ...but in fact we allow lines longer than maxWidth (if there's no break points)
     //  ...and when targetWidth and maxWidth are close, strictly enforcing maxWidth can give
@@ -462,7 +463,7 @@ function evaluateBreak(breakIndex: number,
 
     return {
         index: breakIndex,
-        x: breakX,
+        x: breakX + tailWhiteSpace,
         priorBreak: bestPriorBreak,
         badness: bestBreakBadness
     };
@@ -494,21 +495,22 @@ function determineLineBreaks(logicalInput: TaggedString,
     const hasServerSuggestedBreakpoints = logicalInput.text.indexOf("\u200b") >= 0;
 
     let currentX = 0;
+    let tailWhiteSpace = 0;
 
     for (let i = 0; i < logicalInput.length(); i++) {
         const section = logicalInput.getSection(i);
         // Add glyph advance of previous invisible codePoint in case it is not zero, such as white space ' '
-        if (i > 0) {
-            const lastCodePoint = logicalInput.getCharCode(i - 1);
-            if (whitespace[lastCodePoint]) {
-                currentX += getGlyphAdvance(lastCodePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
-            }
-        }
+        currentX += tailWhiteSpace;
+
         const codePoint = logicalInput.getCharCode(i);
+        const advance = getGlyphAdvance(codePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
         // Do not add glyph advance for invisible codePoint in current iteration as we try to break line here, and invisible
         // codePoint shouldn't affect the decision
         if (!whitespace[codePoint]) {
-            currentX += getGlyphAdvance(codePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
+            currentX += advance;
+            tailWhiteSpace = 0;
+        } else {
+            tailWhiteSpace = advance;
         }
 
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
@@ -524,7 +526,7 @@ function determineLineBreaks(logicalInput: TaggedString,
                         targetWidth,
                         potentialLineBreaks,
                         calculatePenalty(codePoint, logicalInput.getCharCode(i + 1), ideographicBreak && hasServerSuggestedBreakpoints),
-                        false));
+                        false, tailWhiteSpace));
             }
         }
     }
