@@ -41,6 +41,10 @@ class KeyboardHandler {
         this._rotationDisabled = false;
     }
 
+    blur() {
+        this.reset();
+    }
+
     reset() {
         this._active = false;
     }
