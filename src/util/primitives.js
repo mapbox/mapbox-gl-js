@@ -54,7 +54,6 @@ class Frustum {
                 const k = 1.0 / s[3] / worldSize * scale;
                 // Z scale in meters.
                 return vec4.mul(s, s, [k, k, k, k]);
-                //return vec4.mul(s, s, [k, k, 1.0 / s[3], k]);
             });
 
         const frustumPlanePointIndices = [

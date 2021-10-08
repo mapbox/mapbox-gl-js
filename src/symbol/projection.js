@@ -15,9 +15,7 @@ import type {
     SymbolDynamicLayoutArray
 } from '../data/array_types.js';
 import {WritingMode} from '../symbol/shaping.js';
-import {latFromMercatorY, lngFromMercatorX} from '../geo/mercator_coordinate.js';
-import {latLngToECEF, normalizeECEF, tileBoundsOnGlobe} from '../geo/projection/globe.js'
-import { CanonicalTileID, OverscaledTileID } from '../source/tile_id.js';
+import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
 
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
@@ -113,25 +111,6 @@ function project(point: Point, matrix: mat4, elevation: number = 0) {
     };
 }
 
-// function projectToGlobe(p, m, e, tileID) {
-//     const tiles = Math.pow(2.0, tileID.z);
-//     const mx = (p.x / 8192.0 + tileID.x) / tiles;
-//     const my = (p.y / 8192.0 + tileID.y) / tiles;
-//     const lat = latFromMercatorY(my);
-//     const lng = lngFromMercatorX(mx);
-//     const pg = latLngToECEF(lat, lng);
-
-//     vec3.transformMat4(pg, pg, normalizeECEF(tileBoundsOnGlobe(tileID)));
-//     vec3.add(pg, pg, e);
-
-//     //const v = vec4.transformMat4([], [pg[0], pg[1], pg[2], 1.0], m);
-//     const v = vec4.transformMat4([], [pg[0], pg[1], pg[2], 1.0], m);
-//     return {
-//         point: new Point(v[0] / v[3], v[1] / v[3]),
-//         signedDistanceFromCamera: v[3]
-//     }
-// };
-
 function getPerspectiveRatio(cameraToCenterDistance: number, signedDistanceFromCamera: number): number {
     return Math.min(0.5 + 0.5 * (cameraToCenterDistance / signedDistanceFromCamera), 1.5);
 }
@@ -147,19 +126,6 @@ function isVisible(anchorPos: [number, number, number, number],
         y <= clippingBuffer[1]);
     return inPaddedViewport;
 }
-
-// function projectToGlobe2(p, e, tileID) {
-//     const tiles = Math.pow(2.0, tileID.canonical.z);
-//     const mx = (p.x / 8192.0 + tileID.canonical.x) / tiles;
-//     const my = (p.y / 8192.0 + tileID.canonical.y) / tiles;
-//     const lat = latFromMercatorY(my);
-//     const lng = lngFromMercatorX(mx);
-//     const pg = latLngToECEF(lat, lng);
-
-//     vec3.transformMat4(pg, pg, normalizeECEF(tileBoundsOnGlobe(tileID.canonical)));
-//     vec3.add(pg, pg, e);
-//     return pg;
-// };
 
 /*
  *  Update the `dynamicLayoutVertexBuffer` for the buffer with the correct glyph positions for the current map view.
@@ -218,9 +184,7 @@ function updateLineLabels(bucket: SymbolBucket,
 
         // Project tile anchor to globe anchor
         const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-        //const elevatedAnchor = projectToGlobe2(tileAnchorPoint, getElevation(tileAnchorPoint), tileID);
         const elevation = getElevation(tileAnchorPoint);
-        //const elevatedAnchor = tr.projection.projectTilePoint(tileAnchorPoint.x, tileAnchorPoint.y, tileID.canonical);
         const projectedAnchor = tr.projection.projectTilePoint(tileAnchorPoint.x, tileAnchorPoint.y, tileID.canonical);
         const elevatedAnchor = [ projectedAnchor.x + elevation[0], projectedAnchor.y + elevation[1], projectedAnchor.z + elevation[2]];
         const anchorPos = [...elevatedAnchor, 1.0];
@@ -232,7 +196,6 @@ function updateLineLabels(bucket: SymbolBucket,
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
-//function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: mat4, projection: Projection, getElevation: ?((p: Point) => Array<number>)): vec3 {
         const cameraToAnchorDistance = anchorPos[3];
         const perspectiveRatio = getPerspectiveRatio(painter.transform.cameraToCenterDistance, cameraToAnchorDistance);
 
@@ -409,7 +372,7 @@ function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: ma
     if (!getElevation) {
         return project(point, posMatrix, point.z);
     }
-    
+
     const elevation = getElevation(p);
     return project(new Point(point.x + elevation[0], point.y + elevation[1]), posMatrix, point.z + elevation[2]);
 }

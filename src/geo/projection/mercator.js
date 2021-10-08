@@ -96,7 +96,7 @@ class MercatorTileTransform {
 
 export default {
     name: 'mercator',
-    //center: [0, 0],
+
     project(lng: number, lat: number) {
         const x = mercatorXfromLng(lng);
         const y = mercatorYfromLat(lat);
@@ -118,10 +118,4 @@ export default {
     createTileTransform(tr: Transform, worldSize: number): TileTransform {
         return new MercatorTileTransform(tr, worldSize);
     },
-
-//    unproject(x: number, y: number) {
-//        return new LngLat(
-//            lngFromMercatorX(x),
-//            latFromMercatorY(y));
-//    }
 };

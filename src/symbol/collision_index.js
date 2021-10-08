@@ -32,19 +32,6 @@ import { GlobeTile, latLngToECEF, normalizeECEF, tileBoundsOnGlobe } from '../ge
 // stability, but it's expensive.
 const viewportPadding = 100;
 
-// function projectToGlobe(p, e, tileID) {
-//     const tiles = Math.pow(2.0, tileID.canonical.z);
-//     const mx = (p.x / 8192.0 + tileID.canonical.x) / tiles;
-//     const my = (p.y / 8192.0 + tileID.canonical.y) / tiles;
-//     const lat = latFromMercatorY(my);
-//     const lng = lngFromMercatorX(mx);
-//     const pg = latLngToECEF(lat, lng);
-
-//     vec3.transformMat4(pg, pg, normalizeECEF(tileBoundsOnGlobe(tileID.canonical)));
-//     vec3.add(pg, pg, e);
-//     return pg;
-// };
-
 /**
  * A collision index used to prevent symbols from overlapping. It keep tracks of
  * where previous symbols have been placed and is used to check if a new
@@ -89,11 +76,11 @@ class CollisionIndex {
 
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
-        
-        let anchorX = collisionBox.projectedAnchorX; // + up[0] * collisionBox.elevation;
-        let anchorY = collisionBox.projectedAnchorY; // + up[1] * collisionBox.elevation;
-        let anchorZ = collisionBox.projectedAnchorZ; // + up[2] * collisionBox.elevation;
-    
+
+        let anchorX = collisionBox.projectedAnchorX;
+        let anchorY = collisionBox.projectedAnchorY;
+        let anchorZ = collisionBox.projectedAnchorZ;
+
         // Apply elevation vector to the anchor point
         if (collisionBox.elevation) {
             const tileTransform = this.transform.projection
@@ -107,21 +94,6 @@ class CollisionIndex {
         }
 
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID);
-
-        // {
-        //     // anchorPoint is defined in normalized ecef coordinates when the globe view is enabled
-        //     // elevation is applied by finding the unit up vector in ecef space and applying it to the anchor coordinate
-        //     const globeTile = new GlobeTile(collisionBox.tileID.canonical);
-        //     const upVec = globeTile.upVector(collisionBox.tileAnchorX / 8192.0, collisionBox.tileAnchorY / 8192.0);
-
-        //     const elevatedAnchorX = collisionBox.projectedAnchorX + upVec[0] * collisionBox.elevation;
-        //     const elevatedAnchorY = collisionBox.projectedAnchorY + upVec[1] * collisionBox.elevation;
-        //     const elevatedAnchorZ = collisionBox.projectedAnchorZ + upVec[2] * collisionBox.elevation;
-            
-        //     const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchorX, elevatedAnchorY, elevatedAnchorZ, collisionBox.tileID);
-        // }
-
-        // const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation, collisionBox.tileID);
 
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
@@ -167,10 +139,8 @@ class CollisionIndex {
         const placedCollisionCircles = [];
 
         const tileTransform = this.transform.projection.createTileTransform(this.transform, this.transform.worldSize);
-        //const globeTile = new GlobeTile(tileID.canonical);
         const getElevation = this.transform.elevation ? (p => {
             const e = this.transform.elevation.getAtTileOffset(tileID, p.x, p.y);
-            //const up = globeTile.upVector(p.x / 8192.0, p.y / 8192.0);
             const up = tileTransform.upVector(tileID.canonical, p.x, p.y);
             const upScale = tileTransform.upVectorScale(tileID.canonical);
             vec3.scale(up, up, e * upScale);
@@ -182,7 +152,6 @@ class CollisionIndex {
         const elevation = getElevation(tileUnitAnchorPoint);
         const elevatedAnchor = [projectedAnchor.x + elevation[0], projectedAnchor.y + elevation[1], projectedAnchor.z + elevation[2]];
 
-        //const elevatedAnchor2 = projectToGlobe(tileUnitAnchorPoint, getElevation(tileUnitAnchorPoint), tileID);
         const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2], tileID);
 
         const {perspectiveRatio} = screenAnchorPoint;
