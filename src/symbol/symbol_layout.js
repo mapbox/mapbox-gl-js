@@ -34,7 +34,6 @@ import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js'
 import {Aabb} from '../util/primitives.js';
 import {vec3} from 'gl-matrix';
 import {clamp} from '../util/util.js';
-import {tileLatLngCorners, latLngToECEF, normalizeECEF, tileBoundsOnGlobe} from '../geo/projection/globe.js'
 
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
@@ -154,16 +153,6 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
     return (offset[1] !== INVALID_TEXT_OFFSET) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
 }
 
-// const reprojectTileAnchor = (p, tileID) => {
-//     const tiles = Math.pow(2.0, tileID.z);
-//     //const mx = (p.x / 8192.0 + tiles / 2) / tiles;
-//     const mx = (p.x / 8192.0 + tileID.x) / tiles;
-//     const my = (p.y / 8192.0 + tileID.y) / tiles;
-//     const lat = latFromMercatorY(my);
-//     const lng = lngFromMercatorX(mx);
-//     return latLngToECEF(lat, lng);
-// };
-
 export function performSymbolLayout(bucket: SymbolBucket,
                              glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}},
                              glyphPositions: GlyphPositions,
@@ -207,8 +196,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
     const textSize = layout.get('text-size');
-
-    //console.log(canonical);
 
     for (const feature of bucket.features) {
         const fontstack = layout.get('text-font').evaluate(feature, {}, canonical).join(',');
@@ -428,19 +415,12 @@ function addFeature(bucket: SymbolBucket,
         const {x, y, z} = projection.projectTilePoint(anchor.x, anchor.y, canonicalId);
         const projectedAnchor = new Anchor(x, y, z, 0, undefined);
 
-        //let p = reprojectTileAnchor(anchor, canonicalId);
-        //vec3.transformMat4(p, p, normalizationMatrix);
-        //const projectedAnchor = new Anchor(p[0], p[1], p[2], 0, undefined);
-
         addSymbol(bucket, anchor, projectedAnchor, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
             feature, sizes, isSDFIcon, canonical);
     };
-
-    // const bounds = tileBoundsOnGlobe(canonical);
-    // const normalizationMatrix = normalizeECEF(bounds);
 
     if (symbolPlacement === 'line') {
         for (const line of clipLine(feature.geometry, 0, 0, EXTENT, EXTENT)) {

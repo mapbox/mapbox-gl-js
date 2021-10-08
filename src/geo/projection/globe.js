@@ -30,12 +30,7 @@ class GlobeTileTransform {
         if (pitchWithMap) {
             m = this._calculateGlobeLabelMatrix(tileID, this._tr.worldSize / this._tr._projectionScaler, this._tr.center.lat, this._tr.center.lng);
 
-            //_calculateGlobeLabelMatrix(tileID: CanonicalTileID, worldSize: number, lat: number, lng: number) {
-
             if (!rotateWithMap) {
-                // const rot = mat4.identity([]);
-                // mat4.rotateZ(rot, rot, transform.angle);
-                // m = mat4.multiply(rot, rot, m);
                 mat4.rotateZ(m, m, this._tr.angle);
             }
         } else {
@@ -145,9 +140,6 @@ class GlobeTileTransform {
         // Camera is moved closer towards the ground near poles as part of compesanting the reprojection.
         // This has to be compensated for the map aligned label space.
         // Whithout this logic map aligned symbols would appear larger than intended
-        //const altitudeScaler = 1.0 - mercatorZfromAltitude(1, 0) / mercatorZfromAltitude(1, this.center.lat);
-        //const ws = this.worldSize / (1.0 - altitudeScaler);
-        //const ws = this.worldSize / this._projectionScaler;
         const ws = worldSize;
 
         const localRadius = EXTENT / (2.0 * Math.PI);
@@ -327,15 +319,12 @@ const normBitRange = 15;
 
 export function normalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
-    //return m;
 
     const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
-    //const size = vec3.div([], [1.0, 1.0, 1.0], vec3.sub([], bounds.max, bounds.min));
     const st = (1 << (normBitRange - 1)) - 1;
 
     mat4.scale(m, m, [st, st, st]);
     mat4.scale(m, m, [maxExtInv, maxExtInv, maxExtInv]);
-    //mat4.scale(m, m, size);
     mat4.translate(m, m, vec3.negate([], bounds.min));
 
     return m;
@@ -350,14 +339,12 @@ export function globeToMercatorTransition(zoom: number): number {
 
 export function denormalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
-    //return m;
 
     const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
 
     // Denormalize points to the correct range
     const st = 1.0 / ((1 << (normBitRange - 1)) - 1);
     mat4.translate(m, m, bounds.min);
-    //mat4.scale(m, m, vec3.sub([], bounds.max, bounds.min));
     mat4.scale(m, m, [maxExt, maxExt, maxExt]);
     mat4.scale(m, m, [st, st, st]);
 
@@ -448,8 +435,7 @@ export class GlobeTile {
             vec3.normalize(this._brUp, this._brUp);
             vec3.normalize(this._blUp, this._blUp);
         } else {
-            //const pixelsPerMeter = mercatorZfromAltitude(1, 0.0) * (1 << tileID.canonical.z) * 512.0;
-            const pixelsPerMeter = labelSpace;// mercatorZfromAltitude(1, 60.0) * labelSpace;
+            const pixelsPerMeter = labelSpace;
 
             this._tlUp = [0, 0, 1];
             this._trUp = [0, 0, 1];
