@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  aws-cli: circleci/aws-cli@0.1.16
+  aws-cli: circleci/aws-cli@1.4.0
 
 workflows:
   version: 2
