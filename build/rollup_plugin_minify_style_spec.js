@@ -16,7 +16,7 @@ export default function minifyStyleSpec() {
             delete spec['expression_name'];
 
             return {
-                code: JSON.stringify(spec, replacer, 0),
+                code: `export default JSON.parse('${JSON.stringify(spec, replacer, 0)}');`,
                 map: {mappings: ''}
             };
         }
