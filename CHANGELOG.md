@@ -176,6 +176,12 @@
 
 - Run render tests in browser.
 
+## 1.13.2
+
+### 🐞 Bug fixes
+
+* Backports a fix for an iOS 15 issue where the iOS Safari tab bar interrupts touch interactions. ([#11084](https://github.com/mapbox/mapbox-gl-js/pull/11084))
+
 ## 1.13.0
 
 ### ✨ Features and improvements
