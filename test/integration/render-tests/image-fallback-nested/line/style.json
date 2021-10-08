@@ -57,10 +57,31 @@
                   "missing"
               ]]
             ],
-          "#ff0000",
-          "#0000ff" 
+          "red",
+          "blue" 
         ],
-        "line-width": 20
+        "line-width":
+        [ "case",
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+                "missing"
+              ]]
+            ],
+          10,
+          20 
+        ],
+        "line-opacity":
+        [ "case",
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+                "missing"
+              ]]
+            ],
+          1,
+          0.2
+        ]
       }
     }
   ]
