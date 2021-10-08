@@ -58,7 +58,7 @@
         "text-field": ["to-string",
             ["coalesce",
                 ["image", ["get", "icon"]],
-                "missing icon :-("
+                "no icon found"
             ]
         ],
         "text-font": [
@@ -76,8 +76,8 @@
                   "missing"
               ]]
             ],
-          "#ff0000",
-          "#0000ff" 
+          "red",
+          "blue" 
         ]
       }
     }
