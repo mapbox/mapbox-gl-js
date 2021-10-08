@@ -172,7 +172,7 @@ class Camera extends Evented {
      * // Return a LngLat object such as {lng: 0, lat: 0}.
      * const center = map.getCenter();
      * // Access longitude and latitude values directly.
-     * const {longitude, latitude} = map.getCenter();
+     * const {lng, lat} = map.getCenter();
      * @see [Tutorial: Use Mapbox GL JS in a React app](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/#store-the-new-coordinates)
      */
     getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
