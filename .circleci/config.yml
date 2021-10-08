@@ -147,7 +147,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - restore_cache:
           keys:
             - v2-lint-{{ .Branch }}
@@ -164,7 +164,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
@@ -186,9 +186,9 @@ jobs:
       - store_artifacts:
           path: "test/release"
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - dist
+            - mapbox-gl-js/dist
 
   check-size:
     <<: *defaults
