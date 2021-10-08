@@ -10,6 +10,18 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - install-mbx-ci:
+          requires:
+              - prepare
+          filters:
+            tags:
+              only: /.*/
+            # We can't install mbx-ci on CI runs from PR's that reference forks from external contributors
+            # This is because fork's can not access our AWS credentials setup in CircleCI environment variables
+            # Branch names for external contributor forks are are reported in the format pull/{PR_NUMBER} to CircleCI,
+            # This RegEx is setup to ignore that.
+            branches:
+              ignore: /pull\/[0-9]*/
       - lint:
           requires:
             - prepare
@@ -25,6 +37,7 @@ workflows:
       - check-size:
           requires:
             - build
+            - install-mbx-ci
           filters:
             tags:
               only: /.*/
@@ -76,6 +89,7 @@ workflows:
           requires:
             - lint
             - build
+            - install-mbx-ci
             - test-flow
             - test-unit
             - test-render
@@ -92,6 +106,7 @@ workflows:
           requires:
             - lint
             - build
+            - install-mbx-ci
             - test-flow
             - test-unit
             - test-render
@@ -123,15 +138,16 @@ jobs:
             - '~/.yarn'
             - 'node_modules'
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - .
+            - mapbox-gl-js
+            - .ssh
 
   lint:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - restore_cache:
           keys:
             - v2-lint-{{ .Branch }}
@@ -148,7 +164,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
@@ -170,15 +186,15 @@ jobs:
       - store_artifacts:
           path: "test/release"
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - dist
+            - mapbox-gl-js/dist
 
   check-size:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Check bundle size
           command: |
@@ -189,7 +205,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Collect performance stats
           command: node bench/gl-stats.js
@@ -202,21 +218,21 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-flow
 
   test-unit:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-unit
 
   test-render:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-render
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
@@ -225,7 +241,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-query
       - store_test_results:
           path: test/integration/query-tests
@@ -236,7 +252,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run build-dev
       - run: yarn run build-token
       - run:
@@ -256,14 +272,31 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-expressions
+
+  install-mbx-ci:
+    <<: *defaults
+    steps:
+      - run:
+          name: Install mbx-ci
+          command: |
+            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > ~/mbx-ci &&
+            chmod 755 ~/mbx-ci &&
+            ~/mbx-ci aws setup
+      # mbx-ci stores credentials in these directories, so they must be explictly passed along to dependent jobs via workspaces
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - .ssh
+            - .aws
+            - mbx-ci
 
   deploy-benchmarks:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Build
           command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
@@ -279,7 +312,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - aws-cli/install
       - run:
           name: Deploy release
