@@ -1,3 +1,29 @@
+## 2.5.1
+
+### 🐞 Bug fixes
+
+* Fix an iOS 15 issue where the iOS Safari tab bar interrupts touch interactions. ([#11084](https://github.com/mapbox/mapbox-gl-js/pull/11084))
+
+## 2.5.0
+
+### Features ✨ and improvements 🏁
+
+* Added `queryRenderedFeatures` support to heatmap layers. ([#10996](https://github.com/mapbox/mapbox-gl-js/pull/10996))
+* Added support for using `line-gradient` and `line-dasharray` paint properties together on line layers. ([#10894](https://github.com/mapbox/mapbox-gl-js/pull/10894))
+* Added `preclick` event allowing popups to close and open in a new location on one click. ([#10926](https://github.com/mapbox/mapbox-gl-js/pull/10926))
+* Improved collision detection for labels along lines, slightly improving label density. ([#10918](https://github.com/mapbox/mapbox-gl-js/pull/10918))
+* Improved Popup `addClassName`, `removeClassName` and `toggleClassName` methods to work on popup instances that are not added to the map.  ([#10889](https://github.com/mapbox/mapbox-gl-js/pull/10889))
+  * ⚠️ Note: Direct modifications to the popup container CSS class no longer persist. These methods should be used instead.
+
+### 🐞 Bug fixes
+
+* Fixed `maxBounds` property not working across the 180th meridian. ([#10903](https://github.com/mapbox/mapbox-gl-js/pull/10903))
+* Fixed `map.getBounds()` returning too-large bounds under some conditions. ([#10909](https://github.com/mapbox/mapbox-gl-js/pull/10909))
+* Fixed markers not updating position when toggling terrain. ([#10985](https://github.com/mapbox/mapbox-gl-js/pull/10985))
+* Fixed gap on edge of map on retina displays. ([#10936](https://github.com/mapbox/mapbox-gl-js/pull/10936))
+* Fixed SDF images rendering inside text. ([#10989](https://github.com/mapbox/mapbox-gl-js/pull/10989))
+* Fixed an issue with slow tile loading performance on maps with CJK glyphs on certain Chrome/GPU combinations. ([#11047](https://github.com/mapbox/mapbox-gl-js/pull/11047))
+
 ## 2.4.0
 
 ### ✨ Features and improvements

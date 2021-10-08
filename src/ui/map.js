@@ -696,9 +696,10 @@ class Map extends Camera {
      * if (mapDiv.style.visibility === true) map.resize();
      */
     resize(eventData?: Object) {
-        const dimensions = this._containerDimensions();
-        const width = dimensions[0];
-        const height = dimensions[1];
+        const [width, height] = this._containerDimensions();
+
+        // do nothing if container remained the same size
+        if (width === this.transform.width && height === this.transform.height) return this;
 
         this._resizeCanvas(width, height);
 
@@ -707,7 +708,6 @@ class Map extends Camera {
 
         const fireMoving = !this._moving;
         if (fireMoving) {
-            this.stop();
             this.fire(new Event('movestart', eventData))
                 .fire(new Event('move', eventData));
         }
@@ -2761,12 +2761,14 @@ class Map extends Camera {
             this._styleDirty = false;
 
             const zoom = this.transform.zoom;
+            const pitch = this.transform.pitch;
             const now = browser.now();
             this.style.zoomHistory.update(zoom, now);
 
             const parameters = new EvaluationParameters(zoom, {
                 now,
                 fadeDuration,
+                pitch,
                 zoomHistory: this.style.zoomHistory,
                 transition: this.style.getTransition()
             });

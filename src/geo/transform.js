@@ -16,6 +16,7 @@ import assert from 'assert';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
+import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -107,6 +108,7 @@ class Transform {
     _projMatrixCache: {[_: number]: Float32Array};
     _alignedProjMatrixCache: {[_: number]: Float32Array};
     _fogTileMatrixCache: {[_: number]: Float32Array};
+    _distanceTileDataCache: {[_: number]: FeatureDistanceData};
     _camera: FreeCamera;
     _centerAltitude: number;
     _horizonShift: number;
@@ -136,6 +138,7 @@ class Transform {
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
         this._fogTileMatrixCache = {};
+        this._distanceTileDataCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this._averageElevation = 0;
@@ -1262,6 +1265,39 @@ class Transform {
         return posMatrix;
     }
 
+    calculateDistanceTileData(unwrappedTileID: UnwrappedTileID): FeatureDistanceData {
+        const distanceDataKey = unwrappedTileID.key;
+        const cache = this._distanceTileDataCache;
+        if (cache[distanceDataKey]) {
+            return cache[distanceDataKey];
+        }
+
+        //Calculate the offset of the tile
+        const canonical = unwrappedTileID.canonical;
+        const windowScaleFactor = 1 / this.height;
+        const scale = this.cameraWorldSize / this.zoomScale(canonical.z);
+        const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
+        const tX = unwrappedX * scale;
+        const tY = canonical.y * scale;
+
+        const center = this.point;
+
+        // Calculate the bearing vector by rotating unit vector [0, -1] clockwise
+        const angle = this.angle;
+        const bX = Math.sin(-angle);
+        const bY = -Math.cos(-angle);
+
+        const cX = (center.x - tX) * windowScaleFactor;
+        const cY = (center.y - tY) * windowScaleFactor;
+        cache[distanceDataKey] = {
+            bearing: [bX, bY],
+            center: [cX, cY],
+            scale: (scale / EXTENT) * windowScaleFactor
+        };
+
+        return cache[distanceDataKey];
+    }
+
     /**
      * Calculate the fogTileMatrix that, given a tile coordinate, can be used to
      * calculate its position relative to the camera in units of pixels divided
@@ -1600,6 +1636,7 @@ class Transform {
         this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
         this._calcFogMatrices();
+        this._distanceTileDataCache = {};
 
         // inverse matrix for conversion from screen coordinates to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);

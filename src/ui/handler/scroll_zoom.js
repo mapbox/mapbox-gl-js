@@ -371,6 +371,10 @@ class ScrollZoomHandler {
         return easing;
     }
 
+    blur() {
+        this.reset();
+    }
+
     reset() {
         this._active = false;
     }
@@ -391,7 +395,7 @@ class ScrollZoomHandler {
     }
 
     _isFullscreen() {
-        return window.document.fullscreenElement !== null;
+        return !!window.document.fullscreenElement;
     }
 
     _showBlockerAlert() {
