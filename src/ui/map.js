@@ -3078,7 +3078,9 @@ class Map extends Camera {
         }
         this._renderTaskQueue.clear();
         this._domRenderTaskQueue.clear();
-        this.style.clearWorkerCaches();
+        if (this.style) {
+            this.style.clearWorkerCaches();
+        }
         this.painter.destroy();
         this.handlers.destroy();
         delete this.handlers;
