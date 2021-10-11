@@ -74,6 +74,7 @@ function ensureTeardown(t) {
         delete map.painter.context.gl;
         map = null;
     }
+    mapboxgl.clearStorage();
     expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
     diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
 
