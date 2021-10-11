@@ -70,7 +70,6 @@ function ensureTeardown(t) {
     //Teardown all global resources
     //Cleanup WebGL context and map
     if (map) {
-        map.style.clearWorkerCaches();
         map.remove();
         delete map.painter.context.gl;
         map = null;

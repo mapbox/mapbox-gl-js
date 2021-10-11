@@ -1766,7 +1766,7 @@ class Style extends Evented {
         return this._numCircleLayers > 0;
     }
 
-    clearWorkerCaches(): Promise {
+    clearWorkerCaches() {
         this.dispatcher.broadcast('clearCaches');
     }
 }
