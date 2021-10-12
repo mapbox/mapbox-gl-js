@@ -296,9 +296,7 @@ export default class Marker extends Evented {
         }
         this._clearFadeTimer();
         DOM.remove(this._element);
-
         if (this._popup) this._popup.remove();
-
         return this;
     }
 
@@ -397,6 +395,7 @@ export default class Marker extends Evented {
             }
             this._popup = popup;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
+
             this._element.setAttribute('role', 'button');
             this._originalTabIndex = this._element.getAttribute('tabindex');
             if (!this._originalTabIndex) {
@@ -463,8 +462,8 @@ export default class Marker extends Evented {
         if (!popup) {
             return this;
         } else if (popup.isOpen()) {
-            this._element.setAttribute('aria-expanded', 'false');
             popup.remove();
+            this._element.setAttribute('aria-expanded', 'false');
         } else {
             popup.addTo(this._map);
             this._element.setAttribute('aria-expanded', 'true');
