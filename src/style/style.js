@@ -325,8 +325,8 @@ class Style extends Evented {
             this._updateLayerCount(layer, true);
         }
 
-        if (this.stylesheet.projection) {
-            this._setProjection(this.stylesheet.projection);
+        if (this.stylesheet.projection && !this.map._projectionSetAtRuntime) {
+            this.setProjection(this.stylesheet.projection);
         }
 
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
@@ -344,8 +344,7 @@ class Style extends Evented {
         this.fire(new Event('style.load'));
     }
 
-    _setProjection(projection: ProjectionSpecification) {
-        console.log('style setprojection', projection);
+    setProjection(projection: ProjectionSpecification) {
         this.map.painter.clearBackgroundTiles();
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
@@ -1197,6 +1196,7 @@ class Style extends Evented {
             sprite: this.stylesheet.sprite,
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
+            projection: this.stylesheet.projection,
             sources,
             layers: this._serializeLayers(this._order)
         }, (value) => { return value !== undefined; });

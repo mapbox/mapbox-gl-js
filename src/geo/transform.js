@@ -22,6 +22,7 @@ import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
 import type {Projection} from './projection/index.js';
 import type Tile from '../source/tile.js';
+import type {ProjectionSpecification} from '../style-spec/types.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -136,9 +137,7 @@ class Transform {
 
         this.setMaxBounds();
 
-        if (projection) {
-            this.setProjection(projection);
-        }
+        this.setProjection(projection);
 
         this.width = 0;
         this.height = 0;
@@ -214,15 +213,10 @@ class Transform {
         return pick(this.projection, ['name', 'center', 'parallels']);
     }
 
-    setProjection(projection: ProjectionSpecification) {
+    setProjection(projection?: ProjectionSpecification) {
         projection = getProjectionOptions(projection);
         this.projectionOptions = projection;
         this.projection = getProjection(projection);
-        // this.projection = {
-        //     name: 'winkel',
-        //     project: function() {return {x: 0, y: 0}},
-        //     unproject: function() {return {lng: 0, lat: 0}}
-        // };
         this._calcMatrices();
     }
 
