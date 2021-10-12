@@ -32,10 +32,16 @@ export default class TouchPanHandler {
         this._active = false;
         this._touches = {};
         this._sum = new Point(0, 0);
+        this._tap.reset();
     }
 
     touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
-        if (this._map._gestureHandling) {
+        return this._calculateTransform(e, points, mapTouches);
+    }
+
+    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+        // if gesture handling is set to true, require two fingers to touch pan
+        if (this._map._gestureHandling && !this._map.isMoving()) {
             if (e.touches.length !== 2) {
                 this._showTouchPanBlockerAlert();
                 return;
@@ -45,10 +51,7 @@ export default class TouchPanHandler {
                 clearTimeout(this._alertTimer);
             }
         }
-        return this._calculateTransform(e, points, mapTouches);
-    }
 
-    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this._active || mapTouches.length < this._minTouches) return;
         e.preventDefault();
         return this._calculateTransform(e, points, mapTouches);
