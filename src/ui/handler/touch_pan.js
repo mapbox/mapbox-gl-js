@@ -32,7 +32,6 @@ export default class TouchPanHandler {
         this._active = false;
         this._touches = {};
         this._sum = new Point(0, 0);
-        this._tap.reset();
     }
 
     touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
