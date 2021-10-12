@@ -532,7 +532,7 @@ test(`Map#on mousedown can have default behavior prevented and still fire subseq
     map.on('click', click);
 
     simulate.click(map.getCanvas());
-    t.ok(click.callCount, 1);
+    t.equal(click.callCount, 1);
 
     map.remove();
     t.end();

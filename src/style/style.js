@@ -999,7 +999,7 @@ class Style extends Evented {
             return;
         }
 
-        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, null, options)) {
+        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, {layerType: layer.type}, options)) {
             return;
         }
 
@@ -1194,6 +1194,8 @@ class Style extends Evented {
             sourceCache.pause();
         }
         this._changed = true;
+        layer.invalidateCompiledFilter();
+
     }
 
     _flattenAndSortRenderedFeatures(sourceResults: Array<any>) {
@@ -1762,6 +1764,10 @@ class Style extends Evented {
 
     hasCircleLayers(): boolean {
         return this._numCircleLayers > 0;
+    }
+
+    clearWorkerCaches() {
+        this.dispatcher.broadcast('clearCaches');
     }
 }
 

@@ -764,9 +764,41 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('does nothing if container size is the same', (t) => {
+            const map = createMap(t);
+
+            t.spy(map.transform, 'resize');
+            t.spy(map.painter, 'resize');
+
+            map.resize();
+
+            t.notOk(map.transform.resize.called);
+            t.notOk(map.painter.resize.called);
+
+            t.end();
+        });
+
+        t.test('does not call stop on resize', (t) => {
+            const map = createMap(t);
+
+            Object.defineProperty(map.getContainer(), 'getBoundingClientRect',
+                {value: () => ({height: 250, width: 250})});
+
+            t.spy(map, 'stop');
+
+            map.resize();
+
+            t.notOk(map.stop.called);
+
+            t.end();
+        });
+
         t.test('fires movestart, move, resize, and moveend events', (t) => {
             const map = createMap(t),
                 events = [];
+
+            Object.defineProperty(map.getContainer(), 'getBoundingClientRect',
+                {value: () => ({height: 250, width: 250})});
 
             ['movestart', 'move', 'resize', 'moveend'].forEach((event) => {
                 map.on(event, (e) => {
@@ -1026,8 +1058,27 @@ test('Map', (t) => {
 
     t.test('#setMinZoom', (t) => {
         const map = createMap(t, {zoom:5});
+
+        const onZoomStart = t.spy();
+        const onZoom = t.spy();
+        const onZoomEnd = t.spy();
+
+        map.on('zoomstart', onZoomStart);
+        map.on('zoom', onZoom);
+        map.on('zoomend', onZoomEnd);
+
         map.setMinZoom(3.5);
+
+        t.ok(onZoomStart.calledOnce);
+        t.ok(onZoom.calledOnce);
+        t.ok(onZoomEnd.calledOnce);
+
         map.setZoom(1);
+
+        t.equal(onZoomStart.callCount, 2);
+        t.equal(onZoom.callCount, 2);
+        t.equal(onZoomEnd.callCount, 2);
+
         t.equal(map.getZoom(), 3.5);
         t.end();
     });
@@ -1060,8 +1111,27 @@ test('Map', (t) => {
 
     t.test('#setMaxZoom', (t) => {
         const map = createMap(t, {zoom:0});
+
+        const onZoomStart = t.spy();
+        const onZoom = t.spy();
+        const onZoomEnd = t.spy();
+
+        map.on('zoomstart', onZoomStart);
+        map.on('zoom', onZoom);
+        map.on('zoomend', onZoomEnd);
+
         map.setMaxZoom(3.5);
+
+        t.ok(onZoomStart.calledOnce);
+        t.ok(onZoom.calledOnce);
+        t.ok(onZoomEnd.calledOnce);
+
         map.setZoom(4);
+
+        t.equal(onZoomStart.callCount, 2);
+        t.equal(onZoom.callCount, 2);
+        t.equal(onZoomEnd.callCount, 2);
+
         t.equal(map.getZoom(), 3.5);
         t.end();
     });
@@ -1108,8 +1178,27 @@ test('Map', (t) => {
 
     t.test('#setMinPitch', (t) => {
         const map = createMap(t, {pitch: 20});
+
+        const onPitchStart = t.spy();
+        const onPitch = t.spy();
+        const onPitchEnd = t.spy();
+
+        map.on('pitchstart', onPitchStart);
+        map.on('pitch', onPitch);
+        map.on('pitchend', onPitchEnd);
+
         map.setMinPitch(10);
+
+        t.ok(onPitchStart.calledOnce);
+        t.ok(onPitch.calledOnce);
+        t.ok(onPitchEnd.calledOnce);
+
         map.setPitch(0);
+
+        t.equal(onPitchStart.callCount, 2);
+        t.equal(onPitch.callCount, 2);
+        t.equal(onPitchEnd.callCount, 2);
+
         t.equal(map.getPitch(), 10);
         t.end();
     });
@@ -1142,8 +1231,27 @@ test('Map', (t) => {
 
     t.test('#setMaxPitch', (t) => {
         const map = createMap(t, {pitch: 0});
+
+        const onPitchStart = t.spy();
+        const onPitch = t.spy();
+        const onPitchEnd = t.spy();
+
+        map.on('pitchstart', onPitchStart);
+        map.on('pitch', onPitch);
+        map.on('pitchend', onPitchEnd);
+
         map.setMaxPitch(10);
+
+        t.ok(onPitchStart.calledOnce);
+        t.ok(onPitch.calledOnce);
+        t.ok(onPitchEnd.calledOnce);
+
         map.setPitch(20);
+
+        t.equal(onPitchStart.callCount, 2);
+        t.equal(onPitch.callCount, 2);
+        t.equal(onPitchEnd.callCount, 2);
+
         t.equal(map.getPitch(), 10);
         t.end();
     });

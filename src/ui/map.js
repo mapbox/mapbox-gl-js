@@ -106,6 +106,7 @@ type MapOptions = {
     doubleClickZoom?: boolean,
     touchZoomRotate?: boolean,
     touchPitch?: boolean,
+    gestureHandling?: boolean,
     trackResize?: boolean,
     center?: LngLatLike,
     zoom?: number,
@@ -148,6 +149,7 @@ const defaultOptions = {
     doubleClickZoom: true,
     touchZoomRotate: true,
     touchPitch: true,
+    gestureHandling: false,
 
     bearingSnap: 7,
     clickTolerance: 3,
@@ -234,6 +236,7 @@ const defaultOptions = {
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
  * @param {boolean | Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
  * @param {boolean | Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler#enable}.
+ * @param {boolean} [options.gestureHandling=false] If `true`, scroll zoom will require pressing the ctrl or ⌘ key while scrolling to zoom map.
  * @param {boolean} [options.trackResize=true] If `true`, the map will automatically resize when the browser window resizes.
  * @param {LngLatLike} [options.center=[0, 0]] The inital geographical centerpoint of the map. If `center` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: Mapbox GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
  * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
@@ -342,6 +345,7 @@ class Map extends Camera {
     _removed: boolean;
     _speedIndexTiming: boolean;
     _clickTolerance: number;
+    _gestureHandling: boolean;
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
@@ -442,6 +446,7 @@ class Map extends Camera {
         this._mapId = uniqueId();
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
+        this._gestureHandling = options.gestureHandling;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevation = new EasedVariable(0);
@@ -691,9 +696,10 @@ class Map extends Camera {
      * if (mapDiv.style.visibility === true) map.resize();
      */
     resize(eventData?: Object) {
-        const dimensions = this._containerDimensions();
-        const width = dimensions[0];
-        const height = dimensions[1];
+        const [width, height] = this._containerDimensions();
+
+        // do nothing if container remained the same size
+        if (width === this.transform.width && height === this.transform.height) return this;
 
         this._resizeCanvas(width, height);
 
@@ -702,7 +708,6 @@ class Map extends Camera {
 
         const fireMoving = !this._moving;
         if (fireMoving) {
-            this.stop();
             this.fire(new Event('movestart', eventData))
                 .fire(new Event('move', eventData));
         }
@@ -789,7 +794,13 @@ class Map extends Camera {
             this.transform.minZoom = minZoom;
             this._update();
 
-            if (this.getZoom() < minZoom) this.setZoom(minZoom);
+            if (this.getZoom() < minZoom) {
+                this.setZoom(minZoom);
+            } else {
+                this.fire(new Event('zoomstart'))
+                    .fire(new Event('zoom'))
+                    .fire(new Event('zoomend'));
+            }
 
             return this;
 
@@ -824,7 +835,13 @@ class Map extends Camera {
             this.transform.maxZoom = maxZoom;
             this._update();
 
-            if (this.getZoom() > maxZoom) this.setZoom(maxZoom);
+            if (this.getZoom() > maxZoom) {
+                this.setZoom(maxZoom);
+            } else {
+                this.fire(new Event('zoomstart'))
+                    .fire(new Event('zoom'))
+                    .fire(new Event('zoomend'));
+            }
 
             return this;
 
@@ -862,7 +879,13 @@ class Map extends Camera {
             this.transform.minPitch = minPitch;
             this._update();
 
-            if (this.getPitch() < minPitch) this.setPitch(minPitch);
+            if (this.getPitch() < minPitch) {
+                this.setPitch(minPitch);
+            } else {
+                this.fire(new Event('pitchstart'))
+                    .fire(new Event('pitch'))
+                    .fire(new Event('pitchend'));
+            }
 
             return this;
 
@@ -901,7 +924,13 @@ class Map extends Camera {
             this.transform.maxPitch = maxPitch;
             this._update();
 
-            if (this.getPitch() > maxPitch) this.setPitch(maxPitch);
+            if (this.getPitch() > maxPitch) {
+                this.setPitch(maxPitch);
+            } else {
+                this.fire(new Event('pitchstart'))
+                    .fire(new Event('pitch'))
+                    .fire(new Event('pitchend'));
+            }
 
             return this;
 
@@ -2772,12 +2801,14 @@ class Map extends Camera {
             this._styleDirty = false;
 
             const zoom = this.transform.zoom;
+            const pitch = this.transform.pitch;
             const now = browser.now();
             this.style.zoomHistory.update(zoom, now);
 
             const parameters = new EvaluationParameters(zoom, {
                 now,
                 fadeDuration,
+                pitch,
                 zoomHistory: this.style.zoomHistory,
                 transition: this.style.getTransition()
             });
@@ -3087,6 +3118,9 @@ class Map extends Camera {
         }
         this._renderTaskQueue.clear();
         this._domRenderTaskQueue.clear();
+        if (this.style) {
+            this.style.clearWorkerCaches();
+        }
         this.painter.destroy();
         this.handlers.destroy();
         delete this.handlers;

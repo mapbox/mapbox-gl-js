@@ -5,6 +5,9 @@ import ValidationError from '../error/validation_error.js';
 import {createExpression, createPropertyExpression} from '../expression/index.js';
 import {deepUnbundle} from '../util/unbundle_jsonlint.js';
 import {isStateConstant, isGlobalPropertyConstant, isFeatureConstant} from '../expression/is_constant.js';
+import CompoundExpression from '../expression/compound_expression.js';
+
+import type {Expression} from '../expression/expression.js';
 
 export default function validateExpression(options: any): Array<ValidationError> {
     const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(deepUnbundle(options.value), options.valueSpec);
@@ -26,8 +29,8 @@ export default function validateExpression(options: any): Array<ValidationError>
         return [new ValidationError(options.key, options.value, '"feature-state" data expressions are not supported with layout properties.')];
     }
 
-    if (options.expressionContext === 'filter' && !isStateConstant(expressionObj)) {
-        return [new ValidationError(options.key, options.value, '"feature-state" data expressions are not supported with filters.')];
+    if (options.expressionContext === 'filter') {
+        return disallowedFilterParameters(expressionObj, options);
     }
 
     if (options.expressionContext && options.expressionContext.indexOf('cluster') === 0) {
@@ -40,4 +43,32 @@ export default function validateExpression(options: any): Array<ValidationError>
     }
 
     return [];
+}
+
+export function disallowedFilterParameters(e: Expression, options: any): Array<ValidationError> {
+    const disallowedParameters = new Set([
+        'zoom',
+        'feature-state',
+        'pitch',
+        'distance-from-center'
+    ]);
+    for (const param of options.valueSpec.expression.parameters) {
+        disallowedParameters.delete(param);
+    }
+
+    if (disallowedParameters.size === 0) {
+        return [];
+    }
+    const errors = [];
+
+    if (e instanceof CompoundExpression) {
+        if (disallowedParameters.has(e.name)) {
+            return [new ValidationError(options.key, options.value, `["${e.name}"] expression is not supported in a filter for a ${options.object.type} layer with id: ${options.object.id}`)];
+        }
+    }
+    e.eachChild((arg) => {
+        errors.push(...disallowedFilterParameters(arg, options));
+    });
+
+    return errors;
 }
