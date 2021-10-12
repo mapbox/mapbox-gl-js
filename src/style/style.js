@@ -1765,6 +1765,10 @@ class Style extends Evented {
     hasCircleLayers(): boolean {
         return this._numCircleLayers > 0;
     }
+
+    clearWorkerCaches() {
+        this.dispatcher.broadcast('clearCaches');
+    }
 }
 
 Style.getSourceType = getSourceType;
