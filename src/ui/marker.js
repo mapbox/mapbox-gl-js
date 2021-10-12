@@ -296,7 +296,9 @@ export default class Marker extends Evented {
         }
         this._clearFadeTimer();
         DOM.remove(this._element);
+
         if (this._popup) this._popup.remove();
+
         return this;
     }
 
@@ -401,6 +403,7 @@ export default class Marker extends Evented {
                 this._element.setAttribute('tabindex', '0');
             }
             this._element.addEventListener('keypress', this._onKeyPress);
+            this._element.setAttribute('aria-expanded', 'false');
         }
 
         return this;
@@ -457,12 +460,11 @@ export default class Marker extends Evented {
      */
     togglePopup() {
         const popup = this._popup;
-
         if (!popup) {
             return this;
         } else if (popup.isOpen()) {
-            popup.remove();
             this._element.setAttribute('aria-expanded', 'false');
+            popup.remove();
         } else {
             popup.addTo(this._map);
             this._element.setAttribute('aria-expanded', 'true');
