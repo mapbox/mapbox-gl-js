@@ -1053,11 +1053,12 @@ class Map extends Camera {
         return this._rotating || this.handlers && this.handlers.isRotating();
     }
 
-    _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
+    _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any) {
         if (type === 'mouseenter' || type === 'mouseover') {
             let mousein = false;
             const mousemove = (e) => {
-                const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
+                const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
+                const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (!features.length) {
                     mousein = false;
                 } else if (!mousein) {
@@ -1068,11 +1069,13 @@ class Map extends Camera {
             const mouseout = () => {
                 mousein = false;
             };
-            return {layer: layerId, listener, delegates: {mousemove, mouseout}};
+
+            return {layers: new Set(layers), listener, delegates: {mousemove, mouseout}};
         } else if (type === 'mouseleave' || type === 'mouseout') {
             let mousein = false;
             const mousemove = (e) => {
-                const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
+                const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
+                const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (features.length) {
                     mousein = true;
                 } else if (mousein) {
@@ -1086,10 +1089,12 @@ class Map extends Camera {
                     listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
                 }
             };
-            return {layer: layerId, listener, delegates: {mousemove, mouseout}};
+
+            return {layers: new Set(layers), listener, delegates: {mousemove, mouseout}};
         } else {
             const delegate = (e) => {
-                const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
+                const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
+                const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (features.length) {
                     // Here we need to mutate the original event, so that preventDefault works as expected.
                     e.features = features;
@@ -1097,7 +1102,8 @@ class Map extends Camera {
                     delete e.features;
                 }
             };
-            return {layer: layerId, listener, delegates: {[type]: delegate}};
+
+            return {layers: new Set(layers), listener, delegates: {[type]: delegate}};
         }
     }
 
@@ -1162,12 +1168,12 @@ class Map extends Camera {
      * | [`sourcedataloading`](#map.event:sourcedataloading)       |                           |
      * | [`styleimagemissing`](#map.event:styleimagemissing)       |                           |
      *
-     * @param {string} layerId (optional) The ID of a style layer. If you provide a `layerId`,
-     * the listener will be triggered only if its location is within a visible feature in this layer,
+     * @param {string | Array<string>} layerIds (optional) The ID(s) of a style layer(s). If you provide a `layerId`,
+     * the listener will be triggered only if its location is within a visible feature in these layers,
      * and the event will have a `features` property containing an array of the matching features.
-     * If you do not provide a `layerId`, the listener will be triggered by a corresponding event
+     * If you do not provide `layerIds`, the listener will be triggered by a corresponding event
      * happening anywhere on the map, and the event will not have a `features` property.
-     * Note that many event types are not compatible with the optional `layerId` parameter.
+     * Note that many event types are not compatible with the optional `layerIds` parameter.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
@@ -1200,18 +1206,30 @@ class Map extends Camera {
      *         .setHTML(`Country name: ${e.features[0].properties.name}`)
      *         .addTo(map);
      * });
+     * @example
+     * // Set an event listener that will fire
+     * // when a feature on the countries or background layers of the map is clicked.
+     * map.on('click', ['countries', 'background'], (e) => {
+     *     new mapboxgl.Popup()
+     *         .setLngLat(e.lngLat)
+     *         .setHTML(`Country name: ${e.features[0].properties.name}`)
+     *         .addTo(map);
+     * });
      * @see [Example: Add 3D terrain to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-terrain/)
      * @see [Example: Center the map on a clicked symbol](https://docs.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      * @see [Example: Create a draggable marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
-    on(type: MapEvent, layerId: any, listener: any) {
+    on(type: MapEvent, layerIds: any, listener: any) {
         if (listener === undefined) {
-            return super.on(type, layerId);
+            return super.on(type, layerIds);
         }
 
-        const delegatedListener = this._createDelegatedListener(type, layerId, listener);
+        if (!Array.isArray(layerIds)) {
+            layerIds = [layerIds];
+        }
+        const delegatedListener = this._createDelegatedListener(type, layerIds, listener);
 
         this._delegatedListeners = this._delegatedListeners || {};
         this._delegatedListeners[type] = this._delegatedListeners[type] || [];
@@ -1234,12 +1252,12 @@ class Map extends Camera {
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
      * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
-     * @param {string} layerId (optional) The ID of a style layer. If you provide a `layerId`,
-     * the listener will be triggered only if its location is within a visible feature in this layer,
+     * @param {string | Array<string>} layerIds (optional) The ID(s) of a style layer(s). If you provide `layerIds`,
+     * the listener will be triggered only if its location is within a visible feature in these layers,
      * and the event will have a `features` property containing an array of the matching features.
-     * If you do not provide a `layerId`, the listener will be triggered by a corresponding event
+     * If you do not provide `layerIds`, the listener will be triggered by a corresponding event
      * happening anywhere on the map, and the event will not have a `features` property.
-     * Note that many event types are not compatible with the optional `layerId` parameter.
+     * Note that many event types are not compatible with the optional `layerIds` parameter.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
@@ -1253,17 +1271,26 @@ class Map extends Camera {
      * map.once('touchstart', 'my-point-layer', (e) => {
      *     console.log(`The first map touch on the point layer was at: ${e.lnglat}`);
      * });
+     * @example
+     * // Log the coordinates of a user's first map touch
+     * // on specific layers.
+     * map.once('touchstart', ['my-point-layer', 'my-point-layer-2'], (e) => {
+     *     console.log(`The first map touch on the point layer was at: ${e.lnglat}`);
+     * });
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      * @see [Example: Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Example: Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-    once(type: MapEvent, layerId: any, listener: any) {
+    once(type: MapEvent, layerIds: any, listener: any) {
 
         if (listener === undefined) {
-            return super.once(type, layerId);
+            return super.once(type, layerIds);
         }
 
-        const delegatedListener = this._createDelegatedListener(type, layerId, listener);
+        if (!Array.isArray(layerIds)) {
+            layerIds = [layerIds];
+        }
+        const delegatedListener = this._createDelegatedListener(type, layerIds, listener);
 
         for (const event in delegatedListener.delegates) {
             this.once((event: any), delegatedListener.delegates[event]);
@@ -1277,7 +1304,7 @@ class Map extends Camera {
      * optionally limited to layer-specific events.
      *
      * @param {string} type The event type previously used to install the listener.
-     * @param {string} layerId (optional) The layer ID previously used to install the listener.
+     * @param {string | Array<string>} layerIds (optional) The layer ID(s) previously used to install the listener.
      * @param {Function} listener The function previously installed as a listener.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
@@ -1297,16 +1324,28 @@ class Map extends Camera {
      * });
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    off(type: MapEvent, layerId: any, listener: any) {
+    off(type: MapEvent, layerIds: any, listener: any) {
         if (listener === undefined) {
-            return super.off(type, layerId);
+            return super.off(type, layerIds);
         }
 
-        const removeDelegatedListener = (delegatedListeners) => {
-            const listeners = delegatedListeners[type];
+        layerIds = new Set(Array.isArray(layerIds) ? layerIds : [layerIds]);
+        const areLayerArraysEqual = (hash1, hash2) => {
+            if (hash1.size !== hash2.size) {
+                return false; // at-least 1 arr has duplicate value(s)
+            }
+
+            // comparing values
+            for (const value of hash1) {
+                if (!hash2.has(value)) return false;
+            }
+            return true;
+        };
+
+        const removeDelegatedListeners = (listeners: Array<any>) => {
             for (let i = 0; i < listeners.length; i++) {
                 const delegatedListener = listeners[i];
-                if (delegatedListener.layer === layerId && delegatedListener.listener === listener) {
+                if (delegatedListener.listener === listener && areLayerArraysEqual(delegatedListener.layers, layerIds)) {
                     for (const event in delegatedListener.delegates) {
                         this.off((event: any), delegatedListener.delegates[event]);
                     }
@@ -1316,8 +1355,9 @@ class Map extends Camera {
             }
         };
 
-        if (this._delegatedListeners && this._delegatedListeners[type]) {
-            removeDelegatedListener(this._delegatedListeners);
+        const delegatedListeners = this._delegatedListeners ? this._delegatedListeners[type] : undefined;
+        if (delegatedListeners) {
+            removeDelegatedListeners(delegatedListeners);
         }
 
         return this;
