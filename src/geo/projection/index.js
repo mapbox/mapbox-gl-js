@@ -11,9 +11,9 @@ import type {ProjectionSpecification} from '../../style-spec/types.js';
 
 export type Projection = {
     name: string,
-    center: Array<number>,
-    parallels?: Array<number>,
-    range?: Array<number>,
+    center: [number, number],
+    parallels?: [number, number],
+    range?: [number, number],
     project: (lng: number, lat: number) => {x: number, y: number},
     unproject: (x: number, y: number) => LngLat
 };

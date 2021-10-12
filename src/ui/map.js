@@ -354,6 +354,7 @@ class Map extends Camera {
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
+    _projectionSetAtRuntime: boolean;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -406,6 +407,8 @@ class Map extends Camera {
 
     constructor(options: MapOptions) {
         PerformanceUtils.mark(PerformanceMarkers.create);
+
+        const runtimeProjection = options.projection;
 
         options = extend({}, defaultOptions, options);
 
@@ -496,12 +499,15 @@ class Map extends Camera {
         }
 
         this.handlers = new HandlerManager(this, options);
-        
+
         this._localFontFamily = options.localFontFamily;
         this._localIdeographFontFamily = options.localIdeographFontFamily;
-        
-        if (options.style) this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
-        if (options.projection) this.setProjection(getProjectionOptions(options.projection));
+
+        if (options.style) {
+            this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
+            if (runtimeProjection) this._projectionSetAtRuntime = true;
+            this.setProjection(getProjectionOptions(options.projection));
+        }
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         this._hash = options.hash && (new Hash(hashName)).addTo(this);
@@ -918,9 +924,9 @@ class Map extends Camera {
      *   parallels: [20, 60]
      * });
      */
-    setProjection(projection?: ProjectionSpecification | string) {
-        this.projection = getProjectionOptions(projection);
-        this.style._setProjection(projection);
+    setProjection(projection: ProjectionSpecification | string) {
+        if (typeof projection === 'string') projection = getProjectionOptions(projection);
+        this.style.setProjection(projection);
     }
 
     /**

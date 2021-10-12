@@ -13,7 +13,7 @@ import Tile from '../../../src/source/tile.js';
 import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index.js';
 import FeatureIndex from '../../../src/data/feature_index.js';
 import {createSymbolBucket} from '../../util/create_symbol_layer.js';
-import getProjection from '../../../src/geo/projection/index.js';
+import {getProjection} from '../../../src/geo/projection/index.js';
 
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));

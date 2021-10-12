@@ -12,7 +12,7 @@ import {enforceCacheSizeLimit} from '../util/tile_request_cache.js';
 import {extend} from '../util/util.js';
 import {PerformanceUtils} from '../util/performance.js';
 import {Event} from '../util/evented.js';
-import getProjection from '../geo/projection/index.js';
+import {getProjection} from '../geo/projection/index.js';
 
 import type {
     WorkerSource,
@@ -120,13 +120,8 @@ export default class Worker {
         callback();
     }
 
-<<<<<<< HEAD
-    setProjection(mapId: string, config: {name: string} | string) {
-        this.projections[mapId] = getProjection(config);
-=======
     setProjection(mapId: string, config: ProjectionSpecification) {
-        setProjection(config);
->>>>>>> be4cd82af (Update handling stylesheet projections)
+        this.projections[mapId] = getProjection(config);
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {

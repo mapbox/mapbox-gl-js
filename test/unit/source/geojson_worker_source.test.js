@@ -3,7 +3,7 @@ import GeoJSONWorkerSource from '../../../src/source/geojson_worker_source.js';
 import StyleLayerIndex from '../../../src/style/style_layer_index.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import perf from '../../../src/util/performance.js';
-import getProjection from '../../../src/geo/projection/index.js';
+import {getProjection} from '../../../src/geo/projection/index.js';
 
 const actor = {send: () => {}};
 

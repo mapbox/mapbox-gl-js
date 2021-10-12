@@ -66,7 +66,6 @@ class Hash {
             lat = Math.round(center.lat * m) / m,
             bearing = this._map.getBearing(),
             pitch = this._map.getPitch();
-            // console.log('getHashString: ', bearing);
         let hash = '';
         if (mapFeedback) {
             // new map feedback site has some constraints that don't allow
@@ -121,7 +120,6 @@ class Hash {
         const loc = this._getCurrentHash();
         if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
             const bearing = this._map.dragRotate.isEnabled() && this._map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : this._map.getBearing();
-            console.log('bearing: ', bearing);
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
@@ -135,7 +133,6 @@ class Hash {
 
     _updateHashUnthrottled() {
         // Replace if already present, else append the updated hash string
-        console.log('this._updateHashUnthrottled')
         const location = window.location.href.replace(/(#.+)?$/, this.getHashString());
         window.history.replaceState(window.history.state, null, location);
     }
