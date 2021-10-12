@@ -309,7 +309,7 @@ async function runTest(t) {
             updateHTML(testMetaData);
         }
 
-        browserWriteFile.postMessage(fileInfo);
+        if (!process.env.CI) browserWriteFile.postMessage(fileInfo);
 
     } catch (e) {
         t.error(e);
