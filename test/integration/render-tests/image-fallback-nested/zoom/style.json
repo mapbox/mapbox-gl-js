@@ -3,22 +3,7 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64,
-      "operations": [
-        [
-          "setFeatureState",
-          {
-            "source": "geojson",
-            "id": "1"
-          },
-          {
-            "color": "red"
-          }
-        ],
-        [
-          "wait"
-        ]
-      ]
+      "height": 64
     }
   },
   "zoom": 2,
@@ -36,7 +21,7 @@
             "geometry": {
               "type": "Point",
               "coordinates": [
-                -4,
+                -2,
                 0
               ]
             }
@@ -47,7 +32,7 @@
             "geometry": {
               "type": "Point",
               "coordinates": [
-                4,
+                2,
                 0
               ]
             }
