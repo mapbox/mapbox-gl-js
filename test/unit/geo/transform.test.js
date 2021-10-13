@@ -94,15 +94,12 @@ test('transform', (t) => {
         t.end();
     });
 
-    t.test('lngRange & latRange constrain zoom and center', (t) => {
+    t.test('maxBounds constrain zoom and center', (t) => {
         const transform = new Transform();
         transform.center = new LngLat(0, 0);
         transform.zoom = 10;
         transform.resize(500, 500);
-
-        transform.lngRange = [-5, 5];
-        transform.latRange = [-5, 5];
-
+        transform.setMaxBounds(LngLatBounds.convert([-5, -5, 5, 5]));
         transform.zoom = 0;
         t.equal(transform.zoom, 5.135709286104402);
 
@@ -116,8 +113,8 @@ test('transform', (t) => {
         t.end();
     });
 
-    t.test('_minZoomForBounds respects latRange and lngRange', (t) => {
-        t.test('it returns 0 when latRange and lngRange are undefined', (t) => {
+    t.test('_minZoomForBounds respects maxBounds', (t) => {
+        t.test('it returns 0 when lngRange is undefined', (t) => {
             const transform = new Transform();
             transform.center = new LngLat(0, 0);
             transform.zoom = 10;
@@ -132,8 +129,7 @@ test('transform', (t) => {
             transform.center = new LngLat(0, 0);
             transform.zoom = 10;
             transform.resize(500, 500);
-            transform.lngRange = [-5, 5];
-            transform.latRange = [-5, 5];
+            transform.setMaxBounds(LngLatBounds.convert([-5, -5, 5, 5]));
 
             const preComputedMinZoom = transform._minZoomForBounds();
             transform.zoom = 0;
@@ -1323,7 +1319,7 @@ test('transform', (t) => {
         });
 
         t.test('_translateCameraConstrained', (t) => {
-            t.test('it clamps at zoom 0 when lngRange and latRange are not defined', (t) => {
+            t.test('it clamps at zoom 0 when maxBounds are not defined', (t) => {
                 const transform = new Transform();
                 transform.center = new LngLat(0, 0);
                 transform.zoom = 10;
@@ -1358,8 +1354,7 @@ test('transform', (t) => {
                 transform.center = new LngLat(0, 0);
                 transform.zoom = 20;
                 transform.resize(500, 500);
-                transform.lngRange = [-5, 5];
-                transform.latRange = [-5, 5];
+                transform.setMaxBounds(LngLatBounds.convert([-5, -5, 5, 5]));
 
                 //record constrained zoom
                 transform.zoom = 0;

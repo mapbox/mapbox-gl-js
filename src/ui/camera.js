@@ -1492,7 +1492,7 @@ class Camera extends Evented {
     // interpolating between the two endpoints will cross it.
     _normalizeCenter(center: LngLat) {
         const tr = this.transform;
-        if (!tr.renderWorldCopies || tr.lngRange) return;
+        if (!tr.renderWorldCopies || tr.maxBounds) return;
 
         const delta = center.lng - tr.center.lng;
         center.lng +=
