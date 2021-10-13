@@ -32,8 +32,3 @@ const projections = {
 export function getProjection(config: ProjectionSpecification) {
     return {...projections[config.name], ...config};
 }
-
-export function getProjectionOptions(config?: ProjectionSpecification | string) {
-    if (typeof config === 'string' || !config) config = {name: config || 'mercator'};
-    return config;
-}

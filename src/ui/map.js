@@ -30,7 +30,6 @@ import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
-import {getProjectionOptions} from '../geo/projection/index.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -424,7 +423,7 @@ class Map extends Camera {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
         }
 
-        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, options.projection ? getProjectionOptions(options.projection) : undefined);
+        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
         this._interactive = options.interactive;
@@ -504,8 +503,7 @@ class Map extends Camera {
         }
 
         if (options.projection) {
-            this._lazyInitEmptyStyle();
-            this.style.setProjection(getProjectionOptions(options.projection));
+            this.setProjection(options.projection);
         }
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
@@ -924,7 +922,10 @@ class Map extends Camera {
      * });
      */
     setProjection(projection: ProjectionSpecification | string) {
-        if (typeof projection === 'string') projection = getProjectionOptions(projection);
+        this._lazyInitEmptyStyle();
+        if (typeof projection === 'string') {
+            projection = {name: projection};
+        }
         this.style.setProjection(projection);
     }
 

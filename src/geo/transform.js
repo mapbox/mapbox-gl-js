@@ -3,7 +3,7 @@
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE} from './mercator_coordinate.js';
-import {getProjection, getProjectionOptions} from './projection/index.js';
+import {getProjection} from './projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
@@ -123,7 +123,7 @@ class Transform {
     _centerAltitude: number;
     _horizonShift: number;
 
-    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ProjectionSpecification) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
@@ -135,8 +135,8 @@ class Transform {
 
         this.setMaxBounds();
 
-        this.setProjection(projection || {name: 'mercator'});
-        this._unmodifiedProjection = !Boolean(projection);
+        this.setProjection({name: 'mercator'});
+        this._unmodifiedProjection = true;
 
         this.width = 0;
         this.height = 0;
@@ -160,7 +160,7 @@ class Transform {
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.projectionOptions);
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies);
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone.tileSize = this.tileSize;
@@ -180,6 +180,7 @@ class Transform {
         clone._camera = this._camera.clone();
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
+        if (!this._unmodifiedProjection) clone.setProjection(this.getProjection());
         return clone;
     }
 
@@ -212,7 +213,6 @@ class Transform {
     }
 
     setProjection(projection?: ProjectionSpecification) {
-        projection = getProjectionOptions(projection);
         this._unmodifiedProjection = false;
         this.projectionOptions = projection;
         this.projection = getProjection(projection);
