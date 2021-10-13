@@ -97,7 +97,8 @@ const ignoredDiffOperations = pick(diffOperations, [
     'setCenter',
     'setZoom',
     'setBearing',
-    'setPitch'
+    'setPitch',
+    'setProjection'
 ]);
 
 const empty = emptyStyle();
@@ -325,7 +326,7 @@ class Style extends Evented {
             this._updateLayerCount(layer, true);
         }
 
-        if (this.stylesheet.projection && !this.map._projectionSetAtRuntime) {
+        if (this.stylesheet.projection && this.map.transform._unmodifiedProjection) {
             this.setProjection(this.stylesheet.projection);
         }
 

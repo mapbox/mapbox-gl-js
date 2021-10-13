@@ -106,6 +106,7 @@ class Transform {
     _zoom: number;
     _cameraZoom: ?number;
     _unmodified: boolean;
+    _unmodifiedProjection: boolean;
     _renderWorldCopies: boolean;
     _minZoom: number;
     _maxZoom: number;
@@ -134,7 +135,8 @@ class Transform {
 
         this.setMaxBounds();
 
-        this.setProjection(projection);
+        this.setProjection(projection || {name: 'mercator'});
+        this._unmodifiedProjection = !Boolean(projection);
 
         this.width = 0;
         this.height = 0;
@@ -211,6 +213,7 @@ class Transform {
 
     setProjection(projection?: ProjectionSpecification) {
         projection = getProjectionOptions(projection);
+        this._unmodifiedProjection = false;
         this.projectionOptions = projection;
         this.projection = getProjection(projection);
         this._calcMatrices();

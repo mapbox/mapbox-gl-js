@@ -135,7 +135,6 @@ const defaultOptions = {
     zoom: 0,
     bearing: 0,
     pitch: 0,
-    projection: 'mercator',
 
     minZoom: defaultMinZoom,
     maxZoom: defaultMaxZoom,
@@ -354,7 +353,6 @@ class Map extends Camera {
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
-    _projectionSetAtRuntime: boolean;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -408,8 +406,6 @@ class Map extends Camera {
     constructor(options: MapOptions) {
         PerformanceUtils.mark(PerformanceMarkers.create);
 
-        const runtimeProjection = options.projection;
-
         options = extend({}, defaultOptions, options);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
@@ -428,7 +424,7 @@ class Map extends Camera {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
         }
 
-        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, getProjectionOptions(options.projection));
+        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, options.projection ? getProjectionOptions(options.projection) : undefined);
         super(transform, options);
 
         this._interactive = options.interactive;
@@ -505,8 +501,11 @@ class Map extends Camera {
 
         if (options.style) {
             this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
-            if (runtimeProjection) this._projectionSetAtRuntime = true;
-            this.setProjection(getProjectionOptions(options.projection));
+        }
+
+        if (options.projection) {
+            this._lazyInitEmptyStyle();
+            this.style.setProjection(getProjectionOptions(options.projection));
         }
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;

@@ -41,6 +41,7 @@ export default class Worker {
     workerSources: {[_: string]: {[_: string]: {[_: string]: WorkerSource } } };
     demWorkerSources: {[_: string]: {[_: string]: RasterDEMTileWorkerSource } };
     projections: {[_: string]: Projection };
+    defaultProjection: Projection;
     isSpriteLoaded: boolean;
     referrer: ?string;
     terrain: ?boolean;
@@ -51,9 +52,11 @@ export default class Worker {
         this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
-        this.projections = {};
         this.availableImages = {};
         this.isSpriteLoaded = false;
+
+        this.projections = {};
+        this.defaultProjection = getProjection({name: 'mercator'});
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
@@ -137,7 +140,7 @@ export default class Worker {
     loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
-        p.projection = this.projections[mapId];
+        p.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source).loadTile(p, callback);
     }
 
