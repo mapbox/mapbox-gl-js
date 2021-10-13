@@ -30,7 +30,6 @@ import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
-import {getProjectionOptions} from '../geo/projection/index.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -135,7 +134,6 @@ const defaultOptions = {
     zoom: 0,
     bearing: 0,
     pitch: 0,
-    projection: 'mercator',
 
     minZoom: defaultMinZoom,
     maxZoom: defaultMaxZoom,
@@ -354,7 +352,6 @@ class Map extends Camera {
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
-    _projectionSetAtRuntime: boolean;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -408,8 +405,6 @@ class Map extends Camera {
     constructor(options: MapOptions) {
         PerformanceUtils.mark(PerformanceMarkers.create);
 
-        const runtimeProjection = options.projection;
-
         options = extend({}, defaultOptions, options);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
@@ -428,7 +423,7 @@ class Map extends Camera {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
         }
 
-        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, getProjectionOptions(options.projection));
+        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
         this._interactive = options.interactive;
@@ -505,8 +500,10 @@ class Map extends Camera {
 
         if (options.style) {
             this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
-            if (runtimeProjection) this._projectionSetAtRuntime = true;
-            this.setProjection(getProjectionOptions(options.projection));
+        }
+
+        if (options.projection) {
+            this.setProjection(options.projection);
         }
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
@@ -924,8 +921,13 @@ class Map extends Camera {
      *   parallels: [20, 60]
      * });
      */
-    setProjection(projection: ProjectionSpecification | string) {
-        if (typeof projection === 'string') projection = getProjectionOptions(projection);
+    setProjection(projection?: ProjectionSpecification | string) {
+        this._lazyInitEmptyStyle();
+        if (projection === undefined) {
+            projection = {name: 'mercator'};
+        } else if (typeof projection === 'string') {
+            projection = {name: projection};
+        }
         this.style.setProjection(projection);
     }
 
