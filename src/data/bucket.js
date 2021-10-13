@@ -79,7 +79,7 @@ export interface Bucket {
     +stateDependentLayers: Array<any>;
     +stateDependentLayerIds: Array<string>;
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID): void;
-    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}): void;
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}): void;
     isEmpty(): boolean;
 
     upload(context: Context): void;
