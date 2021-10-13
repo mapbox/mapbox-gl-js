@@ -36,6 +36,7 @@ import type {LayerFeatureStates} from './source_state.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {FilterSpecification} from '../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
+import Painter from '../render/painter.js';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -436,10 +437,11 @@ class Tile {
         }
     }
 
-    setFeatureState(states: LayerFeatureStates, painter: any) {
+    setFeatureState(states: LayerFeatureStates, painter: ?Painter) {
         if (!this.latestFeatureIndex ||
             !this.latestFeatureIndex.rawTileData ||
-            Object.keys(states).length === 0) {
+            Object.keys(states).length === 0 ||
+            !painter) {
             return;
         }
 
