@@ -3873,12 +3873,39 @@
   },
   "projection": {
     "name": {
-      "type": "string",
-      "doc": "The name of the projection to be used for rendering the map. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equal-earth'), Equirectangular/WGS84 ('equirectangular'), Globe ('globe'), Lambert ('lambert'), Mercator ('mercator'), Natural Earth ('natural-earth'), and Winkel Tripel ('winkel').",
+      "type": "enum",
+      "values": {
+        "alaska": {
+          "doc": "An Albers projection centered on the US state of Alaska."
+        },
+        "albers": {
+          "doc": "An Albers projection centered on the continental United States. You can configure the center of the projection by passing the Map constructor a Projection object with `center` and `parallels` properties."
+        },
+        "equalEarth": {
+          "doc": "An Equal Earth projection."
+        },
+        "equirectangular": {
+          "doc": "An Equirectangular projection. This projection is very similar to the Plate Carrée projection."
+        },
+        "lambertConformalConic": {
+          "doc": "A conformal, conic version of the Lambert projection. The Lambert projection has a center of [0, 30] by default, but this is configurable."
+        },
+        "mercator": {
+          "doc": "The Mercator projection is the default projection."
+        },
+        "naturalEarth": {
+          "doc": "A Natural Earth projection."
+        },
+        "winkelTripel": {
+          "doc": "A Winkel Tripel projection."
+        }
+      },
+      "default": "mercator",
+      "doc": "The name of the projection to be used for rendering the map.",
       "required": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "2.5.0"
+          "js": "2.6.0"
         }
       }
     },
@@ -3888,14 +3915,22 @@
       "value": "number",
       "property-type": "data-constant",
       "transition": false,
-      "doc": "The reference longitude and latitude of the projection. `center` takes the form of [lng, lat]. This property is only configurable for conical projections (Albers and Lambert). All other projections are centered on [0, 0].",
+      "doc": "The reference longitude and latitude of the projection. `center` takes the form of [lng, lat]. This property is only configurable for conical projections (Albers and Lambert Conformal Conical). All other projections are centered on [0, 0].",
       "example": [
         -96,
         37.5
       ],
+      "requires": [
+        {
+          "name": "albers"
+        },
+        {
+          "name": "lambertConformalConical"
+        }
+      ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.5.0"
+          "js": "2.6.0"
         }
       }
     },
@@ -3905,14 +3940,22 @@
       "value": "number",
       "property-type": "data-constant",
       "transition": false,
-      "doc":  "The standard parallels of the projection, denoting the desired latitude range with minimal distortion. `parallels` takes the form of [lat0, lat1]. This property is only configurable for conical projections (Albers and Lambert).",
+      "doc":  "The standard parallels of the projection, denoting the desired latitude range with minimal distortion. `parallels` takes the form of [lat0, lat1]. This property is only configurable for conical projections (Albers and Lambert Conformal Conical).",
       "example": [
         29.5,
         45.5
       ],
+      "requires": [
+        {
+          "name": "albers"
+        },
+        {
+          "name": "lambertConformalConical"
+        }
+      ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.5.0"
+          "js": "2.6.0"
         }
       }
     }

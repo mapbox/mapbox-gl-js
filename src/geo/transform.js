@@ -216,7 +216,7 @@ class Transform {
     }
 
     setProjection(projection?: ProjectionSpecification) {
-        this._unmodifiedProjection = projection ? false : true;
+        this._unmodifiedProjection = !projection;
         if (projection === undefined) projection = {name: 'mercator'};
         this.projectionOptions = projection;
         this.projection = getProjection(projection);

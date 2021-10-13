@@ -14,6 +14,7 @@ export type Projection = {
     center: [number, number],
     parallels?: [number, number],
     range?: [number, number],
+    conical?: boolean,
     project: (lng: number, lat: number) => {x: number, y: number},
     unproject: (x: number, y: number) => LngLat
 };
@@ -30,5 +31,7 @@ const projections = {
 };
 
 export function getProjection(config: ProjectionSpecification) {
-    return {...projections[config.name], ...config};
+    const projection = projections[config.name];
+    if (!projection) throw new Error(`Invalid projection name: ${config.name}`);
+    return projection.conical ? {...projection, ...config} : projection;
 }

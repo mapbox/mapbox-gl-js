@@ -281,15 +281,15 @@ test('Map', (t) => {
             });
         });
 
-        // t.test('passing null removes style', (t) => {
-        //     const map = createMap(t);
-        //     const style = map.style;
-        //     t.ok(style);
-        //     t.spy(style, '_remove');
-        //     map.setStyle(null);
-        //     t.equal(style._remove.callCount, 1);
-        //     t.end();
-        // });
+        t.test('passing null removes style', (t) => {
+            const map = createMap(t);
+            const style = map.style;
+            t.ok(style);
+            t.spy(style, '_remove');
+            map.setStyle(null);
+            t.equal(style._remove.callCount, 1);
+            t.end();
+        });
 
         t.test('updating terrain triggers style diffing using setTerrain operation', (t) => {
             t.test('removing terrain', (t) => {
@@ -1153,6 +1153,19 @@ test('Map', (t) => {
             });
             t.end();
         });
+
+        t.test('does not composite user and default projection options for non-conical projections', (t) => {
+            const options = {
+                name: 'naturalEarth',
+                center: [12, 34]
+            };
+            const map = createMap(t, {projection: options});
+            t.deepEqual(map.getProjection(), {
+                name: 'naturalEarth',
+                center: [0, 0]
+            });
+            t.end();
+        });
         t.end();
     });
 
@@ -1164,6 +1177,15 @@ test('Map', (t) => {
                 name: 'albers',
                 center: [-96, 37.5],
                 parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+
+        t.test('throws error if invalid projection name is supplied', (t) => {
+            const map = createMap(t);
+            map.on('error', ({error}) => {
+                t.match(error.message, /Invalid projection name: fakeProj/);
+                t.end();
             });
             t.end();
         });

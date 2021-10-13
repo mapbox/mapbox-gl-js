@@ -95,7 +95,7 @@ export type FogSpecification = {|
 |}
 
 export type ProjectionSpecification = {|
-    "name": string,
+    "name": "alaska" | "albers" | "equalEarth" | "equirectangular" | "lambertConformalConic" | "mercator" | "naturalEarth" | "winkelTripel",
     "center"?: [number, number],
     "parallels"?: [number, number]
 |}
