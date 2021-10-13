@@ -243,7 +243,7 @@ function globeUpVectorMatrix(id: CanonicalTileID, tiles: number) {
     return mat4.fromYRotation([], yRotation);
 }
 
-function poleMatrixForTile(id: CanonicalTileID, tr) {
+function poleMatrixForTile(id: CanonicalTileID, south, tr) {
     const poleMatrix = mat4.identity(new Float64Array(16));
 
     const tileDim = Math.pow(2, id.z);
@@ -259,7 +259,7 @@ function poleMatrixForTile(id: CanonicalTileID, tr) {
     mat4.rotateX(poleMatrix, poleMatrix, degToRad(-tr._center.lat));
     mat4.rotateY(poleMatrix, poleMatrix, degToRad(-tr._center.lng));
     mat4.rotateY(poleMatrix, poleMatrix, yRotation);
-    if (id.y === tileDim - 1) {
+    if (south) {
         mat4.scale(poleMatrix, poleMatrix, [1, -1, 1]);
     }
 
@@ -349,14 +349,21 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 uniformValues, "globe_raster", tile.globeGridBuffer, painter.globeSharedBuffers.gridIndexBuffer, painter.globeSharedBuffers.gridSegments, null, null, null, null);
 
             // Fill poles by extrapolating adjacent border tiles
-            if (coord.canonical.y === 0 || coord.canonical.y === tiles - 1) {
-                const poleMatrix = poleMatrixForTile(coord.canonical, tr);
+            const poleMatrices = [
+                coord.canonical.y === 0 ? poleMatrixForTile(coord.canonical, false, tr) : null,
+                coord.canonical.y === tiles - 1 ? poleMatrixForTile(coord.canonical, true, tr) : null
+            ];
+
+            for (const poleMatrix of poleMatrices) {
+                if (!poleMatrix) {
+                    continue;
+                }
 
                 const poleUniforms = globeRasterUniformValues(
                     tr.projMatrix, poleMatrix, poleMatrix,
                     0.0, mercatorCenter, upvectorMatrix);
 
-                program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+                program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                     poleUniforms, "globe_pole_raster", tile.globePoleBuffer, painter.globeSharedBuffers.poleIndexBuffer, painter.globeSharedBuffers.poleSegments);
             }
         }
