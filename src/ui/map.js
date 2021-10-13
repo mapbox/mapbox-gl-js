@@ -921,9 +921,11 @@ class Map extends Camera {
      *   parallels: [20, 60]
      * });
      */
-    setProjection(projection: ProjectionSpecification | string) {
+    setProjection(projection?: ProjectionSpecification | string) {
         this._lazyInitEmptyStyle();
-        if (typeof projection === 'string') {
+        if (projection === undefined) {
+            projection = {name: 'mercator'};
+        } else if (typeof projection === 'string') {
             projection = {name: projection};
         }
         this.style.setProjection(projection);
