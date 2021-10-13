@@ -1194,8 +1194,10 @@ test('Map', (t) => {
         t.test('setProjection with no argument defaults to Mercator', (t) => {
             const map = createMap(t);
             map.setProjection({name: 'albers'});
+            t.equal(map.transform._unmodifiedProjection, false);
             map.setProjection();
             t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
+            t.equal(map.transform._unmodifiedProjection, true);
             t.end();
         });
         t.end();

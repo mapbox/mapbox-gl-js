@@ -923,9 +923,7 @@ class Map extends Camera {
      */
     setProjection(projection?: ProjectionSpecification | string) {
         this._lazyInitEmptyStyle();
-        if (projection === undefined) {
-            projection = {name: 'mercator'};
-        } else if (typeof projection === 'string') {
+        if (typeof projection === 'string') {
             projection = {name: projection};
         }
         this.style.setProjection(projection);
