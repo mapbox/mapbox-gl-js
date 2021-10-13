@@ -1,7 +1,7 @@
 // @flow
 
 import LngLat from '../lng_lat.js';
-import MercatorCoordinate from '../mercator_coordinate.js';
+import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 import {mat4, mat2} from 'gl-matrix';
 import {clamp} from '../../util/util.js';
 import type {Projection} from './index.js';
@@ -49,18 +49,17 @@ const offset = 1 / 40000;
  * Calculates the scale difference between Mercator and the given projection at a certain location.
  */
 function getZoomAdjustment(projection: Projection, loc: LngLat) {
-    const loc1 = new LngLat(loc.lng - 180 * offset, loc.lat);
-    const loc2 = new LngLat(loc.lng + 180 * offset, loc.lat);
+    // make sure we operate within mercator space for adjustments (they can go over for other projections)
+    const lat = clamp(loc.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
 
-    const p1 = projection.project(loc1.lng, loc1.lat);
-    const p2 = projection.project(loc2.lng, loc2.lat);
+    const loc1 = new LngLat(loc.lng - 180 * offset, lat);
+    const loc2 = new LngLat(loc.lng + 180 * offset, lat);
+
+    const p1 = projection.project(loc1.lng, lat);
+    const p2 = projection.project(loc2.lng, lat);
 
     const m1 = MercatorCoordinate.fromLngLat(loc1);
     const m2 = MercatorCoordinate.fromLngLat(loc2);
-
-    // make sure we operate within mercator space for adjustments (they can go over for other projections)
-    m1.y = clamp(m1.y, -1, 1);
-    m2.y = clamp(m2.y, -1, 1);
 
     const pdx = p2.x - p1.x;
     const pdy = p2.y - p1.y;
