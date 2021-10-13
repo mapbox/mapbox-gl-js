@@ -212,7 +212,7 @@ class Transform {
         return pick(this.projection, ['name', 'center', 'parallels']);
     }
 
-    setProjection(projection?: ProjectionSpecification) {
+    setProjection(projection: ProjectionSpecification) {
         this._unmodifiedProjection = false;
         this.projectionOptions = projection;
         this.projection = getProjection(projection);
