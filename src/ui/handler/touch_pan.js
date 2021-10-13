@@ -39,6 +39,8 @@ export default class TouchPanHandler {
     }
 
     touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+        if (!this._active || mapTouches.length < this._minTouches) return;
+
         // if gesture handling is set to true, require two fingers to touch pan
         if (this._map._gestureHandling && !this._map.isMoving()) {
             if (e.touches.length !== 2) {
@@ -51,7 +53,6 @@ export default class TouchPanHandler {
             }
         }
 
-        if (!this._active || mapTouches.length < this._minTouches) return;
         e.preventDefault();
         return this._calculateTransform(e, points, mapTouches);
     }
@@ -137,11 +138,14 @@ export default class TouchPanHandler {
     _showTouchPanBlockerAlert() {
         if (this._alertContainer.style.visibility === 'hidden') this._alertContainer.style.visibility = 'visible';
         this._alertContainer.classList.add('mapboxgl-touch-pan-blocker-show');
+        // remove touch-action css property to enable page scrolling over map
+        this._el.classList.remove('mapboxgl-touch-zoom-rotate', 'mapboxgl-touch-drag-pan');
 
         clearTimeout(this._alertTimer);
 
         this._alertTimer = setTimeout(() => {
             this._alertContainer.classList.remove('mapboxgl-touch-pan-blocker-show');
+            this._el.classList.add('mapboxgl-touch-zoom-rotate', 'mapboxgl-touch-drag-pan');
         }, 500);
     }
 
