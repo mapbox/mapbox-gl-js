@@ -3,7 +3,7 @@
 import {extend} from '../util/util.js';
 import Tile from './tile.js';
 import type {FeatureState} from '../style-spec/expression/index.js';
-import Painter from '../render/painter.js';
+import type Painter from '../render/painter.js';
 
 export type FeatureStates = {[feature_id: string]: FeatureState};
 export type LayerFeatureStates = {[layer: string]: FeatureStates};

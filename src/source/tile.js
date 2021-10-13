@@ -36,7 +36,7 @@ import type {LayerFeatureStates} from './source_state.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {FilterSpecification} from '../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
-import Painter from '../render/painter.js';
+import type Painter from '../render/painter.js';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
