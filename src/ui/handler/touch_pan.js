@@ -43,7 +43,7 @@ export default class TouchPanHandler {
 
         // if gesture handling is set to true, require two fingers to touch pan
         if (this._map._gestureHandling && !this._map.isMoving()) {
-            if (e.touches.length !== 2) {
+            if (e.touches.length === 1) {
                 this._showTouchPanBlockerAlert();
                 return;
             } else if (this._alertContainer.style.visibility !== 'hidden') {
@@ -53,7 +53,10 @@ export default class TouchPanHandler {
             }
         }
 
+        this._el.classList.remove('mapboxgl-scrollable-page');
+
         e.preventDefault();
+
         return this._calculateTransform(e, points, mapTouches);
     }
 
@@ -107,12 +110,18 @@ export default class TouchPanHandler {
 
     enable() {
         this._enabled = true;
-        if (this._map._gestureHandling) this._addTouchPanBlocker();
+        if (this._map._gestureHandling) {
+            this._el.classList.add('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
+            this._addTouchPanBlocker();
+        }
     }
 
     disable() {
         this._enabled = false;
-        if (this._map._gestureHandling) this._alertContainer.remove();
+        if (this._map._gestureHandling) {
+            this._el.classList.remove('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
+            this._alertContainer.remove();
+        }
         this.reset();
     }
 
@@ -137,15 +146,13 @@ export default class TouchPanHandler {
 
     _showTouchPanBlockerAlert() {
         if (this._alertContainer.style.visibility === 'hidden') this._alertContainer.style.visibility = 'visible';
+
         this._alertContainer.classList.add('mapboxgl-touch-pan-blocker-show');
-        // remove touch-action css property to enable page scrolling over map
-        this._el.classList.remove('mapboxgl-touch-zoom-rotate', 'mapboxgl-touch-drag-pan');
 
         clearTimeout(this._alertTimer);
 
         this._alertTimer = setTimeout(() => {
             this._alertContainer.classList.remove('mapboxgl-touch-pan-blocker-show');
-            this._el.classList.add('mapboxgl-touch-zoom-rotate', 'mapboxgl-touch-drag-pan');
         }, 500);
     }
 
