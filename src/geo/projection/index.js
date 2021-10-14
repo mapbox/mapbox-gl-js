@@ -6,7 +6,7 @@ import { OverscaledTileID, CanonicalTileID } from '../../source/tile_id.js';
 import { Aabb } from '../../util/primitives.js';
 import Transform from '../transform.js';
 import { FreeCamera } from '../../ui/free_camera.js';
-
+import MercatorCoordinate from '../mercator_coordinate.js';
 
 export type TileTransform = {
 
@@ -23,6 +23,8 @@ export type TileTransform = {
     upVector: (id: CanonicalTileID, x: Number, y: number) => vec3,
 
     upVectorScale: (id: CanonicalTileID) => Number,
+
+    pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate,
 
     tileSpaceUpVectorScale: () => Number,
 };

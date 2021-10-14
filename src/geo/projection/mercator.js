@@ -5,6 +5,8 @@ import {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from '../merc
 import LngLat from '../lng_lat.js';
 import EXTENT from '../../data/extent.js';
 import {Aabb} from '../../util/primitives.js';
+import MercatorCoordinate from '../mercator_coordinate.js';
+import Point from '@mapbox/point-geometry';
 
 class MercatorTileTransform {
     _tr: Transform;
@@ -75,6 +77,12 @@ class MercatorTileTransform {
         return new Aabb(
             [xMin, yMin, min],
             [xMax, yMax, max]);
+    }
+
+    pointCoordinate(x: number, y: number, z?: number): MercatorCoordinate {
+        const horizonOffset = this._tr.horizonLineFromTop(false);
+        const clamped = new Point(x, Math.max(horizonOffset, y));
+        return this._tr.rayIntersectionCoordinate(this._tr.pointRayIntersection(clamped, z));
     }
 
     cullTile(aabb: Aabb, id: CanonicalTileID, zoom: number, camera: FreeCamera): boolean {

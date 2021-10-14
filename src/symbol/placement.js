@@ -466,7 +466,6 @@ export class Placement {
                 this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false);
                 return;
             }
-            //console.log(symbolInstance.dynamicAnchor);
             let placeText = false;
             let placeIcon = false;
             let offscreen = true;

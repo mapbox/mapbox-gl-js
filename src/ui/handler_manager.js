@@ -518,8 +518,8 @@ class HandlerManager {
         if (panDelta) {
             assert(this._dragOrigin, '_dragOrigin should have been setup with a previous dragstart');
 
-            const startPoint = tr.pointCoordinateOnGlobe(around);
-            const endPoint = tr.pointCoordinateOnGlobe(around.sub(panDelta));
+            const startPoint = tr.pointCoordinate(around);
+            const endPoint = tr.pointCoordinate(around.sub(panDelta));
 
             if (startPoint && endPoint) {
                 panVec[0] = endPoint.x - startPoint.x;
