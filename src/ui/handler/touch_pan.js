@@ -53,7 +53,7 @@ export default class TouchPanHandler {
             }
         }
 
-        this._el.classList.remove('mapboxgl-scrollable-page');
+        this._el.classList.remove('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
 
         e.preventDefault();
 
