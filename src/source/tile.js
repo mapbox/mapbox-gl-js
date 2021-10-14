@@ -447,6 +447,8 @@ class Tile {
 
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
 
+        const availableImages = painter.style.listImages();
+
         for (const id in this.buckets) {
             if (!painter.style.hasLayer(id)) continue;
 
@@ -457,7 +459,7 @@ class Tile {
             const sourceLayerStates = states[sourceLayerId];
             if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
 
-            bucket.update(sourceLayerStates, sourceLayer, painter.style._availableImages, this.imageAtlas && this.imageAtlas.patternPositions || {});
+            bucket.update(sourceLayerStates, sourceLayer, availableImages, this.imageAtlas && this.imageAtlas.patternPositions || {});
             const layer = painter && painter.style && painter.style.getLayer(id);
             if (layer) {
                 this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket));
