@@ -43,7 +43,7 @@ export default class TouchPanHandler {
 
         // if gesture handling is set to true, require two fingers to touch pan
         if (this._map._gestureHandling && !this._map.isMoving()) {
-            if (e.touches.length === 1) {
+            if (mapTouches.length === 1) {
                 this._showTouchPanBlockerAlert();
                 return;
             } else if (this._alertContainer.style.visibility !== 'hidden') {
