@@ -17,7 +17,7 @@ import assert from 'assert';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
-import {tileLatLngCorners, latLngToECEF, denormalizeECEF, tileBoundsOnGlobe} from './projection/globe.js'
+import {latLngToECEF} from './projection/globe.js'
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -946,8 +946,8 @@ class Transform {
     get point(): Point { return this.project(this.center); }
 
     setLocationAtPoint(lnglat: LngLat, point: Point) {
-        const a = this.pointCoordinateOnGlobe(point); // this.pointCoordinate(point);
-        const b = this.pointCoordinateOnGlobe(this.centerPoint); // this.pointCoordinate(this.centerPoint);
+        const a = this.pointCoordinate(point);
+        const b = this.pointCoordinate(this.centerPoint);
         const loc = this.locationCoordinate(lnglat);
         const newCenter = new MercatorCoordinate(
                 loc.x - (a.x - b.x),
@@ -1128,61 +1128,7 @@ class Transform {
      * @private
      */
     pointCoordinate(p: Point, z?: number = this._centerAltitude): MercatorCoordinate {
-        const horizonOffset = this.horizonLineFromTop(false);
-        const clamped = new Point(p.x, Math.max(horizonOffset, p.y));
-        return this.rayIntersectionCoordinate(this.pointRayIntersection(clamped, z));
-    }
-
-    pointCoordinateOnGlobe(p: Point): ?MercatorCoordinate {
-
-        const p0 = [p.x, p.y, 0, 1];
-        const p1 = [p.x, p.y, 1, 1];
-
-        vec4.transformMat4(p0, p0, this.pixelMatrixInverse);
-        vec4.transformMat4(p1, p1, this.pixelMatrixInverse);
-
-        vec4.scale(p0, p0, 1 / p0[3]);
-        vec4.scale(p1, p1, 1 / p1[3]);
-
-        const p0p1 = vec3.sub([], p1, p0);
-        const dir = vec3.normalize([], p0p1);
-
-        // Compute globe origo in world space
-        const matrix = this.calculateGlobeMatrix(this.worldSize);
-        const center = vec3.transformMat4([], [0, 0, 0], matrix);
-        const radius = this.worldSize / (2.0 * Math.PI);
-
-        const oc = vec3.sub([], p0, center);
-        const a = vec3.dot(dir, dir);
-        const b = 2.0 * vec3.dot(oc, dir);
-        const c = vec3.dot(oc, oc) - radius * radius;
-        const d = b * b - 4 * a * c;
-        let pOnGlobe;
-
-        if (d < 0) {
-            // Not intersecting with the globe. Find shortest distance between the ray and the globe
-            const t = clamp(vec3.dot(vec3.negate([], oc), p0p1) / vec3.dot(p0p1, p0p1), 0, 1);
-            const pointOnRay = vec3.lerp([], p0, p1, t);
-            const pointToGlobe = vec3.sub([], center, pointOnRay);
-
-            pOnGlobe = vec3.sub([], vec3.add([], pointOnRay, vec3.scale([], pointToGlobe, (1.0 - radius / vec3.length(pointToGlobe)))), center);
-        } else {
-            const t = (-b - Math.sqrt(d)) / (2.0 * a);
-            pOnGlobe = vec3.sub([], vec3.scaleAndAdd([], p0, dir, t), center);
-        }
-
-        // Transform coordinate axes to find lat & lng of the position
-        const xa = vec3.normalize([], vec4.transformMat4([], [1, 0, 0, 0], matrix));
-        const ya = vec3.normalize([], vec4.transformMat4([], [0,-1, 0, 0], matrix));
-        const za = vec3.normalize([], vec4.transformMat4([], [0, 0, 1, 0], matrix));
-
-        const lat = Math.asin(vec3.dot(ya, pOnGlobe) / radius) * 180 / Math.PI;
-        const xp = vec3.dot(xa, pOnGlobe);
-        const zp = vec3.dot(za, pOnGlobe);
-        const lng = Math.atan2(xp, zp) * 180 / Math.PI;
-
-        // ...and back to mercator
-        return new MercatorCoordinate(mercatorXfromLng(lng), mercatorYfromLat(lat));
+        return this._projection.createTileTransform(this, this.worldSize).pointCoordinate(p.x, p.y, z);
     }
 
     /**

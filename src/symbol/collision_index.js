@@ -20,9 +20,6 @@ import type {
 } from '../data/array_types.js';
 import type {FogState} from '../style/fog_helpers.js';
 import {OverscaledTileID} from '../source/tile_id.js';
-import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
-import {degToRad} from '../util/util.js';
-import { GlobeTile, latLngToECEF, normalizeECEF, tileBoundsOnGlobe } from '../geo/projection/globe.js';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around

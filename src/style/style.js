@@ -191,7 +191,6 @@ class Style extends Evented {
         this._order  = [];
         this._drapedFirstOrder = [];
         this._markersNeedUpdate = false;
-        this.__terrainUsedForDraping = false;
 
         this._resetUpdates();
 
