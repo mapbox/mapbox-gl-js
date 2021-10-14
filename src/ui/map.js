@@ -994,7 +994,10 @@ class Map extends Camera {
 
     /**
      * Returns a {@link ProjectionSpecification} object that defines the current map projection.
-     * @returns {ProjectionSpecification} The {@link ProjectionSpecification} defining the current map projection
+     *
+     * @returns {ProjectionSpecification} The {@link ProjectionSpecification} defining the current map projection.
+     * @example
+     * const projection = map.getProjection();
      */
     getProjection() {
         return this.transform.getProjection();
@@ -1008,9 +1011,9 @@ class Map extends Camera {
      * @example
      * map.setProjection('albers');
      * map.setProjection({
-     *   name: 'albers',
-     *   center: [35, 55],
-     *   parallels: [20, 60]
+     *     name: 'albers',
+     *     center: [35, 55],
+     *     parallels: [20, 60]
      * });
      */
     setProjection(projection?: ProjectionSpecification | string) {

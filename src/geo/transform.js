@@ -1309,22 +1309,11 @@ class Transform {
         let maxLng = 180;
 
         if (bounds) {
-<<<<<<< HEAD
             minLat = bounds.getSouth();
             maxLat = bounds.getNorth();
             minLng = bounds.getWest();
             maxLng = bounds.getEast();
-=======
-            const eastBound = bounds.getEast();
-            const westBound = bounds.getWest();
-            // Unwrap bounds if they cross the 180th meridian
-            this.lngRange = [westBound, eastBound > westBound ? eastBound : eastBound + 360];
-            this.latRange = [bounds.getSouth(), bounds.getNorth()];
-            this._constrain();
-        } else {
-            this.lngRange = null;
-            this.latRange = [-this.maxValidLatitude, this.maxValidLatitude];
->>>>>>> origin/main
+            if (maxLng < minLng) maxLng += 360;
         }
 
         this.worldMinX = mercatorXfromLng(minLng) * this.tileSize;
@@ -1527,34 +1516,8 @@ class Transform {
     _constrain() {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
-<<<<<<< HEAD
         // temporarily disable constraining for non-Mercator projections
         if (this.projection.name !== 'mercator') return;
-=======
-        this._constraining = true;
-
-        let minY = Infinity;
-        let maxY = -Infinity;
-        let minX, maxX, sy, sx, y2;
-        const size = this.size,
-            unmodified = this._unmodified;
-
-        if (this.latRange) {
-            const latRange = this.latRange;
-            minY = mercatorYfromLat(latRange[1]) * this.worldSize;
-            maxY = mercatorYfromLat(latRange[0]) * this.worldSize;
-            sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
-        }
-
-        if (this.lngRange) {
-            const lngRange = this.lngRange;
-            minX = mercatorXfromLng(lngRange[0]) * this.worldSize;
-            maxX = mercatorXfromLng(lngRange[1]) * this.worldSize;
-            sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
-        }
-
-        const point = this.point;
->>>>>>> origin/main
 
         this._constraining = true;
 
@@ -1575,13 +1538,17 @@ class Transform {
             y2 = (maxY + minY) / 2;
         }
 
-<<<<<<< HEAD
         if (this.maxBounds) {
             const minX = this.worldMinX * this.scale;
             const maxX = this.worldMaxX * this.scale;
 
-            if (x - w2 < minX) x2 = minX + w2;
-            if (x + w2 > maxX) x2 = maxX - w2;
+            // Translate to positive positions with the map center in the center position.
+            // This ensures that the map snaps to the correct edge.
+            const shift = this.worldSize / 2 - (minX + maxX) / 2;
+            x2 = (x + shift + this.worldSize) % this.worldSize - shift;
+
+            if (x2 - w2 < minX) x2 = minX + w2;
+            if (x2 + w2 > maxX) x2 = maxX - w2;
             if (maxX - minX < this.width) {
                 s = Math.max(s, this.width / (maxX - minX));
                 x2 = (maxX + minX) / 2;
@@ -1593,30 +1560,6 @@ class Transform {
         }
         if (s) { // scale the map to fit the range
             this.zoom += this.scaleZoom(s);
-=======
-        let x = point.x;
-
-        if (this.lngRange) {
-            // Translate to positive positions with the map center in the center position.
-            // This ensures that the map snaps to the correct edge.
-            const shift = this.worldSize / 2 - (minX + maxX) / 2;
-            x = (x + shift + this.worldSize) % this.worldSize;
-            minX += shift;
-            maxX += shift;
-
-            const w2 = size.x / 2;
-            if (x - w2 < minX) x = minX + w2;
-            if (x + w2 > maxX) x = maxX - w2;
-
-            x -= shift;
-        }
-
-        // pan the map if the screen goes off the range
-        if (x !== point.x || y2 !== undefined) {
-            this.center = this.unproject(new Point(
-                x,
-                y2 !== undefined ? y2 : point.y));
->>>>>>> origin/main
         }
 
         this._constrainCameraAltitude();

@@ -23,7 +23,7 @@ export type LineUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_pixels_to_tile_units': UniformMatrix2f,
     'u_device_pixel_ratio': Uniform1f,
-    'u_units_to_pixels': Uniform2f
+    'u_units_to_pixels': Uniform2f,
     'u_dash_image': Uniform1i,
     'u_gradient_image': Uniform1i,
     'u_image_height': Uniform1f,
@@ -49,7 +49,6 @@ const lineUniforms = (context: Context, locations: UniformLocations): LineUnifor
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_pixels_to_tile_units': new UniformMatrix2f(context, locations.u_pixels_to_tile_units),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
     'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
     'u_dash_image': new Uniform1i(context, locations.u_dash_image),
     'u_gradient_image': new Uniform1i(context, locations.u_gradient_image),

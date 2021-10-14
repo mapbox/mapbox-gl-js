@@ -118,8 +118,7 @@ test('transform', (t) => {
             const transform = new Transform();
             transform.zoom = 6;
             transform.resize(500, 500);
-            transform.lngRange = [160, 190];
-            transform.latRange = [-55, -23];
+            transform.setMaxBounds(LngLatBounds.convert([160, -55, 190, -23]));
 
             transform.center = new LngLat(-170, -40);
 
@@ -133,8 +132,7 @@ test('transform', (t) => {
             const transform = new Transform();
             transform.zoom = 6;
             transform.resize(500, 500);
-            transform.lngRange = [-190, -160];
-            transform.latRange = [-55, -23];
+            transform.setMaxBounds(LngLatBounds.convert([-190, -55, -160, -23]));
 
             transform.center = new LngLat(170, -40);
 
@@ -148,8 +146,7 @@ test('transform', (t) => {
             const transform = new Transform();
             transform.zoom = 6;
             transform.resize(500, 500);
-            transform.lngRange = [0, 360];
-            transform.latRange = [-90, 90];
+            transform.setMaxBounds(LngLatBounds.convert([0, -90, 360, 90]));
 
             transform.center = new LngLat(-155, 0);
 
@@ -162,8 +159,7 @@ test('transform', (t) => {
             const transform = new Transform();
             transform.zoom = 6;
             transform.resize(500, 500);
-            transform.lngRange = [-360, 0];
-            transform.latRange = [-90, 90];
+            transform.setMaxBounds(LngLatBounds.convert([-360, -90, 0, 90]));
 
             transform.center = new LngLat(160, 0);
             t.same(transform.center.lng.toFixed(10), -200);
@@ -344,7 +340,7 @@ test('transform', (t) => {
             const bounds = transform.getBounds();
 
             // Bounds stops at the edge of the map
-            t.same(bounds.getNorth().toFixed(6), transform.maxValidLatitude);
+            t.same(bounds.getNorth().toFixed(6), MAX_MERCATOR_LATITUDE);
             // Top corners of bounds line up with side of view
             t.same(transform.locationPoint(bounds.getNorthWest()).x.toFixed(10), 0);
             t.same(transform.locationPoint(bounds.getNorthEast()).x.toFixed(10), transform.width);
@@ -364,7 +360,7 @@ test('transform', (t) => {
             const bounds = transform.getBounds();
 
             // Bounds stops at the edge of the map
-            t.same(bounds.getSouth().toFixed(6), -transform.maxValidLatitude);
+            t.same(bounds.getSouth().toFixed(6), -MAX_MERCATOR_LATITUDE);
             // Top corners of bounds line up with side of view
             t.same(transform.locationPoint(bounds.getSouthEast()).x.toFixed(10), 0);
             t.same(transform.locationPoint(bounds.getSouthWest()).x.toFixed(10), transform.width);
