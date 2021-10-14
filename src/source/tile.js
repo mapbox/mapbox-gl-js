@@ -446,7 +446,6 @@ class Tile {
         }
 
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
-
         const availableImages = painter.style.listImages();
 
         for (const id in this.buckets) {
