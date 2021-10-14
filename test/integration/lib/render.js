@@ -41,6 +41,7 @@ setupHTML();
 
 const {canvas: expectedCanvas, ctx: expectedCtx} = createCanvas();
 const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
+const {canvas: terrainDepthCanvas, ctx: terrainDepthCtx} = createCanvas();
 let map;
 
 tape.onFinish(() => {
@@ -73,6 +74,7 @@ function ensureTeardown(t) {
         delete map.painter.context.gl;
         map = null;
     }
+    mapboxgl.clearStorage();
     expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
     diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
 
@@ -192,10 +194,11 @@ async function runTest(t) {
         // 1. get pixel data from test canvas as Uint8Array
         if (options.output === "terrainDepth") {
             const pixels = drawTerrainDepth(map, w, h);
-            actualImageData = Uint8Array.from(pixels);
-        }
-
-        if (!actualImageData) {
+            if (!pixels) {
+                throw new Error('Failed to render terrain depth, make sure that terrain is enabled on the render test');
+            }
+            actualImageData = Uint8ClampedArray.from(pixels);
+        } else {
             actualImageData = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
             gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, actualImageData);
 
@@ -231,7 +234,17 @@ async function runTest(t) {
         }
 
         let fileInfo;
-        const actual = map.getCanvas().toDataURL();
+        let actual;
+
+        if (options.output === "terrainDepth") {
+            terrainDepthCanvas.width = w;
+            terrainDepthCanvas.height = h;
+            const terrainDepthData = new ImageData(actualImageData, w, h);
+            terrainDepthCtx.putImageData(terrainDepthData, 0, 0);
+            actual = terrainDepthCanvas.toDataURL();
+        } else {
+            actual = map.getCanvas().toDataURL();
+        }
 
         if (process.env.UPDATE) {
             fileInfo = [
@@ -297,7 +310,7 @@ async function runTest(t) {
             updateHTML(testMetaData);
         }
 
-        browserWriteFile.postMessage(fileInfo);
+        if (!process.env.CI) browserWriteFile.postMessage(fileInfo);
 
     } catch (e) {
         t.error(e);

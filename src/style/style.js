@@ -722,9 +722,9 @@ class Style extends Evented {
     }
 
     /**
-     * Remove a source from this stylesheet, given its id.
-     * @param {string} id id of the source to remove
-     * @throws {Error} if no source is found with the given ID
+     * Remove a source from this stylesheet, given its ID.
+     * @param {string} id ID of the source to remove.
+     * @throws {Error} If no source is found with the given ID.
      * @returns {Map} The {@link Map} object.
      */
     removeSource(id: string) {
@@ -762,9 +762,9 @@ class Style extends Evented {
     }
 
     /**
-    * Set the data of a GeoJSON source, given its id.
-    * @param {string} id id of the source
-    * @param {GeoJSON|string} data GeoJSON source
+    * Set the data of a GeoJSON source, given its ID.
+    * @param {string} id ID of the source.
+    * @param {GeoJSON|string} data GeoJSON source.
     */
     setGeoJSONSourceData(id: string, data: GeoJSON | string) {
         this._checkLoaded();
@@ -778,9 +778,9 @@ class Style extends Evented {
     }
 
     /**
-     * Get a source by id.
-     * @param {string} id id of the desired source
-     * @returns {Object} source
+     * Get a source by ID.
+     * @param {string} id ID of the desired source.
+     * @returns {Object} The source object.
      */
     getSource(id: string): Object {
         const sourceCache = this._getSourceCache(id);
@@ -791,7 +791,7 @@ class Style extends Evented {
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
      * @param {Object | CustomLayerInterface} layerObject The style layer to add.
-     * @param {string} [before] ID of an existing layer to insert before
+     * @param {string} [before] ID of an existing layer to insert before.
      * @param {Object} options Style setter options.
      * @returns {Map} The {@link Map} object.
      */
@@ -872,8 +872,8 @@ class Style extends Evented {
     /**
      * Moves a layer to a different z-position. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
-     * @param {string} id  ID of the layer to move
-     * @param {string} [before] ID of an existing layer to insert before
+     * @param {string} id  ID of the layer to move.
+     * @param {string} [before] ID of an existing layer to insert before.
      */
     moveLayer(id: string, before?: string) {
         this._checkLoaded();
@@ -909,7 +909,7 @@ class Style extends Evented {
      *
      * If no such layer exists, an `error` event is fired.
      *
-     * @param {string} id id of the layer to remove
+     * @param {string} id ID of the layer to remove.
      * @fires error
      */
     removeLayer(id: string) {
@@ -946,28 +946,28 @@ class Style extends Evented {
     /**
      * Return the style layer object with the given `id`.
      *
-     * @param {string} id - id of the desired layer
-     * @returns {?Object} a layer, if one with the given `id` exists
+     * @param {string} id ID of the desired layer.
+     * @returns {?Object} A layer, if one with the given `id` exists.
      */
     getLayer(id: string): Object {
         return this._layers[id];
     }
 
     /**
-     * checks if a specific layer is present within the style.
+     * Checks if a specific layer is present within the style.
      *
-     * @param {string} id - id of the desired layer
-     * @returns {boolean} a boolean specifying if the given layer is present
+     * @param {string} id ID of the desired layer.
+     * @returns {boolean} A boolean specifying if the given layer is present.
      */
     hasLayer(id: string): boolean {
         return id in this._layers;
     }
 
     /**
-     * checks if a specific layer type is present within the style.
+     * Checks if a specific layer type is present within the style.
      *
-     * @param {string} type - type of the desired layer
-     * @returns {boolean} a boolean specifying if the given layer type is present
+     * @param {string} type Type of the desired layer.
+     * @returns {boolean} A boolean specifying if the given layer type is present.
      */
     hasLayerType(type: string): boolean {
         for (const layerId in this._layers) {
@@ -1018,7 +1018,7 @@ class Style extends Evented {
             return;
         }
 
-        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, null, options)) {
+        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, {layerType: layer.type}, options)) {
             return;
         }
 
@@ -1027,9 +1027,9 @@ class Style extends Evented {
     }
 
     /**
-     * Get a layer's filter object
-     * @param {string} layer the layer to inspect
-     * @returns {*} the layer's filter, if any
+     * Get a layer's filter object.
+     * @param {string} layer The layer to inspect.
+     * @returns {*} The layer's filter, if any.
      */
     getFilter(layer: string) {
         return clone(this.getLayer(layer).filter);
@@ -1051,10 +1051,10 @@ class Style extends Evented {
     }
 
     /**
-     * Get a layout property's value from a given layer
-     * @param {string} layerId the layer to inspect
-     * @param {string} name the name of the layout property
-     * @returns {*} the property value
+     * Get a layout property's value from a given layer.
+     * @param {string} layerId The layer to inspect.
+     * @param {string} name The name of the layout property.
+     * @returns {*} The property value.
      */
     getLayoutProperty(layerId: string, name: string) {
         const layer = this.getLayer(layerId);
@@ -1214,6 +1214,8 @@ class Style extends Evented {
             sourceCache.pause();
         }
         this._changed = true;
+        layer.invalidateCompiledFilter();
+
     }
 
     _flattenAndSortRenderedFeatures(sourceResults: Array<any>) {
@@ -1743,7 +1745,7 @@ class Style extends Evented {
         setDependencies(this._symbolSourceCaches[params.source]);
     }
 
-    getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}}, callback: Callback<{[_: string]: {[_: number]: ?StyleGlyph}}>) {
+    getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}}, callback: Callback<{[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
         this.glyphManager.getGlyphs(params.stacks, callback);
     }
 
@@ -1782,6 +1784,10 @@ class Style extends Evented {
 
     hasCircleLayers(): boolean {
         return this._numCircleLayers > 0;
+    }
+
+    clearWorkerCaches() {
+        this.dispatcher.broadcast('clearCaches');
     }
 }
 

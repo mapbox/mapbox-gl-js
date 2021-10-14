@@ -29,8 +29,9 @@ export type ElevationQueryOptions = {
 export class Elevation {
     /**
      * Helper around `getAtPoint` that guarantees that a numeric value is returned.
-     * @param point
-     * @param defaultIfNotLoaded
+     * @param {MercatorCoordinate} point Mercator coordinate of the point.
+     * @param {number} defaultIfNotLoaded Value that is returned if the dem tile of the provided point is not loaded.
+     * @returns {number} Altitude in meters.
      */
     getAtPointOrZero(point: MercatorCoordinate, defaultIfNotLoaded: number = 0): number {
         return this.getAtPoint(point, defaultIfNotLoaded) || 0;
@@ -39,8 +40,8 @@ export class Elevation {
     /**
      * Altitude above sea level in meters at specified point.
      * @param {MercatorCoordinate} point Mercator coordinate of the point.
-     * @param {number} defaultIfNotLoaded Value that is returned if the dem tile of the provided point is not loaded
-     * @param exaggerated
+     * @param {number} defaultIfNotLoaded Value that is returned if the DEM tile of the provided point is not loaded.
+     * @param {boolean} exaggerated `true` if styling exaggeration should be applied to the resulting elevation.
      * @returns {number} Altitude in meters.
      * If there is no loaded tile that carries information for the requested
      * point elevation, returns `defaultIfNotLoaded`.
@@ -106,7 +107,7 @@ export class Elevation {
 
     /**
      * Get elevation minimum and maximum for tile identified by `tileID`.
-     * @param {OverscaledTileID} tileID is a sub tile (or covers the same space) of the DEM tile we read the information from.
+     * @param {OverscaledTileID} tileID The `tileId` is a sub tile (or covers the same space) of the DEM tile we read the information from.
      * @returns {?{min: number, max: number}} The min and max elevation.
      */
     getMinMaxForTile(tileID: OverscaledTileID): ?{min: number, max: number} {
@@ -144,7 +145,7 @@ export class Elevation {
 
     /**
      * Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
-     * x & y components of the position are expected to be in normalized mercator coordinates [0, 1] and z in meters.
+     * `x` & `y` components of the position are expected to be in normalized mercator coordinates [0, 1] and z in meters.
      * @param {vec3} position The ray origin.
      * @param {vec3} dir The ray direction.
      * @param {number} exaggeration The terrain exaggeration.

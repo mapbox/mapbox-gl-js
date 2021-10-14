@@ -6,7 +6,8 @@ import type TapZoomHandler from './../tap_zoom.js';
 /**
  * The `DoubleClickZoomHandler` allows the user to zoom the map at a point by
  * double clicking or double tapping.
- * @see [Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
+ *
+ * @see [Example: Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
  */
 export default class DoubleClickZoomHandler {
 
@@ -46,16 +47,20 @@ export default class DoubleClickZoomHandler {
     /**
      * Returns a Boolean indicating whether the "double click to zoom" interaction is enabled.
      *
-     * @returns {boolean} `true` if the "double click to zoom" interaction is enabled.
+     * @returns {boolean} Returns `true` if the "double click to zoom" interaction is enabled.
+     * @example
+     * const isDoubleClickZoomEnabled = map.doubleClickZoom.isEnabled();
      */
     isEnabled() {
         return this._clickZoom.isEnabled() && this._tapZoom.isEnabled();
     }
 
     /**
-     * Returns a Boolean indicating whether the "double click to zoom" interaction is active, i.e. currently being used.
+     * Returns a Boolean indicating whether the "double click to zoom" interaction is active (currently being used).
      *
-     * @returns {boolean} `true` if the "double click to zoom" interaction is active.
+     * @returns {boolean} Returns `true` if the "double click to zoom" interaction is active.
+     * @example
+     * const isDoubleClickZoomActive = map.doubleClickZoom.isActive();
      */
     isActive() {
         return this._clickZoom.isActive() || this._tapZoom.isActive();

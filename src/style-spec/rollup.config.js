@@ -16,7 +16,7 @@ const config = [{
     input: `${__dirname}/style-spec.js`,
     output: {
         name: 'mapboxGlStyleSpecification',
-        file: `${__dirname}/dist/${esm ? 'index.es.js' : 'index.js'}`,
+        file: `${__dirname}/dist/${esm ? 'index.es.js' : 'index.cjs'}`,
         format: esm ? 'esm' : 'umd',
         sourcemap: true
     },

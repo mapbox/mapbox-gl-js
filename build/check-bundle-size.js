@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { Octokit } from "@octokit/rest";
-import { createAppAuth } from "@octokit/auth-app";
 import prettyBytes from 'pretty-bytes';
 import fs from 'fs';
 import {execSync} from 'child_process';
@@ -14,14 +13,11 @@ process.on('unhandledRejection', error => {
     process.exit(1)
 });
 
-const SIZE_CHECK_APP_ID = 14028;
-const SIZE_CHECK_APP_INSTALLATION_ID = 229425;
-
 const FILES = [
     ['JS', "dist/mapbox-gl.js"],
     ['CSS', "dist/mapbox-gl.css"]
 ];
-const PK = process.env['SIZE_CHECK_APP_PRIVATE_KEY'];
+const PK = process.env['MBX_CI_DOMAIN'];
 if (!PK) {
     console.log('Fork PR; not computing size.');
     process.exit(0);
@@ -32,12 +28,7 @@ const repo = 'mapbox-gl-js';
 (async () => {
     // Initialize github client
     const github = new Octokit({
-        authStrategy: createAppAuth,
-        auth: {
-            appId: SIZE_CHECK_APP_ID,
-            privateKey: Buffer.from(PK, 'base64').toString('binary'),
-            installationId: SIZE_CHECK_APP_INSTALLATION_ID
-        }
+        auth: execSync('~/mbx-ci github notifier token').toString().trim()
     });
 
     //get current sizes

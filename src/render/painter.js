@@ -183,7 +183,7 @@ class Painter {
 
     _updateFog(style: Style) {
         const fog = style.fog;
-        if (!fog || (fog && fog.getOpacity(this.transform.pitch) !== 1.0)) {
+        if (!fog || fog.getOpacity(this.transform.pitch) < 1 || fog.properties.get('horizon-blend') < 0.03) {
             this.transform.fogCullDistSq = null;
             return;
         }
@@ -191,6 +191,12 @@ class Painter {
         // We start culling where the fog opacity function hits
         // 98% which leaves a non-noticeable change threshold.
         const [start, end] = fog.getFovAdjustedRange(this.transform._fov);
+
+        if (start > end) {
+            this.transform.fogCullDistSq = null;
+            return;
+        }
+
         const fogBoundFraction = 0.78;
         const fogCullDist = start + (end - start) * fogBoundFraction;
 
@@ -237,9 +243,9 @@ class Painter {
         this.debugSegments = SegmentVector.simpleSegment(0, 0, 4, 5);
 
         const viewportArray = new PosArray();
-        viewportArray.emplaceBack(0, 0);
-        viewportArray.emplaceBack(1, 0);
-        viewportArray.emplaceBack(0, 1);
+        viewportArray.emplaceBack(-1, -1);
+        viewportArray.emplaceBack(1, -1);
+        viewportArray.emplaceBack(-1, 1);
         viewportArray.emplaceBack(1, 1);
         this.viewportBuffer = context.createVertexBuffer(viewportArray, posAttributes.members);
         this.viewportSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
@@ -304,14 +310,9 @@ class Painter {
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
         // this function in favor of context.clear({ stencil: 0x0 })
-
-        const matrix = mat4.create();
-        mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
-        mat4.scale(matrix, matrix, [gl.drawingBufferWidth, gl.drawingBufferHeight, 0]);
-
         this.useProgram('clippingMask').draw(context, gl.TRIANGLES,
             DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
-            clippingMaskUniformValues(matrix),
+            clippingMaskUniformValues(this.identityMat),
             '$clipping', this.viewportBuffer,
             this.quadTriangleIndexBuffer, this.viewportSegments);
     }
@@ -580,6 +581,7 @@ class Painter {
                 const terrain = (((this.terrain): any): Terrain);
                 const prevLayer = this.currentLayer;
                 this.currentLayer = terrain.renderBatch(this.currentLayer);
+                assert(this.context.bindFramebuffer.current === null);
                 assert(this.currentLayer > prevLayer);
                 continue;
             }

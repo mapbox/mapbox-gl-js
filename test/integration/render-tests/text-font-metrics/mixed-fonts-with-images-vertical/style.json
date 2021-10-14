@@ -2,7 +2,6 @@
   "version": 8,
   "metadata": {
     "test": {
-      "collisionDebug": true,
       "height": 250,
       "width": 200
     }

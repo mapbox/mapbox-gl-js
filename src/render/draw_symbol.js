@@ -101,14 +101,14 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     }
 }
 
-function calculateVariableRenderShift(anchor, width, height, textOffset, textBoxScale, renderTextSize): Point {
+function calculateVariableRenderShift(anchor, width, height, textOffset, textScale, renderTextSize): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
     const shiftY = -(verticalAlign - 0.5) * height;
     const variableOffset = evaluateVariableOffset(anchor, textOffset);
     return new Point(
-        (shiftX / textBoxScale + variableOffset[0]) * renderTextSize,
-        (shiftY / textBoxScale + variableOffset[1]) * renderTextSize
+        (shiftX / textScale + variableOffset[0]) * renderTextSize,
+        (shiftY / textScale + variableOffset[1]) * renderTextSize
     );
 }
 
@@ -157,7 +157,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             // so we don't need to do the extra math to figure out what incremental shift to apply.
             symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicTextLayoutVertexArray);
         } else  {
-            const tileAnchor = new Point(symbol.anchorX, symbol.anchorY);
+            const tileAnchor = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
             const elevation = getElevation(tileAnchor);
             const projectedAnchor = symbolProjection.project(tileAnchor, pitchWithMap ? posMatrix : labelPlaneMatrix, elevation);
             const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.cameraToCenterDistance, projectedAnchor.signedDistanceFromCamera);
@@ -167,10 +167,10 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
                 renderTextSize *= bucket.tilePixelRatio / tileScale;
             }
 
-            const {width, height, anchor, textOffset, textBoxScale} = variableOffset;
+            const {width, height, anchor, textOffset, textScale} = variableOffset;
 
             const shift = calculateVariableRenderShift(
-                anchor, width, height, textOffset, textBoxScale, renderTextSize);
+                anchor, width, height, textOffset, textScale, renderTextSize);
 
             // Usual case is that we take the projected anchor and add the pixel-based shift
             // calculated above. In the (somewhat weird) case of pitch-aligned text, we add an equivalent
@@ -243,11 +243,17 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     let sortFeaturesByKey = false;
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
-
+    const mercCenter = [0, 0];
     const variablePlacement = layer.layout.get('text-variable-anchor');
-
     const tileRenderState: Array<SymbolTileRenderState> = [];
-    const defines = painter.terrain && pitchWithMap ? ['PITCH_WITH_MAP_TERRAIN'] : null;
+
+    const defines = ([]: any);
+    if (painter.terrain && pitchWithMap) {
+        defines.push('PITCH_WITH_MAP_TERRAIN');
+    }
+    if (alongLine) {
+        defines.push('PROJECTED_POS_ON_VIEWPORT');
+    }
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -264,6 +270,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration, defines);
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
+        const coordId = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
 
         let texSize: [number, number];
         let texSizeIcon: [number, number] = [0, 0];
@@ -318,16 +325,19 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             if (!bucket.iconsInText) {
                 uniformValues = symbolSDFUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true);
+                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true,
+                coordId, 0.0, painter.identityMat, mercCenter);
             } else {
                 uniformValues = symbolTextAndIconUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon);
+                uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon,
+                coordId, 0.0, painter.identityMat, mercCenter);
             }
         } else {
             uniformValues = symbolIconUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize);
+                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize,
+                coordId, 0.0, painter.identityMat, mercCenter);
         }
 
         const state = {

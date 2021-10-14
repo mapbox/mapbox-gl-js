@@ -5,11 +5,11 @@
         {
           "glyph": 97,
           "imageName": null,
-          "localGlyph": null,
           "x": -32.5,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -29,11 +29,11 @@
         {
           "glyph": 98,
           "imageName": null,
-          "localGlyph": null,
           "x": -19.5,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -53,11 +53,11 @@
         {
           "glyph": 99,
           "imageName": null,
-          "localGlyph": null,
           "x": -5.5,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -77,11 +77,11 @@
         {
           "glyph": 100,
           "imageName": null,
-          "localGlyph": null,
           "x": 5.5,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -101,11 +101,11 @@
         {
           "glyph": 101,
           "imageName": null,
-          "localGlyph": null,
           "x": 19.5,
           "y": -17,
           "vertical": false,
           "scale": 1,
+          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -133,5 +133,6 @@
   "right": 32.5,
   "writingMode": 1,
   "iconsInText": false,
-  "verticalizable": false
+  "verticalizable": false,
+  "hasBaseline": false
 }

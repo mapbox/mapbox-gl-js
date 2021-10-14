@@ -9,6 +9,7 @@ import boundsAttributes from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import browser from '../util/browser.js';
 
 import type {Source} from './source.js';
 import type {CanvasSourceSpecification} from './canvas_source.js';
@@ -26,23 +27,23 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
 
 /**
  * A data source containing an image.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.)
+ * See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.
  *
  * @example
  * // add to map
  * map.addSource('some id', {
- *    type: 'image',
- *    url: 'https://www.mapbox.com/images/foo.png',
- *    coordinates: [
- *        [-76.54, 39.18],
- *        [-76.52, 39.18],
- *        [-76.52, 39.17],
- *        [-76.54, 39.17]
- *    ]
+ *     type: 'image',
+ *     url: 'https://www.mapbox.com/images/foo.png',
+ *     coordinates: [
+ *         [-76.54, 39.18],
+ *         [-76.52, 39.18],
+ *         [-76.52, 39.17],
+ *         [-76.54, 39.17]
+ *     ]
  * });
  *
  * // update coordinates
- * var mySource = map.getSource('some id');
+ * const mySource = map.getSource('some id');
  * mySource.setCoordinates([
  *     [-76.54335737228394, 39.18579907229748],
  *     [-76.52803659439087, 39.1838364847587],
@@ -52,17 +53,17 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
  *
  * // update url and coordinates simultaneously
  * mySource.updateImage({
- *    url: 'https://www.mapbox.com/images/bar.png',
- *    coordinates: [
- *        [-76.54335737228394, 39.18579907229748],
- *        [-76.52803659439087, 39.1838364847587],
- *        [-76.5295386314392, 39.17683392507606],
- *        [-76.54520273208618, 39.17876344106642]
- *    ]
- * })
+ *     url: 'https://www.mapbox.com/images/bar.png',
+ *     coordinates: [
+ *         [-76.54335737228394, 39.18579907229748],
+ *         [-76.52803659439087, 39.1838364847587],
+ *         [-76.5295386314392, 39.17683392507606],
+ *         [-76.54520273208618, 39.17876344106642]
+ *     ]
+ * });
  *
  * map.removeSource('some id');  // remove
- * @see [Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
+ * @see [Example: Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  */
 class ImageSource extends Evented implements Source {
     type: string;
@@ -78,7 +79,7 @@ class ImageSource extends Evented implements Source {
     dispatcher: Dispatcher;
     map: Map;
     texture: Texture | null;
-    image: HTMLImageElement | ImageBitmap;
+    image: ImageData;
     tileID: CanonicalTileID;
     _boundsArray: RasterBoundsArray;
     boundsBuffer: VertexBuffer;
@@ -117,7 +118,7 @@ class ImageSource extends Evented implements Source {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
-                this.image = image;
+                this.image = browser.getImageData(image);
                 if (newCoordinates) {
                     this.coordinates = newCoordinates;
                 }
@@ -143,7 +144,29 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} this
+     * @returns {ImageSource} Returns itself to allow for method chaining.
+     * @example
+     * // Add to an image source to the map with some initial URL and coordinates
+     * map.addSource('image_source_id', {
+     *     type: 'image',
+     *     url: 'https://www.mapbox.com/images/foo.png',
+     *     coordinates: [
+     *         [-76.54, 39.18],
+     *         [-76.52, 39.18],
+     *         [-76.52, 39.17],
+     *         [-76.54, 39.17]
+     *     ]
+     * });
+     * // Then update the image URL and coordinates
+     * imageSource.updateImage({
+     *     url: 'https://www.mapbox.com/images/bar.png',
+     *     coordinates: [
+     *         [-76.5433, 39.1857],
+     *         [-76.5280, 39.1838],
+     *         [-76.5295, 39.1768],
+     *         [-76.5452, 39.1787]
+     *     ]
+     * });
      */
     updateImage(options: {url: string, coordinates?: Coordinates}) {
         if (!this.image || !options.url) {
@@ -173,7 +196,26 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} this
+     * @returns {ImageSource} Returns itself to allow for method chaining.
+     * @example
+     * // Add an image source to the map with some initial coordinates
+     * map.addSource('image_source_id', {
+     *     type: 'image',
+     *     url: 'https://www.mapbox.com/images/foo.png',
+     *     coordinates: [
+     *         [-76.54, 39.18],
+     *         [-76.52, 39.18],
+     *         [-76.52, 39.17],
+     *         [-76.54, 39.17]
+     *     ]
+     * });
+     * // Then update the image coordinates
+     * imageSource.setCoordinates([
+     *     [-76.5433, 39.1857],
+     *     [-76.5280, 39.1838],
+     *     [-76.5295, 39.1768],
+     *     [-76.5452, 39.1787]
+     * ]);
      */
     setCoordinates(coordinates: Coordinates) {
         this.coordinates = coordinates;

@@ -41,7 +41,7 @@ test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
     });
 
     t.test('exports components directly, not behind `default` - https://github.com/mapbox/mapbox-gl-js/issues/6601', (t) => {
-        const spec = require('../../dist/style-spec/index.js');
+        const spec = require('../../dist/style-spec/index.cjs');
         t.ok(spec.validate);
         t.notOk(spec.default && spec.default.validate);
         t.end();

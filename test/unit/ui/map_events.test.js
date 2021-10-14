@@ -532,7 +532,7 @@ test(`Map#on mousedown can have default behavior prevented and still fire subseq
     map.on('click', click);
 
     simulate.click(map.getCanvas());
-    t.ok(click.callCount, 1);
+    t.equal(click.callCount, 1);
 
     map.remove();
     t.end();
@@ -629,4 +629,501 @@ test("Map#isMoving() returns false in mousedown/mouseup/click with no movement",
 
     map.remove();
     t.end();
+});
+
+test("Map#on click should fire preclick before click", (t) => {
+    const map = createMap(t);
+    const preclickSpy = t.spy(function (e) {
+        t.equal(this, map);
+        t.equal(e.type, 'preclick');
+    });
+
+    const clickSpy = t.spy(function (e) {
+        t.equal(this, map);
+        t.equal(e.type, 'click');
+    });
+
+    map.on('click', clickSpy);
+    map.on('preclick', preclickSpy);
+    map.once('preclick', () => {
+        t.ok(clickSpy.notCalled);
+    });
+
+    simulate.click(map.getCanvas());
+
+    t.ok(preclickSpy.calledOnce);
+    t.ok(clickSpy.calledOnce);
+
+    map.remove();
+    t.end();
+});
+
+test('Map#on adds a listener for an event on multiple layers which do not exist', (t) => {
+    const map = createMap(t);
+    const features = [{}];
+
+    t.stub(map, 'getLayer').returns(undefined);
+    t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
+        t.deepEqual(options, {layers: []});
+        return features;
+    });
+
+    const spy = t.spy();
+
+    map.on('click', ['layer1', 'layer2'], spy);
+    simulate.click(map.getCanvas());
+
+    t.ok(spy.notCalled);
+    t.end();
+});
+
+test('Map#on adds a listener for an event on multiple layers which some do not exist', (t) => {
+    const map = createMap(t);
+    const features = [{}];
+
+    const getLayerCB = t.stub(map, 'getLayer');
+    getLayerCB.onCall(0).returns(undefined);
+    getLayerCB.onCall(1).returns({});
+    getLayerCB.returns({});
+
+    t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
+        t.deepEqual(options, {layers: ['background']});
+        return features;
+    });
+
+    const spy = t.spy(function (e) {
+        t.equal(this, map);
+        t.equal(e.type, 'click');
+        t.equal(e.features, features);
+    });
+
+    map.on('click', ['layer', 'background'], spy);
+    simulate.click(map.getCanvas());
+
+    t.ok(spy.calledOnce);
+    t.end();
+});
+
+test('Map#on distinguishes distinct event types - multiple layers', (t) => {
+    const map = createMap(t);
+
+    t.stub(map, 'getLayer').returns({});
+    t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
+        t.deepEqual(options, {layers: ['layer1', 'layer2']});
+        return [{}];
+    });
+
+    const spyDown = t.spy((e) => {
+        t.equal(e.type, 'mousedown');
+    });
+
+    const spyUp = t.spy((e) => {
+        t.equal(e.type, 'mouseup');
+    });
+
+    map.on('mousedown', ['layer1', 'layer2'], spyDown);
+    map.on('mouseup', ['layer1', 'layer2'], spyUp);
+    simulate.click(map.getCanvas());
+
+    t.ok(spyDown.calledOnce);
+    t.ok(spyUp.calledOnce);
+    t.end();
+});
+
+test('Map#on distinguishes distinct multiple layers', (t) => {
+    const map = createMap(t);
+    const featuresA = [{}];
+    const featuresB = [{}];
+
+    t.stub(map, 'getLayer').returns({});
+    t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
+        return options.layers[0] === 'A' ? featuresA : featuresB;
+    });
+
+    const spyA = t.spy((e) => {
+        t.equal(e.features, featuresA);
+    });
+
+    const spyB = t.spy((e) => {
+        t.equal(e.features, featuresB);
+    });
+
+    map.on('click', ['A', 'A2'], spyA);
+    map.on('click', ['B', 'B2'], spyB);
+    simulate.click(map.getCanvas());
+
+    t.ok(spyA.calledOnce);
+    t.ok(spyB.calledOnce);
+    t.end();
+});
+
+test('Map#off removes a delegated event listener -  multiple layers', (t) => {
+    const map = createMap(t);
+
+    t.stub(map, 'getLayer').returns({});
+    t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+    const spy = t.spy();
+
+    map.on('click', ['layer1', 'layer2'], spy);
+    map.off('click', ['layer2', 'layer1'], spy);
+    simulate.click(map.getCanvas());
+
+    t.ok(spy.notCalled);
+    t.end();
+});
+
+test('Map#off distinguishes distinct event types -  multiple layers', (t) => {
+    const map = createMap(t);
+
+    t.stub(map, 'getLayer').returns({});
+    t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+    const spy = t.spy((e) => {
+        t.equal(e.type, 'mousedown');
+    });
+
+    map.on('mousedown', ['layer1', 'layer2'], spy);
+    map.on('mouseup', ['layer1', 'layer2'], spy);
+    map.off('mouseup', ['layer1', 'layer2'], spy);
+    simulate.click(map.getCanvas());
+
+    t.ok(spy.calledOnce);
+    t.end();
+});
+
+test('Map#off distinguishes distinct layers -  multiple layers', (t) => {
+    const map = createMap(t);
+    const featuresA = [{}];
+
+    t.stub(map, 'getLayer').returns({});
+    t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
+        t.deepEqual(options, {layers: ['A', 'B']});
+        return featuresA;
+    });
+
+    const spy = t.spy((e) => {
+        t.equal(e.features, featuresA);
+    });
+
+    map.on('click', ['A', 'B'], spy);
+    map.on('click', ['C', 'D'], spy);
+    map.off('click', ['C', 'D'], spy);
+    simulate.click(map.getCanvas());
+
+    t.ok(spy.calledOnce);
+    t.end();
+});
+
+test('Map#off distinguishes distinct listeners -  multiple layers', (t) => {
+    const map = createMap(t);
+
+    t.stub(map, 'getLayer').returns({});
+    t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+    const spyA = t.spy();
+    const spyB = t.spy();
+
+    map.on('click', ['layer1', 'layer2'], spyA);
+    map.on('click', ['layer1', 'layer2'], spyB);
+    map.off('click', ['layer1', 'layer2'], spyB);
+    simulate.click(map.getCanvas());
+
+    t.ok(spyA.calledOnce);
+    t.ok(spyB.notCalled);
+    t.end();
+});
+
+['mouseenter', 'mouseover'].forEach((event) => {
+    test(`Map#on ${event} does not fire if the specified layer does not exist -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns(null);
+
+        const spy = t.spy();
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.notCalled);
+        t.end();
+    });
+
+    test(`Map#on ${event} fires when entering the specified layer -  multiple layers`, (t) => {
+        const map = createMap(t);
+        const features = [{}];
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
+            t.deepEqual(options, {layers: ['layer1', 'layer2']});
+            return features;
+        });
+
+        const spy = t.spy(function (e) {
+            t.equal(this, map);
+            t.equal(e.type, event);
+            t.equal(e.target, map);
+            t.equal(e.features, features);
+        });
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.calledOnce);
+        t.end();
+    });
+
+    test(`Map#on ${event} does not fire on mousemove within the specified layer -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+        const spy = t.spy();
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.calledOnce);
+        t.end();
+    });
+
+    test(`Map#on ${event} fires when reentering the specified layer -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures')
+            .onFirstCall().returns([{}])
+            .onSecondCall().returns([])
+            .onThirdCall().returns([{}]);
+
+        const spy = t.spy();
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.calledTwice);
+        t.end();
+    });
+
+    test(`Map#on ${event} fires when reentering the specified layer after leaving the canvas -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+        const spy = t.spy();
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mouseout(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.calledTwice);
+        t.end();
+    });
+
+    test(`Map#on ${event} distinguishes distinct layers -  multiple layers`, (t) => {
+        const map = createMap(t);
+        const featuresA = [{}];
+        const featuresB = [{}];
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
+            return options.layers[0] === 'A' ? featuresA : featuresB;
+        });
+
+        const spyA = t.spy((e) => {
+            t.equal(e.features, featuresA);
+        });
+
+        const spyB = t.spy((e) => {
+            t.equal(e.features, featuresB);
+        });
+
+        map.on(event, ['A', 'A2'], spyA);
+        map.on(event, ['B', 'B2'], spyB);
+
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spyA.calledOnce);
+        t.ok(spyB.calledOnce);
+        t.end();
+    });
+
+    test(`Map#on ${event} distinguishes distinct listeners -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+        const spyA = t.spy();
+        const spyB = t.spy();
+
+        map.on(event, ['layer1', 'layer2'], spyA);
+        map.on(event, ['layer1', 'layer2'], spyB);
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spyA.calledOnce);
+        t.ok(spyB.calledOnce);
+        t.end();
+    });
+
+    test(`Map#off ${event} removes a delegated event listener -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+        const spy = t.spy();
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        map.off(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.notCalled);
+        t.end();
+    });
+
+    test(`Map#off ${event} distinguishes distinct layers -  multiple layers`, (t) => {
+        const map = createMap(t);
+        const featuresA = [{}];
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
+            t.deepEqual(options, {layers: ['A', 'A2']});
+            return featuresA;
+        });
+
+        const spy = t.spy((e) => {
+            t.equal(e.features, featuresA);
+        });
+
+        map.on(event, ['A', 'A2'], spy);
+        map.on(event, ['B', 'B2'], spy);
+        map.off(event, ['B', 'B2'], spy);
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.calledOnce);
+        t.end();
+    });
+
+    test(`Map#off ${event} distinguishes distinct listeners -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+        const spyA = t.spy();
+        const spyB = t.spy();
+
+        map.on(event, ['layer1', 'layer2'], spyA);
+        map.on(event, ['layer1', 'layer2'], spyB);
+        map.off(event, ['layer1', 'layer2'], spyB);
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spyA.calledOnce);
+        t.ok(spyB.notCalled);
+        t.end();
+    });
+});
+
+['mouseleave', 'mouseout'].forEach((event) => {
+    test(`Map#on ${event} does not fire if the specified layer does not exist -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns(null);
+
+        const spy = t.spy();
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.notCalled);
+        t.end();
+    });
+
+    test(`Map#on ${event} does not fire on mousemove when entering or within the specified layer -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+        const spy = t.spy();
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.notCalled);
+        t.end();
+    });
+
+    test(`Map#on ${event} fires when exiting the specified layer -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures')
+            .onFirstCall().returns([{}])
+            .onSecondCall().returns([]);
+
+        const spy = t.spy(function (e) {
+            t.equal(this, map);
+            t.equal(e.type, event);
+            t.equal(e.features, undefined);
+        });
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.calledOnce);
+        t.end();
+    });
+
+    test(`Map#on ${event} fires when exiting the canvas -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+        const spy = t.spy(function (e) {
+            t.equal(this, map);
+            t.equal(e.type, event);
+            t.equal(e.features, undefined);
+        });
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mouseout(map.getCanvas());
+
+        t.ok(spy.calledOnce);
+        t.end();
+    });
+
+    test(`Map#off ${event} removes a delegated event listener -  multiple layers`, (t) => {
+        const map = createMap(t);
+
+        t.stub(map, 'getLayer').returns({});
+        t.stub(map, 'queryRenderedFeatures')
+            .onFirstCall().returns([{}])
+            .onSecondCall().returns([]);
+
+        const spy = t.spy();
+
+        map.on(event, ['layer1', 'layer2'], spy);
+        map.off(event, ['layer1', 'layer2'], spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+        simulate.mouseout(map.getCanvas());
+
+        t.ok(spy.notCalled);
+        t.end();
+    });
 });

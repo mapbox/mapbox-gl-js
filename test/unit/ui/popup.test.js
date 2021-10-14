@@ -12,8 +12,14 @@ const containerHeight = 512;
 function createMap(t, options) {
     options = options || {};
     const container = window.document.createElement('div');
-    Object.defineProperty(container, 'clientWidth', {value: options.width || containerWidth});
-    Object.defineProperty(container, 'clientHeight', {value: options.height || containerHeight});
+    Object.defineProperty(container, 'getBoundingClientRect', {value:
+        () => {
+            return {
+                height: options.height || containerHeight,
+                width: options.width || containerWidth
+            };
+        }
+    });
     return globalCreateMap(t, {container});
 }
 
@@ -576,7 +582,7 @@ test('Popup#remove is idempotent (#2395)', (t) => {
     t.end();
 });
 
-test('Popup adds classes from className option, methods for class manipulations works properly', (t) => {
+test('Popup adds classes from className option, methods for class manipulation work properly', (t) => {
     const map = createMap(t);
     const popup = new Popup({className: 'some classes'})
         .setText('Test')
@@ -599,14 +605,74 @@ test('Popup adds classes from className option, methods for class manipulations 
     popup.toggleClassName('toggle');
     t.ok(!popupContainer.classList.contains('toggle'));
 
-    t.throws(() => popup.addClassName('should throw exception'), window.DOMException);
-    t.throws(() => popup.removeClassName('should throw exception'), window.DOMException);
-    t.throws(() => popup.toggleClassName('should throw exception'), window.DOMException);
+    t.end();
+});
 
-    t.throws(() => popup.addClassName(''), window.DOMException);
-    t.throws(() => popup.removeClassName(''), window.DOMException);
-    t.throws(() => popup.toggleClassName(''), window.DOMException);
+test('Popup#addClassName adds classes when called before adding popup to map (#9677)', (t) => {
+    const map = createMap(t);
+    const popup = new Popup();
+    popup.addClassName('some');
+    popup.addClassName('classes');
 
+    popup.setText('Test')
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    const popupContainer = popup.getElement();
+    t.ok(popupContainer.classList.contains('some'));
+    t.ok(popupContainer.classList.contains('classes'));
+    t.end();
+});
+test('Popup className option and addClassName both add classes', (t) => {
+    const map = createMap(t);
+    const popup = new Popup({className: 'some classes'});
+    popup.addClassName('even')
+        .addClassName('more');
+
+    popup.setText('Test')
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    popup.addClassName('one-more');
+
+    const popupContainer = popup.getElement();
+    t.ok(popupContainer.classList.contains('some'));
+    t.ok(popupContainer.classList.contains('classes'));
+    t.ok(popupContainer.classList.contains('even'));
+    t.ok(popupContainer.classList.contains('more'));
+    t.ok(popupContainer.classList.contains('one-more'));
+    t.end();
+});
+
+test('Methods for class manipulation work properly when popup is not on map', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText('Test')
+        .setLngLat([0, 0])
+        .addClassName('some')
+        .addClassName('classes');
+
+    let popupContainer = popup.addTo(map).getElement();
+    t.ok(popupContainer.classList.contains('some'));
+    t.ok(popupContainer.classList.contains('classes'));
+
+    popup.remove();
+    popup.removeClassName('some');
+    popupContainer = popup.addTo(map).getElement();
+
+    t.ok(!popupContainer.classList.contains('some'));
+
+    popup.remove();
+    popup.toggleClassName('toggle');
+    popupContainer = popup.addTo(map).getElement();
+
+    t.ok(popupContainer.classList.contains('toggle'));
+
+    popup.remove();
+    popup.toggleClassName('toggle');
+    popupContainer = popup.addTo(map).getElement();
+
+    t.ok(!popupContainer.classList.contains('toggle'));
     t.end();
 });
 

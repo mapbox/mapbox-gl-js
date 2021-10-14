@@ -85,6 +85,14 @@ export default class Worker {
         };
     }
 
+    clearCaches(mapId: string, unused: mixed, callback: WorkerTileCallback) {
+        delete this.layerIndexes[mapId];
+        delete this.availableImages[mapId];
+        delete this.workerSources[mapId];
+        delete this.demWorkerSources[mapId];
+        callback();
+    }
+
     checkIfReady(mapID: string, unused: mixed, callback: WorkerTileCallback) {
         // noop, used to check if a worker is fully set up and ready to receive messages
         callback();

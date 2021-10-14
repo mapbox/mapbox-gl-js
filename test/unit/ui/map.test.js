@@ -10,6 +10,8 @@ import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import {Event, ErrorEvent} from '../../../src/util/evented.js';
 import simulate from '../../util/simulate_interaction.js';
 import {fixedLngLat, fixedNum} from '../../util/fixed.js';
+import Fog from '../../../src/style/fog.js';
+import Color from '../../../src/style-spec/util/color.js';
 
 function createStyleSource() {
     return {
@@ -345,6 +347,65 @@ test('Map', (t) => {
                 });
             });
 
+            t.end();
+        });
+
+        t.test('updating fog results in correct transitions', (t) => {
+            t.test('sets fog with transition', (t) => {
+                const fog = new Fog({
+                    'color': 'white',
+                    'range': [0, 1],
+                    'horizon-blend': 0.0
+                });
+                fog.set({'color-transition': {duration: 3000}});
+
+                fog.set({'color': 'red'});
+                fog.updateTransitions({transition: true}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                t.deepEqual(fog.properties.get('color'), new Color(1, 0.5, 0.5, 1));
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                t.deepEqual(fog.properties.get('color'), new Color(1, 0.0, 0.0, 1));
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                t.deepEqual(fog.properties.get('color'), new Color(1, 0.0, 0.0, 1));
+
+                fog.set({'range-transition': {duration: 3000}});
+                fog.set({'range': [2, 5]});
+                fog.updateTransitions({transition: true}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                t.deepEqual(fog.properties.get('range')[0], 1);
+                t.deepEqual(fog.properties.get('range')[1], 3);
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                t.deepEqual(fog.properties.get('range')[0], 2);
+                t.deepEqual(fog.properties.get('range')[1], 5);
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                t.deepEqual(fog.properties.get('range')[0], 2);
+                t.deepEqual(fog.properties.get('range')[1], 5);
+
+                fog.set({'horizon-blend-transition': {duration: 3000}});
+                fog.set({'horizon-blend': 0.5});
+                fog.updateTransitions({transition: true}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                t.deepEqual(fog.properties.get('horizon-blend'), 0.25);
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                t.deepEqual(fog.properties.get('horizon-blend'), 0.5);
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                t.deepEqual(fog.properties.get('horizon-blend'), 0.5);
+
+                t.end();
+            });
+
+            t.test('fog respects validation option', (t) => {
+                const fog = new Fog({});
+                const fogSpy = t.spy(fog, '_validate');
+
+                fog.set({color: [444]}, {validate: false});
+                fog.updateTransitions({transition: false}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 10});
+
+                t.ok(fogSpy.calledOnce);
+                t.deepEqual(fog.properties.get('color'), [444]);
+                t.end();
+            });
             t.end();
         });
 
@@ -687,8 +748,15 @@ test('Map', (t) => {
             const map = createMap(t),
                 container = map.getContainer();
 
-            Object.defineProperty(container, 'clientWidth', {value: 250});
-            Object.defineProperty(container, 'clientHeight', {value: 250});
+            Object.defineProperty(container, 'getBoundingClientRect', {value:
+                () => {
+                    return {
+                        height: 250,
+                        width: 250
+                    };
+                }
+            });
+
             map.resize();
 
             t.equal(map.transform.width, 250);
@@ -697,9 +765,41 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('does nothing if container size is the same', (t) => {
+            const map = createMap(t);
+
+            t.spy(map.transform, 'resize');
+            t.spy(map.painter, 'resize');
+
+            map.resize();
+
+            t.notOk(map.transform.resize.called);
+            t.notOk(map.painter.resize.called);
+
+            t.end();
+        });
+
+        t.test('does not call stop on resize', (t) => {
+            const map = createMap(t);
+
+            Object.defineProperty(map.getContainer(), 'getBoundingClientRect',
+                {value: () => ({height: 250, width: 250})});
+
+            t.spy(map, 'stop');
+
+            map.resize();
+
+            t.notOk(map.stop.called);
+
+            t.end();
+        });
+
         t.test('fires movestart, move, resize, and moveend events', (t) => {
             const map = createMap(t),
                 events = [];
+
+            Object.defineProperty(map.getContainer(), 'getBoundingClientRect',
+                {value: () => ({height: 250, width: 250})});
 
             ['movestart', 'move', 'resize', 'moveend'].forEach((event) => {
                 map.on(event, (e) => {
@@ -797,6 +897,29 @@ test('Map', (t) => {
             t.deepEqual(
                 toFixed([[-33.5599507477, -31.7907658998], [33.5599507477, 31.7907658998]]),
                 toFixed(map.getBounds().toArray())
+            );
+
+            t.end();
+        });
+
+        t.test('bounds cut off at poles (#10261)', (t) => {
+            const map = createMap(t,
+                {zoom: 2, center: [0, 90], pitch: 80, skipCSSStub: true});
+            const bounds = map.getBounds();
+            t.same(bounds.getNorth().toFixed(6), map.transform.maxValidLatitude);
+            t.same(
+                toFixed(bounds.toArray()),
+                toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]])
+            );
+
+            map.setBearing(180);
+            map.setCenter({lng: 0, lat: -90});
+
+            const sBounds = map.getBounds();
+            t.same(sBounds.getSouth().toFixed(6), -map.transform.maxValidLatitude);
+            t.same(
+                toFixed(sBounds.toArray()),
+                toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]])
             );
 
             t.end();
@@ -936,8 +1059,27 @@ test('Map', (t) => {
 
     t.test('#setMinZoom', (t) => {
         const map = createMap(t, {zoom:5});
+
+        const onZoomStart = t.spy();
+        const onZoom = t.spy();
+        const onZoomEnd = t.spy();
+
+        map.on('zoomstart', onZoomStart);
+        map.on('zoom', onZoom);
+        map.on('zoomend', onZoomEnd);
+
         map.setMinZoom(3.5);
+
+        t.ok(onZoomStart.calledOnce);
+        t.ok(onZoom.calledOnce);
+        t.ok(onZoomEnd.calledOnce);
+
         map.setZoom(1);
+
+        t.equal(onZoomStart.callCount, 2);
+        t.equal(onZoom.callCount, 2);
+        t.equal(onZoomEnd.callCount, 2);
+
         t.equal(map.getZoom(), 3.5);
         t.end();
     });
@@ -970,8 +1112,27 @@ test('Map', (t) => {
 
     t.test('#setMaxZoom', (t) => {
         const map = createMap(t, {zoom:0});
+
+        const onZoomStart = t.spy();
+        const onZoom = t.spy();
+        const onZoomEnd = t.spy();
+
+        map.on('zoomstart', onZoomStart);
+        map.on('zoom', onZoom);
+        map.on('zoomend', onZoomEnd);
+
         map.setMaxZoom(3.5);
+
+        t.ok(onZoomStart.calledOnce);
+        t.ok(onZoom.calledOnce);
+        t.ok(onZoomEnd.calledOnce);
+
         map.setZoom(4);
+
+        t.equal(onZoomStart.callCount, 2);
+        t.equal(onZoom.callCount, 2);
+        t.equal(onZoomEnd.callCount, 2);
+
         t.equal(map.getZoom(), 3.5);
         t.end();
     });
@@ -1018,8 +1179,27 @@ test('Map', (t) => {
 
     t.test('#setMinPitch', (t) => {
         const map = createMap(t, {pitch: 20});
+
+        const onPitchStart = t.spy();
+        const onPitch = t.spy();
+        const onPitchEnd = t.spy();
+
+        map.on('pitchstart', onPitchStart);
+        map.on('pitch', onPitch);
+        map.on('pitchend', onPitchEnd);
+
         map.setMinPitch(10);
+
+        t.ok(onPitchStart.calledOnce);
+        t.ok(onPitch.calledOnce);
+        t.ok(onPitchEnd.calledOnce);
+
         map.setPitch(0);
+
+        t.equal(onPitchStart.callCount, 2);
+        t.equal(onPitch.callCount, 2);
+        t.equal(onPitchEnd.callCount, 2);
+
         t.equal(map.getPitch(), 10);
         t.end();
     });
@@ -1052,8 +1232,27 @@ test('Map', (t) => {
 
     t.test('#setMaxPitch', (t) => {
         const map = createMap(t, {pitch: 0});
+
+        const onPitchStart = t.spy();
+        const onPitch = t.spy();
+        const onPitchEnd = t.spy();
+
+        map.on('pitchstart', onPitchStart);
+        map.on('pitch', onPitch);
+        map.on('pitchend', onPitchEnd);
+
         map.setMaxPitch(10);
+
+        t.ok(onPitchStart.calledOnce);
+        t.ok(onPitch.calledOnce);
+        t.ok(onPitchEnd.calledOnce);
+
         map.setPitch(20);
+
+        t.equal(onPitchStart.callCount, 2);
+        t.equal(onPitch.callCount, 2);
+        t.equal(onPitchEnd.callCount, 2);
+
         t.equal(map.getPitch(), 10);
         t.end();
     });
@@ -1357,52 +1556,112 @@ test('Map', (t) => {
     });
 
     t.test('#queryFogOpacity', (t) => {
-        const style = createStyle();
-        const map = createMap(t, {style});
-        map.on('load', () => {
-            map.setFog({
-                "range": [0.5, 10.5]
-            });
+        t.test('normal range', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+            map.on('load', () => {
+                map.setFog({
+                    "range": [0.5, 10.5]
+                });
 
-            t.ok(map.getFog());
+                t.ok(map.getFog());
 
-            map.once('render', () => {
-                map.setZoom(10);
-                map.setCenter([0, 0]);
-                map.setPitch(0);
+                map.once('render', () => {
+                    map.setZoom(10);
+                    map.setCenter([0, 0]);
+                    map.setPitch(0);
 
-                t.deepEqual(map._queryFogOpacity([0, 0]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([0, 0]), 0.0);
 
-                t.deepEqual(map._queryFogOpacity([50, 0]), 0.0);
-                t.deepEqual(map._queryFogOpacity([0, 50]), 0.0);
-                t.deepEqual(map._queryFogOpacity([-50, 0]), 0.0);
-                t.deepEqual(map._queryFogOpacity([-50, -50]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([50, 0]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([0, 50]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([-50, 0]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([-50, -50]), 0.0);
 
-                map.setBearing(90);
-                map.setPitch(70);
+                    map.setBearing(90);
+                    map.setPitch(70);
 
-                t.deepEqual(map._queryFogOpacity([0, 0]), 0.0);
+                    t.deepEqual(map._queryFogOpacity([0, 0]), 0.0);
 
-                t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.5963390859543484);
-                t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.31817612773293763);
-                t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0.0021931905967484703);
-                t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.4147318524978687);
+                    t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.5963390859543484);
+                    t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.31817612773293763);
+                    t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0.0021931905967484703);
+                    t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.4147318524978687);
 
-                t.deepEqual(map._queryFogOpacity([2, 0]), 1.0);
-                t.deepEqual(map._queryFogOpacity([0, 2]), 1.0);
-                t.deepEqual(map._queryFogOpacity([-2, 0]), 1.0);
-                t.deepEqual(map._queryFogOpacity([-2, -2]), 1.0);
+                    t.deepEqual(map._queryFogOpacity([2, 0]), 1.0);
+                    t.deepEqual(map._queryFogOpacity([0, 2]), 1.0);
+                    t.deepEqual(map._queryFogOpacity([-2, 0]), 1.0);
+                    t.deepEqual(map._queryFogOpacity([-2, -2]), 1.0);
 
-                map.transform.fov = 30;
+                    map.transform.fov = 30;
 
-                t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.5917784571074153);
-                t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.2567224170602245);
-                t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0);
-                t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.2727527139608868);
+                    t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.5917784571074153);
+                    t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.2567224170602245);
+                    t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0);
+                    t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.2727527139608868);
 
-                t.end();
+                    t.end();
+                });
             });
         });
+
+        t.test('inverted range', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+            map.on('load', () => {
+                map.setFog({
+                    "range": [10.5, 0.5]
+                });
+
+                t.ok(map.getFog());
+
+                map.once('render', () => {
+                    map.setZoom(10);
+                    map.setCenter([0, 0]);
+                    map.setBearing(90);
+                    map.setPitch(70);
+
+                    t.deepEqual(map._queryFogOpacity([0, 0]), 1.0);
+
+                    t.deepEqual(map._queryFogOpacity([0.5, 0]), 0.961473076058084);
+                    t.deepEqual(map._queryFogOpacity([0, 0.5]), 0.9841669559435576);
+                    t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0.9988871471476187);
+                    t.deepEqual(map._queryFogOpacity([-0.5, -0.5]), 0.9784993261529342);
+
+                    t.end();
+                });
+            });
+        });
+
+        t.test('identical range', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+            map.on('load', () => {
+                map.setFog({
+                    "range": [0, 0]
+                });
+
+                t.ok(map.getFog());
+
+                map.once('render', () => {
+                    map.setZoom(5);
+                    map.setCenter([0, 0]);
+                    map.setBearing(90);
+                    map.setPitch(70);
+
+                    t.deepEqual(map._queryFogOpacity([0, 0]), 0);
+
+                    t.deepEqual(map._queryFogOpacity([0.5, 0]), 1);
+                    t.deepEqual(map._queryFogOpacity([0, 0.5]), 0);
+                    t.deepEqual(map._queryFogOpacity([-0.5, 0]), 0);
+                    t.deepEqual(map._queryFogOpacity([0, -0.5]), 0);
+
+                    t.end();
+                });
+            });
+        });
+
+        t.end();
     });
 
     t.test('#listImages throws an error if called before "load"', (t) => {
@@ -2436,8 +2695,15 @@ test('Map', (t) => {
 
         map.flyTo({center: [200, 0], duration: 100});
 
-        Object.defineProperty(container, 'clientWidth', {value: 250});
-        Object.defineProperty(container, 'clientHeight', {value: 250});
+        Object.defineProperty(container, 'getBoundingClientRect', {value:
+            () => {
+                return {
+                    height: 250,
+                    width: 250
+                };
+            }
+        });
+
         map.resize();
 
         t.ok(map.isMoving(), 'map is still moving after resize due to camera animation');

@@ -2,7 +2,6 @@
   "version": 8,
   "metadata": {
     "test": {
-      "collisionDebug": true,
       "height": 150,
       "width": 100
     }
@@ -44,12 +43,7 @@
       "source": "geojson",
       "layout": {
         "text-max-width": 20,
-        "text-font": [
-          "literal",
-          [
-            "NotoCJK"
-          ]
-        ],
+        "text-font": [ "NotoCJK" ],
         "text-field": "重M\u200bAル\u200bMB",
         "text-writing-mode": ["vertical"],
         "symbol-placement": "point"

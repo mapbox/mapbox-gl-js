@@ -5,6 +5,7 @@ import {getArrayBuffer} from '../util/ajax.js';
 import browser from '../util/browser.js';
 import assert from 'assert';
 import {isWorker} from '../util/util.js';
+import type {Callback} from '../types/callback.js';
 
 const status = {
     unavailable: 'unavailable', // Not loaded
@@ -19,7 +20,6 @@ export type PluginState = {
     pluginURL: ?string
 };
 
-type ErrorCallback = (error: ?Error) => void;
 type PluginStateSyncCallback = (state: PluginState) => void;
 let _completionCallback = null;
 
@@ -61,7 +61,7 @@ export const clearRTLTextPlugin = function() {
     pluginURL = null;
 };
 
-export const setRTLTextPlugin = function(url: string, callback: ?ErrorCallback, deferred: boolean = false) {
+export const setRTLTextPlugin = function(url: string, callback: ?Callback<{err: ?Error}>, deferred: boolean = false) {
     if (pluginStatus === status.deferred || pluginStatus === status.loading || pluginStatus === status.loaded) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
     }

@@ -17,7 +17,8 @@ export type PerformanceMetrics = {
     workerInitialization: number,
     workerEvaluateScript: number,
     workerIdle: number,
-    workerIdlePercent: number
+    workerIdlePercent: number,
+    placementTime: number
 };
 
 export const PerformanceMarkers = {
@@ -27,7 +28,9 @@ export const PerformanceMarkers = {
 };
 
 let lastFrameTime = null;
+let fullLoadFinished = false;
 let frameTimes = [];
+let placementTime = 0;
 const frameSequences = [frameTimes];
 let i = 0;
 
@@ -45,6 +48,10 @@ const frameTimeTarget = 1000 / framerateTarget;
 export const PerformanceUtils = {
     mark(marker: $Keys<typeof PerformanceMarkers>) {
         performance.mark(marker);
+
+        if (marker === PerformanceMarkers.fullLoad) {
+            fullLoadFinished = true;
+        }
     },
     measure(name: string, begin?: string, end?: string) {
         performance.measure(name, begin, end);
@@ -59,6 +66,14 @@ export const PerformanceUtils = {
     },
     endMeasure(m: { name: string, mark: string }) {
         performance.measure(m.name, m.mark);
+    },
+    recordPlacementTime(time: number) {
+        // Ignore placementTimes during loading
+        if (!fullLoadFinished) {
+            return;
+        }
+
+        placementTime += time;
     },
     frame(timestamp: number, isRenderFrame: boolean) {
         const currTimestamp = timestamp;
@@ -78,6 +93,9 @@ export const PerformanceUtils = {
     clearMetrics() {
         lastFrameTime = null;
         frameTimes = [];
+        placementTime = 0;
+        fullLoadFinished = false;
+
         performance.clearMeasures('loadTime');
         performance.clearMeasures('fullLoadTime');
 
@@ -148,6 +166,8 @@ export const PerformanceUtils = {
         for (const renderFrame of renderFrames) {
             metrics.cpuFrameBudgetExceeded += Math.max(0, renderFrame.duration - CPU_FRAME_BUDGET);
         }
+
+        metrics.placementTime = placementTime;
 
         return metrics;
     },

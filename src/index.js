@@ -57,20 +57,22 @@ const exported = {
      * used, must be set before `prewarm()` is called to have an effect.
      *
      * By default, the lifecycle of these resources is managed automatically, and they are
-     * lazily initialized when a Map is first created. By invoking `prewarm()`, these
-     * resources will be created ahead of time, and will not be cleared when the last Map
-     * is removed from the page. This allows them to be re-used by new Map instances that
+     * lazily initialized when a `Map` is first created. Invoking `prewarm()` creates these
+     * resources ahead of time and ensures they are not cleared when the last `Map`
+     * is removed from the page. This allows them to be re-used by new `Map` instances that
      * are created later. They can be manually cleared by calling
-     * `mapboxgl.clearPrewarmedResources()`. This is only necessary if your web page remains
-     * active but stops using maps altogether.
+     * `mapboxgl.clearPrewarmedResources()`. This is only necessary if your web page
+     * remains active but stops using maps altogether. `prewarm()` is idempotent
+     * and has guards against being executed multiple times, and any resources
+     * allocated by `prewarm()` are created synchronously.
      *
-     * This is primarily useful when using GL-JS maps in a single page app, wherein a user
-     * would navigate between various views that can cause Map instances to constantly be
-     * created and destroyed.
+     * This is primarily useful when using Mapbox GL JS maps in a single page app,
+     * in which a user navigates between various views, resulting in
+     * constant creation and destruction of `Map` instances.
      *
      * @function prewarm
      * @example
-     * mapboxgl.prewarm()
+     * mapboxgl.prewarm();
      */
     prewarm,
     /**
@@ -81,7 +83,7 @@ const exported = {
      *
      * @function clearPrewarmedResources
      * @example
-     * mapboxgl.clearPrewarmedResources()
+     * mapboxgl.clearPrewarmedResources();
      */
     clearPrewarmedResources,
 
@@ -92,7 +94,7 @@ const exported = {
      * @returns {string} The currently set access token.
      * @example
      * mapboxgl.accessToken = myAccessToken;
-     * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
+     * @see [Example: Display a map](https://www.mapbox.com/mapbox-gl-js/example/simple-map/)
      */
     get accessToken(): ?string {
         return config.ACCESS_TOKEN;
@@ -103,7 +105,7 @@ const exported = {
     },
 
     /**
-     * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs
+     * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs.
      *
      * @var {string} baseApiUrl
      * @returns {string} The current base API URL.
@@ -119,7 +121,7 @@ const exported = {
     },
 
     /**
-     * Gets and sets the number of web workers instantiated on a page with GL JS maps.
+     * Gets and sets the number of web workers instantiated on a page with Mapbox GL JS maps.
      * By default, it is set to 2.
      * Make sure to set this property before creating any map instances for it to have effect.
      *
@@ -137,8 +139,8 @@ const exported = {
     },
 
     /**
-     * Gets and sets the maximum number of images (raster tiles, sprites, icons) to load in parallel,
-     * which affects performance in raster-heavy maps. 16 by default.
+     * Gets and sets the maximum number of images (raster tiles, sprites, icons) to load in parallel.
+     * 16 by default. There is no maximum value, but the number of images affects performance in raster-heavy maps.
      *
      * @var {string} maxParallelImageRequests
      * @returns {number} Number of parallel requests currently configured.
@@ -173,7 +175,23 @@ const exported = {
     clearStorage(callback?: (err: ?Error) => void) {
         clearTileCache(callback);
     },
-
+    /**
+     * Provides an interface for loading mapbox-gl's WebWorker bundle from a self-hosted URL.
+     * This needs to be set only once, and before any call to `new mapboxgl.Map(..)` takes place.
+     * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
+     * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
+     *
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     *
+     * @var {string} workerUrl
+     * @returns {string} A URL hosting a JavaScript bundle for mapbox-gl's WebWorker.
+     * @example
+     * <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp.js'></script>
+     * <script>
+     * mapboxgl.workerUrl = "https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl-csp-worker.js";
+     * ...
+     * </script>
+     */
     workerUrl: '',
 
     /**
@@ -183,17 +201,18 @@ const exported = {
      * Takes precedence over `mapboxgl.workerUrl`.
      *
      * @var {Object} workerClass
-     * @returns {Object|null} a Class object, an instance of which exposes the `Worker` interface.
+     * @returns {Object | null} A class that implements the `Worker` interface.
      * @example
-     * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js'
-     * import MapboxGLWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker.js'
+     * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js';
+     * import MapboxGLWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker.js';
      *
      * mapboxgl.workerClass = MapboxGLWorker;
      */
     workerClass: null,
 
     /**
-     * Sets the time used by GL JS internally for all animations. Useful for generating videos from GL JS.
+     * Sets the time used by Mapbox GL JS internally for all animations. Useful for generating videos from Mapbox GL JS.
+     *
      * @var {number} time
      */
     setNow: browser.setNow,
@@ -208,10 +227,12 @@ const exported = {
 Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics, getPerformanceMetricsAsync: WorkerPerformanceUtils.getPerformanceMetricsAsync});
 
 /**
- * The version of Mapbox GL JS in use as specified in `package.json`,
+ * Gets the version of Mapbox GL JS in use as specified in `package.json`,
  * `CHANGELOG.md`, and the GitHub release.
  *
  * @var {string} version
+ * @example
+ * console.log(`Mapbox GL JS v${mapboxgl.version}`);
  */
 
 /**
@@ -221,14 +242,15 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * @param {Object} [options]
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
  *   the function will return `false` if the performance of Mapbox GL JS would
- *   be dramatically worse than expected (e.g. a software WebGL renderer would be used).
+ *   be dramatically worse than expected (for example, a software WebGL renderer
+ *   would be used).
  * @return {boolean}
  * @example
  * // Show an alert if the browser does not support Mapbox GL
  * if (!mapboxgl.supported()) {
- *   alert('Your browser does not support Mapbox GL');
+ *     alert('Your browser does not support Mapbox GL');
  * }
- * @see [Check for browser support](https://www.mapbox.com/mapbox-gl-js/example/check-for-support/)
+ * @see [Example: Check for browser support](https://www.mapbox.com/mapbox-gl-js/example/check-for-support/)
  */
 
 /**
@@ -237,17 +259,17 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  *
  * @function setRTLTextPlugin
  * @param {string} pluginURL URL pointing to the Mapbox RTL text plugin source.
- * @param {Function} callback Called with an error argument if there is an error.
- * @param {boolean} lazy If set to `true`, mapboxgl will defer loading the plugin until rtl text is encountered,
- *    rtl text will then be rendered only after the plugin finishes loading.
+ * @param {Function} callback Called with an error argument if there is an error, or no arguments if the plugin loads successfully.
+ * @param {boolean} lazy If set to `true`, MapboxGL will defer loading the plugin until right-to-left text is encountered, and
+ *    right-to-left text will be rendered only after the plugin finishes loading.
  * @example
  * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
- * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
+ * @see [Example: Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
  */
 
 /**
   * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
-  * The status can be `unavailable` (i.e. not requested or removed), `loading`, `loaded` or `error`.
+  * The status can be `unavailable` (not requested or removed), `loading`, `loaded`, or `error`.
   * If the status is `loaded` and the plugin is requested again, an error will be thrown.
   *
   * @function getRTLTextPluginStatus

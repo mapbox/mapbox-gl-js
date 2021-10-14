@@ -1,0 +1,63 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "collisionDebug": true,
+        "height": 264,
+        "width": 400,
+        "operations": [["wait"]]
+      }
+    },
+    "center": [-120.30344797631889, 38.11726797649675],
+    "sprite": "local://sprites/sprite",
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "zoom": 10.852,
+    "pitch": 73.5,
+    "sources": {
+      "rings": {
+        "type": "geojson",
+        "data": "local://data/distance-lines.geojson"
+      }
+    },
+    "layers": [
+      {
+        "id": "background",
+        "type": "background",
+        "paint": {
+          "background-color": "white"
+        }
+      },
+      {
+        "id": "rings-lines",
+        "type": "line",
+        "source": "rings",
+        "layout": {},
+        "paint": {
+            "line-width": ["abs",["*", 10, ["to-number", ["get", "distance"]]]]
+        }
+      },
+      {
+        "type": "symbol",
+        "id": "rings-labels",
+        "source": "rings",
+        "filter": ["<", ["pitch"], 60],
+        "layout": {
+            "symbol-placement": "line",
+            "text-size": 10,
+            "symbol-spacing": 50,
+            "text-font": [
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+            ],
+            "text-field": ["get", "distance"],
+            "text-pitch-alignment": "viewport",
+            "text-allow-overlap": true
+        },
+        "paint": {
+            "text-color": "red",
+            "text-halo-color": "white",
+            "text-halo-width": 2
+        }
+    }
+    ]
+  }

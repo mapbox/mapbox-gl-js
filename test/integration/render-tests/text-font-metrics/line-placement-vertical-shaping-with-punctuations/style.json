@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 200,
+      "height": 300,
       "width": 120
     }
   },
@@ -47,6 +47,7 @@
           ]
         ],
         "text-field": "“重M”A(ル)M-B",
+        "text-writing-mode": ["vertical"],
         "symbol-placement": "line"
       }
     }, {

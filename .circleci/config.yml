@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@1.4.0
-  browser-tools: circleci/browser-tools@1.1.1
+  browser-tools: circleci/browser-tools@1.2.3
 
 workflows:
   version: 2
@@ -11,6 +11,18 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - install-mbx-ci:
+          requires:
+              - prepare
+          filters:
+            tags:
+              only: /.*/
+            # We can't install mbx-ci on CI runs from PR's that reference forks from external contributors
+            # This is because fork's can not access our AWS credentials setup in CircleCI environment variables
+            # Branch names for external contributor forks are are reported in the format pull/{PR_NUMBER} to CircleCI,
+            # This RegEx is setup to ignore that.
+            branches:
+              ignore: /pull\/[0-9]*/
       - lint:
           requires:
             - prepare
@@ -20,6 +32,14 @@ workflows:
       - build:
           requires:
             - prepare
+          filters:
+            tags:
+              only: /.*/
+      - check-bundle-size:
+          requires:
+            - prepare
+            - install-mbx-ci
+            - build
           filters:
             tags:
               only: /.*/
@@ -74,6 +94,7 @@ workflows:
       - collect-stats:
           requires:
             - build
+            - install-mbx-ci
           filters:
             tags:
               ignore: /.*/
@@ -81,6 +102,7 @@ workflows:
               only: main
       - deploy-benchmarks:
           requires:
+            - install-mbx-ci
             - lint
             - build
             - test-flow
@@ -98,6 +120,7 @@ workflows:
                 - /release-.*/
       - deploy-release:
           requires:
+            - install-mbx-ci
             - lint
             - build
             - test-flow
@@ -133,21 +156,38 @@ jobs:
             - '~/.yarn'
             - 'node_modules'
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - .
+            - mapbox-gl-js
+            - .ssh
+
+  install-mbx-ci:
+    <<: *defaults
+    steps:
+      - run:
+          name: Install mbx-ci
+          command: |
+            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > ~/mbx-ci &&
+            chmod 755 ~/mbx-ci &&
+            ~/mbx-ci aws setup
+      # mbx-ci stores credentials in these directories, so they must be explictly passed along to dependent jobs via workspaces
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - .ssh
+            - .aws
+            - mbx-ci
 
   lint:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - restore_cache:
           keys:
             - v2-lint-{{ .Branch }}
             - v2-lint
       - run: yarn run lint
-      - run: yarn run lint-docs
       - run: yarn run lint-css
       - save_cache:
           key: v2-lint-{{ .Branch }}-{{ .Revision }}
@@ -158,7 +198,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
@@ -167,39 +207,37 @@ jobs:
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
       - run: yarn run test-build
-      - run:
-          name: Check bundle size
-          command: |
-            node build/check-bundle-size.js
-      - deploy:
-          name: Trigger memory metrics when merging to main
-          command: |
-            if [ -n "${WEB_METRICS_TOKEN}" ]; then
-              if [[ $CIRCLE_BRANCH == main ]]; then
-                curl -X POST https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/build?circle-token=${WEB_METRICS_TOKEN}
-              fi
-            fi
       - store_artifacts:
           path: "dist"
       - store_artifacts:
           path: "test/release"
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - dist
+            - mapbox-gl-js/dist
+
+  check-bundle-size:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Check bundle size
+          command: |
+            node build/check-bundle-size.js
 
   test-flow:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-flow
 
   test-unit:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-unit
 
   test-render:
@@ -207,8 +245,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome:
-          chrome-version: 91.0.4472.164
+      - browser-tools/install-chrome
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -220,8 +257,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome:
-          chrome-version: 91.0.4472.164
+      - browser-tools/install-chrome
       - run: yarn run test-render-prod
       - store_test_results:
           path: test/integration/render-tests
@@ -233,8 +269,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome:
-          chrome-version: 91.0.4472.164
+      - browser-tools/install-chrome
       - run: yarn run test-query
       - store_test_results:
           path: test/integration/query-tests
@@ -245,7 +280,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Build Webpack
           command: |
@@ -261,8 +296,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome:
-          chrome-version: 91.0.4472.164
+      - browser-tools/install-chrome
       - run:
           name: Collect performance stats
           command: node bench/gl-stats.js
@@ -297,14 +331,14 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run: yarn run test-expressions
 
   deploy-benchmarks:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Build
           command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
@@ -320,7 +354,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - aws-cli/install
       - run:
           name: Check build file for correct SDK version

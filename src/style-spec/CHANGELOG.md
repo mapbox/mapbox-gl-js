@@ -1,3 +1,32 @@
+# 13.22.0
+
+### ✨ Features and improvements
+
+* Added `protected` field to mapbox-api-supported validation. ([#10968](https://github.com/mapbox/mapbox-gl-js/pull/10968))
+
+# 13.21.0
+
+### ✨ Features and improvements
+* Add support for `text-writing-mode` property when using `symbol-placement: line` text labels. ([#10647](https://github.com/mapbox/mapbox-gl-js/pull/10647))
+  * Note: This change will bring following changes for CJK text block:
+    * 1. For vertical CJK text, all the characters including Latin and Numbers will be vertically placed now. Previously, Latin and Numbers are horizontally placed.
+    * 2. For horizontal CJK text, it may have a slight horizontal shift due to the anchor shift.
+
+## 13.20.1
+
+### 🐞 Bug fixes
+
+* Increase strictness of the style API validation for source types ([#10779](https://github.com/mapbox/mapbox-gl-js/pull/10779))
+* Remove strictly-increasing requirement for fog range validation ([#10772](https://github.com/mapbox/mapbox-gl-js/pull/10772))
+
+## 13.20.0
+
+### ✨ Features and improvements
+
+* Add configurable fog as a root style specification ([#10564](https://github.com/mapbox/mapbox-gl-js/pull/10564))
+* Add support for data-driven expressions in `line-dasharray` and `line-cap` properties. ([#10591](https://github.com/mapbox/mapbox-gl-js/pull/10591))
+* Add support for data-driven `text-line-height` ([#10612](https://github.com/mapbox/mapbox-gl-js/pull/10612))
+
 ## 13.19.0
 
 ### ✨ Features and improvements

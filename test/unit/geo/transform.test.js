@@ -113,6 +113,112 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('maxBounds should not jump to the wrong side when crossing 180th meridian (#10447)', (t) => {
+        t.test(' to the East', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [160, 190];
+            transform.latRange = [-55, -23];
+
+            transform.center = new LngLat(-170, -40);
+
+            t.ok(transform.center.lng < 190);
+            t.ok(transform.center.lng > 175);
+
+            t.end();
+        });
+
+        t.test('to the West', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [-190, -160];
+            transform.latRange = [-55, -23];
+
+            transform.center = new LngLat(170, -40);
+
+            t.ok(transform.center.lng > -190);
+            t.ok(transform.center.lng < -175);
+
+            t.end();
+        });
+
+        t.test('longitude 0 - 360', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [0, 360];
+            transform.latRange = [-90, 90];
+
+            transform.center = new LngLat(-155, 0);
+
+            t.same(transform.center, new LngLat(205, 0));
+
+            t.end();
+        });
+
+        t.test('longitude -360 - 0', (t) => {
+            const transform = new Transform();
+            transform.zoom = 6;
+            transform.resize(500, 500);
+            transform.lngRange = [-360, 0];
+            transform.latRange = [-90, 90];
+
+            transform.center = new LngLat(160, 0);
+            t.same(transform.center.lng.toFixed(10), -200);
+
+            t.end();
+        });
+
+        t.end();
+
+    });
+
+    t.test('maxBounds snaps in the correct direction (no forcing to other edge when width < 360)', (t) => {
+        const transform = new Transform();
+        transform.zoom = 6;
+        transform.resize(500, 500);
+        transform.setMaxBounds(new LngLatBounds([-160, -20], [160, 20]));
+
+        transform.center = new LngLat(170, 0);
+        t.ok(transform.center.lng > 150);
+        t.ok(transform.center.lng < 160);
+
+        transform.center = new LngLat(-170, 0);
+        t.ok(transform.center.lng > -160);
+        t.ok(transform.center.lng < -150);
+
+        t.end();
+    });
+
+    t.test('maxBounds works with unwrapped values across the 180th meridian (#6985)', (t) => {
+        const transform = new Transform();
+        transform.zoom = 6;
+        transform.resize(500, 500);
+        transform.setMaxBounds(new LngLatBounds([160, -20], [-160, 20]));  //East bound is "smaller"
+
+        const wrap = val => ((val + 360) % 360);
+
+        transform.center = new LngLat(170, 0);
+        t.same(wrap(transform.center.lng), 170);
+
+        transform.center = new LngLat(-170, 0);
+        t.same(wrap(transform.center.lng), wrap(-170));
+
+        transform.center = new LngLat(150, 0);
+        let lng = wrap(transform.center.lng);
+        t.ok(lng > 160);
+        t.ok(lng < 180);
+
+        transform.center = new LngLat(-150, 0);
+        lng = wrap(transform.center.lng);
+        t.ok(lng < 360 - 160);
+        t.ok(lng > 360 - 180);
+
+        t.end();
+    });
+
     t.test('_minZoomForBounds respects maxBounds', (t) => {
         t.test('it returns 0 when lngRange is undefined', (t) => {
             const transform = new Transform();
@@ -224,6 +330,66 @@ test('transform', (t) => {
         });
 
         t.end();
+    });
+
+    t.test('getBounds (#10261)', (t) => {
+        const transform = new Transform();
+        transform.resize(500, 500);
+        transform.zoom = 2;
+        transform.pitch = 80;
+
+        t.test('Looking at North Pole', (t) => {
+            transform.center = {lng: 0, lat: 90};
+            t.deepEqual(transform.center, {lng: 0, lat: 79.3677012485858});
+            const bounds = transform.getBounds();
+
+            // Bounds stops at the edge of the map
+            t.same(bounds.getNorth().toFixed(6), transform.maxValidLatitude);
+            // Top corners of bounds line up with side of view
+            t.same(transform.locationPoint(bounds.getNorthWest()).x.toFixed(10), 0);
+            t.same(transform.locationPoint(bounds.getNorthEast()).x.toFixed(10), transform.width);
+            // Bottom of bounds lines up with bottom of view
+            t.same(transform.locationPoint(bounds.getSouthEast()).y.toFixed(10), transform.height);
+            t.same(transform.locationPoint(bounds.getSouthWest()).y.toFixed(10), transform.height);
+
+            t.same(toFixed(bounds.toArray()), toFixed([[ -56.6312307639145, 62.350646608460806 ], [ 56.63123076391412, 85.0511287798 ]]));
+
+            t.end();
+        });
+        t.test('Looking at South Pole', (t) => {
+            transform.bearing = 180;
+            transform.center = {lng: 0, lat: -90};
+
+            t.deepEqual(transform.center, {lng: 0, lat: -79.3677012485858});
+            const bounds = transform.getBounds();
+
+            // Bounds stops at the edge of the map
+            t.same(bounds.getSouth().toFixed(6), -transform.maxValidLatitude);
+            // Top corners of bounds line up with side of view
+            t.same(transform.locationPoint(bounds.getSouthEast()).x.toFixed(10), 0);
+            t.same(transform.locationPoint(bounds.getSouthWest()).x.toFixed(10), transform.width);
+            // Bottom of bounds lines up with bottom of view
+            t.same(transform.locationPoint(bounds.getNorthEast()).y.toFixed(10), transform.height);
+            t.same(transform.locationPoint(bounds.getNorthWest()).y.toFixed(10), transform.height);
+
+            t.same(toFixed(bounds.toArray()), toFixed([[ -56.6312307639145, -85.0511287798], [ 56.63123076391412, -62.350646608460806]]));
+
+            t.end();
+        });
+        t.end();
+
+        function toFixed(bounds) {
+            const n = 10;
+            return [
+                [normalizeFixed(bounds[0][0], n), normalizeFixed(bounds[0][1], n)],
+                [normalizeFixed(bounds[1][0], n), normalizeFixed(bounds[1][1], n)]
+            ];
+        }
+
+        function normalizeFixed(num, n) {
+            // workaround for "-0.0000000000" ≠ "0.0000000000"
+            return parseFloat(num.toFixed(n)).toFixed(n);
+        }
     });
 
     test('coveringTiles', (t) => {
@@ -935,7 +1101,7 @@ test('transform', (t) => {
 
     t.test('isHorizonVisible', (t) => {
 
-        t.test('isHorizonVisibleForPoints', (t) => {
+        t.test('isCornerOffEdge', (t) => {
             const transform = new Transform();
             transform.maxPitch = 85;
             transform.resize(800, 800);
@@ -947,21 +1113,21 @@ test('transform', (t) => {
             t.true(transform.isHorizonVisible());
 
             p0 = new Point(0, 0); p1 = new Point(10, 10);
-            t.true(transform.isHorizonVisibleForPoints(p0, p1));
+            t.true(transform.isCornerOffEdge(p0, p1));
 
             p0 = new Point(0, 250); p1 = new Point(10, 350);
-            t.true(transform.isHorizonVisibleForPoints(p0, p1));
+            t.true(transform.isCornerOffEdge(p0, p1));
 
             p0 = new Point(0, transform.horizonLineFromTop() - 10);
             p1 = new Point(10, transform.horizonLineFromTop() + 10);
-            t.true(transform.isHorizonVisibleForPoints(p0, p1));
+            t.true(transform.isCornerOffEdge(p0, p1));
 
             p0 = new Point(0, 700); p1 = new Point(10, 710);
-            t.false(transform.isHorizonVisibleForPoints(p0, p1));
+            t.false(transform.isCornerOffEdge(p0, p1));
 
             p0 = new Point(0, transform.horizonLineFromTop());
             p1 = new Point(10, transform.horizonLineFromTop() + 10);
-            t.false(transform.isHorizonVisibleForPoints(p0, p1));
+            t.false(transform.isCornerOffEdge(p0, p1));
 
             t.end();
         });

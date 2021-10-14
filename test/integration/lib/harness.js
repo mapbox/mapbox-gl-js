@@ -194,7 +194,10 @@ export default function (directory, implementation, options, run) {
         const q = queue(1);
         q.defer(write, out, resultsShell[0]);
         for (const test of tests) {
-            q.defer(write, out, itemTemplate({r: test, hasFailedTests: unsuccessful.length > 0}));
+            const escaped = itemTemplate({r: test, hasFailedTests: unsuccessful.length > 0});
+            // Undo lodash.template's escape characters to correctly render "<" and ">" as html.
+            const fixed = escaped.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+            q.defer(write, out, fixed);
         }
         q.defer(write, out, resultsShell[1]);
         q.await(() => {
