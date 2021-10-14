@@ -3,7 +3,7 @@ import {extend} from '../../../src/util/util.js';
 import {createMap} from '../../util/index.js';
 import DEMData from '../../../src/data/dem_data.js';
 import {RGBAImage} from '../../../src/util/image.js';
-import MercatorCoordinate from '../../../src/geo/mercator_coordinate.js';
+import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
 import window from '../../../src/util/window.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import styleSpec from '../../../src/style-spec/reference/latest.js';
@@ -1514,7 +1514,7 @@ test('terrain getBounds', (t) => {
             map.once('render', () => {
                 t.ok(map.transform.elevation);
                 const bounds = map.getBounds();
-                t.same(bounds.getNorth().toFixed(6), map.transform.maxValidLatitude);
+                t.same(bounds.getNorth().toFixed(6), MAX_MERCATOR_LATITUDE);
                 t.same(
                     toFixed(bounds.toArray()),
                     toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]])
@@ -1524,7 +1524,7 @@ test('terrain getBounds', (t) => {
                 map.setCenter({lng: 0, lat: -90});
 
                 const sBounds = map.getBounds();
-                t.same(sBounds.getSouth().toFixed(6), -map.transform.maxValidLatitude);
+                t.same(sBounds.getSouth().toFixed(6), -MAX_MERCATOR_LATITUDE);
                 t.same(
                     toFixed(sBounds.toArray()),
                     toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]])

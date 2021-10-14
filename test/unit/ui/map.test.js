@@ -12,6 +12,7 @@ import simulate from '../../util/simulate_interaction.js';
 import {fixedLngLat, fixedNum} from '../../util/fixed.js';
 import Fog from '../../../src/style/fog.js';
 import Color from '../../../src/style-spec/util/color.js';
+import {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
 
 function createStyleSource() {
     return {
@@ -906,7 +907,7 @@ test('Map', (t) => {
             const map = createMap(t,
                 {zoom: 2, center: [0, 90], pitch: 80, skipCSSStub: true});
             const bounds = map.getBounds();
-            t.same(bounds.getNorth().toFixed(6), map.transform.maxValidLatitude);
+            t.same(bounds.getNorth().toFixed(6), MAX_MERCATOR_LATITUDE);
             t.same(
                 toFixed(bounds.toArray()),
                 toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]])
@@ -916,7 +917,7 @@ test('Map', (t) => {
             map.setCenter({lng: 0, lat: -90});
 
             const sBounds = map.getBounds();
-            t.same(sBounds.getSouth().toFixed(6), -map.transform.maxValidLatitude);
+            t.same(sBounds.getSouth().toFixed(6), -MAX_MERCATOR_LATITUDE);
             t.same(
                 toFixed(sBounds.toArray()),
                 toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]])
