@@ -7,11 +7,14 @@ import mercator from './mercator.js';
 import naturalEarth from './naturalEarth.js';
 import winkelTripel from './winkelTripel.js';
 import LngLat from '../lng_lat.js';
+import type {ProjectionSpecification} from '../../style-spec/types.js';
 
 export type Projection = {
     name: string,
     center: [number, number],
-    range?: Array<number>,
+    parallels?: [number, number],
+    range?: [number, number],
+    conical?: boolean,
     project: (lng: number, lat: number) => {x: number, y: number},
     unproject: (x: number, y: number) => LngLat
 };
@@ -27,9 +30,8 @@ const projections = {
     winkelTripel
 };
 
-export default function getProjection(config: {name: string} | string) {
-    if (typeof config === 'string') {
-        return projections[config];
-    }
-    return {...projections[config.name], ...config};
+export function getProjection(config: ProjectionSpecification) {
+    const projection = projections[config.name];
+    if (!projection) throw new Error(`Invalid projection name: ${config.name}`);
+    return projection.conical ? {...projection, ...config} : projection;
 }

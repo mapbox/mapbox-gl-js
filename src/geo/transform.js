@@ -3,10 +3,10 @@
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE} from './mercator_coordinate.js';
-import getProjection from './projection/index.js';
+import {getProjection} from './projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
+import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
@@ -22,6 +22,7 @@ import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
 import type {Projection} from './projection/index.js';
 import type Tile from '../source/tile.js';
+import type {ProjectionSpecification} from '../style-spec/types.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -101,7 +102,7 @@ class Transform {
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
     _averageElevation: number;
-    projectionOptions: {name: string} | string;
+    projectionOptions: ProjectionSpecification;
     projection: Projection;
     _elevation: ?Elevation;
     _fov: number;
@@ -109,6 +110,7 @@ class Transform {
     _zoom: number;
     _cameraZoom: ?number;
     _unmodified: boolean;
+    _unmodifiedProjection: boolean;
     _renderWorldCopies: boolean;
     _minZoom: number;
     _maxZoom: number;
@@ -125,7 +127,7 @@ class Transform {
     _centerAltitude: number;
     _horizonShift: number;
 
-    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection: string) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
@@ -135,11 +137,9 @@ class Transform {
         this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
         this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
 
-        if (!projection) projection = 'mercator';
-        this.projectionOptions = projection;
-        this.projection = getProjection(projection);
-
         this.setMaxBounds();
+
+        this.setProjection();
 
         this.width = 0;
         this.height = 0;
@@ -163,7 +163,7 @@ class Transform {
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.projection.name);
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies);
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone.tileSize = this.tileSize;
@@ -183,6 +183,7 @@ class Transform {
         clone._camera = this._camera.clone();
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
+        if (!this._unmodifiedProjection) clone.setProjection(this.getProjection());
         return clone;
     }
 
@@ -207,6 +208,18 @@ class Transform {
         if (constrainCameraOverTerrain) {
             this._constrainCameraAltitude();
         }
+        this._calcMatrices();
+    }
+
+    getProjection() {
+        return pick(this.projection, ['name', 'center', 'parallels']);
+    }
+
+    setProjection(projection?: ProjectionSpecification) {
+        this._unmodifiedProjection = !projection;
+        if (projection === undefined) projection = {name: 'mercator'};
+        this.projectionOptions = projection;
+        this.projection = getProjection(projection);
         this._calcMatrices();
     }
 

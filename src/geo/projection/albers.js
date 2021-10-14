@@ -9,6 +9,8 @@ export const albers = {
     center: [-96, 37.5],
     parallels: [29.5, 45.5],
 
+    conical: true,
+
     project(lng: number, lat: number) {
         const p1 = this.parallels[0] / 180 * Math.PI;
         const p2 = this.parallels[1] / 180 * Math.PI;

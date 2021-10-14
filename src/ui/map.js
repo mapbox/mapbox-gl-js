@@ -62,7 +62,8 @@ import type {
     LightSpecification,
     TerrainSpecification,
     FogSpecification,
-    SourceSpecification
+    SourceSpecification,
+    ProjectionSpecification
 } from '../style-spec/types.js';
 import type {ElevationQueryOptions} from '../terrain/elevation.js';
 
@@ -118,7 +119,7 @@ type MapOptions = {
     accessToken: string,
     testMode: ?boolean,
     locale?: Object,
-    projection?: string
+    projection?: ProjectionSpecification | string
 };
 
 const defaultMinZoom = -2;
@@ -133,7 +134,6 @@ const defaultOptions = {
     zoom: 0,
     bearing: 0,
     pitch: 0,
-    projection: 'mercator',
 
     minZoom: defaultMinZoom,
     maxZoom: defaultMaxZoom,
@@ -268,7 +268,8 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
- * @param {string} [options.projection='mercator'] The map projection to use when creating a map. Defaults to the Web Mercator ('mercator') projection. Other options are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equalEarth'), Equirectangular/Plate Carrée/WGS84 ('equirectangular'), Lambert Conic Conformal ('lambertConformalConic'), Natural Earth ('naturalEarth') and Winkel Tripel ('winkelTripel').
+ * @param {ProjectionSpecification} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equalEarth'), Equirectangular/Plate Carrée/WGS84 ('equirectangular'), Lambert ('lambertConformalConic'), Mercator ('mercator'), Natural Earth ('naturalEarth'), and Winkel Tripel ('winkelTripel').
+ *  Conical projections such as Albers and Lambert have configurable `center` and `parallels` properties that allow developers to define the region in which the projection has minimal distortion; see the example for how to configure these properties.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -276,7 +277,11 @@ const defaultOptions = {
  *   zoom: 13,
  *   style: style_object,
  *   hash: true,
- *   projection: 'winkel',
+ *   projection: {
+ *     "name": "albers",
+ *     "center": [-154, 50],
+ *     "parallels": [55, 65]
+ *   },
  *   transformRequest: (url, resourceType)=> {
  *     if(resourceType === 'Source' && url.startsWith('http://myHost')) {
  *       return {
@@ -418,7 +423,7 @@ class Map extends Camera {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
         }
 
-        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, options.projection);
+        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
         this._interactive = options.interactive;
@@ -490,6 +495,17 @@ class Map extends Camera {
 
         this.handlers = new HandlerManager(this, options);
 
+        this._localFontFamily = options.localFontFamily;
+        this._localIdeographFontFamily = options.localIdeographFontFamily;
+
+        if (options.style) {
+            this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
+        }
+
+        if (options.projection) {
+            this.setProjection(options.projection);
+        }
+
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         this._hash = options.hash && (new Hash(hashName)).addTo(this);
         // don't set position from options if set through hash
@@ -508,11 +524,6 @@ class Map extends Camera {
         }
 
         this.resize();
-
-        this._localFontFamily = options.localFontFamily;
-        this._localIdeographFontFamily = options.localIdeographFontFamily;
-
-        if (options.style) this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
 
         if (options.attributionControl)
             this.addControl(new AttributionControl({customAttribution: options.customAttribution}));
@@ -887,6 +898,35 @@ class Map extends Camera {
     setRenderWorldCopies(renderWorldCopies?: ?boolean) {
         this.transform.renderWorldCopies = renderWorldCopies;
         return this._update();
+    }
+
+    /**
+     * Returns a {@link ProjectionSpecification} object that defines the current map projection.
+     * @returns {ProjectionSpecification} The {@link ProjectionSpecification} defining the current map projection
+     */
+    getProjection() {
+        return this.transform.getProjection();
+    }
+
+    /**
+     * Sets the map's projection. If called with no projection, the map will default to Mercator.
+     *
+     * @param {ProjectionSpecification | string} projection The projection that the map should be rendered in.
+     * This can be a {@link ProjectionSpecification} object or a string of the projection's name.
+     * @example
+     * map.setProjection('albers');
+     * map.setProjection({
+     *   name: 'albers',
+     *   center: [35, 55],
+     *   parallels: [20, 60]
+     * });
+     */
+    setProjection(projection?: ProjectionSpecification | string) {
+        this._lazyInitEmptyStyle();
+        if (typeof projection === 'string') {
+            projection = (({name: projection}: any): ProjectionSpecification);
+        }
+        this.style.setProjection(projection);
     }
 
     /**
@@ -2689,20 +2729,22 @@ class Map extends Camera {
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
 
         // Actually draw
-        this.painter.render(this.style, {
-            showTileBoundaries: this.showTileBoundaries,
-            showTerrainWireframe: this.showTerrainWireframe,
-            showOverdrawInspector: this._showOverdrawInspector,
-            showQueryGeometry: !!this._showQueryGeometry,
-            rotating: this.isRotating(),
-            zooming: this.isZooming(),
-            moving: this.isMoving(),
-            fadeDuration,
-            isInitialLoad: this._isInitialLoad,
-            showPadding: this.showPadding,
-            gpuTiming: !!this.listens('gpu-timing-layer'),
-            speedIndexTiming: this.speedIndexTiming,
-        });
+        if (this.style) {
+            this.painter.render(this.style, {
+                showTileBoundaries: this.showTileBoundaries,
+                showTerrainWireframe: this.showTerrainWireframe,
+                showOverdrawInspector: this._showOverdrawInspector,
+                showQueryGeometry: !!this._showQueryGeometry,
+                rotating: this.isRotating(),
+                zooming: this.isZooming(),
+                moving: this.isMoving(),
+                fadeDuration,
+                isInitialLoad: this._isInitialLoad,
+                showPadding: this.showPadding,
+                gpuTiming: !!this.listens('gpu-timing-layer'),
+                speedIndexTiming: this.speedIndexTiming,
+            });
+        }
 
         this.fire(new Event('render'));
 

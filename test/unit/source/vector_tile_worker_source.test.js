@@ -6,7 +6,7 @@ import {test} from '../../util/test.js';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source.js';
 import StyleLayerIndex from '../../../src/style/style_layer_index.js';
 import perf from '../../../src/util/performance.js';
-import getProjection from '../../../src/geo/projection/index.js';
+import {getProjection} from '../../../src/geo/projection/index.js';
 
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));

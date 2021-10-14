@@ -1112,6 +1112,119 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#getProjection', (t) => {
+        t.test('map defaults to Mercator', (t) => {
+            const map = createMap(t);
+            t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
+            t.end();
+        });
+
+        t.test('respects projection options object', (t) => {
+            const options = {
+                name: 'albers',
+                center: [12, 34],
+                parallels: [10, 42]
+            };
+            const map = createMap(t, {projection: options});
+            t.deepEqual(map.getProjection(), options);
+            t.end();
+        });
+
+        t.test('respects projection options string', (t) => {
+            const map = createMap(t, {projection: 'albers'});
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [-96, 37.5],
+                parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+
+        t.test('composites user and default projection options', (t) => {
+            const options = {
+                name: 'albers',
+                center: [12, 34]
+            };
+            const map = createMap(t, {projection: options});
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [12, 34],
+                parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+
+        t.test('does not composite user and default projection options for non-conical projections', (t) => {
+            const options = {
+                name: 'naturalEarth',
+                center: [12, 34]
+            };
+            const map = createMap(t, {projection: options});
+            t.deepEqual(map.getProjection(), {
+                name: 'naturalEarth',
+                center: [0, 0]
+            });
+            t.end();
+        });
+        t.end();
+    });
+
+    t.test('#setProjection', (t) => {
+        t.test('sets projection by string', (t) => {
+            const map = createMap(t);
+            map.setProjection('albers');
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [-96, 37.5],
+                parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+
+        t.test('throws error if invalid projection name is supplied', (t) => {
+            const map = createMap(t);
+            map.on('error', ({error}) => {
+                t.match(error.message, /Invalid projection name: fakeProj/);
+                t.end();
+            });
+            t.end();
+        });
+
+        t.test('sets projection by options object', (t) => {
+            const options = {
+                name: 'albers',
+                center: [12, 34],
+                parallels: [10, 42]
+            };
+            const map = createMap(t);
+            map.setProjection(options);
+            t.deepEqual(map.getProjection(), options);
+            t.end();
+        });
+
+        t.test('sets projection by options object with just name', (t) => {
+            const map = createMap(t);
+            map.setProjection({name: 'albers'});
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [-96, 37.5],
+                parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+
+        t.test('setProjection with no argument defaults to Mercator', (t) => {
+            const map = createMap(t);
+            map.setProjection({name: 'albers'});
+            t.equal(map.transform._unmodifiedProjection, false);
+            map.setProjection();
+            t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
+            t.equal(map.transform._unmodifiedProjection, true);
+            t.end();
+        });
+        t.end();
+    });
+
     t.test('#remove', (t) => {
         const map = createMap(t);
         t.equal(map.getContainer().childNodes.length, 3);

@@ -277,6 +277,9 @@ test('Elevation', (t) => {
         };
         const map = createMap(t, {
             style: extend(createStyle(), {
+                projection: {
+                    name: 'mercator'
+                },
                 sources: {
                     trace: {
                         type: 'geojson',

@@ -105,7 +105,7 @@ function makeMap() {
         naturalEarth: [0, 0],
         winkelTripel: [0, 0]
     };
-    const projection = el.options[el.selectedIndex].value;
+    const projection = {name: el.options[el.selectedIndex].value};
     const zoom = zooms[projection] || 2;
     const center = centers[projection] || [-97.48, 40.16];
     const styles = {
@@ -127,7 +127,6 @@ function makeMap() {
     map.showTileBoundaries = true;
     map.transform.unskew = !!document.getElementById('unskew').checked;
     map.transform.unrotate = !!document.getElementById('unrotate').checked;
-    update();
     addGraticule();
 }
 
@@ -135,12 +134,20 @@ function update() {
     map.transform._calcMatrices();
     map.triggerRepaint();
 }
-document.getElementById('projName').addEventListener('change', (e) => {
-    makeMap();
+
+map.on('click', function () {
+    console.log('projection', map.getProjection());
 });
+
+document.getElementById('projName').addEventListener('change', (e) => {
+    const el = document.getElementById('projName');
+    map.setProjection(el.options[el.selectedIndex].value);
+});
+
 document.getElementById('styleName').addEventListener('change', (e) => {
     makeMap();
 });
+
 document.getElementById('graticule').addEventListener('change', (e) => {
     map.setPaintProperty('graticule', 'line-opacity', e.target.checked ? 1 : 0);
 });

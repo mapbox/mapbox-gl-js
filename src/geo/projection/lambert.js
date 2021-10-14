@@ -25,6 +25,8 @@ export default {
     center: [0, 30],
     parallels: [30, 30],
 
+    conical: true,
+
     project(lng: number, lat: number) {
         // based on https://github.com/d3/d3-geo, MIT-licensed
         lat = lat / 180 * Math.PI;
