@@ -111,6 +111,7 @@ export default class TouchPanHandler {
     enable() {
         this._enabled = true;
         if (this._map._gestureHandling) {
+            // override touch-action css property to enable scrolling page over map
             this._el.classList.add('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
             this._addTouchPanBlocker();
         }
