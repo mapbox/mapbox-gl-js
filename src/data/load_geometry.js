@@ -51,16 +51,16 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
 
     function reproject(p) {
         if (isMercator || !canonical || !tileTransform || !projection) {
-            return clampPoint(new Point(Math.round(p.x * scale), Math.round(p.y * scale)));
+            return new Point(p.x * scale, p.y * scale);
         } else {
             const z2 = 1 << canonical.z;
             const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
             const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
             const {x, y} = projection.project(lng, lat);
-            return clampPoint(new Point(
-                Math.round((x * tileTransform.scale - tileTransform.x) * EXTENT),
-                Math.round((y * tileTransform.scale - tileTransform.y) * EXTENT)
-            ));
+            return new Point(
+                (x * tileTransform.scale - tileTransform.x) * EXTENT,
+                (y * tileTransform.scale - tileTransform.y) * EXTENT
+            );
         }
     }
 
@@ -70,6 +70,8 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
         geometry[i] = !isMercator && feature.type !== 1 ?
             resample(geometry[i], reproject, 1) :
             geometry[i].map(reproject);
+
+        geometry[i].forEach(p => clampPoint(p._round()));
     }
 
     return geometry;

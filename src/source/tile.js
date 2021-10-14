@@ -62,9 +62,9 @@ export type TileState =
 // a tile bounds outline used for getting reprojected tile geometry in non-mercator projections
 const BOUNDS_FEATURE = (() => {
     const c0 = new Point(0, 0);
-    const c1 = new Point(EXTENT, 0);
-    const c2 = new Point(EXTENT, EXTENT);
-    const c3 = new Point(0, EXTENT);
+    const c1 = new Point(EXTENT + 1, 0);
+    const c2 = new Point(EXTENT + 1, EXTENT + 1);
+    const c3 = new Point(0, EXTENT + 1);
     const coords = [[c0, c1, c2, c3, c0]];
     return {
         type: 2,
