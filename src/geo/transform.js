@@ -1453,10 +1453,11 @@ class Transform {
         this._constraining = true;
 
         // alternate constraining for non-Mercator projections
-        if (this.maxBounds && this.projection.name !== 'mercator') {
+        const maxBounds = this.maxBounds;
+        if (this.projection.name !== 'mercator' && maxBounds) {
             const center = this.center;
-            center.lat = clamp(center.lat, this.maxBounds.getSouth(), this.maxBounds.getNorth());
-            center.lng = clamp(center.lng, this.maxBounds.getWest(), this.maxBounds.getEast());
+            center.lat = clamp(center.lat, maxBounds.getSouth(), maxBounds.getNorth());
+            center.lng = clamp(center.lng, maxBounds.getWest(), maxBounds.getEast());
             this.center = center;
             this._constraining = false;
             return;
