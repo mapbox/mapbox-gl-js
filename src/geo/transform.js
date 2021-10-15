@@ -1645,7 +1645,8 @@ class Transform {
         const horizonDistance = cameraToSeaLevelDistance * (1 / this._horizonShift);
 
         // TODO: Get far z from projection
-        this._farZ = Math.min(furthestDistance * 1.01, horizonDistance) * 4.0;
+        const farPlaneScaler = this.projection.name === 'globe' ? 4.0 : 1.0;
+        this._farZ = Math.min(furthestDistance * 1.01, horizonDistance) * farPlaneScaler;
 
         // The larger the value of nearZ is
         // - the more depth precision is available for features (good)
