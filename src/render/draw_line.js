@@ -132,39 +132,27 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
+        // eslint-disable-next-line no-inner-declarations, no-loop-func
+        function stencilPass(mode: $ReadOnly<StencilMode>) {
+            program.draw(context, gl.TRIANGLES, depthMode,
+                mode, colorMode, CullFaceMode.disabled, uniformValues,
+                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
+                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+        }
+
         if (useStencilMaskRenderPass) {
             const stencilIdPass1 = painter._tileClippingMaskIDs[coord.key];
             const stencilIdPass2 = ~stencilIdPass1 & 255;
-
             const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
 
-            const stencilModePass1 = new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT);
-            const stencilModePass2 = new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP);
-            const stencilModePass3 = new StencilMode(stencilFunc, stencilIdPass2, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT);
-
             uniformValues['u_alpha_discard_threshold'] = 0.75;
-            program.draw(context, gl.TRIANGLES, depthMode,
-                stencilModePass1, colorMode, CullFaceMode.disabled, uniformValues,
-                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
-
+            stencilPass(new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT));
             uniformValues['u_alpha_discard_threshold'] = 0.0;
-            program.draw(context, gl.TRIANGLES, depthMode,
-                stencilModePass2, colorMode, CullFaceMode.disabled, uniformValues,
-                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+            stencilPass(new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP));
+            stencilPass(new StencilMode(stencilFunc, stencilIdPass2, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT));
 
-            program.draw(context, gl.TRIANGLES, depthMode,
-                stencilModePass3, ColorMode.disabled, CullFaceMode.disabled, uniformValues,
-                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
         } else {
-            const stencilMode = painter.stencilModeForClipping(coord);
-
-            program.draw(context, gl.TRIANGLES, depthMode,
-                stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
-                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+            stencilPass(painter.stencilModeForClipping(coord));
         }
     }
 }
