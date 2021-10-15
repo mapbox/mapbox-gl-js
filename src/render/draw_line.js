@@ -47,8 +47,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     // TODO: Move to bucket to evaluate when injecting the define
     const useStencilMaskRenderPass = !image &&
-    opacity.constantOr(1.0) < 1.0 &&
-    width.constantOr(1.0) > 1.0;
+        opacity.constantOr(1.0) < 1.0 &&
+        width.constantOr(1.0) > 1.0;
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
