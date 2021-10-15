@@ -139,9 +139,8 @@ class Transform {
         this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
         this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
 
-        this.setMaxBounds();
-
         this.setProjection();
+        this.setMaxBounds();
 
         this.width = 0;
         this.height = 0;
@@ -1516,10 +1515,18 @@ class Transform {
     _constrain() {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
-        // temporarily disable constraining for non-Mercator projections
-        if (this.projection.name !== 'mercator') return;
-
         this._constraining = true;
+
+        // alternate constraining for non-Mercator projections
+        const maxBounds = this.maxBounds;
+        if (this.projection.name !== 'mercator' && maxBounds) {
+            const center = this.center;
+            center.lat = clamp(center.lat, maxBounds.getSouth(), maxBounds.getNorth());
+            center.lng = clamp(center.lng, maxBounds.getWest(), maxBounds.getEast());
+            this.center = center;
+            this._constraining = false;
+            return;
+        }
 
         const unmodified = this._unmodified;
         const {x, y} = this.point;
