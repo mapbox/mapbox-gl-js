@@ -10,7 +10,6 @@ import Point from '@mapbox/point-geometry';
 import {Event, ErrorEvent, Evented} from '../../../src/util/evented.js';
 import {extend} from '../../../src/util/util.js';
 import browser from '../../../src/util/browser.js';
-import Transfornm from '../../../src/geo/transform.js';
 
 // Add a mocked source type for use in these tests
 function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
