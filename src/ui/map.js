@@ -269,7 +269,7 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
- * @param {ProjectionSpecification} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers Alaska ('alaska'), Albers USA ('albers'), Equal Earth ('equalEarth'), Equirectangular/Plate Carrée/WGS84 ('equirectangular'), Lambert ('lambertConformalConic'), Mercator ('mercator'), Natural Earth ('naturalEarth'), and Winkel Tripel ('winkelTripel').
+ * @param {ProjectionSpecification} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers ('albers'), Equal Earth ('equalEarth'), Equirectangular/Plate Carrée/WGS84 ('equirectangular'), Lambert ('lambertConformalConic'), Mercator ('mercator'), Natural Earth ('naturalEarth'), and Winkel Tripel ('winkelTripel').
  *  Conical projections such as Albers and Lambert have configurable `center` and `parallels` properties that allow developers to define the region in which the projection has minimal distortion; see the example for how to configure these properties.
  * @example
  * const map = new mapboxgl.Map({

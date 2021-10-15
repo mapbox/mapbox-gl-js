@@ -96,7 +96,7 @@
     },
     "projection": {
       "type": "projection",
-      "doc": "The projection the map should be rendered in. Possible projections are Albers USA, Albers Alaska, Equal Earth, Equirectangular (WGS84), Globe, Lambert, Mercator, Natural Earth, and Winkel Tripel.",
+      "doc": "The projection the map should be rendered in. Possible projections are Albers, Equal Earth, Equirectangular (WGS84), Globe, Lambert, Mercator, Natural Earth, and Winkel Tripel.",
       "example": {
         "name": "albers",
         "center": [-154, 50],
@@ -3971,9 +3971,6 @@
     "name": {
       "type": "enum",
       "values": {
-        "alaska": {
-          "doc": "An Albers projection centered on the US state of Alaska."
-        },
         "albers": {
           "doc": "An Albers projection centered on the continental United States. You can configure the center of the projection by passing the Map constructor a Projection object with `center` and `parallels` properties."
         },

@@ -2,7 +2,7 @@
 import LngLat from '../lng_lat.js';
 import {clamp} from '../../util/util.js';
 
-export const albers = {
+export default {
     name: 'albers',
     range: [4, 7],
 
@@ -41,12 +41,4 @@ export const albers = {
         const lat = clamp(Math.asin(s) * 180 / Math.PI, -90, 90);
         return new LngLat(lng, lat);
     }
-};
-
-export const alaska = {
-    ...albers,
-    name: 'alaska',
-    range: [4.5, 7],
-    center: [-154, 50],
-    parallels: [55, 65]
 };

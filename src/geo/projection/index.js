@@ -1,5 +1,5 @@
 // @flow
-import {alaska, albers} from './albers.js';
+import albers from './albers.js';
 import equalEarth from './equalEarth.js';
 import equirectangular from './equirectangular.js';
 import lambertConformalConic from './lambert.js';
@@ -20,7 +20,6 @@ export type Projection = {
 };
 
 const projections = {
-    alaska,
     albers,
     equalEarth,
     equirectangular,
