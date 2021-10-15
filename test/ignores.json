@@ -13,7 +13,6 @@
   "render-tests/map-mode/static": "https://github.com/mapbox/mapbox-gl-js/issues/5649",
   "render-tests/map-mode/tile": "skip - mapbox-gl-js does not support tile-mode",
   "render-tests/map-mode/tile-avoid-edges": "skip - mapbox-gl-js does not support tile-mode",
-  "render-tests/map-projections/albers-usa": "skip - temporarily skip until non-tiled regions are handled properly",
   "render-tests/mixed-zoom/z10-z11": "current behavior conflicts with https://github.com/mapbox/mapbox-gl-js/pull/6803. can be fixed when https://github.com/mapbox/api-maps/issues/1480 is done",
   "render-tests/projection/axonometric": "axonometric rendering in gl-js tbd",
   "render-tests/projection/axonometric-multiple": "axonometric rendering in gl-js tbd",

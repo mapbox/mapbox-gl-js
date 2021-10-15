@@ -43,7 +43,6 @@
         <fieldset>
             <label>Projection:</label>
             <select id="projName">
-                <option value="alaska">Albers Alaska</option>
                 <option value="albers" selected>Albers USA</option>
                 <option value="equalEarth">Equal Earth</option>
                 <option value="equirectangular">Equirectangular</option>
@@ -64,6 +63,10 @@
             <label>Graticule:</label>
             <input id="graticule" type="checkbox">
         </fieldset>
+        <fieldset>
+            <label>Show Debug Tiles:</label>
+            <input id="debug" type="checkbox" checked=true>
+        </fieldset>
     </div>
     <div id='map'></div>
 
@@ -72,34 +75,25 @@
 <script>
 
 let map;
+
+const zooms = {
+    albers: 3,
+    lambertConformalConic: 3,
+    winkelTripel: 1.2
+};
+const centers = {
+    albers: [-122.414, 37.776],
+    lambertConformalConic: [-122.414, 37.776]
+};
+
 makeMap();
 
 function makeMap() {
     if (map) map.remove();
     const el = document.getElementById('projName');
-    const zooms = {
-        alaska: 4,
-        albers: 3,
-        equalEarth: 1.0,
-        equirectangular: 1.0,
-        lambertConformalConic: 1.0,
-        mercator: 1.0,
-        naturalEarth: 1.0,
-        winkelTripel: 1.2
-    };
-    const centers = {
-        alaska: [-154, 63],
-        albers: [-122.414, 37.776],
-        equalEarth: [0, 0],
-        equirectangular: [0, 0],
-        lambertConformalConic: [0, 0],
-        mercator: [0, 0],
-        naturalEarth: [0, 0],
-        winkelTripel: [0, 0]
-    };
-    const projection = {name: el.options[el.selectedIndex].value};
-    const zoom = zooms[projection] || 2;
-    const center = centers[projection] || [-97.48, 40.16];
+    const projection = el.options[el.selectedIndex].value;
+    const zoom = zooms[projection] || 1;
+    const center = centers[projection] || [0, 0];
     const styles = {
         streets: 'mapbox://styles/mapbox/streets-v10',
         satellite: 'mapbox://styles/mapbox/satellite-streets-v11'
@@ -120,17 +114,16 @@ function makeMap() {
     addGraticule();
 }
 
-function update() {
-    map.transform._calcMatrices();
-    map.triggerRepaint();
-}
-
 map.on('click', function () {
     console.log('projection', map.getProjection());
 });
 
 document.getElementById('projName').addEventListener('change', (e) => {
     const el = document.getElementById('projName');
+    const projection = el.options[el.selectedIndex].value;
+    const zoom = zooms[projection] || 1;
+    const center = centers[projection] || [0, 0];
+    map.jumpTo({center, zoom});
     map.setProjection(el.options[el.selectedIndex].value);
 });
 
@@ -140,6 +133,10 @@ document.getElementById('styleName').addEventListener('change', (e) => {
 
 document.getElementById('graticule').addEventListener('change', (e) => {
     map.setPaintProperty('graticule', 'line-opacity', e.target.checked ? 1 : 0);
+});
+
+document.getElementById('debug').addEventListener('change', (e) => {
+    map.showTileBoundaries = e.target.checked;
 });
 
 function addGraticule() {
@@ -184,7 +181,6 @@ function addGraticule() {
                 'line-opacity': document.getElementById('graticule').checked ? 1 : 0
             }
         });
-
     });
 }
 

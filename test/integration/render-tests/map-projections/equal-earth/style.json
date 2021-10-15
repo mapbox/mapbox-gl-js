@@ -2,11 +2,12 @@
     "version": 8,
     "metadata": {
       "test": {
-        "projection": "albers",
         "width": 512,
         "height": 512,
         "operations": [
           ["setStyle", "local://mapbox-gl-styles/styles/basic-v9.json"],
+          ["wait"],
+          ["setProjection", "equalEarth"],
           ["wait"]
         ]
       }

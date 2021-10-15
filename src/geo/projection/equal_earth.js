@@ -47,7 +47,7 @@ export default {
         }
 
         const lambda = M * x * (a1 + 3 * a2 * theta2 + theta6 * (7 * a3 + 9 * a4 * theta2)) / Math.cos(theta);
-        const phi = Math.asin(Math.sin(theta) / M);
+        const phi = Math.asin(clamp(Math.sin(theta) / M, -1, 1));
         const lng = clamp(lambda * 180 / Math.PI, -180, 180);
         const lat = clamp(phi * 180 / Math.PI, -90, 90);
 
