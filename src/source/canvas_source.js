@@ -211,6 +211,10 @@ class CanvasSource extends ImageSource {
         const context = this.map.painter.context;
         const gl = context.gl;
 
+        if (!this._boundsArray) {
+            this._makeBoundsArray();
+        }
+
         if (!this.boundsBuffer) {
             this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
         }
