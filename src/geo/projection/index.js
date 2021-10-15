@@ -1,11 +1,11 @@
 // @flow
 import albers from './albers.js';
-import equalEarth from './equalEarth.js';
+import equalEarth from './equal_earth.js';
 import equirectangular from './equirectangular.js';
 import lambertConformalConic from './lambert.js';
 import mercator from './mercator.js';
-import naturalEarth from './naturalEarth.js';
-import winkelTripel from './winkelTripel.js';
+import naturalEarth from './natural_earth.js';
+import winkelTripel from './winkel_tripel.js';
 import LngLat from '../lng_lat.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 
