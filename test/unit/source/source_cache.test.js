@@ -10,6 +10,7 @@ import Point from '@mapbox/point-geometry';
 import {Event, ErrorEvent, Evented} from '../../../src/util/evented.js';
 import {extend} from '../../../src/util/util.js';
 import browser from '../../../src/util/browser.js';
+import Transfornm from '../../../src/geo/transform.js';
 
 // Add a mocked source type for use in these tests
 function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
@@ -68,7 +69,8 @@ function createSourceCache(options, used) {
         type: 'mock-source-type'
     }, spec), /* dispatcher */ {}, eventedParent));
     sc.used = typeof used === 'boolean' ? used : true;
-    sc.transform = {tileZoom: 0};
+    sc.transform = new Transform();
+    sc.map = {painter: {transform: sc.transform}};
     return {sourceCache: sc, eventedParent};
 }
 
