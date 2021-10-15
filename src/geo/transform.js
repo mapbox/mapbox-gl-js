@@ -6,7 +6,7 @@ import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAlt
 import {getProjection} from './projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
+import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner, warnOnce} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
@@ -1857,7 +1857,12 @@ class Transform {
     }
 
     _terrainEnabled(): boolean {
-        return !!this._elevation;
+        if (!this._elevation) return false;
+        if (this.projection.name !== 'mercator') {
+            warnOnce('Terrain is not yet supported with alternate projections. Use mercator to enable terrain.');
+            return false;
+        }
+        return true;
     }
 
     // Check if any of the four corners are off the edge of the rendered map

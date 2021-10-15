@@ -171,7 +171,7 @@ class Painter {
     }
 
     updateTerrain(style: Style, cameraChanging: boolean) {
-        const enabled = !!style && !!style.terrain;
+        const enabled = !!style && !!style.terrain && this.transform.projection.name === 'mercator';
         if (!enabled && (!this._terrain || !this._terrain.enabled)) return;
         if (!this._terrain) {
             this._terrain = new Terrain(this, style);
@@ -204,7 +204,7 @@ class Painter {
     }
 
     get terrain(): ?Terrain {
-        return this._terrain && this._terrain.enabled ? this._terrain : null;
+        return this.transform._terrainEnabled() && this._terrain && this._terrain.enabled ? this._terrain : null;
     }
 
     /*
