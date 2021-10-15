@@ -45,6 +45,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const context = painter.context;
     const gl = context.gl;
 
+    // TODO: Move to bucket to evaluate when injecting the define
+    const useStencilMaskRenderPass = !image &&
+    opacity.constantOr(1.0) < 1.0 &&
+    width.constantOr(1.0) > 1.0;
+
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         if (image && !tile.patternsLoaded()) continue;
@@ -126,11 +131,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
-
-        // TODO: Move to bucket to evaluate when injecting the define
-        const useStencilMaskRenderPass = !image &&
-            opacity.constantOr(1.0) < 1.0 &&
-            width.constantOr(1.0) > 1.0;
 
         if (useStencilMaskRenderPass) {
             const stencilIdPass1 = painter._tileClippingMaskIDs[coord.key];
