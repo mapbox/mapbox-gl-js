@@ -1,7 +1,8 @@
 // @flow
 import Point from '@mapbox/point-geometry';
-import {lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
+import MercatorCoordinate, {altitudeFromMercatorZ, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
+import {vec3} from 'gl-matrix';
 import type {Projection} from './index.js';
 
 export type TileTransform = {
@@ -85,8 +86,14 @@ export default function tileTransform(id: Object, projection: Projection) {
     };
 }
 
-export function getTilePoint(tileTransform: TileTransform, {x, y}: {x: number, y: number}) {
+export function getTilePoint(tileTransform: TileTransform, {x, y}: {x: number, y: number}, wrap: number = 0) {
     return new Point(
-        (x * tileTransform.scale - tileTransform.x) * EXTENT,
+        ((x - wrap) * tileTransform.scale - tileTransform.x) * EXTENT,
         (y * tileTransform.scale - tileTransform.y) * EXTENT);
+}
+
+export function getTileVec3(tileTransform: TileTransform, coord: MercatorCoordinate, wrap: number = 0): vec3 {
+    const x = ((coord.x - wrap) * tileTransform.scale - tileTransform.x) * EXTENT;
+    const y = (coord.y * tileTransform.scale - tileTransform.y) * EXTENT;
+    return vec3.fromValues(x, y, altitudeFromMercatorZ(coord.z, coord.y));
 }
