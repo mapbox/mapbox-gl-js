@@ -220,6 +220,7 @@ class ImageSource extends Evented implements Source {
      */
     setCoordinates(coordinates: Coordinates) {
         this.coordinates = coordinates;
+        delete this._boundsArray;
 
         // Calculate which mercator tile is suitable for rendering the video in
         // and create a buffer with the corner coordinates. These coordinates
@@ -237,11 +238,16 @@ class ImageSource extends Evented implements Source {
         // level)
         this.minzoom = this.maxzoom = this.tileID.z;
 
+        this.fire(new Event('data', {dataType:'source', sourceDataType: 'content'}));
+        return this;
+    }
+
+    _makeBoundsArray() {
         const tileTr = tileTransform(this.tileID, this.map.transform.projection);
 
         // Transform the corner coordinates into the coordinate space of our
         // tile.
-        const tileCoords = coordinates.map((coord) => {
+        const tileCoords = this.coordinates.map((coord) => {
             const projectedCoord = tileTr.projection.project(coord[0], coord[1]);
             return getTilePoint(tileTr, projectedCoord)._round();
         });
@@ -257,7 +263,6 @@ class ImageSource extends Evented implements Source {
             delete this.boundsBuffer;
         }
 
-        this.fire(new Event('data', {dataType:'source', sourceDataType: 'content'}));
         return this;
     }
 
@@ -268,6 +273,10 @@ class ImageSource extends Evented implements Source {
 
         const context = this.map.painter.context;
         const gl = context.gl;
+
+        if (!this._boundsArray) {
+            this._makeBoundsArray();
+        }
 
         if (!this.boundsBuffer) {
             this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
