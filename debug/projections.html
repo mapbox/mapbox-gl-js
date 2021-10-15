@@ -43,7 +43,6 @@
         <fieldset>
             <label>Projection:</label>
             <select id="projName">
-                <option value="alaska">Albers Alaska</option>
                 <option value="albers" selected>Albers USA</option>
                 <option value="equalEarth">Equal Earth</option>
                 <option value="equirectangular">Equirectangular</option>
@@ -78,7 +77,6 @@ function makeMap() {
     if (map) map.remove();
     const el = document.getElementById('projName');
     const zooms = {
-        alaska: 4,
         albers: 3,
         equalEarth: 1.0,
         equirectangular: 1.0,
@@ -88,7 +86,6 @@ function makeMap() {
         winkelTripel: 1.2
     };
     const centers = {
-        alaska: [-154, 63],
         albers: [-122.414, 37.776],
         equalEarth: [0, 0],
         equirectangular: [0, 0],
