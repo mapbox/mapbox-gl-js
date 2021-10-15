@@ -204,7 +204,7 @@ class Painter {
     }
 
     get terrain(): ?Terrain {
-        return this._terrain && this._terrain.enabled ? this._terrain : null;
+        return this.transform._terrainEnabled() && this._terrain && this._terrain.enabled ? this._terrain : null;
     }
 
     /*

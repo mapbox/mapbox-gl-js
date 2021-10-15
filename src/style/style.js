@@ -353,6 +353,10 @@ class Style extends Evented {
 
         this.map.transform.setProjection(projection);
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
+
+        const fog = this.fog;
+        if (fog) fog._disabledForProjections = Boolean(projection && projection.name !== 'mercator');
+
         this.map._update(true);
     }
 
