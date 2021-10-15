@@ -68,7 +68,8 @@ function createSourceCache(options, used) {
         type: 'mock-source-type'
     }, spec), /* dispatcher */ {}, eventedParent));
     sc.used = typeof used === 'boolean' ? used : true;
-    sc.transform = {tileZoom: 0};
+    sc.transform = new Transform();
+    sc.map = {painter: {transform: sc.transform}};
     return {sourceCache: sc, eventedParent};
 }
 
