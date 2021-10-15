@@ -1,5 +1,7 @@
 // @flow
+import Point from '@mapbox/point-geometry';
 import {lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
+import EXTENT from '../../data/extent.js';
 import type {Projection} from './index.js';
 
 export type TileTransform = {
@@ -20,7 +22,7 @@ export default function tileTransform(id: Object, projection: Projection) {
     const y2 = (id.y + 1) * s;
 
     if (projection.name === 'mercator') {
-        return {scale: 1 << id.z, x: 0, y: 0, x2: 1, y2: 1, projection};
+        return {scale: 1 << id.z, x: id.x, y: id.y, x2: id.x + 1, y2: id.y + 1, projection};
     }
 
     const lng1 = lngFromMercatorX(x1);
@@ -81,4 +83,10 @@ export default function tileTransform(id: Object, projection: Projection) {
         y2: maxY * scale,
         projection
     };
+}
+
+export function getTilePoint(tileTransform: TileTransform, {x, y}: {x: number, y: number}) {
+    return new Point(
+        (x * tileTransform.scale - tileTransform.x) * EXTENT,
+        (y * tileTransform.scale - tileTransform.y) * EXTENT);
 }

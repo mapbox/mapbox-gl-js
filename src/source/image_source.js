@@ -10,6 +10,7 @@ import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import browser from '../util/browser.js';
+import tileTransform, {getTilePoint} from '../geo/projection/tile_transform.js';
 
 import type {Source} from './source.js';
 import type {CanvasSourceSpecification} from './canvas_source.js';
@@ -236,9 +237,14 @@ class ImageSource extends Evented implements Source {
         // level)
         this.minzoom = this.maxzoom = this.tileID.z;
 
+        const tileTr = tileTransform(this.tileID, this.map.transform.projection);
+
         // Transform the corner coordinates into the coordinate space of our
         // tile.
-        const tileCoords = cornerCoords.map((coord) => this.tileID.getTilePoint(coord)._round());
+        const tileCoords = coordinates.map((coord) => {
+            const projectedCoord = tileTr.projection.project(coord[0], coord[1]);
+            return getTilePoint(tileTr, projectedCoord)._round();
+        });
 
         this._boundsArray = new RasterBoundsArray();
         this._boundsArray.emplaceBack(tileCoords[0].x, tileCoords[0].y, 0, 0);
