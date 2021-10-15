@@ -40,7 +40,6 @@ import type {OverscaledTileID} from '../source/tile_id.js';
 import type {UniformValues} from './uniform_binding.js';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program.js';
 import type {CrossTileID, VariableOffset} from '../symbol/placement.js';
-import extent from '../data/extent.js';
 import extend from '../style-spec/util/extend.js';
 
 export default drawSymbols;
@@ -252,7 +251,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
     const rotateWithMap = rotationAlignment === 'map';
-    const pitchWithMap  = pitchAlignment === 'map';
+    const pitchWithMap = pitchAlignment === 'map';
     const alongLine = rotateWithMap && layer.layout.get('symbol-placement') !== 'point';
 
     // Line label rotation happens in `updateLineLabels`
@@ -350,7 +349,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
         }
 
-        let matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),
+        const matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),
             uLabelPlaneMatrix = (alongLine || (isText && variablePlacement) || updateTextFitIcon) ? identityMat4 : labelPlaneMatrix,
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
 
@@ -422,7 +421,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (painter.terrain) {
             const options = {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv};
             if (pitchWithMap) {
-                extend(options, { useTileSpaceElevation: true });
+                extend(options, {useTileSpaceElevation: true});
             }
             painter.terrain.setupElevationDraw(state.tile, state.program, options);
         }

@@ -30,11 +30,6 @@ import type {GlyphPositions} from '../render/glyph_atlas.js';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
 import type {Projection} from '../geo/projection/index.js';
 
-import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
-import {Aabb} from '../util/primitives.js';
-import {vec3} from 'gl-matrix';
-import {clamp} from '../util/util.js';
-
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
 
