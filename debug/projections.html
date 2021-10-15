@@ -64,14 +64,6 @@
             <label>Graticule:</label>
             <input id="graticule" type="checkbox">
         </fieldset>
-        <fieldset>
-            <label>Unskew:</label>
-            <input id="unskew" type="checkbox" checked>
-        </fieldset>
-        <fieldset>
-            <label>Unrotate:</label>
-            <input id="unrotate" type="checkbox" checked>
-        </fieldset>
     </div>
     <div id='map'></div>
 
@@ -125,8 +117,6 @@ function makeMap() {
         hash: true
     });
     map.showTileBoundaries = true;
-    map.transform.unskew = !!document.getElementById('unskew').checked;
-    map.transform.unrotate = !!document.getElementById('unrotate').checked;
     addGraticule();
 }
 
@@ -150,16 +140,6 @@ document.getElementById('styleName').addEventListener('change', (e) => {
 
 document.getElementById('graticule').addEventListener('change', (e) => {
     map.setPaintProperty('graticule', 'line-opacity', e.target.checked ? 1 : 0);
-});
-
-document.getElementById('unskew').addEventListener('change', (e) => {
-    map.transform.unskew = !!e.target.checked;
-    update();
-});
-
-document.getElementById('unrotate').addEventListener('change', (e) => {
-    map.transform.unrotate = !!e.target.checked;
-    update();
 });
 
 function addGraticule() {
