@@ -35,6 +35,9 @@ function getInterpolationT(transform: Transform) {
     if (!range) return 0;
 
     const size = Math.max(transform.width, transform.height);
+    // The interpolation ranges are manually defined based on what makes
+    // sense in a 1024px wide map. Adjust the ranges to the current size
+    // of the map. The smaller the map, the earlier you can start unskewing.
     const rangeAdjustment = Math.log(size / 1024) / Math.LN2;
     const zoomA = range[0] + rangeAdjustment;
     const zoomB = range[1] + rangeAdjustment;
@@ -85,7 +88,7 @@ function getShearAdjustment(projection, zoom, loc, interpT, withoutRotation?: bo
 
     // Calculate how much the map would need to be rotated to make east-west in
     // projected coordinates be left-right
-    const angleAdjust = -Math.atan(pdy / pdx) / Math.PI * 180;
+    const angleAdjust = -Math.atan(pdy / pdx);
 
     // Pick a location identical to the original one except for poles to make sure we're within mercator bounds
     const mc2 = MercatorCoordinate.fromLngLat(loc);
@@ -119,7 +122,7 @@ function getShearAdjustment(projection, zoom, loc, interpT, withoutRotation?: bo
     const scale = Math.abs(delta3.x) / Math.abs(delta4.y);
 
     const unrotate = mat4.identity([]);
-    mat4.rotateZ(unrotate, unrotate, -angleAdjust / 180 * Math.PI * (1 - (withoutRotation ? 0 : interpT)));
+    mat4.rotateZ(unrotate, unrotate, (-angleAdjust) * (1 - (withoutRotation ? 0 : interpT)));
 
     // unskew
     const shear = mat4.identity([]);
@@ -127,7 +130,7 @@ function getShearAdjustment(projection, zoom, loc, interpT, withoutRotation?: bo
     shear[4] = -delta4.x / delta4.y * interpT;
 
     // unrotate
-    mat4.rotateZ(shear, shear, angleAdjust / 180 * Math.PI);
+    mat4.rotateZ(shear, shear, angleAdjust);
 
     mat4.multiply(shear, unrotate, shear);
 
@@ -135,8 +138,8 @@ function getShearAdjustment(projection, zoom, loc, interpT, withoutRotation?: bo
 }
 
 function rotate(x, y, angle) {
-    const cos = Math.cos(angle / 180 * Math.PI);
-    const sin = Math.sin(angle / 180 * Math.PI);
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
     return {
         x: x * cos - y * sin,
         y: x * sin + y * cos
