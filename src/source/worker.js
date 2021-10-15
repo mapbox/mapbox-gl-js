@@ -41,7 +41,7 @@ export default class Worker {
     isSpriteLoaded: boolean;
     referrer: ?string;
     terrain: ?boolean;
-    projection: ?string;
+    projection: string;
 
     constructor(self: WorkerGlobalScopeInterface) {
         PerformanceUtils.measure('workerEvaluateScript');
@@ -51,6 +51,7 @@ export default class Worker {
         this.layerIndexes = {};
         this.availableImages = {};
         this.isSpriteLoaded = false;
+        this.projection = 'mercator';
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
