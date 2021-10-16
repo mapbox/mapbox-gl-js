@@ -300,6 +300,18 @@ class Tile {
             this.lineAtlasTexture.destroy();
         }
 
+        if (this._tileBoundsBuffer) {
+            this._tileBoundsBuffer = null;
+            this._tileBoundsIndexBuffer = null;
+            this._tileBoundsSegments = null;
+        }
+
+        if (this._tileDebugBuffer) {
+            this._tileDebugBuffer = null;
+            this._tileDebugIndexBuffer = null;
+            this._tileDebugSegments = null;
+        }
+
         Debug.run(() => {
             if (this.queryGeometryDebugViz) {
                 this.queryGeometryDebugViz.unload();
