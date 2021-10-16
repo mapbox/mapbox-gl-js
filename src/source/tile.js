@@ -559,6 +559,28 @@ class Tile {
         });
     }
 
+    _makeDebugTileBoundsBuffers(context: Context, projection: Projection) {
+        if (!projection || projection.name === 'mercator') return;
+
+        // reproject tile outline with adaptive resampling
+        const boundsLine = loadGeometry(BOUNDS_FEATURE, this.tileID.canonical, this.tileTransform)[0];
+
+        // generate vertices for debugging tile boundaries
+        const debugVertices = new PosArray();
+        const debugIndices = new LineStripIndexArray();
+
+        for (let i = 0; i < boundsLine.length; i++) {
+            const {x, y} = boundsLine[i];
+            debugVertices.emplaceBack(x, y);
+            debugIndices.emplaceBack(i);
+        }
+        debugIndices.emplaceBack(0);
+
+        this._tileDebugIndexBuffer = context.createIndexBuffer(debugIndices);
+        this._tileDebugBuffer = context.createVertexBuffer(debugVertices, boundsAttributes.members);
+        this._tileDebugSegments = SegmentVector.simpleSegment(0, 0, debugVertices.length, debugIndices.length);
+    }
+
     _makeTileBoundsBuffers(context: Context, projection: Projection) {
         if (this._tileBoundsBuffer || !projection || projection.name === 'mercator') return;
 
@@ -589,21 +611,6 @@ class Tile {
         this._tileBoundsBuffer = context.createVertexBuffer(boundsVertices, boundsAttributes.members);
         this._tileBoundsIndexBuffer = context.createIndexBuffer(boundsIndices);
         this._tileBoundsSegments = SegmentVector.simpleSegment(0, 0, boundsVertices.length, boundsIndices.length);
-
-        // generate vertices for debugging tile boundaries
-        const debugVertices = new PosArray();
-        const debugIndices = new LineStripIndexArray();
-
-        for (let i = 0; i < boundsLine.length; i++) {
-            const {x, y} = boundsLine[i];
-            debugVertices.emplaceBack(x, y);
-            debugIndices.emplaceBack(i);
-        }
-        debugIndices.emplaceBack(0);
-
-        this._tileDebugIndexBuffer = context.createIndexBuffer(debugIndices);
-        this._tileDebugBuffer = context.createVertexBuffer(debugVertices, boundsAttributes.members);
-        this._tileDebugSegments = SegmentVector.simpleSegment(0, 0, debugVertices.length, debugIndices.length);
     }
 }
 
