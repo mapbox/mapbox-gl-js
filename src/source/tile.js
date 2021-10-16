@@ -301,15 +301,15 @@ class Tile {
         }
 
         if (this._tileBoundsBuffer) {
-            this._tileBoundsBuffer = null;
-            this._tileBoundsIndexBuffer = null;
-            this._tileBoundsSegments = null;
+            this._tileBoundsBuffer.destroy();
+            this._tileBoundsIndexBuffer.destroy();
+            this._tileBoundsSegments.destroy();
         }
 
         if (this._tileDebugBuffer) {
-            this._tileDebugBuffer = null;
-            this._tileDebugIndexBuffer = null;
-            this._tileDebugSegments = null;
+            this._tileDebugBuffer.destroy();
+            this._tileDebugIndexBuffer.destroy();
+            this._tileDebugSegments.destroy();
         }
 
         Debug.run(() => {
