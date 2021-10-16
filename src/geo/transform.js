@@ -688,6 +688,7 @@ class Transform {
         const actualZ = z;
 
         const useElevationData = this.elevation && !options.isTerrainDEM;
+        const isMercator = this.projection.name === 'mercator';
 
         if (options.minzoom !== undefined && z < options.minzoom) return [];
         if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
@@ -707,12 +708,29 @@ class Transform {
         const zoomSplitDistance = this.cameraToCenterDistance / options.tileSize * (options.roundZoom ? 1 : 0.502);
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
-        const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation ? z : 0;
+        const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && isMercator ? z : 0;
 
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).
         const maxRange = options.isTerrainDEM && this._elevation ? this._elevation.exaggeration() * 10000 : this._centerAltitude;
         const minRange = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
+
+        const areaAtMercatorCoord = mc => {
+            const offset = 1 / 40000;
+            const mcEast = new MercatorCoordinate(mc.x + offset, mc.y, mc.z);
+            const mcSouth = new MercatorCoordinate(mc.x, mc.y + offset, mc.z);
+            const ll = mc.toLngLat();
+            const llEast = mcEast.toLngLat();
+            const llSouth = mcSouth.toLngLat();
+            const p = this.locationCoordinate(ll);
+            const pEast = this.locationCoordinate(llEast);
+            const pSouth = this.locationCoordinate(llSouth);
+            const dx = Math.sqrt(Math.pow(pEast.x - p.x, 2) + Math.pow(pEast.y - p.y, 2));
+            const dy = Math.sqrt(Math.pow(pSouth.x - p.x, 2) + Math.pow(pSouth.y - p.y, 2));
+            return Math.sqrt(dx * dy) / offset;
+        };
+
+        const centerSize = areaAtMercatorCoord(MercatorCoordinate.fromLngLat(this.center));
 
         const aabbForTile = (z, x, y, wrap, min, max) => {
             const tt = tileTransform({z, x, y}, this.projection);
@@ -817,8 +835,21 @@ class Transform {
                 dzSqr = square(it.aabb.distanceZ(cameraPoint) * meterToTile);
             }
 
+            let scaleAdjustment = 1;
+            if (!isMercator && actualZ <= 5) {
+                // In other projections, not all tiles are the same size.
+                // Account for the tile size difference by adjusting the distToSplit.
+                // Adjust by the ratio of the area at the tile center to the area at the map center.
+                // Adjustments are only needed at lower zooms.
+                const numTiles = Math.pow(2, it.zoom);
+                const tileCenterSize = areaAtMercatorCoord(new MercatorCoordinate((it.x + 0.5) / numTiles, (it.y + 0.5) / numTiles));
+                const areaRatio = tileCenterSize / centerSize;
+                // Fudge the ratio slightly so that all tiles near the center have the same zoom level.
+                scaleAdjustment = areaRatio > 0.85 ? 1 : areaRatio;
+            }
+
             const distanceSqr = dx * dx + dy * dy + dzSqr;
-            const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance;
+            const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * scaleAdjustment;
             const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
 
             return distanceSqr < distToSplitSqr;
@@ -941,7 +972,7 @@ class Transform {
         const cover = result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
         // Relax the assertion on terrain, on high zoom we use distance to center of tile
         // while camera might be closer to selected center of map.
-        assert(!cover.length || this.elevation || cover[0].overscaledZ === overscaledZ);
+        assert(!cover.length || this.elevation || cover[0].overscaledZ === overscaledZ || !isMercator);
         return cover;
     }
 
