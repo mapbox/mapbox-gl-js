@@ -675,10 +675,9 @@ class Style extends Evented {
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
-    listImages() {
+    listImages(): Array<string> {
         this._checkLoaded();
-
-        return this.imageManager.listImages();
+        return this._availableImages.slice();
     }
 
     addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}) {

@@ -124,14 +124,14 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
             const {geometry, index, sourceLayerIndex} = bucketFeature;
             const feature = features[index].feature;
 
-            this.addFeature(bucketFeature, geometry, index, canonical);
+            this.addFeature(bucketFeature, geometry, index, options.availableImages, canonical);
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
         if (!this.stateDependentLayers.length) return;
-        this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, imagePositions);
+        this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions);
     }
 
     isEmpty() {
@@ -159,7 +159,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.segments.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, availableImages: Array<string>, canonical: CanonicalTileID) {
         for (const ring of geometry) {
             for (const point of ring) {
                 const x = point.x;
@@ -193,7 +193,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
             }
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, {}, canonical);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, {}, availableImages, canonical);
     }
 }
 

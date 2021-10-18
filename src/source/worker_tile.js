@@ -164,7 +164,8 @@ class WorkerTile {
                     collisionBoxArray: this.collisionBoxArray,
                     sourceLayerIndex,
                     sourceID: this.source,
-                    enableTerrain: this.enableTerrain
+                    enableTerrain: this.enableTerrain,
+                    availableImages
                 });
 
                 bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
@@ -241,6 +242,7 @@ class WorkerTile {
                             iconMap,
                             imageAtlas.iconPositions,
                             this.showCollisionBoxes,
+                            availableImages,
                             this.tileID.canonical,
                             this.tileZoom);
                     } else if (bucket.hasPattern &&
@@ -248,7 +250,7 @@ class WorkerTile {
                          bucket instanceof FillBucket ||
                          bucket instanceof FillExtrusionBucket)) {
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
-                        bucket.addFeatures(options, this.tileID.canonical, imageAtlas.patternPositions);
+                        bucket.addFeatures(options, this.tileID.canonical, imageAtlas.patternPositions, availableImages);
                     }
                 }
 

@@ -188,7 +188,7 @@ class LineBucket implements Bucket {
                 this.patternFeatures.push(patternBucketFeature);
 
             } else {
-                this.addFeature(bucketFeature, geometry, index, canonical, lineAtlas.positions);
+                this.addFeature(bucketFeature, geometry, index, canonical, lineAtlas.positions, options.availableImages);
             }
 
             const feature = features[index].feature;
@@ -267,14 +267,14 @@ class LineBucket implements Bucket {
 
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
         if (!this.stateDependentLayers.length) return;
-        this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, imagePositions);
+        this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions);
     }
 
-    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
+    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>) {
         for (const feature of this.patternFeatures) {
-            this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions);
+            this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions, availableImages);
         }
     }
 
@@ -314,7 +314,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>) {
         const layout = this.layers[0].layout;
         const join = layout.get('line-join').evaluate(feature, {});
         const cap = layout.get('line-cap').evaluate(feature, {});
@@ -326,7 +326,7 @@ class LineBucket implements Bucket {
             this.addLine(line, feature, join, cap, miterLimit, roundLimit);
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical);
     }
 
     addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number) {
