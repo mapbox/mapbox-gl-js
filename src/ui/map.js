@@ -1004,9 +1004,9 @@ class Map extends Camera {
     }
 
     /**
-     * Sets the map's projection. If called with no projection, the map will default to Mercator.
+     * Sets the map's projection. If called with `null` or `undefined`, the map will reset to Mercator.
      *
-     * @param {ProjectionSpecification | string} projection The projection that the map should be rendered in.
+     * @param {ProjectionSpecification | string | null | undefined} projection The projection that the map should be rendered in.
      * This can be a {@link ProjectionSpecification} object or a string of the projection's name.
      * @example
      * map.setProjection('albers');
@@ -1016,7 +1016,7 @@ class Map extends Camera {
      *     parallels: [20, 60]
      * });
      */
-    setProjection(projection?: ProjectionSpecification | string) {
+    setProjection(projection?: ?ProjectionSpecification | string) {
         this._lazyInitEmptyStyle();
         if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);

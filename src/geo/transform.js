@@ -217,9 +217,9 @@ class Transform {
         return pick(this.projection, ['name', 'center', 'parallels']);
     }
 
-    setProjection(projection?: ProjectionSpecification) {
+    setProjection(projection?: ?ProjectionSpecification) {
         this._unmodifiedProjection = !projection;
-        if (projection === undefined) projection = {name: 'mercator'};
+        if (projection === undefined || projection === null) projection = {name: 'mercator'};
         this.projectionOptions = projection;
         this.projection = getProjection(projection);
         this._calcMatrices();

@@ -345,7 +345,7 @@ class Style extends Evented {
         this.fire(new Event('style.load'));
     }
 
-    setProjection(projection?: ProjectionSpecification) {
+    setProjection(projection?: ?ProjectionSpecification) {
         this.map.painter.clearBackgroundTiles();
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
