@@ -4008,17 +4008,17 @@
       "value": "number",
       "property-type": "data-constant",
       "transition": false,
-      "doc": "The reference longitude and latitude of the projection. `center` takes the form of [lng, lat]. This property is only configurable for conical projections (Albers and Lambert Conformal Conical). All other projections are centered on [0, 0].",
+      "doc": "The reference longitude and latitude of the projection. `center` takes the form of [lng, lat]. This property is only configurable for conic projections (Albers and Lambert Conformal Conic). All other projections are centered on [0, 0].",
       "example": [
         -96,
         37.5
       ],
       "requires": [
         {
-          "name": "albers"
-        },
-        {
-          "name": "lambertConformalConical"
+          "name": [
+              "albers",
+              "lambertConformalConic"
+          ]
         }
       ],
       "sdk-support": {
@@ -4033,17 +4033,17 @@
       "value": "number",
       "property-type": "data-constant",
       "transition": false,
-      "doc":  "The standard parallels of the projection, denoting the desired latitude range with minimal distortion. `parallels` takes the form of [lat0, lat1]. This property is only configurable for conical projections (Albers and Lambert Conformal Conical).",
+      "doc":  "The standard parallels of the projection, denoting the desired latitude range with minimal distortion. `parallels` takes the form of [lat0, lat1]. This property is only configurable for conic projections (Albers and Lambert Conformal Conic).",
       "example": [
         29.5,
         45.5
       ],
       "requires": [
         {
-          "name": "albers"
-        },
-        {
-          "name": "lambertConformalConical"
+          "name": [
+              "albers",
+              "lambertConformalConic"
+          ]
         }
       ],
       "sdk-support": {
