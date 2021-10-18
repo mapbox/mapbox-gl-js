@@ -742,7 +742,8 @@ class Transform {
             return Math.sqrt(dx * dy) / offset;
         };
 
-        const centerSize = sizeAtMercatorCoord(MercatorCoordinate.fromLngLat(this.center));
+        const centerMercatorCoord = MercatorCoordinate.fromLngLat(this.center);
+        const centerSize = sizeAtMercatorCoord(centerMercatorCoord);
 
         const aabbForTile = (z, x, y, wrap, min, max) => {
             const tt = tileTransform({z, x, y}, this.projection);
@@ -854,10 +855,18 @@ class Transform {
                 // Adjust by the ratio of the area at the tile center to the area at the map center.
                 // Adjustments are only needed at lower zooms where tiles are not similarly sized.
                 const numTiles = Math.pow(2, it.zoom);
-                const tileCenterSize = sizeAtMercatorCoord(new MercatorCoordinate((it.x + 0.5) / numTiles, (it.y + 0.5) / numTiles));
+                const mcX = (it.x + 0.5) / numTiles;
+                const mcY = (it.y + 0.5) / numTiles;
+                // Offset to corner closest to center
+                const cornerX = 0.5 / numTiles * Math.sign(centerMercatorCoord.x - mcX);
+                const cornerY = 0.5 / numTiles * Math.sign(centerMercatorCoord.y - mcY);
+                // Consider both the tile's center and the tile's closest corner
+                const tileCenterSize = Math.max(
+                    sizeAtMercatorCoord(new MercatorCoordinate(mcX, mcY)),
+                    sizeAtMercatorCoord(new MercatorCoordinate(mcX + cornerX, mcY + cornerY)));
                 const areaRatio = tileCenterSize / centerSize;
                 // Fudge the ratio slightly so that all tiles near the center have the same zoom level.
-                scaleAdjustment = areaRatio > 0.85 ? 1 : areaRatio;
+                scaleAdjustment = areaRatio > 0.9 ? 1 : areaRatio;
             }
 
             const distanceSqr = dx * dx + dy * dy + dzSqr;
