@@ -595,7 +595,7 @@ class SourceCache extends Evented {
         if (idealTileIDs.length === 0) { return retain; }
 
         const checked: {[_: number | string]: boolean } = {};
-        const minZoom = idealTileIDs[idealTileIDs.length - 1].overscaledZ;
+        const minZoom = idealTileIDs.reduce((min, id) => Math.min(min, id.overscaledZ), Infinity);
         const maxZoom = idealTileIDs[0].overscaledZ;
         assert(minZoom <= maxZoom);
         const minCoveringZoom = Math.max(maxZoom - SourceCache.maxOverzooming, this._source.minzoom);
