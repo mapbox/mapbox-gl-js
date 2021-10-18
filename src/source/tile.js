@@ -572,7 +572,7 @@ class Tile {
     }
 
     _makeDebugTileBoundsBuffers(context: Context, projection: Projection) {
-        if (!projection || projection.name === 'mercator') return;
+        if (!projection || projection.name === 'mercator' || this._tileDebugBuffer) return;
 
         // reproject tile outline with adaptive resampling
         const boundsLine = loadGeometry(BOUNDS_FEATURE, this.tileID.canonical, this.tileTransform)[0];
