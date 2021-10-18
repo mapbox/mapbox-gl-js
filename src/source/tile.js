@@ -36,6 +36,7 @@ import type {LayerFeatureStates} from './source_state.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {FilterSpecification} from '../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
+import type Painter from '../render/painter.js';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -436,14 +437,16 @@ class Tile {
         }
     }
 
-    setFeatureState(states: LayerFeatureStates, painter: any) {
+    setFeatureState(states: LayerFeatureStates, painter: ?Painter) {
         if (!this.latestFeatureIndex ||
             !this.latestFeatureIndex.rawTileData ||
-            Object.keys(states).length === 0) {
+            Object.keys(states).length === 0 ||
+            !painter) {
             return;
         }
 
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
+        const availableImages = painter.style.listImages();
 
         for (const id in this.buckets) {
             if (!painter.style.hasLayer(id)) continue;
@@ -455,7 +458,7 @@ class Tile {
             const sourceLayerStates = states[sourceLayerId];
             if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
 
-            bucket.update(sourceLayerStates, sourceLayer, this.imageAtlas && this.imageAtlas.patternPositions || {});
+            bucket.update(sourceLayerStates, sourceLayer, availableImages, this.imageAtlas && this.imageAtlas.patternPositions || {});
             const layer = painter && painter.style && painter.style.getLayer(id);
             if (layer) {
                 this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket));
