@@ -715,22 +715,34 @@ class Transform {
         const maxRange = options.isTerrainDEM && this._elevation ? this._elevation.exaggeration() * 10000 : this._centerAltitude;
         const minRange = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
 
-        const areaAtMercatorCoord = mc => {
+        const sizeAtMercatorCoord = mc => {
+            // Calculate how scale compares between projected coordinates and mercator coordinates.
+            // Returns a length. The units don't matter since the result is only
+            // used in a ratio with other values returned by this function.
+
+            // Construct a small square in Mercator coordinates.
             const offset = 1 / 40000;
             const mcEast = new MercatorCoordinate(mc.x + offset, mc.y, mc.z);
             const mcSouth = new MercatorCoordinate(mc.x, mc.y + offset, mc.z);
+
+            // Convert the square to projected coordinates.
             const ll = mc.toLngLat();
             const llEast = mcEast.toLngLat();
             const llSouth = mcSouth.toLngLat();
             const p = this.locationCoordinate(ll);
             const pEast = this.locationCoordinate(llEast);
             const pSouth = this.locationCoordinate(llSouth);
+
+            // Calculate the size of each edge of the reprojected square
             const dx = Math.hypot(pEast.x - p.x, pEast.y - p.y);
             const dy = Math.hypot(pSouth.x - p.x, pSouth.y - p.y);
+
+            // Calculate the size of a projected square that would have the
+            // same area as the reprojected square.
             return Math.sqrt(dx * dy) / offset;
         };
 
-        const centerSize = areaAtMercatorCoord(MercatorCoordinate.fromLngLat(this.center));
+        const centerSize = sizeAtMercatorCoord(MercatorCoordinate.fromLngLat(this.center));
 
         const aabbForTile = (z, x, y, wrap, min, max) => {
             const tt = tileTransform({z, x, y}, this.projection);
@@ -840,9 +852,9 @@ class Transform {
                 // In other projections, not all tiles are the same size.
                 // Account for the tile size difference by adjusting the distToSplit.
                 // Adjust by the ratio of the area at the tile center to the area at the map center.
-                // Adjustments are only needed at lower zooms.
+                // Adjustments are only needed at lower zooms where tiles are not similarly sized.
                 const numTiles = Math.pow(2, it.zoom);
-                const tileCenterSize = areaAtMercatorCoord(new MercatorCoordinate((it.x + 0.5) / numTiles, (it.y + 0.5) / numTiles));
+                const tileCenterSize = sizeAtMercatorCoord(new MercatorCoordinate((it.x + 0.5) / numTiles, (it.y + 0.5) / numTiles));
                 const areaRatio = tileCenterSize / centerSize;
                 // Fudge the ratio slightly so that all tiles near the center have the same zoom level.
                 scaleAdjustment = areaRatio > 0.85 ? 1 : areaRatio;
