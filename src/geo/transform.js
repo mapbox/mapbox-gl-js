@@ -725,8 +725,8 @@ class Transform {
             const p = this.locationCoordinate(ll);
             const pEast = this.locationCoordinate(llEast);
             const pSouth = this.locationCoordinate(llSouth);
-            const dx = Math.sqrt(Math.pow(pEast.x - p.x, 2) + Math.pow(pEast.y - p.y, 2));
-            const dy = Math.sqrt(Math.pow(pSouth.x - p.x, 2) + Math.pow(pSouth.y - p.y, 2));
+            const dx = Math.hypot(pEast.x - p.x, pEast.y - p.y);
+            const dy = Math.hypot(pSouth.x - p.x, pSouth.y - p.y);
             return Math.sqrt(dx * dy) / offset;
         };
 
