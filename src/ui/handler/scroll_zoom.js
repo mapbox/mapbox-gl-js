@@ -155,7 +155,10 @@ class ScrollZoomHandler {
     disable() {
         if (!this.isEnabled()) return;
         this._enabled = false;
-        if (this._map._cooperativeGestures) this._alertContainer.remove();
+        if (this._map._cooperativeGestures) {
+            clearTimeout(this._alertTimer);
+            this._alertContainer.remove();
+        }
     }
 
     wheel(e: WheelEvent) {

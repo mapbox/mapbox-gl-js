@@ -118,6 +118,7 @@ export default class TouchPanHandler {
     disable() {
         this._enabled = false;
         if (this._map._cooperativeGestures) {
+            clearTimeout(this._alertTimer);
             this._el.classList.remove('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
             this._alertContainer.remove();
         }
