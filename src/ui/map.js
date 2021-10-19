@@ -508,6 +508,7 @@ class Map extends Camera {
             this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
         }
 
+        options.projection = 'winkelTripel';
         if (options.projection) {
             this.setProjection(options.projection);
         }
