@@ -111,11 +111,7 @@ export default class TouchPanHandler {
         if (this._map._cooperativeGestures) {
             this._addTouchPanBlocker();
             // override touch-action css property to enable scrolling page over map
-            if (this._map.touchZoomRotate.isEnabled()) {
-                this._el.classList.add('mapboxgl-touch-pan-blocker-with-zoom-rotate-override', 'mapboxgl-scrollable-page');
-            } else {
-                this._el.classList.add('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
-            }
+            this._el.classList.add('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
         }
     }
 
@@ -124,11 +120,7 @@ export default class TouchPanHandler {
         if (this._map._cooperativeGestures) {
             clearTimeout(this._alertTimer);
             this._alertContainer.remove();
-            if (this._map.touchZoomRotate.isEnabled()) {
-                this._el.classList.remove('mapboxgl-touch-pan-blocker-with-zoom-rotate-override', 'mapboxgl-scrollable-page');
-            } else {
-                this._el.classList.remove('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
-            }
+            this._el.classList.remove('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
         }
         this.reset();
     }
