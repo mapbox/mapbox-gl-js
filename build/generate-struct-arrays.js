@@ -130,6 +130,7 @@ import lineAttributesExt from '../src/data/bucket/line_attributes_ext.js';
 import patternAttributes from '../src/data/bucket/pattern_attributes.js';
 import dashAttributes from '../src/data/bucket/dash_attributes.js';
 import skyboxAttributes from '../src/render/skybox_attributes.js';
+import tileBoundsAttributes from '../src/data/bounds_attributes.js';
 import {fillExtrusionAttributes, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
 
 // layout vertex arrays
@@ -208,6 +209,9 @@ createStructArrayType('line_strip_index', createLayout([
 // skybox vertex array
 createStructArrayType(`skybox_vertex`, skyboxAttributes);
 
+// tile bounds vertex array
+createStructArrayType(`tile_bounds`, tileBoundsAttributes);
+
 // paint vertex arrays
 
 // used by SourceBinder for float properties
@@ -244,7 +248,6 @@ fs.writeFileSync('src/data/array_types.js',
 import assert from 'assert';
 import {Struct, StructArray} from '../util/struct_array.js';
 import {register} from '../util/web_worker_transfer.js';
-import Point from '@mapbox/point-geometry';
 
 ${layouts.map(structArrayLayoutJs).join('\n')}
 ${arraysWithStructAccessors.map(structArrayJs).join('\n')}
