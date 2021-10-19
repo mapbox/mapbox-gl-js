@@ -3972,7 +3972,7 @@
       "type": "enum",
       "values": {
         "albers": {
-          "doc": "An Albers projection centered on the continental United States. You can configure the center of the projection by passing the Map constructor a Projection object with `center` and `parallels` properties."
+          "doc": "An Albers equal-area projection centered on the continental United States. You can configure the projection for a different region by setting `center` and `parallels` properties. You may want to set max bounds to constrain the map to the relevant region."
         },
         "equalEarth": {
           "doc": "An Equal Earth projection."
@@ -3981,7 +3981,7 @@
           "doc": "An Equirectangular projection. This projection is very similar to the Plate Carrée projection."
         },
         "lambertConformalConic": {
-          "doc": "A conformal, conic version of the Lambert projection. The Lambert projection has a center of [0, 30] by default, but this is configurable."
+          "doc": "A Lambert conformal conic projection. You can configure the projection for a region by setting `center` and `parallels` properties. You may want to set max bounds to constrain the map to the relevant region."
         },
         "mercator": {
           "doc": "The Mercator projection is the default projection."
