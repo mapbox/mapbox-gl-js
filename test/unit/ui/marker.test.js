@@ -135,6 +135,7 @@ test('Marker#togglePopup opens a popup that was closed', (t) => {
         .togglePopup();
 
     t.ok(marker.getPopup().isOpen());
+    t.equal(marker.getElement().getAttribute('aria-expanded'), 'true');
 
     map.remove();
     t.end();
@@ -150,6 +151,7 @@ test('Marker#togglePopup closes a popup that was open', (t) => {
         .togglePopup();
 
     t.ok(!marker.getPopup().isOpen());
+    t.equal(marker.getElement().getAttribute('aria-expanded'), 'false');
 
     map.remove();
     t.end();

@@ -90,7 +90,7 @@ class FullscreenControl {
     _updateTitle() {
         const title = this._getTitle();
         this._fullscreenButton.setAttribute("aria-label", title);
-        this._fullscreenButton.title = title;
+        if (this._fullscreenButton.firstElementChild) this._fullscreenButton.firstElementChild.setAttribute('title', title);
     }
 
     _getTitle() {
