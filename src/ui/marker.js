@@ -24,7 +24,8 @@ type Options = {
     clickTolerance?: number,
     rotation?: number,
     rotationAlignment?: string,
-    pitchAlignment?: string
+    pitchAlignment?: string,
+    isHighAccurate?: boolean
 };
 
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
@@ -81,6 +82,7 @@ export default class Marker extends Evented {
     _rotationAlignment: string;
     _originalTabIndex: ?string; // original tabindex of _element
     _fadeTimer: ?TimeoutID;
+    _isHighAccurate:boolean; // rounding current position or not
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -110,6 +112,7 @@ export default class Marker extends Evented {
         this._rotation = options && options.rotation || 0;
         this._rotationAlignment = options && options.rotationAlignment || 'auto';
         this._pitchAlignment = options && options.pitchAlignment && options.pitchAlignment !== 'auto' ?  options.pitchAlignment : this._rotationAlignment;
+        this._isHighAccurate = options && options.isHighAccurate || false;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -533,7 +536,7 @@ export default class Marker extends Evented {
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
-        if (!e || e.type === "moveend") {
+        if (!this._isHighAccurate && (!e || e.type === "moveend")) {
             this._pos = this._pos.round();
         }
 
@@ -790,5 +793,28 @@ export default class Marker extends Evented {
      */
     getPitchAlignment() {
         return this._pitchAlignment;
+    }
+
+    /**
+     * Sets the `isHighAccurate` property of the marker.
+     * @param {boolean} shouldBeHighAccurate 
+     * @returns {Marker} Returns itself to allow for method chaining.
+     * @example
+     * marker.setIsHighAccurate(true);
+     */
+    setIsHighAccurate(shouldBeHighAccurate: boolean){
+        this._isHighAccurate = shouldBeHighAccurate;
+        return this;
+    }
+
+
+    /**
+     * Returns the current `isHighAccurate` property of the marker.
+     * @returns {boolean}
+     * @example
+     * const isHighAccurateMarker = marker.getIsHighAccurate();
+     */
+    getIsHighAccurate(){
+        return this._isHighAccurate;
     }
 }
