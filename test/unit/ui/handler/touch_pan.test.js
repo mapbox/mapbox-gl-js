@@ -13,7 +13,7 @@ function createMapWithCooperativeGestures(t) {
     });
 }
 
-test('If cooperativeGestures option is set to true, a .mapboxgl-touch-pan-blocker element is added to map', (t) => {
+test('If cooperativeGestures option is set to true, a `.mapboxgl-touch-pan-blocker` element is added to map', (t) => {
     const map = createMapWithCooperativeGestures(t);
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-touch-pan-blocker').length, 1);
@@ -54,7 +54,7 @@ test('If cooperativeGestures option is set to true, touch pan is triggered when 
     t.end();
 });
 
-test('Disabling touch pan removes .mapboxgl-touch-pan-blocker element', (t) => {
+test('Disabling touch pan removes the `.mapboxgl-touch-pan-blocker` element', (t) => {
     const map = createMapWithCooperativeGestures(t);
 
     map.handlers._handlersById.touchPan.disable();
