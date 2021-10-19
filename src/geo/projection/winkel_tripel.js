@@ -16,14 +16,14 @@ export default {
         const y = 0.5 * (lat + Math.sin(lat) / (Math.sin(alpha) / alpha)) || 0;
         return {
             x: (x / Math.PI + 0.5) * 0.5,
-            y: 1 - (y / Math.PI + 0.5) * 0.5
+            y: 1 - (y / Math.PI + 1) * 0.5
         };
     },
 
     unproject(x: number, y: number) {
         // based on https://github.com/d3/d3-geo-projection, MIT-licensed
         x = (2 * x - 0.5) * Math.PI;
-        y = (2 * (1 - y) - 0.5) * Math.PI;
+        y = (2 * (1 - y) - 1) * Math.PI;
         let lambda = x;
         let phi = y;
         let i = 25;

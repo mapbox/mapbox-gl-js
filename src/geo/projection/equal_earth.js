@@ -25,14 +25,14 @@ export default {
 
         return {
             x: (x / Math.PI + 0.5) * 0.5,
-            y: 1 - (y / Math.PI + 0.5) * 0.5
+            y: 1 - (y / Math.PI + 1) * 0.5
         };
     },
 
     unproject(x: number, y: number) {
         // based on https://github.com/d3/d3-geo, MIT-licensed
         x = (2 * x - 0.5) * Math.PI;
-        y = (2 * (1 - y) - 0.5) * Math.PI;
+        y = (2 * (1 - y) - 1) * Math.PI;
         let theta = y;
         let theta2 = theta * theta;
         let theta6 = theta2 * theta2 * theta2;
