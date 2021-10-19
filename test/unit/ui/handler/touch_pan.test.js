@@ -13,14 +13,14 @@ function createMapWithGestureHandling(t) {
     });
 }
 
-test('When gestureHandling option is set to true, a .mapboxgl-touch-pan-blocker element is added to map', (t) => {
+test('If gestureHandling option is set to true, a .mapboxgl-touch-pan-blocker element is added to map', (t) => {
     const map = createMapWithGestureHandling(t);
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-touch-pan-blocker').length, 1);
     t.end();
 });
 
-test('When gestureHandling option is set to true, touch pan is prevented one finger is used to touch pan', (t) => {
+test('If gestureHandling option is set to true, touch pan is prevented when one finger is used to pan', (t) => {
     const map = createMapWithGestureHandling(t);
     const target = map.getCanvas();
 
@@ -37,7 +37,7 @@ test('When gestureHandling option is set to true, touch pan is prevented one fin
     t.end();
 });
 
-test('When gestureHandling option is set to true, touch pan event is triggered when two fingers are used to pan', (t) => {
+test('If gestureHandling option is set to true, touch pan is triggered when two fingers are used to pan', (t) => {
     const map = createMapWithGestureHandling(t);
     const target = map.getCanvas();
 
@@ -54,7 +54,7 @@ test('When gestureHandling option is set to true, touch pan event is triggered w
     t.end();
 });
 
-test('Disabling touch pan removes .mapboxgl-touch-pan-blocker  element', (t) => {
+test('Disabling touch pan removes .mapboxgl-touch-pan-blocker element', (t) => {
     const map = createMapWithGestureHandling(t);
 
     map.handlers._handlersById.touchPan.disable();
