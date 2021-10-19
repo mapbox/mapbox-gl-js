@@ -41,7 +41,7 @@ export default class TouchPanHandler {
     touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this._active || mapTouches.length < this._minTouches) return;
 
-        // if gesture handling is set to true, require two fingers to touch pan
+        // if cooperative gesture handling is set to true, require two fingers to touch pan
         if (this._map._cooperativeGestures && !this._map.isMoving()) {
             if (mapTouches.length === 1) {
                 this._showTouchPanBlockerAlert();
