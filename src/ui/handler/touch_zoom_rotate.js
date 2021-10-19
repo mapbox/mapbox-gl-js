@@ -234,7 +234,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
         const vectorA = points[0].sub(this._lastPoints[0]);
         const vectorB = points[1].sub(this._lastPoints[1]);
 
-        if (this._map._gestureHandling && e.touches.length < 3) return;
+        if (this._map._cooperativeGestures && e.touches.length < 3) return;
 
         this._valid = this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
 

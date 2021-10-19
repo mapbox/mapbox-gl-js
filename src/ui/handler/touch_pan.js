@@ -42,7 +42,7 @@ export default class TouchPanHandler {
         if (!this._active || mapTouches.length < this._minTouches) return;
 
         // if gesture handling is set to true, require two fingers to touch pan
-        if (this._map._gestureHandling && !this._map.isMoving()) {
+        if (this._map._cooperativeGestures && !this._map.isMoving()) {
             if (mapTouches.length === 1) {
                 this._showTouchPanBlockerAlert();
                 return;
@@ -108,7 +108,7 @@ export default class TouchPanHandler {
 
     enable() {
         this._enabled = true;
-        if (this._map._gestureHandling) {
+        if (this._map._cooperativeGestures) {
             // override touch-action css property to enable scrolling page over map
             this._el.classList.add('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
             this._addTouchPanBlocker();
@@ -117,7 +117,7 @@ export default class TouchPanHandler {
 
     disable() {
         this._enabled = false;
-        if (this._map._gestureHandling) {
+        if (this._map._cooperativeGestures) {
             this._el.classList.remove('mapboxgl-touch-pan-blocker-override', 'mapboxgl-scrollable-page');
             this._alertContainer.remove();
         }

@@ -4,24 +4,24 @@ import Map from '../../../../src/ui/map.js';
 import DOM from '../../../../src/util/dom.js';
 import simulate from '../../../util/simulate_interaction.js';
 
-function createMapWithGestureHandling(t) {
+function createMapWithCooperativeGestures(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
     t.stub(Map.prototype, '_authenticate');
     return new Map({
         container: DOM.create('div', '', window.document.body),
-        gestureHandling: true
+        cooperativeGestures: true
     });
 }
 
-test('If gestureHandling option is set to true, a .mapboxgl-touch-pan-blocker element is added to map', (t) => {
-    const map = createMapWithGestureHandling(t);
+test('If cooperativeGestures option is set to true, a .mapboxgl-touch-pan-blocker element is added to map', (t) => {
+    const map = createMapWithCooperativeGestures(t);
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-touch-pan-blocker').length, 1);
     t.end();
 });
 
-test('If gestureHandling option is set to true, touch pan is prevented when one finger is used to pan', (t) => {
-    const map = createMapWithGestureHandling(t);
+test('If cooperativeGestures option is set to true, touch pan is prevented when one finger is used to pan', (t) => {
+    const map = createMapWithCooperativeGestures(t);
     const target = map.getCanvas();
 
     const moveSpy = t.spy();
@@ -37,8 +37,8 @@ test('If gestureHandling option is set to true, touch pan is prevented when one 
     t.end();
 });
 
-test('If gestureHandling option is set to true, touch pan is triggered when two fingers are used to pan', (t) => {
-    const map = createMapWithGestureHandling(t);
+test('If cooperativeGestures option is set to true, touch pan is triggered when two fingers are used to pan', (t) => {
+    const map = createMapWithCooperativeGestures(t);
     const target = map.getCanvas();
 
     const moveSpy = t.spy();
@@ -55,7 +55,7 @@ test('If gestureHandling option is set to true, touch pan is triggered when two 
 });
 
 test('Disabling touch pan removes .mapboxgl-touch-pan-blocker element', (t) => {
-    const map = createMapWithGestureHandling(t);
+    const map = createMapWithCooperativeGestures(t);
 
     map.handlers._handlersById.touchPan.disable();
 
