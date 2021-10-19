@@ -10,6 +10,7 @@ test('load tile', (t) => {
     t.test('calls callback on error', (t) => {
         window.useFakeXMLHttpRequest();
         const worker = new Worker(_self);
+        worker.setProjection(0, {name: 'mercator'});
         worker.loadTile(0, {
             type: 'vector',
             source: 'source',

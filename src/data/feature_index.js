@@ -27,11 +27,13 @@ import type Transform from '../geo/transform.js';
 import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
 import type {FeatureIndex as FeatureIndexStruct} from './array_types.js';
+import type {TileTransform} from '../geo/projection/tile_transform.js';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array,
     transform: Transform,
     tileResult: TilespaceQueryGeometry,
+    tileTransform: TileTransform,
     params: {
         filter: FilterSpecification,
         layers: Array<string>,
@@ -153,7 +155,7 @@ class FeatureIndex {
                 sourceFeatureState,
                 (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, layoutVertexArrayOffset: number = 0) => {
                     if (!featureGeometry) {
-                        featureGeometry = loadGeometry(feature);
+                        featureGeometry = loadGeometry(feature, this.tileID.canonical, args.tileTransform);
                     }
 
                     return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, args.transform, args.pixelPosMatrix, elevationHelper, layoutVertexArrayOffset);

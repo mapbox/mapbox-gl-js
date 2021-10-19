@@ -136,9 +136,15 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     // Bind the empty texture for drawing outlines
     painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
+    tile._makeDebugTileBoundsBuffers(painter.context, painter.transform.projection);
+
+    const debugBuffer = tile._tileDebugBuffer || painter.debugBuffer;
+    const debugIndexBuffer = tile._tileDebugIndexBuffer || painter.debugIndexBuffer;
+    const debugSegments = tile._tileDebugSegments || painter.debugSegments;
+
     program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         debugUniformValues(posMatrix, Color.red), id,
-        painter.debugBuffer, painter.tileBorderIndexBuffer, painter.debugSegments);
+        debugBuffer, debugIndexBuffer, debugSegments);
 
     const tileRawData = tile.latestRawTileData;
     const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;

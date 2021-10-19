@@ -353,7 +353,9 @@ class Camera extends Evented {
      * const bearing = map.getBearing();
      * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    getBearing(): number { return this.transform.bearing; }
+    getBearing(): number {
+        return this.transform.bearing;
+    }
 
     /**
      * Sets the map's bearing (rotation). The bearing is the compass direction that is "up"; for example, a bearing
@@ -1564,7 +1566,7 @@ class Camera extends Evented {
     // interpolating between the two endpoints will cross it.
     _normalizeCenter(center: LngLat) {
         const tr = this.transform;
-        if (!tr.renderWorldCopies || tr.lngRange) return;
+        if (!tr.renderWorldCopies || tr.maxBounds) return;
 
         const delta = center.lng - tr.center.lng;
         center.lng +=

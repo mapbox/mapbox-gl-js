@@ -66,7 +66,8 @@ import type {
     LightSpecification,
     SourceSpecification,
     TerrainSpecification,
-    FogSpecification
+    FogSpecification,
+    ProjectionSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator} from './validate_style.js';
@@ -86,7 +87,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setTransition',
     'setGeoJSONSourceData',
     'setTerrain',
-    'setFog'
+    'setFog',
+    'setProjection'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -95,7 +97,8 @@ const ignoredDiffOperations = pick(diffOperations, [
     'setCenter',
     'setZoom',
     'setBearing',
-    'setPitch'
+    'setPitch',
+    'setProjection'
 ]);
 
 const empty = emptyStyle();
@@ -322,6 +325,11 @@ class Style extends Evented {
             this._serializedLayers[layer.id] = layer.serialize();
             this._updateLayerCount(layer, true);
         }
+
+        if (this.stylesheet.projection && this.map.transform._unmodifiedProjection) {
+            this.setProjection(this.stylesheet.projection);
+        }
+
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
@@ -335,6 +343,21 @@ class Style extends Evented {
 
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
+    }
+
+    setProjection(projection?: ?ProjectionSpecification) {
+        this.map.painter.clearBackgroundTiles();
+        for (const id in this._sourceCaches) {
+            this._sourceCaches[id].clearTiles();
+        }
+
+        this.map.transform.setProjection(projection);
+        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
+
+        const fog = this.fog;
+        if (fog) fog._disabledForProjections = Boolean(projection && projection.name !== 'mercator');
+
+        this.map._update(true);
     }
 
     _loadSprite(url: string) {
@@ -1177,6 +1200,7 @@ class Style extends Evented {
             sprite: this.stylesheet.sprite,
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
+            projection: this.stylesheet.projection,
             sources,
             layers: this._serializeLayers(this._order)
         }, (value) => { return value !== undefined; });

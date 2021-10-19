@@ -72,6 +72,7 @@ export type StyleSpecification = {|
     "sprite"?: string,
     "glyphs"?: string,
     "transition"?: TransitionSpecification,
+    "projection"?: ProjectionSpecification,
     "layers": Array<LayerSpecification>
 |}
 
@@ -91,6 +92,12 @@ export type FogSpecification = {|
     "range"?: PropertyValueSpecification<[number, number]>,
     "color"?: PropertyValueSpecification<ColorSpecification>,
     "horizon-blend"?: PropertyValueSpecification<number>
+|}
+
+export type ProjectionSpecification = {|
+    "name": "albers" | "equalEarth" | "equirectangular" | "lambertConformalConic" | "mercator" | "naturalEarth" | "winkelTripel",
+    "center"?: [number, number],
+    "parallels"?: [number, number]
 |}
 
 export type VectorSourceSpecification = {

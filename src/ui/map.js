@@ -62,7 +62,8 @@ import type {
     LightSpecification,
     TerrainSpecification,
     FogSpecification,
-    SourceSpecification
+    SourceSpecification,
+    ProjectionSpecification
 } from '../style-spec/types.js';
 import type {ElevationQueryOptions} from '../terrain/elevation.js';
 
@@ -118,7 +119,8 @@ type MapOptions = {
     transformRequest?: RequestTransformFunction,
     accessToken: string,
     testMode: ?boolean,
-    locale?: Object
+    locale?: Object,
+    projection?: ProjectionSpecification | string
 };
 
 const defaultMinZoom = -2;
@@ -267,6 +269,8 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
+ * @param {ProjectionSpecification} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers ('albers'), Equal Earth ('equalEarth'), Equirectangular/Plate Carrée/WGS84 ('equirectangular'), Lambert ('lambertConformalConic'), Mercator ('mercator'), Natural Earth ('naturalEarth'), and Winkel Tripel ('winkelTripel').
+ *  Conical projections such as Albers and Lambert have configurable `center` and `parallels` properties that allow developers to define the region in which the projection has minimal distortion; see the example for how to configure these properties.
  * @example
  * const map = new mapboxgl.Map({
  *     container: 'map', // container ID
@@ -497,6 +501,17 @@ class Map extends Camera {
 
         this.handlers = new HandlerManager(this, options);
 
+        this._localFontFamily = options.localFontFamily;
+        this._localIdeographFontFamily = options.localIdeographFontFamily;
+
+        if (options.style) {
+            this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
+        }
+
+        if (options.projection) {
+            this.setProjection(options.projection);
+        }
+
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         this._hash = options.hash && (new Hash(hashName)).addTo(this);
         // don't set position from options if set through hash
@@ -515,11 +530,6 @@ class Map extends Camera {
         }
 
         this.resize();
-
-        this._localFontFamily = options.localFontFamily;
-        this._localIdeographFontFamily = options.localIdeographFontFamily;
-
-        if (options.style) this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
 
         if (options.attributionControl)
             this.addControl(new AttributionControl({customAttribution: options.customAttribution}));
@@ -741,7 +751,7 @@ class Map extends Camera {
      * const maxBounds = map.getMaxBounds();
      */
     getMaxBounds(): LngLatBounds | null {
-        return this.transform.getMaxBounds();
+        return this.transform.getMaxBounds() || null;
     }
 
     /**
@@ -981,6 +991,38 @@ class Map extends Camera {
     }
 
     /** @section {Point conversion} */
+
+    /**
+     * Returns a {@link ProjectionSpecification} object that defines the current map projection.
+     *
+     * @returns {ProjectionSpecification} The {@link ProjectionSpecification} defining the current map projection.
+     * @example
+     * const projection = map.getProjection();
+     */
+    getProjection() {
+        return this.transform.getProjection();
+    }
+
+    /**
+     * Sets the map's projection. If called with `null` or `undefined`, the map will reset to Mercator.
+     *
+     * @param {ProjectionSpecification | string | null | undefined} projection The projection that the map should be rendered in.
+     * This can be a {@link ProjectionSpecification} object or a string of the projection's name.
+     * @example
+     * map.setProjection('albers');
+     * map.setProjection({
+     *     name: 'albers',
+     *     center: [35, 55],
+     *     parallels: [20, 60]
+     * });
+     */
+    setProjection(projection?: ?ProjectionSpecification | string) {
+        this._lazyInitEmptyStyle();
+        if (typeof projection === 'string') {
+            projection = (({name: projection}: any): ProjectionSpecification);
+        }
+        this.style.setProjection(projection);
+    }
 
     /**
      * Returns a {@link Point} representing pixel coordinates, relative to the map's `container`,
@@ -2844,20 +2886,22 @@ class Map extends Camera {
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
 
         // Actually draw
-        this.painter.render(this.style, {
-            showTileBoundaries: this.showTileBoundaries,
-            showTerrainWireframe: this.showTerrainWireframe,
-            showOverdrawInspector: this._showOverdrawInspector,
-            showQueryGeometry: !!this._showQueryGeometry,
-            rotating: this.isRotating(),
-            zooming: this.isZooming(),
-            moving: this.isMoving(),
-            fadeDuration,
-            isInitialLoad: this._isInitialLoad,
-            showPadding: this.showPadding,
-            gpuTiming: !!this.listens('gpu-timing-layer'),
-            speedIndexTiming: this.speedIndexTiming,
-        });
+        if (this.style) {
+            this.painter.render(this.style, {
+                showTileBoundaries: this.showTileBoundaries,
+                showTerrainWireframe: this.showTerrainWireframe,
+                showOverdrawInspector: this._showOverdrawInspector,
+                showQueryGeometry: !!this._showQueryGeometry,
+                rotating: this.isRotating(),
+                zooming: this.isZooming(),
+                moving: this.isMoving(),
+                fadeDuration,
+                isInitialLoad: this._isInitialLoad,
+                showPadding: this.showPadding,
+                gpuTiming: !!this.listens('gpu-timing-layer'),
+                speedIndexTiming: this.speedIndexTiming,
+            });
+        }
 
         this.fire(new Event('render'));
 

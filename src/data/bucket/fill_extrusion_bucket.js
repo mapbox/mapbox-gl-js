@@ -36,6 +36,7 @@ import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
+import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
 const FACTOR = Math.pow(2, 13);
 
@@ -216,7 +217,7 @@ class FillExtrusionBucket implements Bucket {
         this.enableTerrain = options.enableTerrain;
     }
 
-    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID) {
+    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         this.features = [];
         this.hasPattern = hasPattern('fill-extrusion', this.layers, options);
         this.featuresOnBorder = [];
@@ -234,7 +235,7 @@ class FillExtrusionBucket implements Bucket {
                 id,
                 sourceLayerIndex,
                 index,
-                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature),
+                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
                 properties: feature.properties,
                 type: feature.type,
                 patterns: {}
