@@ -132,8 +132,8 @@ class Tile {
     queryGeometryDebugViz: TileSpaceDebugBuffer;
     queryBoundsDebugViz: TileSpaceDebugBuffer;
 
-    _tileDebugBuffer: VertexBuffer;
-    _tileBoundsBuffer: VertexBuffer;
+    _tileDebugBuffer: ?VertexBuffer;
+    _tileBoundsBuffer: ?VertexBuffer;
     _tileDebugIndexBuffer: IndexBuffer;
     _tileBoundsIndexBuffer: IndexBuffer;
     _tileDebugSegments: SegmentVector;
@@ -305,12 +305,14 @@ class Tile {
             this._tileBoundsBuffer.destroy();
             this._tileBoundsIndexBuffer.destroy();
             this._tileBoundsSegments.destroy();
+            this._tileBoundsBuffer = null;
         }
 
         if (this._tileDebugBuffer) {
             this._tileDebugBuffer.destroy();
             this._tileDebugIndexBuffer.destroy();
             this._tileDebugSegments.destroy();
+            this._tileDebugBuffer = null;
         }
 
         Debug.run(() => {
