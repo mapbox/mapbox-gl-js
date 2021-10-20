@@ -1,3 +1,49 @@
+## 2.5.1
+
+### 🐞 Bug fixes
+
+* Fix an iOS 15 issue where the iOS Safari tab bar interrupts touch interactions. ([#11084](https://github.com/mapbox/mapbox-gl-js/pull/11084))
+
+## 2.5.0
+
+### Features ✨ and improvements 🏁
+
+* Added `queryRenderedFeatures` support to heatmap layers. ([#10996](https://github.com/mapbox/mapbox-gl-js/pull/10996))
+* Added support for using `line-gradient` and `line-dasharray` paint properties together on line layers. ([#10894](https://github.com/mapbox/mapbox-gl-js/pull/10894))
+* Added `preclick` event allowing popups to close and open in a new location on one click. ([#10926](https://github.com/mapbox/mapbox-gl-js/pull/10926))
+* Improved collision detection for labels along lines, slightly improving label density. ([#10918](https://github.com/mapbox/mapbox-gl-js/pull/10918))
+* Improved Popup `addClassName`, `removeClassName` and `toggleClassName` methods to work on popup instances that are not added to the map.  ([#10889](https://github.com/mapbox/mapbox-gl-js/pull/10889))
+  * ⚠️ Note: Direct modifications to the popup container CSS class no longer persist. These methods should be used instead.
+
+### 🐞 Bug fixes
+
+* Fixed `maxBounds` property not working across the 180th meridian. ([#10903](https://github.com/mapbox/mapbox-gl-js/pull/10903))
+* Fixed `map.getBounds()` returning too-large bounds under some conditions. ([#10909](https://github.com/mapbox/mapbox-gl-js/pull/10909))
+* Fixed markers not updating position when toggling terrain. ([#10985](https://github.com/mapbox/mapbox-gl-js/pull/10985))
+* Fixed gap on edge of map on retina displays. ([#10936](https://github.com/mapbox/mapbox-gl-js/pull/10936))
+* Fixed SDF images rendering inside text. ([#10989](https://github.com/mapbox/mapbox-gl-js/pull/10989))
+* Fixed an issue with slow tile loading performance on maps with CJK glyphs on certain Chrome/GPU combinations. ([#11047](https://github.com/mapbox/mapbox-gl-js/pull/11047))
+
+## 2.4.0
+
+### ✨ Features and improvements
+
+* Add `showUserHeading` option to `GeolocateControl` that draws a triangle in front of the dot to denote both the user's location, and the direction they're facing.([#10817](https://github.com/mapbox/mapbox-gl-js/pull/10817)) (h/t to [@tsuz](https://github.com/tsuz))
+* Add support for `text-writing-mode` property when using `symbol-placement: line` text labels. ([#10647](https://github.com/mapbox/mapbox-gl-js/pull/10647))
+  * Note: This change will bring the following changes for CJK text blocks:
+    * 1. For vertical CJK text, all the characters including Latin and Numbers will be vertically placed now. Previously, Latin and Numbers were horizontally placed.
+    * 2. For horizontal CJK text, there may be a slight horizontal shift due to the anchor shift.
+* Improve character alignment in labels with mixed CJK and Latin characters by adding support for `descender` and `ascender` font metrics.([#8781](https://github.com/mapbox/mapbox-gl-js/pull/10652))
+* Improve terrain performance by reducing number of framebuffer switches during draping.([#10701](https://github.com/mapbox/mapbox-gl-js/pull/10701))
+* Improve behavior of vertically aligned line labels with horizontal text by adding stickiness to their flip state, preventing them from flickering. ([#10622](https://github.com/mapbox/mapbox-gl-js/pull/10622))
+
+### 🐞 Bug fixes
+
+* Fix a potential rendering artifact when using custom `fill-extrusion` dataset with terrain. ([#10812](https://github.com/mapbox/mapbox-gl-js/pull/10812))
+* Fix anchor calculation for `line-center` line labels when the anchor is very near to line segment endpoints. ([#10776](https://github.com/mapbox/mapbox-gl-js/pull/10776))
+* Fix `ImageSource` breaking in Firefox/Safari if it's not immediately visible.([#10698](https://github.com/mapbox/mapbox-gl-js/pull/10698))
+* Fix gradient skybox rendering issue on some ARM Mali GPU's.([#10703](https://github.com/mapbox/mapbox-gl-js/pull/10703))
+
 ## 2.3.1
 
 ### 🐞 Bug fixes
@@ -129,6 +175,12 @@
 ### 🛠️ Workflow
 
 - Run render tests in browser.
+
+## 1.13.2
+
+### 🐞 Bug fixes
+
+* Backports a fix for an iOS 15 issue where the iOS Safari tab bar interrupts touch interactions. ([#11084](https://github.com/mapbox/mapbox-gl-js/pull/11084))
 
 ## 1.13.0
 

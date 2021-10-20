@@ -24,11 +24,13 @@ native SDKs. For code and issues specific to the native SDKs, see the
 - [Open source styles](https://github.com/mapbox/mapbox-gl-styles)
 - [Contributor documentation](./CONTRIBUTING.md)
 
-[<img width="500" alt="Mapbox GL JS gallery of map images" src="https://static-assets.mapbox.com/www/gallery.png">](https://www.mapbox.com/mapbox-gljs)
+[<img width="600" alt="Mapbox GL JS gallery of map images" src="https://static-assets.mapbox.com/www/mapbox-gl-js-gallery.png">](https://www.mapbox.com/mapbox-gljs)
+
+**Caption:** (_Mapbox GL JS maps, left-to-right, top-to-bottom_): Custom styled point [clusters](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-cluster), custom style with points, [hexbin visualization](https://blog.mapbox.com/exploring-nyc-open-data-with-3d-hexbins-5af2b7d8bc46) on a [Dark style](https://www.mapbox.com/maps/dark) map with [`Popups`](https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup), data-driven [circles](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#circle) over a [`raster` layer](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#raster) with [satellite imagery](https://docs.mapbox.com/help/getting-started/satellite-imagery/), [3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/?topic=3D) with custom [`Markers`](https://docs.mapbox.com/mapbox-gl-js/api/markers/#marker), [Mapbox Movement data](https://docs.mapbox.com/data/movement/guides/) visualization.
 
 ## License
 
-Copyright © 2020 Mapbox
+Copyright © 2021 Mapbox
 
 All rights reserved.
 

@@ -3,7 +3,7 @@
 import {getVideo, ResourceType} from '../util/ajax.js';
 
 import ImageSource from './image_source.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import {ErrorEvent} from '../util/evented.js';
@@ -78,6 +78,9 @@ class VideoSource extends ImageSource {
             } else if (video) {
                 this.video = video;
                 this.video.loop = true;
+
+                // Prevent the video from taking over the screen in iOS
+                this.video.setAttribute('playsinline', '');
 
                 // Start repainting when video starts playing. hasTransition() will then return
                 // true to trigger additional frames as long as the videos continues playing.
@@ -205,8 +208,12 @@ class VideoSource extends ImageSource {
         const context = this.map.painter.context;
         const gl = context.gl;
 
+        if (!this._boundsArray) {
+            this._makeBoundsArray();
+        }
+
         if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
         }
 
         if (!this.boundsSegments) {

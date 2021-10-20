@@ -75,6 +75,7 @@ export interface Source {
     +prepare?: () => void;
 
     +afterUpdate?: () => void;
+    +_clear?: () => void;
 }
 
 type SourceStatics = {

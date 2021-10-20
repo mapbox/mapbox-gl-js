@@ -140,7 +140,7 @@ export default class Popup extends Evented {
 
         this._map = map;
         if (this.options.closeOnClick) {
-            this._map.on('click', this._onClose);
+            this._map.on('preclick', this._onClose);
         }
 
         if (this.options.closeOnMove) {
@@ -534,6 +534,7 @@ export default class Popup extends Evented {
             this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', this._content);
             this._closeButton.type = 'button';
             this._closeButton.setAttribute('aria-label', 'Close popup');
+            this._closeButton.setAttribute('aria-hidden', 'true');
             this._closeButton.innerHTML = '&#215;';
             this._closeButton.addEventListener('click', this._onClose);
         }

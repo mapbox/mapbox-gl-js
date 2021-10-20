@@ -60,6 +60,9 @@ class ScrollZoomHandler {
     _defaultZoomRate: number;
     _wheelZoomRate: number;
 
+    _alertContainer: HTMLElement; // used to display the scroll zoom blocker alert
+    _alertTimer: TimeoutID;
+
     /**
      * @private
      */
@@ -73,7 +76,8 @@ class ScrollZoomHandler {
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
 
-        bindAll(['_onTimeout'], this);
+        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_showBlockerAlert', '_isFullscreen'], this);
+
     }
 
     /**
@@ -139,6 +143,7 @@ class ScrollZoomHandler {
         if (this.isEnabled()) return;
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
+        if (this._map._cooperativeGestures) this._addScrollZoomBlocker();
     }
 
     /**
@@ -150,10 +155,25 @@ class ScrollZoomHandler {
     disable() {
         if (!this.isEnabled()) return;
         this._enabled = false;
+        if (this._map._cooperativeGestures) {
+            clearTimeout(this._alertTimer);
+            this._alertContainer.remove();
+        }
     }
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
+
+        if (this._map._cooperativeGestures) {
+            if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !this._isFullscreen()) {
+                this._showBlockerAlert();
+                return;
+            } else if (this._alertContainer.style.visibility !== 'hidden') {
+                // immediately hide alert if it is visible when ctrl or ⌘ is pressed while scroll zooming.
+                this._alertContainer.style.visibility = 'hidden';
+                clearTimeout(this._alertTimer);
+            }
+        }
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
         let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
@@ -248,6 +268,7 @@ class ScrollZoomHandler {
         this._frameId = null;
 
         if (!this.isActive()) return;
+
         const tr = this._map.transform;
 
         const startingZoom = () => {
@@ -353,9 +374,44 @@ class ScrollZoomHandler {
         return easing;
     }
 
+    blur() {
+        this.reset();
+    }
+
     reset() {
         this._active = false;
     }
+
+    _addScrollZoomBlocker() {
+        if (this._map && !this._alertContainer) {
+            this._alertContainer = DOM.create('div', 'mapboxgl-scroll-zoom-blocker', this._map._container);
+
+            if (/(Mac|iPad)/i.test(window.navigator.userAgent)) {
+                this._alertContainer.textContent = this._map._getUIString('ScrollZoomBlocker.CmdMessage');
+            } else {
+                this._alertContainer.textContent = this._map._getUIString('ScrollZoomBlocker.CtrlMessage');
+            }
+
+            // dynamically set the font size of the scroll zoom blocker alert message
+            this._alertContainer.style.fontSize = `${Math.max(10, Math.min(24, Math.floor(this._el.clientWidth * 0.05)))}px`;
+        }
+    }
+
+    _isFullscreen() {
+        return !!window.document.fullscreenElement;
+    }
+
+    _showBlockerAlert() {
+        if (this._alertContainer.style.visibility === 'hidden') this._alertContainer.style.visibility = 'visible';
+        this._alertContainer.classList.add('mapboxgl-scroll-zoom-blocker-show');
+
+        clearTimeout(this._alertTimer);
+
+        this._alertTimer = setTimeout(() => {
+            this._alertContainer.classList.remove('mapboxgl-scroll-zoom-blocker-show');
+        }, 200);
+    }
+
 }
 
 export default ScrollZoomHandler;

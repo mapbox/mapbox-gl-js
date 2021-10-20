@@ -492,6 +492,8 @@ test('DragRotateHandler ends rotation if the window blurs (#3389)', (t) => {
     t.equal(rotate.callCount, 1);
 
     simulate.blur(window);
+    map._renderTaskQueue.run();
+
     t.equal(rotateend.callCount, 1);
 
     map.remove();

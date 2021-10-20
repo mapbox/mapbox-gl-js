@@ -1,20 +1,36 @@
-#ifdef GL_ES
-precision highp float;
+// NOTE: This prelude is injected in the vertex shader only
+
+float wrap(float n, float min, float max) {
+    float d = max - min;
+    float w = mod(mod(n - min, d) + d, d) + min;
+    return (w == min) ? max : w;
+}
+
+vec3 mercator_tile_position(mat4 matrix, vec2 tile_anchor, vec3 tile_id, vec2 mercator_center) {
+#if defined(PROJECTION_GLOBE_VIEW) && !defined(PROJECTED_POS_ON_VIEWPORT)
+    // tile_id.z contains pow(2.0, coord.canonical.z)
+    float tiles = tile_id.z;
+
+    vec2 mercator = (tile_anchor / EXTENT + tile_id.xy) / tiles;
+    mercator -= mercator_center;
+    mercator.x = wrap(mercator.x, -0.5, 0.5);
+
+    vec4 mercator_tile = vec4(mercator.xy * EXTENT, EXTENT / (2.0 * PI), 1.0);
+    mercator_tile = matrix * mercator_tile;
+
+    return mercator_tile.xyz;
 #else
-
-#if !defined(lowp)
-#define lowp
+    return vec3(0.0);
 #endif
+}
 
-#if !defined(mediump)
-#define mediump
+vec3 mix_globe_mercator(vec3 globe, vec3 mercator, float t) {
+#if defined(PROJECTION_GLOBE_VIEW) && !defined(PROJECTED_POS_ON_VIEWPORT)
+    return mix(globe, mercator, t);
+#else
+    return globe;
 #endif
-
-#if !defined(highp)
-#define highp
-#endif
-
-#endif
+}
 
 // Unpack a pair of values that have been packed into a single float.
 // The packed values are assumed to be 8-bit unsigned integers, and are

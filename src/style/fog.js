@@ -34,11 +34,16 @@ class Fog extends Evented {
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
 
+    // Alternate projections do not yet support fog.
+    // Disable fog rendering until they do.
+    _disabledForProjections: boolean;
+
     constructor(fogOptions?: FogSpecification) {
         super();
         this._transitionable = new Transitionable(fogProperties);
         this.set(fogOptions);
         this._transitioning = this._transitionable.untransitioned();
+        this._disabledForProjections = false;
     }
 
     get state(): FogState {
@@ -69,6 +74,7 @@ class Fog extends Evented {
     }
 
     getOpacity(pitch: number): number {
+        if (this._disabledForProjections) return 0;
         const fogColor = (this.properties && this.properties.get('color')) || 1.0;
         const pitchFactor = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
         return pitchFactor * fogColor.a;

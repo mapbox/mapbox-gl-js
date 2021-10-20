@@ -3,6 +3,7 @@
 import browser from '../util/browser.js';
 
 import {Placement} from '../symbol/placement.js';
+import {PerformanceUtils} from '../util/performance.js';
 
 import type Transform from '../geo/transform.js';
 import type StyleLayer from './style_layer.js';
@@ -29,7 +30,6 @@ class LayerPlacement {
     }
 
     continuePlacement(tiles: Array<Tile>, placement: Placement, showCollisionBoxes: boolean, styleLayer: StyleLayer, shouldPausePlacement: () => boolean) {
-
         const bucketParts = this._bucketParts;
 
         while (this._currentTileIndex < tiles.length) {
@@ -49,8 +49,7 @@ class LayerPlacement {
 
         while (this._currentPartIndex < bucketParts.length) {
             const bucketPart = bucketParts[this._currentPartIndex];
-            placement.placeLayerBucketPart(bucketPart, this._seenCrossTileIDs, showCollisionBoxes);
-
+            placement.placeLayerBucketPart(bucketPart, this._seenCrossTileIDs, showCollisionBoxes, bucketPart.symbolInstanceStart === 0);
             this._currentPartIndex++;
             if (shouldPausePlacement()) {
                 return true;
@@ -110,6 +109,7 @@ class PauseablePlacement {
                 const pausePlacement = this._inProgressLayer.continuePlacement(layerTiles[layer.source], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement);
 
                 if (pausePlacement) {
+                    PerformanceUtils.recordPlacementTime(browser.now() - startTime);
                     // We didn't finish placing all layers within 2ms,
                     // but we can keep rendering with a partial placement
                     // We'll resume here on the next frame
@@ -121,7 +121,7 @@ class PauseablePlacement {
 
             this._currentPlacementIndex--;
         }
-
+        PerformanceUtils.recordPlacementTime(browser.now() - startTime);
         this._done = true;
     }
 

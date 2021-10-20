@@ -2,6 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 import DOM from '../../util/dom.js';
+import type Map from '../map.js';
 
 class TwoTouchHandler {
 
@@ -205,6 +206,12 @@ export class TouchPitchHandler extends TwoTouchHandler {
     _valid: boolean | void;
     _firstMove: number;
     _lastPoints: [Point, Point];
+    _map: Map;
+
+    constructor(map: Map) {
+        super();
+        this._map = map;
+    }
 
     reset() {
         super.reset();
@@ -220,13 +227,17 @@ export class TouchPitchHandler extends TwoTouchHandler {
             this._valid = false;
 
         }
+
     }
 
     _move(points: [Point, Point], center: Point, e: TouchEvent) {
         const vectorA = points[0].sub(this._lastPoints[0]);
         const vectorB = points[1].sub(this._lastPoints[1]);
 
+        if (this._map._cooperativeGestures && e.touches.length < 3) return;
+
         this._valid = this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
+
         if (!this._valid) return;
 
         this._lastPoints = points;
