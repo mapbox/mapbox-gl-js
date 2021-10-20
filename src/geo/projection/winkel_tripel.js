@@ -1,6 +1,6 @@
 // @flow
 import LngLat from '../lng_lat.js';
-import {clamp} from '../../util/util.js';
+import {clamp, degToRad, radToDeg} from '../../util/util.js';
 
 export default {
     name: 'winkelTripel',
@@ -8,12 +8,14 @@ export default {
     range: [3.5, 7],
 
     project(lng: number, lat: number) {
-        lat = lat / 180 * Math.PI;
-        lng = lng / 180 * Math.PI;
-        const phi1 = Math.acos(2 / Math.PI);
-        const alpha = Math.acos(Math.cos(lat) * Math.cos(lng / 2));
-        const x = 0.5 * (lng * Math.cos(phi1) + (2 * Math.cos(lat) * Math.sin(lng / 2)) / (Math.sin(alpha) / alpha)) || 0;
-        const y = 0.5 * (lat + Math.sin(lat) / (Math.sin(alpha) / alpha)) || 0;
+        lat = degToRad(lat);
+        lng = degToRad(lng);
+        const cosLat = Math.cos(lat);
+        const twoOverPi = 2 / Math.PI;
+        const alpha = Math.acos(cosLat * Math.cos(lng / 2));
+        const sinAlphaOverAlpha = Math.sin(alpha) / alpha;
+        const x = 0.5 * (lng * twoOverPi + (2 * cosLat * Math.sin(lng / 2)) / sinAlphaOverAlpha) || 0;
+        const y = 0.5 * (lat + Math.sin(lat) / sinAlphaOverAlpha) || 0;
         return {
             x: (x / Math.PI + 0.5) * 0.5,
             y: 1 - (y / Math.PI + 1) * 0.5
@@ -56,8 +58,8 @@ export default {
             phi -= dphi;
         } while ((Math.abs(dlambda) > epsilon || Math.abs(dphi) > epsilon) && --i > 0);
 
-        const lng = clamp(lambda * 180 / Math.PI, -180, 180);
-        const lat = clamp(phi * 180 / Math.PI, -90, 90);
+        const lng = clamp(radToDeg(lambda), -180, 180);
+        const lat = clamp(radToDeg(phi), -90, 90);
 
         return new LngLat(lng, lat);
     }
