@@ -798,7 +798,7 @@ export default class Marker extends Evented {
     /**
      * Sets the `snapToPixel` property of the marker.
      *
-     * @param {boolean} shouldSnapToPixel
+     * @param {boolean} shouldSnapToPixel Enable or disable `snapToPixel`.
      * @returns {Marker} Returns itself to allow for method chaining.
      * @example
      * marker.setSnapToPixel(true);
@@ -811,7 +811,7 @@ export default class Marker extends Evented {
     /**
      * Returns the current `snapToPixel` property of the marker.
      *
-     * @returns {boolean}
+     * @returns {boolean} Returns the current `snapToPixel` property of the marker.
      * @example
      * const snapToPixel = marker.getSnapToPixel();
      */
