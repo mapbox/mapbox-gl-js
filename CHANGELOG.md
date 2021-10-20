@@ -3,19 +3,19 @@
 ### ✨ Features and improvements
 
 * Add support for a variety of new map projections beyond the standard Web Mercator. Alternate projections can be used together with all existing styles and sources. The projections eliminate distortion as you zoom to make them useful at every scale. Supported projections include `albers`, `equalEarth`, `equirectangular`, `lambertConformalConic`, `naturalEarth` and `winkelTripel`. Change the projection by setting it in the map constructor: `new Map({ projection: 'winkelTripel', ... })`. ([#11124](https://github.com/mapbox/mapbox-gl-js/pull/11124))
-* Adds a new `"cooperativeGestures": true` map option that prevents the map from capturing page scrolling and panning. When enabled, scroll zooming requires `ctrl` or `⌘` to be pressed and touch panning requires two fingers ([#11029](https://github.com/mapbox/mapbox-gl-js/pull/11029), [#11116](https://github.com/mapbox/mapbox-gl-js/pull/11116))
-* Add support for dynamically filtering symbols based on pitch and distance. `["pitch"]` and `["distance-from-camera"]` expressions can now be used within the `filter` of a symbol layer. ([#10795](https://github.com/mapbox/mapbox-gl-js/pull/10795))
-* Improvements to accessibility: conveying only aria-label in controls, replaced aria-pressed with aria-expanded in the attribution control, interactive markers with popups express an aria-expanded state, and interactive markers have the role "button". ([#11064](https://github.com/mapbox/mapbox-gl-js/pull/11064))
-* Added support for conditionally styling most paint properties according to the presence or absence of specific images. ([#11049](https://github.com/mapbox/mapbox-gl-js/pull/11049))
+* Add a new `"cooperativeGestures": true` map option that prevents the map from capturing page scrolling and panning. When enabled, scroll zooming requires `ctrl` or `⌘` to be pressed and touch panning requires two fingers ([#11029](https://github.com/mapbox/mapbox-gl-js/pull/11029), [#11116](https://github.com/mapbox/mapbox-gl-js/pull/11116))
+* Add support for dynamic filtering of symbols based on pitch and distance to map center. `["pitch"]` and `["distance-from-camera"]` expressions can now be used within the `filter` of a symbol layer. ([#10795](https://github.com/mapbox/mapbox-gl-js/pull/10795))
+* Improve user accessibility: conveying only aria-label in controls, replace aria-pressed with aria-expanded in the attribution control, interactive markers with popups express an aria-expanded state, and interactive markers have the role "button". ([#11064](https://github.com/mapbox/mapbox-gl-js/pull/11064))
+* Add support for conditionally styling most paint properties according to the presence or absence of specific images. ([#11049](https://github.com/mapbox/mapbox-gl-js/pull/11049))
 * Add support for attaching events to multiple layers with `map.on()`, allowing users to get retrieve features under the mouse or touch event based on the order in which they are rendered.  ([#11114](https://github.com/mapbox/mapbox-gl-js/pull/11114))
 
 ### 🐞 Bug fixes
 
 * Fix marker positioning before initial map load ([#11025](https://github.com/mapbox/mapbox-gl-js/pull/11025))
 * Fix slow tile loading performance on maps with CJK glyphs on certain Chrome/GPU combinations. ([#11047](https://github.com/mapbox/mapbox-gl-js/pull/11047))
-* Update NavigationControl when min and max zoom are changed ([#11018](https://github.com/mapbox/mapbox-gl-js/pull/11018))
+* Update NavigationControl when `min` and `max` zoom are changed ([#11018](https://github.com/mapbox/mapbox-gl-js/pull/11018))
 * Prevent video sources from entering fullscreen on iOS Safari ([#11067](https://github.com/mapbox/mapbox-gl-js/pull/11067))
-* Fix a rare triangulation issue that could cause infinite loop ([#11110](https://github.com/mapbox/mapbox-gl-js/pull/11110))
+* Fix a rare triangulation issue that could cause an infinite loop ([#11110](https://github.com/mapbox/mapbox-gl-js/pull/11110))
 * Fix a bug where `null` feature values were returned as `"null"` by `queryRenderedFeatures(...)` ([#11110](https://github.com/mapbox/mapbox-gl-js/pull/11110))
 
 ## 2.5.1
