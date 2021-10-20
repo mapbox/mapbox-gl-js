@@ -252,7 +252,7 @@ class CrossTileSymbolIndex {
         this.bucketsInCurrentPlacement = {};
     }
 
-    addLayer(styleLayer: StyleLayer, tiles: Array<Tile>, lng: number) {
+    addLayer(styleLayer: StyleLayer, tiles: Array<Tile>, lng: number, projection: Projection) {
         let layerIndex = this.layerIndexes[styleLayer.id];
         if (layerIndex === undefined) {
             layerIndex = this.layerIndexes[styleLayer.id] = new CrossTileSymbolLayerIndex();
@@ -261,7 +261,9 @@ class CrossTileSymbolIndex {
         let symbolBucketsChanged = false;
         const currentBucketIDs = {};
 
-        layerIndex.handleWrapJump(lng);
+        if (projection.name !== 'globe') {
+            layerIndex.handleWrapJump(lng);
+        }
 
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
