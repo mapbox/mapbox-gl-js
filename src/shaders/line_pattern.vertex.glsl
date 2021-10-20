@@ -12,7 +12,7 @@ attribute float a_linesofar;
 
 uniform mat4 u_matrix;
 uniform vec2 u_units_to_pixels;
-uniform mediump float u_ratio;
+uniform mat2 u_pixels_to_tile_units;
 uniform lowp float u_device_pixel_ratio;
 
 varying vec2 v_normal;
@@ -82,8 +82,8 @@ void main() {
     mediump float t = 1.0 - abs(u);
     mediump vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
 
-    vec4 projected_extrude = u_matrix * vec4(dist / u_ratio, 0.0, 0.0);
-    gl_Position = u_matrix * vec4(pos + offset2 / u_ratio, 0.0, 1.0) + projected_extrude;
+    vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
+    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude;
 
 #ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude

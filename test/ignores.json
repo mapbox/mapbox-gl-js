@@ -32,5 +32,8 @@
   "render-tests/within/paint-line": "https://github.com/mapbox/mapbox-gl-js/issues/7023",
   "render-tests/distance/layout-text-size": "skip - distance expression is not implemented",
   "render-tests/skybox/atmosphere-padding": "skip - https://github.com/mapbox/mapbox-gl-js/issues/10314",
-  "render-tests/terrain/symbol-draping/style.json": "skip - https://github.com/mapbox/mapbox-gl-js/issues/10365"
+  "render-tests/terrain/symbol-draping/style.json": "skip - https://github.com/mapbox/mapbox-gl-js/issues/10365",
+  "render-tests/fill-extrusion-terrain/flat-roof-over-border-of-different-zoom-zoomin": "skip - https://github.com/mapbox/mapbox-gl-js/issues/11041",
+  "render-tests/fill-extrusion-terrain/flat-roof-over-border-of-different-zoom": "skip - https://github.com/mapbox/mapbox-gl-js/issues/11041",
+  "render-tests/text-variable-anchor/pitched": "skip - non-deterministic symbol placement on tile boundaries"
 }

@@ -135,6 +135,7 @@ test('Marker#togglePopup opens a popup that was closed', (t) => {
         .togglePopup();
 
     t.ok(marker.getPopup().isOpen());
+    t.equal(marker.getElement().getAttribute('aria-expanded'), 'true');
 
     map.remove();
     t.end();
@@ -150,6 +151,7 @@ test('Marker#togglePopup closes a popup that was open', (t) => {
         .togglePopup();
 
     t.ok(!marker.getPopup().isOpen());
+    t.equal(marker.getElement().getAttribute('aria-expanded'), 'false');
 
     map.remove();
     t.end();
@@ -830,7 +832,7 @@ test('Drag above horizon clamps', (t) => {
 });
 
 test('Drag below / behind camera', (t) => {
-    const map = createMap(t);
+    const map = createMap(t, {zoom: 3});
     map.setPitch(85);
     const marker = new Marker({draggable: true})
         .setLngLat(map.unproject([map.transform.width / 2, map.transform.height - 20]))

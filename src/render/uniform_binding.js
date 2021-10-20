@@ -151,6 +151,24 @@ class UniformMatrix3f extends Uniform<Float32Array> {
     }
 }
 
+const emptyMat2 = new Float32Array(4);
+class UniformMatrix2f extends Uniform<Float32Array> {
+    constructor(context: Context, location: WebGLUniformLocation) {
+        super(context, location);
+        this.current = emptyMat2;
+    }
+
+    set(v: Float32Array): void {
+        for (let i = 0; i < 4; i++) {
+            if (v[i] !== this.current[i]) {
+                this.current = v;
+                this.gl.uniformMatrix2fv(this.location, false, v);
+                break;
+            }
+        }
+    }
+}
+
 export {
     Uniform,
     Uniform1i,
@@ -159,6 +177,7 @@ export {
     Uniform3f,
     Uniform4f,
     UniformColor,
+    UniformMatrix2f,
     UniformMatrix3f,
     UniformMatrix4f
 };

@@ -57,6 +57,7 @@ class AttributionControl {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
         this._compactButton = DOM.create('button', 'mapboxgl-ctrl-attrib-button', this._container);
+        DOM.create('span', `mapboxgl-ctrl-icon`, this._compactButton).setAttribute('aria-hidden', true);
         this._compactButton.type = 'button';
         this._compactButton.addEventListener('click', this._toggleAttribution);
         this._setElementTitle(this._compactButton, 'ToggleAttribution');
@@ -96,17 +97,17 @@ class AttributionControl {
 
     _setElementTitle(element: HTMLElement, title: string) {
         const str = this._map._getUIString(`AttributionControl.${title}`);
-        element.title = str;
         element.setAttribute('aria-label', str);
+        if (element.firstElementChild) element.firstElementChild.setAttribute('title', str);
     }
 
     _toggleAttribution() {
         if (this._container.classList.contains('mapboxgl-compact-show')) {
             this._container.classList.remove('mapboxgl-compact-show');
-            this._compactButton.setAttribute('aria-pressed', 'false');
+            this._compactButton.setAttribute('aria-expanded', 'false');
         } else {
             this._container.classList.add('mapboxgl-compact-show');
-            this._compactButton.setAttribute('aria-pressed', 'true');
+            this._compactButton.setAttribute('aria-expanded', 'true');
         }
     }
 

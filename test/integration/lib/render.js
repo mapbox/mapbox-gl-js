@@ -74,6 +74,7 @@ function ensureTeardown(t) {
         delete map.painter.context.gl;
         map = null;
     }
+    mapboxgl.clearStorage();
     expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
     diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
 
@@ -144,6 +145,7 @@ async function runTest(t) {
             fadeDuration: options.fadeDuration || 0,
             optimizeForTerrain: options.optimizeForTerrain || false,
             localIdeographFontFamily: options.localIdeographFontFamily || false,
+            projection: options.projection,
             crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
             transformRequest: (url, resourceType) => {
                 // some tests have the port hardcoded to 2900
@@ -308,7 +310,7 @@ async function runTest(t) {
             updateHTML(testMetaData);
         }
 
-        browserWriteFile.postMessage(fileInfo);
+        if (!process.env.CI) browserWriteFile.postMessage(fileInfo);
 
     } catch (e) {
         t.error(e);

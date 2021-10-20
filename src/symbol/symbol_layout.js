@@ -153,6 +153,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                              imageMap: {[_: string]: StyleImage},
                              imagePositions: {[_: string]: ImagePosition},
                              showCollisionBoxes: boolean,
+                             availableImages: Array<string>,
                              canonical: CanonicalTileID,
                              tileZoom: number) {
     bucket.createArrays();
@@ -315,7 +316,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
             bucket.iconsInText = shapedText ? shapedText.iconsInText : false;
         }
         if (shapedText || shapedIcon) {
-            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, canonical);
+            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, availableImages, canonical);
         }
     }
 
@@ -355,7 +356,9 @@ function addFeature(bucket: SymbolBucket,
                     layoutTextSize: number,
                     layoutIconSize: number,
                     textOffset: [number, number],
-                    isSDFIcon: boolean, canonical: CanonicalTileID) {
+                    isSDFIcon: boolean,
+                    availableImages: Array<string>,
+                    canonical: CanonicalTileID) {
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.
     // bucket calculates text-size at a high zoom level so that all tiles can
@@ -407,7 +410,7 @@ function addFeature(bucket: SymbolBucket,
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
-            feature, sizes, isSDFIcon, canonical);
+            feature, sizes, isSDFIcon, availableImages, canonical);
     };
 
     if (symbolPlacement === 'line') {
@@ -486,6 +489,7 @@ function addTextVertices(bucket: SymbolBucket,
                          placedTextSymbolIndices: {[_: string]: number},
                          placedIconIndex: number,
                          sizes: Sizes,
+                         availableImages: Array<string>,
                          canonical: CanonicalTileID) {
     const glyphQuads = getGlyphQuads(anchor, shapedText, textOffset,
                             layer, textAlongLine, feature, imageMap, bucket.allowVerticalPlacement);
@@ -523,6 +527,7 @@ function addTextVertices(bucket: SymbolBucket,
         lineArray.lineStartIndex,
         lineArray.lineLength,
         placedIconIndex,
+        availableImages,
         canonical);
 
     // The placedSymbolArray is used at render time in drawTileSymbols
@@ -643,6 +648,7 @@ function addSymbol(bucket: SymbolBucket,
                    feature: SymbolFeature,
                    sizes: Sizes,
                    isSDFIcon: boolean,
+                   availableImages: Array<string>,
                    canonical: CanonicalTileID) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
 
@@ -729,7 +735,9 @@ function addSymbol(bucket: SymbolBucket,
             lineArray.lineStartIndex,
             lineArray.lineLength,
             // The icon itself does not have an associated symbol since the text isnt placed yet
-            -1, canonical);
+            -1,
+            availableImages,
+            canonical);
 
         placedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
 
@@ -749,7 +757,9 @@ function addSymbol(bucket: SymbolBucket,
                 lineArray.lineStartIndex,
                 lineArray.lineLength,
                 // The icon itself does not have an associated symbol since the text isnt placed yet
-                -1, canonical);
+                -1,
+                availableImages,
+                canonical);
 
             verticalPlacedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
         }
@@ -775,7 +785,7 @@ function addSymbol(bucket: SymbolBucket,
             bucket, projectedAnchor, anchor, shaping, imageMap, layer, textAlongLine, feature, textOffset, lineArray,
             shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly,
             singleLine ? (Object.keys(shapedTextOrientations.horizontal): any) : [justification],
-            placedTextSymbolIndices, placedIconSymbolIndex, sizes, canonical);
+            placedTextSymbolIndices, placedIconSymbolIndex, sizes, availableImages, canonical);
 
         if (singleLine) {
             break;
@@ -785,7 +795,7 @@ function addSymbol(bucket: SymbolBucket,
     if (shapedTextOrientations.vertical) {
         numVerticalGlyphVertices += addTextVertices(
             bucket, projectedAnchor, anchor, shapedTextOrientations.vertical, imageMap, layer, textAlongLine, feature,
-            textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices, verticalPlacedIconSymbolIndex, sizes, canonical);
+            textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices, verticalPlacedIconSymbolIndex, sizes, availableImages, canonical);
     }
 
     // Check if runtime collision circles should be used for any of the collision features.
