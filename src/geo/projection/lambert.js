@@ -57,10 +57,11 @@ export default {
         y = (2 * (1 - y) - 0.5) * Math.PI;
         const {n, f} = getParams(this.parallels);
         const fy = f - y;
+        const signFy = Math.sign(fy);
         const r = Math.sign(n) * Math.sqrt(x * x + fy * fy);
-        let l = Math.atan2(x, Math.abs(fy)) * Math.sign(fy);
+        let l = Math.atan2(x, Math.abs(fy)) * signFy;
 
-        if (fy * n < 0) l -= Math.PI * Math.sign(x) * Math.sign(fy);
+        if (fy * n < 0) l -= Math.PI * Math.sign(x) * signFy;
 
         const lng = clamp((l / n)  * 180 / Math.PI, -180, 180);
         const lat = clamp((2 * Math.atan(Math.pow(f / r, 1 / n)) - halfPi)  * 180 / Math.PI, -90, 90);
