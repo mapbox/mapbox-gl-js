@@ -3,7 +3,7 @@
 import LngLat from '../lng_lat.js';
 import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 import {mat4, mat2} from 'gl-matrix';
-import {clamp} from '../../util/util.js';
+import {clamp, smoothstep} from '../../util/util.js';
 import type {Projection} from './index.js';
 import type Transform from '../transform.js';
 
@@ -41,7 +41,7 @@ function getInterpolationT(transform: Transform) {
     const rangeAdjustment = Math.log(size / 1024) / Math.LN2;
     const zoomA = range[0] + rangeAdjustment;
     const zoomB = range[1] + rangeAdjustment;
-    const t = clamp((transform.zoom - zoomA) / (zoomB - zoomA), 0, 1);
+    const t = smoothstep(zoomA, zoomB, transform.zoom);
     return t;
 }
 
