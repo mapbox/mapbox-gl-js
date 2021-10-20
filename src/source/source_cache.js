@@ -806,6 +806,8 @@ class SourceCache extends Evented {
         for (const id in this._tiles)
             this._removeTile(+id);
 
+        if (this._source._clear) this._source._clear();
+
         this._cache.reset();
     }
 
