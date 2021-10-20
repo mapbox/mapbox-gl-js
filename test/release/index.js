@@ -161,6 +161,11 @@ const pages = [
         "title": "Video",
         "url": "./video.html"
     },
+    {
+        "key": "scroll_zoom_blocker",
+        "title": "Cooperative gesture handling",
+        "url": "./scroll_zoom_blocker.html"
+    }
 ];
 
 const versions = {
