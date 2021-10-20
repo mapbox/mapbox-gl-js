@@ -24,7 +24,7 @@ export default function(tile: {tileID: OverscaledTileID, tileSize: number}, pixe
     return pixelValue * (EXTENT / (tile.tileSize * Math.pow(2, z - tile.tileID.overscaledZ)));
 }
 
-export function getPixelsToTileUnitsMatrix(tile: {tileID: OverscaledTileID, tileSize: number, tileTransform: TileTransform}, transform: Transform): Float32Array {
+export function getPixelsToTileUnitsMatrix(tile: {tileID: OverscaledTileID, tileSize: number, +tileTransform: TileTransform}, transform: Transform): Float32Array {
     const {scale} = tile.tileTransform;
     const s = scale * EXTENT / (tile.tileSize * Math.pow(2, transform.zoom - tile.tileID.overscaledZ + tile.tileID.canonical.z));
     return mat2.scale(new Float32Array(4), transform.inverseAdjustmentMatrix, [s, s]);

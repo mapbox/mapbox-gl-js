@@ -108,7 +108,7 @@ class Tile {
     vtLayers: {[_: string]: VectorTileLayer};
     isSymbolTile: ?boolean;
     isRaster: ?boolean;
-    tileTransform: TileTransform;
+    _tileTransform: TileTransform;
 
     neighboringTiles: ?Object;
     dem: ?DEMData;
@@ -128,6 +128,7 @@ class Tile {
     hasSymbolBuckets: boolean;
     hasRTLText: boolean;
     dependencies: Object;
+    projection: Projection;
 
     queryGeometryDebugViz: TileSpaceDebugBuffer;
     queryBoundsDebugViz: TileSpaceDebugBuffer;
@@ -165,6 +166,10 @@ class Tile {
         this.expiredRequestCount = 0;
 
         this.state = 'loading';
+
+        if (painter && painter.transform) {
+            this.projection = painter.transform.projection;
+        }
     }
 
     registerFadeDuration(duration: number) {
@@ -177,6 +182,13 @@ class Tile {
 
     wasRequested() {
         return this.state === 'errored' || this.state === 'loaded' || this.state === 'reloading';
+    }
+
+    get tileTransform() {
+        if (!this._tileTransform) {
+            this._tileTransform = tileTransform(this.tileID.canonical, this.projection);
+        }
+        return this._tileTransform;
     }
 
     /**
@@ -197,7 +209,6 @@ class Tile {
         // generate tile bounds buffers after on tile load
         if (painter && painter.context) {
             const {projection} = painter.transform;
-            this.tileTransform = tileTransform(this.tileID.canonical, projection);
             this._makeTileBoundsBuffers(painter.context, projection);
         }
 
