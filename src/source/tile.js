@@ -165,14 +165,6 @@ class Tile {
         this.expiredRequestCount = 0;
 
         this.state = 'loading';
-
-        if (painter) {
-            const {projection} = painter.transform;
-            this.tileTransform = tileTransform(tileID.canonical, projection);
-            if (painter.context) {
-                this._makeTileBoundsBuffers(painter.context, projection);
-            }
-        }
     }
 
     registerFadeDuration(duration: number) {
@@ -198,11 +190,14 @@ class Tile {
      * @private
      */
     loadVectorData(data: ?WorkerTileResult, painter: any, justReloaded: ?boolean) {
-        if (this.hasData()) {
-            this.unloadVectorData();
-        }
+        this.unloadVectorData();
 
         this.state = 'loaded';
+
+        // generate tile bounds buffers after on tile load
+        const {projection} = painter.transform;
+        this.tileTransform = tileTransform(this.tileID.canonical, projection);
+        this._makeTileBoundsBuffers(painter.context, projection);
 
         // empty GeoJSON tile
         if (!data) {
@@ -276,6 +271,8 @@ class Tile {
      * @private
      */
     unloadVectorData() {
+        if (!this.hasData()) return;
+
         for (const id in this.buckets) {
             this.buckets[id].destroy();
         }
