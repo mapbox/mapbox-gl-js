@@ -1,21 +1,12 @@
 // @flow
 import LngLat from '../lng_lat.js';
-import {clamp} from '../../util/util.js';
+import {clamp, degToRad, radToDeg} from '../../util/util.js';
+import {vec2} from 'gl-matrix';
 
 const halfPi = Math.PI / 2;
 
 function tany(y) {
     return Math.tan((halfPi + y) / 2);
-}
-
-function getParams([lat0, lat1]) {
-    const y0 = lat0 * Math.PI / 180;
-    const y1 = lat1 * Math.PI / 180;
-    const cy0 = Math.cos(y0);
-    const n = y0 === y1 ? Math.sin(y0) : Math.log(cy0 / Math.cos(y1)) / Math.log(tany(y1) / tany(y0));
-    const f = cy0 * Math.pow(tany(y0), n) / n;
-
-    return {n, f};
 }
 
 export default {
@@ -27,13 +18,29 @@ export default {
 
     conical: true,
 
+    initializeConstants() {
+        if (this.constants && vec2.exactEquals(this.parallels, this.constants.parallels)) {
+            return;
+        }
+
+        const y0 = degToRad(this.parallels[0]);
+        const y1 = degToRad(this.parallels[1]);
+        const cy0 = Math.cos(y0);
+        const n = y0 === y1 ? Math.sin(y0) : Math.log(cy0 / Math.cos(y1)) / Math.log(tany(y1) / tany(y0));
+        const f = cy0 * Math.pow(tany(y0), n) / n;
+
+        this.constants = {n, f, parallels: this.parallels};
+    },
+
     project(lng: number, lat: number) {
+        this.initializeConstants();
+
         // based on https://github.com/d3/d3-geo, MIT-licensed
-        lat = lat / 180 * Math.PI;
-        lng = lng / 180 * Math.PI;
+        lat = degToRad(lat);
+        lng = degToRad(lng);
 
         const epsilon = 1e-6;
-        const {n, f} = getParams(this.parallels);
+        const {n, f} = this.constants;
 
         if (f > 0) {
             if (lat < -halfPi + epsilon) lat = -halfPi + epsilon;
@@ -52,10 +59,12 @@ export default {
     },
 
     unproject(x: number, y: number) {
+        this.initializeConstants();
+
         // based on https://github.com/d3/d3-geo, MIT-licensed
         x = (2 * x - 0.5) * Math.PI;
         y = (2 * (1 - y) - 0.5) * Math.PI;
-        const {n, f} = getParams(this.parallels);
+        const {n, f} = this.constants;
         const fy = f - y;
         const signFy = Math.sign(fy);
         const r = Math.sign(n) * Math.sqrt(x * x + fy * fy);
@@ -63,8 +72,8 @@ export default {
 
         if (fy * n < 0) l -= Math.PI * Math.sign(x) * signFy;
 
-        const lng = clamp((l / n)  * 180 / Math.PI, -180, 180);
-        const lat = clamp((2 * Math.atan(Math.pow(f / r, 1 / n)) - halfPi)  * 180 / Math.PI, -90, 90);
+        const lng = clamp(radToDeg(l / n), -180, 180);
+        const lat = clamp(radToDeg(2 * Math.atan(Math.pow(f / r, 1 / n)) - halfPi), -90, 90);
 
         return new LngLat(lng, lat);
     }

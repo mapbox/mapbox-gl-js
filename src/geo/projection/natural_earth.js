@@ -1,6 +1,6 @@
 // @flow
 import LngLat from '../lng_lat.js';
-import {clamp} from '../../util/util.js';
+import {clamp, degToRad, radToDeg} from '../../util/util.js';
 
 export default {
     name: 'naturalEarth',
@@ -9,8 +9,8 @@ export default {
 
     project(lng: number, lat: number) {
         // based on https://github.com/d3/d3-geo, MIT-licensed
-        lat = lat / 180 * Math.PI;
-        lng = lng / 180 * Math.PI;
+        lat = degToRad(lat);
+        lng = degToRad(lng);
 
         const phi2 = lat * lat;
         const phi4 = phi2 * phi2;
@@ -43,8 +43,8 @@ export default {
         phi2 = phi * phi;
         const lambda = x / (0.8707 + phi2 * (-0.131979 + phi2 * (-0.013791 + phi2 * phi2 * phi2 * (0.003971 - 0.001529 * phi2))));
 
-        const lng = clamp(lambda * 180 / Math.PI, -180, 180);
-        const lat = clamp(phi * 180 / Math.PI, -90, 90);
+        const lng = clamp(radToDeg(lambda), -180, 180);
+        const lat = clamp(radToDeg(phi), -90, 90);
 
         return new LngLat(lng, lat);
     }
