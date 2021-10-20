@@ -242,6 +242,10 @@ class ImageSource extends Evented implements Source {
         return this;
     }
 
+    _clear() {
+        delete this._boundsArray;
+    }
+
     _makeBoundsArray() {
         const tileTr = tileTransform(this.tileID, this.map.transform.projection);
 
