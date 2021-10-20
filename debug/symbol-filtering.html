@@ -1,0 +1,109 @@
+
+<html>
+    <head>
+        <title>Symbol clip demo page</title>
+        <link rel="stylesheet" href="../dist/mapbox-gl.css">
+        <style>
+            body { margin: 0; padding: 0; }
+            html, body, #map { height: 100%; }
+        </style>
+    </head>
+    <body>
+        <div id="map"></div>
+        <script src="../dist/mapbox-gl-dev.js"></script>
+        <script src='../debug/access_token_generated.js'></script>
+                <script>
+                    const map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true
+});
+
+map.once('load', () => {
+    const poiLayer = map.getLayer('poi-label').serialize();
+    const nearFilter = [
+        'all',
+        poiLayer.filter,
+        ['any',
+            ['<', ['pitch'], 60],
+            ['all', ['>=', ['pitch'], 60], ['<=', ['distance-from-center'], 1]]
+        ]
+    ];
+
+    // Set current poi-layer so that it only renders in the "near" area
+    map.setFilter('poi-label', nearFilter);
+    map.addLayer({
+        'id': 'sky',
+        'type': 'sky',
+        'paint': {
+            'sky-type': 'atmosphere',
+            'sky-atmosphere-sun-intensity': 5,
+        }
+    });
+    map.setFog({'range': [2, 10]});
+
+    const farFilter = [
+        'all',
+        poiLayer.filter,
+        ['>', ['pitch'], 60],
+        ['>=', ['distance-from-center'], 2]
+    ];
+
+    const width = 2; // The image will be 64 pixels square
+    const height = 110;
+    const bytesPerPixel = 4; // Each pixel is represented by 4 bytes: red, green, blue, and alpha.
+    const data = new Uint8Array(width * height * bytesPerPixel);
+     
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+            const offset = (y * width + x) * bytesPerPixel;
+            const v = y < 10 ? 255 : 0; //(12 + 24 * Math.abs(x - width/2 + 0.5));
+            data[offset + 0] = v;
+            data[offset + 1] = v;
+            data[offset + 2] = v; // blue
+            data[offset + 3] = 255; // alpha
+        }
+    }
+
+        map.addImage('leader_line', {width,height,data}, {sdf: false});
+        const poiFarLayer = JSON.parse(JSON.stringify(poiLayer));
+        poiFarLayer.id = 'poi-label-elevated';
+        poiFarLayer.filter = farFilter;
+        poiFarLayer.layout['icon-image'] = 'leader_line';
+        //poiFarLayer.paint['icon-color'] =  poiFarLayer.paint['text-color'];
+        poiFarLayer.paint['icon-halo-width'] =  poiFarLayer.paint['text-halo-width'];
+        poiFarLayer.paint['icon-halo-blur'] =  poiFarLayer.paint['text-halo-blur'];
+        poiFarLayer.paint['icon-halo-color'] =  poiFarLayer.paint['text-halo-color'];
+        poiFarLayer.layout['icon-anchor'] = 'bottom';
+        poiFarLayer.layout['icon-size'] = 1;
+        poiFarLayer.layout['text-anchor'] = 'bottom';
+        poiFarLayer.layout['text-field'] = ['format', ['image', ['concat', ['get', 'maki'], '-15']], {}, '\n', {}, poiLayer.layout['text-field'], {}]
+        poiFarLayer.layout['text-offset'] = [
+            "step",
+            ["zoom"],
+            [
+                "step",
+                ["get", "sizerank"],
+                ["literal", [0, -9.5]],
+                5,
+                ["literal", [0, -8.75]]
+            ],
+            17,
+            [
+                "step",
+                ["get", "sizerank"],
+                ["literal", [0, -9.5]],
+                13,
+                ["literal", [0, -8.75]]
+            ]
+            ];
+
+        map.addLayer(poiFarLayer, 'poi-label');
+
+});
+                </script>
+    </body>
+</html> 
+
