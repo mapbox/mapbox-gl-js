@@ -1646,7 +1646,7 @@ class Style extends Evented {
                     .sort((a, b) => (b.tileID.overscaledZ - a.tileID.overscaledZ) || (a.tileID.isLessThan(b.tileID) ? -1 : 1));
             }
 
-            const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, layerTiles[styleLayer.source], transform.center.lng);
+            const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, layerTiles[styleLayer.source], transform.center.lng, transform.projection);
             symbolBucketsChanged = symbolBucketsChanged || layerBucketsChanged;
         }
         this.crossTileSymbolIndex.pruneUnusedLayers(this._order);
