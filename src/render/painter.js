@@ -914,6 +914,7 @@ class Painter {
         const tileIDs = this.transform.coveringTiles({tileSize});
         for (const tileID of tileIDs) {
             newTiles[tileID.key] = oldTiles[tileID.key] || new Tile(tileID, tileSize, this.transform.tileZoom, this);
+            newTiles[tileID.key]._makeTileBoundsBuffers(this.context, this.transform.projection);
         }
         return newTiles;
     }

@@ -108,7 +108,7 @@ class Tile {
     vtLayers: {[_: string]: VectorTileLayer};
     isSymbolTile: ?boolean;
     isRaster: ?boolean;
-    tileTransform: TileTransform;
+    _tileTransform: TileTransform;
 
     neighboringTiles: ?Object;
     dem: ?DEMData;
@@ -128,6 +128,7 @@ class Tile {
     hasSymbolBuckets: boolean;
     hasRTLText: boolean;
     dependencies: Object;
+    projection: Projection;
 
     queryGeometryDebugViz: TileSpaceDebugBuffer;
     queryBoundsDebugViz: TileSpaceDebugBuffer;
@@ -166,12 +167,8 @@ class Tile {
 
         this.state = 'loading';
 
-        if (painter) {
-            const {projection} = painter.transform;
-            this.tileTransform = tileTransform(tileID.canonical, projection);
-            if (painter.context) {
-                this._makeTileBoundsBuffers(painter.context, projection);
-            }
+        if (painter && painter.transform) {
+            this.projection = painter.transform.projection;
         }
     }
 
@@ -187,6 +184,13 @@ class Tile {
         return this.state === 'errored' || this.state === 'loaded' || this.state === 'reloading';
     }
 
+    get tileTransform() {
+        if (!this._tileTransform) {
+            this._tileTransform = tileTransform(this.tileID.canonical, this.projection);
+        }
+        return this._tileTransform;
+    }
+
     /**
      * Given a data object with a 'buffers' property, load it into
      * this tile's elementGroups and buffers properties and set loaded
@@ -198,11 +202,15 @@ class Tile {
      * @private
      */
     loadVectorData(data: ?WorkerTileResult, painter: any, justReloaded: ?boolean) {
-        if (this.hasData()) {
-            this.unloadVectorData();
-        }
+        this.unloadVectorData();
 
         this.state = 'loaded';
+
+        // generate tile bounds buffers after on tile load
+        if (painter && painter.context) {
+            const {projection} = painter.transform;
+            this._makeTileBoundsBuffers(painter.context, projection);
+        }
 
         // empty GeoJSON tile
         if (!data) {
@@ -276,6 +284,8 @@ class Tile {
      * @private
      */
     unloadVectorData() {
+        if (!this.hasData()) return;
+
         for (const id in this.buckets) {
             this.buckets[id].destroy();
         }
