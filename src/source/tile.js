@@ -206,12 +206,6 @@ class Tile {
 
         this.state = 'loaded';
 
-        // generate tile bounds buffers after on tile load
-        if (painter && painter.context) {
-            const {projection} = painter.transform;
-            this._makeTileBoundsBuffers(painter.context, projection);
-        }
-
         // empty GeoJSON tile
         if (!data) {
             this.collisionBoxArray = new CollisionBoxArray();

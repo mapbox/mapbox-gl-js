@@ -282,6 +282,7 @@ class Painter {
 
     getTileBoundsBuffers(tile: Tile) {
         let tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments;
+        tile._makeTileBoundsBuffers(this.context, this.transform.projection);
         if (tile._tileBoundsBuffer) {
             tileBoundsBuffer = tile._tileBoundsBuffer;
             tileBoundsIndexBuffer = tile._tileBoundsIndexBuffer;
