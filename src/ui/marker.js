@@ -25,7 +25,7 @@ type Options = {
     rotation?: number,
     rotationAlignment?: string,
     pitchAlignment?: string,
-    isHighAccurate?: boolean
+    snapToPixel?: boolean
 };
 
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
@@ -82,7 +82,7 @@ export default class Marker extends Evented {
     _rotationAlignment: string;
     _originalTabIndex: ?string; // original tabindex of _element
     _fadeTimer: ?TimeoutID;
-    _isHighAccurate:boolean; // rounding current position or not
+    _snapToPixel: ?boolean; // rounding current position or not
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -112,7 +112,7 @@ export default class Marker extends Evented {
         this._rotation = options && options.rotation || 0;
         this._rotationAlignment = options && options.rotationAlignment || 'auto';
         this._pitchAlignment = options && options.pitchAlignment && options.pitchAlignment !== 'auto' ?  options.pitchAlignment : this._rotationAlignment;
-        this._isHighAccurate = options && options.isHighAccurate || false;
+        this._snapToPixel = !!(options && options.snapToPixel === undefined);
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -536,7 +536,7 @@ export default class Marker extends Evented {
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
-        if (!this._isHighAccurate && (!e || e.type === "moveend")) {
+        if (this._snapToPixel && (!e || e.type === "moveend")) {
             this._pos = this._pos.round();
         }
 
@@ -796,25 +796,26 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Sets the `isHighAccurate` property of the marker.
-     * @param {boolean} shouldBeHighAccurate 
+     * Sets the `snapToPixel` property of the marker.
+     *
+     * @param {boolean} shouldSnapToPixel
      * @returns {Marker} Returns itself to allow for method chaining.
      * @example
-     * marker.setIsHighAccurate(true);
+     * marker.setSnapToPixel(true);
      */
-    setIsHighAccurate(shouldBeHighAccurate: boolean){
-        this._isHighAccurate = shouldBeHighAccurate;
+    setSnapToPixel(shouldSnapToPixel: boolean) {
+        this._snapToPixel = shouldSnapToPixel;
         return this;
     }
 
-
     /**
-     * Returns the current `isHighAccurate` property of the marker.
+     * Returns the current `snapToPixel` property of the marker.
+     *
      * @returns {boolean}
      * @example
-     * const isHighAccurateMarker = marker.getIsHighAccurate();
+     * const snapToPixel = marker.getSnapToPixel();
      */
-    getIsHighAccurate(){
-        return this._isHighAccurate;
+    getSnapToPixel() {
+        return this._snapToPixel;
     }
 }
