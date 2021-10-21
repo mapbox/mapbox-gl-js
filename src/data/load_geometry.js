@@ -18,8 +18,9 @@ const BITS = 15;
 const MAX = Math.pow(2, BITS - 1) - 1;
 const MIN = -MAX - 1;
 
-function clampPoint(point: Point) {
-    const {x, y} = point;
+function preparePoint(point: Point, scale: number) {
+    const x = Math.round(point.x * scale);
+    const y = Math.round(point.y * scale);
     point.x = clamp(x, MIN, MAX);
     point.y = clamp(y, MIN, MAX);
     if (x < point.x || x > point.x + 1 || y < point.y || y > point.y + 1) {
@@ -44,34 +45,35 @@ type FeatureWithGeometry = {
  * @private
  */
 export default function loadGeometry(feature: FeatureWithGeometry, canonical?: CanonicalTileID, tileTransform?: TileTransform): Array<Array<Point>> {
-    const featureExtent = feature.extent;
-    const scale = EXTENT / featureExtent;
-    const projection = tileTransform ? tileTransform.projection : undefined;
-    const isMercator = !projection || projection.name === 'mercator';
+    const geometry = feature.loadGeometry();
+    const extent = feature.extent;
+    const extentScale = EXTENT / extent;
 
-    function reproject(p) {
-        if (isMercator || !canonical || !tileTransform || !projection) {
-            return new Point(p.x * scale, p.y * scale);
-        } else {
-            const z2 = 1 << canonical.z;
-            const lng = lngFromMercatorX((canonical.x + p.x / featureExtent) / z2);
-            const lat = latFromMercatorY((canonical.y + p.y / featureExtent) / z2);
-            const {x, y} = projection.project(lng, lat);
-            return new Point(
-                (x * tileTransform.scale - tileTransform.x) * EXTENT,
-                (y * tileTransform.scale - tileTransform.y) * EXTENT
-            );
+    if (canonical && tileTransform && tileTransform.projection.name !== 'mercator') {
+        const z2 = 1 << canonical.z;
+        const {scale, x, y, projection} = tileTransform;
+
+        const reproject = (p) => {
+            const lng = lngFromMercatorX((canonical.x + p.x / extent) / z2);
+            const lat = latFromMercatorY((canonical.y + p.y / extent) / z2);
+            const p2 = projection.project(lng, lat);
+            p.x = (p2.x * scale - x) * extent;
+            p.y = (p2.y * scale - y) * extent;
+        };
+
+        for (let i = 0; i < geometry.length; i++) {
+            if (feature.type !== 1) {
+                geometry[i] = resample(geometry[i], reproject, 1); // resample lines and polygons
+            } else {
+                geometry[i].forEach(reproject); // points
+            }
         }
     }
 
-    const geometry = feature.loadGeometry();
-
-    for (let i = 0; i < geometry.length; i++) {
-        geometry[i] = !isMercator && feature.type !== 1 ?
-            resample(geometry[i], reproject, 1) :
-            geometry[i].map(reproject);
-
-        geometry[i].forEach(p => clampPoint(p._round()));
+    for (const line of geometry) {
+        for (const p of line) {
+            preparePoint(p, extentScale);
+        }
     }
 
     return geometry;
