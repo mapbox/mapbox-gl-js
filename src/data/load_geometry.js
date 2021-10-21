@@ -67,19 +67,12 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
             } else {
                 geometry[i].forEach(reproject); // points
             }
-
-            // we clamp and round _after_ resampling to make the latter more consistent between tiles
-            for (const p of geometry[i]) {
-                preparePoint(p, extentScale);
-            }
         }
+    }
 
-    } else {
-        // Mercator projection
-        for (const line of geometry) {
-            for (const p of line) {
-                preparePoint(p, extentScale);
-            }
+    for (const line of geometry) {
+        for (const p of line) {
+            preparePoint(p, extentScale);
         }
     }
 
