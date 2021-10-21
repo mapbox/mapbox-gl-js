@@ -82,7 +82,7 @@ export default class Marker extends Evented {
     _rotationAlignment: string;
     _originalTabIndex: ?string; // original tabindex of _element
     _fadeTimer: ?TimeoutID;
-    _snapToPixel: ?boolean; // rounding current position or not
+    _snapToPixel: ?boolean;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -112,7 +112,7 @@ export default class Marker extends Evented {
         this._rotation = options && options.rotation || 0;
         this._rotationAlignment = options && options.rotationAlignment || 'auto';
         this._pitchAlignment = options && options.pitchAlignment && options.pitchAlignment !== 'auto' ?  options.pitchAlignment : this._rotationAlignment;
-        this._snapToPixel = !!(options && options.snapToPixel === undefined);
+        this._snapToPixel = options && options.snapToPixel || true;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
