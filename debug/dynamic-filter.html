@@ -17,12 +17,22 @@
             background-color: white;
             z-index: 5;
         }
+        #checkboxes {
+            position: absolute;
+            background: #fff;
+            top:0;
+            left:0;
+            padding:10px;
+        }
     </style>
 </head>
 
 <body>
 <div id='map'>
     <div id='tooltip'></div>
+</div>
+<div id='checkboxes'>
+    <label><input id='show-scales' type='checkbox'> Show distance scales</label>
 </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -33,8 +43,8 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 10.852,
-    center: [-120.30344797631889, 38.11726797649675],
+    zoom: 14,
+    center: [-122.41514417600938, 37.74792307527825],
     style: 'mapbox://styles/mapbox/streets-v11',
     // hash: true
 });
@@ -130,9 +140,85 @@ map.once('load', () => {
         }
     });
 
+    let showScales = false;
+    document.getElementById('show-scales').onclick = function() {
+        showScales = !!this.checked;
+        map.setLayoutProperty('rings-layer', 'visibility',  showScales ? 'visible' : 'none');
+        map.setLayoutProperty('rings-labels', 'visibility',  showScales ? 'visible' : 'none');
+    };
+
+    const poiLayer = map.getLayer('poi-label').serialize();
+    const nearFilter = [
+        'all',
+        poiLayer.filter,
+        ['any',
+            ['<', ['pitch'], 60],
+            ['all', ['>=', ['pitch'], 60], ['<=', ['distance-from-center'], 1]]
+        ]
+    ];
+
+    // Set current poi-layer so that it only renders in the "near" area
+    map.setFilter('poi-label', nearFilter);
+    map.addLayer({
+        'id': 'sky',
+        'type': 'sky',
+        'paint': {
+            'sky-type': 'atmosphere',
+            'sky-atmosphere-sun-intensity': 5,
+        }
+    });
+    map.setFog({'range': [2, 10]});
+
+    const farFilter = [
+        'all',
+        poiLayer.filter,
+        ['>', ['pitch'], 60],
+        ['>=', ['distance-from-center'], 2]
+    ];
+
+    map.loadImage('./leader_line_s.png', (err, img) => {
+        map.addImage('leader_line', img);
+        const poiFarLayer = JSON.parse(JSON.stringify(poiLayer));
+        poiFarLayer.id = 'poi-label-elevated';
+        poiFarLayer.filter = farFilter;
+        poiFarLayer.layout['icon-image'] = 'leader_line';
+        poiFarLayer.paint['icon-color'] =  poiFarLayer.paint['text-color'];
+        poiFarLayer.paint['icon-halo-width'] =  poiFarLayer.paint['text-halo-width'];
+        poiFarLayer.paint['icon-halo-blur'] =  poiFarLayer.paint['text-halo-blur'];
+        poiFarLayer.paint['icon-halo-color'] =  poiFarLayer.paint['text-halo-color'];
+        poiFarLayer.layout['icon-anchor'] = 'bottom';
+        poiFarLayer.layout['icon-size'] = 1;
+        poiFarLayer.layout['text-anchor'] = 'bottom';
+        poiFarLayer.layout['text-field'] = ['format', ['image', ['concat', ['get', 'maki'], '-11']], {}, '\n', {}, poiLayer.layout['text-field'], {}]
+        poiFarLayer.layout['text-offset'] = [
+            "step",
+            ["zoom"],
+            [
+                "step",
+                ["get", "sizerank"],
+                ["literal", [0, -12]],
+                5,
+                ["literal", [0, -9.75]]
+            ],
+            17,
+            [
+                "step",
+                ["get", "sizerank"],
+                ["literal", [0, -12]],
+                13,
+                ["literal", [0, -9.75]]
+            ]
+            ];
+
+
+        map.addLayer(poiFarLayer, 'poi-label');
+    })
+
     map.on('idle', () => {
-        const scale = generateDistanceScales();
-        map.getSource('rings').setData(scale);
+        if (showScales) {
+            const scale = generateDistanceScales();
+            map.getSource('rings').setData(scale);
+        }
     });
 
 });
