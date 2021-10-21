@@ -913,7 +913,7 @@ class Style extends Evented {
      * If no such layer exists, an `error` event is fired.
      *
      * @param {string} id ID of the layer to remove.
-     * @fires error
+     * @fires Map.event:error
      */
     removeLayer(id: string) {
         this._checkLoaded();

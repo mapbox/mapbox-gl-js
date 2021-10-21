@@ -1727,7 +1727,6 @@ class Map extends Camera {
      * @param {Object} source The source object, conforming to the
      * Mapbox Style Specification's [source definition](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or
      * {@link CanvasSourceOptions}.
-     * @fires source.add
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.addSource('my-data', {
@@ -2194,7 +2193,7 @@ class Map extends Camera {
      *
      * @param {string} id ID of the layer to remove.
      * @returns {Map} Returns itself to allow for method chaining.
-     * @fires error
+     * @fires Map.event:error
      *
      * @example
      * // If a layer with ID 'state-data' exists, remove it.
