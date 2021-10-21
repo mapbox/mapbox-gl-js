@@ -7,7 +7,7 @@
 * Add support for dynamic filtering of symbols based on pitch and distance to map center. `["pitch"]` and `["distance-from-camera"]` expressions can now be used within the `filter` of a symbol layer. ([#10795](https://github.com/mapbox/mapbox-gl-js/pull/10795))
 * Improve user accessibility: conveying only `aria-label` in controls, replace `aria-pressed`with `aria-expanded` in the attribution control, interactive markers with popups express an `aria-expanded` state, and interactive markers have the role "button". ([#11064](https://github.com/mapbox/mapbox-gl-js/pull/11064))
 * Add support for conditionally styling most paint properties according to the presence or absence of specific images. ([#11049](https://github.com/mapbox/mapbox-gl-js/pull/11049))
-* Add support for attaching events to multiple layers with `map.on()`, allowing users to get retrieve features under the mouse or touch event based on the order in which they are rendered.  ([#11114](https://github.com/mapbox/mapbox-gl-js/pull/11114))
+* Add support for attaching events to multiple layers with `map.on()`, allowing users to get retrieve features under the mouse or touch event based on the order in which they are rendered.  ([#11114](https://github.com/mapbox/mapbox-gl-js/pull/11114))(h/t [@omerbn](https://github.com/omerbn))
 
 ### 🐞 Bug fixes
 
