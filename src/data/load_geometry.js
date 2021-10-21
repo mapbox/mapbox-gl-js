@@ -53,14 +53,25 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
             const lng = lngFromMercatorX((canonical.x + p.x / feature.extent) / z2);
             const lat = latFromMercatorY((canonical.y + p.y / feature.extent) / z2);
             const p2 = projection.project(lng, lat);
-            return clampPoint(new Point((p2.x * scale - x) * EXTENT, (p2.y * scale - y) * EXTENT)._round());
+            p.x = (p2.x * scale - x) * EXTENT;
+            p.y = (p2.y * scale - y) * EXTENT;
         };
 
         for (let i = 0; i < geometry.length; i++) {
-            geometry[i] = feature.type !== 1 ? resample(geometry[i], reproject, 1) : geometry[i].map(reproject);
+            if (feature.type !== 1) {
+                geometry[i] = resample(geometry[i], reproject, 1); // resample lines and polygons
+            } else {
+                geometry[i].forEach(reproject); // points
+            }
+
+            // we clamp and round _after_ resampling to make the latter more consistent between tiles
+            for (const p of geometry[i]) {
+                clampPoint(p._round());
+            }
         }
 
     } else {
+        // Mercator projection
         for (const line of geometry) {
             for (const p of line) {
                 clampPoint(p._mult(EXTENT / feature.extent)._round());

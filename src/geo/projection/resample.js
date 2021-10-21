@@ -8,41 +8,44 @@ function pointToLineDist(px, py, ax, ay, bx, by) {
     return Math.abs((ay - py) * dx - (ax - px) * dy) / Math.hypot(dx, dy);
 }
 
-function addResampled(resampled, startMerc, endMerc, startProj, endProj, reproject, tolerance) {
-    const midMerc = new Point(
-        (startMerc.x + endMerc.x) / 2,
-        (startMerc.y + endMerc.y) / 2);
-
-    const midProj = reproject(midMerc);
-    const err = pointToLineDist(midProj.x, midProj.y, startProj.x, startProj.y, endProj.x, endProj.y);
+function addResampled(resampled, mx0, my0, mx2, my2, start, end, reproject, tolerance) {
+    const mx1 = (mx0 + mx2) / 2;
+    const my1 = (my0 + my2) / 2;
+    const mid = new Point(mx1, my1);
+    reproject(mid);
+    const err = pointToLineDist(mid.x, mid.y, start.x, start.y, end.x, end.y);
 
     // if reprojected midPoint is too far from geometric midpoint, recurse into two halves
     if (err >= tolerance) {
         // we're very unlikely to hit max call stack exceeded here,
         // but we might want to safeguard against it in the future
-        addResampled(resampled, startMerc, midMerc, startProj, midProj, reproject, tolerance);
-        addResampled(resampled, midMerc, endMerc, midProj, endProj, reproject, tolerance);
+        addResampled(resampled, mx0, my0, mx1, my1, start, mid, reproject, tolerance);
+        addResampled(resampled, mx1, my1, mx2, my2, mid, end, reproject, tolerance);
 
     } else { // otherwise, just add the point
-        resampled.push(endProj);
+        resampled.push(end);
     }
 }
 
+// reproject and resample a line, adding point where necessary for lines that become curves;
+// note that this operation is mutable (modifying original points) for performance
 export default function resample(line: Array<Point>, reproject: (Point) => Point, tolerance: number): Array<Point> {
     const resampled = [];
-    let prevMerc, prevProj;
+    let mx0, my0, prev;
 
-    for (const pointMerc of line) {
-        const pointProj = reproject(pointMerc);
+    for (const point of line) {
+        const {x, y} = point;
+        reproject(point);
 
-        if (prevMerc && prevProj) {
-            addResampled(resampled, prevMerc, pointMerc, prevProj, pointProj, reproject, tolerance);
+        if (prev) {
+            addResampled(resampled, mx0, my0, x, y, prev, point, reproject, tolerance);
         } else {
-            resampled.push(pointProj);
+            resampled.push(point);
         }
 
-        prevMerc = pointMerc;
-        prevProj = pointProj;
+        mx0 = x;
+        my0 = y;
+        prev = point;
     }
 
     return resampled;
