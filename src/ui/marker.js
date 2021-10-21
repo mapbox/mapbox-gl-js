@@ -804,12 +804,12 @@ export default class Marker extends Evented {
      * marker.setSnapToPixel(true);
      */
     setSnapToPixel(shouldSnapToPixel: boolean) {
-        this._snapToPixel = shouldSnapToPixel;
+        this._snapToPixel = !!shouldSnapToPixel;
         return this;
     }
 
     /**
-     * Returns the current `snapToPixel` property of the marker.
+     * Returns the marker's current `snapToPixel` value.
      *
      * @returns {boolean} Returns the current `snapToPixel` property of the marker.
      * @example
