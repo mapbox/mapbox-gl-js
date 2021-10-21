@@ -161,8 +161,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
         const e = elevation.getAtTileOffset(coord, p.x, p.y);
         const up = tileTransform.upVector(coord.canonical, p.x, p.y);
         const upScale = tileTransform.upVectorScale(coord.canonical);
-        e * upScale;
-        return up;
+        return e * upScale;
     }) : (_ => 0);
 
     dynamicTextLayoutVertexArray.clear();
