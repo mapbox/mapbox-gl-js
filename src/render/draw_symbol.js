@@ -143,26 +143,27 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
 
         if (size) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
-            const elevation = tr.elevation;
-            const getElevation = elevation ? (p => {
-                const e = elevation.getAtTileOffset(coord, p.x, p.y);
-                const up = tileTransform.upVector(coord.canonical, p.x, p.y);
-                const upScale = tileTransform.upVectorScale(coord.canonical);
-                vec3.scale(up, up, e * upScale);
-                return up;
-            }) : (_ => [0, 0, 0]);
             updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                                  tr, labelPlaneMatrix, coord.projMatrix, tileScale, size, updateTextFitIcon, getElevation);
+                                  tr, labelPlaneMatrix, coord, tileScale, size, updateTextFitIcon, tileTransform);
         }
     }
 }
 
 function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                               transform, labelPlaneMatrix, posMatrix, tileScale, size, updateTextFitIcon, getElevation) {
+                               transform, labelPlaneMatrix, coord, tileScale, size, updateTextFitIcon, tileTransform) {
     const placedSymbols = bucket.text.placedSymbolArray;
     const dynamicTextLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
     const dynamicIconLayoutVertexArray = bucket.icon.dynamicLayoutVertexArray;
     const placedTextShifts = {};
+    const projMatrix = coord.projMatrix;
+    const elevation = transform.elevation;
+    const getElevation = elevation ? (p => {
+        const e = elevation.getAtTileOffset(coord, p.x, p.y);
+        const up = tileTransform.upVector(coord.canonical, p.x, p.y);
+        const upScale = tileTransform.upVectorScale(coord.canonical);
+        e * upScale;
+        return up;
+    }) : (_ => 0);
 
     dynamicTextLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
@@ -176,8 +177,8 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicTextLayoutVertexArray);
         } else  {
             const tileAnchor = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-            const elevation = getElevation(tileAnchor);
-            const projectedAnchor = symbolProjection.project(tileAnchor, pitchWithMap ? posMatrix : labelPlaneMatrix, elevation);
+            const anchorElevation = getElevation(tileAnchor);
+            const projectedAnchor = symbolProjection.project(tileAnchor, pitchWithMap ? projMatrix : labelPlaneMatrix, anchorElevation);
             const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.cameraToCenterDistance, projectedAnchor.signedDistanceFromCamera);
             let renderTextSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, size, symbol) * perspectiveRatio / ONE_EM;
             if (pitchWithMap) {
