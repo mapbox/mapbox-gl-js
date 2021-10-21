@@ -18,8 +18,9 @@ const BITS = 15;
 const MAX = Math.pow(2, BITS - 1) - 1;
 const MIN = -MAX - 1;
 
-function clampPoint(point: Point) {
-    const {x, y} = point;
+function preparePoint(point: Point, scale: number) {
+    const x = Math.round(point.x * scale);
+    const y = Math.round(point.y * scale);
     point.x = clamp(x, MIN, MAX);
     point.y = clamp(y, MIN, MAX);
     if (x < point.x || x > point.x + 1 || y < point.y || y > point.y + 1) {
@@ -45,16 +46,19 @@ type FeatureWithGeometry = {
  */
 export default function loadGeometry(feature: FeatureWithGeometry, canonical?: CanonicalTileID, tileTransform?: TileTransform): Array<Array<Point>> {
     const geometry = feature.loadGeometry();
+    const extent = feature.extent;
+    const extentScale = EXTENT / extent;
 
     if (canonical && tileTransform && tileTransform.projection.name !== 'mercator') {
+        const z2 = 1 << canonical.z;
+        const {scale, x, y, projection} = tileTransform;
+
         const reproject = (p) => {
-            const z2 = 1 << canonical.z;
-            const {scale, x, y, projection} = tileTransform;
-            const lng = lngFromMercatorX((canonical.x + p.x / feature.extent) / z2);
-            const lat = latFromMercatorY((canonical.y + p.y / feature.extent) / z2);
+            const lng = lngFromMercatorX((canonical.x + p.x / extent) / z2);
+            const lat = latFromMercatorY((canonical.y + p.y / extent) / z2);
             const p2 = projection.project(lng, lat);
-            p.x = (p2.x * scale - x) * EXTENT;
-            p.y = (p2.y * scale - y) * EXTENT;
+            p.x = (p2.x * scale - x) * extent;
+            p.y = (p2.y * scale - y) * extent;
         };
 
         for (let i = 0; i < geometry.length; i++) {
@@ -66,7 +70,7 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
 
             // we clamp and round _after_ resampling to make the latter more consistent between tiles
             for (const p of geometry[i]) {
-                clampPoint(p._round());
+                preparePoint(p, extentScale);
             }
         }
 
@@ -74,7 +78,7 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
         // Mercator projection
         for (const line of geometry) {
             for (const p of line) {
-                clampPoint(p._mult(EXTENT / feature.extent)._round());
+                preparePoint(p, extentScale);
             }
         }
     }
