@@ -45,6 +45,7 @@ export const TERRAIN_OCCLUDED_OPACITY = 0.2;
  * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective `rotationAlignment` setting. A positive value will rotate the marker clockwise.
  * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
  * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, maintaining a bearing as the map rotates. `viewport` aligns the `Marker`'s rotation relative to the viewport, agnostic to map rotations. `auto` is equivalent to `viewport`.
+ * @param {boolean} [options.snapToPixel=true] A boolean indicating should `Marker` position round to pixel or not.
  * @example
  * // Create a new marker.
  * const marker = new mapboxgl.Marker()
