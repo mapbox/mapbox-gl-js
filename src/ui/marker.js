@@ -806,6 +806,7 @@ export default class Marker extends Evented {
      */
     setSnapToPixel(shouldSnapToPixel: boolean) {
         this._snapToPixel = !!shouldSnapToPixel;
+        this._update();
         return this;
     }
 
