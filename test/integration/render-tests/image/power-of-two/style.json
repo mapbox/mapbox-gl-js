@@ -21,7 +21,8 @@
       "type": "raster",
       "source": "image",
       "paint": {
-        "raster-fade-duration": 0
+        "raster-fade-duration": 0,
+        "raster-resampling": "nearest"
       }
     }
   ]
