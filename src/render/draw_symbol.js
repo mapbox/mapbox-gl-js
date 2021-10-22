@@ -40,7 +40,6 @@ import type {OverscaledTileID} from '../source/tile_id.js';
 import type {UniformValues} from './uniform_binding.js';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program.js';
 import type {CrossTileID, VariableOffset} from '../symbol/placement.js';
-import extend from '../style-spec/util/extend.js';
 
 export default drawSymbols;
 
@@ -420,9 +419,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const pixelsPerMeter = mercatorZfromAltitude(1, tr.center.lat) * tr.worldSize;
         if (painter.terrain) {
             const options = {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv};
-            if (pitchWithMap) {
-                extend(options, {useTileSpaceElevation: true});
-            }
             painter.terrain.setupElevationDraw(state.tile, state.program, options);
         }
         context.activeTexture.set(gl.TEXTURE0);
