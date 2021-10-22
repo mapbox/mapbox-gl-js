@@ -144,8 +144,8 @@ class CollisionIndex {
             return up;
         }) : (_ => [0, 0, 0]);
 
+        const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         const projectedAnchor = this.transform.projection.projectTilePoint(symbol.tileAnchorX, symbol.tileAnchorY, tileID.canonical);
-        const tileUnitAnchorPoint = new Point(projectedAnchor.x, projectedAnchor.y);
         const anchorElevation = getElevation(tileUnitAnchorPoint);
         const elevatedAnchor = [projectedAnchor.x + anchorElevation[0], projectedAnchor.y + anchorElevation[1], projectedAnchor.z + anchorElevation[2]];
         const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2], tileID);
@@ -207,8 +207,8 @@ class CollisionIndex {
                 assert(pitchWithMap);
                 const screenSpacePath = elevation ?
                     projectedPath.map((p, index) => {
-                        const z = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
-                        return projection.project(p, labelToScreenMatrix, z);
+                        const elevation = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
+                        return projection.project(p, labelToScreenMatrix, elevation[2]);
                     }) :
                     projectedPath.map(p => projection.project(p, labelToScreenMatrix));
 

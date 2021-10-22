@@ -160,8 +160,9 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
         const e = elevation.getAtTileOffset(coord, p.x, p.y);
         const up = tileTransform.upVector(coord.canonical, p.x, p.y);
         const upScale = tileTransform.upVectorScale(coord.canonical);
-        return e * upScale;
-    }) : (_ => 0);
+        vec3.scale(up, up, e * upScale);
+        return up;
+    }) : (_ => [0, 0, 0]);
 
     dynamicTextLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
@@ -176,7 +177,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
         } else  {
             const tileAnchor = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
             const anchorElevation = getElevation(tileAnchor);
-            const projectedAnchor = symbolProjection.project(tileAnchor, pitchWithMap ? projMatrix : labelPlaneMatrix, anchorElevation);
+            const projectedAnchor = symbolProjection.project(tileAnchor, pitchWithMap ? projMatrix : labelPlaneMatrix, anchorElevation[2]);
             const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.cameraToCenterDistance, projectedAnchor.signedDistanceFromCamera);
             let renderTextSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, size, symbol) * perspectiveRatio / ONE_EM;
             if (pitchWithMap) {
