@@ -540,8 +540,7 @@ export class Terrain extends Elevation {
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
             morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number },
-            elevationTileID?: CanonicalTileID,
-            useTileSpaceElevation?: boolean
+            elevationTileID?: CanonicalTileID
         }) {
         const context = this.painter.context;
         const gl = context.gl;
