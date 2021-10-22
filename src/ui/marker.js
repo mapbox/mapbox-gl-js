@@ -81,6 +81,7 @@ export default class Marker extends Evented {
     _rotationAlignment: string;
     _originalTabIndex: ?string; // original tabindex of _element
     _fadeTimer: ?TimeoutID;
+    _updateFrameId: number;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -508,6 +509,7 @@ export default class Marker extends Evented {
     }
 
     _update(e?: {type: 'move' | 'moveend'}) {
+        window.cancelAnimationFrame(this._updateFrameId);
         if (!this._map) return;
 
         if (this._map.transform.renderWorldCopies) {
@@ -534,7 +536,12 @@ export default class Marker extends Evented {
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
         if (!e || e.type === "moveend") {
-            this._pos = this._pos.round();
+            this._updateFrameId = window.requestAnimationFrame(() => {
+                if (this._element && this._pos && this._anchor) {
+                    this._pos = this._pos.round();
+                    DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
+                }
+            });
         }
 
         this._map._requestDomTask(() => {
