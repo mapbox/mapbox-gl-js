@@ -415,8 +415,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     for (const segmentState of tileRenderState) {
         const state = segmentState.state;
-
-        const pixelsPerMeter = mercatorZfromAltitude(1, tr.center.lat) * tr.worldSize;
         if (painter.terrain) {
             const options = {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv};
             painter.terrain.setupElevationDraw(state.tile, state.program, options);
