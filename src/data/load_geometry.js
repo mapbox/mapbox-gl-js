@@ -64,8 +64,17 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
         for (let i = 0; i < geometry.length; i++) {
             if (feature.type !== 1) {
                 geometry[i] = resample(geometry[i], reproject, 1); // resample lines and polygons
-            } else {
-                geometry[i].forEach(reproject); // points
+
+            } else { // points
+                const line = [];
+                for (const p of geometry[i]) {
+                    // filter out point features outside tile boundaries now;
+                    // it'd be harder to do later when the coords are reprojected and no longer axis-aligned
+                    if (p.x < 0 || p.x >= extent || p.y < 0 || p.y >= extent) continue;
+                    reproject(p);
+                    line.push(p);
+                }
+                geometry[i] = line;
             }
         }
     }

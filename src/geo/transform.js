@@ -254,7 +254,7 @@ class Transform {
     }
 
     get renderWorldCopies(): boolean {
-        return this._renderWorldCopies && this.projection.wrap;
+        return this._renderWorldCopies && this.projection.wrap === true;
     }
     set renderWorldCopies(renderWorldCopies?: ?boolean) {
         if (renderWorldCopies === undefined) {
