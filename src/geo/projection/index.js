@@ -15,6 +15,7 @@ export type Projection = {
     parallels?: [number, number],
     range?: [number, number],
     conical?: boolean,
+    wrap?: boolean,
     project: (lng: number, lat: number) => {x: number, y: number},
     unproject: (x: number, y: number) => LngLat
 };

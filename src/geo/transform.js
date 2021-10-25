@@ -254,7 +254,7 @@ class Transform {
     }
 
     get renderWorldCopies(): boolean {
-        return this.projection.name === 'mercator' && this._renderWorldCopies;
+        return this._renderWorldCopies && this.projection.wrap === true;
     }
     set renderWorldCopies(renderWorldCopies?: ?boolean) {
         if (renderWorldCopies === undefined) {
@@ -530,7 +530,7 @@ class Transform {
         options.position = new MercatorCoordinate(pos[0], pos[1], pos[2]);
         options.orientation = this._camera.orientation;
         options._elevation = this.elevation;
-        options._renderWorldCopies = this._renderWorldCopies;
+        options._renderWorldCopies = this.renderWorldCopies;
 
         return options;
     }
@@ -640,7 +640,7 @@ class Transform {
      */
     getVisibleUnwrappedCoordinates(tileID: CanonicalTileID) {
         const result = [new UnwrappedTileID(0, tileID)];
-        if (this._renderWorldCopies) {
+        if (this.renderWorldCopies) {
             const utl = this.pointCoordinate(new Point(0, 0));
             const utr = this.pointCoordinate(new Point(this.width, 0));
             const ubl = this.pointCoordinate(new Point(this.width, this.height));
@@ -762,9 +762,7 @@ class Transform {
         const newRootTile = (wrap: number): any => {
             const max = maxRange;
             const min = minRange;
-            const aabb = this.projection.name === 'mercator' ?
-                new Aabb([wrap * numTiles, 0, min], [(wrap + 1) * numTiles, numTiles, max]) :
-                aabbForTile(0, 0, 0, wrap, min, max);
+            const aabb = aabbForTile(0, 0, 0, wrap, min, max);
             return {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
@@ -867,7 +865,7 @@ class Transform {
             return distanceSqr < distToSplitSqr;
         };
 
-        if (this._renderWorldCopies) {
+        if (this.renderWorldCopies) {
             // Render copy of the globe thrice on both sides
             for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
                 stack.push(newRootTile(-i));
@@ -1379,7 +1377,7 @@ class Transform {
         } else {
             const cs = tileTransform(canonical, this.projection);
             scale = 1;
-            scaledX = cs.x;
+            scaledX = cs.x + unwrappedTileID.wrap * cs.scale;
             scaledY = cs.y;
             mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, this.pixelsPerMeter / this.worldSize]);
         }
@@ -1459,7 +1457,7 @@ class Transform {
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
-        const projMatrix = this.projection.name === 'mercator' ? aligned ? this.alignedProjMatrix : this.projMatrix : this.mercatorMatrix;
+        const projMatrix = this.projection.name === 'mercator' ? (aligned ? this.alignedProjMatrix : this.projMatrix) : this.mercatorMatrix;
         mat4.multiply(posMatrix, projMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
@@ -1927,8 +1925,8 @@ class Transform {
             new Point(maxX, minY),
         ];
 
-        const minWX = (this._renderWorldCopies) ? -NUM_WORLD_COPIES : 0;
-        const maxWX = (this._renderWorldCopies) ? 1 + NUM_WORLD_COPIES : 1;
+        const minWX = (this.renderWorldCopies) ? -NUM_WORLD_COPIES : 0;
+        const maxWX = (this.renderWorldCopies) ? 1 + NUM_WORLD_COPIES : 1;
         const minWY = 0;
         const maxWY = 1;
 
