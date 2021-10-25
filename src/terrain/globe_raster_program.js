@@ -33,6 +33,11 @@ export type AtmosphereUniformsType = {|
     'u_end_color': Uniform3f
 |};
 
+export type StarsUniformsType = {|
+    'u_matrix': UniformMatrix4f,
+    'u_opacity': Uniform1f,
+|};
+
 const globeRasterUniforms = (context: Context, locations: UniformLocations): GlobeRasterUniformsType => ({
     'u_proj_matrix': new UniformMatrix4f(context, locations.u_proj_matrix),
     'u_globe_matrix': new UniformMatrix4f(context, locations.u_globe_matrix),
@@ -51,7 +56,21 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_opacity': new Uniform1f(context, locations.u_opacity),
     'u_fadeout_range': new Uniform1f(context, locations.u_fadeout_range),
     'u_start_color': new Uniform3f(context, locations.u_start_color),
-    'u_end_color': new Uniform3f(context, locations.u_end_color)
+    'u_end_color': new Uniform3f(context, locations.u_end_color),
+
+    'u_globe_center': new Uniform3f(context, locations.u_globe_center),
+    'u_camera_pos': new Uniform3f(context, locations.u_camera_pos),
+    'u_camera_dir': new Uniform3f(context, locations.u_camera_dir),
+    'u_tl': new Uniform3f(context, locations.u_tl),
+    'u_right': new Uniform3f(context, locations.u_right),
+    'u_down': new Uniform3f(context, locations.u_down),
+    'u_radius2': new Uniform1f(context, locations.u_radius2),
+    'u_light_dir': new Uniform3f(context, locations.u_light_dir),
+});
+
+const starsUniforms = (context: Context, locations: UniformLocations): AtmosphereUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_opacity': new Uniform1f(context, locations.u_opacity)
 });
 
 const globeRasterUniformValues = (
@@ -79,7 +98,15 @@ const atmosphereUniformValues = (
     opacity,
     fadeoutRange,
     startColor,
-    endColor
+    endColor,
+    globePos,
+    cameraPos,
+    cameraDir,
+    tl,
+    right,
+    down,
+    radius2,
+    lightDir
 ): UniformValues<AtmosphereUniformsType> => ({
     'u_center': center,
     'u_radius': radius,
@@ -89,6 +116,24 @@ const atmosphereUniformValues = (
     'u_fadeout_range': fadeoutRange,
     'u_start_color': startColor,
     'u_end_color': endColor,
+
+    'u_globe_center': globePos,
+    'u_camera_pos': cameraPos,
+    'u_camera_dir': cameraDir,
+    'u_tl': tl,
+    'u_right': right,
+    'u_down': down,
+    'u_radius2': radius2,
+    'u_light_dir': lightDir
 });
 
-export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};
+const starsUniformValues = (
+    matrix,
+    opacity
+): UniformValues<StarsUniformsType> => ({
+    'u_matrix': matrix,
+    'u_opacity': opacity
+});
+
+
+export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues, starsUniforms, starsUniformValues};

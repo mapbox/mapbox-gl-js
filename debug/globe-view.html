@@ -295,7 +295,7 @@ document.getElementById('globe-checkbox').onclick = function() {
 
 document.getElementById('satellite-checkbox').onclick = function() {
     for (const layerId in map.style._layers) {
-        if (layerId.startsWith('satellite') || layerId === buildingsLayerId) continue;
+        if (layerId.startsWith('satellite') || layerId.startsWith('sky') || layerId === buildingsLayerId) continue;
         map.setLayoutProperty(layerId, 'visibility', !this.checked ? 'visible' : 'none');
     }
     map.setLayoutProperty('satellite', 'visibility', this.checked ? 'visible' : 'none');

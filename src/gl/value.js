@@ -247,10 +247,17 @@ export class BlendFunc extends BaseValue<BlendFuncType> {
     }
     set(v: BlendFuncType) {
         const c = this.current;
-        if (v[0] === c[0] && v[1] === c[1] && !this.dirty) return;
-        this.gl.blendFunc(v[0], v[1]);
-        this.current = v;
-        this.dirty = false;
+        if (v.length === 4) {
+            //if (v[0] === c[0] && v[1] === c[1] && !this.dirty) return;
+            this.gl.blendFuncSeparate(v[0], v[1], v[2], v[3]);
+            this.current = v;
+            this.dirty = false;
+        } else {
+            //if (v[0] === c[0] && v[1] === c[1] && !this.dirty) return;
+            this.gl.blendFunc(v[0], v[1]);
+            this.current = v;
+            this.dirty = false;
+        }
     }
 }
 
