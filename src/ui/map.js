@@ -211,7 +211,7 @@ const defaultOptions = {
  * Tilesets hosted with Mapbox can be style-optimized if you append `?optimize=true` to the end of your style URL, like `mapbox://styles/mapbox/streets-v11?optimize=true`.
  * Learn more about style-optimized vector tiles in our [API documentation](https://www.mapbox.com/api-documentation/maps/#retrieve-tiles).
  *
- * @param {(boolean|string)} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
+ * @param {(boolean|string)} [options.hash=false] If `true`, the map's [position](https://docs.mapbox.com/help/glossary/camera) (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
  *   For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
  *   An additional string may optionally be provided to indicate a parameter-styled hash,
  *   for example http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, where `foo`
@@ -1583,7 +1583,7 @@ class Map extends Camera {
     /**
      * Updates the map's Mapbox style object with a new value.
      *
-     * If a style is already set when this is used and the `diff` option is set to true, the map renderer will attempt to compare the given style
+     * If a style is already set when this is used and the `diff` option is set to `true`, the map renderer will attempt to compare the given style
      * against the map's current state and perform only the changes necessary to make the map style match the desired state. Changes in sprites
      * (images used for icons and patterns) and glyphs (fonts for label text) **cannot** be diffed. If the sprites or fonts used in the current
      * style and the given style are different in any way, the map renderer will force a full update, removing the current style and building
