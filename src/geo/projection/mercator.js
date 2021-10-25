@@ -4,6 +4,7 @@ import LngLat from '../lng_lat.js';
 
 export default {
     name: 'mercator',
+    wrap: true,
     center: [0, 0],
     project(lng: number, lat: number) {
         const x = mercatorXfromLng(lng);
