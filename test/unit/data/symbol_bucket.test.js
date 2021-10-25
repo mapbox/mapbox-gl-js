@@ -13,6 +13,7 @@ import Tile from '../../../src/source/tile.js';
 import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index.js';
 import FeatureIndex from '../../../src/data/feature_index.js';
 import {createSymbolBucket} from '../../util/create_symbol_layer.js';
+import {getProjection} from '../../../src/geo/projection/index.js';
 
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -47,11 +48,12 @@ test('SymbolBucket', (t) => {
     const placement = new Placement(transform, 0, true);
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
     const crossTileSymbolIndex = new CrossTileSymbolIndex();
+    const painter = {transform: {projection: getProjection({name: 'mercator'})}};
 
     // add feature from bucket A
     bucketA.populate([{feature}], options);
     performSymbolLayout(bucketA, stacks, glyphPositions);
-    const tileA = new Tile(tileID, 512);
+    const tileA = new Tile(tileID, 512, 0, painter);
     tileA.latestFeatureIndex = new FeatureIndex(tileID);
     tileA.buckets = {test: bucketA};
     tileA.collisionBoxArray = collisionBoxArray;
@@ -59,7 +61,7 @@ test('SymbolBucket', (t) => {
     // add same feature from bucket B
     bucketB.populate([{feature}], options);
     performSymbolLayout(bucketB, stacks, glyphPositions);
-    const tileB = new Tile(tileID, 512);
+    const tileB = new Tile(tileID, 512, 0, painter);
     tileB.buckets = {test: bucketB};
     tileB.collisionBoxArray = collisionBoxArray;
 

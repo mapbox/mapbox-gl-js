@@ -6,6 +6,7 @@ import {test} from '../../util/test.js';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source.js';
 import StyleLayerIndex from '../../../src/style/style_layer_index.js';
 import perf from '../../../src/util/performance.js';
+import {getProjection} from '../../../src/geo/projection/index.js';
 
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -19,6 +20,7 @@ test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
         source: 'source',
         uid: 0,
         tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
+        projection: getProjection({name: 'mercator'}),
         request: {url: 'http://localhost:2900/abort'}
     }, (err, res) => {
         t.false(err);
@@ -46,7 +48,8 @@ test('VectorTileWorkerSource#abortTile aborts pending async request', (t) => {
 
     source.loadTile({
         uid: 0,
-        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}}
+        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
+        projection: getProjection({name: 'mercator'})
     }, (err, res) => {
         t.false(err);
         t.false(res);
@@ -246,6 +249,7 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
         source: 'source',
         uid: 0,
         tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
+        projection: getProjection({name: 'mercator'}),
         request: {url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true}
     }, (err, res) => {
         t.false(err);

@@ -369,6 +369,7 @@ export default class Marker extends Evented {
         if (this._popup) {
             this._popup.remove();
             this._popup = null;
+            this._element.removeAttribute('role');
             this._element.removeEventListener('keypress', this._onKeyPress);
 
             if (!this._originalTabIndex) {
@@ -395,11 +396,13 @@ export default class Marker extends Evented {
             this._popup = popup;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
+            this._element.setAttribute('role', 'button');
             this._originalTabIndex = this._element.getAttribute('tabindex');
             if (!this._originalTabIndex) {
                 this._element.setAttribute('tabindex', '0');
             }
             this._element.addEventListener('keypress', this._onKeyPress);
+            this._element.setAttribute('aria-expanded', 'false');
         }
 
         return this;
@@ -456,10 +459,15 @@ export default class Marker extends Evented {
      */
     togglePopup() {
         const popup = this._popup;
-
-        if (!popup) return this;
-        else if (popup.isOpen()) popup.remove();
-        else popup.addTo(this._map);
+        if (!popup) {
+            return this;
+        } else if (popup.isOpen()) {
+            popup.remove();
+            this._element.setAttribute('aria-expanded', 'false');
+        } else {
+            popup.addTo(this._map);
+            this._element.setAttribute('aria-expanded', 'true');
+        }
         return this;
     }
 

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        .map-overlay {
+            background-color: #fff;
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            font: bold 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            left: 10px;
+            padding: 10px;
+            position: absolute;
+            top: 10px;
+            width: 150px;
+            z-index: 1;
+        }
+
+        fieldset {
+            border: none;
+            padding: 5px 0;
+        }
+         
+        select, input {
+            background-color: transparent;
+            border-radius: 3px;
+            margin: 0;
+        }
+
+        select {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="map-overlay top">
+        <fieldset>
+            <label>Projection:</label>
+            <select id="projName">
+                <option value="albers" selected>Albers USA</option>
+                <option value="equalEarth">Equal Earth</option>
+                <option value="equirectangular">Equirectangular</option>
+                <option value="lambertConformalConic">Lambert Conformal Conic</option>
+                <option value="mercator">Mercator</option>
+                <option value="naturalEarth">Natural Earth</option>
+                <option value="winkelTripel">Winkel Tripel</option>
+            </select>
+        </fieldset>
+        <fieldset>
+            <label>Style:</label>
+            <select id="styleName">
+                <option value="streets" selected>Streets</option>
+                <option value="satellite">Satellite</option>
+            </select>
+        </fieldset>
+        <fieldset>
+            <label>Graticule:</label>
+            <input id="graticule" type="checkbox">
+        </fieldset>
+        <fieldset>
+            <label>Show Debug Tiles:</label>
+            <input id="debug" type="checkbox" checked=true>
+        </fieldset>
+    </div>
+    <div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+let map;
+
+const zooms = {
+    albers: 3,
+    lambertConformalConic: 3,
+    winkelTripel: 1.2
+};
+const centers = {
+    albers: [-122.414, 37.776],
+    lambertConformalConic: [-122.414, 37.776]
+};
+
+makeMap();
+
+function makeMap() {
+    if (map) map.remove();
+    const el = document.getElementById('projName');
+    const projection = el.options[el.selectedIndex].value;
+    const zoom = zooms[projection] || 1;
+    const center = centers[projection] || [0, 0];
+    const styles = {
+        streets: 'mapbox://styles/mapbox/streets-v10',
+        satellite: 'mapbox://styles/mapbox/satellite-streets-v11'
+    };
+    const styleEl = document.getElementById('styleName');
+    const styleName = styleEl.options[styleEl.selectedIndex].value;
+    const style = styles[styleName];
+
+    map = new mapboxgl.Map({
+        projection,
+        container: 'map',
+        zoom,
+        center,
+        style,
+        hash: true
+    });
+    map.showTileBoundaries = true;
+    addGraticule();
+}
+
+map.on('click', function () {
+    console.log('projection', map.getProjection());
+});
+
+document.getElementById('projName').addEventListener('change', (e) => {
+    const el = document.getElementById('projName');
+    const projection = el.options[el.selectedIndex].value;
+    const zoom = zooms[projection] || 1;
+    const center = centers[projection] || [0, 0];
+    map.jumpTo({center, zoom});
+    map.setProjection(el.options[el.selectedIndex].value);
+});
+
+document.getElementById('styleName').addEventListener('change', (e) => {
+    makeMap();
+});
+
+document.getElementById('graticule').addEventListener('change', (e) => {
+    map.setPaintProperty('graticule', 'line-opacity', e.target.checked ? 1 : 0);
+});
+
+document.getElementById('debug').addEventListener('change', (e) => {
+    map.showTileBoundaries = e.target.checked;
+});
+
+function addGraticule() {
+    map.on('style.load', () => {
+        const fc = {
+            type: 'FeatureCollection',
+            features: []
+        };
+
+        for (let i = -170; i < 180; i += 10) {
+            fc.features.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: [[i, -80], [i, 80]]
+                }
+            });
+        }
+        for (let i = -80; i < 80; i += 10) {
+            fc.features.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: [[-180, i], [180, i]]
+                }
+            });
+        }
+
+        map.addSource('graticule', {
+            buffer: 0,
+            type: 'geojson',
+            data: fc
+        });
+
+        map.addLayer({
+            id: 'graticule',
+            source: 'graticule',
+            type: 'line',
+            paint: {
+                'line-width': 1,
+                'line-color': '#aaa',
+                'line-opacity': document.getElementById('graticule').checked ? 1 : 0
+            }
+        });
+    });
+}
+
+</script>
+</body>
+</html>

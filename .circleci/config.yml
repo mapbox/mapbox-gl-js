@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@1.4.0
-  browser-tools: circleci/browser-tools@1.1.1
+  browser-tools: circleci/browser-tools@1.2.3
 
 workflows:
   version: 2
@@ -245,8 +245,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome:
-          chrome-version: 91.0.4472.164
+      - browser-tools/install-chrome
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -258,8 +257,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome:
-          chrome-version: 91.0.4472.164
+      - browser-tools/install-chrome
       - run: yarn run test-render-prod
       - store_test_results:
           path: test/integration/render-tests
@@ -271,8 +269,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome:
-          chrome-version: 91.0.4472.164
+      - browser-tools/install-chrome
       - run: yarn run test-query
       - store_test_results:
           path: test/integration/query-tests
@@ -299,8 +296,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome:
-          chrome-version: 91.0.4472.164
+      - browser-tools/install-chrome
       - run:
           name: Collect performance stats
           command: node bench/gl-stats.js

@@ -149,8 +149,8 @@ class NavigationControl {
 
     _setButtonTitle(button: HTMLButtonElement, title: string) {
         const str = this._map._getUIString(`NavigationControl.${title}`);
-        button.title = str;
         button.setAttribute('aria-label', str);
+        if (button.firstElementChild) button.firstElementChild.setAttribute('title', str);
     }
 }
 

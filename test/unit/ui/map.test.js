@@ -4,6 +4,7 @@ import window from '../../../src/util/window.js';
 import Map from '../../../src/ui/map.js';
 import {createMap} from '../../util/index.js';
 import LngLat from '../../../src/geo/lng_lat.js';
+import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
 import Tile from '../../../src/source/tile.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import {Event, ErrorEvent} from '../../../src/util/evented.js';
@@ -11,6 +12,7 @@ import simulate from '../../util/simulate_interaction.js';
 import {fixedLngLat, fixedNum} from '../../util/fixed.js';
 import Fog from '../../../src/style/fog.js';
 import Color from '../../../src/style-spec/util/color.js';
+import {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
 
 function createStyleSource() {
     return {
@@ -234,10 +236,10 @@ test('Map', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
             t.stub(Map.prototype, '_authenticate');
             const map = new Map({container: window.document.createElement('div'), testMode: true});
-            map.transform.lngRange = [-120, 140];
-            map.transform.latRange = [-60, 80];
+
+            map.transform.setMaxBounds(LngLatBounds.convert([-120, -60, 140, 80]));
             map.transform.resize(600, 400);
-            t.equal(map.transform.zoom, 0.6983039737971012, 'map transform is constrained');
+            t.ok(map.transform.zoom, 0.698303973797101, 'map transform is constrained');
             t.ok(map.transform.unmodified, 'map transform is not modified');
             map.setStyle(createStyle());
             map.on('style.load', () => {
@@ -905,7 +907,7 @@ test('Map', (t) => {
             const map = createMap(t,
                 {zoom: 2, center: [0, 90], pitch: 80, skipCSSStub: true});
             const bounds = map.getBounds();
-            t.same(bounds.getNorth().toFixed(6), map.transform.maxValidLatitude);
+            t.same(bounds.getNorth().toFixed(6), MAX_MERCATOR_LATITUDE);
             t.same(
                 toFixed(bounds.toArray()),
                 toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]])
@@ -915,7 +917,7 @@ test('Map', (t) => {
             map.setCenter({lng: 0, lat: -90});
 
             const sBounds = map.getBounds();
-            t.same(sBounds.getSouth().toFixed(6), -map.transform.maxValidLatitude);
+            t.same(sBounds.getSouth().toFixed(6), -MAX_MERCATOR_LATITUDE);
             t.same(
                 toFixed(sBounds.toArray()),
                 toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]])
@@ -1307,6 +1309,119 @@ test('Map', (t) => {
         t.throws(() => {
             createMap(t, {minPitch: -10});
         }, new Error(`minPitch must be greater than or equal to 0`));
+        t.end();
+    });
+
+    t.test('#getProjection', (t) => {
+        t.test('map defaults to Mercator', (t) => {
+            const map = createMap(t);
+            t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
+            t.end();
+        });
+
+        t.test('respects projection options object', (t) => {
+            const options = {
+                name: 'albers',
+                center: [12, 34],
+                parallels: [10, 42]
+            };
+            const map = createMap(t, {projection: options});
+            t.deepEqual(map.getProjection(), options);
+            t.end();
+        });
+
+        t.test('respects projection options string', (t) => {
+            const map = createMap(t, {projection: 'albers'});
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [-96, 37.5],
+                parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+
+        t.test('composites user and default projection options', (t) => {
+            const options = {
+                name: 'albers',
+                center: [12, 34]
+            };
+            const map = createMap(t, {projection: options});
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [12, 34],
+                parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+
+        t.test('does not composite user and default projection options for non-conical projections', (t) => {
+            const options = {
+                name: 'naturalEarth',
+                center: [12, 34]
+            };
+            const map = createMap(t, {projection: options});
+            t.deepEqual(map.getProjection(), {
+                name: 'naturalEarth',
+                center: [0, 0]
+            });
+            t.end();
+        });
+        t.end();
+    });
+
+    t.test('#setProjection', (t) => {
+        t.test('sets projection by string', (t) => {
+            const map = createMap(t);
+            map.setProjection('albers');
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [-96, 37.5],
+                parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+
+        t.test('throws error if invalid projection name is supplied', (t) => {
+            const map = createMap(t);
+            map.on('error', ({error}) => {
+                t.match(error.message, /Invalid projection name: fakeProj/);
+                t.end();
+            });
+            t.end();
+        });
+
+        t.test('sets projection by options object', (t) => {
+            const options = {
+                name: 'albers',
+                center: [12, 34],
+                parallels: [10, 42]
+            };
+            const map = createMap(t);
+            map.setProjection(options);
+            t.deepEqual(map.getProjection(), options);
+            t.end();
+        });
+
+        t.test('sets projection by options object with just name', (t) => {
+            const map = createMap(t);
+            map.setProjection({name: 'albers'});
+            t.deepEqual(map.getProjection(), {
+                name: 'albers',
+                center: [-96, 37.5],
+                parallels: [29.5, 45.5]
+            });
+            t.end();
+        });
+
+        t.test('setProjection with no argument defaults to Mercator', (t) => {
+            const map = createMap(t);
+            map.setProjection({name: 'albers'});
+            t.equal(map.transform._unmodifiedProjection, false);
+            map.setProjection();
+            t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
+            t.equal(map.transform._unmodifiedProjection, true);
+            t.end();
+        });
         t.end();
     });
 

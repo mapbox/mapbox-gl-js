@@ -415,7 +415,7 @@ class SourceCache extends Evented {
 
     handleWrapJump(lng: number) {
         // On top of the regular z/x/y values, TileIDs have a `wrap` value that specify
-        // which cppy of the world the tile belongs to. For example, at `lng: 10` you
+        // which copy of the world the tile belongs to. For example, at `lng: 10` you
         // might render z/x/y/0 while at `lng: 370` you would render z/x/y/1.
         //
         // When lng values get wrapped (going from `lng: 370` to `long: 10`) you expect
@@ -595,7 +595,7 @@ class SourceCache extends Evented {
         if (idealTileIDs.length === 0) { return retain; }
 
         const checked: {[_: number | string]: boolean } = {};
-        const minZoom = idealTileIDs[idealTileIDs.length - 1].overscaledZ;
+        const minZoom = idealTileIDs.reduce((min, id) => Math.min(min, id.overscaledZ), Infinity);
         const maxZoom = idealTileIDs[0].overscaledZ;
         assert(minZoom <= maxZoom);
         const minCoveringZoom = Math.max(maxZoom - SourceCache.maxOverzooming, this._source.minzoom);
@@ -737,7 +737,8 @@ class SourceCache extends Evented {
 
         const cached = Boolean(tile);
         if (!cached) {
-            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom);
+            const painter = this.map ? this.map.painter : null;
+            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._source.type === 'raster');
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
@@ -804,6 +805,8 @@ class SourceCache extends Evented {
 
         for (const id in this._tiles)
             this._removeTile(+id);
+
+        if (this._source._clear) this._source._clear();
 
         this._cache.reset();
     }

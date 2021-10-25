@@ -94,6 +94,15 @@
         "delay": 0
       }
     },
+    "projection": {
+      "type": "projection",
+      "doc": "The projection the map should be rendered in. Suported projections are Albers, Equal Earth, Equirectangular (WGS84), Lambert conformal conic, Mercator, Natural Earth, and Winkel Tripel. Terrain and fog are not supported for projections other than mercator.",
+      "example": {
+        "name": "albers",
+        "center": [-154, 50],
+        "parallels": [55, 65]
+      }
+    },
     "layers": {
       "required": true,
       "type": "array",
@@ -3954,6 +3963,92 @@
           "android": "5.1.0",
           "ios": "3.6.0",
           "macos": "0.5.0"
+        }
+      }
+    }
+  },
+  "projection": {
+    "name": {
+      "type": "enum",
+      "values": {
+        "albers": {
+          "doc": "An Albers equal-area projection centered on the continental United States. You can configure the projection for a different region by setting `center` and `parallels` properties. You may want to set max bounds to constrain the map to the relevant region."
+        },
+        "equalEarth": {
+          "doc": "An Equal Earth projection."
+        },
+        "equirectangular": {
+          "doc": "An Equirectangular projection. This projection is very similar to the Plate Carrée projection."
+        },
+        "lambertConformalConic": {
+          "doc": "A Lambert conformal conic projection. You can configure the projection for a region by setting `center` and `parallels` properties. You may want to set max bounds to constrain the map to the relevant region."
+        },
+        "mercator": {
+          "doc": "The Mercator projection is the default projection."
+        },
+        "naturalEarth": {
+          "doc": "A Natural Earth projection."
+        },
+        "winkelTripel": {
+          "doc": "A Winkel Tripel projection."
+        }
+      },
+      "default": "mercator",
+      "doc": "The name of the projection to be used for rendering the map.",
+      "required": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.6.0"
+        }
+      }
+    },
+    "center": {
+      "type": "array",
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": false,
+      "doc": "The reference longitude and latitude of the projection. `center` takes the form of [lng, lat]. This property is only configurable for conic projections (Albers and Lambert Conformal Conic). All other projections are centered on [0, 0].",
+      "example": [
+        -96,
+        37.5
+      ],
+      "requires": [
+        {
+          "name": [
+              "albers",
+              "lambertConformalConic"
+          ]
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.6.0"
+        }
+      }
+    },
+    "parallels": {
+      "type": "array",
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": false,
+      "doc":  "The standard parallels of the projection, denoting the desired latitude range with minimal distortion. `parallels` takes the form of [lat0, lat1]. This property is only configurable for conic projections (Albers and Lambert Conformal Conic).",
+      "example": [
+        29.5,
+        45.5
+      ],
+      "requires": [
+        {
+          "name": [
+              "albers",
+              "lambertConformalConic"
+          ]
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.6.0"
         }
       }
     }

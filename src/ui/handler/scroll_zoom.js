@@ -143,7 +143,7 @@ class ScrollZoomHandler {
         if (this.isEnabled()) return;
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
-        if (this._map._gestureHandling) this._addScrollZoomBlocker();
+        if (this._map._cooperativeGestures) this._addScrollZoomBlocker();
     }
 
     /**
@@ -155,13 +155,16 @@ class ScrollZoomHandler {
     disable() {
         if (!this.isEnabled()) return;
         this._enabled = false;
-        if (this._map._gestureHandling) this._alertContainer.remove();
+        if (this._map._cooperativeGestures) {
+            clearTimeout(this._alertTimer);
+            this._alertContainer.remove();
+        }
     }
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
 
-        if (this._map._gestureHandling) {
+        if (this._map._cooperativeGestures) {
             if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !this._isFullscreen()) {
                 this._showBlockerAlert();
                 return;
