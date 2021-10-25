@@ -3972,31 +3972,24 @@
       "type": "enum",
       "values": {
         "albers": {
-          "title": "Albers",
           "doc": "An Albers equal-area projection centered on the continental United States. You can configure the projection for a different region by setting `center` and `parallels` properties. You may want to set max bounds to constrain the map to the relevant region."
         },
         "equalEarth": {
-          "title": "Equal Earth",
           "doc": "An Equal Earth projection."
         },
         "equirectangular": {
-          "title": "Equirectangular (WGS84)",
           "doc": "An Equirectangular projection. This projection is very similar to the Plate Carrée projection."
         },
         "lambertConformalConic": {
-          "title": "Lambert conformal conic",
           "doc": "A Lambert conformal conic projection. You can configure the projection for a region by setting `center` and `parallels` properties. You may want to set max bounds to constrain the map to the relevant region."
         },
         "mercator": {
-          "title": "Mercator",
           "doc": "The Mercator projection is the default projection."
         },
         "naturalEarth": {
-          "title": "Natural Earth",
           "doc": "A Natural Earth projection."
         },
         "winkelTripel": {
-          "title": "Winkel Tripel",
           "doc": "A Winkel Tripel projection."
         }
       },
