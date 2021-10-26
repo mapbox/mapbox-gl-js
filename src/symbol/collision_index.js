@@ -134,10 +134,10 @@ class CollisionIndex {
                           textPixelPadding: number,
                           tileID: OverscaledTileID): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
         const placedCollisionCircles = [];
-
-        const tileTransform = this.transform.projection.createTileTransform(this.transform, this.transform.worldSize);
-        const getElevation = this.transform.elevation ? (p => {
-            const e = this.transform.elevation.getAtTileOffset(tileID, p.x, p.y);
+        const elevation = this.transform.elevation;
+        const getElevation = elevation ? (p => {
+            const tileTransform = this.transform.projection.createTileTransform(this.transform, this.transform.worldSize);
+            const e = elevation.getAtTileOffset(tileID, p.x, p.y);
             const up = tileTransform.upVector(tileID.canonical, p.x, p.y);
             const upScale = tileTransform.upVectorScale(tileID.canonical);
             vec3.scale(up, up, e * upScale);
@@ -146,11 +146,9 @@ class CollisionIndex {
 
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         const projectedAnchor = this.transform.projection.projectTilePoint(symbol.tileAnchorX, symbol.tileAnchorY, tileID.canonical);
-        const elevation = getElevation(tileUnitAnchorPoint);
-        const elevatedAnchor = [projectedAnchor.x + elevation[0], projectedAnchor.y + elevation[1], projectedAnchor.z + elevation[2]];
-
+        const anchorElevation = getElevation(tileUnitAnchorPoint);
+        const elevatedAnchor = [projectedAnchor.x + anchorElevation[0], projectedAnchor.y + anchorElevation[1], projectedAnchor.z + anchorElevation[2]];
         const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2], tileID);
-
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
@@ -209,8 +207,8 @@ class CollisionIndex {
                 assert(pitchWithMap);
                 const screenSpacePath = elevation ?
                     projectedPath.map((p, index) => {
-                        const z = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
-                        return projection.project(p, labelToScreenMatrix, z);
+                        const elevation = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
+                        return projection.project(p, labelToScreenMatrix, elevation[2]);
                     }) :
                     projectedPath.map(p => projection.project(p, labelToScreenMatrix));
 

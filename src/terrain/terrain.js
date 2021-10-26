@@ -540,8 +540,7 @@ export class Terrain extends Elevation {
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
             morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number },
-            elevationTileID?: CanonicalTileID,
-            useTileSpaceElevation?: boolean
+            elevationTileID?: CanonicalTileID
         }) {
         const context = this.painter.context;
         const gl = context.gl;
@@ -551,12 +550,6 @@ export class Terrain extends Elevation {
 
         const tr = this.painter.transform;
         const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
-
-        if (options && options.useTileSpaceElevation) {
-            uniforms['u_label_space_scale'] = tileTransform.tileSpaceUpVectorScale();
-        } else {
-            uniforms['u_label_space_scale'] = 1.0;
-        }
 
         let id = tile.tileID.canonical;
         if (options && options.elevationTileID) {
@@ -1526,14 +1519,13 @@ export type TerrainUniformsType = {|
     'u_depth_size_inv': Uniform2f,
     'u_meter_to_dem'?: Uniform1f,
     'u_label_plane_matrix_inv'?: UniformMatrix4f,
-    
+
     // TODO: separate set of uniforms for the globe?
     'u_tile_tl_up': Uniform3f,
     'u_tile_tr_up': Uniform3f,
     'u_tile_br_up': Uniform3f,
     'u_tile_bl_up': Uniform3f,
-    'u_tile_up_scale': Uniform1f,
-    'u_label_space_scale': Uniform1f
+    'u_tile_up_scale': Uniform1f
 |};
 
 export const terrainUniforms = (context: Context, locations: UniformLocations): TerrainUniformsType => ({
@@ -1555,8 +1547,7 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_tile_tr_up': new Uniform3f(context, locations.u_tile_tr_up),
     'u_tile_br_up': new Uniform3f(context, locations.u_tile_br_up),
     'u_tile_bl_up': new Uniform3f(context, locations.u_tile_bl_up),
-    'u_tile_up_scale': new Uniform1f(context, locations.u_tile_up_scale),
-    'u_label_space_scale': new Uniform1f(context, locations.u_label_space_scale)
+    'u_tile_up_scale': new Uniform1f(context, locations.u_tile_up_scale)
 });
 
 function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUniformsType> {
@@ -1577,7 +1568,6 @@ function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUni
         'u_tile_tr_up': [0, 0, 1],
         'u_tile_br_up': [0, 0, 1],
         'u_tile_bl_up': [0, 0, 1],
-        'u_tile_up_scale': 1,
-        'u_label_space_scale': 1
+        'u_tile_up_scale': 1
     };
 }
