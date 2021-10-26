@@ -80,8 +80,6 @@ class Texture {
         }
 
         this.useMipmap = Boolean(options && options.useMipmap && this.isSizePowerOfTwo());
-        console.log("use mipmap is", this.useMipmap);
-
         if (this.useMipmap) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }
