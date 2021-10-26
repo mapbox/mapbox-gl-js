@@ -62,8 +62,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         let parentScaleBy, parentTL;
 
-        const nearest = layer.paint.get('raster-resampling') === 'nearest';
-        const textureFilter = nearest ?  gl.NEAREST : gl.LINEAR;
+        const textureFilter = layer.paint.get('raster-resampling') === 'nearest' ?  gl.NEAREST : gl.LINEAR;
 
         context.activeTexture.set(gl.TEXTURE0);
         tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
