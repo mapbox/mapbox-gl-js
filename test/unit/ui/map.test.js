@@ -1390,6 +1390,16 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('is idempotent', (t) => {
+            const map = createMap(t);
+            const setProjection = t.spy(map.style, 'setProjection');
+            map.setProjection('albers');
+            t.ok(setProjection.calledOnce);
+            map.setProjection('albers');
+            t.ok(setProjection.calledOnce);
+            t.end();
+        });
+
         t.test('sets projection by options object', (t) => {
             const options = {
                 name: 'albers',

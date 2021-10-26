@@ -1017,6 +1017,8 @@ class Map extends Camera {
      * });
      */
     setProjection(projection?: ?ProjectionSpecification | string) {
+        const currentProjectionName = this.getProjection().name;
+        if (projection === currentProjectionName || projection && projection.name === currentProjectionName) return;
         this._lazyInitEmptyStyle();
         if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
