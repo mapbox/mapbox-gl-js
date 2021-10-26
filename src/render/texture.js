@@ -52,20 +52,16 @@ class Texture {
 
     update(image: TextureImage, options: ?{premultiply?: boolean, useMipmap?: boolean}, position?: { x: number, y: number }) {
         const {width, height} = image;
-        const resize = (!this.size || this.size[0] !== width || this.size[1] !== height) && !position;
         const {context} = this;
         const {gl} = context;
 
-        this.useMipmap = Boolean(options && options.useMipmap && this.isSizePowerOfTwo());
-
-        console.log("use mipmap is", this.useMipmap);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         context.pixelStoreUnpackFlipY.set(false);
         context.pixelStoreUnpack.set(1);
         context.pixelStoreUnpackPremultiplyAlpha.set(this.format === gl.RGBA && (!options || options.premultiply !== false));
 
-        if (resize) {
+        if (!position && (!this.size || this.size[0] !== width || this.size[1] !== height)) {
             this.size = [width, height];
 
             if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData || (ImageBitmap && image instanceof ImageBitmap)) {
@@ -83,6 +79,9 @@ class Texture {
             }
         }
 
+        this.useMipmap = Boolean(options && options.useMipmap && this.isSizePowerOfTwo());
+        console.log("use mipmap is", this.useMipmap);
+
         if (this.useMipmap) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }
@@ -95,7 +94,7 @@ class Texture {
 
         if (filter !== this.filter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, (this.useMipmap && filter === gl.LINEAR) ? gl.LINEAR_MIPMAP_NEAREST : filter);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, (this.useMipmap && filter === gl.LINEAR) ? gl.LINEAR : filter);
             this.filter = filter;
         }
 
