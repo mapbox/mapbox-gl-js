@@ -1397,6 +1397,8 @@ test('Map', (t) => {
             t.ok(setProjection.calledOnce);
             map.setProjection('albers');
             t.ok(setProjection.calledOnce);
+            map.setProjection({name: 'albers'});
+            t.ok(setProjection.calledOnce);
             t.end();
         });
 
