@@ -56,7 +56,7 @@ class Texture {
         const {context} = this;
         const {gl} = context;
 
-        this.useMipmap = Boolean(options && options.useMipmap);
+        this.useMipmap = Boolean(options && options.useMipmap && this.isSizePowerOfTwo());
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         context.pixelStoreUnpackFlipY.set(false);
@@ -81,7 +81,7 @@ class Texture {
             }
         }
 
-        if (this.useMipmap && this.isSizePowerOfTwo()) {
+        if (this.useMipmap) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }
     }
@@ -91,7 +91,7 @@ class Texture {
         const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-        if (minFilter === gl.LINEAR_MIPMAP_NEAREST && (!this.useMipmap || !this.isSizePowerOfTwo())) {
+        if (minFilter === gl.LINEAR_MIPMAP_NEAREST && !this.useMipmap) {
             minFilter = gl.LINEAR;
         }
 
