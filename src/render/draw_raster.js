@@ -64,20 +64,19 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         const nearest = layer.paint.get('raster-resampling') === 'nearest';
         const textureFilter = nearest ?  gl.NEAREST : gl.LINEAR;
-        const minFilter = nearest ? gl.NEAREST : gl.LINEAR_MIPMAP_NEAREST;
 
         context.activeTexture.set(gl.TEXTURE0);
-        tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE, minFilter);
+        tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
 
         context.activeTexture.set(gl.TEXTURE1);
 
         if (parentTile) {
-            parentTile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE, minFilter);
+            parentTile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
             parentScaleBy = Math.pow(2, parentTile.tileID.overscaledZ - tile.tileID.overscaledZ);
             parentTL = [tile.tileID.canonical.x * parentScaleBy % 1, tile.tileID.canonical.y * parentScaleBy % 1];
 
         } else {
-            tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE, minFilter);
+            tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
         }
 
         const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
