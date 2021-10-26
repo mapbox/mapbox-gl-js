@@ -92,7 +92,7 @@ class Texture {
 
         if (filter !== this.filter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, (this.useMipmap && filter === gl.LINEAR) ? gl.LINEAR : filter);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, (this.useMipmap && filter === gl.LINEAR) ? gl.LINEAR_MIPMAP_NEAREST : filter);
             this.filter = filter;
         }
 
