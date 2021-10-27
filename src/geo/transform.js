@@ -669,7 +669,8 @@ class Transform {
         const centerCoord = MercatorCoordinate.fromLngLat(this.center);
         const numTiles = 1 << z;
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
-        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
+        const zInMeters = this.projection.name !== 'globe';
+        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z, zInMeters);
         const cameraCoord = this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
@@ -711,29 +712,6 @@ class Transform {
         let result = [];
         const maxZoom = z;
         const overscaledZ = options.reparseOverscaled ? actualZ : z;
-
-        const getAABBFromElevation = (it) => {
-            assert(this._elevation);
-            if (!this._elevation || !it.tileID) return; // To silence flow.
-            const minmax = this._elevation.getMinMaxForTile(it.tileID);
-            const aabb = it.aabb;
-            if (minmax) {
-                aabb.min[2] = minmax.min;
-                aabb.max[2] = minmax.max;
-                aabb.center[2] = (aabb.min[2] + aabb.max[2]) / 2;
-                it.minZ = minmax.min;
-                it.maxZ = minmax.max;
-            } else {
-                it.shouldSplit = shouldSplit(it);
-                if (!it.shouldSplit) {
-                    // At final zoom level, while corresponding DEM tile is not loaded yet,
-                    // assume center elevation. This covers ground to horizon and prevents
-                    // loading unnecessary tiles until DEM cover is fully loaded.
-                    aabb.min[2] = aabb.max[2] = aabb.center[2] = this._centerAltitude;
-                    it.minZ = it.maxZ = this._centerAltitude;
-                }
-            }
-        };
         const square = a => a * a;
         const cameraHeightSqr = square((cameraAltitude - this._centerAltitude) * meterToTile); // in tile coordinates.
 

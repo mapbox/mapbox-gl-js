@@ -33,7 +33,7 @@ class Frustum {
         this.planes = planes_;
     }
 
-    static fromInvProjectionMatrix(invProj: Float64Array, worldSize: number, zoom: number): Frustum {
+    static fromInvProjectionMatrix(invProj: Float64Array, worldSize: number, zoom: number, zInMeters: boolean): Frustum {
         const clipSpaceCorners = [
             [-1, 1, -1, 1],
             [ 1, 1, -1, 1],
@@ -53,7 +53,7 @@ class Frustum {
                 const s = vec4.transformMat4([], v, invProj);
                 const k = 1.0 / s[3] / worldSize * scale;
                 // Z scale in meters.
-                return vec4.mul(s, s, [k, k, k, k]);
+                return vec4.mul(s, s, [k, k, zInMeters ? 1.0 / s[3] : k, k]);
             });
 
         const frustumPlanePointIndices = [
@@ -86,19 +86,6 @@ class Aabb {
         this.min = min_;
         this.max = max_;
         this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);
-    }
-
-    quadrant(index: number): Aabb {
-        const split = [(index % 2) === 0, index < 2];
-        const qMin = vec3.clone(this.min);
-        const qMax = vec3.clone(this.max);
-        for (let axis = 0; axis < split.length; axis++) {
-            qMin[axis] = split[axis] ? this.min[axis] : this.center[axis];
-            qMax[axis] = split[axis] ? this.center[axis] : this.max[axis];
-        }
-        // Temporarily, elevation is constant, hence quadrant.max.z = this.max.z
-        qMax[2] = this.max[2];
-        return new Aabb(qMin, qMax);
     }
 
     distanceX(point: Array<number>): number {
