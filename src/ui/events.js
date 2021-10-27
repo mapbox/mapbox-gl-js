@@ -714,7 +714,7 @@ export type MapEvent =
      * // Initialize the map
      * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
-     * // when the pointing device leave's
+     * // when the pointing device leaves
      * // the map's canvas.
      * map.on('mouseout', () => {
      *     console.log('A mouseout event occurred.');
@@ -770,7 +770,7 @@ export type MapEvent =
      * // Initialize the map
      * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
-     * // when a touchstart event occurs within the map.
+     * // when a `touchstart` event occurs within the map.
      * map.on('touchstart', () => {
      *     console.log('A touchstart event occurred.');
      * });
@@ -788,7 +788,7 @@ export type MapEvent =
      * @example
      * // Initialize the map.
      * const map = new mapboxgl.Map({});
-     * // Set an event listener that fires when a touchstart event occurs within the map.
+     * // Set an event listener that fires when a `touchstart` event occurs within the map.
      * map.on('touchstart', () => {
      *     console.log('A touchstart event occurred.');
      * });
@@ -824,7 +824,7 @@ export type MapEvent =
      * @example
      * // Initialize the map.
      * const map = new mapboxgl.Map({});
-     * // Set an event listener that fires when a touchcancel event occurs within the map.
+     * // Set an event listener that fires when a `touchcancel` event occurs within the map.
      * map.on('touchcancel', () => {
      *     console.log('A touchcancel event occurred.');
      * });
@@ -923,7 +923,7 @@ export type MapEvent =
      * // Initialize the map
      * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
-     * // repeatedly  during a "drag to pan" interaction.
+     * // repeatedly during a "drag to pan" interaction.
      * map.on('drag', () => {
      *     console.log('A drag event occurred.');
      * });
@@ -1402,7 +1402,7 @@ export type MapEvent =
 
     /**
      * Fired when any map data (style, source, tile, etc) begins loading or
-     * changing asyncronously. All `dataloading` events are followed by a `data`
+     * changing asynchronously. All `dataloading` events are followed by a `data`
      * or `error` event. See {@link MapDataEvent} for more information.
      *
      * @event dataloading
@@ -1422,7 +1422,7 @@ export type MapEvent =
     | 'dataloading'
 
     /**
-     * Fired when the map's style begins loading or changing asyncronously.
+     * Fired when the map's style begins loading or changing asynchronously.
      * All `styledataloading` events are followed by a `styledata`
      * or `error` event. See {@link MapDataEvent} for more information.
      *
@@ -1434,8 +1434,8 @@ export type MapEvent =
      * // Initialize the map
      * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
-     * // map's style begins loading or
-     * // changing asyncronously.
+     * // when the map's style begins loading or
+     * // changing asynchronously.
      * map.on('styledataloading', () => {
      *     console.log('A styledataloading event occurred.');
      * });
@@ -1443,7 +1443,7 @@ export type MapEvent =
     | 'styledataloading'
 
     /**
-     * Fired when one of the map's sources begins loading or changing asyncronously.
+     * Fired when one of the map's sources begins loading or changing asynchronously.
      * All `sourcedataloading` events are followed by a `sourcedata` or `error` event.
      * See {@link MapDataEvent} for more information.
      *
@@ -1455,8 +1455,8 @@ export type MapEvent =
      * // Initialize the map
      * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
-     * // map's sources begin loading or
-     * // changing asyncronously.
+     * // when the map's sources begin loading or
+     * // changing asynchronously.
      * map.on('sourcedataloading', () => {
      *     console.log('A sourcedataloading event occurred.');
      * });
@@ -1476,7 +1476,7 @@ export type MapEvent =
      * // Initialize the map
      * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
-     * // an icon or pattern is missing.
+     * // when an icon or pattern is missing.
      * map.on('styleimagemissing', () => {
      *     console.log('A styleimagemissing event occurred.');
      * });
@@ -1493,7 +1493,7 @@ export type MapEvent =
     | 'style.load'
 
     /**
-     * Fired after speed index calculation is completed if speedIndexTiming option has set to true
+     * Fired after speed index calculation is completed if `speedIndexTiming` option has been set to `true`.
      *
      * @private
      * @event speedindexcompleted
@@ -1504,6 +1504,7 @@ export type MapEvent =
      * var map = new mapboxgl.Map({});
      * map.speedIndexTiming = true;
      * // Set an event listener that fires
+     * // after speed index calculation is completed.
      * map.on('speedindexcompleted', function() {
      *   console.log(`speed index is ${map.speedIndexNumber}`);
      * });
