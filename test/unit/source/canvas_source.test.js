@@ -140,7 +140,7 @@ test('CanvasSource', (t) => {
 
         source.onAdd(map);
 
-        t.equal(source.hasTransition(), true, 'should animate initally');
+        t.equal(source.hasTransition(), true, 'should animate initially');
 
         source.onRemove();
 
