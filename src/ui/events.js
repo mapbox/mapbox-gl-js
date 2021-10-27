@@ -1493,7 +1493,7 @@ export type MapEvent =
     | 'style.load'
 
     /**
-     * Fired after speed index calculation is completed if `speedIndexTiming` option has set to `true`.
+     * Fired after speed index calculation is completed if `speedIndexTiming` option has been set to `true`.
      *
      * @private
      * @event speedindexcompleted
