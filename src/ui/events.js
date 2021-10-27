@@ -1402,7 +1402,7 @@ export type MapEvent =
 
     /**
      * Fired when any map data (style, source, tile, etc) begins loading or
-     * changing asyncronously. All `dataloading` events are followed by a `data`
+     * changing asynchronously. All `dataloading` events are followed by a `data`
      * or `error` event. See {@link MapDataEvent} for more information.
      *
      * @event dataloading
@@ -1422,7 +1422,7 @@ export type MapEvent =
     | 'dataloading'
 
     /**
-     * Fired when the map's style begins loading or changing asyncronously.
+     * Fired when the map's style begins loading or changing asynchronously.
      * All `styledataloading` events are followed by a `styledata`
      * or `error` event. See {@link MapDataEvent} for more information.
      *
@@ -1435,7 +1435,7 @@ export type MapEvent =
      * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
      * // when the map's style begins loading or
-     * // changing asyncronously.
+     * // changing asynchronously.
      * map.on('styledataloading', () => {
      *     console.log('A styledataloading event occurred.');
      * });
@@ -1443,7 +1443,7 @@ export type MapEvent =
     | 'styledataloading'
 
     /**
-     * Fired when one of the map's sources begins loading or changing asyncronously.
+     * Fired when one of the map's sources begins loading or changing asynchronously.
      * All `sourcedataloading` events are followed by a `sourcedata` or `error` event.
      * See {@link MapDataEvent} for more information.
      *
@@ -1456,7 +1456,7 @@ export type MapEvent =
      * const map = new mapboxgl.Map({});
      * // Set an event listener that fires
      * // when the map's sources begin loading or
-     * // changing asyncronously.
+     * // changing asynchronously.
      * map.on('sourcedataloading', () => {
      *     console.log('A sourcedataloading event occurred.');
      * });
