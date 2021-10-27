@@ -576,12 +576,12 @@ export class Terrain extends Elevation {
             context.activeTexture.set(gl.TEXTURE2);
             const demTexture = this._prepareDemTileUniforms(tile, demTile, uniforms) ?
                 (demTile.demTexture: any) : this.emptyDEMTexture;
-            demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+            demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
         if (options && options.useDepthForOcclusion) {
             context.activeTexture.set(gl.TEXTURE3);
-            this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+            this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
             uniforms['u_depth_size_inv'] = [1 / this._depthFBO.width, 1 / this._depthFBO.height];
         }
 
