@@ -140,7 +140,7 @@ export default class TouchPanHandler {
             this._alertContainer.textContent = this._map._getUIString('TouchPanBlocker.Message');
 
             // dynamically set the font size of the touch pan blocker alert message
-            this._alertContainer.style.fontSize = `${Math.max(10, Math.min(24, Math.floor(this._el.clientWidth * 0.05)))}px`;
+            this._alertContainer.style.fontSize = `${Math.max(10, Math.min(24, Math.floor(this._map.getContainer().clientWidth * 0.05)))}px`;
         }
     }
 
