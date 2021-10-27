@@ -121,8 +121,6 @@ class Context {
             this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
         }
 
-        gl.getExtension('OES_standard_derivatives');
-
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     }
