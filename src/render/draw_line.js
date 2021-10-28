@@ -133,9 +133,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
         // eslint-disable-next-line no-inner-declarations, no-loop-func
-        function stencilPass(mode: $ReadOnly<StencilMode>) {
+        function stencilPass(mode: $ReadOnly<StencilMode>, color = true) {
             program.draw(context, gl.TRIANGLES, depthMode,
-                mode, colorMode, CullFaceMode.disabled, uniformValues,
+                mode, color ? colorMode : ColorMode.disabled, CullFaceMode.disabled, uniformValues,
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
                 layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
         }
@@ -149,8 +149,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             stencilPass(new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT));
             uniformValues['u_alpha_discard_threshold'] = 0.0;
             stencilPass(new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP));
-            stencilPass(new StencilMode(stencilFunc, stencilIdPass2, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT));
-
+            stencilPass(new StencilMode(stencilFunc, stencilIdPass2, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT), false);
         } else {
             stencilPass(painter.stencilModeForClipping(coord));
         }
