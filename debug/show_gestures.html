@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+
+        @font-face {
+          font-family: "Cerapro";
+          src: url("https://assets.website-files.com/5f291534dceb6cd8f0e7a02f/5f2a9eb37e663459fc064f54_CeraPRO-Regular.ttf") format("ttf");
+        }
+
+        #circles {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            pointer-events: none;
+            top: 0;
+            left: 0;
+        }
+
+        #circles div {
+            position: absolute;
+            background-color: rgba(255,255,255,0.5);
+            border-radius: 1000px;
+            border: 2px solid #222;
+            transition: margin 500ms, opacity 500ms, width 500ms, height 500ms;
+        }
+        #log {
+            height: 40px;
+        }
+
+        #keys {
+            margin: 20px;
+            padding: 20px;
+            background-color: rgba(255,255,255,0.9);
+            font-family: Cerapro, sans-serif;
+            font-size: 24px;
+            position: fixed;
+            bottom: 0;
+        }
+        #keys:empty {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+<div id='log'></div>
+<div id='map'></div>
+<div id='circles'></div>
+<div id='keys'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    style: 'mapbox://styles/mapbox/light-v10',
+    hash: true
+});
+
+const size = 40;
+class Circle {
+    constructor(x, y) {
+        this.el = document.createElement('div');
+        this.el.style.width = (1 * size) + 'px';
+        this.el.style.height = (1 * size) + 'px';
+        this.el.style.marginLeft = (-0.5 * size) + 'px';
+        this.el.style.marginTop = (-0.5 * size) + 'px';
+        this.update(x, y);
+        document.getElementById('circles').append(this.el);
+    }
+
+    update(x, y) {
+        this.el.style.top = y + 'px';
+        this.el.style.left = x + 'px';
+    }
+
+    remove() {
+        this.el.style.opacity = 0;
+        this.el.style.width = (2 * size) + 'px';
+        this.el.style.height = (2 * size) + 'px';
+        this.el.style.marginLeft = (-1 * size) + 'px';
+        this.el.style.marginTop = (-1 * size) + 'px';
+        this.el.addEventListener('transitionend', () => {
+            document.getElementById('circles').removeChild(this.el);
+        });
+    }
+}
+
+let touches = {};
+
+function updateTouches(e) {
+    let newTouches = {};
+    for (const touch of e.touches) {
+        if (touches[touch.identifier]) {
+            newTouches[touch.identifier] = touches[touch.identifier];
+            newTouches[touch.identifier].update(touch.pageX, touch.pageY);
+            delete touches[touch.identifier];
+        } else {
+            newTouches[touch.identifier] = new Circle(touch.pageX, touch.pageY);
+        }
+    }
+
+    for (const removed in touches) {
+        touches[removed].remove();
+    }
+
+    touches = newTouches;
+}
+
+document.body.addEventListener('touchstart', updateTouches, {capture: true});
+document.body.addEventListener('touchmove', updateTouches, {capture: true});
+document.body.addEventListener('touchend', updateTouches, {capture: true});
+document.body.addEventListener('touchcancel', updateTouches, {capture: true});
+
+let wheelTimeout;
+let isWheeling;
+let isMeta;
+document.body.addEventListener('wheel', (e) => {
+    clearTimeout(wheelTimeout);
+    let key = '';
+    if (e.metaKey) key = '⌘ + ';
+    if (e.ctrlKey) key = 'ctrl + ';
+    document.getElementById('keys').innerText = key + 'scroll';
+    wheelTimeout = setTimeout(() => {
+        document.getElementById('keys').innerText = '';
+    }, 500);
+});
+
+
+
+
+</script>
+</body>
+</html>
