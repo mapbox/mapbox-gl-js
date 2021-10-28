@@ -390,7 +390,7 @@ export class MapLoadEvent extends TelemetryEvent {
         this.skuToken = skuToken;
 
         if (config.EVENTS_URL &&
-            customAccessToken || config.ACCESS_TOKEN &&
+            (customAccessToken || config.ACCESS_TOKEN) &&
             Array.isArray(tileUrls) &&
             tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
             this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
