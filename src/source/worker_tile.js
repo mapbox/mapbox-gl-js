@@ -17,8 +17,8 @@ import GlyphAtlas from '../render/glyph_atlas.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import {OverscaledTileID} from './tile_id.js';
 import {PerformanceUtils} from '../util/performance.js';
+import type {Projection} from '../geo/projection/index.js';
 import getProjection from '../geo/projection/index.js';
-
 import type {Bucket} from '../data/bucket.js';
 import type Actor from '../util/actor.js';
 import type StyleLayer from '../style/style_layer.js';
@@ -225,6 +225,7 @@ class WorkerTile {
                 for (const key in buckets) {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
+                        const projection: Projection = getProjection(this.projection);
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
                         performSymbolLayout(bucket,
                             glyphMap,
@@ -234,7 +235,7 @@ class WorkerTile {
                             this.showCollisionBoxes,
                             this.tileID.canonical,
                             this.tileZoom,
-                            getProjection(this.projection));
+                            projection);
                         bucket.projection = this.projection;
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||

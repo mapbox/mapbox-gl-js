@@ -192,7 +192,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             // calculated above. In the (somewhat weird) case of pitch-aligned text, we add an equivalent
             // tile-unit based shift to the anchor before projecting to the label plane.
             const shiftedAnchor = pitchWithMap ?
-                symbolProjection.project(tileAnchor.add(shift), labelPlaneMatrix, elevation).point :
+                symbolProjection.project(tileAnchor.add(shift), labelPlaneMatrix, anchorElevation[2]).point :
                 projectedAnchor.point.add(rotateWithMap ?
                     shift.rotate(-transform.angle) :
                     shift);
@@ -260,7 +260,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const hasSortKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
     let sortFeaturesByKey = false;
 
-    const depthMode = painter.depthModeForSublayer(0, DepthMode.disabled);
+    const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const mercCenter = [
         mercatorXfromLng(tr.center.lng),
         mercatorYfromLat(tr.center.lat)

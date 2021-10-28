@@ -8,6 +8,7 @@ import {globeRasterUniformValues} from './globe_raster_program.js';
 import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
+import type VertexBuffer from '../gl/vertex_buffer.js';
 import {members as globeLayoutAttributes} from './globe_attributes.js';
 import {easeCubicInOut, clamp, degToRad} from '../util/util.js';
 import {GlobeVertexArray} from '../data/array_types.js';
@@ -196,23 +197,29 @@ function createPoleTriangleVertices(fanSize, tiles, ws, topCap) {
     return arr;
 }
 
-function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID, tiles: number) {
+function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID, tiles: number): [GlobeSharedBuffers, VertexBuffer, VertexBuffer] {
     const context = painter.context;
     const id = coord.canonical;
     const tr = painter.transform;
-    if (!tile.globeGridBuffer) {
+    let gridBuffer = tile.globeGridBuffer;
+    let poleBuffer = tile.globePoleBuffer;
+    let sharedBuffers = painter.globeSharedBuffers;
+
+    if (!gridBuffer) {
         const gridMesh = createGridVertices(painter, GLOBE_VERTEX_GRID_SIZE, id.x, id.y, id.z);
-        tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
+        gridBuffer = tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
     }
 
-    if (!tile.globePoleBuffer && (coord.canonical.y === 0 || coord.canonical.y === tiles - 1)) {
+    if (!poleBuffer) {
         const poleMesh = createPoleTriangleVertices(GLOBE_VERTEX_GRID_SIZE, tiles, tr.tileSize * tiles, coord.canonical.y === 0);
-        tile.globePoleBuffer = context.createVertexBuffer(poleMesh, globeLayoutAttributes, false);
+        poleBuffer = tile.globePoleBuffer = context.createVertexBuffer(poleMesh, globeLayoutAttributes, false);
     }
 
-    if (!painter.globeSharedBuffers) {
-        painter.globeSharedBuffers = new GlobeSharedBuffers(context);
+    if (!sharedBuffers) {
+        sharedBuffers = painter.globeSharedBuffers = new GlobeSharedBuffers(context);
     }
+
+    return [sharedBuffers, gridBuffer, poleBuffer];
 }
 
 function globeMatrixForTile(id: CanonicalTileID, globeMatrix) {
@@ -295,7 +302,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const tile = sourceCache.getTile(coord);
             const tiles = Math.pow(2, coord.canonical.z);
 
-            prepareBuffersForTileMesh(painter, tile, coord, tiles);
+            const [sharedBuffers, gridBuffer, poleBuffer] = prepareBuffersForTileMesh(painter, tile, coord, tiles);
 
             const stencilMode = StencilMode.disabled;
 
@@ -336,7 +343,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
             program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
-                uniformValues, "globe_raster", tile.globeGridBuffer, painter.globeSharedBuffers.gridIndexBuffer, painter.globeSharedBuffers.gridSegments, null, null, null, null);
+                uniformValues, "globe_raster", gridBuffer, sharedBuffers.gridIndexBuffer, sharedBuffers.gridSegments, null, null, null, null);
 
             // Fill poles by extrapolating adjacent border tiles
             const poleMatrices = [
@@ -354,7 +361,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                     0.0, mercatorCenter, upvectorMatrix);
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                    poleUniforms, "globe_pole_raster", tile.globePoleBuffer, painter.globeSharedBuffers.poleIndexBuffer, painter.globeSharedBuffers.poleSegments);
+                    poleUniforms, "globe_pole_raster", poleBuffer, sharedBuffers.poleIndexBuffer, sharedBuffers.poleSegments);
             }
         }
     });
@@ -452,7 +459,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
             const tile = sourceCache.getTile(coord);
             const tiles = Math.pow(2, coord.canonical.z);
 
-            prepareBuffersForTileMesh(painter, tile, coord, tiles);
+            const [sharedBuffers, gridBuffer] = prepareBuffersForTileMesh(painter, tile, coord, tiles);
 
             const gridTileId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
             const elevationOptions = {elevationTileID: gridTileId};
@@ -465,7 +472,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
                 globeUpVectorMatrix(coord.canonical, tiles));
 
             program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
-                uniformValues, "globe_raster_depth", tile.globeGridBuffer, painter.globeSharedBuffers.gridIndexBuffer, painter.globeSharedBuffers.gridSegments, null, null, null, null);
+                uniformValues, "globe_raster_depth", gridBuffer, sharedBuffers.gridIndexBuffer, sharedBuffers.gridSegments, null, null, null, null);
         }
     } else {
         assert(painter.renderPass === 'offscreen');

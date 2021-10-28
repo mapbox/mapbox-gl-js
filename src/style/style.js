@@ -1399,7 +1399,7 @@ class Style extends Evented {
     // eslint-disable-next-line no-warning-comments
     // TODO: generic approach for root level property: light, terrain, skybox.
     // It is not done here to prevent rebasing issues.
-    setTerrain(terrainOptions: TerrainSpecification) {
+    setTerrain(terrainOptions: ?TerrainSpecification) {
         this._checkLoaded();
 
         //Disabling

@@ -13,10 +13,12 @@ import {Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
+import type {Projection} from '../geo/projection/index.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
 import {latLngToECEF} from './projection/globe.js';
+import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -115,6 +117,8 @@ class Transform {
     _centerAltitude: number;
     _horizonShift: number;
     _projectionScaler: number;
+    _nearZ: number;
+    _farZ: number;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
@@ -136,6 +140,8 @@ class Transform {
         this.angle = 0;
         this._fov = 0.6435011087932844;
         this._pitch = 0;
+        this._nearZ = 0;
+        this._farZ = 0;
         this._unmodified = true;
         this._edgeInsets = new EdgeInsets();
         this._projMatrixCache = {};
@@ -168,6 +174,8 @@ class Transform {
         clone.angle = this.angle;
         clone._fov = this._fov;
         clone._pitch = this._pitch;
+        clone._nearZ = this._nearZ;
+        clone._farZ = this._farZ;
         clone._averageElevation = this._averageElevation;
         clone._unmodified = this._unmodified;
         clone._edgeInsets = this._edgeInsets.clone();
@@ -241,8 +249,8 @@ class Transform {
         this._renderWorldCopies = renderWorldCopies;
     }
 
-    set projection(name?: String) {
-        this._projection = getProjection(name || 'mercator');
+    set projection(projection: Projection) {
+        this._projection = projection;
     }
 
     get projection(): Projection {
@@ -956,7 +964,7 @@ class Transform {
         return this._coordinatePoint(this.locationCoordinate(lnglat), false);
     }
 
-    locationPointGlobe(lnglat: Lnglat) {
+    locationPointGlobe(lnglat: LngLat) {
         const ecefLoc = latLngToECEF(lnglat.lat, lnglat.lng);
         const up = vec3.normalize([], ecefLoc);
         const elevation = this.elevation ? this.elevation.getAtPointOrZero(this.locationCoordinate(lnglat), this._centerAltitude) : this._centerAltitude;
@@ -1308,7 +1316,7 @@ class Transform {
         return cache[distanceDataKey];
     }
 
-    calculateGlobeMatrix(worldSize: number): Float64Array {
+    calculateGlobeMatrix(worldSize: number): Float32Array {
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadius = worldSize / (2.0 * Math.PI);
         const s = wsRadius / localRadius;
@@ -1319,7 +1327,7 @@ class Transform {
             mercatorYfromLat(lat) * worldSize);
 
         // transform the globe from reference coordinate space to world space
-        const posMatrix = mat4.identity(new Float64Array(16));
+        const posMatrix = mat4.identity(new Float32Array(16));
         mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
         mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
@@ -1328,7 +1336,7 @@ class Transform {
         return posMatrix;
     }
 
-    calculateGlobeMercatorMatrix(worldSize: number): Float64Array {
+    calculateGlobeMercatorMatrix(worldSize: number): Float32Array {
         const lat = clamp(this.center.lat, -this.maxValidLatitude, this.maxValidLatitude);
         const point = new Point(
             mercatorXfromLng(this.center.lng) * worldSize,
@@ -1339,7 +1347,7 @@ class Transform {
         const zScale = this.pixelsPerMeter;
         const ws = worldSize / projectionScaler;
 
-        const posMatrix = mat4.identity(new Float64Array(16));
+        const posMatrix = mat4.identity(new Float32Array(16));
         mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
         mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
 

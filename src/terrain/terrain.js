@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 import SourceCache from '../source/source_cache.js';
-import {OverscaledTileID} from '../source/tile_id.js';
+import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import Tile from '../source/tile.js';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
 import {RasterBoundsArray, TriangleIndexArray, LineIndexArray} from '../data/array_types.js';

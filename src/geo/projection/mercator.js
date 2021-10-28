@@ -1,22 +1,24 @@
 // @flow
 import assert from 'assert';
-import {mat4} from 'gl-matrix';
+import {mat4, vec3} from 'gl-matrix';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
+import type Transform from '../../geo/transform.js';
 import {Aabb} from '../../util/primitives.js';
+import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
 import Point from '@mapbox/point-geometry';
 
 class MercatorTileTransform {
     _tr: Transform;
     _worldSize: number;
-    _identity: Float64Array;
+    _identity: Float32Array;
 
     constructor(tr: Transform, worldSize: number) {
         this._tr = tr;
         this._worldSize = worldSize;
         // eslint-disable-next-line no-warning-comments
         // TODO: Cache this elsewhere?
-        this._identity = mat4.identity(new Float64Array(16));
+        this._identity = mat4.identity(new Float32Array(16));
     }
 
     createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
@@ -45,11 +47,11 @@ class MercatorTileTransform {
         }
     }
 
-    createInversionMatrix(_: UnwrappedTileID): Float64Array {
+    createInversionMatrix(): Float32Array {
         return this._identity;
     }
 
-    createTileMatrix(id: UnwrappedTileID): Float64Array {
+    createTileMatrix(id: UnwrappedTileID): Float32Array {
         const canonical = id.canonical;
         const zoomScale = Math.pow(2, canonical.z);
         const scale = this._worldSize / zoomScale;
@@ -92,11 +94,11 @@ class MercatorTileTransform {
         return [0, 0, 1];
     }
 
-    upVectorScale(): Number {
+    upVectorScale(): number {
         return 1;
     }
 
-    tileSpaceUpVectorScale(): Number {
+    tileSpaceUpVectorScale(): number {
         return 1;
     }
 }
@@ -122,7 +124,7 @@ export default {
         return mercatorZfromAltitude(1, lat) * worldSize;
     },
 
-    createTileTransform(tr: Transform, worldSize: number): TileTransform {
+    createTileTransform(tr: Transform, worldSize: number): Object {
         return new MercatorTileTransform(tr, worldSize);
     },
 };

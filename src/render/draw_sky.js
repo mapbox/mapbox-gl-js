@@ -34,10 +34,10 @@ function drawGlobeAtmosphere(painter: Painter) {
         const vertices = new GlobeVertexArray();
         const triangles = new TriangleIndexArray();
 
-        vertices.emplaceBack(-1.0, 1.0, 1.0, 0.0, 0.0);
-        vertices.emplaceBack(1.0, 1.0, 1.0, 1.0, 0.0);
-        vertices.emplaceBack(1.0, -1.0, 1.0, 1.0, 1.0);
-        vertices.emplaceBack(-1.0, -1.0, 1.0, 0.0, 1.0);
+        vertices.emplaceBack(-1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+        vertices.emplaceBack(1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0);
+        vertices.emplaceBack(1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0);
+        vertices.emplaceBack(-1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 1.0);
 
         triangles.emplaceBack(0, 1, 2);
         triangles.emplaceBack(2, 3, 0);
@@ -81,7 +81,7 @@ function drawGlobeAtmosphere(painter: Painter) {
 
 function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
     if (painter.transform.projection.name === 'globe') {
-        drawGlobeAtmosphere(painter, layer);
+        drawGlobeAtmosphere(painter);
     } else {
         const opacity = layer.paint.get('sky-opacity');
         if (opacity === 0) {

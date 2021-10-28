@@ -24,6 +24,7 @@ class ColorMode {
     static disabled: $ReadOnly<ColorMode>;
     static unblended: $ReadOnly<ColorMode>;
     static alphaBlended: $ReadOnly<ColorMode>;
+    static alphaBlendedReal: $ReadOnly<ColorMode>;
 }
 
 ColorMode.Replace = [ONE, ZERO];

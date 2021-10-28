@@ -79,15 +79,17 @@ class CollisionIndex {
         let anchorZ = collisionBox.projectedAnchorZ;
 
         // Apply elevation vector to the anchor point
-        if (collisionBox.elevation) {
+        const elevation = collisionBox.elevation;
+        const tileID = collisionBox.tileID;
+        if (elevation && tileID) {
             const tileTransform = this.transform.projection
                 .createTileTransform(this.transform, this.transform.worldSize);
-            const up = tileTransform.upVector(collisionBox.tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
-            const upScale = tileTransform.upVectorScale(collisionBox.tileID.canonical);
+            const up = tileTransform.upVector(tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
+            const upScale = tileTransform.upVectorScale(tileID.canonical);
 
-            anchorX += up[0] * collisionBox.elevation * upScale;
-            anchorY += up[1] * collisionBox.elevation * upScale;
-            anchorZ += up[2] * collisionBox.elevation * upScale;
+            anchorX += up[0] * elevation * upScale;
+            anchorY += up[1] * elevation * upScale;
+            anchorZ += up[2] * elevation * upScale;
         }
 
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID);

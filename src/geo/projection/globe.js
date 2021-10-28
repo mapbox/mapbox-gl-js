@@ -10,6 +10,8 @@ import Context from '../../gl/context.js';
 import IndexBuffer from '../../gl/index_buffer.js';
 import SegmentVector from '../../data/segment.js';
 import {TriangleIndexArray} from '../../data/array_types.js';
+import {FreeCamera} from '../../ui/free_camera.js';
+import type Transform from '../transform.js';
 
 class GlobeTileTransform {
     _tr: Transform;
@@ -37,9 +39,9 @@ class GlobeTileTransform {
         return m;
     }
 
-    createGlCoordMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
+    createGlCoordMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean): mat4 {
         if (pitchWithMap) {
-            const m = this.createLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, pixelsToTileUnits);
+            const m = this.createLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap);
             mat4.invert(m, m);
             mat4.multiply(m, posMatrix, m);
             return m;
@@ -48,12 +50,12 @@ class GlobeTileTransform {
         }
     }
 
-    createTileMatrix(id: UnwrappedTileID): Float64Array {
+    createTileMatrix(id: UnwrappedTileID): Float32Array {
         const decode = denormalizeECEF(tileBoundsOnGlobe(id.canonical));
         return mat4.multiply([], this._globeMatrix, decode);
     }
 
-    createInversionMatrix(id: UnwrappedTileID): Float64Array {
+    createInversionMatrix(id: UnwrappedTileID): Float32Array {
         const center = this._tr.center;
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadiusGlobe = this._worldSize / (2.0 * Math.PI);
@@ -104,13 +106,13 @@ class GlobeTileTransform {
         return new GlobeTile(id).upVector(x / EXTENT, y / EXTENT);
     }
 
-    upVectorScale(id: CanonicalTileID): Number {
+    upVectorScale(id: CanonicalTileID): number {
         const pixelsPerMeterECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
         const maxTileScale = tileNormalizationScale(id);
         return pixelsPerMeterECEF * maxTileScale;
     }
 
-    tileSpaceUpVectorScale(): Number {
+    tileSpaceUpVectorScale(): number {
         return mercatorZfromAltitude(1, this._tr.center.lat) * this._tr.worldSize;
     }
 
@@ -275,7 +277,7 @@ export default {
         return mercatorZfromAltitude(1, 0) * worldSize;
     },
 
-    createTileTransform(tr: Transform, worldSize: number): TileTransform {
+    createTileTransform(tr: Transform, worldSize: number): Object {
         return new GlobeTileTransform(tr, worldSize);
     },
 };
@@ -349,12 +351,13 @@ export function tileLatLngCorners(id: CanonicalTileID) {
     return [latLngTL, latLngBR];
 }
 
-export function latLngToECEF(lat, lng, radius) {
+export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<number> {
     lat = degToRad(lat);
     lng = degToRad(lng);
 
-    if (!radius)
+    if (!radius) {
         radius = globeRefRadius;
+    }
 
     // Convert lat & lng to spherical representation. Use zoom=0 as a reference
     const sx = Math.cos(lat) * Math.sin(lng) * radius;
@@ -465,7 +468,7 @@ export class GlobeTile {
     _blUp: Array<number>;
     _brUp: Array<number>;
 
-    constructor(tileID: CanonicalTileID, labelSpace = false) {
+    constructor(tileID: CanonicalTileID, labelSpace: boolean = false) {
         this.tileID = tileID;
 
         // Pre-compute up vectors of each corner of the tile
