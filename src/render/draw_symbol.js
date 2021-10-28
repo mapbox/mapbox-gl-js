@@ -7,7 +7,7 @@ import SegmentVector from '../data/segment.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
-import {mat4, vec4, vec3} from 'gl-matrix';
+import {mat4, vec3} from 'gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
@@ -18,11 +18,9 @@ import ONE_EM from '../symbol/one_em.js';
 import {evaluateVariableOffset} from '../symbol/symbol_layout.js';
 import Tile from '../source/tile.js';
 import {
-    mercatorZfromAltitude,
     mercatorXfromLng,
     mercatorYfromLat
 } from '../geo/mercator_coordinate.js';
-import {degToRad} from '../util/util.js';
 import {globeToMercatorTransition} from '../geo/projection/globe.js';
 
 import {

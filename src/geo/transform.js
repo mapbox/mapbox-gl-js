@@ -9,15 +9,14 @@ import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCor
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import {Aabb, Frustum, Ray} from '../util/primitives.js';
+import {Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
-
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
-import {latLngToECEF} from './projection/globe.js'
+import {latLngToECEF} from './projection/globe.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -1424,7 +1423,6 @@ class Transform {
             const maxAltitude = (newCenter.z + vec3.length(camToNew)) * this._projectionScaler;
             this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
 
-
             // Camera zoom has to be updated as the orbit distance might have changed
             this._centerAltitude = newCenter.toAltitude();
             this._center = newCenter.toLngLat();
@@ -1622,6 +1620,7 @@ class Transform {
 
         const horizonDistance = cameraToSeaLevelDistance * (1 / this._horizonShift);
 
+        // eslint-disable-next-line no-warning-comments
         // TODO: Get far z from projection
         const farPlaneScaler = this.projection.name === 'globe' ? 4.0 : 1.0;
         this._farZ = Math.min(furthestDistance * 1.01, horizonDistance) * farPlaneScaler;

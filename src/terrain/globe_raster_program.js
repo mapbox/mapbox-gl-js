@@ -5,8 +5,7 @@ import {
     Uniform2f,
     Uniform3f,
     UniformMatrix4f,
-    Uniform1f,
-    Uniform4f
+    Uniform1f
 } from '../render/uniform_binding.js';
 
 import type Context from '../gl/context.js';

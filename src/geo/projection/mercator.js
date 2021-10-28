@@ -1,11 +1,9 @@
 // @flow
 import assert from 'assert';
 import {mat4} from 'gl-matrix';
-import {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from '../mercator_coordinate.js';
-import LngLat from '../lng_lat.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import {Aabb} from '../../util/primitives.js';
-import MercatorCoordinate from '../mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
 
 class MercatorTileTransform {
@@ -16,12 +14,13 @@ class MercatorTileTransform {
     constructor(tr: Transform, worldSize: number) {
         this._tr = tr;
         this._worldSize = worldSize;
+        // eslint-disable-next-line no-warning-comments
         // TODO: Cache this elsewhere?
         this._identity = mat4.identity(new Float64Array(16));
     }
 
     createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
-        let m = mat4.create();
+        const m = mat4.create();
         if (pitchWithMap) {
             mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
             if (!rotateWithMap) {
@@ -46,8 +45,8 @@ class MercatorTileTransform {
         }
     }
 
-    createInversionMatrix(id: UnwrappedTileID): Float64Array {
-         return this._identity;
+    createInversionMatrix(_: UnwrappedTileID): Float64Array {
+        return this._identity;
     }
 
     createTileMatrix(id: UnwrappedTileID): Float64Array {
@@ -85,22 +84,22 @@ class MercatorTileTransform {
         return this._tr.rayIntersectionCoordinate(this._tr.pointRayIntersection(clamped, z));
     }
 
-    cullTile(aabb: Aabb, id: CanonicalTileID, zoom: number, camera: FreeCamera): boolean {
+    cullTile(): boolean {
         return false;
     }
 
-    upVector(id: CanonicalTileID, x: Number, y: number): vec3 {
+    upVector(): vec3 {
         return [0, 0, 1];
     }
 
-    upVectorScale(id: CanonicalTileID): Number {
+    upVectorScale(): Number {
         return 1;
     }
 
     tileSpaceUpVectorScale(): Number {
         return 1;
     }
-};
+}
 
 export default {
     name: 'mercator',
@@ -111,8 +110,8 @@ export default {
         return {x, y, z: 0};
     },
 
-    projectTilePoint(x: number, y: number, id: CanonicalTileID): {x:number, y: number, z:number} {
-        return { x, y, z: 0 };
+    projectTilePoint(x: number, y: number): {x: number, y: number, z: number} {
+        return {x, y, z: 0};
     },
 
     requiresDraping: false,

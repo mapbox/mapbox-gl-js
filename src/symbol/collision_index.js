@@ -81,7 +81,7 @@ class CollisionIndex {
         // Apply elevation vector to the anchor point
         if (collisionBox.elevation) {
             const tileTransform = this.transform.projection
-                .createTileTransform(this.transform, this.transform.worldSize)
+                .createTileTransform(this.transform, this.transform.worldSize);
             const up = tileTransform.upVector(collisionBox.tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
             const upScale = tileTransform.upVectorScale(collisionBox.tileID.canonical);
 

@@ -1,18 +1,15 @@
 // @flow
 
 import {mat4, vec4, vec3} from 'gl-matrix';
-
 import {Aabb} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
 import {degToRad, smoothstep, clamp} from '../../util/util.js';
-import {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
-import CanonicalTileID, { UnwrappedTileID } from '../../source/tile_id.js';
+import MercatorCoordinate, {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
+import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
 import IndexBuffer from '../../gl/index_buffer.js';
-import VertexBuffer from '../../gl/vertex_buffer.js';
 import SegmentVector from '../../data/segment.js';
 import {TriangleIndexArray} from '../../data/array_types.js';
-import MercatorCoordinate from '../mercator_coordinate.js';
 
 class GlobeTileTransform {
     _tr: Transform;
@@ -26,7 +23,7 @@ class GlobeTileTransform {
         this._globeMatrix = this._calculateGlobeMatrix();
     }
 
-    createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
+    createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean): mat4 {
         let m = mat4.create();
         if (pitchWithMap) {
             m = this._calculateGlobeLabelMatrix(tileID, this._tr.worldSize / this._tr._projectionScaler, this._tr.center.lat, this._tr.center.lng);
@@ -84,7 +81,7 @@ class GlobeTileTransform {
         return mat4.multiply(matrix, matrix, scaling);
     }
 
-    tileAabb(id: UnwrappedTileID, z: number, minZ: number, maxZ: number) {
+    tileAabb(id: UnwrappedTileID) {
         const aabb = tileBoundsOnGlobe(id.canonical);
 
         // Transform corners of the aabb to the correct space
@@ -158,7 +155,7 @@ class GlobeTileTransform {
         return mat4.multiply([], posMatrix, denormalizeECEF(tileBoundsOnGlobe(tileID)));
     }
 
-    pointCoordinate(x: number, y: number, z?: number): MercatorCoordinate {
+    pointCoordinate(x: number, y: number): MercatorCoordinate {
         const p0 = [x, y, 0, 1];
         const p1 = [x, y, 1, 1];
 
@@ -197,7 +194,7 @@ class GlobeTileTransform {
 
         // Transform coordinate axes to find lat & lng of the position
         const xa = vec3.normalize([], vec4.transformMat4([], [1, 0, 0, 0], matrix));
-        const ya = vec3.normalize([], vec4.transformMat4([], [0,-1, 0, 0], matrix));
+        const ya = vec3.normalize([], vec4.transformMat4([], [0, -1, 0, 0], matrix));
         const za = vec3.normalize([], vec4.transformMat4([], [0, 0, 1, 0], matrix));
 
         const lat = Math.asin(vec3.dot(ya, pOnGlobe) / radius) * 180 / Math.PI;
@@ -245,15 +242,15 @@ class GlobeTileTransform {
 
         return numFacingAway === 4;
     }
-};
+}
 
 export default {
     name: 'globe',
-    project(lng: number, lat: number) {
-        return { x: 0, y: 0, z: 0 };
+    project() {
+        return {x: 0, y: 0, z: 0};
     },
 
-    projectTilePoint(x: number, y: number, id: CanonicalTileID): {x:number, y: number, z:number} {
+    projectTilePoint(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {
         const tiles = Math.pow(2.0, id.z);
         const mx = (x / EXTENT + id.x) / tiles;
         const my = (y / EXTENT + id.y) / tiles;
@@ -261,6 +258,7 @@ export default {
         const lng = lngFromMercatorX(mx);
         const pos = latLngToECEF(lat, lng);
 
+        // eslint-disable-next-line no-warning-comments
         // TODO: cached matrices!
         const bounds = tileBoundsOnGlobe(id);
         const normalizationMatrix = normalizeECEF(bounds);
@@ -280,7 +278,7 @@ export default {
     createTileTransform(tr: Transform, worldSize: number): TileTransform {
         return new GlobeTileTransform(tr, worldSize);
     },
-}
+};
 
 export const globeRefRadius = EXTENT / Math.PI / 2.0;
 
@@ -338,7 +336,7 @@ export function tileNormalizationScale(id: CanonicalTileID) {
     return st * maxExtInv;
 }
 
-export function tileLatLngCorners(id: CanonicalTileID, padding: ?number) {
+export function tileLatLngCorners(id: CanonicalTileID) {
     const tileScale = Math.pow(2, id.z);
     const left = id.x / tileScale;
     const right = (id.x + 1) / tileScale;
@@ -486,8 +484,6 @@ export class GlobeTile {
             vec3.normalize(this._brUp, this._brUp);
             vec3.normalize(this._blUp, this._blUp);
         } else {
-            const pixelsPerMeter = labelSpace;
-
             this._tlUp = [0, 0, 1];
             this._trUp = [0, 0, 1];
             this._brUp = [0, 0, 1];

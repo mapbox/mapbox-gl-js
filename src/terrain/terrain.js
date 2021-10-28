@@ -1520,6 +1520,7 @@ export type TerrainUniformsType = {|
     'u_meter_to_dem'?: Uniform1f,
     'u_label_plane_matrix_inv'?: UniformMatrix4f,
 
+    // eslint-disable-next-line no-warning-comments
     // TODO: separate set of uniforms for the globe?
     'u_tile_tl_up': Uniform3f,
     'u_tile_tr_up': Uniform3f,

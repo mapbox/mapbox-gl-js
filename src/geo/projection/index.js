@@ -1,11 +1,10 @@
 // @flow
-import LngLat from '../lng_lat.js';
 import globe from './globe.js';
 import mercator from './mercator.js';
-import { OverscaledTileID, CanonicalTileID } from '../../source/tile_id.js';
-import { Aabb } from '../../util/primitives.js';
+import {CanonicalTileID} from '../../source/tile_id.js';
+import {Aabb} from '../../util/primitives.js';
 import Transform from '../transform.js';
-import { FreeCamera } from '../../ui/free_camera.js';
+import {FreeCamera} from '../../ui/free_camera.js';
 import MercatorCoordinate from '../mercator_coordinate.js';
 
 export type TileTransform = {
@@ -33,7 +32,7 @@ export type Projection = {
     name: string,
     project: (lng: number, lat: number) => {x: number, y: number, z: number},
 
-    projectTilePoint: (x: number, y: number, id: CanonicalTileID) => {x:number, y: number, z:number},
+    projectTilePoint: (x: number, y: number, id: CanonicalTileID) => {x: number, y: number, z: number},
 
     requiresDraping: boolean,
     supportsWorldCopies: boolean,

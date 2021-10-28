@@ -11,7 +11,7 @@ import type SourceCache from '../source/source_cache.js';
 import SkyboxGeometry from './skybox_geometry.js';
 import {GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
 import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program.js';
-import {atmosphereUniforms, atmosphereUniformValues} from '../terrain/globe_raster_program.js';
+import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import {skyboxCaptureUniformValues} from './program/skybox_capture_program.js';
 import SkyLayer from '../style/style_layer/sky_style_layer.js';
 import type Painter from './painter.js';
@@ -54,7 +54,7 @@ function drawGlobeAtmosphere(painter: Painter) {
     const globeToView = mat4.mul([], viewMatrix, globeMatrix);
     const viewToScreen = mat4.mul([], transform.labelPlaneMatrix, viewToProj);
 
-    const centerOnViewSpace = vec3.transformMat4([], [0,0,0], globeToView);
+    const centerOnViewSpace = vec3.transformMat4([], [0, 0, 0], globeToView);
     const radiusOnViewSpace = vec3.add([], centerOnViewSpace, [transform.worldSize / Math.PI / 2.0, 0, 0]);
 
     const centerOnScreen = vec3.transformMat4([], centerOnViewSpace, viewToScreen);
@@ -149,8 +149,8 @@ let atmosphereIb = null;
 let atmosphereSegs = null;
 
 const layout = createLayout([
-    { type: 'Float32', name: 'a_pos', components: 3 },
-    { type: 'Float32', name: 'a_uv', components: 2 }
+    {type: 'Float32', name: 'a_pos', components: 3},
+    {type: 'Float32', name: 'a_uv', components: 2}
 ]);
 
 function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: DepthMode, opacity: number, temporalOffset: number) {
