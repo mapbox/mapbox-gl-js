@@ -9,7 +9,7 @@ import EXTENT from '../data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import SegmentVector from '../data/segment.js';
 import {PosArray, TileBoundsArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
-import {values, MAX_SAFE_INTEGER} from '../util/util.js';
+import {values} from '../util/util.js';
 import {isMapAuthenticated} from '../util/mapbox.js';
 import posAttributes from '../data/pos_attributes.js';
 import boundsAttributes from '../data/bounds_attributes.js';
@@ -636,7 +636,7 @@ class Painter {
         // Set defaults for most GL values so that anyone using the state after the render
         // encounters more expected values.
         this.context.setDefault();
-        this.frameCounter = (this.frameCounter + 1) % MAX_SAFE_INTEGER;
+        this.frameCounter = (this.frameCounter + 1) % Number.MAX_SAFE_INTEGER;
 
         if (this.tileLoaded && this.options.speedIndexTiming) {
             this.loadTimeStamps.push(window.performance.now());

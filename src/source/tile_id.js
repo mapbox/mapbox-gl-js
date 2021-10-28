@@ -1,7 +1,6 @@
 // @flow
 
 import {getTileBBox} from '@mapbox/whoots-js';
-import {MAX_SAFE_INTEGER} from '../util/util.js';
 import assert from 'assert';
 import {register} from '../util/web_worker_transfer.js';
 
@@ -178,7 +177,7 @@ function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y
 
     // encode z into 5 bits (24 max) and overscaledZ into 4 bits (10 max)
     const key = ((xy * 32) + z) * 16 + (overscaledZ - z);
-    assert(key >= 0 && key <= MAX_SAFE_INTEGER);
+    assert(key >= 0 && key <= Number.MAX_SAFE_INTEGER);
 
     return key;
 }
