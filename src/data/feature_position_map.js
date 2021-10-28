@@ -2,7 +2,7 @@
 
 import murmur3 from 'murmurhash-js';
 import {register} from '../util/web_worker_transfer.js';
-import {MAX_SAFE_INTEGER} from '../util/util.js';
+import {MIN_SAFE_INTEGER, MAX_SAFE_INTEGER} from '../util/util.js';
 import assert from 'assert';
 
 type SerializedFeaturePositionMap = {
@@ -87,7 +87,7 @@ export default class FeaturePositionMap {
 
 function getNumericId(value: mixed) {
     const numValue = +value;
-    if (!isNaN(numValue) && numValue <= MAX_SAFE_INTEGER) {
+    if (!isNaN(numValue) && MIN_SAFE_INTEGER <= numValue && numValue <= MAX_SAFE_INTEGER) {
         return numValue;
     }
     return murmur3(String(value));
