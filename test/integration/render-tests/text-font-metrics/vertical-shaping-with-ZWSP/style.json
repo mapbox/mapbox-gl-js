@@ -43,7 +43,12 @@
       "source": "geojson",
       "layout": {
         "text-max-width": 20,
-        "text-font": [ "NotoCJK" ],
+        "text-font": [
+          "literal",
+          [
+            "NotoCJK"
+          ]
+        ],
         "text-field": "重M\u200bAル\u200bMB",
         "text-writing-mode": ["vertical"],
         "symbol-placement": "point"

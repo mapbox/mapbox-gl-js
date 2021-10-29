@@ -184,15 +184,6 @@ function updateLineLabels(bucket: SymbolBucket,
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol: any = placedSymbols.get(s);
 
-        // Normally, the 'Horizontal|Vertical' writing mode is followed by a 'Vertical' counterpart, this
-        // is not true for 'Vertical' only line labels. For this case, we'll have to overwrite the 'useVertical'
-        // status before further checks.
-        if (symbol.writingMode === WritingMode.vertical && !useVertical) {
-            if (s === 0 || placedSymbols.get(s - 1).writingMode !== WritingMode.horizontal) {
-                useVertical = true;
-            }
-        }
-
         // Don't do calculations for vertical glyphs unless the previous symbol was horizontal
         // and we determined that vertical glyphs were necessary.
         // Also don't do calculations for symbols that are collided and fully faded out

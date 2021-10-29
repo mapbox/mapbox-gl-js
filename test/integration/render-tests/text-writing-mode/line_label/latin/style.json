@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 520,
+      "height": 512,
       "width": 512
     }
   },
@@ -17,7 +17,7 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "身什戰 1"
+              "name": "one"
             },
             "geometry": {
               "type": "LineString",
@@ -36,7 +36,7 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "two 身什戰"
+              "name": "two"
             },
             "geometry": {
               "type": "LineString",
@@ -55,7 +55,7 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "身什戰33"
+              "name": "three"
             },
             "geometry": {
               "type": "LineString",
@@ -74,7 +74,7 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "身什戰"
+              "name": "four"
             },
             "geometry": {
               "type": "LineString",
@@ -93,7 +93,7 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "身什戰 five"
+              "name": "five"
             },
             "geometry": {
               "type": "LineString",
@@ -112,7 +112,7 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "six 身什戰"
+              "name": "six"
             },
             "geometry": {
               "type": "LineString",
@@ -131,7 +131,7 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "身什戰 seven"
+              "name": "seven"
             },
             "geometry": {
               "type": "LineString",
@@ -150,7 +150,7 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "eight 身什戰"
+              "name": "eight"
             },
             "geometry": {
               "type": "LineString",
@@ -186,7 +186,7 @@
       "layout": {
         "text-field": "{name}",
         "symbol-placement": "line",
-        "symbol-spacing": 150,
+        "symbol-spacing": 100,
         "text-allow-overlap": true,
         "text-font": [ "NotoCJK" ]
       }
