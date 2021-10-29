@@ -9,7 +9,9 @@ import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
 import IndexBuffer from '../../gl/index_buffer.js';
 import SegmentVector from '../../data/segment.js';
-import {TriangleIndexArray} from '../../data/array_types.js';
+import {atmosphereLayout} from '../../terrain/globe_attributes.js';
+import type VertexBuffer from '../../gl/vertex_buffer.js';
+import {TriangleIndexArray, GlobeVertexArray} from '../../data/array_types.js';
 import {FreeCamera} from '../../ui/free_camera.js';
 import type Transform from '../transform.js';
 
@@ -412,6 +414,10 @@ export class GlobeSharedBuffers {
     gridIndexBuffer: IndexBuffer;
     gridSegments: SegmentVector;
 
+    atmosphereVertexBuffer: VertexBuffer;
+    atmosphereIndexBuffer: IndexBuffer;
+    atmosphereSegments: SegmentVector;
+
     constructor(context: Context) {
         const gridIndices = this._createGridIndices(GLOBE_VERTEX_GRID_SIZE);
         this.gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
@@ -426,6 +432,20 @@ export class GlobeSharedBuffers {
         const polePrimitives = GLOBE_VERTEX_GRID_SIZE;
         const poleVertices = GLOBE_VERTEX_GRID_SIZE + 2;
         this.poleSegments = SegmentVector.simpleSegment(0, 0, poleVertices, polePrimitives);
+
+        const atmosphereVertices = new GlobeVertexArray();
+        atmosphereVertices.emplaceBack(-1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+        atmosphereVertices.emplaceBack(1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0);
+        atmosphereVertices.emplaceBack(1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0);
+        atmosphereVertices.emplaceBack(-1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+
+        const atmosphereTriangles = new TriangleIndexArray();
+        atmosphereTriangles.emplaceBack(0, 1, 2);
+        atmosphereTriangles.emplaceBack(2, 3, 0);
+
+        this.atmosphereVertexBuffer = context.createVertexBuffer(atmosphereVertices, atmosphereLayout.members);
+        this.atmosphereIndexBuffer = context.createIndexBuffer(atmosphereTriangles);
+        this.atmosphereSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
     }
 
     destroy() {
@@ -433,6 +453,9 @@ export class GlobeSharedBuffers {
         this.gridIndexBuffer.destroy();
         this.poleSegments.destroy();
         this.gridSegments.destroy();
+        this.atmosphereVertexBuffer.destroy();
+        this.atmosphereIndexBuffer.destroy();
+        this.atmosphereSegments.destroy();
     }
 
     _createPoleTriangleIndices(fanSize: number): TriangleIndexArray {

@@ -9,7 +9,6 @@ import Texture from './texture.js';
 import Program from './program.js';
 import type SourceCache from '../source/source_cache.js';
 import SkyboxGeometry from './skybox_geometry.js';
-import {GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
 import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import {skyboxCaptureUniformValues} from './program/skybox_capture_program.js';
@@ -18,8 +17,6 @@ import type Painter from './painter.js';
 import {vec3, mat3, mat4} from 'gl-matrix';
 import browser from '../util/browser.js';
 import assert from 'assert';
-import SegmentVector from '../data/segment.js';
-import {createLayout} from '../util/struct_array.js';
 
 export default drawSky;
 
@@ -28,24 +25,7 @@ function drawGlobeAtmosphere(painter: Painter) {
     const gl = context.gl;
     const transform = painter.transform;
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
-
     const program = painter.useProgram('globeAtmosphere');
-    if (!atmosphereVb) {
-        const vertices = new GlobeVertexArray();
-        const triangles = new TriangleIndexArray();
-
-        vertices.emplaceBack(-1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
-        vertices.emplaceBack(1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0);
-        vertices.emplaceBack(1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0);
-        vertices.emplaceBack(-1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-
-        triangles.emplaceBack(0, 1, 2);
-        triangles.emplaceBack(2, 3, 0);
-
-        atmosphereVb = context.createVertexBuffer(vertices, layout.members);
-        atmosphereIb = context.createIndexBuffer(triangles);
-        atmosphereSegs = SegmentVector.simpleSegment(0, 0, 4, 2);
-    }
 
     // Compute center and approximate radius of the globe on screen coordinates
     const globeMatrix = transform.calculateGlobeMatrix(transform.worldSize);
@@ -74,9 +54,14 @@ function drawGlobeAtmosphere(painter: Painter) {
 
     painter.prepareDrawProgram(context, program);
 
-    program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
-        ColorMode.alphaBlendedReal, CullFaceMode.backCW,
-        uniforms, "skybox", atmosphereVb, atmosphereIb, atmosphereSegs);
+    const sharedBuffers = painter.globeSharedBuffers;
+    if (sharedBuffers) {
+        program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
+            ColorMode.alphaBlendedReal, CullFaceMode.backCW, uniforms, "skybox",
+            sharedBuffers.atmosphereVertexBuffer,
+            sharedBuffers.atmosphereIndexBuffer,
+            sharedBuffers.atmosphereSegments);
+    }
 }
 
 function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
@@ -143,15 +128,6 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
         uniformValues, 'skyboxGradient', layer.skyboxGeometry.vertexBuffer,
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
-
-let atmosphereVb = null;
-let atmosphereIb = null;
-let atmosphereSegs = null;
-
-const layout = createLayout([
-    {type: 'Float32', name: 'a_pos', components: 3},
-    {type: 'Float32', name: 'a_uv', components: 2}
-]);
 
 function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: DepthMode, opacity: number, temporalOffset: number) {
     const context = painter.context;
