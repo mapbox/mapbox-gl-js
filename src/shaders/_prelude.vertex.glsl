@@ -32,6 +32,19 @@ vec3 mix_globe_mercator(vec3 globe, vec3 mercator, float t) {
 #endif
 }
 
+#ifdef PROJECTION_GLOBE_VIEW
+vec3 extrudeOnGlobeSurface(vec2 extrude, float scale, vec3 pos_nomal, vec3 up_dir, float zoom_transition) {
+    // Apply extra scaling to extrusion to cover different pixel space ratios (which is dependant on the latitude)
+    extrude *= scale;
+
+    vec3 normal = normalize(mix(pos_nomal / 16384.0, up_dir, zoom_transition));
+    // Coordinate frame for the extrusion is the tangent plane at the point location on the globe surface
+    vec3 xAxis = normalize(vec3(normal.z, 0.0, -normal.x));
+    vec3 yAxis = normalize(cross(normal, xAxis));
+    return vec3(xAxis * extrude.x + yAxis * extrude.y);
+}
+#endif
+
 // Unpack a pair of values that have been packed into a single float.
 // The packed values are assumed to be 8-bit unsigned integers, and are
 // packed like so:

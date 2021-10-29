@@ -11,6 +11,19 @@ uniform highp float u_camera_to_center_distance;
 
 attribute vec2 a_pos;
 
+#ifdef PROJECTION_GLOBE_VIEW
+attribute vec3 a_pos_3;         // Projected position on the globe
+attribute vec3 a_pos_normal_3;  // Surface normal at the position
+attribute float a_scale;
+
+// Uniforms required for transition between globe and mercator
+uniform mat4 u_inv_rot_matrix;
+uniform vec2 u_merc_center;
+uniform vec3 u_tile_id;
+uniform float u_zoom_transition;
+uniform vec3 u_up_dir;
+#endif
+
 varying vec3 v_data;
 varying float v_visibility;
 
@@ -49,7 +62,12 @@ float circle_elevation(vec2 pos) {
 vec4 project_vertex(vec2 extrusion, vec4 world_center, vec4 projected_center, float radius, float stroke_width,  float view_scale) {
     vec2 sample_offset = calc_offset(extrusion, radius, stroke_width, view_scale);
 #ifdef PITCH_WITH_MAP
+#ifdef PROJECTION_GLOBE_VIEW
+    vec3 globe_surface_extrusion = extrudeOnGlobeSurface(sample_offset, a_scale, a_pos_normal_3, u_up_dir, u_zoom_transition);
+    return u_matrix * ( world_center + vec4(globe_surface_extrusion, 0) );
+#else
     return u_matrix * ( world_center + vec4(sample_offset, 0, 0) );
+#endif
 #else
     return projected_center + vec4(sample_offset, 0, 0);
 #endif
@@ -80,9 +98,21 @@ void main(void) {
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
     vec2 circle_center = floor(a_pos * 0.5);
+
+#ifdef PROJECTION_GLOBE_VIEW
+    // Compute positions on both globe and mercator plane to support transition between the two modes
+    vec3 globe_surface_extrusion = extrudeOnGlobeSurface(extrude, a_scale, a_pos_normal_3, u_up_dir, u_zoom_transition);
+    vec3 globe_elevation = elevationVector(circle_center) * circle_elevation(circle_center);
+    vec3 globe_pos = a_pos_3 + globe_surface_extrusion + globe_elevation;
+    vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, circle_center, u_tile_id, u_merc_center) + globe_surface_extrusion + globe_elevation;
+    vec3 pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
+    vec4 world_center = vec4(pos, 1);
+#else 
     // extract height offset for terrain, this returns 0 if terrain is not active
     float height = circle_elevation(circle_center);
     vec4 world_center = vec4(circle_center, height, 1);
+#endif
+
     vec4 projected_center = u_matrix * world_center;
 
     float view_scale = 0.0;
@@ -105,7 +135,7 @@ void main(void) {
     gl_Position = project_vertex(extrude, world_center, projected_center, radius, stroke_width, view_scale);
 
     float visibility = 0.0;
-    #ifdef TERRAIN
+    #if defined(TERRAIN) && !defined(PROJECTION_GLOBE_VIEW)
         float step = get_sample_step();
         #ifdef PITCH_WITH_MAP
             // to prevent the circle from self-intersecting with the terrain underneath on a sloped hill,

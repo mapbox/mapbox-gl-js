@@ -64,20 +64,12 @@ void main(void) {
     vec2 tilePos = floor(a_pos * 0.5);
 
 #ifdef PROJECTION_GLOBE_VIEW
-    // Apply extra scaling to extrusion to cover different pixel space ratios (which is dependant on the latitude)
-    extrude *= a_scale;
-
-    vec3 normal = normalize(mix(a_pos_normal_3 / 16384.0, u_up_dir, u_zoom_transition));
-
-    // Coordinate frame for the extrusion is the tangent plane at the point location on the globe surface
-    vec3 xAxis = normalize(vec3(normal.z, 0.0, -normal.x));
-    vec3 yAxis = normalize(cross(normal, xAxis));
-
     // Compute positions on both globe and mercator plane to support transition between the two modes
-    vec3 globePos = a_pos_3 + xAxis * extrude.x + yAxis * extrude.y + elevationVector(tilePos) * elevation(tilePos);
-    vec3 mercPos = mercator_tile_position(u_inv_rot_matrix, tilePos, u_tile_id, u_merc_center) + xAxis * extrude.x + yAxis * extrude.y;
-
-    vec3 pos = mix_globe_mercator(globePos, mercPos, u_zoom_transition);
+    vec3 globe_surface_extrusion = extrudeOnGlobeSurface(extrude, a_scale, a_pos_normal_3, u_up_dir, u_zoom_transition);
+    vec3 globe_elevation = elevationVector(tilePos) * elevation(tilePos);
+    vec3 globe_pos = a_pos_3 + globe_surface_extrusion + globe_elevation;
+    vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, tilePos, u_tile_id, u_merc_center) + globe_surface_extrusion + globe_elevation;
+    vec3 pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
 #else
     vec3 pos = vec3(tilePos + extrude, elevation(tilePos));
 #endif
