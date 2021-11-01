@@ -176,9 +176,6 @@ class AttributionControl {
             }
         }
 
-        // remove any entries that are substrings of another entry.
-        // first sort by length so that substrings come first
-        attributions.sort((a, b) => a.length - b.length);
         attributions = attributions.filter((attrib, i) => {
             for (let j = i + 1; j < attributions.length; j++) {
                 if (attributions[j].indexOf(attrib) >= 0) { return false; }
