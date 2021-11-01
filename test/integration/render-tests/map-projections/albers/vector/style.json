@@ -7,16 +7,12 @@
         "operations": [
           ["setStyle", "local://mapbox-gl-styles/styles/basic-v9.json"],
           ["wait"],
-          ["setProjection", {
-            "name": "albers",
-            "center": [-154, 63],
-            "parallels": [70, 60]
-          }],
+          ["setProjection", "albers"],
           ["wait"]
         ]
       }
     },
-    "center": [-154, 63],
+    "center": [-122.414, 37.776],
     "sources": {},
     "layers": []
-  }
+}
