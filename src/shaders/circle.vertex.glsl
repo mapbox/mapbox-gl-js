@@ -137,6 +137,9 @@ void main(void) {
             view_scale = projected_center.w;
         #endif
     #endif
+    #if defined(SCALE_WITH_MAP) && defined(PROJECTION_GLOBE_VIEW)
+        view_scale *= a_scale;
+    #endif
     gl_Position = project_vertex(extrude, world_center, projected_center, radius, stroke_width, view_scale);
 
     float visibility = 0.0;
