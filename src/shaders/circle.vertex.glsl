@@ -63,7 +63,9 @@ vec4 project_vertex(vec2 extrusion, vec4 world_center, vec4 projected_center, fl
     vec2 sample_offset = calc_offset(extrusion, radius, stroke_width, view_scale);
 #ifdef PITCH_WITH_MAP
 #ifdef PROJECTION_GLOBE_VIEW
-    vec3 globe_surface_extrusion = extrudeOnGlobeSurface(sample_offset, a_scale, a_pos_normal_3, u_up_dir, u_zoom_transition);
+    sample_offset *= a_scale;
+    vec3 pos_normal_3 = a_pos_normal_3 / 16384.0;
+    vec3 globe_surface_extrusion = extrudeOnGlobeSurface(sample_offset, pos_normal_3, u_up_dir, u_zoom_transition);
     return u_matrix * ( world_center + vec4(globe_surface_extrusion, 0) );
 #else
     return u_matrix * ( world_center + vec4(sample_offset, 0, 0) );
@@ -101,7 +103,10 @@ void main(void) {
 
 #ifdef PROJECTION_GLOBE_VIEW
     // Compute positions on both globe and mercator plane to support transition between the two modes
-    vec3 globe_surface_extrusion = extrudeOnGlobeSurface(extrude, a_scale, a_pos_normal_3, u_up_dir, u_zoom_transition);
+    // Apply extra scaling to extrusion to cover different pixel space ratios (which is dependant on the latitude)
+    vec2 scaled_extrude = extrude * a_scale;
+    vec3 pos_normal_3 = a_pos_normal_3 / 16384.0;
+    vec3 globe_surface_extrusion = extrudeOnGlobeSurface(scaled_extrude, pos_normal_3, u_up_dir, u_zoom_transition);
     vec3 globe_elevation = elevationVector(circle_center) * circle_elevation(circle_center);
     vec3 globe_pos = a_pos_3 + globe_surface_extrusion + globe_elevation;
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, circle_center, u_tile_id, u_merc_center) + globe_surface_extrusion + globe_elevation;
