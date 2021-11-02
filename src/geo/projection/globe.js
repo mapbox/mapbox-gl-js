@@ -1,18 +1,19 @@
 // @flow
 
 import {mat4, vec4, vec3} from 'gl-matrix';
-
 import {Aabb} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
 import {degToRad, smoothstep, clamp} from '../../util/util.js';
-import {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
-import CanonicalTileID, { UnwrappedTileID } from '../../source/tile_id.js';
+import MercatorCoordinate, {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
+import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
 import IndexBuffer from '../../gl/index_buffer.js';
-import VertexBuffer from '../../gl/vertex_buffer.js';
 import SegmentVector from '../../data/segment.js';
-import {TriangleIndexArray} from '../../data/array_types.js';
-import MercatorCoordinate from '../mercator_coordinate.js';
+import {atmosphereLayout} from '../../terrain/globe_attributes.js';
+import type VertexBuffer from '../../gl/vertex_buffer.js';
+import {TriangleIndexArray, GlobeVertexArray} from '../../data/array_types.js';
+import {FreeCamera} from '../../ui/free_camera.js';
+import type Transform from '../transform.js';
 
 class GlobeTileTransform {
     _tr: Transform;
@@ -26,7 +27,7 @@ class GlobeTileTransform {
         this._globeMatrix = this._calculateGlobeMatrix();
     }
 
-    createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
+    createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean): mat4 {
         let m = mat4.create();
         if (pitchWithMap) {
             m = this._calculateGlobeLabelMatrix(tileID, this._tr.worldSize / this._tr._projectionScaler, this._tr.center.lat, this._tr.center.lng);
@@ -40,9 +41,9 @@ class GlobeTileTransform {
         return m;
     }
 
-    createGlCoordMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
+    createGlCoordMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean): mat4 {
         if (pitchWithMap) {
-            const m = this.createLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, pixelsToTileUnits);
+            const m = this.createLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap);
             mat4.invert(m, m);
             mat4.multiply(m, posMatrix, m);
             return m;
@@ -51,12 +52,12 @@ class GlobeTileTransform {
         }
     }
 
-    createTileMatrix(id: UnwrappedTileID): Float64Array {
+    createTileMatrix(id: UnwrappedTileID): mat4 {
         const decode = denormalizeECEF(tileBoundsOnGlobe(id.canonical));
         return mat4.multiply([], this._globeMatrix, decode);
     }
 
-    createInversionMatrix(id: UnwrappedTileID): Float64Array {
+    createInversionMatrix(id: UnwrappedTileID): mat4 {
         const center = this._tr.center;
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadiusGlobe = this._worldSize / (2.0 * Math.PI);
@@ -84,7 +85,7 @@ class GlobeTileTransform {
         return mat4.multiply(matrix, matrix, scaling);
     }
 
-    tileAabb(id: UnwrappedTileID, z: number, minZ: number, maxZ: number) {
+    tileAabb(id: UnwrappedTileID) {
         const aabb = tileBoundsOnGlobe(id.canonical);
 
         // Transform corners of the aabb to the correct space
@@ -107,13 +108,13 @@ class GlobeTileTransform {
         return new GlobeTile(id).upVector(x / EXTENT, y / EXTENT);
     }
 
-    upVectorScale(id: CanonicalTileID): Number {
+    upVectorScale(id: CanonicalTileID): number {
         const pixelsPerMeterECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
         const maxTileScale = tileNormalizationScale(id);
         return pixelsPerMeterECEF * maxTileScale;
     }
 
-    tileSpaceUpVectorScale(): Number {
+    tileSpaceUpVectorScale(): number {
         return mercatorZfromAltitude(1, this._tr.center.lat) * this._tr.worldSize;
     }
 
@@ -158,7 +159,7 @@ class GlobeTileTransform {
         return mat4.multiply([], posMatrix, denormalizeECEF(tileBoundsOnGlobe(tileID)));
     }
 
-    pointCoordinate(x: number, y: number, z?: number): MercatorCoordinate {
+    pointCoordinate(x: number, y: number): MercatorCoordinate {
         const p0 = [x, y, 0, 1];
         const p1 = [x, y, 1, 1];
 
@@ -197,7 +198,7 @@ class GlobeTileTransform {
 
         // Transform coordinate axes to find lat & lng of the position
         const xa = vec3.normalize([], vec4.transformMat4([], [1, 0, 0, 0], matrix));
-        const ya = vec3.normalize([], vec4.transformMat4([], [0,-1, 0, 0], matrix));
+        const ya = vec3.normalize([], vec4.transformMat4([], [0, -1, 0, 0], matrix));
         const za = vec3.normalize([], vec4.transformMat4([], [0, 0, 1, 0], matrix));
 
         const lat = Math.asin(vec3.dot(ya, pOnGlobe) / radius) * 180 / Math.PI;
@@ -245,15 +246,15 @@ class GlobeTileTransform {
 
         return numFacingAway === 4;
     }
-};
+}
 
 export default {
     name: 'globe',
-    project(lng: number, lat: number) {
-        return { x: 0, y: 0, z: 0 };
+    project() {
+        return {x: 0, y: 0, z: 0};
     },
 
-    projectTilePoint(x: number, y: number, id: CanonicalTileID): {x:number, y: number, z:number} {
+    projectTilePoint(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {
         const tiles = Math.pow(2.0, id.z);
         const mx = (x / EXTENT + id.x) / tiles;
         const my = (y / EXTENT + id.y) / tiles;
@@ -261,6 +262,7 @@ export default {
         const lng = lngFromMercatorX(mx);
         const pos = latLngToECEF(lat, lng);
 
+        // eslint-disable-next-line no-warning-comments
         // TODO: cached matrices!
         const bounds = tileBoundsOnGlobe(id);
         const normalizationMatrix = normalizeECEF(bounds);
@@ -277,10 +279,10 @@ export default {
         return mercatorZfromAltitude(1, 0) * worldSize;
     },
 
-    createTileTransform(tr: Transform, worldSize: number): TileTransform {
+    createTileTransform(tr: Transform, worldSize: number): Object {
         return new GlobeTileTransform(tr, worldSize);
     },
-}
+};
 
 export const globeRefRadius = EXTENT / Math.PI / 2.0;
 
@@ -338,7 +340,7 @@ export function tileNormalizationScale(id: CanonicalTileID) {
     return st * maxExtInv;
 }
 
-export function tileLatLngCorners(id: CanonicalTileID, padding: ?number) {
+export function tileLatLngCorners(id: CanonicalTileID) {
     const tileScale = Math.pow(2, id.z);
     const left = id.x / tileScale;
     const right = (id.x + 1) / tileScale;
@@ -351,12 +353,13 @@ export function tileLatLngCorners(id: CanonicalTileID, padding: ?number) {
     return [latLngTL, latLngBR];
 }
 
-export function latLngToECEF(lat, lng, radius) {
+export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<number> {
     lat = degToRad(lat);
     lng = degToRad(lng);
 
-    if (!radius)
+    if (!radius) {
         radius = globeRefRadius;
+    }
 
     // Convert lat & lng to spherical representation. Use zoom=0 as a reference
     const sx = Math.cos(lat) * Math.sin(lng) * radius;
@@ -411,6 +414,10 @@ export class GlobeSharedBuffers {
     gridIndexBuffer: IndexBuffer;
     gridSegments: SegmentVector;
 
+    atmosphereVertexBuffer: VertexBuffer;
+    atmosphereIndexBuffer: IndexBuffer;
+    atmosphereSegments: SegmentVector;
+
     constructor(context: Context) {
         const gridIndices = this._createGridIndices(GLOBE_VERTEX_GRID_SIZE);
         this.gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
@@ -425,6 +432,20 @@ export class GlobeSharedBuffers {
         const polePrimitives = GLOBE_VERTEX_GRID_SIZE;
         const poleVertices = GLOBE_VERTEX_GRID_SIZE + 2;
         this.poleSegments = SegmentVector.simpleSegment(0, 0, poleVertices, polePrimitives);
+
+        const atmosphereVertices = new GlobeVertexArray();
+        atmosphereVertices.emplaceBack(-1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+        atmosphereVertices.emplaceBack(1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0);
+        atmosphereVertices.emplaceBack(1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0);
+        atmosphereVertices.emplaceBack(-1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+
+        const atmosphereTriangles = new TriangleIndexArray();
+        atmosphereTriangles.emplaceBack(0, 1, 2);
+        atmosphereTriangles.emplaceBack(2, 3, 0);
+
+        this.atmosphereVertexBuffer = context.createVertexBuffer(atmosphereVertices, atmosphereLayout.members);
+        this.atmosphereIndexBuffer = context.createIndexBuffer(atmosphereTriangles);
+        this.atmosphereSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
     }
 
     destroy() {
@@ -432,6 +453,9 @@ export class GlobeSharedBuffers {
         this.gridIndexBuffer.destroy();
         this.poleSegments.destroy();
         this.gridSegments.destroy();
+        this.atmosphereVertexBuffer.destroy();
+        this.atmosphereIndexBuffer.destroy();
+        this.atmosphereSegments.destroy();
     }
 
     _createPoleTriangleIndices(fanSize: number): TriangleIndexArray {
@@ -467,7 +491,7 @@ export class GlobeTile {
     _blUp: Array<number>;
     _brUp: Array<number>;
 
-    constructor(tileID: CanonicalTileID, labelSpace = false) {
+    constructor(tileID: CanonicalTileID, labelSpace: boolean = false) {
         this.tileID = tileID;
 
         // Pre-compute up vectors of each corner of the tile
@@ -486,8 +510,6 @@ export class GlobeTile {
             vec3.normalize(this._brUp, this._brUp);
             vec3.normalize(this._blUp, this._blUp);
         } else {
-            const pixelsPerMeter = labelSpace;
-
             this._tlUp = [0, 0, 1];
             this._trUp = [0, 0, 1];
             this._brUp = [0, 0, 1];

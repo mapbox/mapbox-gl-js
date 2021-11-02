@@ -690,6 +690,7 @@ class Camera extends Evented {
         const centerIntersectionPoint = tr.pointRayIntersection(tr.centerPoint, focusAltitude);
         const centerIntersectionCoord = toVec3(tr.rayIntersectionCoordinate(centerIntersectionPoint));
         const centerMercatorRay = tr.screenPointToMercatorRay(tr.centerPoint);
+        const zInMeters = tr.projection.name !== 'globe';
 
         const maxMarchingSteps = 10;
 
@@ -706,7 +707,7 @@ class Camera extends Evented {
 
             const aabb = new Aabb([minX, minY, minAltitude], [maxX, maxY, maxAltitude]);
 
-            const frustum = Frustum.fromInvProjectionMatrix(tr.invProjMatrix, tr.worldSize, z);
+            const frustum = Frustum.fromInvProjectionMatrix(tr.invProjMatrix, tr.worldSize, z, zInMeters);
 
             // Stop marching when frustum intersection
             // reports any aabb point not fully inside

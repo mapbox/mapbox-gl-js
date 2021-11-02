@@ -1,38 +1,32 @@
 // @flow
 
-import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
+import {mat4, vec3} from 'gl-matrix';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
 import {terrainRasterUniformValues} from './terrain_raster_program.js';
 import {globeRasterUniformValues} from './globe_raster_program.js';
 import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
-import EXTENT from '../data/extent.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
 import {members as globeLayoutAttributes} from './globe_attributes.js';
-import {easeCubicInOut, warnOnce, wrap, clamp, degToRad} from '../util/util.js';
-import {RasterBoundsArray, GlobeVertexArray, TriangleIndexArray} from '../data/array_types.js';
-import {lngFromMercatorX, mercatorXfromLng, latFromMercatorY, mercatorYfromLat, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
-import {createLayout} from '../util/struct_array.js';
-import SegmentVector from '../data/segment.js';
-
+import {easeCubicInOut, clamp, degToRad} from '../util/util.js';
+import {GlobeVertexArray} from '../data/array_types.js';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import type Painter from '../render/painter.js';
 import type SourceCache from '../source/source_cache.js';
 import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
-import { array } from '../style-spec/expression/types.js';
 import {
     tileLatLngCorners,
     latLngToECEF,
     tileBoundsOnGlobe,
     denormalizeECEF,
     normalizeECEF,
-    GlobeSharedBuffers,
     GLOBE_VERTEX_GRID_SIZE,
     globeToMercatorTransition
-} from '../geo/projection/globe.js'
+} from '../geo/projection/globe.js';
 import extend from '../style-spec/util/extend.js';
 
 export {
@@ -148,8 +142,6 @@ const shaderDefines = {
 const lerp = (a, b, t) => a * (1 - t) + b * t;
 
 function createGridVertices(painter, count: number, sx, sy, sz): any {
-    const counter = painter.frameCounter;
-    const tr = painter.transform;
     const tiles = Math.pow(2, sz);
     const gridTileId = new CanonicalTileID(sz, sx, sy);
     const [latLngTL, latLngBR] = tileLatLngCorners(gridTileId);
@@ -204,23 +196,24 @@ function createPoleTriangleVertices(fanSize, tiles, ws, topCap) {
     return arr;
 }
 
-function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID, tiles: number) {
+function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID, tiles: number): [VertexBuffer, VertexBuffer] {
     const context = painter.context;
     const id = coord.canonical;
     const tr = painter.transform;
-    if (!tile.globeGridBuffer) {
+    let gridBuffer = tile.globeGridBuffer;
+    let poleBuffer = tile.globePoleBuffer;
+
+    if (!gridBuffer) {
         const gridMesh = createGridVertices(painter, GLOBE_VERTEX_GRID_SIZE, id.x, id.y, id.z);
-        tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
+        gridBuffer = tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
     }
 
-    if (!tile.globePoleBuffer && (coord.canonical.y === 0 || coord.canonical.y === tiles - 1)) {
+    if (!poleBuffer) {
         const poleMesh = createPoleTriangleVertices(GLOBE_VERTEX_GRID_SIZE, tiles, tr.tileSize * tiles, coord.canonical.y === 0);
-        tile.globePoleBuffer = context.createVertexBuffer(poleMesh, globeLayoutAttributes, false);
+        poleBuffer = tile.globePoleBuffer = context.createVertexBuffer(poleMesh, globeLayoutAttributes, false);
     }
 
-    if (!painter.globeSharedBuffers) {
-        painter.globeSharedBuffers = new GlobeSharedBuffers(context);
-    }
+    return [gridBuffer, poleBuffer];
 }
 
 function globeMatrixForTile(id: CanonicalTileID, globeMatrix) {
@@ -286,11 +279,11 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     vertexMorphing.update(now);
     const tr = painter.transform;
-    const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
     const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
     const globeMercatorMatrix = tr.calculateGlobeMercatorMatrix(tr.worldSize);
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const batches = showWireframe ? [false, true] : [false];
+    const sharedBuffers = painter.globeSharedBuffers;
 
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
@@ -299,14 +292,11 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         programMode = -1;
 
         const primitive = isWireframe ? gl.LINES : gl.TRIANGLES;
-        const [buffer, segments] = isWireframe ? terrain.getWirefameBuffer() : [terrain.gridIndexBuffer, terrain.gridSegments];
 
         for (const coord of tileIDs) {
             const tile = sourceCache.getTile(coord);
             const tiles = Math.pow(2, coord.canonical.z);
-
-            prepareBuffersForTileMesh(painter, tile, coord, tiles);
-
+            const [gridBuffer, poleBuffer] = prepareBuffersForTileMesh(painter, tile, coord, tiles);
             const stencilMode = StencilMode.disabled;
 
             const prevDemTile = terrain.prevTerrainTileForTile[coord.key];
@@ -326,7 +316,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             if (morph) {
                 extend(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
-                //elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
             }
 
             const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
@@ -340,13 +329,15 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             setShaderMode(shaderMode, isWireframe);
 
             const gridTileId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
-            elevationOptions = extend(elevationOptions, { elevationTileID: gridTileId });
+            elevationOptions = extend(elevationOptions, {elevationTileID: gridTileId});
             terrain.setupElevationDraw(tile, program, elevationOptions);
 
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
-            program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
-                uniformValues, "globe_raster", tile.globeGridBuffer, painter.globeSharedBuffers.gridIndexBuffer, painter.globeSharedBuffers.gridSegments, null, null, null, null);
+            if (sharedBuffers) {
+                program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+                    uniformValues, "globe_raster", gridBuffer, sharedBuffers.gridIndexBuffer, sharedBuffers.gridSegments);
+            }
 
             // Fill poles by extrapolating adjacent border tiles
             const poleMatrices = [
@@ -363,8 +354,10 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                     tr.projMatrix, poleMatrix, poleMatrix,
                     0.0, mercatorCenter, upvectorMatrix);
 
-                program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                    poleUniforms, "globe_pole_raster", tile.globePoleBuffer, painter.globeSharedBuffers.poleIndexBuffer, painter.globeSharedBuffers.poleSegments);
+                if (sharedBuffers) {
+                    program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                        poleUniforms, "globe_pole_raster", poleBuffer, sharedBuffers.poleIndexBuffer, sharedBuffers.poleSegments);
+                }
             }
         }
     });
@@ -457,15 +450,16 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
         const globeMercatorMatrix = tr.calculateGlobeMercatorMatrix(tr.worldSize);
         const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
         const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+        const sharedBuffers = painter.globeSharedBuffers;
 
         for (const coord of tileIDs) {
             const tile = sourceCache.getTile(coord);
             const tiles = Math.pow(2, coord.canonical.z);
 
-            prepareBuffersForTileMesh(painter, tile, coord, tiles);
+            const [gridBuffer] = prepareBuffersForTileMesh(painter, tile, coord, tiles);
 
             const gridTileId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
-            const elevationOptions = { elevationTileID: gridTileId };
+            const elevationOptions = {elevationTileID: gridTileId};
             terrain.setupElevationDraw(tile, program, elevationOptions);
 
             const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
@@ -474,8 +468,10 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
                 globeToMercatorTransition(tr.zoom), mercatorCenter,
                 globeUpVectorMatrix(coord.canonical, tiles));
 
-            program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
-                uniformValues, "globe_raster_depth", tile.globeGridBuffer, painter.globeSharedBuffers.gridIndexBuffer, painter.globeSharedBuffers.gridSegments, null, null, null, null);
+            if (sharedBuffers) {
+                program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
+                    uniformValues, "globe_raster_depth", gridBuffer, sharedBuffers.gridIndexBuffer, sharedBuffers.gridSegments);
+            }
         }
     } else {
         assert(painter.renderPass === 'offscreen');

@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 import SourceCache from '../source/source_cache.js';
-import {OverscaledTileID} from '../source/tile_id.js';
+import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import Tile from '../source/tile.js';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
 import {RasterBoundsArray, TriangleIndexArray, LineIndexArray} from '../data/array_types.js';
@@ -1520,6 +1520,7 @@ export type TerrainUniformsType = {|
     'u_meter_to_dem'?: Uniform1f,
     'u_label_plane_matrix_inv'?: UniformMatrix4f,
 
+    // eslint-disable-next-line no-warning-comments
     // TODO: separate set of uniforms for the globe?
     'u_tile_tl_up': Uniform3f,
     'u_tile_tr_up': Uniform3f,

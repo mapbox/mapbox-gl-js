@@ -126,7 +126,7 @@ export default class Worker {
         callback();
     }
 
-    setProjection(mapId: String, projection: String, callback: WorkerTileCallback) {
+    setProjection(mapId: string, projection: string, callback: WorkerTileCallback) {
         this.projection = projection;
         callback();
     }

@@ -5,8 +5,7 @@ import {
     Uniform2f,
     Uniform3f,
     UniformMatrix4f,
-    Uniform1f,
-    Uniform4f
+    Uniform1f
 } from '../render/uniform_binding.js';
 
 import type Context from '../gl/context.js';
@@ -55,14 +54,14 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
 });
 
 const globeRasterUniformValues = (
-    projMatrix: Float32Array,
+    projMatrix: Array<number>,
     globeMatrix: Float32Array,
     globeMercatorMatrix: Float32Array,
     zoomTransition: number,
     mercCenter: [number, number],
     upVectorMatrix: Float32Array
 ): UniformValues<GlobeRasterUniformsType> => ({
-    'u_proj_matrix': projMatrix,
+    'u_proj_matrix': Float32Array.from(projMatrix),
     'u_globe_matrix': globeMatrix,
     'u_merc_matrix': globeMercatorMatrix,
     'u_zoom_transition': zoomTransition,
@@ -72,14 +71,14 @@ const globeRasterUniformValues = (
 });
 
 const atmosphereUniformValues = (
-    center,
-    radius,
-    screenSize,
-    pixelRatio,
-    opacity,
-    fadeoutRange,
-    startColor,
-    endColor
+    center: [number, number],
+    radius: number,
+    screenSize: [number, number],
+    pixelRatio: number,
+    opacity: number,
+    fadeoutRange: number,
+    startColor: [number, number, number],
+    endColor: [number, number, number]
 ): UniformValues<AtmosphereUniformsType> => ({
     'u_center': center,
     'u_radius': radius,

@@ -3,7 +3,7 @@
 import EXTENT from '../data/extent.js';
 
 import {SymbolInstanceArray} from '../data/array_types.js';
-
+import type {Projection} from '../geo/projection/index.js';
 import type {SymbolInstance} from '../data/array_types.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type SymbolBucket from '../data/bucket/symbol_bucket.js';

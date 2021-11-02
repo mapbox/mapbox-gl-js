@@ -12,6 +12,7 @@ import Style from '../style/style.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import Painter from '../render/painter.js';
 import Transform from '../geo/transform.js';
+import getProjection from '../geo/projection/index.js';
 import Hash from './hash.js';
 import HandlerManager from './handler_manager.js';
 import Camera from './camera.js';
@@ -2387,27 +2388,28 @@ class Map extends Camera {
         }
     }
 
-    setProjection(options?: { name: String }) {
-        const name = options ? options.name : null;
+    setProjection(options?: { name: string }) {
         const prevName = this.transform.projection.name;
-        this.transform.projection = name;
+        const name = options ? options.name : null;
+        const projection = getProjection(name || 'mercator');
+        this.transform.projection = projection;
         this._transitionFromGlobe = false;
 
-        if (this.transform.projection.requiresDraping) {
-            this._setTerrain(this.style.stylesheet.terrain ?? {source: 'mapbox-dem', exaggeration: 0.0}, "projection");
+        if (projection.requiresDraping) {
+            this._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
         } else {
             this._setTerrain(null, "projection");
         }
 
-        if (this.transform.projection.name != prevName) {
+        if (projection.name !== prevName) {
             this.style._forceSymbolLayerUpdate();
-            this.style.dispatcher.broadcast('setProjection', this.transform.projection.name);
+            this.style.dispatcher.broadcast('setProjection', projection.name);
         }
 
         return this._update(true);
     }
 
-    _setTerrain(options: TerrainSpecification, user: string) {
+    _setTerrain(options: ?TerrainSpecification, user: string) {
         // There are multiple different consumers for the terrain.
         // For example user might toggle it on/off explicitly while some of the projections
         // might require it without user's knowledge. For reason a simple reference counter

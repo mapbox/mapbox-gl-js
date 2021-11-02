@@ -9,15 +9,16 @@ import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCor
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import {Aabb, Frustum, Ray} from '../util/primitives.js';
+import {Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
-
+import type {Projection} from '../geo/projection/index.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
-import {latLngToECEF} from './projection/globe.js'
+import {latLngToECEF} from './projection/globe.js';
+import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -116,6 +117,8 @@ class Transform {
     _centerAltitude: number;
     _horizonShift: number;
     _projectionScaler: number;
+    _nearZ: number;
+    _farZ: number;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
@@ -137,6 +140,8 @@ class Transform {
         this.angle = 0;
         this._fov = 0.6435011087932844;
         this._pitch = 0;
+        this._nearZ = 0;
+        this._farZ = 0;
         this._unmodified = true;
         this._edgeInsets = new EdgeInsets();
         this._projMatrixCache = {};
@@ -169,6 +174,8 @@ class Transform {
         clone.angle = this.angle;
         clone._fov = this._fov;
         clone._pitch = this._pitch;
+        clone._nearZ = this._nearZ;
+        clone._farZ = this._farZ;
         clone._averageElevation = this._averageElevation;
         clone._unmodified = this._unmodified;
         clone._edgeInsets = this._edgeInsets.clone();
@@ -242,8 +249,8 @@ class Transform {
         this._renderWorldCopies = renderWorldCopies;
     }
 
-    set projection(name?: String) {
-        this._projection = getProjection(name || 'mercator');
+    set projection(projection: Projection) {
+        this._projection = projection;
     }
 
     get projection(): Projection {
@@ -669,7 +676,8 @@ class Transform {
         const centerCoord = MercatorCoordinate.fromLngLat(this.center);
         const numTiles = 1 << z;
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
-        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
+        const zInMeters = this.projection.name !== 'globe';
+        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z, zInMeters);
         const cameraCoord = this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
@@ -711,29 +719,6 @@ class Transform {
         let result = [];
         const maxZoom = z;
         const overscaledZ = options.reparseOverscaled ? actualZ : z;
-
-        const getAABBFromElevation = (it) => {
-            assert(this._elevation);
-            if (!this._elevation || !it.tileID) return; // To silence flow.
-            const minmax = this._elevation.getMinMaxForTile(it.tileID);
-            const aabb = it.aabb;
-            if (minmax) {
-                aabb.min[2] = minmax.min;
-                aabb.max[2] = minmax.max;
-                aabb.center[2] = (aabb.min[2] + aabb.max[2]) / 2;
-                it.minZ = minmax.min;
-                it.maxZ = minmax.max;
-            } else {
-                it.shouldSplit = shouldSplit(it);
-                if (!it.shouldSplit) {
-                    // At final zoom level, while corresponding DEM tile is not loaded yet,
-                    // assume center elevation. This covers ground to horizon and prevents
-                    // loading unnecessary tiles until DEM cover is fully loaded.
-                    aabb.min[2] = aabb.max[2] = aabb.center[2] = this._centerAltitude;
-                    it.minZ = it.maxZ = this._centerAltitude;
-                }
-            }
-        };
         const square = a => a * a;
         const cameraHeightSqr = square((cameraAltitude - this._centerAltitude) * meterToTile); // in tile coordinates.
 
@@ -979,7 +964,7 @@ class Transform {
         return this._coordinatePoint(this.locationCoordinate(lnglat), false);
     }
 
-    locationPointGlobe(lnglat: Lnglat) {
+    locationPointGlobe(lnglat: LngLat) {
         const ecefLoc = latLngToECEF(lnglat.lat, lnglat.lng);
         const up = vec3.normalize([], ecefLoc);
         const elevation = this.elevation ? this.elevation.getAtPointOrZero(this.locationCoordinate(lnglat), this._centerAltitude) : this._centerAltitude;
@@ -1331,7 +1316,7 @@ class Transform {
         return cache[distanceDataKey];
     }
 
-    calculateGlobeMatrix(worldSize: number): Float64Array {
+    calculateGlobeMatrix(worldSize: number): mat4 {
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadius = worldSize / (2.0 * Math.PI);
         const s = wsRadius / localRadius;
@@ -1351,7 +1336,7 @@ class Transform {
         return posMatrix;
     }
 
-    calculateGlobeMercatorMatrix(worldSize: number): Float64Array {
+    calculateGlobeMercatorMatrix(worldSize: number): mat4 {
         const lat = clamp(this.center.lat, -this.maxValidLatitude, this.maxValidLatitude);
         const point = new Point(
             mercatorXfromLng(this.center.lng) * worldSize,
@@ -1445,7 +1430,6 @@ class Transform {
             const camToNew = [newCenter.x - start[0], newCenter.y - start[1], newCenter.z - start[2] * metersToMerc];
             const maxAltitude = (newCenter.z + vec3.length(camToNew)) * this._projectionScaler;
             this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
-
 
             // Camera zoom has to be updated as the orbit distance might have changed
             this._centerAltitude = newCenter.toAltitude();
@@ -1644,6 +1628,7 @@ class Transform {
 
         const horizonDistance = cameraToSeaLevelDistance * (1 / this._horizonShift);
 
+        // eslint-disable-next-line no-warning-comments
         // TODO: Get far z from projection
         const farPlaneScaler = this.projection.name === 'globe' ? 4.0 : 1.0;
         this._farZ = Math.min(furthestDistance * 1.01, horizonDistance) * farPlaneScaler;
