@@ -146,18 +146,6 @@ class AttributionControl {
     _updateAttributions() {
         if (!this._map.style) return;
         let attributions: Array<string> = [];
-        if (this.options.customAttribution) {
-            if (Array.isArray(this.options.customAttribution)) {
-                attributions = attributions.concat(
-                    this.options.customAttribution.map(attribution => {
-                        if (typeof attribution !== 'string') return '';
-                        return attribution;
-                    })
-                );
-            } else if (typeof this.options.customAttribution === 'string') {
-                attributions.push(this.options.customAttribution);
-            }
-        }
 
         if (this._map.style.stylesheet) {
             const stylesheet: any = this._map.style.stylesheet;
@@ -176,12 +164,25 @@ class AttributionControl {
             }
         }
 
+        // remove any entries that are substrings of another entry.
+        // first sort by length so that substrings come first
+        attributions.sort((a, b) => a.length - b.length);
         attributions = attributions.filter((attrib, i) => {
             for (let j = i + 1; j < attributions.length; j++) {
                 if (attributions[j].indexOf(attrib) >= 0) { return false; }
             }
             return true;
         });
+
+        if (this.options.customAttribution) {
+            if (Array.isArray(this.options.customAttribution)) {
+                for (const attribution of this.options.customAttribution) {
+                    if (typeof attribution === 'string') attributions.unshift(attribution);
+                }
+            } else if (typeof this.options.customAttribution === 'string') {
+                attributions.unshift(this.options.customAttribution);
+            }
+        }
 
         // check if attribution string is different to minimize DOM changes
         const attribHTML = attributions.join(' | ');
