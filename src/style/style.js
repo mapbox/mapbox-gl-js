@@ -354,9 +354,6 @@ class Style extends Evented {
         this.map.transform.setProjection(projection);
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 
-        const fog = this.fog;
-        if (fog) fog._disabledForProjections = Boolean(projection && projection.name !== 'mercator');
-
         this.map._update(true);
     }
 
@@ -1472,7 +1469,7 @@ class Style extends Evented {
     }
 
     _createFog(fogOptions: FogSpecification) {
-        const fog = this.fog = new Fog(fogOptions);
+        const fog = this.fog = new Fog(fogOptions, this.map.transform);
         this.stylesheet.fog = fogOptions;
         const parameters = {
             now: browser.now(),

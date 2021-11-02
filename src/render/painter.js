@@ -516,7 +516,7 @@ class Painter {
         // Clear buffers in preparation for drawing to the main framebuffer
         // If fog is enabled, use the fog color as default clear color.
         let clearColor = Color.transparent;
-        if (this.style.fog) {
+        if (this.style.fog && this.style.fog.getOpacity(this.transform.pitch)) {
             clearColor = this.style.fog.properties.get('color');
         }
         this.context.clear({color: options.showOverdrawInspector ? Color.black : clearColor, depth: 1});
