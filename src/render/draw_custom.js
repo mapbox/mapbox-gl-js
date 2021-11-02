@@ -4,6 +4,7 @@ export default drawCustom;
 
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
+import {warnOnce} from '../util/util.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -13,6 +14,11 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
     const context = painter.context;
     const implementation = layer.implementation;
+
+    if (painter.transform.projection.name !== 'mercator') {
+        warnOnce('Custom layers are not yet supported with non-mercator projections. Use mercator to enable custom layers.');
+        return;
+    }
 
     if (painter.renderPass === 'offscreen') {
 
