@@ -103,12 +103,13 @@ void main(void) {
     // Apply extra scaling to extrusion to cover different pixel space ratios (which is dependant on the latitude)
     vec2 scaled_extrude = extrude * a_scale;
     vec3 pos_normal_3 = a_pos_normal_3 / 16384.0;
-    mat3 surface_vectors = globe_surface_vectors(pos_normal_3, u_up_dir, u_zoom_transition);
+    mat3 surface_vectors = globe_mercator_surface_vectors(pos_normal_3, u_up_dir, u_zoom_transition);
 
-    vec3 globe_surface_extrusion = scaled_extrude.x * surface_vectors[0] + scaled_extrude.y * surface_vectors[1];
+    vec3 surface_extrusion = scaled_extrude.x * surface_vectors[0] + scaled_extrude.y * surface_vectors[1];
     vec3 globe_elevation = elevationVector(circle_center) * circle_elevation(circle_center);
-    vec3 globe_pos = a_pos_3 + globe_surface_extrusion + globe_elevation;
-    vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, circle_center, u_tile_id, u_merc_center) + globe_surface_extrusion + globe_elevation;
+    vec3 globe_pos = a_pos_3 + surface_extrusion + globe_elevation;
+    vec3 mercator_elevation = u_up_dir * u_tile_up_scale * circle_elevation(circle_center);
+    vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, circle_center, u_tile_id, u_merc_center) + surface_extrusion + mercator_elevation;
     vec3 pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
     vec4 world_center = vec4(pos, 1);
 #else 
