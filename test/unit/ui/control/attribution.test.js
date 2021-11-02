@@ -127,7 +127,7 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
     map.on('data', (e) => {
         if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
             if (++times === 7) {
-                t.equal(attribution._innerContainer.innerHTML, 'Hello World | Another Source | GeoJSON Source');
+                t.equal(attribution._innerContainer.innerHTML, 'Hello World | Another Source | Hello | GeoJSON Source');
                 t.end();
             }
         }
@@ -237,7 +237,7 @@ test('AttributionControl shows all custom attributions if customAttribution arra
 
     t.equal(
         attributionControl._innerContainer.innerHTML,
-        'Custom string | Another custom string | Some very long custom string'
+        'Some very long custom string | Custom string | Another custom string'
     );
     t.end();
 });
