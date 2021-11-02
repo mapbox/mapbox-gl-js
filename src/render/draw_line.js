@@ -20,6 +20,7 @@ import type {DynamicDefinesType} from './program/program_uniforms.js';
 import {clamp, nextPowerOfTwo} from '../util/util.js';
 import {renderColorRamp} from '../util/color_ramp.js';
 import EXTENT from '../data/extent.js';
+import assert from 'assert';
 
 export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
@@ -142,6 +143,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         if (useStencilMaskRenderPass) {
             const stencilIdPass1 = painter._tileClippingMaskIDs[coord.key];
+            assert(stencilIdPass1 !== undefined);
             const stencilIdPass2 = ~stencilIdPass1 & 255;
             const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
 
