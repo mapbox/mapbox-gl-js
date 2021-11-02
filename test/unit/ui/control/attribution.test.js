@@ -127,7 +127,7 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
     map.on('data', (e) => {
         if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
             if (++times === 7) {
-                t.equal(attribution._innerContainer.innerHTML, 'Hello World | Another Source | Hello | GeoJSON Source');
+                t.equal(attribution._innerContainer.innerHTML, 'Hello World | Another Source | GeoJSON Source');
                 t.end();
             }
         }
