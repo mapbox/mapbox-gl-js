@@ -2,6 +2,7 @@
 
 import {createExpression} from '../expression/index.js';
 import {isFeatureConstant} from '../expression/is_constant.js';
+import {deepUnbundle} from '../util/unbundle_jsonlint.js';
 import latest from '../reference/latest.js';
 import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
@@ -133,7 +134,7 @@ function extractStaticFilter(filter: any): any {
     }
 
     // Shallow copy so we can replace expressions in-place
-    let result = filter.slice();
+    let result = deepUnbundle(filter);
 
     // 1. Union branches
     unionDynamicBranches(result);
