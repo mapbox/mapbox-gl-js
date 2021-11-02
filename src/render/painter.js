@@ -310,7 +310,7 @@ class Painter {
         const gl = context.gl;
 
         this.nextStencilID = 1;
-        this.currentStencilSource = undefined;
+        this.resetStencilClippingMasks();
 
         // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
@@ -323,8 +323,29 @@ class Painter {
             this.quadTriangleIndexBuffer, this.viewportSegments);
     }
 
+    resetStencilClippingMasks() {
+        this.currentStencilSource = undefined;
+        this._tileClippingMaskIDs = {};
+    }
+
     _renderTileClippingMasks(layer: StyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
-        if (!sourceCache || this.currentStencilSource === sourceCache.id || !layer.isTileClipped() || !tileIDs || !tileIDs.length) return;
+        if (!sourceCache || this.currentStencilSource === sourceCache.id || !layer.isTileClipped() || !tileIDs || tileIDs.length === 0) {
+            return;
+        }
+
+        if (this._tileClippingMaskIDs) {
+            let dirtyStencilClippingMasks = false;
+            // Equivalent tile set is already rendered in stencil
+            for (const coord of tileIDs) {
+                if (this._tileClippingMaskIDs[coord.key] === undefined) {
+                    dirtyStencilClippingMasks = true;
+                    break;
+                }
+            }
+            if (!dirtyStencilClippingMasks) {
+                return;
+            }
+        }
 
         this.currentStencilSource = sourceCache.id;
 
