@@ -11,14 +11,14 @@ import Point from '@mapbox/point-geometry';
 class MercatorTileTransform {
     _tr: Transform;
     _worldSize: number;
-    _identity: Float32Array;
+    _identity: Float64Array;
 
     constructor(tr: Transform, worldSize: number) {
         this._tr = tr;
         this._worldSize = worldSize;
         // eslint-disable-next-line no-warning-comments
         // TODO: Cache this elsewhere?
-        this._identity = mat4.identity(new Float32Array(16));
+        this._identity = mat4.identity(new Float64Array(16));
     }
 
     createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
@@ -47,11 +47,11 @@ class MercatorTileTransform {
         }
     }
 
-    createInversionMatrix(): Float32Array {
+    createInversionMatrix(): mat4 {
         return this._identity;
     }
 
-    createTileMatrix(id: UnwrappedTileID): Float32Array {
+    createTileMatrix(id: UnwrappedTileID): mat4 {
         const canonical = id.canonical;
         const zoomScale = Math.pow(2, canonical.z);
         const scale = this._worldSize / zoomScale;

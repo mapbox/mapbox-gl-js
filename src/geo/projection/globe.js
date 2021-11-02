@@ -52,12 +52,12 @@ class GlobeTileTransform {
         }
     }
 
-    createTileMatrix(id: UnwrappedTileID): Float32Array {
+    createTileMatrix(id: UnwrappedTileID): mat4 {
         const decode = denormalizeECEF(tileBoundsOnGlobe(id.canonical));
         return mat4.multiply([], this._globeMatrix, decode);
     }
 
-    createInversionMatrix(id: UnwrappedTileID): Float32Array {
+    createInversionMatrix(id: UnwrappedTileID): mat4 {
         const center = this._tr.center;
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadiusGlobe = this._worldSize / (2.0 * Math.PI);

@@ -1316,7 +1316,7 @@ class Transform {
         return cache[distanceDataKey];
     }
 
-    calculateGlobeMatrix(worldSize: number): Float32Array {
+    calculateGlobeMatrix(worldSize: number): mat4 {
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadius = worldSize / (2.0 * Math.PI);
         const s = wsRadius / localRadius;
@@ -1327,7 +1327,7 @@ class Transform {
             mercatorYfromLat(lat) * worldSize);
 
         // transform the globe from reference coordinate space to world space
-        const posMatrix = mat4.identity(new Float32Array(16));
+        const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
         mat4.scale(posMatrix, posMatrix, [s, s, s]);
         mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
@@ -1336,7 +1336,7 @@ class Transform {
         return posMatrix;
     }
 
-    calculateGlobeMercatorMatrix(worldSize: number): Float32Array {
+    calculateGlobeMercatorMatrix(worldSize: number): mat4 {
         const lat = clamp(this.center.lat, -this.maxValidLatitude, this.maxValidLatitude);
         const point = new Point(
             mercatorXfromLng(this.center.lng) * worldSize,
@@ -1347,7 +1347,7 @@ class Transform {
         const zScale = this.pixelsPerMeter;
         const ws = worldSize / projectionScaler;
 
-        const posMatrix = mat4.identity(new Float32Array(16));
+        const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
         mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
 

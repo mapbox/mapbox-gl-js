@@ -13,9 +13,9 @@ export type TileTransform = {
 
     createGlCoordMatrix: (posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits: number) => mat4,
 
-    createTileMatrix: (id: UnwrappedTileID) => Float32Array,
+    createTileMatrix: (id: UnwrappedTileID) => mat4,
 
-    createInversionMatrix: (id: UnwrappedTileID) => Float32Array,
+    createInversionMatrix: (id: UnwrappedTileID) => mat4,
 
     tileAabb: (id: UnwrappedTileID, z: number, min: number, max: number) => Aabb,
 
