@@ -68,7 +68,8 @@ void main(void) {
     // Apply extra scaling to extrusion to cover different pixel space ratios (which is dependant on the latitude)
     extrude *= a_scale;
     vec3 pos_normal_3 = a_pos_normal_3 / 16384.0;
-    vec3 globe_surface_extrusion = extrudeOnGlobeSurface(extrude, pos_normal_3, u_up_dir, u_zoom_transition);
+    mat3 surface_vectors = globe_surface_vectors(pos_normal_3, u_up_dir, u_zoom_transition);
+    vec3 globe_surface_extrusion = extrude.x * surface_vectors[0] + extrude.y * surface_vectors[1];
     vec3 globe_elevation = elevationVector(tilePos) * elevation(tilePos);
     vec3 globe_pos = a_pos_3 + globe_surface_extrusion + globe_elevation;
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, tilePos, u_tile_id, u_merc_center) + globe_surface_extrusion + globe_elevation;

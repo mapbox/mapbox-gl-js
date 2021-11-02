@@ -33,12 +33,12 @@ vec3 mix_globe_mercator(vec3 globe, vec3 mercator, float t) {
 }
 
 #ifdef PROJECTION_GLOBE_VIEW
-vec3 extrudeOnGlobeSurface(vec2 extrude, vec3 pos_normal, vec3 up_dir, float zoom_transition) {
+mat3 globe_surface_vectors(vec3 pos_normal, vec3 up_dir, float zoom_transition) {
     vec3 normal = normalize(mix(pos_normal, up_dir, zoom_transition));
     // Coordinate frame for the extrusion is the tangent plane at the point location on the globe surface
     vec3 xAxis = normalize(vec3(normal.z, 0.0, -normal.x));
     vec3 yAxis = normalize(cross(normal, xAxis));
-    return vec3(xAxis * extrude.x + yAxis * extrude.y);
+    return mat3(xAxis, yAxis, normal);
 }
 #endif
 
