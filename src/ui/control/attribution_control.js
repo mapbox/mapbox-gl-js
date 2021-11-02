@@ -176,7 +176,8 @@ class AttributionControl {
 
         if (this.options.customAttribution) {
             if (Array.isArray(this.options.customAttribution)) {
-                for (const attribution of this.options.customAttribution.reverse()) {
+                const customAttributionReversed = [...this.options.customAttribution].reverse();
+                for (const attribution of customAttributionReversed) {
                     if (typeof attribution === 'string') attributions.unshift(attribution);
                 }
             } else if (typeof this.options.customAttribution === 'string') {
