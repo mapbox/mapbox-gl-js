@@ -346,12 +346,15 @@ class Style extends Evented {
     }
 
     setProjection(projection?: ?ProjectionSpecification) {
+
+        const projectionChanged = this.map.transform.setProjection(projection);
+        if (!projectionChanged) return;
+
         this.map.painter.clearBackgroundTiles();
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
         }
 
-        this.map.transform.setProjection(projection);
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 
         this.map._update(true);

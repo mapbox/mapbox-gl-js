@@ -1587,5 +1587,20 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test("setProjection", (t) => {
+        const transform = new Transform();
+        t.equal(transform.getProjection().name, 'mercator');
+
+        // correctly returns indication of whether projection changed
+        t.equal(transform.setProjection({name: 'albers'}), true);
+        t.equal(transform.setProjection({name: 'albers'}), false);
+        t.equal(transform.setProjection({name: 'albers', center: [-96, 37.5]}), false);
+        t.equal(transform.setProjection({name: 'albers', center: [-100, 37.5]}), true);
+        t.equal(transform.setProjection({name: 'mercator'}), true);
+        t.equal(transform.setProjection(), false);
+
+        t.end();
+    });
+
     t.end();
 });
