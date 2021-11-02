@@ -358,7 +358,7 @@ class Style extends Evented {
             }
         }
 
-        const projectionChanged = this.map.transform.setProjection(this._runtimeProjection || this.stylesheet.projection);
+        const projectionChanged = this.map.transform.setProjection(this._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
         if (!projectionChanged) return;
 
         this.map.painter.clearBackgroundTiles();
