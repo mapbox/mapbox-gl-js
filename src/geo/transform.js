@@ -6,7 +6,7 @@ import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAlt
 import {getProjection} from './projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner, warnOnce} from '../util/util.js';
+import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner, warnOnce, deepEqual} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
@@ -221,8 +221,15 @@ class Transform {
         this._unmodifiedProjection = !projection;
         if (projection === undefined || projection === null) projection = {name: 'mercator'};
         this.projectionOptions = projection;
+
+        const oldProjection = this.projection ? this.getProjection() : undefined;
         this.projection = getProjection(projection);
+
+        if (deepEqual(oldProjection, this.getProjection())) {
+            return false;
+        }
         this._calcMatrices();
+        return true;
     }
 
     get minZoom(): number { return this._minZoom; }
