@@ -1021,7 +1021,7 @@ class Map extends Camera {
         if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
-        this.style.setProjection(projection);
+        this.style.setProjection(projection, true);
     }
 
     /**

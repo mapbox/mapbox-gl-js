@@ -97,8 +97,7 @@ const ignoredDiffOperations = pick(diffOperations, [
     'setCenter',
     'setZoom',
     'setBearing',
-    'setPitch',
-    'setProjection'
+    'setPitch'
 ]);
 
 const empty = emptyStyle();
@@ -154,6 +153,7 @@ class Style extends Evented {
     _layerOrderChanged: boolean;
     _availableImages: Array<string>;
     _markersNeedUpdate: boolean;
+    _runtimeProjection: ProjectionSpecification | void | null;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -194,6 +194,7 @@ class Style extends Evented {
         this._order  = [];
         this._drapedFirstOrder = [];
         this._markersNeedUpdate = false;
+        this._runtimeProjection = undefined;
 
         this._resetUpdates();
 
@@ -326,7 +327,7 @@ class Style extends Evented {
             this._updateLayerCount(layer, true);
         }
 
-        if (this.stylesheet.projection && this.map.transform._unmodifiedProjection) {
+        if (this.stylesheet.projection) {
             this.setProjection(this.stylesheet.projection);
         }
 
@@ -345,9 +346,19 @@ class Style extends Evented {
         this.fire(new Event('style.load'));
     }
 
-    setProjection(projection?: ?ProjectionSpecification) {
+    setProjection(projection?: ?ProjectionSpecification, runtimeProjection?: boolean) {
 
-        const projectionChanged = this.map.transform.setProjection(projection);
+        if (runtimeProjection) {
+            this._runtimeProjection = projection;
+        } else {
+            if (projection) {
+                this.stylesheet.projection = projection;
+            } else {
+                delete this.stylesheet.projection;
+            }
+        }
+
+        const projectionChanged = this.map.transform.setProjection(this._runtimeProjection || this.stylesheet.projection);
         if (!projectionChanged) return;
 
         this.map.painter.clearBackgroundTiles();
