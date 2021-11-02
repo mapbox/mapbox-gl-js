@@ -557,6 +557,8 @@ test('filter', t => {
 
                 for (const testCase of testCases) {
                     t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                    // Ensure input doesnt get mutated
+                    t.deepInequal(testCase.dynamic, testCase.static);
                 }
 
                 t.end();
@@ -656,6 +658,8 @@ test('filter', t => {
 
                 for (const testCase of testCases) {
                     t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                    // Ensure input doesnt get mutated
+                    t.deepInequal(testCase.dynamic, testCase.static);
                 }
 
                 t.end();
@@ -818,6 +822,8 @@ test('filter', t => {
 
                 for (const testCase of testCases) {
                     t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                    // Ensure input doesnt get mutated
+                    t.deepInequal(testCase.dynamic, testCase.static);
                 }
 
                 t.end();
@@ -1011,6 +1017,8 @@ test('filter', t => {
                 ];
                 for (const testCase of testCases) {
                     t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                    // Ensure input doesnt get mutated
+                    t.deepInequal(testCase.dynamic, testCase.static);
                 }
 
                 t.end();
