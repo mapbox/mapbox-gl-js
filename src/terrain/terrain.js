@@ -330,7 +330,6 @@ export class Terrain extends Elevation {
 
     _onSetFeatureStateEvent(event: any) {
         this._invalidateRenderCache = true;
-
     }
 
     // Terrain
