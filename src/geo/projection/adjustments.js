@@ -88,7 +88,7 @@ function getShearAdjustment(projection, zoom, loc, interpT, withoutRotation?: bo
 
     // Calculate how much the map would need to be rotated to make east-west in
     // projected coordinates be left-right
-    const angleAdjust = -Math.atan(pdy / pdx);
+    const angleAdjust = -Math.atan2(pdy, pdx);
 
     // Pick a location identical to the original one except for poles to make sure we're within mercator bounds
     const mc2 = MercatorCoordinate.fromLngLat(loc);
