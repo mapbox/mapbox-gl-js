@@ -247,6 +247,7 @@ export class Terrain extends Elevation {
 
     set style(style: Style) {
         style.on('data', this._onStyleDataEvent.bind(this));
+        style.on('setfeaturestate', this._onSetFeatureStateEvent.bind(this));
         style.on('neworder', this._checkRenderCacheEfficiency.bind(this));
         this._style = style;
         this._checkRenderCacheEfficiency();
@@ -325,6 +326,11 @@ export class Terrain extends Elevation {
         } else if (event.dataType === 'style') {
             this._invalidateRenderCache = true;
         }
+    }
+
+    _onSetFeatureStateEvent(event: any) {
+        this._invalidateRenderCache = true;
+
     }
 
     // Terrain
