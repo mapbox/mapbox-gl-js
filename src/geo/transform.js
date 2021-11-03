@@ -797,14 +797,6 @@ class Transform {
                 fullyVisible = intersectResult === 2;
             }
 
-            // Perform extra culling specific to the projection mode.
-            // For example the globe view could perform additional backface culling
-            const id = new CanonicalTileID(it.zoom, x, y);
-
-            if (tileTransform.cullTile(it.aabb, id, this.zoom, this._camera)) {
-                continue;
-            }
-
             // Have we reached the target depth or is the tile too far away to be any split further?
             if (it.zoom === maxZoom || !shouldSplit(it)) {
                 const tileZoom = it.zoom === maxZoom ? overscaledZ : it.zoom;
@@ -1605,33 +1597,7 @@ class Transform {
 
         this._updateCameraState();
 
-        // Find the distance from the center point [width/2 + offset.x, height/2 + offset.y] to the
-        // center top point [width/2 + offset.x, 0] in Z units, using the law of sines.
-        // 1 Z unit is equivalent to 1 horizontal px at the center of the map
-        // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
-        const groundAngle = Math.PI / 2 + this._pitch;
-        const fovAboveCenter = this.fovAboveCenter;
-
-        // Adjust distance to MSL by the minimum possible elevation visible on screen,
-        // this way the far plane is pushed further in the case of negative elevation.
-        const minElevationInPixels = this.elevation ?
-            this.elevation.getMinElevationBelowMSL() * pixelsPerMeter :
-            0;
-        const cameraToSeaLevelDistance = ((this._camera.position[2] * this.worldSize) - minElevationInPixels) / Math.cos(this._pitch);
-        const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * cameraToSeaLevelDistance / Math.sin(clamp(Math.PI - groundAngle - fovAboveCenter, 0.01, Math.PI - 0.01));
-        const point = this.point;
-        const x = point.x, y = point.y;
-
-        // Calculate z distance of the farthest fragment that should be rendered.
-        const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + cameraToSeaLevelDistance;
-        // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
-
-        const horizonDistance = cameraToSeaLevelDistance * (1 / this._horizonShift);
-
-        // eslint-disable-next-line no-warning-comments
-        // TODO: Get far z from projection
-        const farPlaneScaler = this.projection.name === 'globe' ? 4.0 : 1.0;
-        this._farZ = Math.min(furthestDistance * 1.01, horizonDistance) * farPlaneScaler;
+        this._farZ = this.projection.farthestPixelDistance(this);
 
         // The larger the value of nearZ is
         // - the more depth precision is available for features (good)
@@ -1682,6 +1648,8 @@ class Transform {
         // is an odd integer to preserve rendering to the pixel grid. We're rotating this shift based on the angle
         // of the transformation so that 0°, 90°, 180°, and 270° rasters are crisp, and adjust the shift so that
         // it is always <= 0.5 pixels.
+        const point = this.point;
+        const x = point.x, y = point.y;
         const xShift = (this.width % 2) / 2, yShift = (this.height % 2) / 2,
             angleCos = Math.cos(this.angle), angleSin = Math.sin(this.angle),
             dx = x - Math.round(x) + angleCos * xShift + angleSin * yShift,

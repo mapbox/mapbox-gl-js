@@ -5,7 +5,6 @@ import {mat4, vec3} from 'gl-matrix';
 import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import {Aabb} from '../../util/primitives.js';
 import Transform from '../transform.js';
-import {FreeCamera} from '../../ui/free_camera.js';
 import MercatorCoordinate from '../mercator_coordinate.js';
 
 export type TileTransform = {
@@ -25,9 +24,7 @@ export type TileTransform = {
 
     pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate,
 
-    tileSpaceUpVectorScale: () => number,
-
-    cullTile: (aabb: Aabb, id: CanonicalTileID, zoom: number, camera: FreeCamera) => boolean
+    tileSpaceUpVectorScale: () => number
 };
 
 export type Projection = {
@@ -41,6 +38,8 @@ export type Projection = {
     zAxisUnit: "meters" | "pixels",
 
     pixelsPerMeter: (lat: number, worldSize: number) => number,
+
+    farthestPixelDistance: (tr: Transform) => number,
 
     createTileTransform: (tr: Transform, worldSize: number) => TileTransform,
 };
