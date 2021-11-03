@@ -8,6 +8,14 @@ uniform highp float u_temporal_offset;
 
 void main() {
     float progress = acos(dot(normalize(v_uv), u_center_direction)) / u_radius;
+    // cutoff the skybox below the horizon
+    const float y_bias = 0.015;
+    const float y_cutoff = 0.3;
+    const float y_cutoff_range = 0.1;
+    float biased_cutoff = y_bias + y_cutoff;
+    vec3 normalized_uv = normalize(v_uv);
+    float horizon_cutoff_alpha = 1.0 - smoothstep(biased_cutoff - y_cutoff_range, biased_cutoff + y_cutoff_range, -normalized_uv.y);
+
     vec4 color = texture2D(u_color_ramp, vec2(progress, 0.5));
 
 #ifdef FOG
@@ -17,7 +25,7 @@ void main() {
     color.rgb = fog_apply_sky_gradient(v_uv.xzy, color.rgb / color.a) * color.a;
 #endif
 
-    color *= u_opacity;
+    color *= u_opacity * horizon_cutoff_alpha;
 
     // Dither
     color.rgb = dither(color.rgb, gl_FragCoord.xy + u_temporal_offset);

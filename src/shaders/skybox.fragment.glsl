@@ -27,9 +27,15 @@ float map(float value, float start, float end, float new_start, float new_end) {
 void main() {
     vec3 uv = v_uv;
 
+    const float y_bias = 0.015;
+    // cutoff the skybox below the horizon
+    const float y_cutoff = 0.3;
+    const float y_cutoff_range = 0.1;
+    float biased_cutoff = y_bias + y_cutoff;
+    vec3 normalized_uv = normalize(uv);
+    float horizon_cutoff_alpha = 1.0 - smoothstep(biased_cutoff - y_cutoff_range, biased_cutoff + y_cutoff_range, -normalized_uv.y);
     // Add a small offset to prevent black bands around areas where
     // the scattering algorithm does not manage to gather lighting
-    const float y_bias = 0.015;
     uv.y += y_bias;
 
     // Inverse of the operation applied for non-linear UV parameterization
@@ -53,7 +59,7 @@ void main() {
     // Add sun disk
     sky_color += 0.1 * sun_disk(v_uv, u_sun_direction);
 
-    gl_FragColor = vec4(sky_color * u_opacity, u_opacity);
+    gl_FragColor = vec4(sky_color * u_opacity * horizon_cutoff_alpha, u_opacity * horizon_cutoff_alpha);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
