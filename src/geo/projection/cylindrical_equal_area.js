@@ -17,14 +17,12 @@ export default function(phi) {
             };
         },
         unproject(x: number, y: number) {
-            // debugger;
-            // const cosPhi = Math.cos(phi);
             const x_ = (x - 1) * 2;
             const y_ = (y - 1) * -2;
             const lng = clamp(radToDeg(x_) / cosPhi, -180, 180);
-            const y2 = radToDeg(y_) * cosPhi;
+            const y2 = y_ * cosPhi;
             const y3 = Math.asin(clamp(y2, -1, 1));
-            const lat = clamp(y3, -90, 90);
+            const lat = clamp(radToDeg(y3), -90, 90);
 
             return new LngLat(lng, lat);
         }
