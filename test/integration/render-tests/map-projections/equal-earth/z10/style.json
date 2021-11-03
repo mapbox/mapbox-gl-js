@@ -14,7 +14,7 @@
   "sources": {
     "graticule": {
       "type": "geojson",
-      "data": "local://data/graticule.geojson"
+      "data": "local://data/dense-graticule.geojson"
     }
   },
   "layers": [

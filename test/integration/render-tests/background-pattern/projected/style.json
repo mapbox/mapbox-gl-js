@@ -2,22 +2,30 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 512,
-      "width": 512,
+      "width": 256,
+      "height": 256,
       "operations": [
-        ["setProjection", "winkelTripel"],
+        ["setProjection", "albers"],
         ["wait"]
       ]
     }
   },
-  "zoom": 10,
+  "zoom": 2,
   "sources": {
     "graticule": {
       "type": "geojson",
-      "data": "local://data/dense-graticule.geojson"
+      "data": "local://data/graticule.geojson"
     }
   },
+  "sprite": "local://sprites/emerald",
   "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-pattern": "cemetery_icon"
+      }
+    },
     {
       "id": "graticule",
       "source": "graticule",

@@ -2,15 +2,15 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 512,
-      "width": 512,
+      "height": 256,
+      "width": 256,
       "operations": [
-        ["setProjection", "winkelTripel"],
+        ["setProjection", "albers"],
         ["wait"]
       ]
     }
   },
-  "zoom": 10,
+  "zoom": 6,
   "sources": {
     "graticule": {
       "type": "geojson",
