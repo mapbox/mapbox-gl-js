@@ -111,7 +111,6 @@ class Transform {
     _zoom: number;
     _cameraZoom: ?number;
     _unmodified: boolean;
-    _unmodifiedProjection: boolean;
     _renderWorldCopies: boolean;
     _minZoom: number;
     _maxZoom: number;
@@ -185,7 +184,7 @@ class Transform {
         clone._camera = this._camera.clone();
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
-        if (!this._unmodifiedProjection) clone.setProjection(this.getProjection());
+        clone.setProjection(this.getProjection());
         return clone;
     }
 
@@ -218,7 +217,6 @@ class Transform {
     }
 
     setProjection(projection?: ?ProjectionSpecification) {
-        this._unmodifiedProjection = !projection;
         if (projection === undefined || projection === null) projection = {name: 'mercator'};
         this.projectionOptions = projection;
 

@@ -1416,11 +1416,33 @@ test('Map', (t) => {
         t.test('setProjection with no argument defaults to Mercator', (t) => {
             const map = createMap(t);
             map.setProjection({name: 'albers'});
-            t.equal(map.transform._unmodifiedProjection, false);
+            t.equal(map.getProjection().name, 'albers');
             map.setProjection();
             t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
-            t.equal(map.transform._unmodifiedProjection, true);
             t.end();
+        });
+
+        t.test('setProjection persists after new style', (t) => {
+            const map = createMap(t);
+            map.once('style.load', () => {
+                map.setProjection({name: 'albers'});
+                t.equal(map.getProjection().name, 'albers');
+
+                // setStyle with diffing
+                map.setStyle(Object.assign({}, map.getStyle(), {projection: {name: 'winkelTripel'}}));
+                t.equal(map.getProjection().name, 'albers');
+                t.equal(map.style.stylesheet.projection.name, 'winkelTripel');
+
+                // setStyle without diffing
+                const s = map.getStyle();
+                delete s.projection;
+                map.setStyle(s, {diff: false});
+                map.once('style.load', () => {
+                    t.equal(map.getProjection().name, 'albers');
+                    t.equal(map.style.stylesheet.projection, undefined);
+                    t.end();
+                });
+            });
         });
         t.end();
     });
