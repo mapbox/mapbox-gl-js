@@ -52,19 +52,11 @@ map.on('load', function() {
                 0.8,
                 'rgba(135, 206, 235, 1.0)',
                 1,
-                'rgba(0,0,0,0.1)'
+                'rgba(255,0,0,1.0)'
             ],
             'sky-gradient-center': [0, 0],
             'sky-gradient-radius': 90,
-            'sky-opacity': [
-                'interpolate',
-                ['exponential', 0.1],
-                ['zoom'],
-                5,
-                0,
-                22,
-                1
-            ]
+            'sky-opacity': 1
         }
     });
 });

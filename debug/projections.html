@@ -25,7 +25,7 @@
             border: none;
             padding: 5px 0;
         }
-         
+
         select, input {
             background-color: transparent;
             border-radius: 3px;
@@ -181,6 +181,17 @@ function addGraticule() {
                 'line-opacity': document.getElementById('graticule').checked ? 1 : 0
             }
         });
+
+        map.addLayer({
+            'id': 'sky',
+            'type': 'sky',
+            'paint': {
+                'sky-opacity': 1,
+                'sky-type': 'atmosphere',
+                'sky-atmosphere-sun': [0, 85],
+                'sky-atmosphere-sun-intensity': 5,
+            }
+            });
     });
 }
 
