@@ -1957,14 +1957,20 @@ class Transform {
     // Checks the four corners of the frustum to see if they lie in the map's quad.
     //
     isHorizonVisible(): boolean {
-        // we consider the horizon as visible if the angle between
-        // a the top plane of the frustum and the map plane is smaller than this threshold.
-        const horizonAngleEpsilon = 2;
-        if (this.pitch + radToDeg(this.fovAboveCenter) > (90 - horizonAngleEpsilon)) {
+        if (this.projection.name === 'mercator') {
+            // we consider the horizon as visible if the angle between
+            // a the top plane of the frustum and the map plane is smaller than this threshold.
+            const horizonAngleEpsilon = 2;
+            if (this.pitch + radToDeg(this.fovAboveCenter) > (90 - horizonAngleEpsilon)) {
+                return true;
+            }
+
+            return this.isCornerOffEdge(new Point(0, 0), new Point(this.width, this.height));
+        } else {
+            // complex shape of non-mercator maps means we cannot perform a cheap culling test
+            // so we deoptimize instead and always render the skybox.
             return true;
         }
-
-        return this.isCornerOffEdge(new Point(0, 0), new Point(this.width, this.height));
     }
 
     /**
