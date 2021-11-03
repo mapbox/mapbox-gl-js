@@ -97,8 +97,7 @@ const ignoredDiffOperations = pick(diffOperations, [
     'setCenter',
     'setZoom',
     'setBearing',
-    'setPitch',
-    'setProjection'
+    'setPitch'
 ]);
 
 const empty = emptyStyle();
@@ -299,6 +298,8 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = json;
 
+        this.updateProjection();
+
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
         }
@@ -326,10 +327,6 @@ class Style extends Evented {
             this._updateLayerCount(layer, true);
         }
 
-        if (this.stylesheet.projection && this.map.transform._unmodifiedProjection) {
-            this.setProjection(this.stylesheet.projection);
-        }
-
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
@@ -346,16 +343,25 @@ class Style extends Evented {
     }
 
     setProjection(projection?: ?ProjectionSpecification) {
+        if (projection) {
+            this.stylesheet.projection = projection;
+        } else {
+            delete this.stylesheet.projection;
+        }
+        this.updateProjection();
+    }
 
-        const projectionChanged = this.map.transform.setProjection(projection);
+    updateProjection() {
+        const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
+
+        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
+
         if (!projectionChanged) return;
 
         this.map.painter.clearBackgroundTiles();
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
         }
-
-        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 
         this.map._update(true);
     }

@@ -353,6 +353,7 @@ class Map extends Camera {
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
+    _runtimeProjection: ProjectionSpecification | void | null;
 
     /** @section {Interaction handlers} */
 
@@ -1021,7 +1022,8 @@ class Map extends Camera {
         if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
-        this.style.setProjection(projection);
+        this._runtimeProjection = projection;
+        this.style.updateProjection();
     }
 
     /**
