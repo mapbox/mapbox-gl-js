@@ -3,7 +3,8 @@ import LngLat from '../lng_lat.js';
 import {clamp, degToRad, radToDeg} from '../../util/util.js';
 
 export default function(phi) {
-    const cosPhi = Math.cos(phi);
+    const cosPhi = Math.cos(degToRad(phi));
+    const scale = 1 / (2 * Math.max(Math.PI * cosPhi, 1 / cosPhi));
 
     return {
         // wrap: true,
@@ -12,13 +13,13 @@ export default function(phi) {
             const y = Math.sin(degToRad(lat)) / cosPhi;
 
             return {
-                x: 1 + 0.5 * x,
-                y: 1 - 0.5 * y
+                x: (x * scale) + 0.5,
+                y: (-y * scale) + 0.5,
             };
         },
         unproject(x: number, y: number) {
-            const x_ = (x - 1) * 2;
-            const y_ = (y - 1) * -2;
+            const x_ = (x - 0.5) / scale;
+            const y_ = -(y - 0.5) / scale;
             const lng = clamp(radToDeg(x_) / cosPhi, -180, 180);
             const y2 = y_ * cosPhi;
             const y3 = Math.asin(clamp(y2, -1, 1));
