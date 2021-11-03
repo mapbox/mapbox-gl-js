@@ -146,21 +146,21 @@ function addGraticule() {
             features: []
         };
 
-        for (let i = -1; i < 1; i += 0.05) {
+        for (let i = -170; i < 180; i += 10) {
             fc.features.push({
                 type: 'Feature',
                 geometry: {
                     type: 'LineString',
-                    coordinates: [[i, -1], [i, 1]]
+                    coordinates: [[i, -80], [i, 80]]
                 }
             });
         }
-        for (let i = -1; i < 1; i += 0.05) {
+        for (let i = -80; i < 80; i += 10) {
             fc.features.push({
                 type: 'Feature',
                 geometry: {
                     type: 'LineString',
-                    coordinates: [[-1, i], [1, i]]
+                    coordinates: [[-180, i], [180, i]]
                 }
             });
         }
