@@ -29,7 +29,13 @@ import SegmentVector from '../data/segment.js';
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
 import type {Bucket} from '../data/bucket.js';
+<<<<<<< HEAD
 import FillBucket from '../data/bucket/fill_bucket.js';
+=======
+import CircleBucket from '../data/bucket/circle_bucket.js';
+import FillBucket from '../data/bucket/fill_bucket.js';
+import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
+>>>>>>> a47ab0661 (Fix flow errors)
 import LineBucket from '../data/bucket/line_bucket.js';
 import type StyleLayer from '../style/style_layer.js';
 import type {WorkerTileResult} from './worker_source.js';
@@ -530,6 +536,7 @@ class Tile {
 
             bucket.update(sourceLayerStates, sourceLayer, availableImages, this.imageAtlas && this.imageAtlas.patternPositions || {});
 <<<<<<< HEAD
+<<<<<<< HEAD
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {
@@ -538,6 +545,17 @@ class Tile {
                 const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
                 if (sourceCache && painter._terrain) { // Always happens, just making Flow happy
 >>>>>>> b4cdedff6 (Changed approach to directly clear render cache from Tile)
+=======
+            if (painter._terrain && painter._terrain.enabled &&
+                (bucket instanceof LineBucket ||
+                bucket instanceof FillBucket ||
+                bucket instanceof FillExtrusionBucket ||
+                bucket instanceof CircleBucket)
+                // Symbol bucket has no programConfigurations. This has to be spelled out for Flow.
+            ) {
+                const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
+                if (sourceCache && painter._terrain && bucket.programConfigurations.needsUpload) {
+>>>>>>> a47ab0661 (Fix flow errors)
                     painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);
                 }
             }
