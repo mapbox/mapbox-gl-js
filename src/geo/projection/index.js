@@ -36,7 +36,7 @@ function getConicProjection(projection: Projection, config: ProjectionSpecificat
         if (config.parallels[0] + config.parallels[1] === 0) {
             if (config.name === 'lambertConformalConic') return projections['mercator'];
             const center = config.center || projection.center;
-            return {...projection, ...config, ...cylindricalEqualArea(center[1])};
+            return {...projection, ...config, ...cylindricalEqualArea(config.parallels[0])};
         }
     }
 
