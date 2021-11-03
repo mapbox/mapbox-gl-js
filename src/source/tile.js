@@ -527,6 +527,12 @@ class Tile {
             if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
 
             bucket.update(sourceLayerStates, sourceLayer, availableImages, this.imageAtlas && this.imageAtlas.patternPositions || {});
+            if (painter._terrain && painter._terrain.enabled && bucket.programConfigurations && bucket.programConfigurations.needsUpload) {
+                const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
+                if (sourceCache && painter._terrain) { // Always happens, just making Flow happy
+                    painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);
+                }
+            }
             const layer = painter && painter.style && painter.style.getLayer(id);
             if (layer) {
                 this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket));

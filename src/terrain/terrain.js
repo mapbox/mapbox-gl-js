@@ -247,7 +247,6 @@ export class Terrain extends Elevation {
 
     set style(style: Style) {
         style.on('data', this._onStyleDataEvent.bind(this));
-        style.on('setfeaturestate', this._onSetFeatureStateEvent.bind(this));
         style.on('neworder', this._checkRenderCacheEfficiency.bind(this));
         this._style = style;
         this._checkRenderCacheEfficiency();
@@ -326,10 +325,6 @@ export class Terrain extends Elevation {
         } else if (event.dataType === 'style') {
             this._invalidateRenderCache = true;
         }
-    }
-
-    _onSetFeatureStateEvent(event: any) {
-        this._invalidateRenderCache = true;
     }
 
     // Terrain
@@ -987,7 +982,11 @@ export class Terrain extends Elevation {
                     const tiles = current[source];
                     const prevTiles = prev[source];
                     if (!prevTiles || prevTiles.length !== tiles.length ||
-                        tiles.some((t, index) => (t !== prevTiles[index] || (dirty[source] && dirty[source].hasOwnProperty(t.key))))) {
+                        tiles.some((t, index) =>
+                            (t !== prevTiles[index] ||
+                            (dirty[source] && dirty[source].hasOwnProperty(t.key)
+                            )))
+                    ) {
                         equal = -1;
                         break;
                     }

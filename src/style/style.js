@@ -1120,7 +1120,6 @@ class Style extends Evented {
         for (const sourceCache of sourceCaches) {
             sourceCache.setFeatureState(sourceLayer, target.id, state);
         }
-        this.fire(new Event('setfeaturestate'));
     }
 
     removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
