@@ -6,6 +6,7 @@
       "height": 512,
       "allowed": 0.01,
       "operations": [
+        ["setProjection", "albers"],
         ["setStyle", "local://mapbox-gl-styles/styles/satellite-v9.json"],
         ["wait"],
         ["setPaintProperty",
@@ -16,9 +17,6 @@
         ["wait"]
       ]
     }
-  },
-  "projection": {
-    "name": "albers"
   },
   "sources": {},
   "layers": []
