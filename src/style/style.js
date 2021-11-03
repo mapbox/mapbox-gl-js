@@ -153,7 +153,6 @@ class Style extends Evented {
     _layerOrderChanged: boolean;
     _availableImages: Array<string>;
     _markersNeedUpdate: boolean;
-    _runtimeProjection: ProjectionSpecification | void | null;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -194,7 +193,6 @@ class Style extends Evented {
         this._order  = [];
         this._drapedFirstOrder = [];
         this._markersNeedUpdate = false;
-        this._runtimeProjection = undefined;
 
         this._resetUpdates();
 
@@ -300,6 +298,8 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = json;
 
+        this.updateProjection();
+
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
         }
@@ -327,10 +327,6 @@ class Style extends Evented {
             this._updateLayerCount(layer, true);
         }
 
-        if (this.stylesheet.projection) {
-            this.setProjection(this.stylesheet.projection);
-        }
-
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
@@ -346,27 +342,26 @@ class Style extends Evented {
         this.fire(new Event('style.load'));
     }
 
-    setProjection(projection?: ?ProjectionSpecification, runtimeProjection?: boolean) {
-
-        if (runtimeProjection) {
-            this._runtimeProjection = projection;
+    setProjection(projection?: ?ProjectionSpecification) {
+        if (projection) {
+            this.stylesheet.projection = projection;
         } else {
-            if (projection) {
-                this.stylesheet.projection = projection;
-            } else {
-                delete this.stylesheet.projection;
-            }
+            delete this.stylesheet.projection;
         }
+        this.updateProjection();
+    }
 
-        const projectionChanged = this.map.transform.setProjection(this._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
+    updateProjection() {
+        const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
+
+        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
+
         if (!projectionChanged) return;
 
         this.map.painter.clearBackgroundTiles();
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
         }
-
-        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 
         this.map._update(true);
     }

@@ -1421,6 +1421,29 @@ test('Map', (t) => {
             t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
             t.end();
         });
+
+        t.test('setProjection persists after new style', (t) => {
+            const map = createMap(t);
+            map.once('style.load', () => {
+                map.setProjection({name: 'albers'});
+                t.equal(map.getProjection().name, 'albers');
+
+                // setStyle with diffing
+                map.setStyle(Object.assign({}, map.getStyle(), {projection: {name: 'winkelTripel'}}));
+                t.equal(map.getProjection().name, 'albers');
+                t.equal(map.style.stylesheet.projection.name, 'winkelTripel');
+
+                // setStyle without diffing
+                const s = map.getStyle();
+                delete s.projection;
+                map.setStyle(s, {diff: false});
+                map.once('style.load', () => {
+                    t.equal(map.getProjection().name, 'albers');
+                    t.equal(map.style.stylesheet.projection, undefined);
+                    t.end();
+                });
+            });
+        });
         t.end();
     });
 
