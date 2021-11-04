@@ -101,6 +101,8 @@ export type ElevationBoxRaycast = {
     maxAltitude: number
 };
 
+const freeCameraNotSupportedWarning = 'map.setFreeCameraOptions(...) and map.getFreeCameraOptions() are not yet supported for non-mercator projections.';
+
 /**
  * Options for setting padding on calls to methods such as {@link Map#fitBounds}, {@link Map#fitScreenCoordinates}, and {@link Map#setPadding}. Adjust these options to set the amount of padding in pixels added to the edges of the canvas. Set a uniform padding on all edges or individual values for each edge. All properties of this object must be
  * non-negative integers.
@@ -172,7 +174,7 @@ class Camera extends Evented {
      * // Return a LngLat object such as {lng: 0, lat: 0}.
      * const center = map.getCenter();
      * // Access longitude and latitude values directly.
-     * const {longitude, latitude} = map.getCenter();
+     * const {lng, lat} = map.getCenter();
      * @see [Tutorial: Use Mapbox GL JS in a React app](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/#store-the-new-coordinates)
      */
     getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
@@ -183,8 +185,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {LngLatLike} center The centerpoint to set.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setCenter([-74, 38]);
@@ -200,8 +202,8 @@ class Camera extends Evented {
      * @param {PointLike} offset The `x` and `y` coordinates by which to pan the map.
      * @param {AnimationOptions | null} options An options object describing the destination and animation of the transition. We do not recommend using `options.offset` since this value will override the value of the `offset` parameter.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} `this` Returns itself to allow for method chaining.
      * @example
      * map.panBy([-74, 38]);
@@ -222,8 +224,8 @@ class Camera extends Evented {
      * @param {LngLatLike} lnglat The location to pan the map to.
      * @param {AnimationOptions | null} options Options describing the destination and animation of the transition.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.panTo([-74, 38]);
@@ -254,12 +256,12 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {number} zoom The zoom level to set (0-20).
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires move
-     * @fires zoom
-     * @fires moveend
-     * @fires zoomend
+     * @fires Map.event:movestart
+     * @fires Map.event:zoomstart
+     * @fires Map.event:move
+     * @fires Map.event:zoom
+     * @fires Map.event:moveend
+     * @fires Map.event:zoomend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Zoom to the zoom level 5 without an animated transition
@@ -277,12 +279,12 @@ class Camera extends Evented {
      * @param {number} zoom The zoom level to transition to.
      * @param {AnimationOptions | null} options Options object.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires move
-     * @fires zoom
-     * @fires moveend
-     * @fires zoomend
+     * @fires Map.event:movestart
+     * @fires Map.event:zoomstart
+     * @fires Map.event:move
+     * @fires Map.event:zoom
+     * @fires Map.event:moveend
+     * @fires Map.event:zoomend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Zoom to the zoom level 5 without an animated transition
@@ -305,12 +307,12 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {AnimationOptions | null} options Options object.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires move
-     * @fires zoom
-     * @fires moveend
-     * @fires zoomend
+     * @fires Map.event:movestart
+     * @fires Map.event:zoomstart
+     * @fires Map.event:move
+     * @fires Map.event:zoom
+     * @fires Map.event:moveend
+     * @fires Map.event:zoomend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // zoom the map in one level with a custom animation duration
@@ -327,12 +329,12 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {AnimationOptions | null} options Options object.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires move
-     * @fires zoom
-     * @fires moveend
-     * @fires zoomend
+     * @fires Map.event:movestart
+     * @fires Map.event:zoomstart
+     * @fires Map.event:move
+     * @fires Map.event:zoom
+     * @fires Map.event:moveend
+     * @fires Map.event:zoomend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // zoom the map out one level with a custom animation offset
@@ -353,7 +355,9 @@ class Camera extends Evented {
      * const bearing = map.getBearing();
      * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    getBearing(): number { return this.transform.bearing; }
+    getBearing(): number {
+        return this.transform.bearing;
+    }
 
     /**
      * Sets the map's bearing (rotation). The bearing is the compass direction that is "up"; for example, a bearing
@@ -364,8 +368,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {number} bearing The desired bearing.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Rotate the map to 90 degrees.
@@ -394,8 +398,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {PaddingOptions} padding The desired padding. Format: {left: number, right: number, top: number, bottom: number}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Sets a left padding of 300px, and a top padding of 50px
@@ -414,8 +418,8 @@ class Camera extends Evented {
      * @param {number} bearing The desired bearing.
      * @param {AnimationOptions | null} options Options object.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.rotateTo(30);
@@ -435,8 +439,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {AnimationOptions | null} options Options object.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // resetNorth with an animation of 2 seconds.
@@ -453,8 +457,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {AnimationOptions | null} options Options object.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // resetNorthPitch with an animation of 2 seconds.
@@ -476,8 +480,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {AnimationOptions | null} options Options object.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // snapToNorth with an animation of 2 seconds.
@@ -506,9 +510,9 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {number} pitch The pitch to set, measured in degrees away from the plane of the screen (0-60).
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires pitchstart
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:pitchstart
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // setPitch with an animation of 2 seconds.
@@ -757,8 +761,8 @@ class Camera extends Evented {
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
      * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
 	 * @example
      * const bbox = [[-79, 43], [-73, 45]];
@@ -829,8 +833,8 @@ class Camera extends Evented {
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
+     * @fires Map.event:movestart
+     * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
 	 * @example
      * const p0 = [220, 400];
@@ -903,16 +907,16 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {CameraOptions} options Options object.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires pitchstart
-     * @fires rotate
-     * @fires move
-     * @fires zoom
-     * @fires pitch
-     * @fires moveend
-     * @fires zoomend
-     * @fires pitchend
+     * @fires Map.event:movestart
+     * @fires Map.event:zoomstart
+     * @fires Map.event:pitchstart
+     * @fires Map.event:rotate
+     * @fires Map.event:move
+     * @fires Map.event:zoom
+     * @fires Map.event:pitch
+     * @fires Map.event:moveend
+     * @fires Map.event:zoomend
+     * @fires Map.event:pitchend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // jump to coordinates at current zoom
@@ -985,6 +989,8 @@ class Camera extends Evented {
     /**
      * Returns position and orientation of the camera entity.
      *
+     * This method is not supported for projections other than mercator.
+     *
      * @memberof Map#
      * @returns {FreeCameraOptions} The camera state.
      * @example
@@ -999,6 +1005,9 @@ class Camera extends Evented {
      * map.setFreeCameraOptions(camera);
      */
     getFreeCameraOptions(): FreeCameraOptions {
+        if (this.transform.projection.name !== 'mercator') {
+            warnOnce(freeCameraNotSupportedWarning);
+        }
         return this.transform.getFreeCameraOptions();
     }
 
@@ -1010,19 +1019,21 @@ class Camera extends Evented {
      * can be invalid if it leads to the camera being upside down, the quaternion has zero length,
      * or the pitch is over the maximum pitch limit.
      *
+     * This method is not supported for projections other than mercator.
+     *
      * @memberof Map#
      * @param {FreeCameraOptions} options `FreeCameraOptions` object.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires pitchstart
-     * @fires rotate
-     * @fires move
-     * @fires zoom
-     * @fires pitch
-     * @fires moveend
-     * @fires zoomend
-     * @fires pitchend
+     * @fires Map.event:movestart
+     * @fires Map.event:zoomstart
+     * @fires Map.event:pitchstart
+     * @fires Map.event:rotate
+     * @fires Map.event:move
+     * @fires Map.event:zoom
+     * @fires Map.event:pitch
+     * @fires Map.event:moveend
+     * @fires Map.event:zoomend
+     * @fires Map.event:pitchend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * const camera = map.getFreeCameraOptions();
@@ -1036,9 +1047,15 @@ class Camera extends Evented {
      * map.setFreeCameraOptions(camera);
      */
     setFreeCameraOptions(options: FreeCameraOptions, eventData?: Object) {
+        const tr = this.transform;
+
+        if (tr.projection.name !== 'mercator') {
+            warnOnce(freeCameraNotSupportedWarning);
+            return;
+        }
+
         this.stop();
 
-        const tr = this.transform;
         const prevZoom = tr.zoom;
         const prevPitch = tr.pitch;
         const prevBearing = tr.bearing;
@@ -1087,16 +1104,16 @@ class Camera extends Evented {
      * @param {CameraOptions & AnimationOptions} options Options describing the destination and animation of the transition.
      *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires pitchstart
-     * @fires rotate
-     * @fires move
-     * @fires zoom
-     * @fires pitch
-     * @fires moveend
-     * @fires zoomend
-     * @fires pitchend
+     * @fires Map.event:movestart
+     * @fires Map.event:zoomstart
+     * @fires Map.event:pitchstart
+     * @fires Map.event:rotate
+     * @fires Map.event:move
+     * @fires Map.event:zoom
+     * @fires Map.event:pitch
+     * @fires Map.event:moveend
+     * @fires Map.event:zoomend
+     * @fires Map.event:pitchend
      * @returns {Map} `this` Returns itself to allow for method chaining.
      * @example
      * // Ease with default options to null island for 5 seconds.
@@ -1300,16 +1317,16 @@ class Camera extends Evented {
      * @param {number} [options.maxDuration] The animation's maximum duration, measured in milliseconds.
      *     If duration exceeds maximum duration, it resets to 0.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires pitchstart
-     * @fires move
-     * @fires zoom
-     * @fires rotate
-     * @fires pitch
-     * @fires moveend
-     * @fires zoomend
-     * @fires pitchend
+     * @fires Map.event:movestart
+     * @fires Map.event:zoomstart
+     * @fires Map.event:pitchstart
+     * @fires Map.event:move
+     * @fires Map.event:zoom
+     * @fires Map.event:rotate
+     * @fires Map.event:pitch
+     * @fires Map.event:moveend
+     * @fires Map.event:zoomend
+     * @fires Map.event:pitchend
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // fly with default options to null island
@@ -1564,7 +1581,7 @@ class Camera extends Evented {
     // interpolating between the two endpoints will cross it.
     _normalizeCenter(center: LngLat) {
         const tr = this.transform;
-        if (!tr.renderWorldCopies || tr.lngRange) return;
+        if (!tr.renderWorldCopies || tr.maxBounds) return;
 
         const delta = center.lng - tr.center.lng;
         center.lng +=

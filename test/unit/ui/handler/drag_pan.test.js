@@ -151,13 +151,15 @@ test('DragPanHandler ends a mouse-triggered drag if the window blurs', (t) => {
     map._renderTaskQueue.run();
 
     simulate.blur(window);
+    map._renderTaskQueue.run();
+
     t.equal(dragend.callCount, 1);
 
     map.remove();
     t.end();
 });
 
-test('DragPanHandler ends a touch-triggered drag if the window blurs', (t) => {
+test('DragPanHandler does not end a touch-triggered drag if the window blurs', (t) => {
     const map = createMap(t);
     const target = map.getCanvas();
 
@@ -171,7 +173,40 @@ test('DragPanHandler ends a touch-triggered drag if the window blurs', (t) => {
     map._renderTaskQueue.run();
 
     simulate.blur(window);
+    map._renderTaskQueue.run();
+
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler does not end a touch-triggered drag if the window resizes', (t) => {
+    const map = createMap(t);
+    const target = map.getCanvas();
+
+    const dragend = t.spy();
+    map.on('dragend', dragend);
+
+    const drag = t.spy();
+    map.on('drag', drag);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{target, clientX: 0, clientY: 0}]});
+    map._renderTaskQueue.run();
+
+    simulate.touchmove(map.getCanvas(), {touches: [{target, clientX: 10, clientY: 10}]});
+    map._renderTaskQueue.run();
+
+    map.resize();
+
+    simulate.touchmove(map.getCanvas(), {touches: [{target, clientX: 20, clientY: 10}]});
+    map._renderTaskQueue.run();
+
+    simulate.touchend(map.getCanvas());
+    map._renderTaskQueue.run();
+
     t.equal(dragend.callCount, 1);
+    t.equal(drag.callCount, 2);
 
     map.remove();
     t.end();

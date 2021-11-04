@@ -38,6 +38,7 @@ export default class SymbolLayout extends Layout {
                                             tileResult.iconMap,
                                             tileResult.imageAtlas.iconPositions,
                                             false,
+                                            this.parser.style.listImages(),
                                             tileResult.tileID.canonical,
                                             tileResult.tileZoom);
                     }

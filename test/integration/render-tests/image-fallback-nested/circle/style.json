@@ -1,0 +1,83 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 0,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "icon": "fav-bicycle-18"},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                16
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "icon": "missing-icon"},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                -16
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "text",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-color": [ "case",
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+              "missing"
+              ]]
+            ],
+          "red",
+          "blue" 
+        ],
+        "circle-radius": [ "case",
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+              "missing"
+              ]]
+            ],
+          8,
+          16
+        ],
+        "circle-opacity": [ "case",
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+              "missing"
+              ]]
+            ],
+          1,
+          0.2
+        ]
+      }
+    }
+  ]
+}

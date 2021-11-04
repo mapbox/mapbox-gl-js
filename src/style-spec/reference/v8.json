@@ -94,6 +94,15 @@
         "delay": 0
       }
     },
+    "projection": {
+      "type": "projection",
+      "doc": "The projection the map should be rendered in. Suported projections are Albers, Equal Earth, Equirectangular (WGS84), Lambert conformal conic, Mercator, Natural Earth, and Winkel Tripel. Terrain, fog and CustomLayerInterface are not supported for projections other than mercator.",
+      "example": {
+        "name": "albers",
+        "center": [-154, 50],
+        "parallels": [55, 65]
+      }
+    },
     "layers": {
       "required": true,
       "type": "array",
@@ -652,7 +661,7 @@
     },
     "filter": {
       "type": "filter",
-      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. Zoom expressions in filters are only evaluated at integer zoom levels. The `feature-state` expression is not supported in filter expressions."
+      "doc": "An expression specifying conditions on source features. Only features that match the filter are displayed. Zoom expressions in filters are only evaluated at integer zoom levels. The `[\"feature-state\", ...]` expression is not supported in filter expressions.  The `[\"pitch\"]` and `[\"distance-from-center\"]` expressions are supported only for filter expressions on the symbol layer."
     },
     "layout": {
       "type": "layout",
@@ -2500,6 +2509,72 @@
     "value": "*",
     "doc": "A filter selects specific features from a layer."
   },
+  "filter_symbol": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to display a symbol. Symbols support dynamic filtering, meaning this expression can use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature", "pitch", "distance-from-center"]
+    }
+  },
+  "filter_fill": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to display a polygon. Fill layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_line": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to display a Polygon or LineString. Line layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_circle": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to display a circle. Circle layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_fill-extrusion": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to display a Polygon. Fill-extrusion layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_heatmap": {
+    "type": "boolean",
+    "doc": "Expression used to determine whether a point is being displayed or not. Heatmap layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
   "filter_operator": {
     "type": "enum",
     "values": {
@@ -3091,7 +3166,7 @@
         }
       },
       "length": {
-        "doc": "Gets the length of an array or string.",
+        "doc": "Returns the length of an array or string.",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
@@ -3103,7 +3178,7 @@
         }
       },
       "properties": {
-        "doc": "Gets the feature properties object.  Note that in some cases, it may be more efficient to use [\"get\", \"property_name\"] directly.",
+        "doc": "Returns the feature properties object.  Note that in some cases, it may be more efficient to use `[\"get\", \"property_name\"]` directly.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -3124,7 +3199,7 @@
         }
       },
       "geometry-type": {
-        "doc": "Gets the feature's geometry type: `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`. `Multi*` feature types are only returned in GeoJSON sources. When working with vector tile sources, use the singular forms.",
+        "doc": "Returns the feature's geometry type: `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`. `Multi*` feature types are only returned in GeoJSON sources. When working with vector tile sources, use the singular forms.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -3136,7 +3211,7 @@
         }
       },
       "id": {
-        "doc": "Gets the feature's id, if it has one.",
+        "doc": "Returns the feature's id, if it has one.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -3148,8 +3223,8 @@
         }
       },
       "zoom": {
-        "doc": "Gets the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level \"step\" or \"interpolate\" expression.",
-        "group": "Zoom",
+        "doc": "Returns the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level \"step\" or \"interpolate\" expression.",
+        "group": "Camera",
         "sdk-support": {
           "basic functionality": {
             "js": "0.41.0",
@@ -3159,8 +3234,26 @@
           }
         }
       },
+      "pitch": {
+        "doc": "Returns the current pitch in degrees. `[\"pitch\"]` may only be used in the `filter` expression for a `symbol` layer.",
+        "group": "Camera",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "2.6.0"
+          }
+        }
+      },
+      "distance-from-center": {
+        "doc": "Returns the distance of a `symbol` instance from the center of the map. The distance is measured in pixels divided by the height of the map container. It measures 0 at the center, decreases towards the camera and increase away from the camera. For example, if the height of the map is 1000px, a value of -1 means 1000px away from the center towards the camera, and a value of 1 means a distance of 1000px away from the camera from the center. `[\"distance-from-center\"]` may only be used in the `filter` expression for a `symbol` layer.",
+        "group": "Camera",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "2.6.0"
+          }
+        }
+      },
       "heatmap-density": {
-        "doc": "Gets the kernel density estimation of a pixel in a heatmap layer, which is a relative measure of how many data points are crowded around a particular pixel. Can only be used in the `heatmap-color` property.",
+        "doc": "Returns the kernel density estimation of a pixel in a heatmap layer, which is a relative measure of how many data points are crowded around a particular pixel. Can only be used in the `heatmap-color` property.",
         "group": "Heatmap",
         "sdk-support": {
           "basic functionality": {
@@ -3172,7 +3265,7 @@
         }
       },
       "line-progress": {
-        "doc": "Gets the progress along a gradient line. Can only be used in the `line-gradient` property.",
+        "doc": "Returns the progress along a gradient line. Can only be used in the `line-gradient` property.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -3184,7 +3277,7 @@
         }
       },
       "sky-radial-progress": {
-        "doc": "Gets the distance of a point on the sky from the sun position. Returns 0 at sun position and 1 when the distance reaches `sky-gradient-radius`. Can only be used in the `sky-gradient` property.",
+        "doc": "Returns the distance of a point on the sky from the sun position. Returns 0 at sun position and 1 when the distance reaches `sky-gradient-radius`. Can only be used in the `sky-gradient` property.",
         "group": "sky",
         "sdk-support": {
           "basic functionality": {
@@ -3195,7 +3288,7 @@
         }
       },
       "accumulated": {
-        "doc": "Gets the value of a cluster property accumulated so far. Can only be used in the `clusterProperties` option of a clustered GeoJSON source.",
+        "doc": "Returns the value of a cluster property accumulated so far. Can only be used in the `clusterProperties` option of a clustered GeoJSON source.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -3870,6 +3963,92 @@
           "android": "5.1.0",
           "ios": "3.6.0",
           "macos": "0.5.0"
+        }
+      }
+    }
+  },
+  "projection": {
+    "name": {
+      "type": "enum",
+      "values": {
+        "albers": {
+          "doc": "An Albers equal-area projection centered on the continental United States. You can configure the projection for a different region by setting `center` and `parallels` properties. You may want to set max bounds to constrain the map to the relevant region."
+        },
+        "equalEarth": {
+          "doc": "An Equal Earth projection."
+        },
+        "equirectangular": {
+          "doc": "An Equirectangular projection. This projection is very similar to the Plate Carrée projection."
+        },
+        "lambertConformalConic": {
+          "doc": "A Lambert conformal conic projection. You can configure the projection for a region by setting `center` and `parallels` properties. You may want to set max bounds to constrain the map to the relevant region."
+        },
+        "mercator": {
+          "doc": "The Mercator projection is the default projection."
+        },
+        "naturalEarth": {
+          "doc": "A Natural Earth projection."
+        },
+        "winkelTripel": {
+          "doc": "A Winkel Tripel projection."
+        }
+      },
+      "default": "mercator",
+      "doc": "The name of the projection to be used for rendering the map.",
+      "required": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.6.0"
+        }
+      }
+    },
+    "center": {
+      "type": "array",
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": false,
+      "doc": "The reference longitude and latitude of the projection. `center` takes the form of [lng, lat]. This property is only configurable for conic projections (Albers and Lambert Conformal Conic). All other projections are centered on [0, 0].",
+      "example": [
+        -96,
+        37.5
+      ],
+      "requires": [
+        {
+          "name": [
+              "albers",
+              "lambertConformalConic"
+          ]
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.6.0"
+        }
+      }
+    },
+    "parallels": {
+      "type": "array",
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": false,
+      "doc":  "The standard parallels of the projection, denoting the desired latitude range with minimal distortion. `parallels` takes the form of [lat0, lat1]. This property is only configurable for conic projections (Albers and Lambert Conformal Conic).",
+      "example": [
+        29.5,
+        45.5
+      ],
+      "requires": [
+        {
+          "name": [
+              "albers",
+              "lambertConformalConic"
+          ]
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.6.0"
         }
       }
     }

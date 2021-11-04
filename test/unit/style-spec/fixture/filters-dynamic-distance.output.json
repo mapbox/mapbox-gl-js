@@ -1,0 +1,22 @@
+[
+  {
+    "message": "layers[1].filter: [\"distance-from-center\"] expression is not supported in a filter for a fill layer with id: fill-not-supported",
+    "line": 22
+  },
+  {
+    "message": "layers[2].filter: [\"distance-from-center\"] expression is not supported in a filter for a line layer with id: line-not-supported",
+    "line": 29
+  },
+  {
+    "message": "layers[3].filter: [\"distance-from-center\"] expression is not supported in a filter for a circle layer with id: circle-not-supported",
+    "line": 36
+  },
+  {
+    "message": "layers[4].filter: [\"distance-from-center\"] expression is not supported in a filter for a fill-extrusion layer with id: fill-extrusion-not-supported",
+    "line": 43
+  },
+  {
+    "message": "layers[5].filter: [\"distance-from-center\"] expression is not supported in a filter for a heatmap layer with id: heatmap-not-supported",
+    "line": 50
+  }
+]

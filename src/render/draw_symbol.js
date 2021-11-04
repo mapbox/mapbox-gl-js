@@ -4,7 +4,6 @@ import Point from '@mapbox/point-geometry';
 import drawCollisionDebug from './draw_collision_debug.js';
 
 import SegmentVector from '../data/segment.js';
-import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
 import {mat4} from 'gl-matrix';
@@ -126,8 +125,8 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
         const sizeData = bucket.textSizeData;
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
 
-        const pixelToTileScale = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale);
+        const pixelsToTileUnits = painter.transform.calculatePixelsToTileUnitsMatrix(tile);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, pitchWithMap, rotateWithMap, painter.transform, pixelsToTileUnits);
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
 
         if (size) {
@@ -298,7 +297,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             texSize = tile.imageAtlasTexture.size;
         }
 
-        const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
+        const s = painter.transform.calculatePixelsToTileUnitsMatrix(tile);
         const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
         const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(new Float32Array(16), labelPlaneMatrix) : identityMat4;

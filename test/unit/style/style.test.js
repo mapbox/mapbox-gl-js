@@ -2397,3 +2397,57 @@ test('Style#getFog', (t) => {
 
     t.end();
 });
+
+test('Style#setProjection', (t) => {
+    t.test('runtime projection overrides style projection', (t) => {
+        const style = new Style(new StubMap());
+
+        style.map.painter = {
+            clearBackgroundTiles: () => {}
+        };
+        style.map._update = () => {};
+
+        style.loadJSON({
+            "version": 8,
+            "projection": {
+                "name": "albers"
+            },
+            "sources": {},
+            "layers": []
+        });
+
+        style.on('style.load', () => {
+            t.equal(style.serialize().projection.name, 'albers');
+            t.equal(style.map.transform.getProjection().name, 'albers');
+
+            // Runtime api overrides style projection
+            // Stylesheet projection not changed by runtime apis
+            style.map._runtimeProjection = {name: 'winkelTripel'};
+            style.updateProjection();
+            t.equal(style.serialize().projection.name, 'albers');
+            t.equal(style.map.transform.getProjection().name, 'winkelTripel');
+
+            // Runtime api overrides style projection
+            style.setState(Object.assign({}, style.serialize(), {projection: {name: 'naturalEarth'}}));
+            t.equal(style.serialize().projection.name, 'naturalEarth');
+            t.equal(style.map.transform.getProjection().name, 'winkelTripel');
+
+            // Unsetting runtime projection reveals map projection
+            style.map._runtimeProjection = null;
+            style.updateProjection();
+            t.equal(style.serialize().projection.name, 'naturalEarth');
+            t.equal(style.map.transform.getProjection().name, 'naturalEarth');
+
+            // Unsetting style projection reveals mercator
+            const stylesheet = style.serialize();
+            delete stylesheet.projection;
+            style.setState(stylesheet);
+            t.equal(style.serialize().projection, undefined);
+            t.equal(style.map.transform.getProjection().name, 'mercator');
+
+            t.end();
+        });
+
+    });
+    t.end();
+});

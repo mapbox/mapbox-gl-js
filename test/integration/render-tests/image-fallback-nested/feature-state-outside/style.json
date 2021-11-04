@@ -1,0 +1,127 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": "0"
+          },
+          {
+            "hover": true
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": "2"
+          },
+          {
+            "hover": true
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 2,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": 
+      {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "id": 0,
+            "properties": { "icon": "fav-bicycle-18"},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -2,
+                2
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 1,
+            "properties": { "icon": "fav-bicycle-18"},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                2,
+                2
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 2,
+            "properties": { "icon": "missing-icon"},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                2,
+                -2
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 3,
+            "properties": { "icon": "missing-icon"},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -2,
+                -2
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 5,
+        "circle-color": [ "case",
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+              "missing"
+              ]
+            ]
+          ],
+          [ "case",
+            ["boolean", [ "feature-state", "hover"], false ],
+            "yellow",
+            "red"
+          ],
+          [ "case",
+            ["boolean", [ "feature-state", "hover"], false ],
+            "green",
+            "blue"
+          ]
+        ]
+      }
+    }
+  ]
+}

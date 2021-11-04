@@ -306,6 +306,7 @@ class FreeCamera {
         vec3.scale(invPosition, invPosition, -worldSize);
 
         mat4.fromQuat(matrix, invOrientation);
+
         mat4.translate(matrix, matrix, invPosition);
 
         // Pre-multiply y (2nd row)

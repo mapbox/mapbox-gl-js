@@ -1,5 +1,5 @@
 import {test} from '../../util/test.js';
-import {default as createFilter, isExpressionFilter} from '../../../src/style-spec/feature_filter/index.js';
+import {default as createFilter, isExpressionFilter, isDynamicFilter, extractStaticFilter} from '../../../src/style-spec/feature_filter/index.js';
 
 import convertFilter from '../../../src/style-spec/feature_filter/convert.js';
 import Point from '@mapbox/point-geometry';
@@ -87,6 +87,946 @@ test('filter', t => {
         t.equal(withinFilter.filter({zoom: 3}, {type: 2, geometry: [[getPointFromLngLat(2, 2, canonical), getPointFromLngLat(3, 3, canonical)]]}, canonical), true);
         t.equal(withinFilter.filter({zoom: 3}, {type: 2, geometry: [[getPointFromLngLat(6, 6, canonical), getPointFromLngLat(2, 2, canonical)]]}, canonical), false);
         t.equal(withinFilter.filter({zoom: 3}, {type: 2, geometry: [[getPointFromLngLat(5, 5, canonical), getPointFromLngLat(2, 2, canonical)]]}, canonical), false);
+        t.end();
+    });
+
+    t.test('dynamic filters', (t) => {
+
+        const DYNAMIC_FILTERS = [
+            ["case",
+                ["<", ["pitch"], 60], true,
+                ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], true,
+                false
+            ],
+            ["case",
+                ["<", ["pitch"], 60], ["<", ["get", "filter_rank"], 2],
+                [">", ["get", "filter_rank"], 4],
+            ],
+            ["all", ["<", ["get", "filter_rank"], 2 ], [ "<", ["pitch"], 60]],
+            ["any", ["<", ["get", "filter_rank"], 2 ], [ "<", ["pitch"], 60]],
+            ["<", ["pitch"], 60],
+            ["all",
+                [
+                    "<=",
+                    ["get", "filterrank"],
+                    3
+                ],
+                [
+                    "match",
+                    ["get", "class"],
+                    "settlement",
+                    [
+                        "match",
+                        ["get", "worldview"],
+                        ["all", "US"],
+                        true,
+                        false
+                    ],
+                    "disputed_settlement",
+                    [
+                        "all",
+                        [
+                            "==",
+                            ["get", "disputed"],
+                            "true"
+                        ],
+                        [
+                            "match",
+                            ["get", "worldview"],
+                            ["all", "US"],
+                            true,
+                            false
+                        ],
+                        ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]]
+                    ],
+                    false
+                ],
+                [
+                    "step",
+                    ["zoom"],
+                    false,
+                    8,
+                    [
+                        "<",
+                        ["get", "symbolrank"],
+                        11
+                    ],
+                    10,
+                    [
+                        "<",
+                        ["get", "symbolrank"],
+                        12
+                    ],
+                    11,
+                    [
+                        "<",
+                        ["get", "symbolrank"],
+                        13
+                    ],
+                    12,
+                    [
+                        "<",
+                        ["get", "symbolrank"],
+                        15
+                    ],
+                    13,
+                    [
+                        ">=",
+                        ["get", "symbolrank"],
+                        11
+                    ],
+                    14,
+                    [
+                        ">=",
+                        ["get", "symbolrank"],
+                        13
+                    ]
+                ]
+            ]
+        ];
+
+        const STATIC_FILTERS = [
+            ["match",
+                ["get", "class"],
+                "country",
+                [
+                    "match",
+                    ["get", "worldview"],
+                    ["all", "US"],
+                    true,
+                    false
+                ],
+                "disputed_country",
+                [
+                    "all",
+                    [
+                        "==",
+                        ["get", "disputed"],
+                        "true"
+                    ],
+                    [
+                        "match",
+                        ["get", "worldview"],
+                        ["all", "US"],
+                        true,
+                        false
+                    ]
+                ],
+                false
+            ],
+            ["all",
+                [
+                    "<=",
+                    ["get", "filterrank"],
+                    3
+                ],
+                [
+                    "match",
+                    ["get", "class"],
+                    "settlement",
+                    [
+                        "match",
+                        ["get", "worldview"],
+                        ["all", "US"],
+                        true,
+                        false
+                    ],
+                    "disputed_settlement",
+                    [
+                        "all",
+                        [
+                            "==",
+                            ["get", "disputed"],
+                            "true"
+                        ],
+                        [
+                            "match",
+                            ["get", "worldview"],
+                            ["all", "US"],
+                            true,
+                            false
+                        ]
+                    ],
+                    false
+                ],
+                [
+                    "step",
+                    ["zoom"],
+                    false,
+                    8,
+                    [
+                        "<",
+                        ["get", "symbolrank"],
+                        11
+                    ],
+                    10,
+                    [
+                        "<",
+                        ["get", "symbolrank"],
+                        12
+                    ],
+                    11,
+                    [
+                        "<",
+                        ["get", "symbolrank"],
+                        13
+                    ],
+                    12,
+                    [
+                        "<",
+                        ["get", "symbolrank"],
+                        15
+                    ],
+                    13,
+                    [
+                        ">=",
+                        ["get", "symbolrank"],
+                        11
+                    ],
+                    14,
+                    [
+                        ">=",
+                        ["get", "symbolrank"],
+                        13
+                    ]
+                ]
+            ],
+            ["all",
+                [
+                    "match",
+                    ["get", "class"],
+                    "settlement_subdivision",
+                    [
+                        "match",
+                        ["get", "worldview"],
+                        ["all", "US"],
+                        true,
+                        false
+                    ],
+                    "disputed_settlement_subdivision",
+                    [
+                        "all",
+                        [
+                            "==",
+                            ["get", "disputed"],
+                            "true"
+                        ],
+                        [
+                            "match",
+                            ["get", "worldview"],
+                            ["all", "US"],
+                            true,
+                            false
+                        ]
+                    ],
+                    false
+                ],
+                [
+                    "<=",
+                    ["get", "filterrank"],
+                    4
+                ]
+            ],
+            ["<=",
+                ["get", "filterrank"],
+                [
+                    "+",
+                    [
+                        "step",
+                        ["zoom"],
+                        0,
+                        16,
+                        1,
+                        17,
+                        2
+                    ],
+                    3
+                ]
+            ],
+            ["<=", ["get", "test_param"], null]
+        ];
+
+        t.test('isDynamicFilter', (t) => {
+            t.test('true', (t) => {
+                for (const filter of DYNAMIC_FILTERS) {
+                    t.ok(isDynamicFilter(filter), `Filter ${JSON.stringify(filter, null, 2)} should be classified as dynamic.`);
+                }
+                t.end();
+            });
+
+            t.test('false', (t) => {
+                for (const filter of STATIC_FILTERS) {
+                    t.notOk(isDynamicFilter(filter), `Filter ${JSON.stringify(filter, null, 2)} should be classified as static.`);
+                }
+                t.end();
+            });
+
+            t.end();
+        });
+
+        t.test('extractStaticFilter', (t) => {
+            t.test('it lets static filters pass through', (t) => {
+                for (const filter of STATIC_FILTERS) {
+                    t.equal(extractStaticFilter(filter), filter);
+                }
+                t.end();
+            });
+
+            t.test('it collapses dynamic case expressions to any expressions', (t) => {
+                const testCases = [
+                    {
+                        dynamic: ["case",
+                            ["<", ["pitch"], 60], true,
+                            ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], true,
+                            false
+                        ],
+                        static: ["any", true, true, false]
+                    },
+                    {
+                        dynamic: ["case",
+                            ["<", ["pitch"], 60], ["<", ["get", "filter_rank"], 2],
+                            [">", ["get", "filter_rank"], 4],
+                        ],
+                        static: ["any", ["<", ["get", "filter_rank"], 2], [">", ["get", "filter_rank"], 4]]
+                    },
+                    {
+                        dynamic: ["case",
+                            ["<", ["pitch"], 60], ["<", ["get", "filter_rank"], 2],
+                            ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], [">", ["get", "filter_rank"], 4],
+                            false
+                        ],
+                        static: ["any", ["<", ["get", "filter_rank"], 2], [">", ["get", "filter_rank"], 4], false]
+                    },
+                    {
+                        dynamic: ["case",
+                            ["<", ["pitch"], 60], ["<", ["get", "filter_rank"], 2],
+                            ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], [">", ["get", "filter_rank"], 4],
+                            ["any", ["==", ["get", "filter_rank"], 2], ["==", ["get", "filter_rank"], 3]]
+                        ],
+                        static: ["any",
+                            ["<", ["get", "filter_rank"], 2],
+                            [">", ["get", "filter_rank"], 4],
+                            ["any", ["==", ["get", "filter_rank"], 2], ["==", ["get", "filter_rank"], 3]]
+                        ]
+                    },
+                    {
+                        dynamic: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                    "match",
+                                    ["get", "worldview"],
+                                    ["all", "US"],
+                                    true,
+                                    false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                    "all",
+                                    [
+                                        "==",
+                                        ["get", "disputed"],
+                                        "true"
+                                    ],
+                                    [
+                                        "case",
+                                        ["<", ["pitch"], 60], ["==", ["get", "worldview"], "US"],
+                                        ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], ["==", ["get", "worldview"], "IND"],
+                                        ["==", ["get", "worldview"], "INTL"]
+                                    ]
+                                ],
+                                false
+                            ],
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                4
+                            ]
+                        ],
+                        static: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                    "match",
+                                    ["get", "worldview"],
+                                    ["all", "US"],
+                                    true,
+                                    false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                    "all",
+                                    [
+                                        "==",
+                                        ["get", "disputed"],
+                                        "true"
+                                    ],
+                                    [
+                                        "any",
+                                        ["==", ["get", "worldview"], "US"],
+                                        ["==", ["get", "worldview"], "IND"],
+                                        ["==", ["get", "worldview"], "INTL"]
+                                    ]
+                                ],
+                                false
+                            ],
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                4
+                            ]
+                        ]
+                    },
+                    {
+                        dynamic: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                    "match",
+                                    ["get", "worldview"],
+                                    ["all", "US"],
+                                    true,
+                                    false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                    "all",
+                                    [
+                                        "==",
+                                        ["get", "disputed"],
+                                        "true"
+                                    ],
+                                    [
+                                        "case",
+                                        ["<", ["pitch"], 60], ["==", ["get", "worldview"], "US"],
+                                        ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], ["==", ["get", "worldview"], "IND"],
+                                        ["==", ["get", "worldview"], "INTL"]
+                                    ]
+                                ],
+                                false
+                            ],
+                            [
+                                "case",
+                                ["<", ["pitch"], 60], ["<", ["get", "filterrank"], 4],
+                                [">=", ["get", "filterrank"], 5]
+                            ]
+                        ],
+                        static: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                    "match",
+                                    ["get", "worldview"],
+                                    ["all", "US"],
+                                    true,
+                                    false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                    "all",
+                                    [
+                                        "==",
+                                        ["get", "disputed"],
+                                        "true"
+                                    ],
+                                    [
+                                        "any",
+                                        ["==", ["get", "worldview"], "US"],
+                                        ["==", ["get", "worldview"], "IND"],
+                                        ["==", ["get", "worldview"], "INTL"]
+                                    ]
+                                ],
+                                false
+                            ],
+                            [
+                                "any",
+                                ["<", ["get", "filterrank"], 4],
+                                [">=", ["get", "filterrank"], 5]
+                            ]
+                        ]
+                    }
+                ];
+
+                for (const testCase of testCases) {
+                    t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                    // Ensure input doesnt get mutated
+                    t.deepInequal(testCase.dynamic, testCase.static);
+                }
+
+                t.end();
+            });
+
+            t.test('it collapses dynamic match expressions to any expressions', (t) => {
+                const testCases = [
+                    {
+                        dynamic: ["match",
+                            ["pitch"],
+                            [10, 20, 30], [ "<", ["get", "filterrank"], 2],
+                            [70, 80], [ ">", ["get", "filterrank"], 5],
+                            ["all", [ ">", ["get", "filterrank"], 2], [ "<", ["get", "filterrank"], 5]]
+                        ],
+                        static: ["any",
+                            [ "<", ["get", "filterrank"], 2],
+                            [ ">", ["get", "filterrank"], 5],
+                            ["all", [ ">", ["get", "filterrank"], 2], [ "<", ["get", "filterrank"], 5]]
+                        ]
+                    },
+                    {
+                        dynamic: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                    "match",
+                                    ["get", "worldview"],
+                                    ["all", "US"],
+                                    true,
+                                    false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                    "all",
+                                    [
+                                        "match",
+                                        ["distance-from-center"],
+                                        [1, 2], ["==", ["get", "worldview"], "US"],
+                                        [4, 5], ["==", ["get", "worldview"], "IND"],
+                                        ["==", ["get", "worldview"], "INTL"]
+                                    ],
+                                    [
+                                        "case",
+                                        ["<", ["pitch"], 60], ["==", ["get", "worldview"], "US"],
+                                        ["all", [">=", ["pitch"], 60], ["<", ["distance-from-center"], 2]], ["==", ["get", "worldview"], "IND"],
+                                        ["==", ["get", "worldview"], "INTL"]
+                                    ]
+                                ],
+                                false
+                            ],
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                4
+                            ]
+                        ],
+                        static: ["all",
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement_subdivision",
+                                [
+                                    "match",
+                                    ["get", "worldview"],
+                                    ["all", "US"],
+                                    true,
+                                    false
+                                ],
+                                "disputed_settlement_subdivision",
+                                [
+                                    "all",
+                                    [
+                                        "any",
+                                        ["==", ["get", "worldview"], "US"],
+                                        ["==", ["get", "worldview"], "IND"],
+                                        ["==", ["get", "worldview"], "INTL"]
+                                    ],
+                                    [
+                                        "any",
+                                        ["==", ["get", "worldview"], "US"],
+                                        ["==", ["get", "worldview"], "IND"],
+                                        ["==", ["get", "worldview"], "INTL"]
+                                    ]
+                                ],
+                                false
+                            ],
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                4
+                            ]
+                        ]
+                    }
+                ];
+
+                for (const testCase of testCases) {
+                    t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                    // Ensure input doesnt get mutated
+                    t.deepInequal(testCase.dynamic, testCase.static);
+                }
+
+                t.end();
+            });
+
+            t.test('it collapses dynamic step expressions to any expressions', (t) => {
+                const testCases = [
+                    {
+                        dynamic: [
+                            "all",
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                3
+                            ],
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement",
+                                [
+                                    "match",
+                                    ["get", "worldview"],
+                                    ["all", "US"],
+                                    true,
+                                    false
+                                ],
+                                "disputed_settlement",
+                                [
+                                    "all",
+                                    [
+                                        "==",
+                                        ["get", "disputed"],
+                                        "true"
+                                    ],
+                                    [
+                                        "match",
+                                        ["get", "worldview"],
+                                        ["all", "US"],
+                                        true,
+                                        false
+                                    ]
+                                ],
+                                false
+                            ],
+                            [
+                                "step",
+                                ["pitch"],
+                                true,
+                                10,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    10
+                                ],
+                                20,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    20
+                                ],
+                                30,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    30
+                                ],
+                                40,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    40
+                                ],
+                                50,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    50
+                                ],
+                                60,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    60
+                                ]
+                            ]
+                        ],
+                        static: [
+                            "all",
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                3
+                            ],
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement",
+                                [
+                                    "match",
+                                    ["get", "worldview"],
+                                    ["all", "US"],
+                                    true,
+                                    false
+                                ],
+                                "disputed_settlement",
+                                [
+                                    "all",
+                                    [
+                                        "==",
+                                        ["get", "disputed"],
+                                        "true"
+                                    ],
+                                    [
+                                        "match",
+                                        ["get", "worldview"],
+                                        ["all", "US"],
+                                        true,
+                                        false
+                                    ]
+                                ],
+                                false
+                            ],
+                            [
+                                "any",
+                                true,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    10
+                                ],
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    20
+                                ],
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    30
+                                ],
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    40
+                                ],
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    50
+                                ],
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    60
+                                ]
+                            ]
+                        ]
+                    }
+                ];
+
+                for (const testCase of testCases) {
+                    t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                    // Ensure input doesnt get mutated
+                    t.deepInequal(testCase.dynamic, testCase.static);
+                }
+
+                t.end();
+
+            });
+
+            t.test('it collapses dynamic conditionals to true', (t) => {
+                const testCases = [
+                    {
+                        dynamic: ["<", ["pitch"], 60],
+                        static: true
+                    },
+                    {
+                        dynamic: ["all", ["<", ["pitch"], 60], ["<", ["distance-from-center"], 4]],
+                        static: ["all", true, true]
+                    },
+                    {
+                        dynamic: ["all", ["<", ["+", ["*", ["pitch"], 2], 5], 60], ["<", ["+", ["distance-from-center"], 1], 4]],
+                        static: ["all", true, true]
+                    },
+                    {
+                        dynamic: [
+                            "all",
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                3
+                            ],
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement",
+                                [
+                                    "match",
+                                    ["get", "worldview"],
+                                    ["all", "US"],
+                                    true,
+                                    false
+                                ],
+                                "disputed_settlement",
+                                [
+                                    "all",
+                                    [
+                                        "==",
+                                        ["get", "disputed"],
+                                        "true"
+                                    ],
+                                    [
+                                        "match",
+                                        ["get", "worldview"],
+                                        ["all", "US"],
+                                        true,
+                                        false
+                                    ]
+                                ],
+                                false
+                            ],
+                            [
+                                "step",
+                                ["zoom"],
+                                true,
+                                8,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    11
+                                ],
+                                10,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    12
+                                ],
+                                11,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    13
+                                ],
+                                12,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    15
+                                ],
+                                13,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    11
+                                ],
+                                14,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    13
+                                ]
+                            ],
+                            [
+                                "<=",
+                                ["pitch"],
+                                60
+                            ],
+                            [
+                                "<=",
+                                ["distance-from-center"],
+                                2
+                            ]
+                        ],
+                        static: [
+                            "all",
+                            [
+                                "<=",
+                                ["get", "filterrank"],
+                                3
+                            ],
+                            [
+                                "match",
+                                ["get", "class"],
+                                "settlement",
+                                [
+                                    "match",
+                                    ["get", "worldview"],
+                                    ["all", "US"],
+                                    true,
+                                    false
+                                ],
+                                "disputed_settlement",
+                                [
+                                    "all",
+                                    [
+                                        "==",
+                                        ["get", "disputed"],
+                                        "true"
+                                    ],
+                                    [
+                                        "match",
+                                        ["get", "worldview"],
+                                        ["all", "US"],
+                                        true,
+                                        false
+                                    ]
+                                ],
+                                false
+                            ],
+                            [
+                                "step",
+                                ["zoom"],
+                                true,
+                                8,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    11
+                                ],
+                                10,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    12
+                                ],
+                                11,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    13
+                                ],
+                                12,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    15
+                                ],
+                                13,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    11
+                                ],
+                                14,
+                                [
+                                    ">=",
+                                    ["get", "symbolrank"],
+                                    13
+                                ]
+                            ],
+                            true,
+                            true
+                        ]
+                    }
+                ];
+                for (const testCase of testCases) {
+                    t.deepEqual(extractStaticFilter(testCase.dynamic), testCase.static);
+                    // Ensure input doesnt get mutated
+                    t.deepInequal(testCase.dynamic, testCase.static);
+                }
+
+                t.end();
+            });
+
+            t.end();
+        });
+
         t.end();
     });
 

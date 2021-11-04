@@ -66,7 +66,8 @@ import type {
     LightSpecification,
     SourceSpecification,
     TerrainSpecification,
-    FogSpecification
+    FogSpecification,
+    ProjectionSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator} from './validate_style.js';
@@ -86,7 +87,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setTransition',
     'setGeoJSONSourceData',
     'setTerrain',
-    'setFog'
+    'setFog',
+    'setProjection'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -296,6 +298,8 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = json;
 
+        this.updateProjection();
+
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
         }
@@ -322,6 +326,7 @@ class Style extends Evented {
             this._serializedLayers[layer.id] = layer.serialize();
             this._updateLayerCount(layer, true);
         }
+
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
@@ -335,6 +340,30 @@ class Style extends Evented {
 
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
+    }
+
+    setProjection(projection?: ?ProjectionSpecification) {
+        if (projection) {
+            this.stylesheet.projection = projection;
+        } else {
+            delete this.stylesheet.projection;
+        }
+        this.updateProjection();
+    }
+
+    updateProjection() {
+        const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
+
+        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
+
+        if (!projectionChanged) return;
+
+        this.map.painter.clearBackgroundTiles();
+        for (const id in this._sourceCaches) {
+            this._sourceCaches[id].clearTiles();
+        }
+
+        this.map._update(true);
     }
 
     _loadSprite(url: string) {
@@ -652,10 +681,9 @@ class Style extends Evented {
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
-    listImages() {
+    listImages(): Array<string> {
         this._checkLoaded();
-
-        return this.imageManager.listImages();
+        return this._availableImages.slice();
     }
 
     addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}) {
@@ -891,7 +919,7 @@ class Style extends Evented {
      * If no such layer exists, an `error` event is fired.
      *
      * @param {string} id ID of the layer to remove.
-     * @fires error
+     * @fires Map.event:error
      */
     removeLayer(id: string) {
         this._checkLoaded();
@@ -999,7 +1027,7 @@ class Style extends Evented {
             return;
         }
 
-        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, null, options)) {
+        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, {layerType: layer.type}, options)) {
             return;
         }
 
@@ -1178,6 +1206,7 @@ class Style extends Evented {
             sprite: this.stylesheet.sprite,
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
+            projection: this.stylesheet.projection,
             sources,
             layers: this._serializeLayers(this._order)
         }, (value) => { return value !== undefined; });
@@ -1194,6 +1223,8 @@ class Style extends Evented {
             sourceCache.pause();
         }
         this._changed = true;
+        layer.invalidateCompiledFilter();
+
     }
 
     _flattenAndSortRenderedFeatures(sourceResults: Array<any>) {
@@ -1447,7 +1478,7 @@ class Style extends Evented {
     }
 
     _createFog(fogOptions: FogSpecification) {
-        const fog = this.fog = new Fog(fogOptions);
+        const fog = this.fog = new Fog(fogOptions, this.map.transform);
         this.stylesheet.fog = fogOptions;
         const parameters = {
             now: browser.now(),
@@ -1762,6 +1793,10 @@ class Style extends Evented {
 
     hasCircleLayers(): boolean {
         return this._numCircleLayers > 0;
+    }
+
+    clearWorkerCaches() {
+        this.dispatcher.broadcast('clearCaches');
     }
 }
 

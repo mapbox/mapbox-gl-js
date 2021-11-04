@@ -3,6 +3,7 @@ import GeoJSONWorkerSource from '../../../src/source/geojson_worker_source.js';
 import StyleLayerIndex from '../../../src/style/style_layer_index.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import perf from '../../../src/util/performance.js';
+import {getProjection} from '../../../src/geo/projection/index.js';
 
 const actor = {send: () => {}};
 
@@ -34,7 +35,8 @@ test('reloadTile', (t) => {
             source: 'sourceId',
             uid: 0,
             tileID: new OverscaledTileID(0, 0, 0, 0, 0),
-            maxZoom: 10
+            maxZoom: 10,
+            projection: getProjection({name: 'mercator'})
         };
 
         function addData(callback) {
