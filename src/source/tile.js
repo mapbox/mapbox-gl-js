@@ -535,27 +535,9 @@ class Tile {
             if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
 
             bucket.update(sourceLayerStates, sourceLayer, availableImages, this.imageAtlas && this.imageAtlas.patternPositions || {});
-<<<<<<< HEAD
-<<<<<<< HEAD
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {
-=======
-            if (painter._terrain && painter._terrain.enabled && bucket.programConfigurations && bucket.programConfigurations.needsUpload) {
-                const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
-                if (sourceCache && painter._terrain) { // Always happens, just making Flow happy
->>>>>>> b4cdedff6 (Changed approach to directly clear render cache from Tile)
-=======
-            if (painter._terrain && painter._terrain.enabled &&
-                (bucket instanceof LineBucket ||
-                bucket instanceof FillBucket ||
-                bucket instanceof FillExtrusionBucket ||
-                bucket instanceof CircleBucket)
-                // Symbol bucket has no programConfigurations. This has to be spelled out for Flow.
-            ) {
-                const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
-                if (sourceCache && painter._terrain && bucket.programConfigurations.needsUpload) {
->>>>>>> a47ab0661 (Fix flow errors)
                     painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);
                 }
             }
