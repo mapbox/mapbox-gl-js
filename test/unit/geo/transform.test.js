@@ -1097,7 +1097,7 @@ test('transform', (t) => {
 
     t.test('isHorizonVisible', (t) => {
 
-        t.test('isCornerOffEdge', (t) => {
+        t.test('anyCornerOffEdge', (t) => {
             const transform = new Transform();
             transform.maxPitch = 85;
             transform.resize(800, 800);
@@ -1109,21 +1109,21 @@ test('transform', (t) => {
             t.true(transform.isHorizonVisible());
 
             p0 = new Point(0, 0); p1 = new Point(10, 10);
-            t.true(transform.isCornerOffEdge(p0, p1));
+            t.true(transform.anyCornerOffEdge(p0, p1));
 
             p0 = new Point(0, 250); p1 = new Point(10, 350);
-            t.true(transform.isCornerOffEdge(p0, p1));
+            t.true(transform.anyCornerOffEdge(p0, p1));
 
             p0 = new Point(0, transform.horizonLineFromTop() - 10);
             p1 = new Point(10, transform.horizonLineFromTop() + 10);
-            t.true(transform.isCornerOffEdge(p0, p1));
+            t.true(transform.anyCornerOffEdge(p0, p1));
 
             p0 = new Point(0, 700); p1 = new Point(10, 710);
-            t.false(transform.isCornerOffEdge(p0, p1));
+            t.false(transform.anyCornerOffEdge(p0, p1));
 
             p0 = new Point(0, transform.horizonLineFromTop());
             p1 = new Point(10, transform.horizonLineFromTop() + 10);
-            t.false(transform.isCornerOffEdge(p0, p1));
+            t.false(transform.anyCornerOffEdge(p0, p1));
 
             t.end();
         });
