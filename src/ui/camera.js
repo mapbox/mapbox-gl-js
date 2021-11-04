@@ -989,6 +989,8 @@ class Camera extends Evented {
     /**
      * Returns position and orientation of the camera entity.
      *
+     * This method is not supported for projections other than mercator.
+     *
      * @memberof Map#
      * @returns {FreeCameraOptions} The camera state.
      * @example
@@ -1016,6 +1018,8 @@ class Camera extends Evented {
      * if the conversion to the pitch and bearing presentation is ambiguous. For example orientation
      * can be invalid if it leads to the camera being upside down, the quaternion has zero length,
      * or the pitch is over the maximum pitch limit.
+     *
+     * This method is not supported for projections other than mercator.
      *
      * @memberof Map#
      * @param {FreeCameraOptions} options `FreeCameraOptions` object.
