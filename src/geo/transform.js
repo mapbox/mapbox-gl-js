@@ -851,7 +851,7 @@ class Transform {
             }
 
             let tileScaleAdjustment = 1;
-            if (actualZ <= 5) {
+            if (!isMercator && actualZ <= 5) {
                 // In other projections, not all tiles are the same size.
                 // Account for the tile size difference by adjusting the distToSplit.
                 // Adjust by the ratio of the area at the tile center to the area at the map center.
