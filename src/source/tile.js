@@ -29,6 +29,8 @@ import SegmentVector from '../data/segment.js';
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
 import type {Bucket} from '../data/bucket.js';
+import FillBucket from '../data/bucket/fill_bucket.js';
+import LineBucket from '../data/bucket/line_bucket.js';
 import type StyleLayer from '../style/style_layer.js';
 import type {WorkerTileResult} from './worker_source.js';
 import type Actor from '../util/actor.js';
@@ -527,6 +529,12 @@ class Tile {
             if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
 
             bucket.update(sourceLayerStates, sourceLayer, availableImages, this.imageAtlas && this.imageAtlas.patternPositions || {});
+            if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
+                const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
+                if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {
+                    painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);
+                }
+            }
             const layer = painter && painter.style && painter.style.getLayer(id);
             if (layer) {
                 this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket));
