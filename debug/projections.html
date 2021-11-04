@@ -103,10 +103,7 @@ function makeMap() {
     const style = styles[styleName];
 
     map = new mapboxgl.Map({
-        projection: {
-            name: 'albers',
-            parallels: [10, -10]
-        },
+        projection,
         container: 'map',
         zoom,
         center,

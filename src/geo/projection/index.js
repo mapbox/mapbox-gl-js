@@ -33,10 +33,18 @@ const projections = {
 
 function getConicProjection(projection: Projection, config: ProjectionSpecification) {
     if (config.parallels) {
-        if (config.parallels[0] + config.parallels[1] === 0) {
-            if (config.name === 'lambertConformalConic') return projections['mercator'];
-            const center = config.center || projection.center;
-            return {...projection, ...config, ...cylindricalEqualArea(config.parallels[0])};
+        // parallels that are equal but with opposite signs (e.g. [10, -10])
+        // create a cylindrical projection so we replace the
+        // project and unproject functions with equivalent cylindrical versions
+        if (Math.abs(config.parallels[0] + config.parallels[1]) < 0.01) {
+            let cylindricalFunctions = cylindricalEqualArea((config: any).parallels[0]);
+
+            if (config.name === 'lambertConformalConic') {
+                const {project, unproject} = projections['mercator'];
+                cylindricalFunctions = {wrap: true, project, unproject};
+            }
+
+            return {...projection, ...config, ...cylindricalFunctions};
         }
     }
 

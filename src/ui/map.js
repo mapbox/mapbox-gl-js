@@ -270,7 +270,7 @@ const defaultOptions = {
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
  * @param {ProjectionSpecification} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers ('albers'), Equal Earth ('equalEarth'), Equirectangular/Plate Carrée/WGS84 ('equirectangular'), Lambert ('lambertConformalConic'), Mercator ('mercator'), Natural Earth ('naturalEarth'), and Winkel Tripel ('winkelTripel').
- *  conic projections such as Albers and Lambert have configurable `center` and `parallels` properties that allow developers to define the region in which the projection has minimal distortion; see the example for how to configure these properties.
+ *  Conic projections such as Albers and Lambert have configurable `center` and `parallels` properties that allow developers to define the region in which the projection has minimal distortion; see the example for how to configure these properties.
  * @example
  * const map = new mapboxgl.Map({
  *     container: 'map', // container ID

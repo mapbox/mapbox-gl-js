@@ -2,12 +2,13 @@
 import LngLat from '../lng_lat.js';
 import {clamp, degToRad, radToDeg} from '../../util/util.js';
 
-export default function(phi) {
+export default function(phi: number) {
     const cosPhi = Math.cos(degToRad(phi));
+    // scale coordinates between 0 and 1 to avoid constraint issues
     const scale = 1 / (2 * Math.max(Math.PI * cosPhi, 1 / cosPhi));
 
     return {
-        // wrap: true,
+        wrap: true,
         project(lng: number, lat: number) {
             const x = degToRad(lng) * cosPhi;
             const y = Math.sin(degToRad(lat)) / cosPhi;
