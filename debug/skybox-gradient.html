@@ -55,7 +55,16 @@ map.on('load', function() {
                 'rgba(0,0,0,0.1)'
             ],
             'sky-gradient-center': [0, 0],
-            'sky-gradient-radius': 90
+            'sky-gradient-radius': 90,
+            'sky-opacity': [
+                'interpolate',
+                ['exponential', 0.1],
+                ['zoom'],
+                5,
+                0,
+                22,
+                1
+            ]
         }
     });
 });
