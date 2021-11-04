@@ -1915,7 +1915,8 @@ class Transform {
     }
 
     // Check if any of the four corners are off the edge of the rendered map
-    isCornerOffEdge(p0: Point, p1: Point): boolean {
+    // This function will return `false` for all non-mercator projection
+    anyCornerOffEdge(p0: Point, p1: Point): boolean {
         const minX = Math.min(p0.x, p1.x);
         const maxX = Math.max(p0.x, p1.x);
         const minY = Math.min(p0.y, p1.y);
@@ -1923,6 +1924,10 @@ class Transform {
 
         const horizon = this.horizonLineFromTop(false);
         if (minY < horizon) return true;
+
+        if (this.projection.name !== 'mercator') {
+            return false;
+        }
 
         const min = new Point(minX, minY);
         const max = new Point(maxX, maxY);
@@ -1958,6 +1963,7 @@ class Transform {
     // Checks the four corners of the frustum to see if they lie in the map's quad.
     //
     isHorizonVisible(): boolean {
+
         // we consider the horizon as visible if the angle between
         // a the top plane of the frustum and the map plane is smaller than this threshold.
         const horizonAngleEpsilon = 2;
@@ -1965,7 +1971,7 @@ class Transform {
             return true;
         }
 
-        return this.isCornerOffEdge(new Point(0, 0), new Point(this.width, this.height));
+        return this.anyCornerOffEdge(new Point(0, 0), new Point(this.width, this.height));
     }
 
     /**
