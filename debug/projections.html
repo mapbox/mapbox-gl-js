@@ -208,8 +208,8 @@ for (const [input, value] of inputs) {
         value.textContent = e.target.value;
         map.setProjection({
             name: projectionInput.value,
-            center: [lngInput.value, latInput.value],
-            parallels: [lat1Input.value, lat2Input.value]
+            center: [Number(lngInput.value), Number(latInput.value)],
+            parallels: [Number(lat1Input.value), Number(lat2Input.value)]
         });
     });
 }
