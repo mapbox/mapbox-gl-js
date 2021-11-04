@@ -116,7 +116,7 @@ function prepareHillshade(painter, tile, layer, depthMode, stencilMode, colorMod
     context.bindFramebuffer.set(fbo.framebuffer);
     context.viewport.set([0, 0, tileSize, tileSize]);
 
-    const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
+    const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getMercatorTileBoundsBuffers();
 
     painter.useProgram('hillshadePrepare').draw(context, gl.TRIANGLES,
         depthMode, stencilMode, colorMode, CullFaceMode.disabled,
