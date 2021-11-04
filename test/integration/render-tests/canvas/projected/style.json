@@ -1,0 +1,65 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "operations": [
+        ["setProjection", "albers"],
+        ["wait"]
+      ],
+      "addFakeCanvas": {
+          "id": "fake-canvas",
+          "image": "./image/0.png"
+      }
+    }
+  },
+  "zoom": 3,
+  "sources": {
+    "canvas": {
+      "type": "canvas",
+      "coordinates": [
+        [
+          -10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          -10
+        ],
+        [
+          -10,
+          -10
+        ]
+      ],
+      "canvas": "fake-canvas"
+    },
+    "graticule": {
+      "type": "geojson",
+      "data": "local://data/graticule.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "canvas",
+      "type": "raster",
+      "source": "canvas",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "graticule",
+      "source": "graticule",
+      "type": "line",
+      "paint": {
+          "line-width": 1,
+          "line-color": "#aaa"
+      }
+    }
+  ]
+}
