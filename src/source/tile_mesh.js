@@ -62,14 +62,25 @@ type TileMesh = {
     indices: TriangleIndexArray
 };
 
+// There can be visible seams between neighbouring tiles because of precision issues
+// and resampling differences. Adding a bit of padding around the edges of tiles hides
+// most of these issues.
+const commonRasterTileSize = 256;
+const paddingSize = meshSize / commonRasterTileSize / 4;
+function seamPadding(n) {
+    if (n === 0) return -paddingSize;
+    else if (n === gridSize - 1) return paddingSize;
+    else return 0;
+}
+
 export default function getTileMesh(canonical: CanonicalTileID, projection: Projection): TileMesh {
     const cs = tileTransform(canonical, projection);
     const z2 = Math.pow(2, canonical.z);
 
     for (let y = 0; y < gridSize; y++) {
         for (let x = 0; x < gridSize; x++) {
-            const lng = lngFromMercatorX((canonical.x + x / meshSize) / z2);
-            const lat = latFromMercatorY((canonical.y + y / meshSize) / z2);
+            const lng = lngFromMercatorX((canonical.x + (x + seamPadding(x)) / meshSize) / z2);
+            const lat = latFromMercatorY((canonical.y + (y + seamPadding(y)) / meshSize) / z2);
             const p = projection.project(lng, lat);
             const k = y * gridSize + x;
             reprojectedCoords[2 * k + 0] = Math.round((p.x * cs.scale - cs.x) * EXTENT);
