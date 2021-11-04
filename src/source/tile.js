@@ -29,13 +29,7 @@ import SegmentVector from '../data/segment.js';
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
 import type {Bucket} from '../data/bucket.js';
-<<<<<<< HEAD
 import FillBucket from '../data/bucket/fill_bucket.js';
-=======
-import CircleBucket from '../data/bucket/circle_bucket.js';
-import FillBucket from '../data/bucket/fill_bucket.js';
-import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
->>>>>>> a47ab0661 (Fix flow errors)
 import LineBucket from '../data/bucket/line_bucket.js';
 import type StyleLayer from '../style/style_layer.js';
 import type {WorkerTileResult} from './worker_source.js';
