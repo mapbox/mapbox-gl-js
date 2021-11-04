@@ -280,6 +280,14 @@ class Painter {
         this.loadTimeStamps.push(window.performance.now());
     }
 
+    getMercatorTileBoundsBuffers() {
+        return {
+            tileBoundsBuffer: this.mercatorBoundsBuffer,
+            tileBoundsIndexBuffer: this.quadTriangleIndexBuffer,
+            tileBoundsSegments: this.mercatorBoundsSegments
+        };
+    }
+
     getTileBoundsBuffers(tile: Tile) {
         let tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments;
         tile._makeTileBoundsBuffers(this.context, this.transform.projection);

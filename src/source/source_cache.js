@@ -738,7 +738,7 @@ class SourceCache extends Evented {
         const cached = Boolean(tile);
         if (!cached) {
             const painter = this.map ? this.map.painter : null;
-            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._source.type === 'raster');
+            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._source.type === 'raster' || this._source.type === 'raster-dem');
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
