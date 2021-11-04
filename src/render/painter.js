@@ -289,19 +289,16 @@ class Painter {
     }
 
     getTileBoundsBuffers(tile: Tile) {
-        let tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments;
         tile._makeTileBoundsBuffers(this.context, this.transform.projection);
         if (tile._tileBoundsBuffer) {
-            tileBoundsBuffer = tile._tileBoundsBuffer;
-            tileBoundsIndexBuffer = tile._tileBoundsIndexBuffer;
-            tileBoundsSegments = tile._tileBoundsSegments;
+            const tileBoundsBuffer = tile._tileBoundsBuffer;
+            const tileBoundsIndexBuffer = tile._tileBoundsIndexBuffer;
+            const tileBoundsSegments = tile._tileBoundsSegments;
+            return {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments};
         } else {
-            tileBoundsBuffer = this.mercatorBoundsBuffer;
-            tileBoundsIndexBuffer = this.quadTriangleIndexBuffer;
-            tileBoundsSegments = this.mercatorBoundsSegments;
+            return this.getMercatorTileBoundsBuffers();
         }
 
-        return {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments};
     }
 
     /*
