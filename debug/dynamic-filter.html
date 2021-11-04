@@ -176,7 +176,7 @@ map.once('load', () => {
         ['>=', ['distance-from-center'], 2]
     ];
 
-    map.loadImage('./leader_line_s.png', (err, img) => {
+    map.loadImage('./leader_line_s.png', (_, img) => {
         map.addImage('leader_line', img);
         const poiFarLayer = JSON.parse(JSON.stringify(poiLayer));
         poiFarLayer.id = 'poi-label-elevated';
@@ -189,7 +189,7 @@ map.once('load', () => {
         poiFarLayer.layout['icon-anchor'] = 'bottom';
         poiFarLayer.layout['icon-size'] = 1;
         poiFarLayer.layout['text-anchor'] = 'bottom';
-        poiFarLayer.layout['text-field'] = ['format', ['image', ['concat', ['get', 'maki'], '-11']], {}, '\n', {}, poiLayer.layout['text-field'], {}]
+        poiFarLayer.layout['text-field'] = ['format', ['image', ['concat', ['get', 'maki'], '-11']], {}, '\n', {}, poiLayer.layout['text-field'], {}];
         poiFarLayer.layout['text-offset'] = [
             "step",
             ["zoom"],
@@ -208,11 +208,10 @@ map.once('load', () => {
                 13,
                 ["literal", [0, -9.75]]
             ]
-            ];
-
+        ];
 
         map.addLayer(poiFarLayer, 'poi-label');
-    })
+    });
 
     map.on('idle', () => {
         if (showScales) {
