@@ -16,7 +16,7 @@ export default {
     center: [0, 30],
     parallels: [30, 30],
 
-    conical: true,
+    conic: true,
 
     initializeConstants() {
         if (this.constants && vec2.exactEquals(this.parallels, this.constants.parallels)) {

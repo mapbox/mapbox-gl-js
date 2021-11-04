@@ -1366,6 +1366,20 @@ test('Map', (t) => {
             });
             t.end();
         });
+
+        t.test('returns conic projections when cylindrical functions are used', (t) => {
+            let options = {
+                name: 'albers',
+                center: [12, 34],
+                parallels: [40, -40]
+            };
+            const map = createMap(t, {projection: options});
+            t.deepEqual(map.getProjection(), options);
+            options = {name: 'lambertConformalConic', center: [20, 25], parallels: [30, -30]};
+            map.setProjection(options);
+            t.deepEqual(map.getProjection(), options);
+            t.end();
+        });
         t.end();
     });
 
