@@ -10,7 +10,7 @@ export default {
     center: [-96, 37.5],
     parallels: [29.5, 45.5],
 
-    conical: true,
+    conic: true,
 
     initializeConstants() {
         if (this.constants && vec2.exactEquals(this.parallels, this.constants.parallels)) {
@@ -52,7 +52,6 @@ export default {
         const a = x_ / Math.sin(theta);
         const s = clamp((Math.pow(a / 0.5 * n, 2) - c) / (-2 * n), -1, 1);
         const lat = clamp(radToDeg(Math.asin(s)), -90, 90);
-
         return new LngLat(lng, lat);
     }
 };
