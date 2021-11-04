@@ -269,10 +269,11 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const setShaderMode = (mode, isWireframe) => {
         if (programMode === mode)
             return;
-        const defines = [shaderDefines[mode]];
+        const defines = ([]: any);
         if (isWireframe) {
             defines.push(shaderDefines[showWireframe]);
         }
+        defines.push(shaderDefines[mode]);
         defines.push('PROJECTION_GLOBE_VIEW');
         program = painter.useProgram('globeRaster', null, defines);
         programMode = mode;
