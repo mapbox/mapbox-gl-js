@@ -19,15 +19,15 @@ import assert from 'assert';
 
 export default drawSky;
 
-const OPACITY_ZOOM_START = 7;
-const OPACITY_ZOOM_END = 8;
+const TRANSITION_OPACITY_ZOOM_START = 7;
+const TRANSITION_OPACITY_ZOOM_END = 8;
 
 function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
     const tr = painter.transform;
     const isMercator = tr.projection.name === 'mercator';
     // For non-mercator projection, use a forced opacity transition. This transition is set to be
     // 1.0 after the sheer adjustment upper bound which ensures to be in the mercator projection.
-    const transitionOpacity = isMercator ? 1.0 : smoothstep(OPACITY_ZOOM_START, OPACITY_ZOOM_END, tr.zoom);
+    const transitionOpacity = isMercator ? 1.0 : smoothstep(TRANSITION_OPACITY_ZOOM_START, TRANSITION_OPACITY_ZOOM_END, tr.zoom);
     const opacity = layer.paint.get('sky-opacity') * transitionOpacity;
     if (opacity === 0) {
         return;
