@@ -1,6 +1,7 @@
 // @flow
 import LngLat from '../lng_lat.js';
 import {clamp, degToRad, radToDeg} from '../../util/util.js';
+import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 import {vec2} from 'gl-matrix';
 
 const halfPi = Math.PI / 2;
@@ -73,7 +74,8 @@ export default {
         if (fy * n < 0) l -= Math.PI * Math.sign(x) * signFy;
 
         const lng = clamp(radToDeg(l / n), -180, 180);
-        const lat = clamp(radToDeg(2 * Math.atan(Math.pow(f / r, 1 / n)) - halfPi), -90, 90);
+        const phi = 2 * Math.atan(Math.pow(f / r, 1 / n)) - halfPi;
+        const lat = clamp(radToDeg(phi), -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
 
         return new LngLat(lng, lat);
     }

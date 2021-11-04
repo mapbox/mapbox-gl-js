@@ -1,6 +1,7 @@
 // @flow
 import LngLat from '../lng_lat.js';
 import {clamp, degToRad, radToDeg} from '../../util/util.js';
+import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 
 export default function(phi: number) {
     const cosPhi = Math.cos(degToRad(phi));
@@ -24,7 +25,7 @@ export default function(phi: number) {
             const lng = clamp(radToDeg(x_) / cosPhi, -180, 180);
             const y2 = y_ * cosPhi;
             const y3 = Math.asin(clamp(y2, -1, 1));
-            const lat = clamp(radToDeg(y3), -90, 90);
+            const lat = clamp(radToDeg(y3), -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
 
             return new LngLat(lng, lat);
         }

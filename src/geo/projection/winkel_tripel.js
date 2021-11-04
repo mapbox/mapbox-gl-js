@@ -1,6 +1,9 @@
 // @flow
 import LngLat from '../lng_lat.js';
 import {clamp, degToRad, radToDeg} from '../../util/util.js';
+import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
+
+const maxPhi = degToRad(MAX_MERCATOR_LATITUDE);
 
 export default {
     name: 'winkelTripel',
@@ -54,13 +57,11 @@ export default {
 
             dlambda = (fy * dxdphi - fx * dydphi) / denominator;
             dphi = (fx * dydlambda - fy * dxdlambda) / denominator;
-            lambda -= dlambda;
-            phi -= dphi;
+            lambda = clamp(lambda - dlambda, -Math.PI, Math.PI);
+            phi = clamp(phi - dphi, -maxPhi, maxPhi);
+
         } while ((Math.abs(dlambda) > epsilon || Math.abs(dphi) > epsilon) && --i > 0);
 
-        const lng = clamp(radToDeg(lambda), -180, 180);
-        const lat = clamp(radToDeg(phi), -90, 90);
-
-        return new LngLat(lng, lat);
+        return new LngLat(radToDeg(lambda), radToDeg(phi));
     }
 };

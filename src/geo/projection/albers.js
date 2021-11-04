@@ -1,6 +1,7 @@
 // @flow
 import LngLat from '../lng_lat.js';
-import {clamp, degToRad, radToDeg} from '../../util/util.js';
+import {clamp, wrap, degToRad, radToDeg} from '../../util/util.js';
+import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 import {vec2} from 'gl-matrix';
 
 export default {
@@ -47,11 +48,12 @@ export default {
         const x_ = (x - 1) * 2;
         const y_ = (y - 1) * -2;
         const y2 = -(y_ - b);
-        const theta = Math.atan2(x_, y2);
-        const lng = clamp(radToDeg(theta / n) + this.center[0], -180, 180);
+        const dt = degToRad(this.center[0]) * n;
+        const theta = wrap(Math.atan2(x_, y2), -Math.PI - dt, Math.PI - dt);
+        const lng = radToDeg(theta / n) + this.center[0];
         const a = x_ / Math.sin(theta);
         const s = clamp((Math.pow(a / 0.5 * n, 2) - c) / (-2 * n), -1, 1);
-        const lat = clamp(radToDeg(Math.asin(s)), -90, 90);
+        const lat = clamp(radToDeg(Math.asin(s)), -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
         return new LngLat(lng, lat);
     }
 };
