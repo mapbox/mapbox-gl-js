@@ -1,6 +1,9 @@
 // @flow
 import LngLat from '../lng_lat.js';
 import {clamp, degToRad, radToDeg} from '../../util/util.js';
+import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
+
+const maxPhi = degToRad(MAX_MERCATOR_LATITUDE);
 
 export default {
     name: 'naturalEarth',
@@ -36,15 +39,16 @@ export default {
         do {
             phi2 = phi * phi;
             const phi4 = phi2 * phi2;
-            phi -= delta = (phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4))) - y) /
+            delta = (phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4))) - y) /
                 (1.007226 + phi2 * (0.015085 * 3 + phi4 * (-0.044475 * 7 + 0.028874 * 9 * phi2 - 0.005916 * 11 * phi4)));
+            phi = clamp(phi - delta, -maxPhi, maxPhi);
         } while (Math.abs(delta) > epsilon && --i > 0);
 
         phi2 = phi * phi;
         const lambda = x / (0.8707 + phi2 * (-0.131979 + phi2 * (-0.013791 + phi2 * phi2 * phi2 * (0.003971 - 0.001529 * phi2))));
 
         const lng = clamp(radToDeg(lambda), -180, 180);
-        const lat = clamp(radToDeg(phi), -90, 90);
+        const lat = radToDeg(phi);
 
         return new LngLat(lng, lat);
     }

@@ -94,6 +94,10 @@ class Transform {
 
     inverseAdjustmentMatrix: Array<number>;
 
+    minLng: number;
+    maxLng: number;
+    minLat: number;
+    maxLat: number;
     worldMinX: number;
     worldMaxX: number;
     worldMinY: number;
@@ -1348,23 +1352,23 @@ class Transform {
     setMaxBounds(bounds: ?LngLatBounds) {
         this.maxBounds = bounds;
 
-        let minLat = -MAX_MERCATOR_LATITUDE;
-        let maxLat = MAX_MERCATOR_LATITUDE;
-        let minLng = -180;
-        let maxLng = 180;
+        this.minLat = -MAX_MERCATOR_LATITUDE;
+        this.maxLat = MAX_MERCATOR_LATITUDE;
+        this.minLng = -180;
+        this.maxLng = 180;
 
         if (bounds) {
-            minLat = bounds.getSouth();
-            maxLat = bounds.getNorth();
-            minLng = bounds.getWest();
-            maxLng = bounds.getEast();
-            if (maxLng < minLng) maxLng += 360;
+            this.minLat = bounds.getSouth();
+            this.maxLat = bounds.getNorth();
+            this.minLng = bounds.getWest();
+            this.maxLng = bounds.getEast();
+            if (this.maxLng < this.minLng) this.maxLng += 360;
         }
 
-        this.worldMinX = mercatorXfromLng(minLng) * this.tileSize;
-        this.worldMaxX = mercatorXfromLng(maxLng) * this.tileSize;
-        this.worldMinY = mercatorYfromLat(maxLat) * this.tileSize;
-        this.worldMaxY = mercatorYfromLat(minLat) * this.tileSize;
+        this.worldMinX = mercatorXfromLng(this.minLng) * this.tileSize;
+        this.worldMaxX = mercatorXfromLng(this.maxLng) * this.tileSize;
+        this.worldMinY = mercatorYfromLat(this.maxLat) * this.tileSize;
+        this.worldMaxY = mercatorYfromLat(this.minLat) * this.tileSize;
 
         this._constrain();
     }
@@ -1564,11 +1568,10 @@ class Transform {
         this._constraining = true;
 
         // alternate constraining for non-Mercator projections
-        const maxBounds = this.maxBounds;
-        if (this.projection.name !== 'mercator' && maxBounds) {
+        if (this.projection.name !== 'mercator') {
             const center = this.center;
-            center.lat = clamp(center.lat, maxBounds.getSouth(), maxBounds.getNorth());
-            center.lng = clamp(center.lng, maxBounds.getWest(), maxBounds.getEast());
+            center.lat = clamp(center.lat, this.minLat, this.maxLat);
+            if (this.maxBounds || !this.renderWorldCopies) center.lng = clamp(center.lng, this.minLng, this.maxLng);
             this.center = center;
             this._constraining = false;
             return;
@@ -1591,7 +1594,7 @@ class Transform {
             y2 = (maxY + minY) / 2;
         }
 
-        if (this.maxBounds) {
+        if (this.maxBounds || !this.renderWorldCopies) {
             const minX = this.worldMinX * this.scale;
             const maxX = this.worldMaxX * this.scale;
 
