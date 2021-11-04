@@ -1,5 +1,7 @@
 {
   "query-tests/regressions/mapbox-gl-js#4494": "https://github.com/mapbox/mapbox-gl-js/issues/2716",
+  "render-tests/background-pattern/projected": "skip - patterns not working with projections",
+  "render-tests/fill-pattern/projected": "skip - patterns not working with projections",
   "render-tests/debug/tile": "skip - inconsistent text rendering with canvas on different platforms",
   "render-tests/debug/tile-overscaled": "skip - inconsistent text rendering with canvas on different platforms",
   "render-tests/fill-extrusion-pattern/1.5x-on-1x-add-image": "skip - non-deterministic on AMD graphics cards",

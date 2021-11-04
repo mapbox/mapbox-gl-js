@@ -1,0 +1,54 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        ["setProjection", "albers"],
+        ["wait"]
+      ],
+      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform."
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 3,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    },
+    "graticule": {
+      "type": "geojson",
+      "data": "local://data/graticule.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "heatmap",
+      "type": "heatmap",
+      "source": "geojson",
+      "paint": {
+        "heatmap-radius": 50
+      }
+    },
+    {
+      "id": "graticule",
+      "source": "graticule",
+      "type": "line",
+      "paint": {
+          "line-width": 1,
+          "line-color": "#aaa"
+      }
+    }
+  ]
+}
