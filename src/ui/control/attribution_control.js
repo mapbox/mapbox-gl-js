@@ -176,8 +176,8 @@ class AttributionControl {
 
         if (this.options.customAttribution) {
             if (Array.isArray(this.options.customAttribution)) {
-                attributions = [...this.options.customAttribution.filter(s => typeof s === 'string'), ...attributions];
-            } else if (typeof this.options.customAttribution === 'string') {
+                attributions = [...this.options.customAttribution, ...attributions];
+            } else {
                 attributions.unshift(this.options.customAttribution);
             }
         }
