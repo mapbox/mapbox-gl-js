@@ -101,6 +101,8 @@ export type ElevationBoxRaycast = {
     maxAltitude: number
 };
 
+const freeCameraNotSupportedWarning = 'map.setFreeCameraOptions(...) and map.getFreeCameraOptions() are not yet supported for non-mercator projections.';
+
 /**
  * Options for setting padding on calls to methods such as {@link Map#fitBounds}, {@link Map#fitScreenCoordinates}, and {@link Map#setPadding}. Adjust these options to set the amount of padding in pixels added to the edges of the canvas. Set a uniform padding on all edges or individual values for each edge. All properties of this object must be
  * non-negative integers.
@@ -1001,6 +1003,9 @@ class Camera extends Evented {
      * map.setFreeCameraOptions(camera);
      */
     getFreeCameraOptions(): FreeCameraOptions {
+        if (this.transform.projection.name !== 'mercator') {
+            warnOnce(freeCameraNotSupportedWarning);
+        }
         return this.transform.getFreeCameraOptions();
     }
 
@@ -1038,9 +1043,15 @@ class Camera extends Evented {
      * map.setFreeCameraOptions(camera);
      */
     setFreeCameraOptions(options: FreeCameraOptions, eventData?: Object) {
+        const tr = this.transform;
+
+        if (tr.projection.name !== 'mercator') {
+            warnOnce(freeCameraNotSupportedWarning);
+            return;
+        }
+
         this.stop();
 
-        const tr = this.transform;
         const prevZoom = tr.zoom;
         const prevPitch = tr.pitch;
         const prevBearing = tr.bearing;
