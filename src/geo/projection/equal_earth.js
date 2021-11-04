@@ -1,6 +1,7 @@
 // @flow
 import LngLat from '../lng_lat.js';
 import {clamp} from '../../util/util.js';
+import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 
 const a1 = 1.340264;
 const a2 = -0.081106;
@@ -40,16 +41,17 @@ export default {
         for (let i = 0, delta, fy, fpy; i < 12; ++i) {
             fy = theta * (a1 + a2 * theta2 + theta6 * (a3 + a4 * theta2)) - y;
             fpy = a1 + 3 * a2 * theta2 + theta6 * (7 * a3 + 9 * a4 * theta2);
-            theta -= delta = fy / fpy;
+            delta = fy / fpy;
+            theta = clamp(theta - delta, -Math.PI / 3, Math.PI / 3);
             theta2 = theta * theta;
             theta6 = theta2 * theta2 * theta2;
             if (Math.abs(delta) < 1e-12) break;
         }
 
         const lambda = M * x * (a1 + 3 * a2 * theta2 + theta6 * (7 * a3 + 9 * a4 * theta2)) / Math.cos(theta);
-        const phi = Math.asin(clamp(Math.sin(theta) / M, -1, 1));
+        const phi = Math.asin(Math.sin(theta) / M);
         const lng = clamp(lambda * 180 / Math.PI, -180, 180);
-        const lat = clamp(phi * 180 / Math.PI, -90, 90);
+        const lat = clamp(phi * 180 / Math.PI, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
 
         return new LngLat(lng, lat);
     }
