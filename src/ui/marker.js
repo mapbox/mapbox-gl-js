@@ -257,7 +257,7 @@ export default class Marker extends Evented {
         this.remove();
         this._map = map;
         map.getCanvasContainer().appendChild(this._element);
-        map.on('move', this._update);
+        map.on('move', () => this._update(true));
         map.on('moveend', this._update);
         map.on('remove', this._clearFadeTimer);
         map._addMarker(this);
@@ -283,7 +283,7 @@ export default class Marker extends Evented {
     remove() {
         if (this._map) {
             this._map.off('click', this._onMapClick);
-            this._map.off('move', this._update);
+            this._map.off('move', () => this._update(true));
             this._map.off('moveend', this._update);
             this._map.off('mousedown', this._addDragHandler);
             this._map.off('touchstart', this._addDragHandler);
@@ -338,7 +338,7 @@ export default class Marker extends Evented {
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;
         if (this._popup) this._popup.setLngLat(this._lngLat);
-        this._update();
+        this._update(true);
         return this;
     }
 
@@ -508,7 +508,7 @@ export default class Marker extends Evented {
             position.y >= 0 && position.y < tr.height;
     }
 
-    _update(e?: {type: 'move' | 'moveend'}) {
+    _update(delaySnap?: boolean) {
         window.cancelAnimationFrame(this._updateFrameId);
         if (!this._map) return;
 
@@ -535,13 +535,15 @@ export default class Marker extends Evented {
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
-        if (!e || e.type === "moveend") {
+        if (delaySnap) {
             this._updateFrameId = window.requestAnimationFrame(() => {
                 if (this._element && this._pos && this._anchor) {
                     this._pos = this._pos.round();
                     DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
                 }
             });
+        } else {
+            this._pos = this._pos.round();
         }
 
         this._map._requestDomTask(() => {
