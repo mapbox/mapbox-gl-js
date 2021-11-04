@@ -80,7 +80,6 @@ class SourceFeatureState {
         } else {
             this.deletedStates[sourceLayer] = null;
         }
-
     }
 
     getState(sourceLayer: string, featureId: number | string) {

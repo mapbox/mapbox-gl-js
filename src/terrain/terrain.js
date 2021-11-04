@@ -982,7 +982,11 @@ export class Terrain extends Elevation {
                     const tiles = current[source];
                     const prevTiles = prev[source];
                     if (!prevTiles || prevTiles.length !== tiles.length ||
-                        tiles.some((t, index) => (t !== prevTiles[index] || (dirty[source] && dirty[source].hasOwnProperty(t.key))))) {
+                        tiles.some((t, index) =>
+                            (t !== prevTiles[index] ||
+                            (dirty[source] && dirty[source].hasOwnProperty(t.key)
+                            )))
+                    ) {
                         equal = -1;
                         break;
                     }
