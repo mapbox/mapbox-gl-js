@@ -11,7 +11,7 @@
 
 ### 🐞 Bug fixes
 
-* Fix `map.setFeatureState(...)` not updating rendering when terrain is enabled. ([#11230](https://github.com/mapbox/mapbox-gl-js/pull/11230))
+* Fix `map.setFeatureState(...)` not updating rendering when terrain is enabled. ([#11209](https://github.com/mapbox/mapbox-gl-js/pull/11209))
 * Fix marker positioning before initial map load ([#11025](https://github.com/mapbox/mapbox-gl-js/pull/11025))
 * Fix slow tile loading performance on maps with CJK glyphs on certain Chrome/GPU combinations. ([#11047](https://github.com/mapbox/mapbox-gl-js/pull/11047))
 * Update NavigationControl when `min` and `max` zoom are changed ([#11018](https://github.com/mapbox/mapbox-gl-js/pull/11018))
