@@ -1,4 +1,4 @@
-## 2.6.0-beta.1
+## 2.6.0-beta.2
 
 ### ✨ Features and improvements
 
@@ -11,12 +11,14 @@
 
 ### 🐞 Bug fixes
 
+* Fix `map.setFeatureState(...)` not updating rendering when terrain is enabled. ([#11230](https://github.com/mapbox/mapbox-gl-js/pull/11230))
 * Fix marker positioning before initial map load ([#11025](https://github.com/mapbox/mapbox-gl-js/pull/11025))
 * Fix slow tile loading performance on maps with CJK glyphs on certain Chrome/GPU combinations. ([#11047](https://github.com/mapbox/mapbox-gl-js/pull/11047))
 * Update NavigationControl when `min` and `max` zoom are changed ([#11018](https://github.com/mapbox/mapbox-gl-js/pull/11018))
 * Prevent video sources from entering fullscreen on iOS Safari ([#11067](https://github.com/mapbox/mapbox-gl-js/pull/11067))
 * Fix a rare triangulation issue that could cause an infinite loop ([#11110](https://github.com/mapbox/mapbox-gl-js/pull/11110))
 * Fix `null` feature values returned as `"null"` by `queryRenderedFeatures(...)` ([#11110](https://github.com/mapbox/mapbox-gl-js/pull/11110))
+* Fix rendering issue with power of two square images and `'raster-resampling': 'nearest'` ([#11162](https://github.com/mapbox/mapbox-gl-js/pull/11162))
 
 ## 2.5.1
 
