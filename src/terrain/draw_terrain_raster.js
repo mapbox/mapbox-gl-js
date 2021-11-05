@@ -278,28 +278,34 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
             if (sharedBuffers) {
+                const [buffer, segments] = isWireframe ?
+                    sharedBuffers.getWirefameBuffer(painter.context) :
+                    [sharedBuffers.gridIndexBuffer, sharedBuffers.gridSegments];
+
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
-                    uniformValues, "globe_raster", gridBuffer, sharedBuffers.gridIndexBuffer, sharedBuffers.gridSegments);
+                    uniformValues, "globe_raster", gridBuffer, buffer, segments);
             }
 
-            // Fill poles by extrapolating adjacent border tiles
-            const poleMatrices = [
-                coord.canonical.y === 0 ? poleMatrixForTile(coord.canonical, false, tr) : null,
-                coord.canonical.y === tiles - 1 ? poleMatrixForTile(coord.canonical, true, tr) : null
-            ];
+            if (!isWireframe) {
+                // Fill poles by extrapolating adjacent border tiles
+                const poleMatrices = [
+                    coord.canonical.y === 0 ? poleMatrixForTile(coord.canonical, false, tr) : null,
+                    coord.canonical.y === tiles - 1 ? poleMatrixForTile(coord.canonical, true, tr) : null
+                ];
 
-            for (const poleMatrix of poleMatrices) {
-                if (!poleMatrix) {
-                    continue;
-                }
+                for (const poleMatrix of poleMatrices) {
+                    if (!poleMatrix) {
+                        continue;
+                    }
 
-                const poleUniforms = globeRasterUniformValues(
-                    tr.projMatrix, poleMatrix, poleMatrix,
-                    0.0, mercatorCenter, upvectorMatrix);
+                    const poleUniforms = globeRasterUniformValues(
+                        tr.projMatrix, poleMatrix, poleMatrix,
+                        0.0, mercatorCenter, upvectorMatrix);
 
-                if (sharedBuffers) {
-                    program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                        poleUniforms, "globe_pole_raster", poleBuffer, sharedBuffers.poleIndexBuffer, sharedBuffers.poleSegments);
+                    if (sharedBuffers) {
+                        program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                            poleUniforms, "globe_pole_raster", poleBuffer, sharedBuffers.poleIndexBuffer, sharedBuffers.poleSegments);
+                    }
                 }
             }
         }

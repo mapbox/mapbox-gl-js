@@ -11,7 +11,7 @@ import IndexBuffer from '../../gl/index_buffer.js';
 import SegmentVector from '../../data/segment.js';
 import {atmosphereLayout} from '../../terrain/globe_attributes.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
-import {TriangleIndexArray, GlobeVertexArray} from '../../data/array_types.js';
+import {TriangleIndexArray, GlobeVertexArray, LineIndexArray} from '../../data/array_types.js';
 import type Transform from '../transform.js';
 
 class GlobeTileTransform {
@@ -429,6 +429,9 @@ export class GlobeSharedBuffers {
     atmosphereIndexBuffer: IndexBuffer;
     atmosphereSegments: SegmentVector;
 
+    wireframeIndexBuffer: IndexBuffer;
+    wireframeSegments: SegmentVector;
+
     constructor(context: Context) {
         const gridIndices = this._createGridIndices();
         this.gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
@@ -467,6 +470,11 @@ export class GlobeSharedBuffers {
         this.atmosphereVertexBuffer.destroy();
         this.atmosphereIndexBuffer.destroy();
         this.atmosphereSegments.destroy();
+
+        if (this.wireframeIndexBuffer) {
+            this.wireframeIndexBuffer.destroy();
+            this.wireframeSegments.destroy();
+        }
     }
 
     static createPoleTriangleVertices(tiles: number, ws: number, isTopCap: boolean): GlobeVertexArray {
@@ -547,6 +555,39 @@ export class GlobeSharedBuffers {
                 quad(i, j);
             }
         }
+        return indexArray;
+    }
+
+    getWirefameBuffer(context: Context): [IndexBuffer, SegmentVector] {
+        if (!this.wireframeSegments) {
+            const wireframeGridIndices = this._createWireframeGrid();
+            this.wireframeIndexBuffer = context.createIndexBuffer(wireframeGridIndices);
+
+            const vertexBufferLength = GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE;
+            this.wireframeSegments = SegmentVector.simpleSegment(0, 0, vertexBufferLength, wireframeGridIndices.length);
+        }
+        return [this.wireframeIndexBuffer, this.wireframeSegments];
+    }
+
+    _createWireframeGrid(): LineIndexArray {
+        const indexArray = new LineIndexArray();
+
+        const quadExt = GLOBE_VERTEX_GRID_SIZE;
+        const vertexExt = quadExt + 1;
+
+        const quad = (i, j) => {
+            const index = j * vertexExt + i;
+            indexArray.emplaceBack(index, index + 1);
+            indexArray.emplaceBack(index, index + vertexExt);
+            indexArray.emplaceBack(index, index + vertexExt + 1);
+        };
+
+        for (let j = 0; j < quadExt; j++) {
+            for (let i = 0; i < quadExt; i++) {
+                quad(i, j);
+            }
+        }
+
         return indexArray;
     }
 }
