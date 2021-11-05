@@ -1,4 +1,4 @@
-# 13.23.0-beta.1
+# 13.23.0-beta.2
 
 ### ✨ Features and improvements
 
