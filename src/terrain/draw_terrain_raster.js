@@ -1,6 +1,6 @@
 // @flow
 
-import {mat4, vec3} from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import {terrainRasterUniformValues} from './terrain_raster_program.js';
@@ -10,8 +10,7 @@ import Tile from '../source/tile.js';
 import assert from 'assert';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import {members as globeLayoutAttributes} from './globe_attributes.js';
-import {easeCubicInOut, clamp, degToRad} from '../util/util.js';
-import {GlobeVertexArray} from '../data/array_types.js';
+import {easeCubicInOut, degToRad} from '../util/util.js';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import type Painter from '../render/painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -19,13 +18,10 @@ import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import {
-    tileLatLngCorners,
-    latLngToECEF,
     tileBoundsOnGlobe,
     denormalizeECEF,
-    normalizeECEF,
-    GLOBE_VERTEX_GRID_SIZE,
-    globeToMercatorTransition
+    globeToMercatorTransition,
+    GlobeSharedBuffers
 } from '../geo/projection/globe.js';
 import extend from '../style-spec/util/extend.js';
 
@@ -139,64 +135,7 @@ const shaderDefines = {
     "2": 'TERRAIN_WIREFRAME'
 };
 
-const lerp = (a, b, t) => a * (1 - t) + b * t;
-
-function createGridVertices(painter, count: number, sx, sy, sz): any {
-    const tiles = Math.pow(2, sz);
-    const gridTileId = new CanonicalTileID(sz, sx, sy);
-    const [latLngTL, latLngBR] = tileLatLngCorners(gridTileId);
-    const boundsArray = new GlobeVertexArray();
-
-    const bounds = tileBoundsOnGlobe(new CanonicalTileID(sz, tiles / 2, sy));
-    const norm = normalizeECEF(bounds);
-
-    const gridExt = count;
-    const vertexExt = gridExt + 1;
-    boundsArray.reserve(count * count);
-
-    for (let y = 0; y < vertexExt; y++) {
-        const lat = lerp(latLngTL[0], latLngBR[0], y / gridExt);
-        const mercY = clamp(mercatorYfromLat(lat), 0, 1);
-        const uvY = (mercY * tiles) - sy;
-        for (let x = 0; x < vertexExt; x++) {
-            const uvX = x / gridExt;
-            const lng = lerp(latLngTL[1], latLngBR[1], uvX);
-
-            const pGlobe = latLngToECEF(lat, lng);
-            vec3.transformMat4(pGlobe, pGlobe, norm);
-
-            const mercatorX = mercatorXfromLng(lng);
-            const mercatorY = mercatorYfromLat(lat);
-
-            boundsArray.emplaceBack(pGlobe[0], pGlobe[1], pGlobe[2], mercatorX, mercatorY, uvX, uvY);
-        }
-    }
-
-    return boundsArray;
-}
-
-function createPoleTriangleVertices(fanSize, tiles, ws, topCap) {
-    const arr = new GlobeVertexArray();
-    const radius = ws / Math.PI / 2.0;
-
-    // Place the tip
-    arr.emplaceBack(0, -radius, 0, 0, 0, 0.5, topCap ? 0.0 : 1.0);
-
-    const startAngle = 0;
-    const endAngle = 360.0 / tiles;
-
-    for (let i = 0; i <= fanSize; i++) {
-        const uvX = i / fanSize;
-        const angle = lerp(startAngle, endAngle, uvX);
-        const p = latLngToECEF(85, angle, radius);
-
-        arr.emplaceBack(p[0], p[1], p[2], 0, 0, uvX, topCap ? 0.0 : 1.0);
-    }
-
-    return arr;
-}
-
-function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID, tiles: number): [VertexBuffer, VertexBuffer] {
+function prepareGlobeBuffersForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID, tiles: number): [VertexBuffer, VertexBuffer] {
     const context = painter.context;
     const id = coord.canonical;
     const tr = painter.transform;
@@ -204,12 +143,12 @@ function prepareBuffersForTileMesh(painter: Painter, tile: Tile, coord: Overscal
     let poleBuffer = tile.globePoleBuffer;
 
     if (!gridBuffer) {
-        const gridMesh = createGridVertices(painter, GLOBE_VERTEX_GRID_SIZE, id.x, id.y, id.z);
+        const gridMesh = GlobeSharedBuffers.createGridVertices(id.x, id.y, id.z);
         gridBuffer = tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
     }
 
     if (!poleBuffer) {
-        const poleMesh = createPoleTriangleVertices(GLOBE_VERTEX_GRID_SIZE, tiles, tr.tileSize * tiles, coord.canonical.y === 0);
+        const poleMesh = GlobeSharedBuffers.createPoleTriangleVertices(tiles, tr.tileSize * tiles, coord.canonical.y === 0);
         poleBuffer = tile.globePoleBuffer = context.createVertexBuffer(poleMesh, globeLayoutAttributes, false);
     }
 
@@ -300,7 +239,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         for (const coord of tileIDs) {
             const tile = sourceCache.getTile(coord);
             const tiles = Math.pow(2, coord.canonical.z);
-            const [gridBuffer, poleBuffer] = prepareBuffersForTileMesh(painter, tile, coord, tiles);
+            const [gridBuffer, poleBuffer] = prepareGlobeBuffersForTileMesh(painter, tile, coord, tiles);
             const stencilMode = StencilMode.disabled;
 
             const prevDemTile = terrain.prevTerrainTileForTile[coord.key];
@@ -460,7 +399,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
             const tile = sourceCache.getTile(coord);
             const tiles = Math.pow(2, coord.canonical.z);
 
-            const [gridBuffer] = prepareBuffersForTileMesh(painter, tile, coord, tiles);
+            const [gridBuffer] = prepareGlobeBuffersForTileMesh(painter, tile, coord, tiles);
 
             const gridTileId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
             const elevationOptions = {elevationTileID: gridTileId};

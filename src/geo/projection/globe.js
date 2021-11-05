@@ -344,14 +344,14 @@ export function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
     return new Aabb(bMin, bMax);
 }
 
-export function tileNormalizationScale(id: CanonicalTileID) {
+function tileNormalizationScale(id: CanonicalTileID) {
     const bounds = tileBoundsOnGlobe(id);
     const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
     const st = (1 << (normBitRange - 1)) - 1;
     return st * maxExtInv;
 }
 
-export function tileLatLngCorners(id: CanonicalTileID) {
+function tileLatLngCorners(id: CanonicalTileID) {
     const tileScale = Math.pow(2, id.z);
     const left = id.x / tileScale;
     const right = (id.x + 1) / tileScale;
@@ -382,7 +382,7 @@ export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<n
 
 const normBitRange = 15;
 
-export function normalizeECEF(bounds: Aabb): Float64Array {
+function normalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
 
     const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
@@ -416,7 +416,7 @@ export function denormalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export const GLOBE_VERTEX_GRID_SIZE = 128;
+const GLOBE_VERTEX_GRID_SIZE = 64;
 
 export class GlobeSharedBuffers {
     poleIndexBuffer: IndexBuffer;
@@ -430,14 +430,14 @@ export class GlobeSharedBuffers {
     atmosphereSegments: SegmentVector;
 
     constructor(context: Context) {
-        const gridIndices = this._createGridIndices(GLOBE_VERTEX_GRID_SIZE);
+        const gridIndices = this._createGridIndices();
         this.gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
 
         const gridPrimitives = GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE * 2;
         const gridVertices = (GLOBE_VERTEX_GRID_SIZE + 1) * (GLOBE_VERTEX_GRID_SIZE + 1);
         this.gridSegments = SegmentVector.simpleSegment(0, 0, gridVertices, gridPrimitives);
 
-        const poleIndices = this._createPoleTriangleIndices(GLOBE_VERTEX_GRID_SIZE);
+        const poleIndices = this._createPoleTriangleIndices();
         this.poleIndexBuffer = context.createIndexBuffer(poleIndices, true);
 
         const polePrimitives = GLOBE_VERTEX_GRID_SIZE;
@@ -469,17 +469,73 @@ export class GlobeSharedBuffers {
         this.atmosphereSegments.destroy();
     }
 
-    _createPoleTriangleIndices(fanSize: number): TriangleIndexArray {
+    static createPoleTriangleVertices(tiles: number, ws: number, isTopCap: boolean): GlobeVertexArray {
+        const lerp = (a, b, t) => a * (1 - t) + b * t;
+        const arr = new GlobeVertexArray();
+        const radius = ws / Math.PI / 2.0;
+
+        // Place the tip
+        arr.emplaceBack(0, -radius, 0, 0, 0, 0.5, isTopCap ? 0.0 : 1.0);
+
+        const startAngle = 0;
+        const endAngle = 360.0 / tiles;
+
+        for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
+            const uvX = i / GLOBE_VERTEX_GRID_SIZE;
+            const angle = lerp(startAngle, endAngle, uvX);
+            const p = latLngToECEF(85, angle, radius);
+
+            arr.emplaceBack(p[0], p[1], p[2], 0, 0, uvX, isTopCap ? 0.0 : 1.0);
+        }
+
+        return arr;
+    }
+
+    _createPoleTriangleIndices(): TriangleIndexArray {
         const arr = new TriangleIndexArray();
-        for (let i = 0; i <= fanSize; i++) {
+        for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
             arr.emplaceBack(0, i + 1, i + 2);
         }
         return arr;
     }
 
-    _createGridIndices(count: number): TriangleIndexArray {
+    static createGridVertices(sx: number, sy: number, sz: number): GlobeVertexArray {
+        const lerp = (a, b, t) => a * (1 - t) + b * t;
+        const tiles = Math.pow(2, sz);
+        const gridTileId = new CanonicalTileID(sz, sx, sy);
+        const [latLngTL, latLngBR] = tileLatLngCorners(gridTileId);
+        const boundsArray = new GlobeVertexArray();
+
+        const bounds = tileBoundsOnGlobe(new CanonicalTileID(sz, tiles / 2, sy));
+        const norm = normalizeECEF(bounds);
+
+        const vertexExt = GLOBE_VERTEX_GRID_SIZE + 1;
+        boundsArray.reserve(GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE);
+
+        for (let y = 0; y < vertexExt; y++) {
+            const lat = lerp(latLngTL[0], latLngBR[0], y / GLOBE_VERTEX_GRID_SIZE);
+            const mercY = clamp(mercatorYfromLat(lat), 0, 1);
+            const uvY = (mercY * tiles) - sy;
+            for (let x = 0; x < vertexExt; x++) {
+                const uvX = x / GLOBE_VERTEX_GRID_SIZE;
+                const lng = lerp(latLngTL[1], latLngBR[1], uvX);
+
+                const pGlobe = latLngToECEF(lat, lng);
+                vec3.transformMat4(pGlobe, pGlobe, norm);
+
+                const mercatorX = mercatorXfromLng(lng);
+                const mercatorY = mercatorYfromLat(lat);
+
+                boundsArray.emplaceBack(pGlobe[0], pGlobe[1], pGlobe[2], mercatorX, mercatorY, uvX, uvY);
+            }
+        }
+
+        return boundsArray;
+    }
+
+    _createGridIndices(): TriangleIndexArray {
         const indexArray = new TriangleIndexArray();
-        const quadExt = count;
+        const quadExt = GLOBE_VERTEX_GRID_SIZE;
         const vertexExt = quadExt + 1;
         const quad = (i, j) => {
             const index = j * vertexExt + i;
