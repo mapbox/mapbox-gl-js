@@ -13,47 +13,50 @@ export default {
 
     conic: true,
 
+    // based on https://github.com/d3/d3-geo-projection, MIT-licensed
+
     initializeConstants() {
         if (this.constants && vec2.exactEquals(this.parallels, this.constants.parallels)) {
             return;
         }
 
-        const p1 = degToRad(this.parallels[0]);
-        const p2 = degToRad(this.parallels[1]);
-        const sinp1 = Math.sin(p1);
-        const cosp1 = Math.cos(p1);
-        const cosp12 = cosp1 * cosp1;
-        const r = 0.5;
-        const n = 0.5 * (sinp1 + Math.sin(p2));
-        const c = cosp12 + 2 * n * sinp1;
-        const b = r / n * Math.sqrt(c);
+        const sy0 = Math.sin(degToRad(this.parallels[0]));
+        const n = (sy0 + Math.sin(degToRad(this.parallels[1]))) / 2;
+        const c = 1 + sy0 * (2 * n - sy0);
+        const r0 = Math.sqrt(c) / n;
 
-        this.constants = {n, b, c, parallels: this.parallels};
+        this.constants = {n, c, r0, parallels: this.parallels};
     },
+
     project(lng: number, lat: number) {
         this.initializeConstants();
 
-        const {n, b, c} = this.constants;
-        const theta = n * degToRad(lng - this.center[0]);
-        const a = 0.5 / n * Math.sqrt(c - 2 * n * Math.sin(degToRad(lat)));
-        const x = a * Math.sin(theta);
-        const y = b - a * Math.cos(theta);
+        const lambda = degToRad(lng - this.center[0]);
+        const phi = degToRad(lat);
 
-        return {x: 1 + 0.5 * x, y: 1 - 0.5 * y};
+        const {n, c, r0} = this.constants;
+        const r = Math.sqrt(c - 2 * n * Math.sin(phi)) / n;
+        const x = r * Math.sin(lambda * n);
+        const y = r * Math.cos(lambda * n) - r0;
+        return {x, y};
     },
+
     unproject(x: number, y: number) {
         this.initializeConstants();
+        const {n, c, r0} = this.constants;
 
-        const {n, b, c} = this.constants;
-        const x_ = (x - 1) * 2;
-        const y_ = (y - 1) * -2;
-        const y2 = -(y_ - b);
+        const r0y = r0 + y;
+        let l = Math.atan2(x, Math.abs(r0y)) * Math.sign(r0y);
+        if (r0y * n < 0) {
+            l -= Math.PI * Math.sign(x) * Math.sign(r0y);
+        }
         const dt = degToRad(this.center[0]) * n;
-        const theta = wrap(Math.atan2(x_, y2), -Math.PI - dt, Math.PI - dt);
-        const lng = radToDeg(theta / n) + this.center[0];
-        const a = x_ / Math.sin(theta);
-        const s = clamp((Math.pow(a / 0.5 * n, 2) - c) / (-2 * n), -1, 1);
-        const lat = clamp(radToDeg(Math.asin(s)), -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+        l = wrap(l, -Math.PI - dt, Math.PI - dt);
+
+        const lng = radToDeg(l / n) + this.center[0];
+        const phi = Math.asin(clamp((c - (x * x + r0y * r0y) * n * n) / (2 * n), -1, 1));
+        const lat = clamp(radToDeg(phi), -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+
         return new LngLat(lng, lat);
     }
 };
