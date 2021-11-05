@@ -59,8 +59,14 @@
         <fieldset>
             <label>Select style</label>
             <select id="style" name="style">
-                <option value="streets-v11">Streets</option>
-                <option value="satellite-v9">Satellite</option>
+                <option value="mapbox/streets-v11">Streets</option>
+                <option value="mapbox/satellite-v9">Satellite</option>
+                <option value="mapbox/satellite-streets-v9">Satellite streets</option>
+                <option value="mapbox/cj44mfrt20f082snokim4ungi">North star</option>
+                <option value="mapbox-map-design/cksysy2nl62zp17quosctdtcc">Bubble</option>
+                <option value="mapbox/cjerxnqt3cgvp2rmyuxbeqme7">Cali terrain</option>
+                <option value="mapbox/light-v9">Light</option>
+                <option value="mapbox/dark-v9">Dark</option>
             </select>
         </fieldset>
         <fieldset>
@@ -191,7 +197,7 @@ projectionInput.addEventListener('change', (e) => {
 });
 
 styleInput.addEventListener('change', () => {
-    map.setStyle('mapbox://styles/mapbox/' + styleInput.value);
+    map.setStyle('mapbox://styles/' + styleInput.value);
 });
 debugInput.addEventListener('change', () => {
     map.showTileBoundaries = debugInput.checked;
