@@ -38,7 +38,7 @@ export default {
 
         // based on https://github.com/d3/d3-geo, MIT-licensed
         lat = degToRad(lat);
-        lng = degToRad(lng);
+        lng = degToRad(lng - this.center[0]);
 
         const epsilon = 1e-6;
         const {n, f} = this.constants;
@@ -73,7 +73,7 @@ export default {
 
         if (fy * n < 0) l -= Math.PI * Math.sign(x) * signFy;
 
-        const lng = clamp(radToDeg(l / n), -180, 180);
+        const lng = clamp(radToDeg(l / n) + this.center[0], -180, 180);
         const phi = 2 * Math.atan(Math.pow(f / r, 1 / n)) - halfPi;
         const lat = clamp(radToDeg(phi), -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
 
