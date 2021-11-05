@@ -66,10 +66,10 @@
         <fieldset>
             <label>Select projection</label>
             <select id="projection" name="projection">
-                <option value="albers">Albers</option>
+                <option value="albers" selected>Albers</option>
                 <option value="equalEarth">Equal Earth</option>
                 <option value="equirectangular">Equirectangular</option>
-                <option value="lambertConformalConic" selected>
+                <option value="lambertConformalConic">
                     Lambert Conformal Conic
                 </option>
                 <option value="mercator">Mercator</option>
@@ -101,7 +101,7 @@
         </fieldset>
         <fieldset class="conic-param-input">
             <label
-                >Southern Parallel Lat: <span id="lat1-value">30</span></label
+                >Southern Parallel Lat: <span id="lat1-value">29.5</span></label
             >
             <input
                 id="lat1"
@@ -109,12 +109,12 @@
                 min="-90"
                 max="90"
                 step="any"
-                value="30"
+                value="29.5"
             />
         </fieldset>
         <fieldset class="conic-param-input">
             <label
-                >Northern Parallel Lat: <span id="lat2-value">30</span></label
+                >Northern Parallel Lat: <span id="lat2-value">45.5</span></label
             >
             <input
                 id="lat2"
@@ -122,7 +122,7 @@
                 min="-90"
                 max="90"
                 step="any"
-                value="30"
+                value="45.5"
             />
         </fieldset>
         <fieldset>
@@ -144,9 +144,7 @@ const map = new mapboxgl.Map({
     zoom: 0,
     center: [0, 1],
     projection: {
-        name: 'lambertConformalConic',
-        center: [0, 30],
-        parallels: [30, 30]
+        name: 'albers'
     }
 });
 
