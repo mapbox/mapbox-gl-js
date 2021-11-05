@@ -8,19 +8,22 @@ import type {Projection} from './index.js';
 import type Transform from '../transform.js';
 
 export default function getProjectionAdjustments(transform: Transform, withoutRotation?: boolean) {
-    const projection = transform.projection;
-
     const interpT = getInterpolationT(transform);
-
-    const zoomAdjustment = getZoomAdjustment(projection, transform.center);
-    const zoomAdjustmentOrigin = getZoomAdjustment(projection, LngLat.convert(projection.center));
-    const scaleAdjustment = Math.pow(2, zoomAdjustment * interpT + (1 - interpT) * zoomAdjustmentOrigin);
-
     const matrix = getShearAdjustment(transform.projection, transform.zoom, transform.center, interpT, withoutRotation);
 
+    const scaleAdjustment = getScaleAdjustment(transform);
     mat4.scale(matrix, matrix, [scaleAdjustment, scaleAdjustment, 1]);
 
     return matrix;
+}
+
+export function getScaleAdjustment(transform: Transform) {
+    const projection = transform.projection;
+    const interpT = getInterpolationT(transform);
+    const zoomAdjustment = getZoomAdjustment(projection, transform.center);
+    const zoomAdjustmentOrigin = getZoomAdjustment(projection, LngLat.convert(projection.center));
+    const scaleAdjustment = Math.pow(2, zoomAdjustment * interpT + (1 - interpT) * zoomAdjustmentOrigin);
+    return scaleAdjustment;
 }
 
 export function getProjectionAdjustmentInverted(transform: Transform) {
