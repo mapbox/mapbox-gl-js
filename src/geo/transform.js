@@ -14,7 +14,7 @@ import {Aabb, Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
-import getProjectionAdjustments, {getProjectionAdjustmentInverted} from './projection/adjustments.js';
+import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
@@ -724,7 +724,9 @@ class Transform {
         const maxRange = options.isTerrainDEM && this._elevation ? this._elevation.exaggeration() * 10000 : this._centerAltitude;
         const minRange = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
 
-        const sizeAtMercatorCoord = mc => {
+        const scaleAdjustment = getScaleAdjustment(this);
+
+        const relativeScaleAtMercatorCoord = mc => {
             // Calculate how scale compares between projected coordinates and mercator coordinates.
             // Returns a length. The units don't matter since the result is only
             // used in a ratio with other values returned by this function.
@@ -748,10 +750,8 @@ class Transform {
 
             // Calculate the size of a projected square that would have the
             // same area as the reprojected square.
-            return Math.sqrt(dx * dy) / offset;
+            return Math.sqrt(dx * dy) * scaleAdjustment / offset;
         };
-
-        const centerSize = sizeAtMercatorCoord(MercatorCoordinate.fromLngLat(this.center));
 
         const aabbForTile = (z, x, y, wrap, min, max) => {
             const tt = tileTransform({z, x, y}, this.projection);
@@ -854,21 +854,20 @@ class Transform {
                 dzSqr = square(it.aabb.distanceZ(cameraPoint) * meterToTile);
             }
 
-            let scaleAdjustment = 1;
+            let tileScaleAdjustment = 1;
             if (!isMercator && actualZ <= 5) {
                 // In other projections, not all tiles are the same size.
                 // Account for the tile size difference by adjusting the distToSplit.
                 // Adjust by the ratio of the area at the tile center to the area at the map center.
                 // Adjustments are only needed at lower zooms where tiles are not similarly sized.
                 const numTiles = Math.pow(2, it.zoom);
-                const tileCenterSize = sizeAtMercatorCoord(new MercatorCoordinate((it.x + 0.5) / numTiles, (it.y + 0.5) / numTiles));
-                const areaRatio = tileCenterSize / centerSize;
+                const relativeScale = relativeScaleAtMercatorCoord(new MercatorCoordinate((it.x + 0.5) / numTiles, (it.y + 0.5) / numTiles));
                 // Fudge the ratio slightly so that all tiles near the center have the same zoom level.
-                scaleAdjustment = areaRatio > 0.85 ? 1 : areaRatio;
+                tileScaleAdjustment = relativeScale > 0.85 ? 1 : relativeScale;
             }
 
             const distanceSqr = dx * dx + dy * dy + dzSqr;
-            const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * scaleAdjustment;
+            const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * tileScaleAdjustment;
             const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
 
             return distanceSqr < distToSplitSqr;
