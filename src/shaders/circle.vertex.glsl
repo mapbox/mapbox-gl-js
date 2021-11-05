@@ -144,7 +144,7 @@ void main(void) {
     gl_Position = project_vertex(extrude, world_center, projected_center, radius, stroke_width, view_scale, surface_vectors);
 
     float visibility = 0.0;
-    #if defined(TERRAIN) && !defined(PROJECTION_GLOBE_VIEW)
+    #ifdef TERRAIN
         float step = get_sample_step();
         #ifdef PITCH_WITH_MAP
             // to prevent the circle from self-intersecting with the terrain underneath on a sloped hill,
@@ -166,6 +166,11 @@ void main(void) {
         }
         visibility /= float(NUM_VISIBILITY_RINGS) * float(NUM_SAMPLES_PER_RING);
     #else
+        visibility = 1.0;
+    #endif
+    // This is a temporary overwrite until we add support for terrain occlusion for the globe view
+    // Having a separate overwrite here makes the metal shader generation simpler for the default case
+    #ifdef PROJECTION_GLOBE_VIEW
         visibility = 1.0;
     #endif
     v_visibility = visibility;
