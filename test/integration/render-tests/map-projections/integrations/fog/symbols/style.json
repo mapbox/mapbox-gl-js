@@ -1,0 +1,55 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "operations": [
+        ["setProjection", "albers"],
+        ["wait"]
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "zoom": 10,
+  "pitch": 70,
+  "fog": {},
+  "sources": {
+    "graticule": {
+      "type": "geojson",
+      "data": "local://data/dense-graticule.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "graticule",
+      "source": "graticule",
+      "type": "line",
+      "paint": {
+          "line-width": 1,
+          "line-color": "#aaa"
+      }
+    },
+    {
+      "id": "graticule-label",
+      "source": "graticule",
+      "type": "symbol",
+      "layout": {
+        "symbol-placement": "line",
+        "text-size": 10,
+        "symbol-spacing": 50,
+        "text-font": [
+            "Open Sans Semibold",
+            "Arial Unicode MS Bold"
+        ],
+        "text-field": "GRATICULE",
+        "text-pitch-alignment": "viewport",
+        "text-allow-overlap": false
+      },
+      "paint": {
+        "text-color": "black",
+        "text-halo-color": "white"
+      }
+    }
+  ]
+}

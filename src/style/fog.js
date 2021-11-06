@@ -46,7 +46,9 @@ class Fog extends Evented {
         this._transform = transform;
     }
 
-    get state(): FogState {
+    get state(): ?FogState {
+        if (this._transform.projection.name !== 'mercator') return null;
+
         return {
             range: this.properties.get('range'),
             horizonBlend: this.properties.get('horizon-blend'),
