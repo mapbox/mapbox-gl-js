@@ -925,3 +925,24 @@ test('Marker and fog', (t) => {
         });
     });
 });
+
+test('Snap To Pixel', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({draggable: true})
+        .setLngLat([1, 2])
+        .addTo(map);
+    t.test("Snap To Pixel immediately after initializing marker", (t) => {
+        t.same(marker._pos, marker._pos.round());
+        t.end();
+    });
+    t.test("Not Immediately Snap To Pixel After setLngLat", (t) => {
+        marker.setLngLat([2, 1]);
+        const pos = marker._pos;
+        setTimeout(() => {
+            t.notSame(marker._pos, pos);
+            t.same(marker._pos, pos.round());
+            t.end();
+        }, 100);
+    });
+    t.end();
+});
