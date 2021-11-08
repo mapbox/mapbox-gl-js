@@ -1,4 +1,4 @@
-## 2.6.0-beta.2
+## 2.6.0
 
 ### ✨ Features and improvements
 
