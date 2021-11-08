@@ -46,10 +46,11 @@ class Fog extends Evented {
         this._transform = transform;
     }
 
-    get state(): ?FogState {
-        // Soft disable fog
-        if (this._transform.projection.name !== 'mercator') return null;
+    isSoftDisabled(): boolean {
+        return this._transform.projection.name !== 'mercator';
+    }
 
+    get state(): FogState {
         return {
             range: this.properties.get('range'),
             horizonBlend: this.properties.get('horizon-blend'),
@@ -77,30 +78,24 @@ class Fog extends Evented {
     }
 
     getOpacity(pitch: number): number {
-        if (this.state) {
-            const fogColor = (this.properties && this.properties.get('color')) || 1.0;
-            const pitchFactor = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-            return pitchFactor * fogColor.a;
-        } else {
-            return 0;
-        }
+        if (this.isSoftDisabled()) return 0;
+
+        const fogColor = (this.properties && this.properties.get('color')) || 1.0;
+        const pitchFactor = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+        return pitchFactor * fogColor.a;
     }
 
     getOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
-        if (this.state) {
-            return getFogOpacityAtLngLat(this.state, lngLat, transform);
-        } else {
-            return 0;
-        }
+        if (this.isSoftDisabled()) return 0;
+
+        return getFogOpacityAtLngLat(this.state, lngLat, transform);
     }
 
     getFovAdjustedRange(fov: number): [number, number] {
         // We can return any arbitrary range because we expect opacity=0 to clean it up
-        if (this.state) {
-            return getFovAdjustedFogRange(this.state, fov);
-        } else {
-            return [0, 1];
-        }
+        if (this.isSoftDisabled()) return [0, 1];
+
+        return getFovAdjustedFogRange(this.state, fov);
     }
 
     updateTransitions(parameters: TransitionParameters) {
