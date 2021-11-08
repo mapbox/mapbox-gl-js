@@ -482,7 +482,7 @@ export default class Marker extends Evented {
         const mapLocation = this._map.unproject(position);
 
         let terrainOccluded = false;
-        if (this._map.getTerrain()) {
+        if (this._map.transform._terrainEnabled() && this._map.getTerrain()) {
             const camera = this._map.getFreeCameraOptions();
             if (camera.position) {
                 const cameraPos = camera.position.toLngLat();
