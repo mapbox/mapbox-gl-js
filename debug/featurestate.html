@@ -26,7 +26,7 @@
             <option value="naturalEarth">Natural Earth</option>
             <option value="winkelTripel">Winkel Tripel</option>
         </select>
-        <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label>
+        <label><input id='terrain-checkbox' type='checkbox'> terrain</label>
     </div>
 </div>
 
@@ -89,7 +89,6 @@ map.on('load', () => {
             selectedCounty = feature.id;
         }
     });
-    map.setTerrain({"source": "mapbox-dem"});
 });
 
 document.getElementById('projName').addEventListener('change', (e) => {
