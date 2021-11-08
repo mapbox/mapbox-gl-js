@@ -47,6 +47,7 @@ class Fog extends Evented {
     }
 
     get state(): ?FogState {
+        // Soft disable fog
         if (this._transform.projection.name !== 'mercator') return null;
 
         return {
@@ -76,18 +77,30 @@ class Fog extends Evented {
     }
 
     getOpacity(pitch: number): number {
-        if (this._transform.projection.name !== 'mercator') return 0;
-        const fogColor = (this.properties && this.properties.get('color')) || 1.0;
-        const pitchFactor = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-        return pitchFactor * fogColor.a;
+        if (this.state) {
+            const fogColor = (this.properties && this.properties.get('color')) || 1.0;
+            const pitchFactor = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+            return pitchFactor * fogColor.a;
+        } else {
+            return 0;
+        }
     }
 
     getOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
-        return getFogOpacityAtLngLat(this.state, lngLat, transform);
+        if (this.state) {
+            return getFogOpacityAtLngLat(this.state, lngLat, transform);
+        } else {
+            return 0;
+        }
     }
 
     getFovAdjustedRange(fov: number): [number, number] {
-        return getFovAdjustedFogRange(this.state, fov);
+        // We can return any arbitrary range because we expect opacity=0 to clean it up
+        if (this.state) {
+            return getFovAdjustedFogRange(this.state, fov);
+        } else {
+            return [0, 1];
+        }
     }
 
     updateTransitions(parameters: TransitionParameters) {
