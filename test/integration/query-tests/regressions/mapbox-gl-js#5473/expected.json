@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "geometry": {
+      "coordinates": [
+        0,
+        0
+      ],
+      "type": "Point"
+    },
+    "properties": {
+      "identifier": "firstSource"
+    },
+    "source": "source",
+    "state": {},
+    "type": "Feature"
+  }
+]

@@ -17,10 +17,10 @@ type Options = {
  *
  * @implements {IControl}
  * @param {Object} [options]
- * @param {boolean} [options.compact] If `true`, force a compact attribution that shows the full attribution on mouse hover. If `false`, force the full attribution control. The default is a responsive attribution that collapses when the map is less than 640 pixels wide. **Attribution should not be collapsed if it can comfortably fit on the map. `compact` should only be used to modify default attribution when map size makes it impossible to fit [default attribution](https://docs.mapbox.com/help/how-mapbox-works/attribution/) and when the automatic compact resizing for default settings are not sufficient.**
+ * @param {boolean} [options.compact] If `true`, force a compact attribution that shows the full attribution on mouse hover. If `false`, force the full attribution control. The default is a responsive attribution that collapses when the map is less than 640 pixels wide. **Attribution should not be collapsed if it can comfortably fit on the map. `compact` should only be used to modify default attribution when map size makes it impossible to fit [default attribution](https://docs.mapbox.com/help/how-mapbox-works/attribution/) and when the automatic compact resizing for default settings are not sufficient**.
  * @param {string | Array<string>} [options.customAttribution] String or strings to show in addition to any other attributions. You can also set a custom attribution when initializing your map with {@link https://docs.mapbox.com/mapbox-gl-js/api/map/#map-parameters the customAttribution option}.
  * @example
- * var map = new mapboxgl.Map({attributionControl: false})
+ * const map = new mapboxgl.Map({attributionControl: false})
  *     .addControl(new mapboxgl.AttributionControl({
  *         customAttribution: 'Map design by me'
  *     }));
@@ -57,6 +57,7 @@ class AttributionControl {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
         this._compactButton = DOM.create('button', 'mapboxgl-ctrl-attrib-button', this._container);
+        DOM.create('span', `mapboxgl-ctrl-icon`, this._compactButton).setAttribute('aria-hidden', true);
         this._compactButton.type = 'button';
         this._compactButton.addEventListener('click', this._toggleAttribution);
         this._setElementTitle(this._compactButton, 'ToggleAttribution');
@@ -96,17 +97,17 @@ class AttributionControl {
 
     _setElementTitle(element: HTMLElement, title: string) {
         const str = this._map._getUIString(`AttributionControl.${title}`);
-        element.title = str;
         element.setAttribute('aria-label', str);
+        if (element.firstElementChild) element.firstElementChild.setAttribute('title', str);
     }
 
     _toggleAttribution() {
         if (this._container.classList.contains('mapboxgl-compact-show')) {
             this._container.classList.remove('mapboxgl-compact-show');
-            this._compactButton.setAttribute('aria-pressed', 'false');
+            this._compactButton.setAttribute('aria-expanded', 'false');
         } else {
             this._container.classList.add('mapboxgl-compact-show');
-            this._compactButton.setAttribute('aria-pressed', 'true');
+            this._compactButton.setAttribute('aria-expanded', 'true');
         }
     }
 

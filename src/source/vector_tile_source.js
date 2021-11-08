@@ -24,12 +24,12 @@ import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
 
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
- * (See the [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector) for detailed documentation of options.)
+ * See the [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector) for detailed documentation of options.
  *
  * @example
  * map.addSource('some id', {
  *     type: 'vector',
- *     url: 'mapbox://mapbox.mapbox-streets-v6'
+ *     url: 'mapbox://mapbox.mapbox-streets-v8'
  * });
  *
  * @example
@@ -41,12 +41,12 @@ import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
  * });
  *
  * @example
- * map.getSource('some id').setUrl("mapbox://mapbox.mapbox-streets-v6");
+ * map.getSource('some id').setUrl("mapbox://mapbox.mapbox-streets-v8");
  *
  * @example
  * map.getSource('some id').setTiles(['https://d25uarhxywzl1j.cloudfront.net/v0.1/{z}/{x}/{y}.mvt']);
- * @see [Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
- * @see [Add a third party vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/third-party/)
+ * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
+ * @see [Example: Add a third party vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/third-party/)
  */
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
@@ -154,7 +154,19 @@ class VectorTileSource extends Evented implements Source {
      * Sets the source `tiles` property and re-renders the map.
      *
      * @param {string[]} tiles An array of one or more tile source URLs, as in the TileJSON spec.
-     * @returns {VectorTileSource} this
+     * @returns {VectorTileSource} Returns itself to allow for method chaining.
+     * @example
+     * map.addSource('vector_source_id', {
+     *     type: 'vector',
+     *     tiles: ['https://some_end_point.net/{z}/{x}/{y}.mvt'],
+     *     minzoom: 6,
+     *     maxzoom: 14
+     * });
+     *
+     * const vectorTileSource = map.getSource('vector_source_id');
+     *
+     * // Set the endpoint associated with a vector tile source.
+     * vectorTileSource.setTiles(['https://another_end_point.net/{z}/{x}/{y}.mvt']);
      */
     setTiles(tiles: Array<string>) {
         this.setSourceProperty(() => {
@@ -168,7 +180,17 @@ class VectorTileSource extends Evented implements Source {
      * Sets the source `url` property and re-renders the map.
      *
      * @param {string} url A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`.
-     * @returns {VectorTileSource} this
+     * @returns {VectorTileSource} Returns itself to allow for method chaining.
+     * @example
+     * map.addSource('vector_source_id', {
+     *     type: 'vector',
+     *     url: 'mapbox://mapbox.mapbox-streets-v7'
+     * });
+     *
+     * const vectorTileSource = map.getSource('vector_source_id');
+     *
+     * // Update vector tile source to a new URL endpoint
+     * vectorTileSource.setUrl("mapbox://mapbox.mapbox-streets-v8");
      */
     setUrl(url: string) {
         this.setSourceProperty(() => {

@@ -24,6 +24,15 @@ function createMap(t) {
     });
 }
 
+function createMapWithCooperativeGestures(t) {
+    t.stub(Map.prototype, '_detectMissingCSS');
+    t.stub(Map.prototype, '_authenticate');
+    return new Map({
+        container: DOM.create('div', '', window.document.body),
+        cooperativeGestures: true
+    });
+}
+
 test('ScrollZoomHandler', (t) => {
     const browserNow = t.stub(browser, 'now');
     let now = 1555555555555;
@@ -364,5 +373,61 @@ test('ScrollZoomHandler', (t) => {
         t.end();
     });
 
+    t.end();
+});
+
+test('When cooperativeGestures option is set to true, a .mapboxgl-scroll-zoom-blocker element is added to map', (t) => {
+    const map = createMapWithCooperativeGestures(t);
+
+    t.equal(map.getContainer().querySelectorAll('.mapboxgl-scroll-zoom-blocker').length, 1);
+    t.end();
+});
+
+test('When cooperativeGestures option is set to true, scroll zoom is prevented when the ctrl key or meta key is not pressed during wheel event', (t) => {
+    const map = createMapWithCooperativeGestures(t);
+
+    const zoomSpy = t.spy();
+    map.on('zoom', zoomSpy);
+
+    simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+
+    t.equal(zoomSpy.callCount, 0);
+    t.end();
+});
+
+test('When cooperativeGestures option is set to true, scroll zoom is activated when ctrl key is pressed during wheel event', (t) => {
+    const map = createMapWithCooperativeGestures(t);
+
+    const zoomSpy = t.spy();
+    map.on('zoom', zoomSpy);
+
+    simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta, ctrlKey: true});
+
+    map._renderTaskQueue.run();
+
+    t.equal(zoomSpy.callCount, 1);
+    t.end();
+});
+
+test('When cooperativeGestures option is set to true, scroll zoom is activated when meta key is pressed during wheel event', (t) => {
+    const map = createMapWithCooperativeGestures(t);
+
+    const zoomSpy = t.spy();
+    map.on('zoom', zoomSpy);
+
+    simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta, metaKey: true});
+
+    map._renderTaskQueue.run();
+
+    t.equal(zoomSpy.callCount, 1);
+    t.end();
+});
+
+test('Disabling scrollZoom removes scroll zoom blocker container', (t) => {
+    const map = createMapWithCooperativeGestures(t);
+
+    map.scrollZoom.disable();
+
+    t.equal(map.getContainer().querySelectorAll('.mapboxgl-scroll-zoom-blocker').length, 0);
     t.end();
 });

@@ -94,7 +94,7 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationEr
     /*
      * The following keys are optional but fully managed by the Mapbox Styles
      * API. Values on stylesheet on POST or PATCH will be ignored: "owner",
-     * "id", "cacheControl", "draft", "created", "modified"
+     * "id", "cacheControl", "draft", "created", "modified", "protected"
      *
      * The following keys are optional. The Mapbox Styles API respects value on
      * stylesheet on PATCH, but ignores the value on POST: "visibility"
@@ -106,7 +106,8 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationEr
         'draft',
         'created',
         'modified',
-        'visibility'
+        'visibility',
+        'protected'
     ];
 
     const allowedKeyErrors = getAllowedKeyErrors(style, [...specKeys, ...optionalRootProperties]);
@@ -147,6 +148,10 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationEr
         errors.push(new ValidationError('visibility', style.visibility, 'Style visibility must be public or private'));
     }
 
+    if (style.protected !== undefined && getType(style.protected) !== 'boolean') {
+        errors.push(new ValidationError('protected', style.protected, 'Style protection must be true or false'));
+    }
+
     return errors;
 }
 
@@ -177,3 +182,4 @@ export default function validateMapboxApiSupported(style: Object): Array<?Valida
 
     return errors;
 }
+

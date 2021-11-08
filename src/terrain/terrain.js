@@ -4,12 +4,12 @@ import Point from '@mapbox/point-geometry';
 import SourceCache from '../source/source_cache.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import Tile from '../source/tile.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import {RasterBoundsArray, TriangleIndexArray, LineIndexArray} from '../data/array_types.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import Program from '../render/program.js';
-import {Uniform1i, Uniform1f, Uniform2f, Uniform4f, UniformMatrix4f} from '../render/uniform_binding.js';
+import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from '../render/uniform_binding.js';
 import {prepareDEMTexture} from '../render/draw_hillshade.js';
 import EXTENT from '../data/extent.js';
 import {clamp, warnOnce} from '../util/util.js';
@@ -120,7 +120,7 @@ class ProxySourceCache extends SourceCache {
         for (const id in this._tiles) {
             if (!(id in incoming)) {
                 this.freeFBO(id);
-                this._tiles[id].state = 'unloaded';
+                this._tiles[id].unloadVectorData();
                 delete this._tiles[id];
             }
         }
@@ -146,7 +146,7 @@ class ProxySourceCache extends SourceCache {
 /**
  * Canonical, wrap and overscaledZ contain information of original source cache tile.
  * This tile gets ortho-rendered to proxy tile (defined by proxyTileKey).
- * posMatrix holds orthographic, scaling and translation information that is used
+ * `posMatrix` holds orthographic, scaling and translation information that is used
  * for rendering original tile content to a proxy tile. Proxy tile covers whole
  * or sub-rectangle of the original tile.
  */
@@ -222,7 +222,7 @@ export class Terrain extends Elevation {
         // edge vertices from neighboring tiles evaluate to the same 3D point.
         const [triangleGridArray, triangleGridIndices, skirtIndicesOffset] = createGrid(GRID_DIM + 1);
         const context = painter.context;
-        this.gridBuffer = context.createVertexBuffer(triangleGridArray, rasterBoundsAttributes.members);
+        this.gridBuffer = context.createVertexBuffer(triangleGridArray, boundsAttributes.members);
         this.gridIndexBuffer = context.createIndexBuffer(triangleGridIndices);
         this.gridSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, triangleGridIndices.length);
         this.gridNoSkirtSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, skirtIndicesOffset);
@@ -576,12 +576,12 @@ export class Terrain extends Elevation {
             context.activeTexture.set(gl.TEXTURE2);
             const demTexture = this._prepareDemTileUniforms(tile, demTile, uniforms) ?
                 (demTile.demTexture: any) : this.emptyDEMTexture;
-            demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+            demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
         if (options && options.useDepthForOcclusion) {
             context.activeTexture.set(gl.TEXTURE3);
-            this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+            this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
             uniforms['u_depth_size_inv'] = [1 / this._depthFBO.width, 1 / this._depthFBO.height];
         }
 
@@ -982,7 +982,11 @@ export class Terrain extends Elevation {
                     const tiles = current[source];
                     const prevTiles = prev[source];
                     if (!prevTiles || prevTiles.length !== tiles.length ||
-                        tiles.some((t, index) => (t !== prevTiles[index] || (dirty[source] && dirty[source].hasOwnProperty(t.key))))) {
+                        tiles.some((t, index) =>
+                            (t !== prevTiles[index] ||
+                            (dirty[source] && dirty[source].hasOwnProperty(t.key)
+                            )))
+                    ) {
                         equal = -1;
                         break;
                     }
@@ -1503,7 +1507,12 @@ export type TerrainUniformsType = {|
     'u_depth': Uniform1i,
     'u_depth_size_inv': Uniform2f,
     'u_meter_to_dem'?: Uniform1f,
-    'u_label_plane_matrix_inv'?: UniformMatrix4f
+    'u_label_plane_matrix_inv'?: UniformMatrix4f,
+    'u_tile_tl_up': Uniform3f,
+    'u_tile_tr_up': Uniform3f,
+    'u_tile_br_up': Uniform3f,
+    'u_tile_bl_up': Uniform3f,
+    'u_tile_up_scale': Uniform1f
 |};
 
 export const terrainUniforms = (context: Context, locations: UniformLocations): TerrainUniformsType => ({
@@ -1520,7 +1529,12 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_depth': new Uniform1i(context, locations.u_depth),
     'u_depth_size_inv': new Uniform2f(context, locations.u_depth_size_inv),
     'u_meter_to_dem': new Uniform1f(context, locations.u_meter_to_dem),
-    'u_label_plane_matrix_inv': new UniformMatrix4f(context, locations.u_label_plane_matrix_inv)
+    'u_label_plane_matrix_inv': new UniformMatrix4f(context, locations.u_label_plane_matrix_inv),
+    'u_tile_tl_up': new Uniform3f(context, locations.u_tile_tl_up),
+    'u_tile_tr_up': new Uniform3f(context, locations.u_tile_tr_up),
+    'u_tile_br_up': new Uniform3f(context, locations.u_tile_br_up),
+    'u_tile_bl_up': new Uniform3f(context, locations.u_tile_bl_up),
+    'u_tile_up_scale': new Uniform1f(context, locations.u_tile_up_scale)
 });
 
 function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUniformsType> {
@@ -1536,6 +1550,11 @@ function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUni
         'u_dem_lerp': 1.0,
         'u_depth': 3,
         'u_depth_size_inv': [0, 0],
-        'u_exaggeration': 0
+        'u_exaggeration': 0,
+        'u_tile_tl_up': [0, 0, 1],
+        'u_tile_tr_up': [0, 0, 1],
+        'u_tile_br_up': [0, 0, 1],
+        'u_tile_bl_up': [0, 0, 1],
+        'u_tile_up_scale': 1
     };
 }

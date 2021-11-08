@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+    <style>
+    .map-overlay {
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        position: absolute;
+        width: 200px;
+        top: 0;
+        left: 0;
+        padding: 10px;
+    }
+
+    .map-overlay .map-overlay-inner {
+        background-color: #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .map-overlay-inner fieldset {
+        border: none;
+        padding: 0;
+        margin: 0 0 10px;
+    }
+
+    .map-overlay-inner fieldset:last-child {
+        margin: 0;
+    }
+
+    .map-overlay-inner select,
+    .map-overlay-inner input {
+        width: 100%;
+    }
+
+    .map-overlay-inner label {
+        display: block;
+        font-weight: bold;
+        margin: 0 0 5px;
+    }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div class="map-overlay top">
+    <details open>
+    <summary>Toggle controls</summary>
+    <div class="map-overlay-inner">
+        <fieldset>
+            <label>Select style</label>
+            <select id="style" name="style">
+                <option value="streets-v11">Streets</option>
+                <option value="satellite-v9">Satellite</option>
+            </select>
+        </fieldset>
+        <fieldset>
+            <label>Select projection</label>
+            <select id="projection" name="projection">
+                <option value="albers" selected>Albers</option>
+                <option value="equalEarth">Equal Earth</option>
+                <option value="equirectangular">Equirectangular</option>
+                <option value="lambertConformalConic">
+                    Lambert Conformal Conic
+                </option>
+                <option value="mercator">Mercator</option>
+                <option value="naturalEarth">Natural Earth</option>
+                <option value="winkelTripel">Winkel Tripel</option>
+            </select>
+        </fieldset>
+        <fieldset class="conic-param-input">
+            <label>Center Longitude: <span id="lng-value">0</span></label>
+            <input
+                id="lng"
+                type="range"
+                min="-180"
+                max="180"
+                step="any"
+                value="0"
+            />
+        </fieldset>
+        <fieldset class="conic-param-input">
+            <label>Center Latitude: <span id="lat-value">30</span></label>
+            <input
+                id="lat"
+                type="range"
+                min="-90"
+                max="90"
+                step="any"
+                value="30"
+            />
+        </fieldset>
+        <fieldset class="conic-param-input">
+            <label
+                >Southern Parallel Lat: <span id="lat1-value">29.5</span></label
+            >
+            <input
+                id="lat1"
+                type="range"
+                min="-90"
+                max="90"
+                step="any"
+                value="29.5"
+            />
+        </fieldset>
+        <fieldset class="conic-param-input">
+            <label
+                >Northern Parallel Lat: <span id="lat2-value">45.5</span></label
+            >
+            <input
+                id="lat2"
+                type="range"
+                min="-90"
+                max="90"
+                step="any"
+                value="45.5"
+            />
+        </fieldset>
+        <fieldset>
+            <label>Show Debug Tiles:</label>
+            <input id="debug" type="checkbox">
+        </fieldset>
+    </div>
+    </details>
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    hash: true,
+    style: 'mapbox://styles/mapbox/streets-v11',
+    zoom: 0,
+    center: [0, 1],
+    projection: {
+        name: 'albers'
+    }
+});
+
+const projectionInput = document.getElementById('projection');
+const styleInput = document.getElementById('style');
+const debugInput = document.getElementById('debug');
+const conicParamInputs =
+    document.getElementsByClassName('conic-param-input');
+const lngInput = document.getElementById('lng');
+const lngValue = document.getElementById('lng-value');
+const latInput = document.getElementById('lat');
+const latValue = document.getElementById('lat-value');
+const lat1Input = document.getElementById('lat1');
+const lat1Value = document.getElementById('lat1-value');
+const lat2Input = document.getElementById('lat2');
+const lat2Value = document.getElementById('lat2-value');
+
+projectionInput.addEventListener('change', (e) => {
+    const isConic = ['albers', 'lambertConformalConic'].includes(
+        e.target.value
+    );
+
+    // Hide non-conic projection params
+    for (const input of conicParamInputs) {
+        input.style.display = isConic ? 'block' : 'none';
+    }
+
+    const projection = isConic ? {
+        name: e.target.value
+    } : e.target.value;
+
+    map.setProjection(projection);
+
+    if (isConic) {
+        const p = map.getProjection();
+        lngInput.value = p.center[0];
+        latInput.value = p.center[1];
+        lat1Input.value = p.parallels[0];
+        lat2Input.value = p.parallels[1];
+        for (const [input, value] of inputs) {
+            value.textContent = input.value;
+        }
+    }
+});
+
+styleInput.addEventListener('change', () => {
+    map.setStyle('mapbox://styles/mapbox/' + styleInput.value);
+});
+debugInput.addEventListener('change', () => {
+    map.showTileBoundaries = debugInput.checked;
+});
+
+const inputs = [
+    [lngInput, lngValue],
+    [latInput, latValue],
+    [lat1Input, lat1Value],
+    [lat2Input, lat2Value]
+];
+
+for (const [input, value] of inputs) {
+    input.addEventListener('change', (e) => {
+        value.textContent = e.target.value;
+        map.setProjection({
+            name: projectionInput.value,
+            center: [Number(lngInput.value), Number(latInput.value)],
+            parallels: [Number(lat1Input.value), Number(lat2Input.value)]
+        });
+    });
+}
+
+</script>
+</body>
+</html>

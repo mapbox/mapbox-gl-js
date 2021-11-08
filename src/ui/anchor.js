@@ -22,11 +22,3 @@ export const anchorTranslate: {[_: Anchor]: string} = {
     'left': 'translate(0,-50%)',
     'right': 'translate(-100%,-50%)'
 };
-
-export function applyAnchorClass(element: HTMLElement, anchor: Anchor, prefix: string) {
-    const classList = element.classList;
-    for (const key in anchorTranslate) {
-        classList.remove(`mapboxgl-${prefix}-anchor-${key}`);
-    }
-    classList.add(`mapboxgl-${prefix}-anchor-${anchor}`);
-}

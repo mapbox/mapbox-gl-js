@@ -19,7 +19,7 @@ import type {Cancelable} from '../types/cancelable.js';
 
 /**
  * A source containing GeoJSON.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-geojson) for detailed documentation of options.)
+ * See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-geojson) for detailed documentation of options.
  *
  * @example
  * map.addSource('some id', {
@@ -29,39 +29,39 @@ import type {Cancelable} from '../types/cancelable.js';
  *
  * @example
  * map.addSource('some id', {
- *    type: 'geojson',
- *    data: {
- *        "type": "FeatureCollection",
- *        "features": [{
- *            "type": "Feature",
- *            "properties": {},
- *            "geometry": {
- *                "type": "Point",
- *                "coordinates": [
- *                    -76.53063297271729,
- *                    39.18174077994108
- *                ]
- *            }
- *        }]
- *    }
+ *     type: 'geojson',
+ *     data: {
+ *         "type": "FeatureCollection",
+ *         "features": [{
+ *             "type": "Feature",
+ *             "properties": {},
+ *             "geometry": {
+ *                 "type": "Point",
+ *                 "coordinates": [
+ *                     -76.53063297271729,
+ *                     39.18174077994108
+ *                 ]
+ *             }
+ *         }]
+ *     }
  * });
  *
  * @example
  * map.getSource('some id').setData({
- *   "type": "FeatureCollection",
- *   "features": [{
- *       "type": "Feature",
- *       "properties": { "name": "Null Island" },
- *       "geometry": {
- *           "type": "Point",
- *           "coordinates": [ 0, 0 ]
- *       }
- *   }]
+ *     "type": "FeatureCollection",
+ *     "features": [{
+ *         "type": "Feature",
+ *         "properties": {"name": "Null Island"},
+ *         "geometry": {
+ *             "type": "Point",
+ *             "coordinates": [ 0, 0 ]
+ *         }
+ *     }]
  * });
- * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
- * @see [Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
- * @see [Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
- * @see [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
+ * @see [Example: Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+ * @see [Example: Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
+ * @see [Example: Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
+ * @see [Example: Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
  */
 class GeoJSONSource extends Evented implements Source {
     type: 'geojson';
@@ -155,8 +155,26 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * Sets the GeoJSON data and re-renders the map.
      *
-     * @param {Object|string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
-     * @returns {GeoJSONSource} this
+     * @param {Object | string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
+     * @example
+     * map.addSource('source_id', {
+     *     type: 'geojson',
+     *     data: {}
+     * });
+     * const geojsonSource = map.getSource('source_id');
+     * // Update the data after the GeoJSON source was created
+     * geojsonSource.setData({
+     *     "type": "FeatureCollection",
+     *     "features": [{
+     *         "type": "Feature",
+     *         "properties": {"name": "Null Island"},
+     *         "geometry": {
+     *             "type": "Point",
+     *             "coordinates": [ 0, 0 ]
+     *         }
+     *     }]
+     * });
      */
     setData(data: GeoJSON | string) {
         this._data = data;
@@ -167,9 +185,32 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * For clustered sources, fetches the zoom at which the given cluster expands.
      *
-     * @param clusterId The value of the cluster's `cluster_id` property.
-     * @param callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
-     * @returns {GeoJSONSource} this
+     * @param {number} clusterId The value of the cluster's `cluster_id` property.
+     * @param {Function} callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
+     * @example
+     * // Assuming the map has a layer named 'clusters' and a source 'earthquakes'
+     * // The following creates a camera animation on cluster feature click
+     * map.on('click', 'clusters', (e) => {
+     *     const features = map.queryRenderedFeatures(e.point, {
+     *         layers: ['clusters']
+     *     });
+     *
+     *     const clusterId = features[0].properties.cluster_id;
+     *
+     *     // Ease the camera to the next cluster expansion
+     *     map.getSource('earthquakes').getClusterExpansionZoom(
+     *         clusterId,
+     *         (err, zoom) => {
+     *             if (!err) {
+     *                 map.easeTo({
+     *                     center: features[0].geometry.coordinates,
+     *                     zoom
+     *                 });
+     *             }
+     *         }
+     *     );
+     * });
      */
     getClusterExpansionZoom(clusterId: number, callback: Callback<number>) {
         this.actor.send('geojson.getClusterExpansionZoom', {clusterId, source: this.id}, callback);
@@ -179,9 +220,25 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * For clustered sources, fetches the children of the given cluster on the next zoom level (as an array of GeoJSON features).
      *
-     * @param clusterId The value of the cluster's `cluster_id` property.
-     * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
-     * @returns {GeoJSONSource} this
+     * @param {number} clusterId The value of the cluster's `cluster_id` property.
+     * @param {Function} callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
+     * @example
+     * // Retrieve cluster children on click
+     * map.on('click', 'clusters', (e) => {
+     *     const features = map.queryRenderedFeatures(e.point, {
+     *         layers: ['clusters']
+     *     });
+     *
+     *     const clusterId = features[0].properties.cluster_id;
+     *
+     *     clusterSource.getClusterChildren(clusterId, (error, features) => {
+     *         if (!error) {
+     *             console.log('Cluster children:', features);
+     *         }
+     *     });
+     * });
+     *
      */
     getClusterChildren(clusterId: number, callback: Callback<Array<GeoJSONFeature>>) {
         this.actor.send('geojson.getClusterChildren', {clusterId, source: this.id}, callback);
@@ -191,26 +248,26 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * For clustered sources, fetches the original points that belong to the cluster (as an array of GeoJSON features).
      *
-     * @param clusterId The value of the cluster's `cluster_id` property.
-     * @param limit The maximum number of features to return. (Defaults to `10` if a falsy value is given.)
-     * @param offset The number of features to skip (e.g. for pagination). (Defaults to `0` if a falsy value is given.)
-     * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
-     * @returns {GeoJSONSource} this
+     * @param {number} clusterId The value of the cluster's `cluster_id` property.
+     * @param {number} limit The maximum number of features to return. Defaults to `10` if a falsy value is given.
+     * @param {number} offset The number of features to skip (for example, for pagination). Defaults to `0` if a falsy value is given.
+     * @param {Function} callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * // Retrieve cluster leaves on click
-     * map.on('click', 'clusters', function(e) {
-     *   var features = map.queryRenderedFeatures(e.point, {
-     *     layers: ['clusters']
-     *   });
+     * map.on('click', 'clusters', (e) => {
+     *     const features = map.queryRenderedFeatures(e.point, {
+     *         layers: ['clusters']
+     *     });
      *
-     *   var clusterId = features[0].properties.cluster_id;
-     *   var pointCount = features[0].properties.point_count;
-     *   var clusterSource = map.getSource('clusters');
+     *     const clusterId = features[0].properties.cluster_id;
+     *     const pointCount = features[0].properties.point_count;
+     *     const clusterSource = map.getSource('clusters');
      *
-     *   clusterSource.getClusterLeaves(clusterId, pointCount, 0, function(error, features) {
+     *     clusterSource.getClusterLeaves(clusterId, pointCount, 0, (error, features) => {
      *     // Print cluster leaves in the console
-     *     console.log('Cluster leaves:', error, features);
-     *   })
+     *         console.log('Cluster leaves:', error, features);
+     *     });
      * });
      */
     getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {

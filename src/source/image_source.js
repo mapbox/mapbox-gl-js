@@ -5,11 +5,12 @@ import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import {getImage, ResourceType} from '../util/ajax.js';
 import EXTENT from '../data/extent.js';
 import {RasterBoundsArray} from '../data/array_types.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import browser from '../util/browser.js';
+import tileTransform, {getTilePoint} from '../geo/projection/tile_transform.js';
 
 import type {Source} from './source.js';
 import type {CanvasSourceSpecification} from './canvas_source.js';
@@ -27,23 +28,23 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
 
 /**
  * A data source containing an image.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.)
+ * See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.
  *
  * @example
  * // add to map
  * map.addSource('some id', {
- *    type: 'image',
- *    url: 'https://www.mapbox.com/images/foo.png',
- *    coordinates: [
- *        [-76.54, 39.18],
- *        [-76.52, 39.18],
- *        [-76.52, 39.17],
- *        [-76.54, 39.17]
- *    ]
+ *     type: 'image',
+ *     url: 'https://www.mapbox.com/images/foo.png',
+ *     coordinates: [
+ *         [-76.54, 39.18],
+ *         [-76.52, 39.18],
+ *         [-76.52, 39.17],
+ *         [-76.54, 39.17]
+ *     ]
  * });
  *
  * // update coordinates
- * var mySource = map.getSource('some id');
+ * const mySource = map.getSource('some id');
  * mySource.setCoordinates([
  *     [-76.54335737228394, 39.18579907229748],
  *     [-76.52803659439087, 39.1838364847587],
@@ -53,17 +54,17 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
  *
  * // update url and coordinates simultaneously
  * mySource.updateImage({
- *    url: 'https://www.mapbox.com/images/bar.png',
- *    coordinates: [
- *        [-76.54335737228394, 39.18579907229748],
- *        [-76.52803659439087, 39.1838364847587],
- *        [-76.5295386314392, 39.17683392507606],
- *        [-76.54520273208618, 39.17876344106642]
- *    ]
- * })
+ *     url: 'https://www.mapbox.com/images/bar.png',
+ *     coordinates: [
+ *         [-76.54335737228394, 39.18579907229748],
+ *         [-76.52803659439087, 39.1838364847587],
+ *         [-76.5295386314392, 39.17683392507606],
+ *         [-76.54520273208618, 39.17876344106642]
+ *     ]
+ * });
  *
  * map.removeSource('some id');  // remove
- * @see [Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
+ * @see [Example: Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  */
 class ImageSource extends Evented implements Source {
     type: string;
@@ -144,7 +145,29 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} this
+     * @returns {ImageSource} Returns itself to allow for method chaining.
+     * @example
+     * // Add to an image source to the map with some initial URL and coordinates
+     * map.addSource('image_source_id', {
+     *     type: 'image',
+     *     url: 'https://www.mapbox.com/images/foo.png',
+     *     coordinates: [
+     *         [-76.54, 39.18],
+     *         [-76.52, 39.18],
+     *         [-76.52, 39.17],
+     *         [-76.54, 39.17]
+     *     ]
+     * });
+     * // Then update the image URL and coordinates
+     * imageSource.updateImage({
+     *     url: 'https://www.mapbox.com/images/bar.png',
+     *     coordinates: [
+     *         [-76.5433, 39.1857],
+     *         [-76.5280, 39.1838],
+     *         [-76.5295, 39.1768],
+     *         [-76.5452, 39.1787]
+     *     ]
+     * });
      */
     updateImage(options: {url: string, coordinates?: Coordinates}) {
         if (!this.image || !options.url) {
@@ -174,10 +197,30 @@ class ImageSource extends Evented implements Source {
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
-     * @returns {ImageSource} this
+     * @returns {ImageSource} Returns itself to allow for method chaining.
+     * @example
+     * // Add an image source to the map with some initial coordinates
+     * map.addSource('image_source_id', {
+     *     type: 'image',
+     *     url: 'https://www.mapbox.com/images/foo.png',
+     *     coordinates: [
+     *         [-76.54, 39.18],
+     *         [-76.52, 39.18],
+     *         [-76.52, 39.17],
+     *         [-76.54, 39.17]
+     *     ]
+     * });
+     * // Then update the image coordinates
+     * imageSource.setCoordinates([
+     *     [-76.5433, 39.1857],
+     *     [-76.5280, 39.1838],
+     *     [-76.5295, 39.1768],
+     *     [-76.5452, 39.1787]
+     * ]);
      */
     setCoordinates(coordinates: Coordinates) {
         this.coordinates = coordinates;
+        delete this._boundsArray;
 
         // Calculate which mercator tile is suitable for rendering the video in
         // and create a buffer with the corner coordinates. These coordinates
@@ -195,9 +238,23 @@ class ImageSource extends Evented implements Source {
         // level)
         this.minzoom = this.maxzoom = this.tileID.z;
 
+        this.fire(new Event('data', {dataType:'source', sourceDataType: 'content'}));
+        return this;
+    }
+
+    _clear() {
+        delete this._boundsArray;
+    }
+
+    _makeBoundsArray() {
+        const tileTr = tileTransform(this.tileID, this.map.transform.projection);
+
         // Transform the corner coordinates into the coordinate space of our
         // tile.
-        const tileCoords = cornerCoords.map((coord) => this.tileID.getTilePoint(coord)._round());
+        const tileCoords = this.coordinates.map((coord) => {
+            const projectedCoord = tileTr.projection.project(coord[0], coord[1]);
+            return getTilePoint(tileTr, projectedCoord)._round();
+        });
 
         this._boundsArray = new RasterBoundsArray();
         this._boundsArray.emplaceBack(tileCoords[0].x, tileCoords[0].y, 0, 0);
@@ -210,7 +267,6 @@ class ImageSource extends Evented implements Source {
             delete this.boundsBuffer;
         }
 
-        this.fire(new Event('data', {dataType:'source', sourceDataType: 'content'}));
         return this;
     }
 
@@ -222,8 +278,12 @@ class ImageSource extends Evented implements Source {
         const context = this.map.painter.context;
         const gl = context.gl;
 
+        if (!this._boundsArray) {
+            this._makeBoundsArray();
+        }
+
         if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
         }
 
         if (!this.boundsSegments) {

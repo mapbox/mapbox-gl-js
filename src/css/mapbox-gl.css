@@ -97,6 +97,7 @@
     box-sizing: border-box;
     background-color: transparent;
     cursor: pointer;
+    overflow: hidden;
 }
 
 .mapboxgl-ctrl-group button + button {
@@ -702,6 +703,28 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.35);
 }
 
+.mapboxgl-user-location-show-heading .mapboxgl-user-location-heading {
+    width: 0;
+    height: 0;
+}
+
+.mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::before,
+.mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::after {
+    content: "";
+    border-bottom: 7.5px solid #4aa1eb;
+    position: absolute;
+}
+
+.mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::before {
+    border-left: 7.5px solid transparent;
+    transform: translate(0, -28px) skewY(-20deg);
+}
+
+.mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::after {
+    border-right: 7.5px solid transparent;
+    transform: translate(7.5px, -28px) skewY(20deg);
+}
+
 @keyframes mapboxgl-user-location-dot-pulse {
     0%   { transform: scale(1); opacity: 1; }
     70%  { transform: scale(3); opacity: 0; }
@@ -745,4 +768,35 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     .mapbox-improve-map {
         display: none;
     }
+}
+
+.mapboxgl-touch-pan-blocker,
+.mapboxgl-scroll-zoom-blocker {
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    justify-content: center;
+    text-align: center;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.75s ease-in-out;
+    transition-delay: 1s;
+}
+
+.mapboxgl-touch-pan-blocker-show,
+.mapboxgl-scroll-zoom-blocker-show {
+    opacity: 1;
+    transition: opacity 0.1s ease-in-out;
+}
+
+.mapboxgl-canvas-container.mapboxgl-touch-pan-blocker-override.mapboxgl-scrollable-page,
+.mapboxgl-canvas-container.mapboxgl-touch-pan-blocker-override.mapboxgl-scrollable-page .mapboxgl-canvas {
+    touch-action: pan-x pan-y;
 }

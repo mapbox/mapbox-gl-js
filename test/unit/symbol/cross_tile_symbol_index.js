@@ -8,8 +8,8 @@ const styleLayer = {
 
 function makeSymbolInstance(x, y, key) {
     return {
-        anchorX: x,
-        anchorY: y,
+        tileAnchorX: x,
+        tileAnchorY: y,
         key
     };
 }

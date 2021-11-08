@@ -66,11 +66,11 @@ class SourceCache extends Evented {
         source.on('data', (e) => {
             // this._sourceLoaded signifies that the TileJSON is loaded if applicable.
             // if the source type does not come with a TileJSON, the flag signifies the
-            // source data has loaded (i.e geojson has been tiled on the worker and is ready)
+            // source data has loaded (in other words, GeoJSON has been tiled on the worker and is ready)
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') this._sourceLoaded = true;
 
             // for sources with mutable data, this event fires when the underlying data
-            // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
+            // to a source is changed (for example, using [GeoJSONSource#setData](https://docs.mapbox.com/mapbox-gl-js/api/sources/#geojsonsource#setdata) or [ImageSource#setCoordinates](https://docs.mapbox.com/mapbox-gl-js/api/sources/#imagesource#setcoordinates))
             if (this._sourceLoaded && !this._paused && e.dataType === "source" && e.sourceDataType === 'content') {
                 this.reload();
                 if (this.transform) {
@@ -415,7 +415,7 @@ class SourceCache extends Evented {
 
     handleWrapJump(lng: number) {
         // On top of the regular z/x/y values, TileIDs have a `wrap` value that specify
-        // which cppy of the world the tile belongs to. For example, at `lng: 10` you
+        // which copy of the world the tile belongs to. For example, at `lng: 10` you
         // might render z/x/y/0 while at `lng: 370` you would render z/x/y/1.
         //
         // When lng values get wrapped (going from `lng: 370` to `long: 10`) you expect
@@ -595,7 +595,7 @@ class SourceCache extends Evented {
         if (idealTileIDs.length === 0) { return retain; }
 
         const checked: {[_: number | string]: boolean } = {};
-        const minZoom = idealTileIDs[idealTileIDs.length - 1].overscaledZ;
+        const minZoom = idealTileIDs.reduce((min, id) => Math.min(min, id.overscaledZ), Infinity);
         const maxZoom = idealTileIDs[0].overscaledZ;
         assert(minZoom <= maxZoom);
         const minCoveringZoom = Math.max(maxZoom - SourceCache.maxOverzooming, this._source.minzoom);
@@ -636,7 +636,7 @@ class SourceCache extends Evented {
                     continue; // tile is covered by overzoomed child
                 }
             } else {
-                // check if all 4 immediate children are loaded (i.e. the missing ideal tile is covered)
+                // Check if all 4 immediate children are loaded (in other words, the missing ideal tile is covered)
                 const children = tileID.children(this._source.maxzoom);
 
                 if (retain[children[0].key] &&
@@ -737,7 +737,8 @@ class SourceCache extends Evented {
 
         const cached = Boolean(tile);
         if (!cached) {
-            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom);
+            const painter = this.map ? this.map.painter : null;
+            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._source.type === 'raster' || this._source.type === 'raster-dem');
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
@@ -795,7 +796,8 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Remove all tiles from this pyramid
+     * Remove all tiles from this pyramid.
+     * @private
      */
     clearTiles() {
         this._shouldReloadOnResume = false;
@@ -803,6 +805,8 @@ class SourceCache extends Evented {
 
         for (const id in this._tiles)
             this._removeTile(+id);
+
+        if (this._source._clear) this._source._clear();
 
         this._cache.reset();
     }

@@ -3,7 +3,7 @@
 import {getVideo, ResourceType} from '../util/ajax.js';
 
 import ImageSource from './image_source.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import {ErrorEvent} from '../util/evented.js';
@@ -16,26 +16,26 @@ import type {VideoSourceSpecification} from '../style-spec/types.js';
 
 /**
  * A data source containing video.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-video) for detailed documentation of options.)
+ * See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-video) for detailed documentation of options.
  *
  * @example
  * // add to map
  * map.addSource('some id', {
- *    type: 'video',
- *    url: [
- *        'https://www.mapbox.com/blog/assets/baltimore-smoke.mp4',
- *        'https://www.mapbox.com/blog/assets/baltimore-smoke.webm'
- *    ],
- *    coordinates: [
- *        [-76.54, 39.18],
- *        [-76.52, 39.18],
- *        [-76.52, 39.17],
- *        [-76.54, 39.17]
- *    ]
+ *     type: 'video',
+ *     url: [
+ *         'https://www.mapbox.com/blog/assets/baltimore-smoke.mp4',
+ *         'https://www.mapbox.com/blog/assets/baltimore-smoke.webm'
+ *     ],
+ *     coordinates: [
+ *         [-76.54, 39.18],
+ *         [-76.52, 39.18],
+ *         [-76.52, 39.17],
+ *         [-76.54, 39.17]
+ *     ]
  * });
  *
  * // update
- * var mySource = map.getSource('some id');
+ * const mySource = map.getSource('some id');
  * mySource.setCoordinates([
  *     [-76.54335737228394, 39.18579907229748],
  *     [-76.52803659439087, 39.1838364847587],
@@ -44,7 +44,7 @@ import type {VideoSourceSpecification} from '../style-spec/types.js';
  * ]);
  *
  * map.removeSource('some id');  // remove
- * @see [Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
+ * @see [Example: Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
 class VideoSource extends ImageSource {
     options: VideoSourceSpecification;
@@ -79,6 +79,9 @@ class VideoSource extends ImageSource {
                 this.video = video;
                 this.video.loop = true;
 
+                // Prevent the video from taking over the screen in iOS
+                this.video.setAttribute('playsinline', '');
+
                 // Start repainting when video starts playing. hasTransition() will then return
                 // true to trigger additional frames as long as the videos continues playing.
                 this.video.addEventListener('playing', () => {
@@ -96,6 +99,13 @@ class VideoSource extends ImageSource {
 
     /**
      * Pauses the video.
+     *
+     * @example
+     * // Assuming a video source identified by video_source_id was added to the map
+     * const videoSource = map.getSource('video_source_id');
+     *
+     * // Pauses the video
+     * videoSource.pause();
      */
     pause() {
         if (this.video) {
@@ -105,6 +115,13 @@ class VideoSource extends ImageSource {
 
     /**
      * Plays the video.
+     *
+     * @example
+     * // Assuming a video source identified by video_source_id was added to the map
+     * const videoSource = map.getSource('video_source_id');
+     *
+     * // Starts the video
+     * videoSource.play();
      */
     play() {
         if (this.video) {
@@ -129,6 +146,11 @@ class VideoSource extends ImageSource {
      * Returns the HTML `video` element.
      *
      * @returns {HTMLVideoElement} The HTML `video` element.
+     * @example
+     * // Assuming a video source identified by video_source_id was added to the map
+     * const videoSource = map.getSource('video_source_id');
+     *
+     * videoSource.getVideo(); // <video crossorigin="Anonymous" loop="">...</video>
      */
     getVideo() {
         return this.video;
@@ -150,7 +172,31 @@ class VideoSource extends ImageSource {
      * @method setCoordinates
      * @instance
      * @memberof VideoSource
-     * @returns {VideoSource} this
+     * @returns {VideoSource} Returns itself to allow for method chaining.
+     * @example
+     * // Add a video source to the map to map
+     * map.addSource('video_source_id', {
+     *     type: 'video',
+     *     url: [
+     *         'https://www.mapbox.com/blog/assets/baltimore-smoke.mp4',
+     *         'https://www.mapbox.com/blog/assets/baltimore-smoke.webm'
+     *     ],
+     *     coordinates: [
+     *         [-76.54, 39.18],
+     *         [-76.52, 39.18],
+     *         [-76.52, 39.17],
+     *         [-76.54, 39.17]
+     *     ]
+     * });
+     *
+     * // Then update the video source coordinates by new coordinates
+     * const videoSource = map.getSource('video_source_id');
+     * videoSource.setCoordinates([
+     *     [-76.5433, 39.1857],
+     *     [-76.5280, 39.1838],
+     *     [-76.5295, 39.1768],
+     *     [-76.5452, 39.1787]
+     * ]);
      */
     // setCoordinates inherited from ImageSource
 
@@ -162,8 +208,12 @@ class VideoSource extends ImageSource {
         const context = this.map.painter.context;
         const gl = context.gl;
 
+        if (!this._boundsArray) {
+            this._makeBoundsArray();
+        }
+
         if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
         }
 
         if (!this.boundsSegments) {

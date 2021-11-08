@@ -246,7 +246,7 @@ class HandlerManager {
         const tapDragZoom = new TapDragZoomHandler();
         this._add('tapDragZoom', tapDragZoom);
 
-        const touchPitch = map.touchPitch = new TouchPitchHandler();
+        const touchPitch = map.touchPitch = new TouchPitchHandler(map);
         this._add('touchPitch', touchPitch);
 
         const mouseRotate = new MouseRotateHandler(options);
@@ -256,7 +256,7 @@ class HandlerManager {
         this._add('mousePitch', mousePitch, ['mouseRotate']);
 
         const mousePan = new MousePanHandler(options);
-        const touchPan = new TouchPanHandler(options);
+        const touchPan = new TouchPanHandler(map, options);
         map.dragPan = new DragPanHandler(el, mousePan, touchPan);
         this._add('mousePan', mousePan);
         this._add('touchPan', touchPan, ['touchZoom', 'touchRotate']);
@@ -309,6 +309,7 @@ class HandlerManager {
     isZooming() {
         return !!this._eventsInProgress.zoom || this._map.scrollZoom.isZooming();
     }
+
     isRotating() {
         return !!this._eventsInProgress.rotate;
     }
@@ -343,11 +344,6 @@ class HandlerManager {
     }
 
     handleEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
-
-        if (e.type === 'blur') {
-            this.stop(true);
-            return;
-        }
 
         this._updatingCamera = true;
         assert(e.timeStamp !== undefined);
@@ -552,7 +548,7 @@ class HandlerManager {
                 vec3.scale(zoomVec, aroundRay.dir, movement);
             } else if (tr._terrainEnabled()) {
                 // Special handling is required if the ray created from the cursor is heading up.
-                // This scenario is possible if user is trying to zoom towards e.g. a hill or a mountain.
+                // This scenario is possible if user is trying to zoom towards a feature like a hill or a mountain.
                 // Convert zoomDelta to a movement vector as if the camera would be orbiting around the picked point
                 const movement = tr.zoomDeltaToMovement(pickedPosition, zoomDelta);
                 vec3.scale(zoomVec, aroundRay.dir, movement);

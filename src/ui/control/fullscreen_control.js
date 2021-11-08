@@ -21,7 +21,7 @@ type Options = {
  *
  * @example
  * map.addControl(new mapboxgl.FullscreenControl({container: document.querySelector('body')}));
- * @see [View a fullscreen map](https://www.mapbox.com/mapbox-gl-js/example/fullscreen/)
+ * @see [Example: View a fullscreen map](https://www.mapbox.com/mapbox-gl-js/example/fullscreen/)
  */
 
 class FullscreenControl {
@@ -90,7 +90,7 @@ class FullscreenControl {
     _updateTitle() {
         const title = this._getTitle();
         this._fullscreenButton.setAttribute("aria-label", title);
-        this._fullscreenButton.title = title;
+        if (this._fullscreenButton.firstElementChild) this._fullscreenButton.firstElementChild.setAttribute('title', title);
     }
 
     _getTitle() {

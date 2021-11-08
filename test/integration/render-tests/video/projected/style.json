@@ -1,0 +1,66 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0005,
+      "operations": [
+        ["setProjection", "albers"],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 3,
+  "bearing": -96,
+  "sources": {
+    "video": {
+      "type": "video",
+      "coordinates": [
+        [
+          -10,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          -10
+        ],
+        [
+          -10,
+          -10
+        ]
+      ],
+      "urls": [
+        "https://static-assets.mapbox.com/mapbox-gl-js/drone.mp4",
+        "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm"
+      ]
+    },
+    "graticule": {
+      "type": "geojson",
+      "data": "local://data/graticule.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "video",
+      "type": "raster",
+      "source": "video",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "graticule",
+      "source": "graticule",
+      "type": "line",
+      "paint": {
+          "line-width": 1,
+          "line-color": "#aaa"
+      }
+    }
+  ]
+}

@@ -52,37 +52,37 @@ export function renderStyleImage(image: StyleImage) {
  * can be used to update the image.
  *
  * @interface StyleImageInterface
- * @property {number} width
- * @property {number} height
- * @property {Uint8Array | Uint8ClampedArray} data
+ * @property {number} width Width in pixels.
+ * @property {number} height Height in pixels.
+ * @property {Uint8Array | Uint8ClampedArray} data Byte array representing the image. To ensure space for all four channels in an RGBA color, size must be width × height × 4.
  *
- * @see [Add an animated icon to the map.](https://docs.mapbox.com/mapbox-gl-js/example/add-image-animated/)
+ * @see [Example: Add an animated icon to the map.](https://docs.mapbox.com/mapbox-gl-js/example/add-image-animated/)
  *
  * @example
- * var flashingSquare = {
+ * const flashingSquare = {
  *     width: 64,
  *     height: 64,
  *     data: new Uint8Array(64 * 64 * 4),
  *
- *     onAdd: function(map) {
+ *     onAdd(map) {
  *         this.map = map;
  *     },
  *
- *     render: function() {
+ *     render() {
  *         // keep repainting while the icon is on the map
  *         this.map.triggerRepaint();
  *
  *         // alternate between black and white based on the time
- *         var value = Math.round(Date.now() / 1000) % 2 === 0  ? 255 : 0;
+ *         const value = Math.round(Date.now() / 1000) % 2 === 0  ? 255 : 0;
  *
  *         // check if image needs to be changed
  *         if (value !== this.previousValue) {
  *             this.previousValue = value;
  *
- *             var bytesPerPixel = 4;
- *             for (var x = 0; x < this.width; x++) {
- *                 for (var y = 0; y < this.height; y++) {
- *                     var offset = (y * this.width + x) * bytesPerPixel;
+ *             const bytesPerPixel = 4;
+ *             for (let x = 0; x < this.width; x++) {
+ *                 for (let y = 0; y < this.height; y++) {
+ *                     const offset = (y * this.width + x) * bytesPerPixel;
  *                     this.data[offset + 0] = value;
  *                     this.data[offset + 1] = value;
  *                     this.data[offset + 2] = value;
@@ -94,9 +94,9 @@ export function renderStyleImage(image: StyleImage) {
  *             return true;
  *         }
  *     }
- *  }
+ * };
  *
- *  map.addImage('flashing_square', flashingSquare);
+ * map.addImage('flashing_square', flashingSquare);
  */
 
 /**

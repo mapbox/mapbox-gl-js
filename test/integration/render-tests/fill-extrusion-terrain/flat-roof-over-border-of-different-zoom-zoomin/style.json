@@ -1,0 +1,149 @@
+{
+  "version": 8,
+  "metadata": {
+    "description": "Tests various cases of flatRoofsUpdate().",
+    "test": {
+      "height": 512,
+      "width": 512,
+      "operations": [
+        ["wait"],
+        [
+          "setZoom",
+          16
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/const/0-0-0.terrain.512.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 512
+    },
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "pitch": 50,
+  "bearing": 0,
+  "zoom": 15.5,
+  "center": [
+    -122.448383,
+    37.743011
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "blue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightgreen",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "building",
+      "source": "mapbox",
+      "paint": {
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          15.0,
+          0.0,
+          16.0,
+          1.0
+        ],
+        "fill-outline-color": [
+          "rgba",
+          205.00001525878907,
+          202.00001525878907,
+          198.00001525878907,
+          1.0
+        ],
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          15.0,
+          [
+            "rgba",
+            223.00001525878907,
+            220.00001525878907,
+            215.00001525878907,
+            1.0
+          ],
+          16.0,
+          [
+            "rgba",
+            220.00001525878907,
+            217.00001525878907,
+            214.00001525878907,
+            1.0
+          ]
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "!=",
+          [
+            "get",
+            "type"
+          ],
+          "building:part"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "underground"
+          ],
+          "false"
+        ]
+      ],
+      "source-layer": "building",
+      "type": "fill",
+      "minzoom": 15.0
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "filter": ["==", "extrude", "true"],
+      "paint": {
+        "fill-extrusion-color": "gray",
+        "fill-extrusion-opacity": 0.7,
+        "fill-extrusion-height": ["get", "height"]
+      }
+    }
+  ]
+}
