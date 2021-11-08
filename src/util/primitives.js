@@ -1,6 +1,7 @@
 // @flow
 
 import {vec3, vec4} from 'gl-matrix';
+import assert from 'assert';
 
 class Ray {
     pos: vec3;
@@ -21,6 +22,49 @@ class Ray {
         const intersection = vec3.scaleAndAdd(vec3.create(), this.pos, this.dir, t);
         vec3.copy(out, intersection);
         return true;
+    }
+
+    closestPointOnSphere(center: vec3, r: number, out: vec3): boolean {
+        assert(vec3.squaredLength(this.dir) > 0.0 && r >= 0.0);
+        if (vec3.equals(this.pos, center) || r === 0.0) {
+            out = [0.0, 0.0, 0.0];
+            return false;
+        }
+
+        const centerToP = vec3.sub([], center, this.pos);
+        const a = vec3.dot(this.dir, this.dir);
+        const b = 2.0 * vec3.dot(centerToP, this.dir);
+        const c = vec3.dot(centerToP, centerToP) - r * r;
+        const d = b * b - 4 * a * c;
+
+        if (d < 0.0) {
+            // No intersection, find distance between closest points
+            vec3.scale(centerToP, centerToP, -1.0);
+
+            const t = Math.max(vec3.dot(centerToP, this.dir), 0.0);
+            const pointOnRay = vec3.add([], this.pos, vec3.scale([], this.dir, t));
+            const pointToGlobe = vec3.sub([], center, pointOnRay);
+
+            const pointToGlobeLength = vec3.length(pointToGlobe);
+            vec3.scale(pointToGlobe, pointToGlobe, 1.0 - r / pointToGlobeLength);
+            vec3.sub(out, vec3.add([], pointOnRay, pointToGlobe), center);
+
+            return false;
+        } else {
+            assert(a > 0.0);
+            const t = (-b - Math.sqrt(d)) / (2.0 * a);
+            if (t < 0.0) {
+                // Ray is pointing away from the sphere
+                out = vec3.scale(centerToP, r / vec3.length(centerToP));
+                return false;
+            } else {
+                const dir = vec3.scale([], this.dir, t);
+                const pos = vec3.add([], this.pos, dir);
+
+                vec3.sub(out, pos, center);
+                return true;
+            }
+        }
     }
 }
 

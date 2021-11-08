@@ -1,6 +1,7 @@
 // @flow
 import assert from 'assert';
 import {mat4, vec3} from 'gl-matrix';
+import {clamp} from '../../util/util.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import type Transform from '../../geo/transform.js';
@@ -86,10 +87,6 @@ class MercatorTileTransform {
         return this._tr.rayIntersectionCoordinate(this._tr.pointRayIntersection(clamped, z));
     }
 
-    cullTile(): boolean {
-        return false;
-    }
-
     upVector(): vec3 {
         return [0, 0, 1];
     }
@@ -122,6 +119,32 @@ export default {
 
     pixelsPerMeter(lat: number, worldSize: number) {
         return mercatorZfromAltitude(1, lat) * worldSize;
+    },
+
+    farthestPixelDistance(tr: Transform): number {
+        const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
+
+        // Find the distance from the center point [width/2 + offset.x, height/2 + offset.y] to the
+        // center top point [width/2 + offset.x, 0] in Z units, using the law of sines.
+        // 1 Z unit is equivalent to 1 horizontal px at the center of the map
+        // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
+        const groundAngle = Math.PI / 2 + tr._pitch;
+        const fovAboveCenter = tr.fovAboveCenter;
+
+        // Adjust distance to MSL by the minimum possible elevation visible on screen,
+        // this way the far plane is pushed further in the case of negative elevation.
+        const minElevationInPixels = tr.elevation ?
+            tr.elevation.getMinElevationBelowMSL() * pixelsPerMeter :
+            0;
+        const cameraToSeaLevelDistance = ((tr._camera.position[2] * tr.worldSize) - minElevationInPixels) / Math.cos(tr._pitch);
+        const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * cameraToSeaLevelDistance / Math.sin(clamp(Math.PI - groundAngle - fovAboveCenter, 0.01, Math.PI - 0.01));
+
+        // Calculate z distance of the farthest fragment that should be rendered.
+        const furthestDistance = Math.cos(Math.PI / 2 - tr._pitch) * topHalfSurfaceDistance + cameraToSeaLevelDistance;
+        const horizonDistance = cameraToSeaLevelDistance * (1 / tr._horizonShift);
+
+        // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
+        return Math.min(furthestDistance * 1.01, horizonDistance);
     },
 
     createTileTransform(tr: Transform, worldSize: number): Object {
