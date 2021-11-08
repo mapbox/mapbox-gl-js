@@ -945,6 +945,8 @@ export class Placement {
             }
         };
 
+        let visibleInstanceCount = 0;
+
         for (let s = 0; s < bucket.symbolInstances.length; s++) {
             const symbolInstance = bucket.symbolInstances.get(s);
             const {
@@ -972,6 +974,7 @@ export class Placement {
             const placedOrientation = this.placedOrientations[symbolInstance.crossTileID];
             const horizontalHidden = placedOrientation === WritingMode.vertical;
             const verticalHidden = placedOrientation === WritingMode.horizontal || placedOrientation === WritingMode.horizontalOnly;
+            if ((hasText || hasIcon) && !opacityState.isHidden()) visibleInstanceCount++;
 
             if (hasText) {
                 const packedOpacity = packOpacity(opacityState.text);
@@ -1088,7 +1091,7 @@ export class Placement {
                 }
             }
         }
-
+        bucket.fullyClipped = visibleInstanceCount === 0;
         bucket.sortFeatures(this.transform.angle);
         if (this.retainedQueryData[bucket.bucketInstanceId]) {
             this.retainedQueryData[bucket.bucketInstanceId].featureSortOrder = bucket.featureSortOrder;
