@@ -2396,7 +2396,7 @@ class Map extends Camera {
         this._transitionFromGlobe = false;
 
         if (projection.requiresDraping) {
-            this._setTerrain({source: 'mapbox-dem', exaggeration: 5.0}, "projection");
+            this._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
         } else {
             this._setTerrain(null, "projection");
         }

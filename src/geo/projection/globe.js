@@ -133,10 +133,6 @@ class GlobeTileTransform {
         return pixelsPerMeterECEF * maxTileScale;
     }
 
-    tileSpaceUpVectorScale(): number {
-        return mercatorZfromAltitude(1, this._tr.center.lat) * this._tr.worldSize;
-    }
-
     _calculateGlobeMatrix() {
         const localRadius = EXTENT / (2.0 * Math.PI);
         const wsRadius = this._worldSize / (2.0 * Math.PI);

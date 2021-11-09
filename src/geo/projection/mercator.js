@@ -94,10 +94,6 @@ class MercatorTileTransform {
     upVectorScale(): number {
         return 1;
     }
-
-    tileSpaceUpVectorScale(): number {
-        return 1;
-    }
 }
 
 export default {

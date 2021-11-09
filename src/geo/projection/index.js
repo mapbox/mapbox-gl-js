@@ -22,9 +22,7 @@ export type TileTransform = {
 
     upVectorScale: (id: CanonicalTileID) => number,
 
-    pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate,
-
-    tileSpaceUpVectorScale: () => number
+    pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate
 };
 
 export type Projection = {
