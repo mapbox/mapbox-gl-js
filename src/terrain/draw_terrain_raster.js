@@ -21,7 +21,9 @@ import {
     tileBoundsOnGlobe,
     denormalizeECEF,
     globeToMercatorTransition,
-    GlobeSharedBuffers
+    GlobeSharedBuffers,
+    calculateGlobeMatrix,
+    calculateGlobeMercatorMatrix
 } from '../geo/projection/globe.js';
 import extend from '../style-spec/util/extend.js';
 
@@ -222,8 +224,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     vertexMorphing.update(now);
     const tr = painter.transform;
-    const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
-    const globeMercatorMatrix = tr.calculateGlobeMercatorMatrix(tr.worldSize);
+    const globeMatrix = calculateGlobeMatrix(tr, tr.worldSize);
+    const globeMercatorMatrix = calculateGlobeMercatorMatrix(tr);
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
@@ -396,8 +398,8 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
         context.clear({depth: 1});
         const program = painter.useProgram('globeDepth');
         const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
-        const globeMercatorMatrix = tr.calculateGlobeMercatorMatrix(tr.worldSize);
-        const globeMatrix = tr.calculateGlobeMatrix(tr.worldSize);
+        const globeMercatorMatrix = calculateGlobeMercatorMatrix(tr);
+        const globeMatrix = calculateGlobeMatrix(tr, tr.worldSize);
         const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
         const sharedBuffers = painter.globeSharedBuffers;
 

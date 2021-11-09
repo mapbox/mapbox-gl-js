@@ -2,6 +2,7 @@
 import assert from 'assert';
 import {mat4, vec3} from 'gl-matrix';
 import {clamp} from '../../util/util.js';
+import LngLat from '../lng_lat.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import type Transform from '../../geo/transform.js';
@@ -98,6 +99,9 @@ class MercatorTileTransform {
 
 export default {
     name: 'mercator',
+    requiresDraping: false,
+    supportsWorldCopies: true,
+    zAxisUnit: "meters",
 
     project(lng: number, lat: number) {
         const x = mercatorXfromLng(lng);
@@ -109,9 +113,9 @@ export default {
         return {x, y, z: 0};
     },
 
-    requiresDraping: false,
-    supportsWorldCopies: true,
-    zAxisUnit: "meters",
+    locationPoint(tr: Transform, lngLat: LngLat): Point {
+        return tr._coordinatePoint(tr.locationCoordinate(lngLat), false);
+    },
 
     pixelsPerMeter(lat: number, worldSize: number) {
         return mercatorZfromAltitude(1, lat) * worldSize;

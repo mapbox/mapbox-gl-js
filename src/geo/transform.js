@@ -952,7 +952,7 @@ class Transform {
      * @private
      */
     locationPoint(lnglat: LngLat) {
-        return this._coordinatePoint(this.locationCoordinate(lnglat), false);
+        return this.projection.locationPoint(this, lnglat);
     }
 
     /**
@@ -1292,44 +1292,6 @@ class Transform {
         };
 
         return cache[distanceDataKey];
-    }
-
-    calculateGlobeMatrix(worldSize: number): mat4 {
-        const localRadius = EXTENT / (2.0 * Math.PI);
-        const wsRadius = worldSize / (2.0 * Math.PI);
-        const s = wsRadius / localRadius;
-
-        const lat = clamp(this.center.lat, -this.maxValidLatitude, this.maxValidLatitude);
-        const point = new Point(
-            mercatorXfromLng(this.center.lng) * worldSize,
-            mercatorYfromLat(lat) * worldSize);
-
-        // transform the globe from reference coordinate space to world space
-        const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
-        mat4.scale(posMatrix, posMatrix, [s, s, s]);
-        mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
-        mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
-
-        return posMatrix;
-    }
-
-    calculateGlobeMercatorMatrix(worldSize: number): mat4 {
-        const lat = clamp(this.center.lat, -this.maxValidLatitude, this.maxValidLatitude);
-        const point = new Point(
-            mercatorXfromLng(this.center.lng) * worldSize,
-            mercatorYfromLat(lat) * worldSize);
-
-        const mercatorZ = mercatorZfromAltitude(1, this.center.lat) * worldSize;
-        const projectionScaler = mercatorZ / this.pixelsPerMeter;
-        const zScale = this.pixelsPerMeter;
-        const ws = worldSize / projectionScaler;
-
-        const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
-        mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
-
-        return posMatrix;
     }
 
     /**
