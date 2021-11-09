@@ -269,7 +269,15 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
- * @param {ProjectionSpecification} [options.projection='mercator'] The projection the map should be rendered in. Available projections are Albers ('albers'), Equal Earth ('equalEarth'), Equirectangular/Plate Carrée/WGS84 ('equirectangular'), Lambert ('lambertConformalConic'), Mercator ('mercator'), Natural Earth ('naturalEarth'), and Winkel Tripel ('winkelTripel').
+ * @param {ProjectionSpecification} [options.projection='mercator'] The projection the map should be rendered in.
+ * Supported projections are:
+ *  * [Albers](https://en.wikipedia.org/wiki/Albers_projection) equal-area conic projection as `albers`
+ *  * [Equal Earth](https://en.wikipedia.org/wiki/Equal_Earth_projection) equal-area pseudocylindrical projection as `equalEarth`
+ *  * [Equirectangular](https://en.wikipedia.org/wiki/Equirectangular_projection) (Plate Carrée/WGS84) as `equirectangular`
+ *  * [Lambert Conformal Conic](https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection) as `lambertConformalConic`
+ *  * [Mercator](https://en.wikipedia.org/wiki/Mercator_projection) cylindrical map projection as `mercator`
+ *  * [Natural Earth](https://en.wikipedia.org/wiki/Natural_Earth_projection) pseudocylindrical map projection as `naturalEarth`
+ *  * [Winkel Tripel](https://en.wikipedia.org/wiki/Winkel_tripel_projection) azimuthal map projection as `winkelTripel`
  *  Conic projections such as Albers and Lambert have configurable `center` and `parallels` properties that allow developers to define the region in which the projection has minimal distortion; see the example for how to configure these properties.
  * @example
  * const map = new mapboxgl.Map({
@@ -1016,6 +1024,7 @@ class Map extends Camera {
      *     center: [35, 55],
      *     parallels: [20, 60]
      * });
+     * @see [Example: Use different map projections for web maps](https://docs.mapbox.com/mapbox-gl-js/example/projections/)
      */
     setProjection(projection?: ?ProjectionSpecification | string) {
         this._lazyInitEmptyStyle();
