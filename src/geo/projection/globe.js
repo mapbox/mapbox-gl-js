@@ -6,15 +6,17 @@ import EXTENT from '../../data/extent.js';
 import LngLat from '../lng_lat.js';
 import {degToRad, smoothstep, clamp} from '../../util/util.js';
 import MercatorCoordinate, {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
-import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
+import {CanonicalTileID, UnwrappedTileID, OverscaledTileID} from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
+import Tile from '../../source/tile.js';
 import IndexBuffer from '../../gl/index_buffer.js';
+import type Painter from '../../render/painter.js';
 import SegmentVector from '../../data/segment.js';
 import Point from '@mapbox/point-geometry';
-import {atmosphereLayout} from '../../terrain/globe_attributes.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray} from '../../data/array_types.js';
 import type Transform from '../transform.js';
+import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
 
 class GlobeTileTransform {
     _tr: Transform;
@@ -313,7 +315,7 @@ export default {
 
 export const globeRefRadius = EXTENT / Math.PI / 2.0;
 
-export function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
+function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
     const z = id.z;
 
     const mn = -globeRefRadius;
@@ -411,6 +413,20 @@ function normalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
+function denormalizeECEF(bounds: Aabb): Float64Array {
+    const m = mat4.identity(new Float64Array(16));
+
+    const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
+
+    // Denormalize points to the correct range
+    const st = 1.0 / ((1 << (normBitRange - 1)) - 1);
+    mat4.translate(m, m, bounds.min);
+    mat4.scale(m, m, [maxExt, maxExt, maxExt]);
+    mat4.scale(m, m, [st, st, st]);
+
+    return m;
+}
+
 export function calculateGlobeMatrix(tr: Transform, worldSize: number): mat4 {
     const localRadius = EXTENT / (2.0 * Math.PI);
     const wsRadius = worldSize / (2.0 * Math.PI);
@@ -457,18 +473,67 @@ export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
 }
 
-export function denormalizeECEF(bounds: Aabb): Float64Array {
-    const m = mat4.identity(new Float64Array(16));
+export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID, tiles: number): [VertexBuffer, VertexBuffer] {
+    const context = painter.context;
+    const id = coord.canonical;
+    const tr = painter.transform;
+    let gridBuffer = tile.globeGridBuffer;
+    let poleBuffer = tile.globePoleBuffer;
 
-    const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
+    if (!gridBuffer) {
+        const gridMesh = GlobeSharedBuffers.createGridVertices(id.x, id.y, id.z);
+        gridBuffer = tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
+    }
 
-    // Denormalize points to the correct range
-    const st = 1.0 / ((1 << (normBitRange - 1)) - 1);
-    mat4.translate(m, m, bounds.min);
-    mat4.scale(m, m, [maxExt, maxExt, maxExt]);
-    mat4.scale(m, m, [st, st, st]);
+    if (!poleBuffer) {
+        const poleMesh = GlobeSharedBuffers.createPoleTriangleVertices(tiles, tr.tileSize * tiles, coord.canonical.y === 0);
+        poleBuffer = tile.globePoleBuffer = context.createVertexBuffer(poleMesh, globeLayoutAttributes, false);
+    }
 
-    return m;
+    return [gridBuffer, poleBuffer];
+}
+
+export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4) {
+    const gridTileId = new CanonicalTileID(id.z, Math.pow(2, id.z) / 2, id.y);
+    const bounds = tileBoundsOnGlobe(gridTileId);
+    const decode = denormalizeECEF(bounds);
+    const posMatrix = mat4.clone(globeMatrix);
+    mat4.mul(posMatrix, posMatrix, decode);
+
+    return posMatrix;
+}
+
+export function globeUpVectorMatrix(id: CanonicalTileID, tiles: number) {
+    // Tile up vectors and can be reused for each tiles on the same x-row.
+    // i.e. for each tile id (x, y, z) use pregenerated mesh of (0, y, z).
+    // For this reason the up vectors are rotated first by 'yRotation' to
+    // place them in the correct longitude location.
+    const xOffset = id.x - tiles / 2;
+    const yRotation = xOffset / tiles * Math.PI * 2.0;
+    return mat4.fromYRotation([], yRotation);
+}
+
+export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: Transform) {
+    const poleMatrix = mat4.identity(new Float64Array(16));
+
+    const tileDim = Math.pow(2, id.z);
+    const xOffset = id.x - tileDim / 2;
+    const yRotation = xOffset / tileDim * Math.PI * 2.0;
+
+    const point = tr.point;
+    const ws = tr.worldSize;
+    const s = tr.worldSize / (tr.tileSize * tileDim);
+
+    mat4.translate(poleMatrix, poleMatrix, [point.x, point.y, -(ws / Math.PI / 2.0)]);
+    mat4.scale(poleMatrix, poleMatrix, [s, s, s]);
+    mat4.rotateX(poleMatrix, poleMatrix, degToRad(-tr._center.lat));
+    mat4.rotateY(poleMatrix, poleMatrix, degToRad(-tr._center.lng));
+    mat4.rotateY(poleMatrix, poleMatrix, yRotation);
+    if (south) {
+        mat4.scale(poleMatrix, poleMatrix, [1, -1, 1]);
+    }
+
+    return poleMatrix;
 }
 
 const GLOBE_VERTEX_GRID_SIZE = 64;
