@@ -1024,6 +1024,7 @@ class Map extends Camera {
      *     center: [35, 55],
      *     parallels: [20, 60]
      * });
+     * @see [Example: Display a web map using an alternate projection](https://docs.mapbox.com/mapbox-gl-js/example/map-projection/)
      * @see [Example: Use different map projections for web maps](https://docs.mapbox.com/mapbox-gl-js/example/projections/)
      */
     setProjection(projection?: ?ProjectionSpecification | string) {
