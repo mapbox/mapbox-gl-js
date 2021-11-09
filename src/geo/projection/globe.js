@@ -104,7 +104,27 @@ class GlobeTileTransform {
     }
 
     upVector(id: CanonicalTileID, x: number, y: number): vec3 {
-        return new GlobeTile(id).upVector(x / EXTENT, y / EXTENT);
+        const corners = tileLatLngCorners(id);
+        const tl = corners[0];
+        const br = corners[1];
+
+        const tlUp = latLngToECEF(tl[0], tl[1]);
+        const trUp = latLngToECEF(tl[0], br[1]);
+        const brUp = latLngToECEF(br[0], br[1]);
+        const blUp = latLngToECEF(br[0], tl[1]);
+
+        vec3.normalize(tlUp, tlUp);
+        vec3.normalize(trUp, trUp);
+        vec3.normalize(brUp, brUp);
+        vec3.normalize(blUp, blUp);
+
+        const u = x / EXTENT;
+        const v = y / EXTENT;
+
+        const tltr = vec3.lerp([], tlUp, trUp, u);
+        const blbr = vec3.lerp([], blUp, brUp, u);
+
+        return vec3.lerp([], tltr, blbr, v);
     }
 
     upVectorScale(id: CanonicalTileID): number {
@@ -589,46 +609,5 @@ export class GlobeSharedBuffers {
         }
 
         return indexArray;
-    }
-}
-
-export class GlobeTile {
-    tileID: CanonicalTileID;
-    _tlUp: Array<number>;
-    _trUp: Array<number>;
-    _blUp: Array<number>;
-    _brUp: Array<number>;
-
-    constructor(tileID: CanonicalTileID, labelSpace: boolean = false) {
-        this.tileID = tileID;
-
-        // Pre-compute up vectors of each corner of the tile
-        const corners = tileLatLngCorners(tileID);
-        const tl = corners[0];
-        const br = corners[1];
-
-        this._tlUp = latLngToECEF(tl[0], tl[1]);
-        this._trUp = latLngToECEF(tl[0], br[1]);
-        this._brUp = latLngToECEF(br[0], br[1]);
-        this._blUp = latLngToECEF(br[0], tl[1]);
-
-        if (!labelSpace) {
-            vec3.normalize(this._tlUp, this._tlUp);
-            vec3.normalize(this._trUp, this._trUp);
-            vec3.normalize(this._brUp, this._brUp);
-            vec3.normalize(this._blUp, this._blUp);
-        } else {
-            this._tlUp = [0, 0, 1];
-            this._trUp = [0, 0, 1];
-            this._brUp = [0, 0, 1];
-            this._blUp = [0, 0, 1];
-        }
-    }
-
-    upVector(u: number, v: number): Array<number> {
-        return vec3.lerp([],
-            vec3.lerp([], this._tlUp, this._trUp, u),
-            vec3.lerp([], this._blUp, this._brUp, u),
-            v);
     }
 }
