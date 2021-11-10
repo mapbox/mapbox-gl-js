@@ -257,7 +257,7 @@ export default class Marker extends Evented {
         this.remove();
         this._map = map;
         map.getCanvasContainer().appendChild(this._element);
-        map.on('move', () => this._update(true));
+        map.on('move', this._updateMoving);
         map.on('moveend', this._update);
         map.on('remove', this._clearFadeTimer);
         map._addMarker(this);
@@ -283,7 +283,7 @@ export default class Marker extends Evented {
     remove() {
         if (this._map) {
             this._map.off('click', this._onMapClick);
-            this._map.off('move', () => this._update(true));
+            this._map.off('move', this._updateMoving);
             this._map.off('moveend', this._update);
             this._map.off('mousedown', this._addDragHandler);
             this._map.off('touchstart', this._addDragHandler);
@@ -425,6 +425,10 @@ export default class Marker extends Evented {
         if (this._popup && (targetElement === element || element.contains((targetElement: any)))) {
             this.togglePopup();
         }
+    }
+
+    _updateMoving() {
+        this._update(true);
     }
 
     /**
