@@ -1,4 +1,5 @@
 import {test} from '../../../util/test.js';
+import window from '../../../../src/util/window.js';
 import {createMap as globalCreateMap} from '../../../util/index.js';
 import VectorTileSource from '../../../../src/source/vector_tile_source.js';
 
@@ -104,13 +105,13 @@ test('LogoControl appears in compact mode if container is less then 250 pixel wi
     const map = createMap(t);
     const container = map.getContainer();
 
-    Object.defineProperty(map.getContainer(), 'getBoundingClientRect', {value: () => ({height: 200, width: 255})});
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 200, width: 255})});
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 255, configurable: true});
     map.resize();
 
     t.equal(container.querySelectorAll('.mapboxgl-ctrl-logo:not(.mapboxgl-compact)').length, 1);
 
-    Object.defineProperty(map.getContainer(), 'getBoundingClientRect', {value: () => ({height: 200, width: 245})});
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 200, width: 245})});
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 245, configurable: true});
     map.resize();
 

@@ -94,7 +94,7 @@ function updateScale(map, container, options) {
     const maxWidth = options && options.maxWidth || 100;
 
     const y = parseFloat(window.getComputedStyle(map._container).height) / 2;
-    
+
     const left = map.unproject([0, y]);
     const right = map.unproject([maxWidth, y]);
     const maxMeters = left.distanceTo(right);

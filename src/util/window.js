@@ -25,6 +25,7 @@ function restore(): Window {
     // Remove previous window from exported object
     const previousWindow = _window;
     if (previousWindow.close) previousWindow.close();
+
     for (const key in previousWindow) {
         if (previousWindow.hasOwnProperty(key)) {
             delete previousWindow[key];
@@ -35,6 +36,17 @@ function restore(): Window {
     const {window} = new jsdom.JSDOM('', {
         // Send jsdom console output to the node console object.
         virtualConsole: new jsdom.VirtualConsole().sendTo(console)
+    });
+
+    Object.defineProperty(window, 'getComputedStyle', {
+        value: () => {
+                return {
+                     height: 200,
+                     width: 200
+                };
+            },
+        configurable: true,
+        writable: true
     });
 
     // Delete local and session storage from JSDOM and stub them out with a warning log

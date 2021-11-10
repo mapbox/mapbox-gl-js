@@ -415,7 +415,7 @@ test('Elevation', (t) => {
                     const gl = map.painter.context.gl;
                     const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
                     gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-                    const centerOffset = map.getContainer().offsetWidth / 2 * (map.getContainer().offsetHeight + 1) * 4;
+                    const centerOffset = parseFloat(window.getComputedStyle(map.getContainer()).width) / 2 * (parseFloat(window.getComputedStyle(map.getContainer()).offsetHeight) + 1) * 4;
                     const isCenterRendered = pixels[centerOffset] === 255;
                     if (!beganRenderingContent) {
                         beganRenderingContent = isCenterRendered;

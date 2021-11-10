@@ -10,8 +10,14 @@ import simulate from '../../util/simulate_interaction.js';
 function createMap(t, options = {}) {
     const container = window.document.createElement('div');
 
-    Object.defineProperty(container, 'offsetWidth', {value: 512});
-    Object.defineProperty(container, 'offsetHeight', {value: 512});
+    Object.defineProperty(window, 'getComputedStyle', {value:
+        () => {
+            return {
+                height: 512,
+                width: 512
+            };
+        }
+    });
 
     return globalCreateMap(t, {container, ...options});
 }
@@ -294,7 +300,7 @@ test('Popup anchors around default Marker', (t) => {
     // open the popup
     marker.togglePopup();
 
-    const mapHeight = map.getContainer().offsetHeight;
+    const mapHeight = parseFloat(window.getComputedStyle(map.getContainer()).width);
     const markerTop = -marker.getPopup().options.offset.bottom[1]; // vertical distance from tip of marker to the top in pixels
     const markerRight = -marker.getPopup().options.offset.right[0]; // horizontal distance from the tip of the marker to the right in pixels
 
