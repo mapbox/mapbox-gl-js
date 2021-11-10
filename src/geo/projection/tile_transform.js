@@ -4,6 +4,10 @@ import MercatorCoordinate, {altitudeFromMercatorZ, lngFromMercatorX, latFromMerc
 import EXTENT from '../../data/extent.js';
 import {vec3} from 'gl-matrix';
 import type {Projection} from './index.js';
+import {Aabb} from '../../util/primitives.js';
+import {tileBoundsOnGlobe, calculateGlobeMatrix} from './globe.js';
+import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
+import assert from 'assert';
 
 export type TileTransform = {
     scale: number,
@@ -84,6 +88,43 @@ export default function tileTransform(id: Object, projection: Projection) {
         y2: maxY * scale,
         projection
     };
+}
+
+export function tileAABB(tr: Transform, numTiles, z, x, y, wrap, min, max, projection: Projection) {
+    if (projection.name === 'globe') {
+        const tileId = new UnwrappedTileID(wrap, new CanonicalTileID(z, x, y));
+        const aabb = tileBoundsOnGlobe(tileId.canonical);
+
+        // Transform corners of the aabb to the correct space
+        const corners = aabb.getCorners();
+
+        const mx = Number.MAX_VALUE;
+        const cornerMax = [-mx, -mx, -mx];
+        const cornerMin = [mx, mx, mx];
+        const globeMatrix = calculateGlobeMatrix(tr, numTiles);
+
+        for (let i = 0; i < corners.length; i++) {
+            vec3.transformMat4(corners[i], corners[i], globeMatrix);
+            vec3.min(cornerMin, cornerMin, corners[i]);
+            vec3.max(cornerMax, cornerMax, corners[i]);
+        }
+
+        return new Aabb(cornerMin, cornerMax);
+    }
+
+    const tt = tileTransform({z, x, y}, projection);
+    const tx = tt.x / tt.scale;
+    const ty = tt.y / tt.scale;
+    const tx2 = tt.x2 / tt.scale;
+    const ty2 = tt.y2 / tt.scale;
+
+    if (isNaN(tx) || isNaN(tx2) || isNaN(ty) || isNaN(ty2)) {
+        assert(false);
+    }
+
+    return new Aabb(
+        [(wrap + tx) * numTiles, numTiles * ty, min],
+        [(wrap  + tx2) * numTiles, numTiles * ty2, max]);
 }
 
 export function getTilePoint(tileTransform: TileTransform, {x, y}: {x: number, y: number}, wrap: number = 0) {

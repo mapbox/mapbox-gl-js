@@ -4,13 +4,13 @@ import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE} from './mercator_coordinate.js';
 import {getProjection} from './projection/index.js';
-import tileTransform from '../geo/projection/tile_transform.js';
+import {tileAABB} from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner, warnOnce, deepEqual} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import {Aabb, Frustum, Ray} from '../util/primitives.js';
+import {Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
@@ -726,8 +726,6 @@ class Transform {
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && isMercator ? z : 0;
 
-        const tileTransform = this.projection.createTileTransform(this, numTiles);
-
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).
         const maxRange = options.isTerrainDEM && this._elevation ? this._elevation.exaggeration() * 10000 : this._centerAltitude;
@@ -762,30 +760,14 @@ class Transform {
             return Math.sqrt(dx * dy) * scaleAdjustment / offset;
         };
 
-        const aabbForTile = (z, x, y, wrap, min, max) => {
-            const tt = tileTransform({z, x, y}, this.projection);
-            const tx = tt.x / tt.scale;
-            const ty = tt.y / tt.scale;
-            const tx2 = tt.x2 / tt.scale;
-            const ty2 = tt.y2 / tt.scale;
-            if (isNaN(tx) || isNaN(tx2) || isNaN(ty) || isNaN(ty2)) {
-                assert(false);
-            }
-            const ret = new Aabb(
-                [(wrap + tx) * numTiles, numTiles * ty, min],
-                [(wrap  + tx2) * numTiles, numTiles * ty2, max]);
-            return ret;
-        };
-
         const newRootTile = (wrap: number): any => {
             const max = maxRange;
             const min = minRange;
-            const aabb = aabbForTile(0, 0, 0, wrap, min, max);
             // FIXME(globe-view-rebase): Use aabb
             return {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
-                aabb: tileTransform.tileAabb(new UnwrappedTileID(wrap, new CanonicalTileID(0, 0, 0)), z, min, max),
+                aabb: tileAABB(this, numTiles, 0, 0, 0, wrap, min, max, this.projection),
                 zoom: 0,
                 x: 0,
                 y: 0,
@@ -910,10 +892,9 @@ class Transform {
             for (let i = 0; i < 4; i++) {
                 const childX = (x << 1) + (i % 2);
                 const childY = (y << 1) + (i >> 1);
-
-                const aabb = tileTransform.tileAabb(new UnwrappedTileID(it.wrap, new CanonicalTileID(it.zoom + 1, childX, childY)), z, it.minZ, it.maxZ);
-                // FIXME(globe-view-rebase): Use aabb
-                // const aabb = this.projection.name === 'mercator' ? it.aabb.quadrant(i) : aabbForTile(it.zoom + 1, childX, childY, it.wrap, 0, 0);
+                const aabb = isMercator ?
+                    it.aabb.quadrant(i) :
+                    tileAABB(this, numTiles, it.zoom + 1, childX, childY, it.wrap, it.minZ, it.maxZ, this.projection);
                 const child = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined, minZ: it.minZ, maxZ: it.maxZ};
                 if (useElevationData) {
                     child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);

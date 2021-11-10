@@ -88,25 +88,6 @@ class GlobeTileTransform {
         return mat4.multiply(matrix, matrix, scaling);
     }
 
-    tileAabb(id: UnwrappedTileID) {
-        const aabb = tileBoundsOnGlobe(id.canonical);
-
-        // Transform corners of the aabb to the correct space
-        const corners = aabb.getCorners();
-
-        const mx = Number.MAX_VALUE;
-        const max = [-mx, -mx, -mx];
-        const min = [mx, mx, mx];
-
-        for (let i = 0; i < corners.length; i++) {
-            vec3.transformMat4(corners[i], corners[i], this._globeMatrix);
-            vec3.min(min, min, corners[i]);
-            vec3.max(max, max, corners[i]);
-        }
-
-        return new Aabb(min, max);
-    }
-
     upVector(id: CanonicalTileID, x: number, y: number): vec3 {
         const corners = tileLatLngCorners(id);
         const tl = corners[0];
@@ -315,7 +296,7 @@ export default {
 
 export const globeRefRadius = EXTENT / Math.PI / 2.0;
 
-function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
+export function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
     const z = id.z;
 
     const mn = -globeRefRadius;

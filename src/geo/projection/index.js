@@ -12,7 +12,6 @@ import type {ProjectionSpecification} from '../../style-spec/types.js';
 import globe from './globe.js';
 import {mat4, vec3} from 'gl-matrix';
 import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
-import {Aabb} from '../../util/primitives.js';
 import Transform from '../transform.js';
 import LngLat from '../lng_lat.js';
 import Point from '@mapbox/point-geometry';
@@ -83,8 +82,6 @@ export type TileTransform = {
     createTileMatrix: (id: UnwrappedTileID) => mat4,
 
     createInversionMatrix: (id: UnwrappedTileID) => mat4,
-
-    tileAabb: (id: UnwrappedTileID, z: number, min: number, max: number) => Aabb,
 
     upVector: (id: CanonicalTileID, x: number, y: number) => vec3,
 

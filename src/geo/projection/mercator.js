@@ -1,6 +1,5 @@
 // @flow
 import LngLat from '../lng_lat.js';
-import assert from 'assert';
 import {mat4, vec3} from 'gl-matrix';
 import {clamp} from '../../util/util.js';
 import MercatorCoordinate, {
@@ -12,7 +11,6 @@ import MercatorCoordinate, {
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import type Transform from '../../geo/transform.js';
-import {Aabb} from '../../util/primitives.js';
 import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
 import Point from '@mapbox/point-geometry';
 
@@ -70,22 +68,6 @@ class MercatorTileTransform {
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 
         return posMatrix;
-    }
-
-    tileAabb(id: UnwrappedTileID, z: number, min: number, max: number) {
-        assert(z >= id.canonical.z);
-        const numTiles = 1 << z;
-        const zScale = 1 << (z - id.canonical.z);
-        const wrap = id.wrap;
-
-        const xMin = wrap * numTiles + id.canonical.x * zScale;
-        const xMax = wrap * numTiles + (id.canonical.x + 1) * zScale;
-        const yMin = id.canonical.y * zScale;
-        const yMax = (id.canonical.y + 1) * zScale;
-
-        return new Aabb(
-            [xMin, yMin, min],
-            [xMax, yMax, max]);
     }
 
     pointCoordinate(x: number, y: number, z?: number): MercatorCoordinate {
