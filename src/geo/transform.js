@@ -17,7 +17,6 @@ import type {Projection} from '../geo/projection/index.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
-import {latLngToECEF} from './projection/globe.js';
 import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
 
 const NUM_WORLD_COPIES = 3;
@@ -953,20 +952,7 @@ class Transform {
      * @private
      */
     locationPoint(lnglat: LngLat) {
-        return this._coordinatePoint(this.locationCoordinate(lnglat), false);
-    }
-
-    locationPointGlobe(lnglat: LngLat) {
-        const ecefLoc = latLngToECEF(lnglat.lat, lnglat.lng);
-        const up = vec3.normalize([], ecefLoc);
-        const elevation = this.elevation ? this.elevation.getAtPointOrZero(this.locationCoordinate(lnglat), this._centerAltitude) : this._centerAltitude;
-        vec3.scaleAndAdd(ecefLoc, ecefLoc, up, mercatorZfromAltitude(1, 0.0) * 8192.0 * elevation);
-        const matrix = this.calculateGlobeMatrix(this.worldSize);
-        mat4.multiply(matrix, this.pixelMatrix, matrix);
-
-        const p = [...ecefLoc, 1.0];
-        vec3.transformMat4(p, p, matrix);
-        return new Point(p[0], p[1]);
+        return this.projection.locationPoint(this, lnglat);
     }
 
     /**
@@ -1306,44 +1292,6 @@ class Transform {
         };
 
         return cache[distanceDataKey];
-    }
-
-    calculateGlobeMatrix(worldSize: number): mat4 {
-        const localRadius = EXTENT / (2.0 * Math.PI);
-        const wsRadius = worldSize / (2.0 * Math.PI);
-        const s = wsRadius / localRadius;
-
-        const lat = clamp(this.center.lat, -this.maxValidLatitude, this.maxValidLatitude);
-        const point = new Point(
-            mercatorXfromLng(this.center.lng) * worldSize,
-            mercatorYfromLat(lat) * worldSize);
-
-        // transform the globe from reference coordinate space to world space
-        const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
-        mat4.scale(posMatrix, posMatrix, [s, s, s]);
-        mat4.rotateX(posMatrix, posMatrix, degToRad(-this._center.lat));
-        mat4.rotateY(posMatrix, posMatrix, degToRad(-this._center.lng));
-
-        return posMatrix;
-    }
-
-    calculateGlobeMercatorMatrix(worldSize: number): mat4 {
-        const lat = clamp(this.center.lat, -this.maxValidLatitude, this.maxValidLatitude);
-        const point = new Point(
-            mercatorXfromLng(this.center.lng) * worldSize,
-            mercatorYfromLat(lat) * worldSize);
-
-        const mercatorZ = mercatorZfromAltitude(1, this.center.lat) * worldSize;
-        const projectionScaler = mercatorZ / this.pixelsPerMeter;
-        const zScale = this.pixelsPerMeter;
-        const ws = worldSize / projectionScaler;
-
-        const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
-        mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
-
-        return posMatrix;
     }
 
     /**

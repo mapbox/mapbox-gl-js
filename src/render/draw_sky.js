@@ -7,6 +7,7 @@ import CullFaceMode from '../gl/cull_face_mode.js';
 import Context from '../gl/context.js';
 import Texture from './texture.js';
 import Program from './program.js';
+import {calculateGlobeMatrix} from './../geo/projection/globe.js';
 import type SourceCache from '../source/source_cache.js';
 import SkyboxGeometry from './skybox_geometry.js';
 import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program.js';
@@ -28,10 +29,9 @@ function drawGlobeAtmosphere(painter: Painter) {
     const program = painter.useProgram('globeAtmosphere');
 
     // Compute center and approximate radius of the globe on screen coordinates
-    const globeMatrix = transform.calculateGlobeMatrix(transform.worldSize);
     const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1.0);
     const viewToProj = transform._camera.getCameraToClipPerspective(transform._fov, transform.width / transform.height, transform._nearZ, transform._farZ);
-    const globeToView = mat4.mul([], viewMatrix, globeMatrix);
+    const globeToView = mat4.mul([], viewMatrix, calculateGlobeMatrix(transform, transform.worldSize));
     const viewToScreen = mat4.mul([], transform.labelPlaneMatrix, viewToProj);
 
     const centerOnViewSpace = vec3.transformMat4([], [0, 0, 0], globeToView);

@@ -3,16 +3,20 @@
 import {mat4, vec4, vec3} from 'gl-matrix';
 import {Aabb, Ray} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
+import LngLat from '../lng_lat.js';
 import {degToRad, smoothstep, clamp} from '../../util/util.js';
 import MercatorCoordinate, {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
-import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
+import {CanonicalTileID, UnwrappedTileID, OverscaledTileID} from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
+import Tile from '../../source/tile.js';
 import IndexBuffer from '../../gl/index_buffer.js';
+import type Painter from '../../render/painter.js';
 import SegmentVector from '../../data/segment.js';
-import {atmosphereLayout} from '../../terrain/globe_attributes.js';
+import Point from '@mapbox/point-geometry';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray} from '../../data/array_types.js';
 import type Transform from '../transform.js';
+import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
 
 class GlobeTileTransform {
     _tr: Transform;
@@ -23,7 +27,7 @@ class GlobeTileTransform {
         this._tr = tr;
         this._worldSize = worldSize;
 
-        this._globeMatrix = this._calculateGlobeMatrix();
+        this._globeMatrix = calculateGlobeMatrix(tr, worldSize);
     }
 
     createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean): mat4 {
@@ -104,36 +108,33 @@ class GlobeTileTransform {
     }
 
     upVector(id: CanonicalTileID, x: number, y: number): vec3 {
-        return new GlobeTile(id).upVector(x / EXTENT, y / EXTENT);
+        const corners = tileLatLngCorners(id);
+        const tl = corners[0];
+        const br = corners[1];
+
+        const tlUp = latLngToECEF(tl[0], tl[1]);
+        const trUp = latLngToECEF(tl[0], br[1]);
+        const brUp = latLngToECEF(br[0], br[1]);
+        const blUp = latLngToECEF(br[0], tl[1]);
+
+        vec3.normalize(tlUp, tlUp);
+        vec3.normalize(trUp, trUp);
+        vec3.normalize(brUp, brUp);
+        vec3.normalize(blUp, blUp);
+
+        const u = x / EXTENT;
+        const v = y / EXTENT;
+
+        const tltr = vec3.lerp([], tlUp, trUp, u);
+        const blbr = vec3.lerp([], blUp, brUp, u);
+
+        return vec3.lerp([], tltr, blbr, v);
     }
 
     upVectorScale(id: CanonicalTileID): number {
         const pixelsPerMeterECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
         const maxTileScale = tileNormalizationScale(id);
         return pixelsPerMeterECEF * maxTileScale;
-    }
-
-    tileSpaceUpVectorScale(): number {
-        return mercatorZfromAltitude(1, this._tr.center.lat) * this._tr.worldSize;
-    }
-
-    _calculateGlobeMatrix() {
-        const localRadius = EXTENT / (2.0 * Math.PI);
-        const wsRadius = this._worldSize / (2.0 * Math.PI);
-        const s = wsRadius / localRadius;
-
-        const lat = clamp(this._tr.center.lat, -this._tr.maxValidLatitude, this._tr.maxValidLatitude);
-        const x = mercatorXfromLng(this._tr.center.lng) * this._worldSize;
-        const y = mercatorYfromLat(lat) * this._worldSize;
-
-        // transform the globe from reference coordinate space to world space
-        const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [x, y, -wsRadius]);
-        mat4.scale(posMatrix, posMatrix, [s, s, s]);
-        mat4.rotateX(posMatrix, posMatrix, degToRad(-this._tr._center.lat));
-        mat4.rotateY(posMatrix, posMatrix, degToRad(-this._tr._center.lng));
-
-        return posMatrix;
     }
 
     _calculateGlobeLabelMatrix(tileID: CanonicalTileID, worldSize: number, lat: number, lng: number) {
@@ -172,7 +173,7 @@ class GlobeTileTransform {
         const dir = vec3.normalize([], p0p1);
 
         // Compute globe origo in world space
-        const matrix = this._calculateGlobeMatrix();
+        const matrix = calculateGlobeMatrix(this._tr, this._worldSize);
         const center = vec3.transformMat4([], [0, 0, 0], matrix);
         const radius = this._worldSize / (2.0 * Math.PI);
 
@@ -211,6 +212,10 @@ class GlobeTileTransform {
 
 export default {
     name: 'globe',
+    requiresDraping: true,
+    supportsWorldCopies: false,
+    zAxisUnit: "pixels",
+
     project() {
         return {x: 0, y: 0, z: 0};
     },
@@ -232,9 +237,22 @@ export default {
         return {x: pos[0], y: pos[1], z: pos[2]};
     },
 
-    requiresDraping: true,
-    supportsWorldCopies: false,
-    zAxisUnit: "pixels",
+    locationPoint(tr: Transform, lngLat: LngLat): Point {
+        const pos = latLngToECEF(lngLat.lat, lngLat.lng);
+        const up = vec3.normalize([], pos);
+
+        const elevation = tr.elevation ?
+            tr.elevation.getAtPointOrZero(tr.locationCoordinate(lngLat), tr._centerAltitude) :
+            tr._centerAltitude;
+
+        const upScale = mercatorZfromAltitude(1, 0) * EXTENT * elevation;
+        vec3.scaleAndAdd(pos, pos, up, upScale);
+        const matrix = calculateGlobeMatrix(tr, tr.worldSize);
+        mat4.multiply(matrix, tr.pixelMatrix, matrix);
+        vec3.transformMat4(pos, pos, matrix);
+
+        return new Point(pos[0], pos[1]);
+    },
 
     pixelsPerMeter(lat: number, worldSize: number) {
         return mercatorZfromAltitude(1, 0) * worldSize;
@@ -297,7 +315,7 @@ export default {
 
 export const globeRefRadius = EXTENT / Math.PI / 2.0;
 
-export function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
+function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
     const z = id.z;
 
     const mn = -globeRefRadius;
@@ -395,14 +413,7 @@ function normalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
-export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
-
-export function globeToMercatorTransition(zoom: number): number {
-    return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
-}
-
-export function denormalizeECEF(bounds: Aabb): Float64Array {
+function denormalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
 
     const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
@@ -414,6 +425,115 @@ export function denormalizeECEF(bounds: Aabb): Float64Array {
     mat4.scale(m, m, [st, st, st]);
 
     return m;
+}
+
+export function calculateGlobeMatrix(tr: Transform, worldSize: number): mat4 {
+    const localRadius = EXTENT / (2.0 * Math.PI);
+    const wsRadius = worldSize / (2.0 * Math.PI);
+    const s = wsRadius / localRadius;
+
+    const lat = clamp(tr.center.lat, -tr.maxValidLatitude, tr.maxValidLatitude);
+    const point = new Point(
+        mercatorXfromLng(tr.center.lng) * worldSize,
+        mercatorYfromLat(lat) * worldSize);
+
+    // transform the globe from reference coordinate space to world space
+    const posMatrix = mat4.identity(new Float64Array(16));
+    mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
+    mat4.scale(posMatrix, posMatrix, [s, s, s]);
+    mat4.rotateX(posMatrix, posMatrix, degToRad(-tr._center.lat));
+    mat4.rotateY(posMatrix, posMatrix, degToRad(-tr._center.lng));
+
+    return posMatrix;
+}
+
+export function calculateGlobeMercatorMatrix(tr: Transform): mat4 {
+    const worldSize = tr.worldSize;
+    const lat = clamp(tr.center.lat, -tr.maxValidLatitude, tr.maxValidLatitude);
+    const point = new Point(
+        mercatorXfromLng(tr.center.lng) * worldSize,
+        mercatorYfromLat(lat) * worldSize);
+
+    const mercatorZ = mercatorZfromAltitude(1, tr.center.lat) * worldSize;
+    const projectionScaler = mercatorZ / tr.pixelsPerMeter;
+    const zScale = tr.pixelsPerMeter;
+    const ws = worldSize / projectionScaler;
+
+    const posMatrix = mat4.identity(new Float64Array(16));
+    mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
+    mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
+
+    return posMatrix;
+}
+
+export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
+export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
+
+export function globeToMercatorTransition(zoom: number): number {
+    return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
+}
+
+export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID, tiles: number): [VertexBuffer, VertexBuffer] {
+    const context = painter.context;
+    const id = coord.canonical;
+    const tr = painter.transform;
+    let gridBuffer = tile.globeGridBuffer;
+    let poleBuffer = tile.globePoleBuffer;
+
+    if (!gridBuffer) {
+        const gridMesh = GlobeSharedBuffers.createGridVertices(id.x, id.y, id.z);
+        gridBuffer = tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
+    }
+
+    if (!poleBuffer) {
+        const poleMesh = GlobeSharedBuffers.createPoleTriangleVertices(tiles, tr.tileSize * tiles, coord.canonical.y === 0);
+        poleBuffer = tile.globePoleBuffer = context.createVertexBuffer(poleMesh, globeLayoutAttributes, false);
+    }
+
+    return [gridBuffer, poleBuffer];
+}
+
+export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4) {
+    const gridTileId = new CanonicalTileID(id.z, Math.pow(2, id.z) / 2, id.y);
+    const bounds = tileBoundsOnGlobe(gridTileId);
+    const decode = denormalizeECEF(bounds);
+    const posMatrix = mat4.clone(globeMatrix);
+    mat4.mul(posMatrix, posMatrix, decode);
+
+    return posMatrix;
+}
+
+export function globeUpVectorMatrix(id: CanonicalTileID, tiles: number) {
+    // Tile up vectors and can be reused for each tiles on the same x-row.
+    // i.e. for each tile id (x, y, z) use pregenerated mesh of (0, y, z).
+    // For this reason the up vectors are rotated first by 'yRotation' to
+    // place them in the correct longitude location.
+    const xOffset = id.x - tiles / 2;
+    const yRotation = xOffset / tiles * Math.PI * 2.0;
+    return mat4.fromYRotation([], yRotation);
+}
+
+export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: Transform) {
+    const poleMatrix = mat4.identity(new Float64Array(16));
+
+    const tileDim = Math.pow(2, id.z);
+    const xOffset = id.x - tileDim / 2;
+    const yRotation = xOffset / tileDim * Math.PI * 2.0;
+
+    const point = tr.point;
+    const ws = tr.worldSize;
+    const s = tr.worldSize / (tr.tileSize * tileDim);
+
+    mat4.translate(poleMatrix, poleMatrix, [point.x, point.y, -(ws / Math.PI / 2.0)]);
+    mat4.scale(poleMatrix, poleMatrix, [s, s, s]);
+    mat4.rotateX(poleMatrix, poleMatrix, degToRad(-tr._center.lat));
+    mat4.rotateY(poleMatrix, poleMatrix, degToRad(-tr._center.lng));
+    mat4.rotateY(poleMatrix, poleMatrix, yRotation);
+    if (south) {
+        mat4.scale(poleMatrix, poleMatrix, [1, -1, 1]);
+    }
+
+    return poleMatrix;
 }
 
 const GLOBE_VERTEX_GRID_SIZE = 64;
@@ -589,46 +709,5 @@ export class GlobeSharedBuffers {
         }
 
         return indexArray;
-    }
-}
-
-export class GlobeTile {
-    tileID: CanonicalTileID;
-    _tlUp: Array<number>;
-    _trUp: Array<number>;
-    _blUp: Array<number>;
-    _brUp: Array<number>;
-
-    constructor(tileID: CanonicalTileID, labelSpace: boolean = false) {
-        this.tileID = tileID;
-
-        // Pre-compute up vectors of each corner of the tile
-        const corners = tileLatLngCorners(tileID);
-        const tl = corners[0];
-        const br = corners[1];
-
-        this._tlUp = latLngToECEF(tl[0], tl[1]);
-        this._trUp = latLngToECEF(tl[0], br[1]);
-        this._brUp = latLngToECEF(br[0], br[1]);
-        this._blUp = latLngToECEF(br[0], tl[1]);
-
-        if (!labelSpace) {
-            vec3.normalize(this._tlUp, this._tlUp);
-            vec3.normalize(this._trUp, this._trUp);
-            vec3.normalize(this._brUp, this._brUp);
-            vec3.normalize(this._blUp, this._blUp);
-        } else {
-            this._tlUp = [0, 0, 1];
-            this._trUp = [0, 0, 1];
-            this._brUp = [0, 0, 1];
-            this._blUp = [0, 0, 1];
-        }
-    }
-
-    upVector(u: number, v: number): Array<number> {
-        return vec3.lerp([],
-            vec3.lerp([], this._tlUp, this._trUp, u),
-            vec3.lerp([], this._blUp, this._brUp, u),
-            v);
     }
 }

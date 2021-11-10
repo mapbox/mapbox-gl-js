@@ -1152,8 +1152,7 @@ class Camera extends Evented {
 
         if (options.around) {
             around = LngLat.convert(options.around);
-            //aroundPoint = tr.locationPoint(around);
-            aroundPoint = tr.locationPointGlobe(around);
+            aroundPoint = tr.locationPoint(around);
         }
 
         const currently = {

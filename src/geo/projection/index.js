@@ -5,6 +5,8 @@ import {mat4, vec3} from 'gl-matrix';
 import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import {Aabb} from '../../util/primitives.js';
 import Transform from '../transform.js';
+import LngLat from '../lng_lat.js';
+import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../mercator_coordinate.js';
 
 export type TileTransform = {
@@ -22,20 +24,20 @@ export type TileTransform = {
 
     upVectorScale: (id: CanonicalTileID) => number,
 
-    pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate,
-
-    tileSpaceUpVectorScale: () => number
+    pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate
 };
 
 export type Projection = {
     name: string,
-    project: (lng: number, lat: number) => {x: number, y: number, z: number},
-
-    projectTilePoint: (x: number, y: number, id: CanonicalTileID) => {x: number, y: number, z: number},
-
     requiresDraping: boolean,
     supportsWorldCopies: boolean,
     zAxisUnit: "meters" | "pixels",
+
+    project: (lng: number, lat: number) => {x: number, y: number, z: number},
+
+    locationPoint: (tr: Transform, lngLat: LngLat) => Point,
+
+    projectTilePoint: (x: number, y: number, id: CanonicalTileID) => {x: number, y: number, z: number},
 
     pixelsPerMeter: (lat: number, worldSize: number) => number,
 
