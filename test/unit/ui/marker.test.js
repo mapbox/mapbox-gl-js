@@ -4,6 +4,7 @@ import {createMap as globalCreateMap} from '../../util/index.js';
 import Marker from '../../../src/ui/marker.js';
 import Popup from '../../../src/ui/popup.js';
 import LngLat from '../../../src/geo/lng_lat.js';
+import {Event} from '../../../src/util/evented.js';
 import Point from '@mapbox/point-geometry';
 import simulate from '../../util/simulate_interaction.js';
 
@@ -944,5 +945,24 @@ test('Snap To Pixel', (t) => {
             t.end();
         }, 100);
     });
+    t.test("Not Immediately Snap To Pixel when Map move and Snap To Pixel on moveend", (t) => {
+        map.fire(new Event("move"));
+        t.notSame(marker._pos, marker._pos.round());
+        map.fire(new Event("moveend"));
+        window.requestAnimationFrame(() => {
+            t.same(marker._pos, marker._pos.round());
+            t.end();
+        });
+    });
+    t.test("Not Immediately Snap To Pixel when Map move and setLngLat", (t) => {
+        marker.setLngLat([1, 2]);
+        map.fire(new Event("move"));
+        t.notSame(marker._pos, marker._pos.round());
+        setTimeout(() => {
+            t.same(marker._pos, marker._pos.round());
+            t.end();
+        }, 100);
+    });
+    map.remove();
     t.end();
 });
