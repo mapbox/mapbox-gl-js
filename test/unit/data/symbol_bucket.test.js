@@ -6,7 +6,6 @@ import {VectorTile} from '@mapbox/vector-tile';
 import SymbolBucket from '../../../src/data/bucket/symbol_bucket.js';
 import {CollisionBoxArray} from '../../../src/data/array_types.js';
 import {performSymbolLayout} from '../../../src/symbol/symbol_layout.js';
-import getProjection from '../../../src/geo/projection/index.js';
 import {Placement} from '../../../src/symbol/placement.js';
 import Transform from '../../../src/geo/transform.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';

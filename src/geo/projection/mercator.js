@@ -3,7 +3,13 @@ import LngLat from '../lng_lat.js';
 import assert from 'assert';
 import {mat4, vec3} from 'gl-matrix';
 import {clamp} from '../../util/util.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from '../mercator_coordinate.js';
+import MercatorCoordinate, {
+    mercatorXfromLng,
+    mercatorYfromLat,
+    mercatorZfromAltitude,
+    lngFromMercatorX,
+    latFromMercatorY
+} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import type Transform from '../../geo/transform.js';
 import {Aabb} from '../../util/primitives.js';

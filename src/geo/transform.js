@@ -10,7 +10,7 @@ import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestT
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import {Frustum, Ray} from '../util/primitives.js';
+import {Aabb, Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
