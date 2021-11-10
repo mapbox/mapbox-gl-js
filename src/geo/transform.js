@@ -102,8 +102,6 @@ class Transform {
     worldMinY: number;
     worldMaxY: number;
 
-    _projection: Projection;
-
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
@@ -169,7 +167,6 @@ class Transform {
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
         this._projectionScaler = 1.0;
-        this._projection = getProjection();
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -196,7 +193,6 @@ class Transform {
         clone._unmodified = this._unmodified;
         clone._edgeInsets = this._edgeInsets.clone();
         clone._camera = this._camera.clone();
-        clone._projection = getProjection(this._projection.name);
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
         clone.setProjection(this.getProjection());
@@ -286,14 +282,6 @@ class Transform {
         this._renderWorldCopies = renderWorldCopies;
     }
 
-    set projection(projection: Projection) {
-        this._projection = projection;
-    }
-
-    get projection(): Projection {
-        return this._projection;
-    }
-
     get worldSize(): number {
         return this.tileSize * this.scale;
     }
@@ -304,11 +292,11 @@ class Transform {
     }
 
     get pixelsPerMeter(): number {
-        return this._projection.pixelsPerMeter(this.center.lat, this.worldSize);
+        return this.projection.pixelsPerMeter(this.center.lat, this.worldSize);
     }
 
     get cameraPixelsPerMeter(): number {
-        return this._projection.pixelsPerMeter(this.center.lat, this.cameraWorldSize);
+        return this.projection.pixelsPerMeter(this.center.lat, this.cameraWorldSize);
     }
 
     get centerOffset(): Point {
@@ -738,7 +726,7 @@ class Transform {
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && isMercator ? z : 0;
 
-        const tileTransform = this._projection.createTileTransform(this, numTiles);
+        const tileTransform = this.projection.createTileTransform(this, numTiles);
 
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).
@@ -878,7 +866,7 @@ class Transform {
         };
 
         // FIXME(globe-view-rebase): Add supportsWorldCopies to projection
-        if (this._projection.supportsWorldCopies && this._renderWorldCopies) {
+        if (this.projection.supportsWorldCopies && this._renderWorldCopies) {
             // Render copy of the globe thrice on both sides
             for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
                 stack.push(newRootTile(-i));
@@ -1203,7 +1191,7 @@ class Transform {
      * @private
      */
     pointCoordinate(p: Point, z?: number = this._centerAltitude): MercatorCoordinate {
-        return this._projection.createTileTransform(this, this.worldSize).pointCoordinate(p.x, p.y, z);
+        return this.projection.createTileTransform(this, this.worldSize).pointCoordinate(p.x, p.y, z);
     }
 
     /**
@@ -1377,7 +1365,7 @@ class Transform {
     }
 
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
-        return this._projection.createTileTransform(this, worldSize).createTileMatrix(unwrappedTileID);
+        return this.projection.createTileTransform(this, worldSize).createTileMatrix(unwrappedTileID);
         // FIXME(globe-view-rebase)
         //let scale, scaledX, scaledY;
         //const canonical = unwrappedTileID.canonical;
@@ -1684,7 +1672,7 @@ class Transform {
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
         this._nearZ = this.height / 50;
 
-        const zUnit = this._projection.zAxisUnit === "meters" ? pixelsPerMeter : 1.0;
+        const zUnit = this.projection.zAxisUnit === "meters" ? pixelsPerMeter : 1.0;
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
 
