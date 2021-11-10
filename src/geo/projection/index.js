@@ -7,11 +7,9 @@ import mercator from './mercator.js';
 import naturalEarth from './natural_earth.js';
 import winkelTripel from './winkel_tripel.js';
 import cylindricalEqualArea from './cylindrical_equal_area.js';
-import LngLat from '../lng_lat.js';
 import {extend} from '../../util/util.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import globe from './globe.js';
-import mercator from './mercator.js';
 import {mat4, vec3} from 'gl-matrix';
 import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import {Aabb} from '../../util/primitives.js';
@@ -27,11 +25,21 @@ export type Projection = {
     range?: [number, number],
     conic?: boolean,
     wrap?: boolean,
-    project: (lng: number, lat: number) => {x: number, y: number},
-    unproject: (x: number, y: number) => LngLat
+    name: string,
+    requiresDraping: boolean,
+    supportsWorldCopies: boolean,
+    zAxisUnit: "meters" | "pixels",
+    project: (lng: number, lat: number) => {x: number, y: number, z: number},
+    unproject: (x: number, y: number) => LngLat,
+    locationPoint: (tr: Transform, lngLat: LngLat) => Point,
+    projectTilePoint: (x: number, y: number, id: CanonicalTileID) => {x: number, y: number, z: number},
+    pixelsPerMeter: (lat: number, worldSize: number) => number,
+    farthestPixelDistance: (tr: Transform) => number,
+    createTileTransform: (tr: Transform, worldSize: number) => TileTransform,
 };
 
 const projections = {
+    globe,
     albers,
     equalEarth,
     equirectangular,
@@ -84,33 +92,3 @@ export type TileTransform = {
 
     pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate
 };
-
-export type Projection = {
-    name: string,
-    requiresDraping: boolean,
-    supportsWorldCopies: boolean,
-    zAxisUnit: "meters" | "pixels",
-
-    project: (lng: number, lat: number) => {x: number, y: number, z: number},
-
-    locationPoint: (tr: Transform, lngLat: LngLat) => Point,
-
-    projectTilePoint: (x: number, y: number, id: CanonicalTileID) => {x: number, y: number, z: number},
-
-    pixelsPerMeter: (lat: number, worldSize: number) => number,
-
-    farthestPixelDistance: (tr: Transform) => number,
-
-    createTileTransform: (tr: Transform, worldSize: number) => TileTransform,
-};
-
-const projections = {
-    globe,
-    mercator
-};
-
-export default function getProjection(name: ?string): Projection {
-    if (!name || !(name in projections))
-        return projections.mercator;
-    return projections[name];
-}

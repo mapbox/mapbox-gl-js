@@ -1,32 +1,14 @@
 // @flow
-import {mercatorXfromLng, mercatorYfromLat, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
 import LngLat from '../lng_lat.js';
 import assert from 'assert';
 import {mat4, vec3} from 'gl-matrix';
 import {clamp} from '../../util/util.js';
-import LngLat from '../lng_lat.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import type Transform from '../../geo/transform.js';
 import {Aabb} from '../../util/primitives.js';
 import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
 import Point from '@mapbox/point-geometry';
-
-export default {
-    name: 'mercator',
-    wrap: true,
-    center: [0, 0],
-    project(lng: number, lat: number) {
-        const x = mercatorXfromLng(lng);
-        const y = mercatorYfromLat(lat);
-        return {x, y};
-    },
-    unproject(x: number, y: number) {
-        const lng = lngFromMercatorX(x);
-        const lat = latFromMercatorY(y);
-        return new LngLat(lng, lat);
-    }
-};
 
 class MercatorTileTransform {
     _tr: Transform;
@@ -120,11 +102,19 @@ export default {
     requiresDraping: false,
     supportsWorldCopies: true,
     zAxisUnit: "meters",
+    wrap: true,
+    center: [0, 0],
 
     project(lng: number, lat: number) {
         const x = mercatorXfromLng(lng);
         const y = mercatorYfromLat(lat);
         return {x, y, z: 0};
+    },
+
+    unproject(x: number, y: number) {
+        const lng = lngFromMercatorX(x);
+        const lat = latFromMercatorY(y);
+        return new LngLat(lng, lat);
     },
 
     projectTilePoint(x: number, y: number): {x: number, y: number, z: number} {

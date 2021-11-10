@@ -20,7 +20,6 @@ import type {Projection} from '../geo/projection/index.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
-import type {Projection} from './projection/index.js';
 import type Tile from '../source/tile.js';
 import type {ProjectionSpecification} from '../style-spec/types.js';
 import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
