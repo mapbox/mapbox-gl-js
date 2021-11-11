@@ -66,14 +66,8 @@ test('Map', (t) => {
 
     t.test('initial bounds in constructor options', (t) => {
         const container = window.document.createElement('div');
-        Object.defineProperty(window, 'getComputedStyle', {value:
-            () => {
-                return {
-                    height: 512,
-                    width: 512
-                };
-            }
-        });
+        Object.defineProperty(container, 'offsetWidth', {value: 512});
+        Object.defineProperty(container, 'offsetHeight', {value: 512});
 
         const bounds = [[-133, 16], [-68, 50]];
         const map = createMap(t, {container, bounds});
@@ -89,15 +83,8 @@ test('Map', (t) => {
 
         const map = (fitBoundsOptions, skipCSSStub) => {
             const container = window.document.createElement('div');
-            Object.defineProperty(window, 'getComputedStyle', {value:
-                () => {
-                    return {
-                        height: 512,
-                        width: 512
-                    }
-                }
-            });
-
+            Object.defineProperty(container, 'offsetWidth', {value: 512});
+            Object.defineProperty(container, 'offsetHeight', {value: 512});
             return createMap(t, {skipCSSStub, container, bounds, fitBoundsOptions});
         };
 
@@ -758,17 +745,9 @@ test('Map', (t) => {
 
     t.test('#resize', (t) => {
         t.test('sets width and height from container clients', (t) => {
-            const map = createMap(t),
-                container = map.getContainer();
+            const map = createMap(t);
 
-            Object.defineProperty(window, 'getComputedStyle', {value:
-                () => {
-                    return {
-                        height: 250,
-                        width: 250
-                    };
-                }
-            });
+            Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 250, width: 250})});
 
             map.resize();
 
@@ -795,14 +774,7 @@ test('Map', (t) => {
         t.test('does not call stop on resize', (t) => {
             const map = createMap(t);
 
-            Object.defineProperty(window, 'getComputedStyle', {value:
-                () => {
-                    return {
-                        height: 250,
-                        width: 250
-                    };
-                }
-            });
+            Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 250, width: 250})});
 
             t.spy(map, 'stop');
 
@@ -817,14 +789,7 @@ test('Map', (t) => {
             const map = createMap(t),
                 events = [];
 
-            Object.defineProperty(window, 'getComputedStyle', {value:
-                () => {
-                    return {
-                        height: 250,
-                        width: 250
-                    };
-                }
-            });
+            Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 250, width: 250})});
 
             ['movestart', 'move', 'resize', 'moveend'].forEach((event) => {
                 map.on(event, (e) => {
@@ -2751,19 +2716,11 @@ test('Map', (t) => {
     });
 
     t.test('continues camera animation on resize', (t) => {
-        const map = createMap(t),
-            container = map.getContainer();
+        const map = createMap(t);
 
         map.flyTo({center: [200, 0], duration: 100});
 
-        Object.defineProperty(window, 'getComputedStyle', {value:
-            () => {
-                return {
-                    height: 250,
-                    width: 250
-                };
-            }
-        });
+        Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 250, width: 250})});
 
         map.resize();
 

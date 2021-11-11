@@ -12,16 +12,7 @@ const containerHeight = 512;
 function createMap(t, options) {
     options = options || {};
     const container = window.document.createElement('div');
-
-    Object.defineProperty(window, 'getComputedStyle', {value:
-        () => {
-            return {
-                height: options.height || containerHeight,
-                width: options.width || containerWidth
-            };
-        }
-    });
-
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: options.height || containerHeight, width: options.width || containerWidth})});
     return globalCreateMap(t, {container});
 }
 

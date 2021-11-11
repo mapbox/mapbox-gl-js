@@ -10,14 +10,7 @@ import simulate from '../../util/simulate_interaction.js';
 function createMap(t, options = {}) {
     const container = window.document.createElement('div');
 
-    Object.defineProperty(window, 'getComputedStyle', {value:
-        () => {
-            return {
-                height: 512,
-                width: 512
-            };
-        }
-    });
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 512})});
 
     return globalCreateMap(t, {container, ...options});
 }

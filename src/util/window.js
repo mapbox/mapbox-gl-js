@@ -38,17 +38,6 @@ function restore(): Window {
         virtualConsole: new jsdom.VirtualConsole().sendTo(console)
     });
 
-    Object.defineProperty(window, 'getComputedStyle', {
-        value: () => {
-                return {
-                     height: 200,
-                     width: 200
-                };
-            },
-        configurable: true,
-        writable: true
-    });
-
     // Delete local and session storage from JSDOM and stub them out with a warning log
     // Accessing these properties during extend() produces an error in Node environments
     // See https://github.com/mapbox/mapbox-gl-js/pull/7455 for discussion

@@ -17,17 +17,7 @@ export function createMap(t, options, callback) {
         }
     };
 
-    // Object.defineProperty(window, 'getComputedStyle', {value:
-    //     () => {
-    //         return {
-    //             height: 200,
-    //             width: 200
-    //         }
-    //     },
-    //     configurable: true
-    // });
-    // Object.defineProperty(container, 'offsetWidth', {value: 200, configurable: true});
-    // Object.defineProperty(container, 'offsetHeight', {value: 200, configurable: true});
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 200, width: 200}), configurable: true});
 
     if (!options || !options.skipCSSStub) t.stub(Map.prototype, '_detectMissingCSS');
     if (options && options.deleteStyle) delete defaultOptions.style;

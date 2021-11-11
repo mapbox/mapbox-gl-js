@@ -13,14 +13,7 @@ test('hash', (t) => {
     function createMap(t) {
         const container = window.document.createElement('div');
 
-        Object.defineProperty(window, 'getComputedStyle', {value:
-            () => {
-                return {
-                    height: 512,
-                    width: 512
-                };
-            }
-        });
+        Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 512})});
 
         return globalCreateMap(t, {container});
     }
@@ -314,14 +307,7 @@ test('hash', (t) => {
     });
 
     t.test('map#remove', (t) => {
-        Object.defineProperty(window, 'getComputedStyle', {value:
-            () => {
-                return {
-                    height: 512,
-                    width: 512
-                };
-            }
-        });
+        Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 512})});
 
         const map = createMap(t, {hash: true});
 

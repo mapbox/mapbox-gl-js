@@ -65,7 +65,7 @@ test('AttributionControl appears in compact mode if compact option is used', (t)
 test('AttributionControl appears in compact mode if container is less then 640 pixel wide', (t) => {
     const map = createMap(t);
     map.addControl(new AttributionControl());
-    
+
     Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 200, width: 700})});
     map.resize();
 
