@@ -2443,26 +2443,26 @@ class Map extends Camera {
         }
     }
 
-    setProjection(options?: { name: string }) {
-        const prevName = this.transform.projection.name;
-        const name = options ? options.name : null;
-        const projection = getProjection(name || 'mercator');
-        this.transform.projection = projection;
-        this._transitionFromGlobe = false;
+    // setProjection(options?: { name: string }) {
+    //     const prevName = this.transform.projection.name;
+    //     const name = options ? options.name : null;
+    //     const projection = getProjection(name || 'mercator');
+    //     this.transform.projection = projection;
+    //     this._transitionFromGlobe = false;
 
-        if (projection.requiresDraping) {
-            this._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
-        } else {
-            this._setTerrain(null, "projection");
-        }
+    //     if (projection.requiresDraping) {
+    //         this._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
+    //     } else {
+    //         this._setTerrain(null, "projection");
+    //     }
 
-        if (projection.name !== prevName) {
-            this.style._forceSymbolLayerUpdate();
-            this.style.dispatcher.broadcast('setProjection', projection.name);
-        }
+    //     if (projection.name !== prevName) {
+    //         this.style._forceSymbolLayerUpdate();
+    //         this.style.dispatcher.broadcast('setProjection', projection.name);
+    //     }
 
-        return this._update(true);
-    }
+    //     return this._update(true);
+    // }
 
     _setTerrain(options: ?TerrainSpecification, user: string) {
         // There are multiple different consumers for the terrain.

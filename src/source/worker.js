@@ -134,12 +134,13 @@ export default class Worker {
         callback();
     }
 
-    setProjection(mapId: string, projection: string, callback: WorkerTileCallback) {
+    setProjection(mapId: string, config: ProjectionSpecification) {
+        //setProjection(mapId: string, projection: string, callback: WorkerTileCallback) {
         // FIXME(rebase): Make sure that setProjection is called with a callback
         // FIXME(rebase): Remove duplicate
         this.projections[mapId] = getProjection(config);
-        this.projection = projection;
-        callback();
+        // this.projection = projection;
+        // callback();
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {

@@ -239,7 +239,6 @@ class WorkerTile {
                 for (const key in buckets) {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
-                        const projection: Projection = getProjection(this.projection);
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
                         performSymbolLayout(bucket,
                             glyphMap,
@@ -250,8 +249,8 @@ class WorkerTile {
                             availableImages,
                             this.tileID.canonical,
                             this.tileZoom,
-                            projection);
-                        bucket.projection = this.projection;
+                            this.projection);
+                        bucket.projection = this.projection.name;
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||
