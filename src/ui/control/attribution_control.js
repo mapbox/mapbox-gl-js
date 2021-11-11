@@ -3,7 +3,7 @@
 import DOM from '../../util/dom.js';
 import {bindAll} from '../../util/util.js';
 import config from '../../util/config.js';
-
+import window from '../../util/window.js';
 import type Map from '../map.js';
 
 type Options = {
@@ -203,7 +203,7 @@ class AttributionControl {
     }
 
     _updateCompact() {
-        if (this._map.getCanvasContainer().offsetWidth <= 640) {
+        if (parseFloat(window.getComputedStyle(this._map.getCanvasContainer()).width) <= 640) {
             this._container.classList.add('mapboxgl-compact');
         } else {
             this._container.classList.remove('mapboxgl-compact', 'mapboxgl-compact-show');

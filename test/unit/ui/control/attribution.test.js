@@ -64,16 +64,15 @@ test('AttributionControl appears in compact mode if compact option is used', (t)
 
 test('AttributionControl appears in compact mode if container is less then 640 pixel wide', (t) => {
     const map = createMap(t);
-    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 200, width: 700})});
-    Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 700, configurable: true});
     map.addControl(new AttributionControl());
+    
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 200, width: 700})});
+    map.resize();
 
     const container = map.getContainer();
-
     t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib:not(.mapboxgl-compact)').length, 1);
 
     Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 200, width: 600})});
-    // Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 600, configurable: true});
     map.resize();
 
     t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib.mapboxgl-compact').length, 1);

@@ -1,8 +1,8 @@
 // @flow
 
 import DOM from '../../util/dom.js';
-
 import {bindAll} from '../../util/util.js';
+import window from '../../util/window.js';
 
 import type Map from '../map.js';
 
@@ -80,7 +80,7 @@ class LogoControl {
         const containerChildren = this._container.children;
         if (containerChildren.length) {
             const anchor = containerChildren[0];
-            if (this._map.getCanvasContainer().offsetWidth < 250) {
+            if (parseFloat(window.getComputedStyle(this._map.getCanvasContainer()).width) < 250) {
                 anchor.classList.add('mapboxgl-compact');
             } else {
                 anchor.classList.remove('mapboxgl-compact');
