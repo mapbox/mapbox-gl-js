@@ -763,7 +763,6 @@ class Transform {
         const newRootTile = (wrap: number): any => {
             const max = maxRange;
             const min = minRange;
-            // FIXME(globe-view-rebase): Use aabb
             return {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
@@ -1347,28 +1346,6 @@ class Transform {
 
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
         return this.projection.createTileTransform(this, worldSize).createTileMatrix(unwrappedTileID);
-        // FIXME(globe-view-rebase)
-        //let scale, scaledX, scaledY;
-        //const canonical = unwrappedTileID.canonical;
-        //const posMatrix = mat4.identity(new Float64Array(16));
-        //
-        //if (this.projection.name === 'mercator') {
-        //    scale = worldSize / this.zoomScale(canonical.z);
-        //    const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
-        //    scaledX = unwrappedX * scale;
-        //    scaledY = canonical.y * scale;
-        //} else {
-        //    const cs = tileTransform(canonical, this.projection);
-        //    scale = 1;
-        //    scaledX = cs.x + unwrappedTileID.wrap * cs.scale;
-        //    scaledY = cs.y;
-        //    mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, this.pixelsPerMeter / this.worldSize]);
-        //}
-        //
-        //mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);
-        //mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
-        //
-        //return posMatrix;
     }
 
     calculateDistanceTileData(unwrappedTileID: UnwrappedTileID): FeatureDistanceData {

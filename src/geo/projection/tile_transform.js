@@ -5,7 +5,7 @@ import EXTENT from '../../data/extent.js';
 import {vec3} from 'gl-matrix';
 import type {Projection} from './index.js';
 import {Aabb} from '../../util/primitives.js';
-import {tileBoundsOnGlobe, calculateGlobeMatrix} from './globe.js';
+import {globeTileBounds, calculateGlobeMatrix} from './globe.js';
 import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
 import assert from 'assert';
 
