@@ -947,10 +947,8 @@ test('Snap To Pixel', (t) => {
     });
     t.test("Not Immediately Snap To Pixel when Map move and Snap To Pixel on moveend", (t) => {
         map.fire(new Event("moveend"));
-        window.requestAnimationFrame(() => {
-            t.same(marker._pos, marker._pos.round());
-            t.end();
-        });
+        t.same(marker._pos, marker._pos.round());
+        t.end();
     });
     t.test("Not Immediately Snap To Pixel when Map move and setLngLat", (t) => {
         marker.setLngLat([1, 2]);
