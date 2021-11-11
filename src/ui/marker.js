@@ -254,6 +254,9 @@ export default class Marker extends Evented {
      *     .addTo(map); // add the marker to the map
      */
     addTo(map: Map) {
+        if (map === this._map) {
+            return this;
+        }
         this.remove();
         this._map = map;
         map.getCanvasContainer().appendChild(this._element);
