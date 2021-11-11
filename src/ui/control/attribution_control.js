@@ -4,6 +4,7 @@ import DOM from '../../util/dom.js';
 import {bindAll} from '../../util/util.js';
 import config from '../../util/config.js';
 import window from '../../util/window.js';
+
 import type Map from '../map.js';
 
 type Options = {

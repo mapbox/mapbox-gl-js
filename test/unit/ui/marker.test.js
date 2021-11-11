@@ -9,9 +9,6 @@ import simulate from '../../util/simulate_interaction.js';
 
 function createMap(t, options = {}) {
     const container = window.document.createElement('div');
-
-    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 512})});
-
     return globalCreateMap(t, {container, ...options});
 }
 
@@ -54,6 +51,7 @@ test('Marker uses a default marker element with custom scale', (t) => {
     t.ok(largerMarker.getElement().firstChild.getAttribute('height').includes('82'));
     t.ok(largerMarker.getElement().firstChild.getAttribute('width').includes('54'));
 
+    map.remove();
     t.end();
 });
 
@@ -279,11 +277,15 @@ test('Popup offsets around default Marker', (t) => {
     t.deepEqual(marker.getPopup().options.offset['top-left'], [0, 0], 'popup offset at the tip when below to the right');
     t.deepEqual(marker.getPopup().options.offset['top-right'], [0, 0], 'popup offset at the tip when below to the left');
 
+    map.remove();
     t.end();
 });
 
 test('Popup anchors around default Marker', (t) => {
     const map = createMap(t);
+
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 512})});
+    map.resize();
 
     const marker = new Marker()
         .setLngLat([0, 0])
@@ -293,7 +295,7 @@ test('Popup anchors around default Marker', (t) => {
     // open the popup
     marker.togglePopup();
 
-    const mapHeight = parseFloat(window.getComputedStyle(map.getContainer()).width);
+    const mapHeight = parseFloat(window.getComputedStyle(map.getContainer()).height);
     const markerTop = -marker.getPopup().options.offset.bottom[1]; // vertical distance from tip of marker to the top in pixels
     const markerRight = -marker.getPopup().options.offset.right[0]; // horizontal distance from the tip of the marker to the right in pixels
 
@@ -340,6 +342,7 @@ test('Popup anchors around default Marker', (t) => {
     map._domRenderTaskQueue.run();
     t.ok(marker.getPopup()._container.classList.contains('mapboxgl-popup-anchor-bottom-right'), 'popup anchors top left of marker');
 
+    map.remove();
     t.end();
 });
 
@@ -855,6 +858,9 @@ test('Marker and fog', (t) => {
         .setPopup(new Popup().setHTML(`a popup content`))
         .togglePopup();
 
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 512})});
+    map.resize();
+
     map.on('load', () => {
         map.setFog({
             "range": [0.5, 10.5]
@@ -917,7 +923,6 @@ test('Marker and fog', (t) => {
                     t.end();
                 }, 100);
             });
-
             t.end();
         });
     });

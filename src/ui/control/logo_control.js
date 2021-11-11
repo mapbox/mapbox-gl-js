@@ -1,6 +1,7 @@
 // @flow
 
 import DOM from '../../util/dom.js';
+
 import {bindAll} from '../../util/util.js';
 import window from '../../util/window.js';
 

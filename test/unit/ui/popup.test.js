@@ -9,10 +9,8 @@ import simulate from '../../util/simulate_interaction.js';
 const containerWidth = 512;
 const containerHeight = 512;
 
-function createMap(t, options) {
-    options = options || {};
+function createMap(t) {
     const container = window.document.createElement('div');
-    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: options.height || containerHeight, width: options.width || containerWidth})});
     return globalCreateMap(t, {container});
 }
 
@@ -264,7 +262,10 @@ test('Popup provides LngLat accessors', (t) => {
 });
 
 test('Popup is positioned at the specified LngLat in a world copy', (t) => {
-    const map = createMap(t, {width: 1024}); // longitude bounds: [-360, 360]
+    const map = createMap(t); // longitude bounds: [-360, 360]
+
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 1024})});
+    map.resize();
 
     const popup = new Popup()
         .setLngLat([270, 0])
@@ -276,7 +277,10 @@ test('Popup is positioned at the specified LngLat in a world copy', (t) => {
 });
 
 test('Popup preserves object constancy of position after map move', (t) => {
-    const map = createMap(t, {width: 1024}); // longitude bounds: [-360, 360]
+    const map = createMap(t); // longitude bounds: [-360, 360]
+
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 1024})});
+    map.resize();
 
     const popup = new Popup()
         .setLngLat([270, 0])
@@ -293,8 +297,11 @@ test('Popup preserves object constancy of position after map move', (t) => {
 });
 
 test('Popup preserves object constancy of position after auto-wrapping center (left)', (t) => {
-    const map = createMap(t, {width: 1024});
+    const map = createMap(t);
     map.setCenter([-175, 0]); // longitude bounds: [-535, 185]
+
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 1024})});
+    map.resize();
 
     const popup = new Popup()
         .setLngLat([0, 0])
@@ -308,8 +315,11 @@ test('Popup preserves object constancy of position after auto-wrapping center (l
 });
 
 test('Popup preserves object constancy of position after auto-wrapping center (right)', (t) => {
-    const map = createMap(t, {width: 1024});
+    const map = createMap(t);
     map.setCenter([175, 0]); // longitude bounds: [-185, 535]
+
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 1024})});
+    map.resize();
 
     const popup = new Popup()
         .setLngLat([0, 0])
@@ -323,7 +333,10 @@ test('Popup preserves object constancy of position after auto-wrapping center (r
 });
 
 test('Popup preserves object constancy of position after auto-wrapping center with horizon', (t) => {
-    const map = createMap(t, {width: 1024});
+    const map = createMap(t);
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 1024})});
+    map.resize();
+
     map.setCenter([-175, 0]); // longitude bounds: [-535, 185]
     map.setPitch(69);
     map.setBearing(90);
@@ -348,7 +361,10 @@ test('Popup preserves object constancy of position after auto-wrapping center wi
 });
 
 test('Popup wraps position after map move if it would otherwise go offscreen (right)', (t) => {
-    const map = createMap(t, {width: 1024}); // longitude bounds: [-360, 360]
+    const map = createMap(t); // longitude bounds: [-360, 360]
+
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 1024})});
+    map.resize();
 
     const popup = new Popup()
         .setLngLat([-355, 0])
@@ -361,7 +377,10 @@ test('Popup wraps position after map move if it would otherwise go offscreen (ri
 });
 
 test('Popup wraps position after map move if it would otherwise go offscreen (right)', (t) => {
-    const map = createMap(t, {width: 1024}); // longitude bounds: [-360, 360]
+    const map = createMap(t); // longitude bounds: [-360, 360]
+
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 1024})});
+    map.resize();
 
     const popup = new Popup()
         .setLngLat([355, 0])
@@ -374,7 +393,10 @@ test('Popup wraps position after map move if it would otherwise go offscreen (ri
 });
 
 test('Popup is repositioned at the specified LngLat', (t) => {
-    const map = createMap(t, {width: 1024}); // longitude bounds: [-360, 360]
+    const map = createMap(t); // longitude bounds: [-360, 360]
+
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 1024})});
+    map.resize();
 
     const popup = new Popup()
         .setLngLat([270, 0])
@@ -419,6 +441,8 @@ test('Popup anchors as specified by the anchor option', (t) => {
             .setLngLat([0, 0])
             .setText('Test')
             .addTo(map);
+        Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 512})});
+        map.resize();
         map._domRenderTaskQueue.run();
 
         Object.defineProperty(popup.getElement(), 'offsetWidth', {value: 100});
@@ -451,6 +475,8 @@ test('Popup anchors as specified by the anchor option', (t) => {
 
 test('Popup automatically anchors to top if its bottom offset would push it off-screen', (t) => {
     const map = createMap(t);
+    Object.defineProperty(window, 'getComputedStyle', {value: () => ({height: 512, width: 512})});
+    map.resize();
     const point = new Point(containerWidth / 2, containerHeight / 2);
     const options = {offset: {
         'bottom': [0, -25],
