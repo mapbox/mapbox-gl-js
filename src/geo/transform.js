@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, lngFromMercatorX, MAX_MERCATOR_LATITUDE} from './mercator_coordinate.js';
 import {getProjection} from './projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
@@ -27,6 +27,17 @@ import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
+
+const TILE_OUTLINE = (() => {
+    const n = 8;
+    const line = [];
+    for (let i = 0; i < n; i++) line.push([i / n, 0]);
+    for (let i = 0; i < n; i++) line.push([1, i / n]);
+    for (let i = 0; i < n; i++) line.push([1 - i / n, 1]);
+    for (let i = 0; i < n; i++) line.push([0, 1 - i / n]);
+    line.push([0, 0]);
+    return line;
+})();
 
 type RayIntersectionResult = { p0: vec4, p1: vec4, t: number};
 type ElevationReference = "sea" | "ground";
@@ -726,31 +737,25 @@ class Transform {
 
         const scaleAdjustment = getScaleAdjustment(this);
 
-        const relativeScaleAtMercatorCoord = mc => {
-            // Calculate how scale compares between projected coordinates and mercator coordinates.
-            // Returns a length. The units don't matter since the result is only
-            // used in a ratio with other values returned by this function.
+        const relativeScaleOfTile = (it) => {
+            // Calculate how tile size compares between projected coordinates and mercator coordinates.
+            let area = 0;
+            let x = 0;
+            let y = 0;
+            const z2 = 1 << it.zoom;
+            const inc = Math.min(z2, 8); // use lower resolution outline on higher tiles
 
-            // Construct a small square in Mercator coordinates.
-            const offset = 1 / 40000;
-            const mcEast = new MercatorCoordinate(mc.x + offset, mc.y, mc.z);
-            const mcSouth = new MercatorCoordinate(mc.x, mc.y + offset, mc.z);
+            for (let i = 0; i < TILE_OUTLINE.length; i += inc) {
+                const [mx, my] = TILE_OUTLINE[i];
+                const lng = lngFromMercatorX((it.x + mx) / z2);
+                const lat = latFromMercatorY((it.y + my) / z2);
+                const {x: x1, y: y1} = this.projection.project(lng, lat);
+                area += (x * y1 - x1 * y) * z2 * z2 / 2;
+                x = x1;
+                y = y1;
+            }
 
-            // Convert the square to projected coordinates.
-            const ll = mc.toLngLat();
-            const llEast = mcEast.toLngLat();
-            const llSouth = mcSouth.toLngLat();
-            const p = this.locationCoordinate(ll);
-            const pEast = this.locationCoordinate(llEast);
-            const pSouth = this.locationCoordinate(llSouth);
-
-            // Calculate the size of each edge of the reprojected square
-            const dx = Math.hypot(pEast.x - p.x, pEast.y - p.y);
-            const dy = Math.hypot(pSouth.x - p.x, pSouth.y - p.y);
-
-            // Calculate the size of a projected square that would have the
-            // same area as the reprojected square.
-            return Math.sqrt(dx * dy) * scaleAdjustment / offset;
+            return scaleAdjustment * Math.sqrt(area);
         };
 
         const aabbForTile = (z, x, y, wrap, min, max) => {
@@ -858,10 +863,9 @@ class Transform {
             if (!isMercator && actualZ <= 5) {
                 // In other projections, not all tiles are the same size.
                 // Account for the tile size difference by adjusting the distToSplit.
-                // Adjust by the ratio of the area at the tile center to the area at the map center.
+                // Adjust by the ratio of the area of the projected tile to mercator tile.
                 // Adjustments are only needed at lower zooms where tiles are not similarly sized.
-                const numTiles = Math.pow(2, it.zoom);
-                const relativeScale = relativeScaleAtMercatorCoord(new MercatorCoordinate((it.x + 0.5) / numTiles, (it.y + 0.5) / numTiles));
+                const relativeScale = relativeScaleOfTile(it);
                 // Fudge the ratio slightly so that all tiles near the center have the same zoom level.
                 tileScaleAdjustment = relativeScale > 0.85 ? 1 : relativeScale;
             }
