@@ -353,6 +353,17 @@ class Style extends Evented {
 
     updateProjection() {
         const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
+        const projection = this.map.transform.projection;
+
+        // TODO: Allow globe to be set without style loaded at map creation
+        if (this._loaded) {
+            if (projection.requiresDraping) {
+                // TODO: Allow draping to work without an explicit DEM source (dummy source)
+                this.map._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
+            } else {
+                this.map._setTerrain(null, "projection");
+            }
+        }
 
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 

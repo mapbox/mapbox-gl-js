@@ -1040,6 +1040,7 @@ class Map extends Camera {
         }
         this._runtimeProjection = projection;
         this.style.updateProjection();
+        this._transitionFromGlobe = false;
         return this;
     }
 
@@ -2442,27 +2443,6 @@ class Map extends Camera {
             this.setProjection({name: 'globe'});
         }
     }
-
-    // setProjection(options?: { name: string }) {
-    //     const prevName = this.transform.projection.name;
-    //     const name = options ? options.name : null;
-    //     const projection = getProjection(name || 'mercator');
-    //     this.transform.projection = projection;
-    //     this._transitionFromGlobe = false;
-
-    //     if (projection.requiresDraping) {
-    //         this._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
-    //     } else {
-    //         this._setTerrain(null, "projection");
-    //     }
-
-    //     if (projection.name !== prevName) {
-    //         this.style._forceSymbolLayerUpdate();
-    //         this.style.dispatcher.broadcast('setProjection', projection.name);
-    //     }
-
-    //     return this._update(true);
-    // }
 
     _setTerrain(options: ?TerrainSpecification, user: string) {
         // There are multiple different consumers for the terrain.
