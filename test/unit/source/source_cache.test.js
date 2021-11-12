@@ -1772,3 +1772,69 @@ test('SourceCache sets max cache size correctly', (t) => {
 
     t.end();
 });
+
+test('SourceCache loads tiles recursively', (t) => {
+    function testSourceCache(name, callback) {
+        t.test(name, (t) => {
+            const transform = new Transform();
+            transform.resize(511, 511);
+            transform.zoom = 14;
+
+            const {sourceCache, eventedParent} = createSourceCache({
+                loadTile (tile, callback) {
+                    if (tile.tileID.canonical.z > 12) {
+                        setTimeout(() => callback({status: 404}), 0);
+                    } else {
+                        tile.state = 'loaded';
+                        callback(null);
+                    }
+                }
+            });
+
+            if (callback) callback(sourceCache);
+
+            eventedParent.on('data', (e) => {
+                if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                    sourceCache.update(transform, undefined, sourceCache.usedForTerrain);
+                }
+            });
+
+            sourceCache.getSource().onAdd();
+
+            setTimeout(() => {
+                t.deepEqual(sourceCache.getRenderableIds(), [
+                    new OverscaledTileID(12, 0, 12, 2048, 2048).key,
+                    new OverscaledTileID(12, 0, 12, 2047, 2048).key,
+                    new OverscaledTileID(12, 0, 12, 2048, 2047).key,
+                    new OverscaledTileID(12, 0, 12, 2047, 2047).key,
+                ], 'contains first renderable tiles');
+
+                t.deepEqual(sourceCache.getIds(), [
+                    new OverscaledTileID(12, 0, 12, 2048, 2048).key,
+                    new OverscaledTileID(12, 0, 12, 2047, 2048).key,
+                    new OverscaledTileID(12, 0, 12, 2048, 2047).key,
+                    new OverscaledTileID(12, 0, 12, 2047, 2047).key,
+                    new OverscaledTileID(13, 0, 13, 4096, 4096).key,
+                    new OverscaledTileID(13, 0, 13, 4095, 4096).key,
+                    new OverscaledTileID(13, 0, 13, 4096, 4095).key,
+                    new OverscaledTileID(13, 0, 13, 4095, 4095).key,
+                    new OverscaledTileID(14, 0, 14, 8192, 8192).key,
+                    new OverscaledTileID(14, 0, 14, 8191, 8192).key,
+                    new OverscaledTileID(14, 0, 14, 8192, 8191).key,
+                    new OverscaledTileID(14, 0, 14, 8191, 8191).key,
+                ], 'recursively loads parent tiles if current tiles not found');
+
+                t.end();
+            }, 10);
+        });
+    }
+
+    testSourceCache('loads parent tiles on 404');
+
+    testSourceCache('raster-dem loads parent tiles on 404', (sourceCache) => {
+        sourceCache.usedForTerrain = true;
+        sourceCache._source.type = 'raster-dem';
+    });
+
+    t.end();
+});

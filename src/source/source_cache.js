@@ -241,14 +241,14 @@ class SourceCache extends Evented {
             tile.state = 'errored';
             if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
             // continue to try loading parent/children tiles if a tile doesn't exist (404)
-            else this.update(this.transform);
+            else this.update(this.transform, undefined, this._source.type === 'raster-dem');
             return;
         }
 
         tile.timeAdded = browser.now();
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
-        if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
+        if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._state.initializeTileState(tile, this.map ? this.map.painter : null);
 
         this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID, 'sourceCacheId': this.id}));
