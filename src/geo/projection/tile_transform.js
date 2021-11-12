@@ -93,7 +93,7 @@ export default function tileTransform(id: Object, projection: Projection) {
 export function tileAABB(tr: Transform, numTiles, z, x, y, wrap, min, max, projection: Projection) {
     if (projection.name === 'globe') {
         const tileId = new UnwrappedTileID(wrap, new CanonicalTileID(z, x, y));
-        const aabb = tileBoundsOnGlobe(tileId.canonical);
+        const aabb = globeTileBounds(tileId.canonical);
 
         // Transform corners of the aabb to the correct space
         const corners = aabb.getCorners();
