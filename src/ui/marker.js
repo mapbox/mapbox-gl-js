@@ -82,6 +82,7 @@ export default class Marker extends Evented {
     _originalTabIndex: ?string; // original tabindex of _element
     _fadeTimer: ?TimeoutID;
     _updateFrameId: number;
+    _updateMoving: () => void;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -111,6 +112,7 @@ export default class Marker extends Evented {
         this._rotation = options && options.rotation || 0;
         this._rotationAlignment = options && options.rotationAlignment || 'auto';
         this._pitchAlignment = options && options.pitchAlignment && options.pitchAlignment !== 'auto' ?  options.pitchAlignment : this._rotationAlignment;
+        this._updateMoving = () => this._update(true);
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -259,7 +261,6 @@ export default class Marker extends Evented {
         }
         this.remove();
         this._map = map;
-        this._updateMoving = this._updateMoving.bind(this);
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._updateMoving);
         map.on('moveend', this._update);
@@ -429,10 +430,6 @@ export default class Marker extends Evented {
         if (this._popup && (targetElement === element || element.contains((targetElement: any)))) {
             this.togglePopup();
         }
-    }
-
-    _updateMoving() {
-        this._update(true);
     }
 
     /**
