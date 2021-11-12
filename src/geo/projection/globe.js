@@ -4,7 +4,14 @@ import {Aabb, Ray} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
 import LngLat from '../lng_lat.js';
 import {degToRad, smoothstep, clamp} from '../../util/util.js';
-import {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
+import {
+    MAX_MERCATOR_LATITUDE,
+    lngFromMercatorX,
+    latFromMercatorY,
+    mercatorZfromAltitude,
+    mercatorXfromLng,
+    mercatorYfromLat
+} from '../mercator_coordinate.js';
 import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
 import Tile from '../../source/tile.js';
@@ -189,7 +196,7 @@ export function calculateGlobeMatrix(tr: Transform, worldSize: number): mat4 {
     const wsRadius = worldSize / (2.0 * Math.PI);
     const s = wsRadius / localRadius;
 
-    const lat = clamp(tr.center.lat, -tr.maxValidLatitude, tr.maxValidLatitude);
+    const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
     const point = new Point(
         mercatorXfromLng(tr.center.lng) * worldSize,
         mercatorYfromLat(lat) * worldSize);
@@ -206,7 +213,7 @@ export function calculateGlobeMatrix(tr: Transform, worldSize: number): mat4 {
 
 export function calculateGlobeMercatorMatrix(tr: Transform): mat4 {
     const worldSize = tr.worldSize;
-    const lat = clamp(tr.center.lat, -tr.maxValidLatitude, tr.maxValidLatitude);
+    const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
     const point = new Point(
         mercatorXfromLng(tr.center.lng) * worldSize,
         mercatorYfromLat(lat) * worldSize);
