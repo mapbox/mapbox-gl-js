@@ -40,6 +40,12 @@ export default {
         return {x: 0, y: 0, z: 0};
     },
 
+    unproject(x: number, y: number) {
+        const lng = lngFromMercatorX(x);
+        const lat = latFromMercatorY(y);
+        return new LngLat(lng, lat);
+    },
+
     projectTilePoint(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {
         const tiles = Math.pow(2.0, id.z);
         const mx = (x / EXTENT + id.x) / tiles;
