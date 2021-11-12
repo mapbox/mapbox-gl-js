@@ -945,10 +945,18 @@ test('Snap To Pixel', (t) => {
             t.end();
         }, 100);
     });
-    t.test("Not Immediately Snap To Pixel when Map move and Snap To Pixel on moveend", (t) => {
+    t.test("Immediately Snap To Pixel on moveend", (t) => {
         map.fire(new Event("moveend"));
         t.same(marker._pos, marker._pos.round());
         t.end();
+    });
+    t.test("Not Immediately Snap To Pixel when Map move", (t) => {
+        map.fire(new Event("move"));
+        t.notSame(marker._pos, marker._pos.round());
+        window.requestAnimationFrame(() => {
+            t.same(marker._pos, marker._pos.round());
+            t.end();
+        });
     });
     t.test("Not Immediately Snap To Pixel when Map move and setLngLat", (t) => {
         marker.setLngLat([1, 2]);

@@ -259,6 +259,7 @@ export default class Marker extends Evented {
         }
         this.remove();
         this._map = map;
+        this._updateMoving = this._updateMoving.bind(this);
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._updateMoving);
         map.on('moveend', this._update);
