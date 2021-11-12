@@ -408,6 +408,10 @@ class Transform {
         this._cameraZoom = this._zoomFromMercatorZ((terrainElevation + height) / this.worldSize);
     }
 
+    globeOrMercator(): boolean {
+        return this.projection.name === 'mercator' || this.projection.name === 'globe';
+    }
+
     sampleAverageElevation(): number {
         if (!this._elevation) return 0;
         const elevation: Elevation = this._elevation;
@@ -731,7 +735,7 @@ class Transform {
         const maxRange = options.isTerrainDEM && this._elevation ? this._elevation.exaggeration() * 10000 : this._centerAltitude;
         const minRange = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
 
-        const scaleAdjustment = getScaleAdjustment(this);
+        const scaleAdjustment = this.globeOrMercator() ? 1.0 : getScaleAdjustment(this);
 
         const relativeScaleAtMercatorCoord = mc => {
             // Calculate how scale compares between projected coordinates and mercator coordinates.
@@ -1525,7 +1529,7 @@ class Transform {
         this._constraining = true;
 
         // alternate constraining for non-Mercator projections
-        if (this.projection.name !== 'mercator') {
+        if (!this.globeOrMercator()) {
             const center = this.center;
             center.lat = clamp(center.lat, this.minLat, this.maxLat);
             if (this.maxBounds || !this.renderWorldCopies) center.lng = clamp(center.lng, this.minLng, this.maxLng);
@@ -1640,7 +1644,7 @@ class Transform {
 
         let m = mat4.mul([], cameraToClip, worldToCamera);
 
-        if (this.projection.name !== 'mercator') {
+        if (!this.globeOrMercator()) {
             // Projections undistort as you zoom in (shear, scale, rotate).
             // Apply the undistortion around the center of the map.
             const mc = this.locationCoordinate(this.center);
@@ -1852,7 +1856,7 @@ class Transform {
 
     _terrainEnabled(): boolean {
         if (!this._elevation) return false;
-        if (this.projection.name !== 'mercator') {
+        if (!this.globeOrMercator()) {
             warnOnce('Terrain is not yet supported with alternate projections. Use mercator to enable terrain.');
             return false;
         }
