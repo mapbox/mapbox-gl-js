@@ -17,6 +17,7 @@ import {TriangleIndexArray, GlobeVertexArray, LineIndexArray} from '../../data/a
 import type Transform from '../transform.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
 import GlobeTileTransform from './globe_tile_transform.js';
+import {furthestPixelDistanceOnSphere} from './far_z.js';
 
 export const NORMALIZATION_BIT_RANGE = 15;
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
@@ -76,52 +77,7 @@ export default {
 
     farthestPixelDistance(tr: Transform): number {
         const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
-        // Find farthest distance of the globe that is potentially visible to the camera.
-        // First check if the view frustum is fully covered by the map by casting a ray
-        // from the top left/right corner and see if it intersects with the globe. In case
-        // of no intersection we need to find distance to the horizon point where the
-        // surface normal is perpendicular to the camera forward direction.
-        const cameraDistance = tr.cameraToCenterDistance;
-        const centerPixelAltitude = tr._centerAltitude * pixelsPerMeter;
-
-        const camera = tr._camera;
-        const forward = tr._camera.forward();
-        const cameraPosition = vec3.add([], vec3.scale([], forward, -cameraDistance), [0, 0, centerPixelAltitude]);
-
-        const globeRadius = tr.worldSize / (2.0 * Math.PI);
-        const globeCenter = [0, 0, -globeRadius];
-
-        const aspectRatio = tr.width / tr.height;
-        const tanFovAboveCenter = Math.tan(tr.fovAboveCenter);
-
-        const up = vec3.scale([], camera.up(), tanFovAboveCenter);
-        const right = vec3.scale([], camera.right(), tanFovAboveCenter * aspectRatio);
-        const dir = vec3.normalize([], vec3.add([], vec3.add([], forward, up), right));
-
-        const pointOnGlobe = [];
-        const ray = new Ray(cameraPosition, dir);
-
-        let pixelDistance;
-        if (ray.closestPointOnSphere(globeCenter, globeRadius, pointOnGlobe)) {
-            const p0 = vec3.add([], pointOnGlobe, globeCenter);
-            const p1 = vec3.sub([], p0, cameraPosition);
-            // Globe is fully covering the view frustum. Project the intersection
-            // point to the camera view vector in order to find the pixel distance
-            pixelDistance = Math.cos(tr.fovAboveCenter) * vec3.length(p1);
-        } else {
-            // Background space is visible. Find distance to the point of the
-            // globe where surface normal is parallel to the view vector
-            const p0 = vec3.sub([], cameraPosition, globeCenter);
-            const p1 = vec3.sub([], globeCenter, cameraPosition);
-            vec3.normalize(p1, p1);
-
-            const cameraHeight = vec3.length(p0) - globeRadius;
-            pixelDistance = Math.sqrt(cameraHeight * cameraHeight + 2 * globeRadius * cameraHeight);
-            const angle = Math.acos(pixelDistance / (globeRadius + cameraHeight)) - Math.acos(vec3.dot(forward, p1));
-            pixelDistance *= Math.cos(angle);
-        }
-
-        return pixelDistance * 1.01;
+        return furthestPixelDistanceOnSphere(tr, pixelsPerMeter);
     }
 };
 
