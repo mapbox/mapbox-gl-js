@@ -1017,6 +1017,7 @@ class Map extends Camera {
      *
      * @param {ProjectionSpecification | string | null | undefined} projection The projection that the map should be rendered in.
      * This can be a {@link ProjectionSpecification} object or a string of the projection's name.
+     * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setProjection('albers');
      * map.setProjection({
@@ -1034,6 +1035,7 @@ class Map extends Camera {
         }
         this._runtimeProjection = projection;
         this.style.updateProjection();
+        return this;
     }
 
     /**
