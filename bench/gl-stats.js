@@ -32,6 +32,12 @@ function waitForConsole(page) {
     await page.setViewport({width: 600, height: 600, deviceScaleFactor: 2});
     await page.setContent(benchHTML);
 
+    let consoleCounter = 0;
+    page.on('console', async (msg) => {
+        consoleCounter++;
+        console.log(consoleCounter, await msg.text());
+    });
+
     const tmp = await waitForConsole(page);
     console.log(tmp);
 
