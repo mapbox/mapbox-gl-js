@@ -14,6 +14,10 @@ const benchHTML = benchSrc
 function waitForConsole(page) {
     return new Promise((resolve) => {
         function onConsole(msg) {
+            if (msg.type() !== 'log') {
+                return;
+            }
+
             page.removeListener('console', onConsole);
             resolve(msg.text());
         }
@@ -23,6 +27,7 @@ function waitForConsole(page) {
 
 (async () => {
     const browser = await puppeteer.launch({
+        dumpio: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
         executablePath: process.env.CI ? '/usr/bin/google-chrome' : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     });
@@ -32,16 +37,11 @@ function waitForConsole(page) {
     await page.setViewport({width: 600, height: 600, deviceScaleFactor: 2});
     await page.setContent(benchHTML);
 
-    let consoleCounter = 0;
     page.on('console', async (msg) => {
-        consoleCounter++;
-        console.log(consoleCounter, await msg.text());
+        console.log(await msg.type(), await msg.text());
     });
 
-    const tmp = await waitForConsole(page);
-    console.log(tmp);
-
-    const stats = JSON.parse(tmp);
+    const stats = JSON.parse(await waitForConsole(page));
     stats["bundle_size"] = mapboxGLJSSrc.length + mapboxGLCSSSrc.length;
     stats["bundle_size_gz"] = zlib.gzipSync(mapboxGLJSSrc).length + zlib.gzipSync(mapboxGLCSSSrc).length;
     stats.dt = execSync('git show --no-patch --no-notes --pretty=\'%cI\' HEAD').toString().substring(0, 19);
