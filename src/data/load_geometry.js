@@ -49,9 +49,8 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
     const extent = feature.extent;
     const extentScale = EXTENT / extent;
 
-    // TODO: Cleanup check against 'mercator' or 'globe', make it part of the projection
-    // interface
     if (canonical && tileTransform &&
+        // FIXME: move this as part of the projection interface
         tileTransform.projection.name !== 'mercator' &&
         tileTransform.projection.name !== 'globe') {
         const z2 = 1 << canonical.z;

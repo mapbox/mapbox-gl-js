@@ -134,13 +134,9 @@ export default class Worker {
         callback();
     }
 
-    setProjection(mapId: string, config: ProjectionSpecification) {
-        //setProjection(mapId: string, projection: string, callback: WorkerTileCallback) {
-        // FIXME(rebase): Make sure that setProjection is called with a callback
-        // FIXME(rebase): Remove duplicate
+    setProjection(mapId: string, config: ProjectionSpecification, callback: WorkerTileCallback) {
         this.projections[mapId] = getProjection(config);
-        // this.projection = projection;
-        // callback();
+        callback();
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
@@ -158,9 +154,6 @@ export default class Worker {
         const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
         p.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source).loadTile(p, callback);
-        // FIXME(rebase):
-        // extend(params, {enableTerrain: this.terrain, projection: this.projection});
-        // this.getWorkerSource(mapId, params.type, params.source).loadTile(params, callback);
     }
 
     loadDEMTile(mapId: string, params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
@@ -173,9 +166,6 @@ export default class Worker {
         const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
         p.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source).reloadTile(p, callback);
-        // FIXME(rebase):
-        // extend(params, {enableTerrain: this.terrain, projection: this.projection});
-        // this.getWorkerSource(mapId, params.type, params.source).reloadTile(params, callback);
     }
 
     abortTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {

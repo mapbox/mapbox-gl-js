@@ -47,6 +47,7 @@ class Fog extends Evented {
     }
 
     isSoftDisabled(): boolean {
+        // FIXME: Move this as part of the projection interface
         return this._transform.projection.name !== 'mercator';
     }
 

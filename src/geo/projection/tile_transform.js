@@ -19,16 +19,16 @@ export type TileTransform = {
 };
 
 export default function tileTransform(id: Object, projection: Projection) {
+    if (projection.name === 'mercator' || projection.name !== 'globe') {
+        return {scale: 1 << id.z, x: id.x, y: id.y, x2: id.x + 1, y2: id.y + 1, projection};
+    }
+
     const s = Math.pow(2, -id.z);
 
     const x1 = (id.x) * s;
     const x2 = (id.x + 1) * s;
     const y1 = (id.y) * s;
     const y2 = (id.y + 1) * s;
-
-    if (projection.name === 'mercator') {
-        return {scale: 1 << id.z, x: id.x, y: id.y, x2: id.x + 1, y2: id.y + 1, projection};
-    }
 
     const lng1 = lngFromMercatorX(x1);
     const lng2 = lngFromMercatorX(x2);

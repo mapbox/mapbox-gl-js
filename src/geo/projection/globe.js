@@ -36,8 +36,10 @@ export default {
     supportsWorldCopies: false,
     zAxisUnit: "pixels",
 
-    project() {
-        return {x: 0, y: 0, z: 0};
+    project(lng: number, lat: number) {
+        const x = mercatorXfromLng(lng);
+        const y = mercatorYfromLat(lat);
+        return {x, y, z: 0};
     },
 
     unproject(x: number, y: number) {
