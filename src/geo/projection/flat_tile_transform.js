@@ -20,32 +20,6 @@ export default class FlatTileTransform {
         this._identity = mat4.identity(new Float64Array(16));
     }
 
-    createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
-        const m = mat4.create();
-        if (pitchWithMap) {
-            mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
-            if (!rotateWithMap) {
-                mat4.rotateZ(m, m, this._tr.angle);
-            }
-        } else {
-            mat4.multiply(m, this._tr.labelPlaneMatrix, posMatrix);
-        }
-        return m;
-    }
-
-    createGlCoordMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits): mat4 {
-        if (pitchWithMap) {
-            const m = mat4.clone(posMatrix);
-            mat4.scale(m, m, [pixelsToTileUnits, pixelsToTileUnits, 1]);
-            if (!rotateWithMap) {
-                mat4.rotateZ(m, m, -this._tr.angle);
-            }
-            return m;
-        } else {
-            return this._tr.glCoordMatrix;
-        }
-    }
-
     createInversionMatrix(): mat4 {
         return this._identity;
     }
@@ -68,10 +42,10 @@ export default class FlatTileTransform {
            scaledY = cs.y;
            mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, this._tr.pixelsPerMeter / this._worldSize]);
         }
-        
+
         mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
-        
+
         return posMatrix;
     }
 

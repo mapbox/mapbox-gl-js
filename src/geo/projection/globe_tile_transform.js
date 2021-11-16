@@ -30,33 +30,7 @@ export default class GlobeTileTransform {
     constructor(tr: Transform, worldSize: number) {
         this._tr = tr;
         this._worldSize = worldSize;
-
         this._globeMatrix = calculateGlobeMatrix(tr, worldSize);
-    }
-
-    createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean): mat4 {
-        let m = mat4.create();
-        if (pitchWithMap) {
-            m = this._calculateGlobeLabelMatrix(tileID, this._tr.worldSize / this._tr._projectionScaler, this._tr.center.lat, this._tr.center.lng);
-
-            if (!rotateWithMap) {
-                mat4.rotateZ(m, m, this._tr.angle);
-            }
-        } else {
-            mat4.multiply(m, this._tr.labelPlaneMatrix, posMatrix);
-        }
-        return m;
-    }
-
-    createGlCoordMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean): mat4 {
-        if (pitchWithMap) {
-            const m = this.createLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap);
-            mat4.invert(m, m);
-            mat4.multiply(m, posMatrix, m);
-            return m;
-        } else {
-            return this._tr.glCoordMatrix;
-        }
     }
 
     createTileMatrix(id: UnwrappedTileID): mat4 {
@@ -120,28 +94,6 @@ export default class GlobeTileTransform {
         const pixelsPerMeterECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
         const maxTileScale = tileNormalizationScale(id);
         return pixelsPerMeterECEF * maxTileScale;
-    }
-
-    _calculateGlobeLabelMatrix(tileID: CanonicalTileID, worldSize: number, lat: number, lng: number) {
-
-        // Camera is moved closer towards the ground near poles as part of compesanting the reprojection.
-        // This has to be compensated for the map aligned label space.
-        // Whithout this logic map aligned symbols would appear larger than intended
-        const ws = worldSize;
-
-        const localRadius = EXTENT / (2.0 * Math.PI);
-        const wsRadius = ws / (2.0 * Math.PI);
-        const s = wsRadius / localRadius;
-
-        // transform the globe from reference coordinate space to world space
-        const posMatrix = mat4.identity(new Float64Array(16));
-
-        mat4.translate(posMatrix, posMatrix, [0, 0, -wsRadius]);
-        mat4.scale(posMatrix, posMatrix, [s, s, s]);
-        mat4.rotateX(posMatrix, posMatrix, degToRad(-lat));
-        mat4.rotateY(posMatrix, posMatrix, degToRad(-lng));
-
-        return mat4.multiply([], posMatrix, denormalizeECEF(globeTileBounds(tileID)));
     }
 
     pointCoordinate(x: number, y: number): MercatorCoordinate {

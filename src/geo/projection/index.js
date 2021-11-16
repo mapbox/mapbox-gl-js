@@ -75,17 +75,9 @@ export function getProjection(config: ProjectionSpecification) {
 }
 
 export type TileTransform = {
-    createLabelPlaneMatrix: (posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits: number) => mat4,
-
-    createGlCoordMatrix: (posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean, pixelsToTileUnits: number) => mat4,
-
     createTileMatrix: (id: UnwrappedTileID) => mat4,
-
     createInversionMatrix: (id: UnwrappedTileID) => mat4,
-
     upVector: (id: CanonicalTileID, x: number, y: number) => vec3,
-
     upVectorScale: (id: CanonicalTileID) => number,
-
     pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate
 };

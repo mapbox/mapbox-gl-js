@@ -199,19 +199,24 @@ export function denormalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export function calculateGlobeMatrix(tr: Transform, worldSize: number): mat4 {
+export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset: [number, number]): mat4 {
     const localRadius = EXTENT / (2.0 * Math.PI);
     const wsRadius = worldSize / (2.0 * Math.PI);
     const s = wsRadius / localRadius;
 
-    const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
-    const point = new Point(
-        mercatorXfromLng(tr.center.lng) * worldSize,
-        mercatorYfromLat(lat) * worldSize);
+    if (!offset) {
+        const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+        const lng = tr.center.lng;
+
+        offset = [
+            mercatorXfromLng(lng) * worldSize,
+            mercatorYfromLat(lat) * worldSize
+        ];
+    }
 
     // transform the globe from reference coordinate space to world space
     const posMatrix = mat4.identity(new Float64Array(16));
-    mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
+    mat4.translate(posMatrix, posMatrix, [offset[0], offset[1], -wsRadius]);
     mat4.scale(posMatrix, posMatrix, [s, s, s]);
     mat4.rotateX(posMatrix, posMatrix, degToRad(-tr._center.lat));
     mat4.rotateY(posMatrix, posMatrix, degToRad(-tr._center.lng));
