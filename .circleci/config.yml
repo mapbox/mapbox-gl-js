@@ -98,8 +98,6 @@ workflows:
           filters:
             tags:
               ignore: /.*/
-            branches:
-              only: main
       - deploy-benchmarks:
           requires:
             - install-mbx-ci

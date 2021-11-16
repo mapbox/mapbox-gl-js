@@ -32,7 +32,10 @@ function waitForConsole(page) {
     await page.setViewport({width: 600, height: 600, deviceScaleFactor: 2});
     await page.setContent(benchHTML);
 
-    const stats = JSON.parse(await waitForConsole(page));
+    const tmp = await waitForConsole(page);
+    console.log(tmp);
+
+    const stats = JSON.parse(tmp);
     stats["bundle_size"] = mapboxGLJSSrc.length + mapboxGLCSSSrc.length;
     stats["bundle_size_gz"] = zlib.gzipSync(mapboxGLJSSrc).length + zlib.gzipSync(mapboxGLCSSSrc).length;
     stats.dt = execSync('git show --no-patch --no-notes --pretty=\'%cI\' HEAD').toString().substring(0, 19);
