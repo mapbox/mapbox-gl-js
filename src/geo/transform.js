@@ -1422,7 +1422,9 @@ class Transform {
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
-        const projMatrix = this.projection.name === 'mercator' ? (aligned ? this.alignedProjMatrix : this.projMatrix) : this.mercatorMatrix;
+        const projMatrix = this.projection.name === 'mercator' || this.projection.name === 'globe' ?
+            (aligned ? this.alignedProjMatrix : this.projMatrix) :
+            this.mercatorMatrix;
         mat4.multiply(posMatrix, projMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
