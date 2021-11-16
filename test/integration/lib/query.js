@@ -149,7 +149,7 @@ async function runTest(t) {
             ];
         }
 
-        if (!process.env.CI) browserWriteFile.postMessage(fileInfo);
+        if (!process.env.CI || process.env.UPDATE) browserWriteFile.postMessage(fileInfo);
 
     } catch (e) {
         t.error(e);
