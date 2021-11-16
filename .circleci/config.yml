@@ -308,7 +308,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome
+      - browser-tools/install-browser-tools:
+          chrome-version: 91.0.4472.164
       - run: yarn run build-dev
       - run: yarn run build-token
       - run:
