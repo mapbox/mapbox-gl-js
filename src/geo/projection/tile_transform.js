@@ -19,7 +19,7 @@ export type TileTransform = {
 };
 
 export default function tileTransform(id: Object, projection: Projection) {
-    if (projection.name === 'mercator' || projection.name !== 'globe') {
+    if (projection.name === 'mercator' || projection.name === 'globe') {
         return {scale: 1 << id.z, x: id.x, y: id.y, x2: id.x + 1, y2: id.y + 1, projection};
     }
 
