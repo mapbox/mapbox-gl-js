@@ -369,10 +369,13 @@ class Style extends Evented {
 
         if (!projectionChanged) return;
 
+        // TODO: Only do that for runtime reprojection, otherwise
+        // reduce to only _forceSymbolLayerUpdate for faster switch
         this.map.painter.clearBackgroundTiles();
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
         }
+        // this._forceSymbolLayerUpdate();
 
         this.map._update(true);
     }
