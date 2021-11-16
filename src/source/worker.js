@@ -45,7 +45,6 @@ export default class Worker {
     isSpriteLoaded: {[_: string]: boolean };
     referrer: ?string;
     terrain: ?boolean;
-    projection: string;
 
     constructor(self: WorkerGlobalScopeInterface) {
         PerformanceUtils.measure('workerEvaluateScript');
@@ -57,9 +56,7 @@ export default class Worker {
         this.isSpriteLoaded = {};
 
         this.projections = {};
-        // FIXME(rebase): Duplicate
         this.defaultProjection = getProjection({name: 'mercator'});
-        this.projection = 'mercator';
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
