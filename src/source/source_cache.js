@@ -921,6 +921,28 @@ class SourceCache extends Evented {
         }
         this._cache.filter(tile => !tile.hasDependency(namespaces, keys));
     }
+
+    preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions) {
+        const calculatedOptions = this.map.cameraForBounds(bounds, options);
+        if (!calculatedOptions) return this;
+
+        const transform = this.transform.clone();
+        transform.zoom = calculatedOptions.zoom;
+        transform.center = calculatedOptions.center;
+
+        const tileIDs = transform.coveringTiles({
+            tileSize: this._source.tileSize,
+            minzoom: this._source.minzoom,
+            maxzoom: this._source.maxzoom,
+            roundZoom: this._source.roundZoom,
+            reparseOverscaled: this._source.reparseOverscaled,
+            isTerrainDEM: this.usedForTerrain
+        });
+
+        for (const tileID of tileIDs) {
+            this._addTile(tileID);
+        }
+    }
 }
 
 SourceCache.maxOverzooming = 10;

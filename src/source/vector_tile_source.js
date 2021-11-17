@@ -310,6 +310,13 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
+    preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions) {
+        const sourceCaches = this.map.style._getSourceCaches(this.id);
+        for (const sourceCache of sourceCaches) {
+            sourceCache.preloadTiles(bounds, options);
+        }
+    }
+
     hasTransition() {
         return false;
     }
