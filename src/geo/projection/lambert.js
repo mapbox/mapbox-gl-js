@@ -23,6 +23,7 @@ export default {
     parallels: [30, 30],
 
     conic: true,
+    isReprojectedInTileSpace: true,
 
     initializeConstants() {
         if (this.constants && vec2.exactEquals(this.parallels, this.constants.parallels)) {

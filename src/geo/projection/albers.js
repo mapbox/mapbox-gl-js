@@ -15,6 +15,7 @@ export default {
     parallels: [29.5, 45.5],
     zAxisUnit: "meters",
     conic: true,
+    isReprojectedInTileSpace: true,
 
     // based on https://github.com/d3/d3-geo-projection, MIT-licensed
 

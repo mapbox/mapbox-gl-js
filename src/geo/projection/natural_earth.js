@@ -13,6 +13,7 @@ export default {
     name: 'naturalEarth',
     center: [0, 0],
     range: [3.5, 7],
+    isReprojectedInTileSpace: true,
 
     project(lng: number, lat: number) {
         // based on https://github.com/d3/d3-geo, MIT-licensed

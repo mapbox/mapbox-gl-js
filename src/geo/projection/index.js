@@ -29,6 +29,8 @@ export type Projection = {
     supportsTerrain?: boolean;
     supportsFog?: boolean;
     supportsWorldCopies: boolean,
+    // Whether the projection reprojects data in tile space
+    isReprojectedInTileSpace?: boolean;
     zAxisUnit: "meters" | "pixels",
     project: (lng: number, lat: number) => {x: number, y: number, z: number},
     unproject: (x: number, y: number) => LngLat,

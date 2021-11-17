@@ -408,10 +408,6 @@ class Transform {
         this._cameraZoom = this._zoomFromMercatorZ((terrainElevation + height) / this.worldSize);
     }
 
-    globeOrMercator(): boolean {
-        return this.projection.name === 'mercator' || this.projection.name === 'globe';
-    }
-
     sampleAverageElevation(): number {
         if (!this._elevation) return 0;
         const elevation: Elevation = this._elevation;
@@ -708,7 +704,6 @@ class Transform {
 
         const useElevationData = this.elevation && !options.isTerrainDEM;
         const isMercator = this.projection.name === 'mercator';
-        const isGlobe = this.projection.name === 'globe';
 
         if (options.minzoom !== undefined && z < options.minzoom) return [];
         if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
@@ -729,14 +724,14 @@ class Transform {
         const zoomSplitDistance = this.cameraToCenterDistance / options.tileSize * (options.roundZoom ? 1 : 0.502);
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
-        const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && (isMercator || isGlobe) ? z : 0;
+        const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && !this.projection.isReprojectedInTileSpace ? z : 0;
 
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).
         const maxRange = options.isTerrainDEM && this._elevation ? this._elevation.exaggeration() * 10000 : this._centerAltitude;
         const minRange = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
 
-        const scaleAdjustment = this.globeOrMercator() ? 1.0 : getScaleAdjustment(this);
+        const scaleAdjustment = this.projection.isReprojectedInTileSpace ? getScaleAdjustment(this) : 1.0;
 
         const relativeScaleAtMercatorCoord = mc => {
             // Calculate how scale compares between projected coordinates and mercator coordinates.
@@ -833,7 +828,7 @@ class Transform {
             }
 
             let tileScaleAdjustment = 1;
-            if (!(isMercator || isGlobe) && actualZ <= 5) {
+            if (this.projection.isReprojectedInTileSpace && actualZ <= 5) {
                 // In other projections, not all tiles are the same size.
                 // Account for the tile size difference by adjusting the distToSplit.
                 // Adjust by the ratio of the area at the tile center to the area at the map center.
@@ -1422,9 +1417,8 @@ class Transform {
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
-        const projMatrix = this.projection.name === 'mercator' || this.projection.name === 'globe' ?
-            (aligned ? this.alignedProjMatrix : this.projMatrix) :
-            this.mercatorMatrix;
+        const projMatrix = this.projection.isReprojectedInTileSpace ?
+            this.mercatorMatrix : (aligned ? this.alignedProjMatrix : this.projMatrix);
         mat4.multiply(posMatrix, projMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
@@ -1532,7 +1526,7 @@ class Transform {
         this._constraining = true;
 
         // alternate constraining for non-Mercator projections
-        if (!this.globeOrMercator()) {
+        if (this.project.isReprojectedInTileSpace) {
             const center = this.center;
             center.lat = clamp(center.lat, this.minLat, this.maxLat);
             if (this.maxBounds || !this.renderWorldCopies) center.lng = clamp(center.lng, this.minLng, this.maxLng);
@@ -1647,7 +1641,7 @@ class Transform {
 
         let m = mat4.mul([], cameraToClip, worldToCamera);
 
-        if (!this.globeOrMercator()) {
+        if (this.projection.isReprojectedInTileSpace) {
             // Projections undistort as you zoom in (shear, scale, rotate).
             // Apply the undistortion around the center of the map.
             const mc = this.locationCoordinate(this.center);
@@ -1859,7 +1853,7 @@ class Transform {
 
     _terrainEnabled(): boolean {
         if (!this._elevation) return false;
-        if (!this.globeOrMercator()) {
+        if (!this.projection.supportsTerrain) {
             warnOnce('Terrain is not yet supported with alternate projections. Use mercator to enable terrain.');
             return false;
         }

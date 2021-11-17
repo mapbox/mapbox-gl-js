@@ -49,10 +49,7 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
     const extent = feature.extent;
     const extentScale = EXTENT / extent;
 
-    if (canonical && tileTransform &&
-        // FIXME: move this as part of the projection interface
-        tileTransform.projection.name !== 'mercator' &&
-        tileTransform.projection.name !== 'globe') {
+    if (canonical && tileTransform && tileTransform.projection.isReprojectedInTileSpace) {
         const z2 = 1 << canonical.z;
         const {scale, x, y, projection} = tileTransform;
 

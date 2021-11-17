@@ -30,17 +30,17 @@ export default class FlatTileTransform {
         const posMatrix = mat4.identity(new Float64Array(16));
         const projection = this._tr.projection;
 
-        if (projection.name === 'mercator') {
-           scale = this._worldSize / this._tr.zoomScale(canonical.z);
-           const unwrappedX = canonical.x + Math.pow(2, canonical.z) * id.wrap;
-           scaledX = unwrappedX * scale;
-           scaledY = canonical.y * scale;
-        } else {
+        if (projection.isReprojectedInTileSpace) {
            const cs = tileTransform(canonical, projection);
            scale = 1;
            scaledX = cs.x + id.wrap * cs.scale;
            scaledY = cs.y;
            mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, this._tr.pixelsPerMeter / this._worldSize]);
+        } else {
+           scale = this._worldSize / this._tr.zoomScale(canonical.z);
+           const unwrappedX = canonical.x + Math.pow(2, canonical.z) * id.wrap;
+           scaledX = unwrappedX * scale;
+           scaledY = canonical.y * scale;
         }
 
         mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);

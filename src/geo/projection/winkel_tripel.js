@@ -14,6 +14,7 @@ export default {
     center: [0, 0],
     range: [3.5, 7],
     zAxisUnit: "meters",
+    isReprojectedInTileSpace: true,
 
     project(lng: number, lat: number) {
         lat = degToRad(lat);
