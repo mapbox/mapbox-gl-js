@@ -26,6 +26,8 @@ export type Projection = {
     wrap?: boolean,
     name: string,
     requiresDraping: boolean,
+    supportsTerrain?: boolean;
+    supportsFog?: boolean;
     supportsWorldCopies: boolean,
     zAxisUnit: "meters" | "pixels",
     project: (lng: number, lat: number) => {x: number, y: number, z: number},

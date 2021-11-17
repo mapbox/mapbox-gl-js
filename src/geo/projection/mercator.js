@@ -17,6 +17,8 @@ export default {
     name: 'mercator',
     requiresDraping: false,
     supportsWorldCopies: true,
+    supportsTerrain: true,
+    supportsFog: true,
     zAxisUnit: "meters",
     wrap: true,
     center: [0, 0],

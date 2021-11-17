@@ -173,11 +173,7 @@ class Painter {
     }
 
     updateTerrain(style: Style, cameraChanging: boolean) {
-        // FIXME: Move this check as part of the projection interface
-        const globeOrMercator =
-            this.transform.projection.name === 'mercator' ||
-            this.transform.projection.name === 'globe' ;
-        const enabled = !!style && !!style.terrain && globeOrMercator;
+        const enabled = !!style && !!style.terrain && this.transform.projection.supportsTerrain;
         if (!enabled && (!this._terrain || !this._terrain.enabled)) return;
         if (!this._terrain) {
             this._terrain = new Terrain(this, style);

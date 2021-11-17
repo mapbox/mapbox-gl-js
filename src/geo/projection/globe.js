@@ -34,6 +34,7 @@ export default {
     name: 'globe',
     requiresDraping: true,
     supportsWorldCopies: false,
+    supportsTerrain: true,
     zAxisUnit: "pixels",
 
     project(lng: number, lat: number) {
