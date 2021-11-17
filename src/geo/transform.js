@@ -846,7 +846,6 @@ class Transform {
             return distanceSqr < distToSplitSqr;
         };
 
-        // FIXME(globe-view-rebase): Add supportsWorldCopies to projection
         if (this.projection.supportsWorldCopies && this._renderWorldCopies) {
             // Render copy of the globe thrice on both sides
             for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
