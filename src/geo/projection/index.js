@@ -28,6 +28,8 @@ export type Projection = {
     requiresDraping: boolean,
     supportsTerrain?: boolean;
     supportsFog?: boolean;
+    supportsCustomLayers?: boolean,
+    supportsFreeCamera?: boolean,
     supportsWorldCopies: boolean,
     // Whether the projection reprojects data in tile space
     isReprojectedInTileSpace?: boolean;

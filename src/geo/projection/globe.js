@@ -35,6 +35,7 @@ export default {
     requiresDraping: true,
     supportsWorldCopies: false,
     supportsTerrain: true,
+    supportsFreeCamera: true,
     zAxisUnit: "pixels",
 
     project(lng: number, lat: number) {

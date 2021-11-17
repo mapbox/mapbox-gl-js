@@ -19,6 +19,8 @@ export default {
     supportsWorldCopies: true,
     supportsTerrain: true,
     supportsFog: true,
+    supportsCustomLayers: true,
+    supportsFreeCamera: true,
     zAxisUnit: "meters",
     wrap: true,
     center: [0, 0],

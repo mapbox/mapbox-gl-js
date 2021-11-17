@@ -1006,8 +1006,7 @@ class Camera extends Evented {
      * map.setFreeCameraOptions(camera);
      */
     getFreeCameraOptions(): FreeCameraOptions {
-        // FIXME: Move this as part of the projection interface
-        if (this.transform.projection.name !== 'mercator') {
+        if (!this.transform.projection.supportsFreeCamera) {
             warnOnce(freeCameraNotSupportedWarning);
         }
         return this.transform.getFreeCameraOptions();
@@ -1051,7 +1050,7 @@ class Camera extends Evented {
     setFreeCameraOptions(options: FreeCameraOptions, eventData?: Object) {
         const tr = this.transform;
 
-        if (tr.projection.name !== 'mercator') {
+        if (!tr.projection.supportsFreeCamera) {
             warnOnce(freeCameraNotSupportedWarning);
             return;
         }
