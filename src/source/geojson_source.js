@@ -177,6 +177,7 @@ class GeoJSONSource extends Evented implements Source {
      * });
      */
     setData(data: GeoJSON | string) {
+        if (this.map && this._loaded) this.map._isInitialLoad = true;
         this._data = data;
         this._updateWorkerData();
         return this;
