@@ -8,6 +8,7 @@ import naturalEarth from './natural_earth.js';
 import winkelTripel from './winkel_tripel.js';
 import cylindricalEqualArea from './cylindrical_equal_area.js';
 import LngLat from '../lng_lat.js';
+import {extend} from '../../util/util.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 
 export type Projection = {
@@ -44,11 +45,11 @@ function getConicProjection(projection: Projection, config: ProjectionSpecificat
                 cylindricalFunctions = {wrap: true, project, unproject};
             }
 
-            return {...projection, ...config, ...cylindricalFunctions};
+            return extend({}, projection, config, cylindricalFunctions);
         }
     }
 
-    return {...projection, ...config};
+    return extend({}, projection, config);
 }
 
 export function getProjection(config: ProjectionSpecification) {
