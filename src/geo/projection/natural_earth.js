@@ -14,6 +14,7 @@ export default {
     center: [0, 0],
     range: [3.5, 7],
     isReprojectedInTileSpace: true,
+    zAxisUnit: "meters",
 
     project(lng: number, lat: number) {
         // based on https://github.com/d3/d3-geo, MIT-licensed
@@ -27,7 +28,8 @@ export default {
 
         return {
             x: (x / Math.PI + 0.5) * 0.5,
-            y: 1 - (y / Math.PI + 1) * 0.5
+            y: 1 - (y / Math.PI + 1) * 0.5,
+            z: 0
         };
     },
 

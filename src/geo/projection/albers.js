@@ -42,7 +42,7 @@ export default {
         const r = Math.sqrt(c - 2 * n * Math.sin(phi)) / n;
         const x = r * Math.sin(lambda * n);
         const y = r * Math.cos(lambda * n) - r0;
-        return {x, y};
+        return {x, y, z: 0};
     },
 
     unproject(x: number, y: number) {

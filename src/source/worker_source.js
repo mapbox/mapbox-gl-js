@@ -40,7 +40,7 @@ export type WorkerTileParameters = RequestedTileParameters & {
     collectResourceTiming?: boolean,
     returnDependencies?: boolean,
     enableTerrain?: boolean,
-    projection?: Projection
+    projection: Projection
 };
 
 export type WorkerDEMTileParameters = TileParameters & {

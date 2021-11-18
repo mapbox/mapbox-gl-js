@@ -18,7 +18,7 @@ export default {
     project(lng: number, lat: number) {
         const x = 0.5 + lng / 360;
         const y = 0.5 - lat / 360;
-        return {x, y};
+        return {x, y, z: 0};
     },
 
     unproject(x: number, y: number) {

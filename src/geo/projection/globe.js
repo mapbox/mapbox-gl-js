@@ -37,6 +37,7 @@ export default {
     supportsTerrain: true,
     supportsFreeCamera: true,
     zAxisUnit: "pixels",
+    center: [0, 0],
 
     project(lng: number, lat: number) {
         const x = mercatorXfromLng(lng);
@@ -201,7 +202,7 @@ export function denormalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset: [number, number]): mat4 {
+export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): mat4 {
     const localRadius = EXTENT / (2.0 * Math.PI);
     const wsRadius = worldSize / (2.0 * Math.PI);
     const s = wsRadius / localRadius;

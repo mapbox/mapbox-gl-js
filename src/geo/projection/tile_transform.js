@@ -6,6 +6,7 @@ import {vec3} from 'gl-matrix';
 import type {Projection} from './index.js';
 import {Aabb} from '../../util/primitives.js';
 import {globeTileBounds, calculateGlobeMatrix} from './globe.js';
+import type Transform from '../transform.js';
 import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
 import assert from 'assert';
 
@@ -90,7 +91,7 @@ export default function tileTransform(id: Object, projection: Projection) {
     };
 }
 
-export function tileAABB(tr: Transform, numTiles, z, x, y, wrap, min, max, projection: Projection) {
+export function tileAABB(tr: Transform, numTiles: number, z: number, x: number, y: number, wrap: number, min: number, max: number, projection: Projection) {
     if (projection.name === 'globe') {
         const tileId = new UnwrappedTileID(wrap, new CanonicalTileID(z, x, y));
         const aabb = globeTileBounds(tileId.canonical);

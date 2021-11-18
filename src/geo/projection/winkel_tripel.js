@@ -27,7 +27,8 @@ export default {
         const y = 0.5 * (lat + Math.sin(lat) / sinAlphaOverAlpha) || 0;
         return {
             x: (x / Math.PI + 0.5) * 0.5,
-            y: 1 - (y / Math.PI + 1) * 0.5
+            y: 1 - (y / Math.PI + 1) * 0.5,
+            z: 0
         };
     },
 

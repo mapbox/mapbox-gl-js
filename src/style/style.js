@@ -1710,7 +1710,8 @@ class Style extends Evented {
         }
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, this.fog && !this.fog.isSoftDisabled() ? this.fog.state : null);
+            const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState);
             this._layerOrderChanged = false;
         }
 

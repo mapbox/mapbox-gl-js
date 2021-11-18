@@ -17,6 +17,7 @@ export default function(phi: number) {
             return {
                 x: (x * scale) + 0.5,
                 y: (-y * scale) + 0.5,
+                z: 0
             };
         },
         unproject(x: number, y: number) {

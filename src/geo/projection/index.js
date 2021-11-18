@@ -25,12 +25,12 @@ export type Projection = {
     conic?: boolean,
     wrap?: boolean,
     name: string,
-    requiresDraping: boolean,
+    requiresDraping?: boolean,
     supportsTerrain?: boolean;
     supportsFog?: boolean;
     supportsCustomLayers?: boolean,
     supportsFreeCamera?: boolean,
-    supportsWorldCopies: boolean,
+    supportsWorldCopies?: boolean,
     // Whether the projection reprojects data in tile space
     isReprojectedInTileSpace?: boolean;
     zAxisUnit: "meters" | "pixels",
