@@ -526,14 +526,6 @@ class HandlerManager {
                 panVec[0] = endPoint.x - startPoint.x;
                 panVec[1] = endPoint.y - startPoint.y;
             }
-
-            // const startRay = tr.screenPointToMercatorRay(around);
-            // const endRay = tr.screenPointToMercatorRay(around.sub(panDelta));
-
-            // const startPoint = this._trackingEllipsoid.projectRay(startRay.dir);
-            // const endPoint = this._trackingEllipsoid.projectRay(endRay.dir);
-            //panVec[0] = endPoint[0] - startPoint[0];
-            //panVec[1] = endPoint[1] - startPoint[1];
         }
 
         const originalZoom = tr.zoom;

@@ -134,7 +134,7 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
 
         const pixelsToTileUnits = painter.transform.calculatePixelsToTileUnitsMatrix(tile);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, pixelsToTileUnits);
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
 
         if (size) {

@@ -10,7 +10,6 @@ import {CollisionBoxArray, TileBoundsArray, PosArray, TriangleIndexArray, LineSt
 import Texture from '../render/texture.js';
 import browser from '../util/browser.js';
 import {Debug} from '../util/debug.js';
-import type VertexBuffer from '../gl/vertex_buffer.js';
 import toEvaluationFeature from '../data/evaluation_feature.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import SourceFeatureState from '../source/source_state.js';

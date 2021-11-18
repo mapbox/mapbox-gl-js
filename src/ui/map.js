@@ -12,7 +12,6 @@ import Style from '../style/style.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import Painter from '../render/painter.js';
 import Transform from '../geo/transform.js';
-import getProjection from '../geo/projection/index.js';
 import Hash from './hash.js';
 import HandlerManager from './handler_manager.js';
 import Camera from './camera.js';
@@ -1040,6 +1039,7 @@ class Map extends Camera {
         }
         this._runtimeProjection = projection;
         this.style.updateProjection();
+        this._transitionFromGlobe = false;
         return this;
     }
 
@@ -2441,27 +2441,6 @@ class Map extends Camera {
         } else if (this._transitionFromGlobe && zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
             this.setProjection({name: 'globe'});
         }
-    }
-
-    setProjection(options?: { name: string }) {
-        const prevName = this.transform.projection.name;
-        const name = options ? options.name : null;
-        const projection = getProjection(name || 'mercator');
-        this.transform.projection = projection;
-        this._transitionFromGlobe = false;
-
-        if (projection.requiresDraping) {
-            this._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
-        } else {
-            this._setTerrain(null, "projection");
-        }
-
-        if (projection.name !== prevName) {
-            this.style._forceSymbolLayerUpdate();
-            this.style.dispatcher.broadcast('setProjection', projection.name);
-        }
-
-        return this._update(true);
     }
 
     _setTerrain(options: ?TerrainSpecification, user: string) {

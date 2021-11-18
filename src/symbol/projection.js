@@ -16,7 +16,7 @@ import type {
 } from '../data/array_types.js';
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
-
+import {calculateGlobeMatrix, denormalizeECEF, globeTileBounds} from '../geo/projection/globe.js';
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 const FlipState = {
@@ -81,13 +81,24 @@ function getLabelPlaneMatrix(posMatrix: mat4,
                              rotateWithMap: boolean,
                              transform: Transform,
                              pixelsToTileUnits: Float32Array) {
-    const m = mat4.create();
+    let m = mat4.create();
     if (pitchWithMap) {
-        const s = mat2.invert([], pixelsToTileUnits);
-        m[0] = s[0];
-        m[1] = s[1];
-        m[4] = s[2];
-        m[5] = s[3];
+        if (transform.projection.name === 'globe') {
+            // Camera is moved closer towards the ground near poles as part of
+            // compesanting the reprojection. This has to be compensated for the
+            // map aligned label space. Whithout this logic map aligned symbols
+            // would appear larger than intended.
+            const labelWorldSize = transform.worldSize / transform._projectionScaler;
+            m = calculateGlobeMatrix(transform, labelWorldSize, [0, 0]);
+
+            mat4.multiply(m, m, denormalizeECEF(globeTileBounds(tileID)));
+        } else {
+            const s = mat2.invert([], pixelsToTileUnits);
+            m[0] = s[0];
+            m[1] = s[1];
+            m[4] = s[2];
+            m[5] = s[3];
+        }
         if (!rotateWithMap) {
             mat4.rotateZ(m, m, transform.angle);
         }
@@ -95,10 +106,6 @@ function getLabelPlaneMatrix(posMatrix: mat4,
         mat4.multiply(m, transform.labelPlaneMatrix, posMatrix);
     }
     return m;
-
-    // FIXME(globe-view-rebase): pixelsToTileUnits number -> Float32Array
-    //return transform.projection.createTileTransform(transform, transform.worldSize).createLabelPlaneMatrix(
-    //    posMatrix, tileID, pitchWithMap, rotateWithMap, pixelsToTileUnits);
 }
 
 /*
@@ -111,22 +118,27 @@ function getGlCoordMatrix(posMatrix: mat4,
                           transform: Transform,
                           pixelsToTileUnits: Float32Array) {
     if (pitchWithMap) {
-        const m = mat4.clone(posMatrix);
-        const s = mat4.identity([]);
-        s[0] = pixelsToTileUnits[0];
-        s[1] = pixelsToTileUnits[1];
-        s[4] = pixelsToTileUnits[2];
-        s[5] = pixelsToTileUnits[3];
-        mat4.multiply(m, m, s);
-        if (!rotateWithMap) {
-            mat4.rotateZ(m, m, -transform.angle);
+        if (transform.projection.name === 'globe') {
+            const m = getLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits);
+            mat4.invert(m, m);
+            mat4.multiply(m, posMatrix, m);
+            return m;
+        } else {
+            const m = mat4.clone(posMatrix);
+            const s = mat4.identity([]);
+            s[0] = pixelsToTileUnits[0];
+            s[1] = pixelsToTileUnits[1];
+            s[4] = pixelsToTileUnits[2];
+            s[5] = pixelsToTileUnits[3];
+            mat4.multiply(m, m, s);
+            if (!rotateWithMap) {
+                mat4.rotateZ(m, m, -transform.angle);
+            }
+            return m;
         }
-        return m;
     } else {
         return transform.glCoordMatrix;
     }
-    // FIXME(globe-view-rebase): pixelsToTileUnits number -> Float32Array
-    //return transform.projection.createTileTransform(transform, transform.worldSize).createGlCoordMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, pixelsToTileUnits);
 }
 
 function project(point: Point, matrix: mat4, elevation: ?number = 0) {
