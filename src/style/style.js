@@ -353,15 +353,40 @@ class Style extends Evented {
 
     updateProjection() {
         const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
+        const projection = this.map.transform.projection;
+
+        // eslint-disable-next-line no-warning-comments
+        // TODO: Allow globe to be set without style loaded at map creation
+        if (this._loaded) {
+            if (projection.requiresDraping) {
+                // eslint-disable-next-line no-warning-comments
+                // TODO:
+                // - Allow draping to work without an explicit DEM source (dummy source)
+                // - Prevent override of exaggeration when terrain is already enabled
+                this.map._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
+            } else {
+                // eslint-disable-next-line no-warning-comments
+                // TODO:
+                // - Revert terrain if terrain use is only for globe draping
+                // - Make sure that terrain set as part of stylesheet is set with 'explicit' mode
+                // if (!this.map._terrainRefCount['explicit']) {
+                //   this.map._setTerrain(null, "projection");
+                // }
+            }
+        }
 
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 
         if (!projectionChanged) return;
 
+        // eslint-disable-next-line no-warning-comments
+        // TODO: Only do that for runtime reprojection, otherwise
+        // reduce to only _forceSymbolLayerUpdate for faster switch
         this.map.painter.clearBackgroundTiles();
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
         }
+        // this._forceSymbolLayerUpdate();
 
         this.map._update(true);
     }
@@ -1693,7 +1718,8 @@ class Style extends Evented {
         }
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, this.fog && !this.fog.isSoftDisabled() ? this.fog.state : null);
+            const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState);
             this._layerOrderChanged = false;
         }
 
