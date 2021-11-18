@@ -360,10 +360,18 @@ class Style extends Evented {
         if (this._loaded) {
             if (projection.requiresDraping) {
                 // eslint-disable-next-line no-warning-comments
-                // TODO: Allow draping to work without an explicit DEM source (dummy source)
+                // TODO:
+                // - Allow draping to work without an explicit DEM source (dummy source)
+                // - Prevent override of exaggeration when terrain is already enabled
                 this.map._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
             } else {
-                this.map._setTerrain(null, "projection");
+                // eslint-disable-next-line no-warning-comments
+                // TODO:
+                // - Revert terrain if terrain use is only for globe draping
+                // - Make sure that terrain set as part of stylesheet is set with 'explicit' mode
+                // if (!this.map._terrainRefCount['explicit']) {
+                //   this.map._setTerrain(null, "projection");
+                // }
             }
         }
 
