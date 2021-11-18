@@ -1157,7 +1157,9 @@ class Camera extends Evented {
 
         const offsetAsPoint = Point.convert(options.offset);
         let pointAtOffset = tr.centerPoint.add(offsetAsPoint);
-        const locationAtOffset = tr.pointCoordinate(pointAtOffset).toLngLat();
+        const locationAtOffset = tr.projection.name === 'globe' ?
+            tr.pointCoordinate(pointAtOffset).toLngLat() :
+            tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
         this._normalizeCenter(center);
 
