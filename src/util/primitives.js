@@ -132,6 +132,19 @@ class Aabb {
         this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);
     }
 
+    quadrant(index: number): Aabb {
+        const split = [(index % 2) === 0, index < 2];
+        const qMin = vec3.clone(this.min);
+        const qMax = vec3.clone(this.max);
+        for (let axis = 0; axis < split.length; axis++) {
+            qMin[axis] = split[axis] ? this.min[axis] : this.center[axis];
+            qMax[axis] = split[axis] ? this.center[axis] : this.max[axis];
+        }
+        // Temporarily, elevation is constant, hence quadrant.max.z = this.max.z
+        qMax[2] = this.max[2];
+        return new Aabb(qMin, qMax);
+    }
+
     distanceX(point: Array<number>): number {
         const pointOnAabb = Math.max(Math.min(this.max[0], point[0]), this.min[0]);
         return pointOnAabb - point[0];
