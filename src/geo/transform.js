@@ -270,7 +270,7 @@ class Transform {
     }
 
     get renderWorldCopies(): boolean {
-        return this._renderWorldCopies && this.projection.wrap === true;
+        return this._renderWorldCopies && this.projection.supportsWorldCopies === true;
     }
     set renderWorldCopies(renderWorldCopies?: ?boolean) {
         if (renderWorldCopies === undefined) {
@@ -846,7 +846,7 @@ class Transform {
             return distanceSqr < distToSplitSqr;
         };
 
-        if (this.projection.supportsWorldCopies && this._renderWorldCopies) {
+        if (this.renderWorldCopies) {
             // Render copy of the globe thrice on both sides
             for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
                 stack.push(newRootTile(-i));

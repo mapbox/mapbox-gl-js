@@ -9,7 +9,7 @@ import {farthestPixelDistanceOnPlane} from './far_z.js';
 
 export default {
     name: 'equirectangular',
-    wrap: true,
+    supportsWorldCopies: true,
     center: [0, 0],
     range: [3.5, 7],
     zAxisUnit: "meters",

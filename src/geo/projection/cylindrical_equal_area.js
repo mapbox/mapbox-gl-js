@@ -9,7 +9,7 @@ export default function(phi: number) {
     const scale = 1 / (2 * Math.max(Math.PI * cosPhi, 1 / cosPhi));
 
     return {
-        wrap: true,
+        supportsWorldCopies: true,
         project(lng: number, lat: number) {
             const x = degToRad(lng) * cosPhi;
             const y = Math.sin(degToRad(lat)) / cosPhi;
