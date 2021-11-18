@@ -1498,8 +1498,7 @@ class Transform {
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
         if (cameraHeight < minHeight) {
-            // FIXME(globe-view-rebase): MercatorCoordinate -> this.locationCoordinate
-            const center = MercatorCoordinate.fromLngLat(this._center, this._centerAltitude);
+            const center = this.locationCoordinate(this._center, this._centerAltitude);
             const cameraToCenter = [center.x - pos[0], center.y - pos[1], center.z - pos[2]];
             const prevDistToCamera = vec3.length(cameraToCenter);
 

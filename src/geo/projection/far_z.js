@@ -1,5 +1,5 @@
 // @flow
-import {mat4, vec3} from 'gl-matrix';
+import {vec3} from 'gl-matrix';
 import {Ray} from '../../util/primitives.js';
 import type Transform from '../transform.js';
 import {clamp} from '../../util/util.js';

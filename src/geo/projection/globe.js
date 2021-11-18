@@ -1,6 +1,6 @@
 // @flow
 import {mat4, vec3} from 'gl-matrix';
-import {Aabb, Ray} from '../../util/primitives.js';
+import {Aabb} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
 import LngLat from '../lng_lat.js';
 import {degToRad, smoothstep, clamp} from '../../util/util.js';

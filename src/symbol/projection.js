@@ -81,17 +81,17 @@ function getLabelPlaneMatrix(posMatrix: mat4,
                              rotateWithMap: boolean,
                              transform: Transform,
                              pixelsToTileUnits: Float32Array) {
-    const m = mat4.create();
+    let m = mat4.create();
     if (pitchWithMap) {
         if (transform.projection.name === 'globe') {
             // Camera is moved closer towards the ground near poles as part of
             // compesanting the reprojection. This has to be compensated for the
             // map aligned label space. Whithout this logic map aligned symbols
             // would appear larger than intended.
-            const labelWorldSize = this._tr.worldSize / this._tr._projectionScaler;
-            m = calculateGlobeMatrix(tr, labelWorldSize, [0, 0]);
+            const labelWorldSize = transform.worldSize / transform._projectionScaler;
+            m = calculateGlobeMatrix(transform, labelWorldSize, [0, 0]);
 
-            mat4.multiply(m, m, denormalizeECEF(globeTileBounds(tileID)))
+            mat4.multiply(m, m, denormalizeECEF(globeTileBounds(tileID)));
         } else {
             const s = mat2.invert([], pixelsToTileUnits);
             m[0] = s[0];
@@ -134,8 +134,8 @@ function getGlCoordMatrix(posMatrix: mat4,
             if (!rotateWithMap) {
                 mat4.rotateZ(m, m, -transform.angle);
             }
+            return m;
         }
-        return m;
     } else {
         return transform.glCoordMatrix;
     }

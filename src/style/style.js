@@ -355,9 +355,11 @@ class Style extends Evented {
         const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
         const projection = this.map.transform.projection;
 
+        // eslint-disable-next-line no-warning-comments
         // TODO: Allow globe to be set without style loaded at map creation
         if (this._loaded) {
             if (projection.requiresDraping) {
+                // eslint-disable-next-line no-warning-comments
                 // TODO: Allow draping to work without an explicit DEM source (dummy source)
                 this.map._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
             } else {
@@ -369,6 +371,7 @@ class Style extends Evented {
 
         if (!projectionChanged) return;
 
+        // eslint-disable-next-line no-warning-comments
         // TODO: Only do that for runtime reprojection, otherwise
         // reduce to only _forceSymbolLayerUpdate for faster switch
         this.map.painter.clearBackgroundTiles();

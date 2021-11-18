@@ -42,7 +42,7 @@ export default class SymbolLayout extends Layout {
                                             this.parser.style.listImages(),
                                             tileResult.tileID.canonical,
                                             tileResult.tileZoom,
-                                            getProjection('mercator'));
+                                            'mercator');
                     }
                 }
             });

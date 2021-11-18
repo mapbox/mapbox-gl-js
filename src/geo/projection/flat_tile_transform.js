@@ -1,6 +1,6 @@
 // @flow
 import type Transform from '../transform.js';
-import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
+import {UnwrappedTileID} from '../../source/tile_id.js';
 import {mat4, vec3} from 'gl-matrix';
 import MercatorCoordinate from '../mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
@@ -31,16 +31,16 @@ export default class FlatTileTransform {
         const projection = this._tr.projection;
 
         if (projection.isReprojectedInTileSpace) {
-           const cs = tileTransform(canonical, projection);
-           scale = 1;
-           scaledX = cs.x + id.wrap * cs.scale;
-           scaledY = cs.y;
-           mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, this._tr.pixelsPerMeter / this._worldSize]);
+            const cs = tileTransform(canonical, projection);
+            scale = 1;
+            scaledX = cs.x + id.wrap * cs.scale;
+            scaledY = cs.y;
+            mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, this._tr.pixelsPerMeter / this._worldSize]);
         } else {
-           scale = this._worldSize / this._tr.zoomScale(canonical.z);
-           const unwrappedX = canonical.x + Math.pow(2, canonical.z) * id.wrap;
-           scaledX = unwrappedX * scale;
-           scaledY = canonical.y * scale;
+            scale = this._worldSize / this._tr.zoomScale(canonical.z);
+            const unwrappedX = canonical.x + Math.pow(2, canonical.z) * id.wrap;
+            scaledX = unwrappedX * scale;
+            scaledY = canonical.y * scale;
         }
 
         mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);

@@ -12,7 +12,6 @@ import Style from '../style/style.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import Painter from '../render/painter.js';
 import Transform from '../geo/transform.js';
-import {getProjection} from '../geo/projection/index.js';
 import Hash from './hash.js';
 import HandlerManager from './handler_manager.js';
 import Camera from './camera.js';

@@ -1,6 +1,5 @@
 // @flow
 import LngLat from '../lng_lat.js';
-import {clamp} from '../../util/util.js';
 import {
     mercatorXfromLng,
     mercatorYfromLat,
