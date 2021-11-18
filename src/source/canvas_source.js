@@ -63,8 +63,6 @@ class CanvasSource extends ImageSource {
     options: CanvasSourceSpecification;
     animate: boolean;
     canvas: HTMLCanvasElement;
-    width: number;
-    height: number;
     play: () => void;
     pause: () => void;
     _playing: boolean;
