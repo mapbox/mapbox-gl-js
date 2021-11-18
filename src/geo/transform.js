@@ -1524,7 +1524,7 @@ class Transform {
         this._constraining = true;
 
         // alternate constraining for non-Mercator projections
-        if (!this.project.isReprojectedInTileSpace) {
+        if (this.projection.isReprojectedInTileSpace) {
             const center = this.center;
             center.lat = clamp(center.lat, this.minLat, this.maxLat);
             if (this.maxBounds || !this.renderWorldCopies) center.lng = clamp(center.lng, this.minLng, this.maxLng);
