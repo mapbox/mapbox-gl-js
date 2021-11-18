@@ -4,6 +4,11 @@ import MercatorCoordinate, {altitudeFromMercatorZ, lngFromMercatorX, latFromMerc
 import EXTENT from '../../data/extent.js';
 import {vec3} from 'gl-matrix';
 import type {Projection} from './index.js';
+import {Aabb} from '../../util/primitives.js';
+import {globeTileBounds, calculateGlobeMatrix} from './globe.js';
+import type Transform from '../transform.js';
+import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
+import assert from 'assert';
 
 export type TileTransform = {
     scale: number,
@@ -15,16 +20,16 @@ export type TileTransform = {
 };
 
 export default function tileTransform(id: Object, projection: Projection) {
+    if (!projection.isReprojectedInTileSpace) {
+        return {scale: 1 << id.z, x: id.x, y: id.y, x2: id.x + 1, y2: id.y + 1, projection};
+    }
+
     const s = Math.pow(2, -id.z);
 
     const x1 = (id.x) * s;
     const x2 = (id.x + 1) * s;
     const y1 = (id.y) * s;
     const y2 = (id.y + 1) * s;
-
-    if (projection.name === 'mercator') {
-        return {scale: 1 << id.z, x: id.x, y: id.y, x2: id.x + 1, y2: id.y + 1, projection};
-    }
 
     const lng1 = lngFromMercatorX(x1);
     const lng2 = lngFromMercatorX(x2);
@@ -84,6 +89,43 @@ export default function tileTransform(id: Object, projection: Projection) {
         y2: maxY * scale,
         projection
     };
+}
+
+export function tileAABB(tr: Transform, numTiles: number, z: number, x: number, y: number, wrap: number, min: number, max: number, projection: Projection) {
+    if (projection.name === 'globe') {
+        const tileId = new UnwrappedTileID(wrap, new CanonicalTileID(z, x, y));
+        const aabb = globeTileBounds(tileId.canonical);
+
+        // Transform corners of the aabb to the correct space
+        const corners = aabb.getCorners();
+
+        const mx = Number.MAX_VALUE;
+        const cornerMax = [-mx, -mx, -mx];
+        const cornerMin = [mx, mx, mx];
+        const globeMatrix = calculateGlobeMatrix(tr, numTiles);
+
+        for (let i = 0; i < corners.length; i++) {
+            vec3.transformMat4(corners[i], corners[i], globeMatrix);
+            vec3.min(cornerMin, cornerMin, corners[i]);
+            vec3.max(cornerMax, cornerMax, corners[i]);
+        }
+
+        return new Aabb(cornerMin, cornerMax);
+    }
+
+    const tt = tileTransform({z, x, y}, projection);
+    const tx = tt.x / tt.scale;
+    const ty = tt.y / tt.scale;
+    const tx2 = tt.x2 / tt.scale;
+    const ty2 = tt.y2 / tt.scale;
+
+    if (isNaN(tx) || isNaN(tx2) || isNaN(ty) || isNaN(ty2)) {
+        assert(false);
+    }
+
+    return new Aabb(
+        [(wrap + tx) * numTiles, numTiles * ty, min],
+        [(wrap  + tx2) * numTiles, numTiles * ty2, max]);
 }
 
 export function getTilePoint(tileTransform: TileTransform, {x, y}: {x: number, y: number}, wrap: number = 0) {

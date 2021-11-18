@@ -49,7 +49,7 @@ export default function loadGeometry(feature: FeatureWithGeometry, canonical?: C
     const extent = feature.extent;
     const extentScale = EXTENT / extent;
 
-    if (canonical && tileTransform && tileTransform.projection.name !== 'mercator') {
+    if (canonical && tileTransform && tileTransform.projection.isReprojectedInTileSpace) {
         const z2 = 1 << canonical.z;
         const {scale, x, y, projection} = tileTransform;
 
