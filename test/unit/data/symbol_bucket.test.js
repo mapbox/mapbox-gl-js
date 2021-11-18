@@ -44,16 +44,16 @@ function bucketSetup(text = 'abcde') {
 test('SymbolBucket', (t) => {
     const bucketA = bucketSetup();
     const bucketB = bucketSetup();
-    const projection = getProjection('mercator');
+    const projection = getProjection({name: 'mercator'});
     const options = {iconDependencies: {}, glyphDependencies: {}};
     const placement = new Placement(transform, 0, true);
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
     const crossTileSymbolIndex = new CrossTileSymbolIndex();
-    const painter = {transform: {projection: getProjection({name: 'mercator'})}};
+    const painter = {transform: {projection}};
 
     // add feature from bucket A
     bucketA.populate([{feature}], options);
-    performSymbolLayout(bucketA, stacks, glyphPositions, null, null, null, null, null, projection);
+    performSymbolLayout(bucketA, stacks, glyphPositions, null, null, null, null, null, null, projection);
     const tileA = new Tile(tileID, 512, 0, painter);
     tileA.latestFeatureIndex = new FeatureIndex(tileID);
     tileA.buckets = {test: bucketA};
@@ -61,7 +61,7 @@ test('SymbolBucket', (t) => {
 
     // add same feature from bucket B
     bucketB.populate([{feature}], options);
-    performSymbolLayout(bucketB, stacks, glyphPositions, null, null, null, null, null, projection);
+    performSymbolLayout(bucketB, stacks, glyphPositions, null, null, null, null, null, null, projection);
     const tileB = new Tile(tileID, 512, 0, painter);
     tileB.buckets = {test: bucketB};
     tileB.collisionBoxArray = collisionBoxArray;
@@ -92,12 +92,12 @@ test('SymbolBucket integer overflow', (t) => {
     t.stub(SymbolBucket, 'MAX_GLYPHS').value(5);
 
     const bucket = bucketSetup();
-    const projection = getProjection('mercator');
+    const projection = getProjection({name: 'mercator'});
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
     bucket.populate([{feature}], options);
     const fakeRect = {w: 10, h: 10};
-    performSymbolLayout(bucket, stacks, {'Test':  {97: fakeRect, 98: fakeRect, 99: fakeRect, 100: fakeRect, 101: fakeRect, 102: fakeRect}}, null, null, null, null, null, projection);
+    performSymbolLayout(bucket, stacks, {'Test':  {97: fakeRect, 98: fakeRect, 99: fakeRect, 100: fakeRect, 101: fakeRect, 102: fakeRect}}, null, null, null, null, null, null, projection);
 
     t.ok(console.warn.calledOnce);
     t.ok(console.warn.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));

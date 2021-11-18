@@ -131,9 +131,8 @@ export default class Worker {
         callback();
     }
 
-    setProjection(mapId: string, config: ProjectionSpecification, callback: WorkerTileCallback) {
+    setProjection(mapId: string, config: ProjectionSpecification) {
         this.projections[mapId] = getProjection(config);
-        callback();
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
