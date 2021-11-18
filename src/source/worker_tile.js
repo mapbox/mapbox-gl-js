@@ -18,9 +18,7 @@ import EvaluationParameters from '../style/evaluation_parameters.js';
 import {CanonicalTileID, OverscaledTileID} from './tile_id.js';
 import {PerformanceUtils} from '../util/performance.js';
 import tileTransform from '../geo/projection/tile_transform.js';
-
 import type {Projection} from '../geo/projection/index.js';
-import getProjection from '../geo/projection/index.js';
 import type {Bucket} from '../data/bucket.js';
 import type Actor from '../util/actor.js';
 import type StyleLayer from '../style/style_layer.js';
@@ -50,7 +48,7 @@ class WorkerTile {
     returnDependencies: boolean;
     enableTerrain: boolean;
     isSymbolTile: ?boolean;
-    projection: ?string;
+    projection: Projection;
     tileTransform: TileTransform;
 
     status: 'parsing' | 'done';
@@ -77,12 +75,7 @@ class WorkerTile {
         this.promoteId = params.promoteId;
         this.enableTerrain = !!params.enableTerrain;
         this.isSymbolTile = params.isSymbolTile;
-        if (params.projection) {
-            this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
-        } else {
-            // silence flow
-            assert(params.projection);
-        }
+        this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
         this.projection = params.projection;
     }
 
@@ -239,7 +232,6 @@ class WorkerTile {
                 for (const key in buckets) {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
-                        const projection: Projection = getProjection(this.projection);
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
                         performSymbolLayout(bucket,
                             glyphMap,
@@ -250,8 +242,8 @@ class WorkerTile {
                             availableImages,
                             this.tileID.canonical,
                             this.tileZoom,
-                            projection);
-                        bucket.projection = this.projection;
+                            this.projection);
+                        bucket.projection = this.projection.name;
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||

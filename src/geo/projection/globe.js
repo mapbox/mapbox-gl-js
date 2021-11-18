@@ -1,12 +1,18 @@
 // @flow
-
-import {mat4, vec4, vec3} from 'gl-matrix';
-import {Aabb, Ray} from '../../util/primitives.js';
+import {mat4, vec3} from 'gl-matrix';
+import {Aabb} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
 import LngLat from '../lng_lat.js';
 import {degToRad, smoothstep, clamp} from '../../util/util.js';
-import MercatorCoordinate, {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
-import {CanonicalTileID, UnwrappedTileID, OverscaledTileID} from '../../source/tile_id.js';
+import {
+    MAX_MERCATOR_LATITUDE,
+    lngFromMercatorX,
+    latFromMercatorY,
+    mercatorZfromAltitude,
+    mercatorXfromLng,
+    mercatorYfromLat
+} from '../mercator_coordinate.js';
+import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
 import Tile from '../../source/tile.js';
 import IndexBuffer from '../../gl/index_buffer.js';
@@ -17,207 +23,32 @@ import type VertexBuffer from '../../gl/vertex_buffer.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray} from '../../data/array_types.js';
 import type Transform from '../transform.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
+import GlobeTileTransform from './globe_tile_transform.js';
+import {furthestPixelDistanceOnSphere} from './far_z.js';
 
-class GlobeTileTransform {
-    _tr: Transform;
-    _worldSize: number;
-    _globeMatrix: Float64Array;
-
-    constructor(tr: Transform, worldSize: number) {
-        this._tr = tr;
-        this._worldSize = worldSize;
-
-        this._globeMatrix = calculateGlobeMatrix(tr, worldSize);
-    }
-
-    createLabelPlaneMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean): mat4 {
-        let m = mat4.create();
-        if (pitchWithMap) {
-            m = this._calculateGlobeLabelMatrix(tileID, this._tr.worldSize / this._tr._projectionScaler, this._tr.center.lat, this._tr.center.lng);
-
-            if (!rotateWithMap) {
-                mat4.rotateZ(m, m, this._tr.angle);
-            }
-        } else {
-            mat4.multiply(m, this._tr.labelPlaneMatrix, posMatrix);
-        }
-        return m;
-    }
-
-    createGlCoordMatrix(posMatrix: mat4, tileID: CanonicalTileID, pitchWithMap: boolean, rotateWithMap: boolean): mat4 {
-        if (pitchWithMap) {
-            const m = this.createLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap);
-            mat4.invert(m, m);
-            mat4.multiply(m, posMatrix, m);
-            return m;
-        } else {
-            return this._tr.glCoordMatrix;
-        }
-    }
-
-    createTileMatrix(id: UnwrappedTileID): mat4 {
-        const decode = denormalizeECEF(tileBoundsOnGlobe(id.canonical));
-        return mat4.multiply([], this._globeMatrix, decode);
-    }
-
-    createInversionMatrix(id: UnwrappedTileID): mat4 {
-        const center = this._tr.center;
-        const localRadius = EXTENT / (2.0 * Math.PI);
-        const wsRadiusGlobe = this._worldSize / (2.0 * Math.PI);
-        const sGlobe = wsRadiusGlobe / localRadius;
-
-        const matrix = mat4.identity(new Float64Array(16));
-        mat4.scale(matrix, matrix, [sGlobe, sGlobe, 1.0]);
-        mat4.rotateX(matrix, matrix, degToRad(-center.lat));
-        mat4.rotateY(matrix, matrix, degToRad(-center.lng));
-
-        const decode = denormalizeECEF(tileBoundsOnGlobe(id.canonical));
-        mat4.multiply(matrix, matrix, decode);
-        mat4.invert(matrix, matrix);
-
-        const z = mercatorZfromAltitude(1, center.lat) * this._worldSize;
-        const projectionScaler = z / this._tr.pixelsPerMeter;
-
-        const ws = this._worldSize / projectionScaler;
-        const wsRadiusScaled = ws / (2.0 * Math.PI);
-        const sMercator = wsRadiusScaled / localRadius;
-
-        const scaling = mat4.identity(new Float64Array(16));
-        mat4.scale(scaling, scaling, [sMercator, sMercator, 1.0]);
-
-        return mat4.multiply(matrix, matrix, scaling);
-    }
-
-    tileAabb(id: UnwrappedTileID) {
-        const aabb = tileBoundsOnGlobe(id.canonical);
-
-        // Transform corners of the aabb to the correct space
-        const corners = aabb.getCorners();
-
-        const mx = Number.MAX_VALUE;
-        const max = [-mx, -mx, -mx];
-        const min = [mx, mx, mx];
-
-        for (let i = 0; i < corners.length; i++) {
-            vec3.transformMat4(corners[i], corners[i], this._globeMatrix);
-            vec3.min(min, min, corners[i]);
-            vec3.max(max, max, corners[i]);
-        }
-
-        return new Aabb(min, max);
-    }
-
-    upVector(id: CanonicalTileID, x: number, y: number): vec3 {
-        const corners = tileLatLngCorners(id);
-        const tl = corners[0];
-        const br = corners[1];
-
-        const tlUp = latLngToECEF(tl[0], tl[1]);
-        const trUp = latLngToECEF(tl[0], br[1]);
-        const brUp = latLngToECEF(br[0], br[1]);
-        const blUp = latLngToECEF(br[0], tl[1]);
-
-        vec3.normalize(tlUp, tlUp);
-        vec3.normalize(trUp, trUp);
-        vec3.normalize(brUp, brUp);
-        vec3.normalize(blUp, blUp);
-
-        const u = x / EXTENT;
-        const v = y / EXTENT;
-
-        const tltr = vec3.lerp([], tlUp, trUp, u);
-        const blbr = vec3.lerp([], blUp, brUp, u);
-
-        return vec3.lerp([], tltr, blbr, v);
-    }
-
-    upVectorScale(id: CanonicalTileID): number {
-        const pixelsPerMeterECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRefRadius * Math.PI;
-        const maxTileScale = tileNormalizationScale(id);
-        return pixelsPerMeterECEF * maxTileScale;
-    }
-
-    _calculateGlobeLabelMatrix(tileID: CanonicalTileID, worldSize: number, lat: number, lng: number) {
-
-        // Camera is moved closer towards the ground near poles as part of compesanting the reprojection.
-        // This has to be compensated for the map aligned label space.
-        // Whithout this logic map aligned symbols would appear larger than intended
-        const ws = worldSize;
-
-        const localRadius = EXTENT / (2.0 * Math.PI);
-        const wsRadius = ws / (2.0 * Math.PI);
-        const s = wsRadius / localRadius;
-
-        // transform the globe from reference coordinate space to world space
-        const posMatrix = mat4.identity(new Float64Array(16));
-
-        mat4.translate(posMatrix, posMatrix, [0, 0, -wsRadius]);
-        mat4.scale(posMatrix, posMatrix, [s, s, s]);
-        mat4.rotateX(posMatrix, posMatrix, degToRad(-lat));
-        mat4.rotateY(posMatrix, posMatrix, degToRad(-lng));
-
-        return mat4.multiply([], posMatrix, denormalizeECEF(tileBoundsOnGlobe(tileID)));
-    }
-
-    pointCoordinate(x: number, y: number): MercatorCoordinate {
-        const p0 = [x, y, 0, 1];
-        const p1 = [x, y, 1, 1];
-
-        vec4.transformMat4(p0, p0, this._tr.pixelMatrixInverse);
-        vec4.transformMat4(p1, p1, this._tr.pixelMatrixInverse);
-
-        vec4.scale(p0, p0, 1 / p0[3]);
-        vec4.scale(p1, p1, 1 / p1[3]);
-
-        const p0p1 = vec3.sub([], p1, p0);
-        const dir = vec3.normalize([], p0p1);
-
-        // Compute globe origo in world space
-        const matrix = calculateGlobeMatrix(this._tr, this._worldSize);
-        const center = vec3.transformMat4([], [0, 0, 0], matrix);
-        const radius = this._worldSize / (2.0 * Math.PI);
-
-        const oc = vec3.sub([], p0, center);
-        const a = vec3.dot(dir, dir);
-        const b = 2.0 * vec3.dot(oc, dir);
-        const c = vec3.dot(oc, oc) - radius * radius;
-        const d = b * b - 4 * a * c;
-        let pOnGlobe;
-
-        if (d < 0) {
-            // Not intersecting with the globe. Find shortest distance between the ray and the globe
-            const t = clamp(vec3.dot(vec3.negate([], oc), p0p1) / vec3.dot(p0p1, p0p1), 0, 1);
-            const pointOnRay = vec3.lerp([], p0, p1, t);
-            const pointToGlobe = vec3.sub([], center, pointOnRay);
-
-            pOnGlobe = vec3.sub([], vec3.add([], pointOnRay, vec3.scale([], pointToGlobe, (1.0 - radius / vec3.length(pointToGlobe)))), center);
-        } else {
-            const t = (-b - Math.sqrt(d)) / (2.0 * a);
-            pOnGlobe = vec3.sub([], vec3.scaleAndAdd([], p0, dir, t), center);
-        }
-
-        // Transform coordinate axes to find lat & lng of the position
-        const xa = vec3.normalize([], vec4.transformMat4([], [1, 0, 0, 0], matrix));
-        const ya = vec3.normalize([], vec4.transformMat4([], [0, -1, 0, 0], matrix));
-        const za = vec3.normalize([], vec4.transformMat4([], [0, 0, 1, 0], matrix));
-
-        const lat = Math.asin(vec3.dot(ya, pOnGlobe) / radius) * 180 / Math.PI;
-        const xp = vec3.dot(xa, pOnGlobe);
-        const zp = vec3.dot(za, pOnGlobe);
-        const lng = Math.atan2(xp, zp) * 180 / Math.PI;
-
-        return new MercatorCoordinate(mercatorXfromLng(lng), mercatorYfromLat(lat));
-    }
-}
+export const NORMALIZATION_BIT_RANGE = 15;
+export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
+const GLOBE_VERTEX_GRID_SIZE = 64;
 
 export default {
     name: 'globe',
     requiresDraping: true,
     supportsWorldCopies: false,
+    supportsTerrain: true,
+    supportsFreeCamera: true,
     zAxisUnit: "pixels",
+    center: [0, 0],
 
-    project() {
-        return {x: 0, y: 0, z: 0};
+    project(lng: number, lat: number) {
+        const x = mercatorXfromLng(lng);
+        const y = mercatorYfromLat(lat);
+        return {x, y, z: 0};
+    },
+
+    unproject(x: number, y: number) {
+        const lng = lngFromMercatorX(x);
+        const lat = latFromMercatorY(y);
+        return new LngLat(lng, lat);
     },
 
     projectTilePoint(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {
@@ -230,7 +61,7 @@ export default {
 
         // eslint-disable-next-line no-warning-comments
         // TODO: cached matrices!
-        const bounds = tileBoundsOnGlobe(id);
+        const bounds = globeTileBounds(id);
         const normalizationMatrix = normalizeECEF(bounds);
         vec3.transformMat4(pos, pos, normalizationMatrix);
 
@@ -264,62 +95,15 @@ export default {
 
     farthestPixelDistance(tr: Transform): number {
         const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
-        // Find farthest distance of the globe that is potentially visible to the camera.
-        // First check if the view frustum is fully covered by the map by casting a ray
-        // from the top left/right corner and see if it intersects with the globe. In case
-        // of no intersection we need to find distance to the horizon point where the
-        // surface normal is perpendicular to the camera forward direction.
-        const cameraDistance = tr.cameraToCenterDistance;
-        const centerPixelAltitude = tr._centerAltitude * pixelsPerMeter;
-
-        const camera = tr._camera;
-        const forward = tr._camera.forward();
-        const cameraPosition = vec3.add([], vec3.scale([], forward, -cameraDistance), [0, 0, centerPixelAltitude]);
-
-        const globeRadius = tr.worldSize / (2.0 * Math.PI);
-        const globeCenter = [0, 0, -globeRadius];
-
-        const aspectRatio = tr.width / tr.height;
-        const tanFovAboveCenter = Math.tan(tr.fovAboveCenter);
-
-        const up = vec3.scale([], camera.up(), tanFovAboveCenter);
-        const right = vec3.scale([], camera.right(), tanFovAboveCenter * aspectRatio);
-        const dir = vec3.normalize([], vec3.add([], vec3.add([], forward, up), right));
-
-        const pointOnGlobe = [];
-        const ray = new Ray(cameraPosition, dir);
-
-        let pixelDistance;
-        if (ray.closestPointOnSphere(globeCenter, globeRadius, pointOnGlobe)) {
-            const p0 = vec3.add([], pointOnGlobe, globeCenter);
-            const p1 = vec3.sub([], p0, cameraPosition);
-            // Globe is fully covering the view frustum. Project the intersection
-            // point to the camera view vector in order to find the pixel distance
-            pixelDistance = Math.cos(tr.fovAboveCenter) * vec3.length(p1);
-        } else {
-            // Background space is visible. Find distance to the point of the
-            // globe where surface normal is parallel to the view vector
-            const p0 = vec3.sub([], cameraPosition, globeCenter);
-            const p1 = vec3.sub([], globeCenter, cameraPosition);
-            vec3.normalize(p1, p1);
-
-            const cameraHeight = vec3.length(p0) - globeRadius;
-            pixelDistance = Math.sqrt(cameraHeight * cameraHeight + 2 * globeRadius * cameraHeight);
-            const angle = Math.acos(pixelDistance / (globeRadius + cameraHeight)) - Math.acos(vec3.dot(forward, p1));
-            pixelDistance *= Math.cos(angle);
-        }
-
-        return pixelDistance * 1.01;
+        return furthestPixelDistanceOnSphere(tr, pixelsPerMeter);
     }
 };
 
-export const globeRefRadius = EXTENT / Math.PI / 2.0;
-
-function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
+export function globeTileBounds(id: CanonicalTileID): Aabb {
     const z = id.z;
 
-    const mn = -globeRefRadius;
-    const mx = globeRefRadius;
+    const mn = -GLOBE_RADIUS;
+    const mx = GLOBE_RADIUS;
 
     if (z === 0) {
         return new Aabb([mn, mn, mn], [mx, mx, mx]);
@@ -337,13 +121,13 @@ function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
 
     // After zoom 1 surface function is monotonic for all tile patches
     // => it is enough to project corner points
-    const [min, max] = tileLatLngCorners(id);
+    const [min, max] = globeTileLatLngCorners(id);
 
     const corners = [
-        latLngToECEF(min[0], min[1], globeRefRadius),
-        latLngToECEF(min[0], max[1], globeRefRadius),
-        latLngToECEF(max[0], min[1], globeRefRadius),
-        latLngToECEF(max[0], max[1], globeRefRadius)
+        latLngToECEF(min[0], min[1], GLOBE_RADIUS),
+        latLngToECEF(min[0], max[1], GLOBE_RADIUS),
+        latLngToECEF(max[0], min[1], GLOBE_RADIUS),
+        latLngToECEF(max[0], max[1], GLOBE_RADIUS)
     ];
 
     const bMin = [mx, mx, mx];
@@ -362,14 +146,7 @@ function tileBoundsOnGlobe(id: CanonicalTileID): Aabb {
     return new Aabb(bMin, bMax);
 }
 
-function tileNormalizationScale(id: CanonicalTileID) {
-    const bounds = tileBoundsOnGlobe(id);
-    const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
-    const st = (1 << (normBitRange - 1)) - 1;
-    return st * maxExtInv;
-}
-
-function tileLatLngCorners(id: CanonicalTileID) {
+export function globeTileLatLngCorners(id: CanonicalTileID) {
     const tileScale = Math.pow(2, id.z);
     const left = id.x / tileScale;
     const right = (id.x + 1) / tileScale;
@@ -387,7 +164,7 @@ export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<n
     lng = degToRad(lng);
 
     if (!radius) {
-        radius = globeRefRadius;
+        radius = GLOBE_RADIUS;
     }
 
     // Convert lat & lng to spherical representation. Use zoom=0 as a reference
@@ -398,13 +175,11 @@ export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<n
     return [sx, sy, sz];
 }
 
-const normBitRange = 15;
-
 function normalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
 
     const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
-    const st = (1 << (normBitRange - 1)) - 1;
+    const st = (1 << (NORMALIZATION_BIT_RANGE - 1)) - 1;
 
     mat4.scale(m, m, [st, st, st]);
     mat4.scale(m, m, [maxExtInv, maxExtInv, maxExtInv]);
@@ -413,13 +188,13 @@ function normalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-function denormalizeECEF(bounds: Aabb): Float64Array {
+export function denormalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
 
     const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
 
     // Denormalize points to the correct range
-    const st = 1.0 / ((1 << (normBitRange - 1)) - 1);
+    const st = 1.0 / ((1 << (NORMALIZATION_BIT_RANGE - 1)) - 1);
     mat4.translate(m, m, bounds.min);
     mat4.scale(m, m, [maxExt, maxExt, maxExt]);
     mat4.scale(m, m, [st, st, st]);
@@ -427,19 +202,24 @@ function denormalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export function calculateGlobeMatrix(tr: Transform, worldSize: number): mat4 {
+export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): mat4 {
     const localRadius = EXTENT / (2.0 * Math.PI);
     const wsRadius = worldSize / (2.0 * Math.PI);
     const s = wsRadius / localRadius;
 
-    const lat = clamp(tr.center.lat, -tr.maxValidLatitude, tr.maxValidLatitude);
-    const point = new Point(
-        mercatorXfromLng(tr.center.lng) * worldSize,
-        mercatorYfromLat(lat) * worldSize);
+    if (!offset) {
+        const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+        const lng = tr.center.lng;
+
+        offset = [
+            mercatorXfromLng(lng) * worldSize,
+            mercatorYfromLat(lat) * worldSize
+        ];
+    }
 
     // transform the globe from reference coordinate space to world space
     const posMatrix = mat4.identity(new Float64Array(16));
-    mat4.translate(posMatrix, posMatrix, [point.x, point.y, -wsRadius]);
+    mat4.translate(posMatrix, posMatrix, [offset[0], offset[1], -wsRadius]);
     mat4.scale(posMatrix, posMatrix, [s, s, s]);
     mat4.rotateX(posMatrix, posMatrix, degToRad(-tr._center.lat));
     mat4.rotateY(posMatrix, posMatrix, degToRad(-tr._center.lng));
@@ -449,7 +229,7 @@ export function calculateGlobeMatrix(tr: Transform, worldSize: number): mat4 {
 
 export function calculateGlobeMercatorMatrix(tr: Transform): mat4 {
     const worldSize = tr.worldSize;
-    const lat = clamp(tr.center.lat, -tr.maxValidLatitude, tr.maxValidLatitude);
+    const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
     const point = new Point(
         mercatorXfromLng(tr.center.lng) * worldSize,
         mercatorYfromLat(lat) * worldSize);
@@ -495,7 +275,7 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
 
 export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4) {
     const gridTileId = new CanonicalTileID(id.z, Math.pow(2, id.z) / 2, id.y);
-    const bounds = tileBoundsOnGlobe(gridTileId);
+    const bounds = globeTileBounds(gridTileId);
     const decode = denormalizeECEF(bounds);
     const posMatrix = mat4.clone(globeMatrix);
     mat4.mul(posMatrix, posMatrix, decode);
@@ -535,8 +315,6 @@ export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: 
 
     return poleMatrix;
 }
-
-const GLOBE_VERTEX_GRID_SIZE = 64;
 
 export class GlobeSharedBuffers {
     poleIndexBuffer: IndexBuffer;
@@ -631,10 +409,10 @@ export class GlobeSharedBuffers {
         const lerp = (a, b, t) => a * (1 - t) + b * t;
         const tiles = Math.pow(2, sz);
         const gridTileId = new CanonicalTileID(sz, sx, sy);
-        const [latLngTL, latLngBR] = tileLatLngCorners(gridTileId);
+        const [latLngTL, latLngBR] = globeTileLatLngCorners(gridTileId);
         const boundsArray = new GlobeVertexArray();
 
-        const bounds = tileBoundsOnGlobe(new CanonicalTileID(sz, tiles / 2, sy));
+        const bounds = globeTileBounds(new CanonicalTileID(sz, tiles / 2, sy));
         const norm = normalizeECEF(bounds);
 
         const vertexExt = GLOBE_VERTEX_GRID_SIZE + 1;

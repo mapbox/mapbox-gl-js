@@ -4,7 +4,7 @@ import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE} from './mercator_coordinate.js';
 import {getProjection} from './projection/index.js';
-import tileTransform from '../geo/projection/tile_transform.js';
+import {tileAABB} from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner, warnOnce, deepEqual} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
@@ -20,7 +20,6 @@ import type {Projection} from '../geo/projection/index.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
-import type {Projection} from './projection/index.js';
 import type Tile from '../source/tile.js';
 import type {ProjectionSpecification} from '../style-spec/types.js';
 import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
@@ -103,8 +102,6 @@ class Transform {
     worldMinY: number;
     worldMaxY: number;
 
-    _projection: Projection;
-
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
@@ -170,7 +167,6 @@ class Transform {
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
         this._projectionScaler = 1.0;
-        this._projection = getProjection();
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -197,7 +193,6 @@ class Transform {
         clone._unmodified = this._unmodified;
         clone._edgeInsets = this._edgeInsets.clone();
         clone._camera = this._camera.clone();
-        clone._projection = getProjection(this._projection.name);
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
         clone.setProjection(this.getProjection());
@@ -275,7 +270,7 @@ class Transform {
     }
 
     get renderWorldCopies(): boolean {
-        return this._renderWorldCopies && this.projection.wrap === true;
+        return this._renderWorldCopies && this.projection.supportsWorldCopies === true;
     }
     set renderWorldCopies(renderWorldCopies?: ?boolean) {
         if (renderWorldCopies === undefined) {
@@ -285,14 +280,6 @@ class Transform {
         }
 
         this._renderWorldCopies = renderWorldCopies;
-    }
-
-    set projection(projection: Projection) {
-        this._projection = projection;
-    }
-
-    get projection(): Projection {
-        return this._projection;
     }
 
     get worldSize(): number {
@@ -305,11 +292,11 @@ class Transform {
     }
 
     get pixelsPerMeter(): number {
-        return this._projection.pixelsPerMeter(this.center.lat, this.worldSize);
+        return this.projection.pixelsPerMeter(this.center.lat, this.worldSize);
     }
 
     get cameraPixelsPerMeter(): number {
-        return this._projection.pixelsPerMeter(this.center.lat, this.cameraWorldSize);
+        return this.projection.pixelsPerMeter(this.center.lat, this.cameraWorldSize);
     }
 
     get centerOffset(): Point {
@@ -737,16 +724,14 @@ class Transform {
         const zoomSplitDistance = this.cameraToCenterDistance / options.tileSize * (options.roundZoom ? 1 : 0.502);
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
-        const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && isMercator ? z : 0;
-
-        const tileTransform = this._projection.createTileTransform(this, numTiles);
+        const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && !this.projection.isReprojectedInTileSpace ? z : 0;
 
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).
         const maxRange = options.isTerrainDEM && this._elevation ? this._elevation.exaggeration() * 10000 : this._centerAltitude;
         const minRange = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
 
-        const scaleAdjustment = getScaleAdjustment(this);
+        const scaleAdjustment = this.projection.isReprojectedInTileSpace ? getScaleAdjustment(this) : 1.0;
 
         const relativeScaleAtMercatorCoord = mc => {
             // Calculate how scale compares between projected coordinates and mercator coordinates.
@@ -775,30 +760,13 @@ class Transform {
             return Math.sqrt(dx * dy) * scaleAdjustment / offset;
         };
 
-        const aabbForTile = (z, x, y, wrap, min, max) => {
-            const tt = tileTransform({z, x, y}, this.projection);
-            const tx = tt.x / tt.scale;
-            const ty = tt.y / tt.scale;
-            const tx2 = tt.x2 / tt.scale;
-            const ty2 = tt.y2 / tt.scale;
-            if (isNaN(tx) || isNaN(tx2) || isNaN(ty) || isNaN(ty2)) {
-                assert(false);
-            }
-            const ret = new Aabb(
-                [(wrap + tx) * numTiles, numTiles * ty, min],
-                [(wrap  + tx2) * numTiles, numTiles * ty2, max]);
-            return ret;
-        };
-
         const newRootTile = (wrap: number): any => {
             const max = maxRange;
             const min = minRange;
-            const aabb = aabbForTile(0, 0, 0, wrap, min, max);
-            // FIXME(globe-view-rebase): Use aabb
             return {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
-                aabb: tileTransform.tileAabb(new UnwrappedTileID(wrap, new CanonicalTileID(0, 0, 0)), z, min, max),
+                aabb: tileAABB(this, numTiles, 0, 0, 0, wrap, min, max, this.projection),
                 zoom: 0,
                 x: 0,
                 y: 0,
@@ -860,7 +828,7 @@ class Transform {
             }
 
             let tileScaleAdjustment = 1;
-            if (!isMercator && actualZ <= 5) {
+            if (this.projection.isReprojectedInTileSpace && actualZ <= 5) {
                 // In other projections, not all tiles are the same size.
                 // Account for the tile size difference by adjusting the distToSplit.
                 // Adjust by the ratio of the area at the tile center to the area at the map center.
@@ -878,8 +846,7 @@ class Transform {
             return distanceSqr < distToSplitSqr;
         };
 
-        // FIXME(globe-view-rebase): Add supportsWorldCopies to projection
-        if (this._projection.supportsWorldCopies && this._renderWorldCopies) {
+        if (this.renderWorldCopies) {
             // Render copy of the globe thrice on both sides
             for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
                 stack.push(newRootTile(-i));
@@ -923,10 +890,9 @@ class Transform {
             for (let i = 0; i < 4; i++) {
                 const childX = (x << 1) + (i % 2);
                 const childY = (y << 1) + (i >> 1);
-
-                const aabb = tileTransform.tileAabb(new UnwrappedTileID(it.wrap, new CanonicalTileID(it.zoom + 1, childX, childY)), z, it.minZ, it.maxZ);
-                // FIXME(globe-view-rebase): Use aabb
-                // const aabb = this.projection.name === 'mercator' ? it.aabb.quadrant(i) : aabbForTile(it.zoom + 1, childX, childY, it.wrap, 0, 0);
+                const aabb = isMercator ?
+                    it.aabb.quadrant(i) :
+                    tileAABB(this, numTiles, it.zoom + 1, childX, childY, it.wrap, it.minZ, it.maxZ, this.projection);
                 const child = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined, minZ: it.minZ, maxZ: it.maxZ};
                 if (useElevationData) {
                     child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
@@ -1204,7 +1170,7 @@ class Transform {
      * @private
      */
     pointCoordinate(p: Point, z?: number = this._centerAltitude): MercatorCoordinate {
-        return this._projection.createTileTransform(this, this.worldSize).pointCoordinate(p.x, p.y, z);
+        return this.projection.createTileTransform(this, this.worldSize).pointCoordinate(p.x, p.y, z);
     }
 
     /**
@@ -1379,29 +1345,7 @@ class Transform {
     }
 
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
-        return this._projection.createTileTransform(this, worldSize).createTileMatrix(unwrappedTileID);
-        // FIXME(globe-view-rebase)
-        //let scale, scaledX, scaledY;
-        //const canonical = unwrappedTileID.canonical;
-        //const posMatrix = mat4.identity(new Float64Array(16));
-        //
-        //if (this.projection.name === 'mercator') {
-        //    scale = worldSize / this.zoomScale(canonical.z);
-        //    const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
-        //    scaledX = unwrappedX * scale;
-        //    scaledY = canonical.y * scale;
-        //} else {
-        //    const cs = tileTransform(canonical, this.projection);
-        //    scale = 1;
-        //    scaledX = cs.x + unwrappedTileID.wrap * cs.scale;
-        //    scaledY = cs.y;
-        //    mat4.scale(posMatrix, posMatrix, [scale / cs.scale, scale / cs.scale, this.pixelsPerMeter / this.worldSize]);
-        //}
-        //
-        //mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);
-        //mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
-        //
-        //return posMatrix;
+        return this.projection.createTileTransform(this, worldSize).createTileMatrix(unwrappedTileID);
     }
 
     calculateDistanceTileData(unwrappedTileID: UnwrappedTileID): FeatureDistanceData {
@@ -1473,7 +1417,8 @@ class Transform {
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
-        const projMatrix = this.projection.name === 'mercator' ? (aligned ? this.alignedProjMatrix : this.projMatrix) : this.mercatorMatrix;
+        const projMatrix = this.projection.isReprojectedInTileSpace ?
+            this.mercatorMatrix : (aligned ? this.alignedProjMatrix : this.projMatrix);
         mat4.multiply(posMatrix, projMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
@@ -1554,8 +1499,7 @@ class Transform {
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
         if (cameraHeight < minHeight) {
-            // FIXME(globe-view-rebase): MercatorCoordinate -> this.locationCoordinate
-            const center = MercatorCoordinate.fromLngLat(this._center, this._centerAltitude);
+            const center = this.locationCoordinate(this._center, this._centerAltitude);
             const cameraToCenter = [center.x - pos[0], center.y - pos[1], center.z - pos[2]];
             const prevDistToCamera = vec3.length(cameraToCenter);
 
@@ -1581,7 +1525,7 @@ class Transform {
         this._constraining = true;
 
         // alternate constraining for non-Mercator projections
-        if (this.projection.name !== 'mercator') {
+        if (this.projection.isReprojectedInTileSpace) {
             const center = this.center;
             center.lat = clamp(center.lat, this.minLat, this.maxLat);
             if (this.maxBounds || !this.renderWorldCopies) center.lng = clamp(center.lng, this.minLng, this.maxLng);
@@ -1686,7 +1630,7 @@ class Transform {
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
         this._nearZ = this.height / 50;
 
-        const zUnit = this._projection.zAxisUnit === "meters" ? pixelsPerMeter : 1.0;
+        const zUnit = this.projection.zAxisUnit === "meters" ? pixelsPerMeter : 1.0;
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
 
@@ -1696,7 +1640,7 @@ class Transform {
 
         let m = mat4.mul([], cameraToClip, worldToCamera);
 
-        if (this.projection.name !== 'mercator') {
+        if (this.projection.isReprojectedInTileSpace) {
             // Projections undistort as you zoom in (shear, scale, rotate).
             // Apply the undistortion around the center of the map.
             const mc = this.locationCoordinate(this.center);
@@ -1908,7 +1852,7 @@ class Transform {
 
     _terrainEnabled(): boolean {
         if (!this._elevation) return false;
-        if (this.projection.name !== 'mercator') {
+        if (!this.projection.supportsTerrain) {
             warnOnce('Terrain is not yet supported with alternate projections. Use mercator to enable terrain.');
             return false;
         }
