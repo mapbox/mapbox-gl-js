@@ -96,7 +96,7 @@ class ProxySourceCache extends SourceCache {
 
     // Override for transient nature of cover here: don't cache and retain.
     /* eslint-disable no-unused-vars */
-    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) {
+    update(transform: Transform) {
         if (transform.freezeTileCoverage) { return; }
         this.transform = transform;
         const idealTileIDs = transform.coveringTiles({
@@ -276,9 +276,11 @@ export class Terrain extends Elevation {
                 // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
                 const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
                 const proxyTileSize = this.proxySourceCache.getSource().tileSize;
+                this.sourceCache.terrainTileSize = demScale * proxyTileSize;
+
                 // Dem tile needs to be parent or at least of the same zoom level as proxy tile.
                 // Tile cover roundZoom behavior is set to the same as for proxy (false) in SourceCache.update().
-                this.sourceCache.update(transform, demScale * proxyTileSize, true);
+                this.sourceCache.update(transform);
                 // As a result of update, we get new set of tiles: reset lookup cache.
                 this._findCoveringTileCache[this.sourceCache.id] = {};
             };
