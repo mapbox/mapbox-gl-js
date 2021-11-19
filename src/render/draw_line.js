@@ -3,7 +3,6 @@
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
-import ColorMode from '../gl/color_mode.js';
 import Texture from './texture.js';
 import {
     lineUniformValues,
@@ -20,7 +19,6 @@ import type {DynamicDefinesType} from './program/program_uniforms.js';
 import {clamp, nextPowerOfTwo} from '../util/util.js';
 import {renderColorRamp} from '../util/color_ramp.js';
 import EXTENT from '../data/extent.js';
-import assert from 'assert';
 
 export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
@@ -46,10 +44,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const context = painter.context;
     const gl = context.gl;
 
-    // TODO: Move to bucket to evaluate when injecting the define
-    const useStencilMaskRenderPass = !image &&
-        opacity.constantOr(1.0) < 1.0 &&
-        width.constantOr(1.0) > 1.0;
+    const definesValues = lineDefinesValues(layer);
+    const useStencilMaskRenderPass = definesValues.includes('RENDER_LINE_ALPHA_DISCARD');
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -60,7 +56,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.prepareDrawTile(coord);
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const definesValues = lineDefinesValues(layer);
         const program = painter.useProgram(programId, programConfiguration, ((definesValues: any): DynamicDefinesType[]));
 
         const constantPattern = patternProperty.constantOr(null);
@@ -141,15 +136,13 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         };
 
         if (useStencilMaskRenderPass) {
-            const stencilIdPass1 = painter._tileClippingMaskIDs[coord.key];
-            assert(stencilIdPass1 !== undefined);
-            const stencilIdPass2 = ~stencilIdPass1 & 255;
+            const stencilId = painter._tileClippingMaskIDs[coord.key];
             const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
 
             uniformValues['u_alpha_discard_threshold'] = 0.75;
-            renderLine(new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT));
+            renderLine(new StencilMode(stencilFunc, stencilId, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT));
             uniformValues['u_alpha_discard_threshold'] = 0.0;
-            renderLine(new StencilMode(stencilFunc, stencilIdPass1, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP));
+            renderLine(new StencilMode(stencilFunc, stencilId, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP));
         } else {
             renderLine(painter.stencilModeForClipping(coord));
         }

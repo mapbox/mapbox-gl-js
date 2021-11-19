@@ -154,7 +154,9 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
 
     const hasPattern = layer.paint.get('line-pattern').constantOr((1: any));
-    if (layer.paint.get('line-opacity').constantOr(1.0) !== 1.0 && !hasPattern) {
+    const hasOpacity = layer.paint.get('line-opacity').constantOr(1.0) !== 1.0;
+    const hasWidthOver1 = layer.paint.get('line-width').constantOr(1.0) > 1.0;
+    if (!hasPattern && hasWidthOver1 && hasOpacity) {
         values.push('RENDER_LINE_ALPHA_DISCARD');
     }
     return values;
