@@ -177,6 +177,7 @@ class GeoJSONSource extends Evented implements Source {
      * });
      */
     setData(data: GeoJSON | string) {
+        // set fade duration to 0 to prevent fading out of symbols
         if (this.map && this._loaded) this.map._fadeDuration = 0;
         this._data = data;
         this._updateWorkerData();
