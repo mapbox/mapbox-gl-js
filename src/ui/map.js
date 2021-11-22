@@ -2643,6 +2643,9 @@ class Map extends Camera {
     _setupContainer() {
         const container = this._container;
         container.classList.add('mapboxgl-map');
+        container.setAttribute('tabindex', '0');
+        container.setAttribute('aria-label', 'Map');
+        container.setAttribute('role', 'region');
 
         const missingCSSCanary = this._missingCSSCanary = DOM.create('div', 'mapboxgl-canary', container);
         missingCSSCanary.style.visibility = 'hidden';
@@ -2656,9 +2659,6 @@ class Map extends Camera {
         this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
         this._canvas.addEventListener('webglcontextlost', this._contextLost, false);
         this._canvas.addEventListener('webglcontextrestored', this._contextRestored, false);
-        this._canvas.setAttribute('tabindex', '0');
-        this._canvas.setAttribute('aria-label', 'Map');
-        this._canvas.setAttribute('role', 'region');
 
         const dimensions = this._containerDimensions();
         this._resizeCanvas(dimensions[0], dimensions[1]);
