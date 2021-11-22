@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3-color@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-interpolate@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-scale-chromatic@3"></script>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    style: 'mapbox://styles/mapbox/empty-v9',
+    hash: true
+});
+
+map.on('load', () => {
+    map.addSource('dem-custom', {
+        "type": "raster",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 16
+    });
+    const rasterSource = map.getSource('dem-custom');
+    rasterSource.setImageTransformer((img, tileId) => {
+        const transformedImage = new Uint8Array(img.data);
+        const MIN = 0;
+        const MAX = 8000;
+        for(let i=0; i < img.data.length/4; i++) {
+            const R = img.data[4 * i];
+            const G = img.data[4 * i + 1];
+            const B = img.data[4 * i + 2];
+            const elevation = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
+            const t = Math.max(0, elevation / (MAX - MIN));
+
+            const transformedColor = d3.rgb(d3.interpolateInferno(t));
+
+            transformedImage[4 * i] = transformedColor.r;
+            transformedImage[4 * i + 1] = transformedColor.g;
+            transformedImage[4 * i + 2] = transformedColor.b;
+        }
+
+        return new Promise((resolve, reject) => {
+            resolve({data: transformedImage, width: img.width, height: img.height});
+        });
+    });
+
+    map.addLayer({
+        "id": "dem-custom-layer",
+        "source": "dem-custom",
+        "type": "raster"
+    });
+
+});
+
+</script>
+</body>
+</html>

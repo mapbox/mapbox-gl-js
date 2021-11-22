@@ -40,6 +40,7 @@ class RasterTileSource extends Evented implements Source {
     map: Map;
     tiles: Array<string>;
 
+    _imageTransformer: ?Function;
     _loaded: boolean;
     _options: RasterSourceSpecification | RasterDEMSourceSpecification;
     _tileJSONRequest: ?Cancelable;
@@ -57,6 +58,7 @@ class RasterTileSource extends Evented implements Source {
         this.scheme = 'xyz';
         this.tileSize = 512;
         this._loaded = false;
+        this._imageTransformer = null;
 
         this._options = extend({type: 'raster'}, options);
         extend(this, pick(options, ['url', 'scheme', 'tileSize']));
@@ -109,6 +111,10 @@ class RasterTileSource extends Evented implements Source {
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
+    setImageTransformer(func: Function) {
+        this._imageTransformer = func;
+    }
+
     loadTile(tile: Tile, callback: Callback<void>) {
         const use2x = browser.devicePixelRatio >= 2;
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), use2x, this.tileSize);
@@ -124,25 +130,28 @@ class RasterTileSource extends Evented implements Source {
             } else if (img) {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
 
-                const context = this.map.painter.context;
-                const gl = context.gl;
-                tile.texture = this.map.painter.getTileTexture(img.width);
-                if (tile.texture) {
-                    tile.texture.update(img, {useMipmap: true});
-                } else {
-                    tile.texture = new Texture(context, img, gl.RGBA, {useMipmap: true});
-                    tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+                const tileLoaded = (img) => {
+                    tile.setTexture(img, this.map.painter);
 
-                    if (context.extTextureFilterAnisotropic) {
-                        gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
-                    }
+                    tile.state = 'loaded';
+                    cacheEntryPossiblyAdded(this.dispatcher);
+                    callback(null);
+                }
+                const imageTransformer = this._imageTransformer;
+                if (imageTransformer) {
+                    const imageData = browser.getImageData(img);
+                    const tileId = {
+                        z: tile.tileID.canonical.z,
+                        x: tile.tileID.canonical.x,
+                        y: tile.tileID.canonical.y
+                    };
+                    imageTransformer(imageData, tileId).then((transformedImg) => {
+                        tileLoaded(transformedImg)
+                    });
+                } else {
+                    tileLoaded(img);
                 }
 
-                tile.state = 'loaded';
-
-                cacheEntryPossiblyAdded(this.dispatcher);
-
-                callback(null);
             }
         });
     }

@@ -52,6 +52,7 @@ import type IndexBuffer from '../gl/index_buffer.js';
 import type {Projection} from '../geo/projection/index.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
 import type Painter from '../render/painter.js';
+import type {TextureImage} from '../render/texture.js';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -564,6 +565,23 @@ class Tile {
             index[dep] = true;
         }
         this.dependencies[namespace] = index;
+    }
+
+    setTexture(img: TextureImage, painter: Painter) {
+        const context = painter.context;
+        const gl = context.gl;
+        this.texture = painter.getTileTexture(img.width);
+        if (this.texture) {
+            this.texture.update(img, {useMipmap: true});
+        } else {
+            this.texture = new Texture(context, img, gl.RGBA, {useMipmap: true});
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+            if (context.extTextureFilterAnisotropic) {
+                gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
+            }
+        }
+
     }
 
     hasDependency(namespaces: Array<string>, keys: Array<string>) {
