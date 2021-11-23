@@ -14,6 +14,8 @@ import rasterFade from './raster_fade.js';
 
 export default drawRaster;
 
+const TILE_UPDATE_BUDGET = 4;
+
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, isInitialLoad: boolean) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
@@ -35,6 +37,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const minTileZ = coords[coords.length - 1].overscaledZ;
 
+    let updatedTiles = 0;
+
     const align = !painter.options.moving;
     for (const coord of coords) {
         // Set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
@@ -45,6 +49,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const unwrappedTileID = coord.toUnwrapped();
         const tile = sourceCache.getTile(coord);
         if (renderingToTexture && !(tile && tile.hasData())) continue;
+
+        if (updatedTiles < TILE_UPDATE_BUDGET) {
+            const didUpdate = tile.updateTexture(painter, sourceCache._source);
+            if (didUpdate) updatedTiles++;
+        }
 
         const projMatrix = (renderingToTexture) ? coord.projMatrix :
             painter.transform.calculateProjMatrix(unwrappedTileID, align);

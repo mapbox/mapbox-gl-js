@@ -11,12 +11,15 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        .dg.a {
+            float: left !important;
+        }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
-
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script>
@@ -28,6 +31,10 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/empty-v9',
     hash: true
 });
+window.onload = function() {
+
+
+}
 
 map.on('load', () => {
     map.addSource('dem-custom', {
@@ -38,26 +45,76 @@ map.on('load', () => {
     });
     const rasterSource = map.getSource('dem-custom');
     rasterSource.setImageTransformer((img, tileId) => {
-        const transformedImage = new Uint8Array(img.data);
-        const MIN = 0;
-        const MAX = 8000;
-        for(let i=0; i < img.data.length/4; i++) {
-            const R = img.data[4 * i];
-            const G = img.data[4 * i + 1];
-            const B = img.data[4 * i + 2];
-            const elevation = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
-            const t = Math.max(0, elevation / (MAX - MIN));
-
-            const transformedColor = d3.rgb(d3.interpolateInferno(t));
-
-            transformedImage[4 * i] = transformedColor.r;
-            transformedImage[4 * i + 1] = transformedColor.g;
-            transformedImage[4 * i + 2] = transformedColor.b;
-        }
-
         return new Promise((resolve, reject) => {
-            resolve({data: transformedImage, width: img.width, height: img.height});
+            resolve(img);
         });
+    });
+
+    const params = {
+        interpolation: 'NONE',
+        min: 0,
+        max: 8000
+    };
+
+    const updateTransformer = function() {
+        if (params.interpolation === 'NONE') {
+            rasterSource.setImageTransformer((img, tileId) => {
+                return new Promise((resolve, reject) => {
+                    resolve(img);
+                });
+            });
+        } else {
+            rasterSource.setImageTransformer((img, tileId) => {
+                const transformedImage = new Uint8Array(img.data);
+                const MIN = params.min;
+                const MAX = params.max;
+                for(let i=0; i < img.data.length/4; i++) {
+                    const R = img.data[4 * i];
+                    const G = img.data[4 * i + 1];
+                    const B = img.data[4 * i + 2];
+                    const elevation = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
+                    const t = Math.min(1, Math.max(0, elevation / (MAX - MIN)));
+
+                    const transformedColor = d3.rgb(d3[`interpolate${params.interpolation}`](t));
+
+                    transformedImage[4 * i] = transformedColor.r;
+                    transformedImage[4 * i + 1] = transformedColor.g;
+                    transformedImage[4 * i + 2] = transformedColor.b;
+                }
+
+                return new Promise((resolve, reject) => {
+                    resolve({data: transformedImage, width: img.width, height: img.height});
+                });
+            });
+        }
+    };
+
+    const gui = new dat.GUI(); // eslint-disable-line
+
+    const interpolation = gui.add(params, 'interpolation', [
+        'NONE',
+        'Blues',
+        'Greens',
+        'Greys',
+        'Oranges',
+        'Turbo',
+        'Inferno',
+        'Cividis',
+        'OrRd',
+        'Rainbow'
+    ]);
+    interpolation.onFinishChange((value) => {
+        updateTransformer();
+    });
+
+    const min = gui.add(params, 'min', -10000, 10000);
+    min.onFinishChange((value) => {
+        updateTransformer();
+    });
+
+    const max = gui.add(params, 'max', -10000, 10000);
+    max.onFinishChange((value) => {
+        updateTransformer();
     });
 
     map.addLayer({

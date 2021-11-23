@@ -40,6 +40,7 @@ class RasterTileSource extends Evented implements Source {
     map: Map;
     tiles: Array<string>;
 
+    _loadedAnyTiles: boolean;
     _imageTransformer: ?Function;
     _loaded: boolean;
     _options: RasterSourceSpecification | RasterDEMSourceSpecification;
@@ -59,6 +60,7 @@ class RasterTileSource extends Evented implements Source {
         this.tileSize = 512;
         this._loaded = false;
         this._imageTransformer = null;
+        this._loadedAnyTiles = false;
 
         this._options = extend({type: 'raster'}, options);
         extend(this, pick(options, ['url', 'scheme', 'tileSize']));
@@ -113,6 +115,13 @@ class RasterTileSource extends Evented implements Source {
 
     setImageTransformer(func: Function) {
         this._imageTransformer = func;
+        this.map.triggerRepaint();
+        // invalidate currently loaded tiles
+        // We only need to do this if we have loaded any tiles in the past
+        // If we haven't loaded anything yet, then we can skip this since tile loading will apply the transformation
+        if (this._loadedAnyTiles) {
+            this.fire(new Event('invalidate-texture', {dataType: 'source'}));
+        }
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
@@ -135,8 +144,9 @@ class RasterTileSource extends Evented implements Source {
 
                     tile.state = 'loaded';
                     cacheEntryPossiblyAdded(this.dispatcher);
+                    this._loadedAnyTiles = true;
                     callback(null);
-                }
+                };
                 const imageTransformer = this._imageTransformer;
                 if (imageTransformer) {
                     const imageData = browser.getImageData(img);
@@ -145,8 +155,9 @@ class RasterTileSource extends Evented implements Source {
                         x: tile.tileID.canonical.x,
                         y: tile.tileID.canonical.y
                     };
+                    tile.textureImageData = imageData;
                     imageTransformer(imageData, tileId).then((transformedImg) => {
-                        tileLoaded(transformedImg)
+                        tileLoaded(transformedImg);
                     });
                 } else {
                     tileLoaded(img);

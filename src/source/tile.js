@@ -123,6 +123,9 @@ class Tile {
     needsDEMTextureUpload: ?boolean;
     request: ?Cancelable;
     texture: any;
+    textureImageData: ?ImageData;
+    needsTextureUpdate: ?boolean;
+
     fbo: ?Framebuffer;
     demTexture: ?Texture;
     refreshedUponExpiration: boolean;
@@ -581,7 +584,30 @@ class Tile {
                 gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
             }
         }
+    }
 
+    updateTexture(painter: Painter, source: RasterTileSource): boolean {
+        const imageTransformer = source._imageTransformer;
+        if (this.needsTextureUpdate && this.textureImageData) {
+            this.needsTextureUpdate = false;
+            const tileId = {
+                z: this.tileID.canonical.z,
+                x: this.tileID.canonical.x,
+                y: this.tileID.canonical.y
+            };
+            if (imageTransformer) {
+                imageTransformer(this.textureImageData, tileId).then((transformedImg) => {
+                    this.setTexture(transformedImg, painter);
+                    source.map.triggerRepaint();
+                });
+            } else {
+                this.setTexture(this.textureImageData, painter);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     hasDependency(namespaces: Array<string>, keys: Array<string>) {
