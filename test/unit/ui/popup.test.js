@@ -20,6 +20,8 @@ function createMap(t, options) {
             };
         }
     });
+    Object.defineProperty(container, 'clientWidth', {value: options.width || containerWidth, configurable: true});
+    Object.defineProperty(container, 'clientHeight', {value: options.height || containerHeight, configurable: true});
     return globalCreateMap(t, {container});
 }
 

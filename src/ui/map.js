@@ -354,6 +354,8 @@ class Map extends Camera {
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
     _runtimeProjection: ProjectionSpecification | void | null;
+    _containerWidth: number;
+    _containerHeight: number
 
     /** @section {Interaction handlers} */
 
@@ -2607,15 +2609,21 @@ class Map extends Camera {
     }
 
     _containerDimensions() {
-        let width = 0;
-        let height = 0;
-
         if (this._container) {
-            width = this._container.getBoundingClientRect().width || 400;
-            height = this._container.getBoundingClientRect().height || 300;
-        }
+            const width = this._container.getBoundingClientRect().width;
+            const height = this._container.getBoundingClientRect().height;
 
-        return [width, height];
+            // Check if transform(scale) css property was used since getBoundingClientRect returns its values after calculating transforms
+            if (Math.round(width) !== this._container.clientWidth || Math.round(height) !== this._container.clientHeight) {
+                this._containerWidth = this._container.clientWidth / Math.abs(this._container.clientWidth - this._container.getBoundingClientRect().width) * this._container.getBoundingClientRect().width || 400;
+                this._containerHeight = this._container.clientHeight / Math.abs(this._container.clientHeight - this._container.getBoundingClientRect().height) * this._container.getBoundingClientRect().height || 300;
+            } else {
+                this._containerWidth = this._container.getBoundingClientRect().width || 400;
+                this._containerHeight = this._container.getBoundingClientRect().height || 300;
+            }
+
+            return [this._containerWidth, this._containerHeight];
+        }
     }
 
     _detectMissingCSS(): void {

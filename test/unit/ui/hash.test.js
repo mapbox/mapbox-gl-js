@@ -20,6 +20,8 @@ test('hash', (t) => {
                 };
             }
         });
+        Object.defineProperty(container, 'clientWidth', {value: 512, configurable: true});
+        Object.defineProperty(container, 'clientHeight', {value: 512, configurable: true});
         return globalCreateMap(t, {container});
     }
 
@@ -321,6 +323,8 @@ test('hash', (t) => {
                 };
             }
         });
+        Object.defineProperty(container, 'clientWidth', {value: 512, configurable: true});
+        Object.defineProperty(container, 'clientHeight', {value: 512, configurable: true});
 
         const map = createMap(t, {hash: true});
 

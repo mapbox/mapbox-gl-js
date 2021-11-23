@@ -17,6 +17,8 @@ function createMap(t, options = {}) {
             };
         }
     });
+    Object.defineProperty(container, 'clientWidth', {value: 512, configurable: true});
+    Object.defineProperty(container, 'clientHeight', {value: 512, configurable: true});
     return globalCreateMap(t, {container, ...options});
 }
 
@@ -298,7 +300,7 @@ test('Popup anchors around default Marker', (t) => {
     // open the popup
     marker.togglePopup();
 
-    const mapHeight = map.getContainer().getBoundingClientRect().height;
+    const mapHeight = map._containerHeight;
     const markerTop = -marker.getPopup().options.offset.bottom[1]; // vertical distance from tip of marker to the top in pixels
     const markerRight = -marker.getPopup().options.offset.right[0]; // horizontal distance from the tip of the marker to the right in pixels
 
