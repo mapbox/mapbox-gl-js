@@ -2608,7 +2608,7 @@ class Map extends Camera {
         return this.style.getFeatureState(feature);
     }
 
-    _containerDimensions() {
+    _containerDimensions(): any {
         if (this._container) {
             const width = this._container.getBoundingClientRect().width;
             const height = this._container.getBoundingClientRect().height;
@@ -2656,8 +2656,8 @@ class Map extends Camera {
         this._canvas.setAttribute('aria-label', 'Map');
         this._canvas.setAttribute('role', 'region');
 
-        const dimensions = this._containerDimensions();
-        this._resizeCanvas(dimensions[0], dimensions[1]);
+        const [containerWidth, containerHeight] = this._containerDimensions();
+        this._resizeCanvas(containerWidth, containerHeight);
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         const positions = this._controlPositions = {};
