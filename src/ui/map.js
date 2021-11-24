@@ -2618,8 +2618,6 @@ class Map extends Camera {
             if (Math.round(width) !== this._container.clientWidth || Math.round(height) !== this._container.clientHeight) {
                 this._containerWidth = width / (width / this._container.clientWidth) || 400;
                 this._containerHeight = height / (height / this._container.clientHeight) || 300;
-                //this._containerWidth = width || 400;
-                //this._containerHeight = height || 300;
             } else {
                 this._containerWidth = width || 400;
                 this._containerHeight = height || 300;
