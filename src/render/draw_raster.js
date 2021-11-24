@@ -5,6 +5,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import {rasterUniformValues} from './program/raster_program.js';
+import browser from '../util/browser.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -13,8 +14,6 @@ import type {OverscaledTileID} from '../source/tile_id.js';
 import rasterFade from './raster_fade.js';
 
 export default drawRaster;
-
-const TILE_UPDATE_BUDGET = 4;
 
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, isInitialLoad: boolean) {
     if (painter.renderPass !== 'translucent') return;
@@ -37,7 +36,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const minTileZ = coords[coords.length - 1].overscaledZ;
 
-    let updatedTiles = 0;
+    let totalTileUpdateTime = 0;
 
     const align = !painter.options.moving;
     for (const coord of coords) {
@@ -49,11 +48,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const unwrappedTileID = coord.toUnwrapped();
         const tile = sourceCache.getTile(coord);
         if (renderingToTexture && !(tile && tile.hasData())) continue;
-
-        if (updatedTiles < TILE_UPDATE_BUDGET) {
-            const didUpdate = tile.updateTexture(painter, sourceCache._source);
-            if (didUpdate) updatedTiles++;
-        }
 
         const projMatrix = (renderingToTexture) ? coord.projMatrix :
             painter.transform.calculateProjMatrix(unwrappedTileID, align);

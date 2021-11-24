@@ -40,9 +40,14 @@ map.on('load', () => {
     map.addSource('dem-custom', {
         "type": "raster",
         "url": "mapbox://mapbox.terrain-rgb",
-        "tileSize": 512,
-        "maxzoom": 16
+        "tileSize": 512
     });
+
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+    });
+
     const rasterSource = map.getSource('dem-custom');
     rasterSource.setImageTransformer((img, tileId) => {
         return new Promise((resolve, reject) => {
@@ -53,7 +58,8 @@ map.on('load', () => {
     const params = {
         interpolation: 'NONE',
         min: 0,
-        max: 8000
+        max: 8000,
+        terrain: false
     };
 
     const updateTransformer = function() {
@@ -115,6 +121,15 @@ map.on('load', () => {
     const max = gui.add(params, 'max', -10000, 10000);
     max.onFinishChange((value) => {
         updateTransformer();
+    });
+
+    const enable3dTerrain = gui.add(params, 'terrain');
+    enable3dTerrain.onFinishChange(() => {
+        if(params.terrain) {
+            map.setTerrain({"source": "mapbox-dem"});
+        }else {
+            map.setTerrain(null);
+        }
     });
 
     map.addLayer({

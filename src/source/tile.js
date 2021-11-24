@@ -124,7 +124,7 @@ class Tile {
     request: ?Cancelable;
     texture: any;
     textureImageData: ?ImageData;
-    needsTextureUpdate: ?boolean;
+    _textureUpdateTaskId: ?number;
 
     fbo: ?Framebuffer;
     demTexture: ?Texture;
@@ -313,6 +313,7 @@ class Tile {
         if (this.lineAtlasTexture) {
             this.lineAtlasTexture.destroy();
         }
+
 
         if (this._tileBoundsBuffer) {
             this._tileBoundsBuffer.destroy();
@@ -586,28 +587,41 @@ class Tile {
         }
     }
 
-    updateTexture(painter: Painter, source: RasterTileSource): boolean {
-        const imageTransformer = source._imageTransformer;
-        if (this.needsTextureUpdate && this.textureImageData) {
-            this.needsTextureUpdate = false;
-            const tileId = {
-                z: this.tileID.canonical.z,
-                x: this.tileID.canonical.x,
-                y: this.tileID.canonical.y
-            };
-            if (imageTransformer) {
-                imageTransformer(this.textureImageData, tileId).then((transformedImg) => {
-                    this.setTexture(transformedImg, painter);
-                    source.map.triggerRepaint();
-                });
-            } else {
-                this.setTexture(this.textureImageData, painter);
-            }
+    scheduleTextureUpdate(source: RasterTileSource) {
+        const map = source.map;
+        const painter = map.painter;
 
-            return true;
+        if (this._textureUpdateTaskId) {
+            map._frameBudgetTaskQueue.remove(this._textureUpdateTaskId);
+            delete this._frameBudgetTaskQueue;
         }
 
-        return false;
+        this._textureUpdateTaskId = map._frameBudgetTaskQueue.add(() =>{
+            const invalidateRenderCache = () => {
+                if (painter._terrain && painter._terrain.enabled) {
+                    painter._terrain._clearRenderCacheForTile(source.id, this.tileID);
+                }
+            };
+
+            if (this.textureImageData) {
+                const imageTransformer = source._imageTransformer;
+                const tileId = {
+                    z: this.tileID.canonical.z,
+                    x: this.tileID.canonical.x,
+                    y: this.tileID.canonical.y
+                };
+                if (imageTransformer) {
+                    imageTransformer(this.textureImageData, tileId).then((transformedImg) => {
+                        this.setTexture(transformedImg, painter);
+                        invalidateRenderCache();
+                    });
+                } else {
+                    this.setTexture(this.textureImageData, painter);
+                    invalidateRenderCache();
+                }
+            }
+            delete this._textureUpdateTaskId;
+        });
     }
 
     hasDependency(namespaces: Array<string>, keys: Array<string>) {

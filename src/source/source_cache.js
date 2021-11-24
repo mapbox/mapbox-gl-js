@@ -86,11 +86,11 @@ class SourceCache extends Evented {
         source.on('invalidate-texture', () => {
             for (const key in this._tiles) {
                 const tile = this._tiles[key];
-                tile.needsTextureUpdate = true;
+                tile.scheduleTextureUpdate(source);
             }
 
             this._cache.forEachTile((tile) => {
-                tile.needsTextureUpdate = true;
+               tile.scheduleTextureUpdate(source);
             });
         });
 

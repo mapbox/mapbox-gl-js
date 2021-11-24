@@ -122,6 +122,7 @@ class RasterTileSource extends Evented implements Source {
         if (this._loadedAnyTiles) {
             this.fire(new Event('invalidate-texture', {dataType: 'source'}));
         }
+
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
@@ -176,6 +177,7 @@ class RasterTileSource extends Evented implements Source {
     }
 
     unloadTile(tile: Tile, callback: Callback<void>) {
+        if (tile._textureUpdateTaskId) this.map._frameBudgetTaskQueue.remove(tile._textureUpdateTaskId);
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
         callback();
     }

@@ -25,7 +25,7 @@ import {supported} from '@mapbox/mapbox-gl-supported';
 import {RGBAImage} from '../util/image.js';
 import {Event, ErrorEvent} from '../util/evented.js';
 import {MapMouseEvent} from './events.js';
-import TaskQueue from '../util/task_queue.js';
+import TaskQueue, {TimeBudgetedTaskQueue} from '../util/task_queue.js';
 import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
@@ -346,6 +346,7 @@ class Map extends Camera {
     _optimizeForTerrain: boolean;
     _renderTaskQueue: TaskQueue;
     _domRenderTaskQueue: TaskQueue;
+    _frameBudgetTaskQueue: TimeBudgetedTaskQueue;
     _controls: Array<IControl>;
     _markers: Array<Marker>;
     _logoControl: IControl;
@@ -454,6 +455,7 @@ class Map extends Camera {
         this._optimizeForTerrain = options.optimizeForTerrain;
         this._renderTaskQueue = new TaskQueue();
         this._domRenderTaskQueue = new TaskQueue();
+        this._frameBudgetTaskQueue = new TimeBudgetedTaskQueue(2);
         this._controls = [];
         this._markers = [];
         this._mapId = uniqueId();
@@ -2843,6 +2845,7 @@ class Map extends Camera {
 
         this._renderTaskQueue.run(paintStartTimeStamp);
         this._domRenderTaskQueue.run(paintStartTimeStamp);
+        this._frameBudgetTaskQueue.run(paintStartTimeStamp);
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
 
@@ -2969,7 +2972,8 @@ class Map extends Camera {
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
-        const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty || averageElevationChanged;
+        const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty ||
+            averageElevationChanged || this._frameBudgetTaskQueue.tasksPending();
         if (somethingDirty || this._repaint) {
             this.triggerRepaint();
         } else {
