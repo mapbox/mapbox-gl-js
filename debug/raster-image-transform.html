@@ -22,7 +22,8 @@
 <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
-<script>
+<script type="module">
+import * as Comlink from "https://unpkg.com/comlink/dist/esm/comlink.mjs";
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
@@ -31,10 +32,9 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/empty-v9',
     hash: true
 });
-window.onload = function() {
 
-
-}
+const worker = new Worker('./image-transform-worker.js');
+const UTILS = Comlink.wrap(worker);
 
 map.on('load', () => {
     map.addSource('dem-custom', {
@@ -59,39 +59,47 @@ map.on('load', () => {
         interpolation: 'NONE',
         min: 0,
         max: 8000,
-        terrain: false
+        terrain: false,
+        useWorker: false
     };
 
     const updateTransformer = function() {
-        if (params.interpolation === 'NONE') {
+        if (params.useWorker) {
             rasterSource.setImageTransformer((img, tileId) => {
-                return new Promise((resolve, reject) => {
-                    resolve(img);
-                });
+                return UTILS.transformImg({params, img});
             });
         } else {
-            rasterSource.setImageTransformer((img, tileId) => {
-                const transformedImage = new Uint8Array(img.data);
-                const MIN = params.min;
-                const MAX = params.max;
-                for(let i=0; i < img.data.length/4; i++) {
-                    const R = img.data[4 * i];
-                    const G = img.data[4 * i + 1];
-                    const B = img.data[4 * i + 2];
-                    const elevation = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
-                    const t = Math.min(1, Math.max(0, elevation / (MAX - MIN)));
-
-                    const transformedColor = d3.rgb(d3[`interpolate${params.interpolation}`](t));
-
-                    transformedImage[4 * i] = transformedColor.r;
-                    transformedImage[4 * i + 1] = transformedColor.g;
-                    transformedImage[4 * i + 2] = transformedColor.b;
-                }
-
-                return new Promise((resolve, reject) => {
-                    resolve({data: transformedImage, width: img.width, height: img.height});
+            // Work on main-thread
+            if (params.interpolation === 'NONE') {
+                rasterSource.setImageTransformer((img, tileId) => {
+                    return new Promise((resolve, reject) => {
+                        resolve(img);
+                    });
                 });
-            });
+            } else {
+                rasterSource.setImageTransformer((img, tileId) => {
+                    const transformedImage = new Uint8Array(img.data);
+                    const MIN = params.min;
+                    const MAX = params.max;
+                    for(let i=0; i < img.data.length/4; i++) {
+                        const R = img.data[4 * i];
+                        const G = img.data[4 * i + 1];
+                        const B = img.data[4 * i + 2];
+                        const elevation = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
+                        const t = Math.min(1, Math.max(0, elevation / (MAX - MIN)));
+
+                        const transformedColor = d3.rgb(d3[`interpolate${params.interpolation}`](t));
+
+                        transformedImage[4 * i] = transformedColor.r;
+                        transformedImage[4 * i + 1] = transformedColor.g;
+                        transformedImage[4 * i + 2] = transformedColor.b;
+                    }
+
+                    return new Promise((resolve, reject) => {
+                        resolve({data: transformedImage, width: img.width, height: img.height});
+                    });
+                });
+            }
         }
     };
 
@@ -130,6 +138,10 @@ map.on('load', () => {
         }else {
             map.setTerrain(null);
         }
+    });
+    const useWorker = gui.add(params, 'useWorker');
+    useWorker.onFinishChange(() => {
+        updateTransformer();
     });
 
     map.addLayer({

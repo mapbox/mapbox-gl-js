@@ -601,6 +601,7 @@ class Tile {
                 if (painter._terrain && painter._terrain.enabled) {
                     painter._terrain._clearRenderCacheForTile(source.id, this.tileID);
                 }
+                map.triggerRepaint();
             };
 
             if (this.textureImageData) {
