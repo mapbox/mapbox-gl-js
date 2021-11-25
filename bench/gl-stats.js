@@ -14,6 +14,10 @@ const benchHTML = benchSrc
 function waitForConsole(page) {
     return new Promise((resolve) => {
         function onConsole(msg) {
+            if (msg.type() !== 'log') {
+                return;
+            }
+
             page.removeListener('console', onConsole);
             resolve(msg.text());
         }
@@ -23,6 +27,7 @@ function waitForConsole(page) {
 
 (async () => {
     const browser = await puppeteer.launch({
+        dumpio: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
         executablePath: process.env.CI ? '/usr/bin/google-chrome' : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     });
