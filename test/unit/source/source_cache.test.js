@@ -1772,3 +1772,57 @@ test('SourceCache sets max cache size correctly', (t) => {
 
     t.end();
 });
+
+test('SourceCache#preloadTiles', (t) => {
+    const bounds = [[-133, 16], [-68, 50]];
+
+    const cameraForBounds = () => ({
+        zoom: 3.5,
+        center: new LngLat(-100.5, 34.7)
+    });
+
+    t.test('preloads tiles', (t) => {
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+
+        const expected = [
+            new OverscaledTileID(0, 0, 0, 0, 0).key,
+            new OverscaledTileID(3, 0, 3, 1, 3).key,
+            new OverscaledTileID(3, 0, 3, 1, 2).key,
+            new OverscaledTileID(3, 0, 3, 2, 3).key,
+            new OverscaledTileID(3, 0, 3, 2, 2).key,
+        ];
+
+        t.plan(expected.length + 1);
+
+        const {sourceCache, eventedParent} = createSourceCache({
+            reparseOverscaled: true,
+            loadTile (tile, callback) {
+                t.equal(tile.tileID.key, expected.shift());
+
+                tile.state = 'loaded';
+                callback(null);
+            }
+        });
+
+        sourceCache.map.cameraForBounds = cameraForBounds;
+
+        const callbackSpy = t.spy(() => {});
+
+        setTimeout(() => {
+            t.equal(callbackSpy.getCalls().length, 4);
+        }, 0);
+
+        eventedParent.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                sourceCache.preloadTiles(bounds, null, callbackSpy);
+            }
+        });
+
+        sourceCache.getSource().onAdd();
+    });
+
+    t.end();
+});
