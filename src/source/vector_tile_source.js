@@ -21,6 +21,9 @@ import type {Cancelable} from '../types/cancelable.js';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
 import type Actor from '../util/actor.js';
 import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
+import type {CameraOptions} from '../ui/camera.js';
+import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+import type {TilesPreloadProgress} from './source_cache.js';
 
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
@@ -310,11 +313,45 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions) {
+    /**
+     * Preloads tiles in the requested viewport.
+     * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
+     *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
+     * @param {Object} [options] Options supports all properties from {@link CameraOptions}.
+     * @param {Function} callback Called when the requested tile is ready or errored.
+     * @returns {TilesPreloadProgress} The current preload progress.
+     * @example
+     * map.addSource('some id', {
+     *     type: 'vector',
+     *     url: 'mapbox://mapbox.mapbox-streets-v8'
+     * });
+     *
+     * const bbox = [[-79, 43], [-73, 45]];
+     * map.getSource('some id').preloadTiles(bbox, {
+     *     padding: 20
+     * });
+     */
+    preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions, callback?: (progress: TilesPreloadProgress) => void): TilesPreloadProgress {
+        let errored = 0;
+        let completed = 0;
+        let pending = 0;
+        let requested = 0;
+
+        function tileLoaded(err: ?Error, tile: ?Tile) {
+            if (err) errored++;
+            else completed++;
+            pending = requested - (errored + completed);
+
+            // $FlowFixMe
+            callback({errored, completed, pending, requested});
+        }
+
         const sourceCaches = this.map.style._getSourceCaches(this.id);
         for (const sourceCache of sourceCaches) {
-            sourceCache.preloadTiles(bounds, options);
+            requested += sourceCache.preloadTiles(bounds, options, callback ? tileLoaded : undefined);
         }
+
+        return {errored, completed, pending, requested};
     }
 
     hasTransition() {

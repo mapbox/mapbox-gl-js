@@ -18,6 +18,15 @@ import type Transform from '../geo/transform.js';
 import type {TileState} from './tile.js';
 import type {Callback} from '../types/callback.js';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry.js';
+import type {CameraOptions} from '../ui/camera.js';
+import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+
+export type TilesPreloadProgress = {
+  completed: number,
+  errored: number,
+  requested: number,
+  pending: number,
+};
 
 /**
  * `SourceCache` is responsible for
@@ -922,13 +931,22 @@ class SourceCache extends Evented {
         this._cache.filter(tile => !tile.hasDependency(namespaces, keys));
     }
 
-    preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions) {
-        const calculatedOptions = this.map.cameraForBounds(bounds, options);
-        if (!calculatedOptions) return this;
-
+    /**
+     * Preloads tiles in the requested viewport.
+     * @private
+     * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
+     *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
+     * @param {Object} [options] Options supports all properties from {@link CameraOptions}.
+     * @param {Function} callback Called when the requested tile is ready or errored.
+     */
+    preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions, callback?: Callback<Tile>): number {
         const transform = this.transform.clone();
+
+        const calculatedOptions = this.map.cameraForBounds(bounds, options);
+        if (!calculatedOptions || !calculatedOptions.zoom || !calculatedOptions.center) return 0;
+
         transform.zoom = calculatedOptions.zoom;
-        transform.center = calculatedOptions.center;
+        transform.center = (calculatedOptions.center: any);
 
         const tileIDs = transform.coveringTiles({
             tileSize: this._source.tileSize,
@@ -939,9 +957,18 @@ class SourceCache extends Evented {
             isTerrainDEM: this.usedForTerrain
         });
 
-        for (const tileID of tileIDs) {
-            this._addTile(tileID);
+        function tileLoaded(tile: Tile, id: number, previousState: TileState, err: ?Error) {
+            this._tileLoaded(tile, id, previousState, err);
+            if (callback) callback(err, tile);
         }
+
+        const painter = this.map ? this.map.painter : null;
+        for (const tileID of tileIDs) {
+            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._source.type === 'raster' || this._source.type === 'raster-dem');
+            this._loadTile(tile, tileLoaded.bind(this, tile, tileID.key, tile.state));
+        }
+
+        return tileIDs.length;
     }
 }
 
