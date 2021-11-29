@@ -51,7 +51,6 @@ class SourceCache extends Evented {
     _isIdRenderable: (id: number, symbolLayer?: boolean) => boolean;
     used: boolean;
     usedForTerrain: boolean;
-    terrainTileSize: number | void;
     _state: SourceFeatureState;
     _loadedParentTiles: {[_: number | string]: ?Tile};
     _onlySymbols: ?boolean;
@@ -242,7 +241,7 @@ class SourceCache extends Evented {
             tile.state = 'errored';
             if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
             // continue to try loading parent/children tiles if a tile doesn't exist (404)
-            else this.update(this.transform);
+            else this.update(this.transform, undefined, this._source.type === 'raster-dem');
             return;
         }
 
@@ -461,20 +460,19 @@ class SourceCache extends Evented {
      * Removes tiles that are outside the viewport and adds new tiles that
      * are inside the viewport.
      * @private
+     * @param {boolean} updateForTerrain Signals to update tiles even if the
+     * source is not used (this.used) by layers: it is used for terrain.
+     * @param {tileSize} tileSize If needed to get lower resolution ideal cover,
+     * override source.tileSize used in tile cover calculation.
      */
-    update(transform: Transform) {
+    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) {
         this.transform = transform;
         if (!this._sourceLoaded || this._paused || this.transform.freezeTileCoverage) { return; }
-
-        // update terrain tiles even if the source is not used (this.used) by layers
-        const updateForTerrain = this._source.type === 'raster-dem' && this.usedForTerrain;
         assert(!(updateForTerrain && !this.usedForTerrain));
         if (this.usedForTerrain && !updateForTerrain) {
             // If source is used for both terrain and hillshade, don't update it twice.
             return;
         }
-
-        const tileSize = this.usedForTerrain && this.terrainTileSize ? this.terrainTileSize : this._source.tileSize;
 
         this.updateCacheSize(transform, tileSize);
         this.handleWrapJump(this.transform.center.lng);
@@ -491,7 +489,7 @@ class SourceCache extends Evented {
                 .map((unwrapped) => new OverscaledTileID(unwrapped.canonical.z, unwrapped.wrap, unwrapped.canonical.z, unwrapped.canonical.x, unwrapped.canonical.y));
         } else {
             idealTileIDs = transform.coveringTiles({
-                tileSize,
+                tileSize: tileSize || this._source.tileSize,
                 minzoom: this._source.minzoom,
                 maxzoom: this._source.maxzoom,
                 roundZoom: this._source.roundZoom && !updateForTerrain,
