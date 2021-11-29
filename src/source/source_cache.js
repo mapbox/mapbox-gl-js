@@ -241,7 +241,10 @@ class SourceCache extends Evented {
             tile.state = 'errored';
             if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
             // continue to try loading parent/children tiles if a tile doesn't exist (404)
-            else this.update(this.transform, undefined, this._source.type === 'raster-dem');
+            else {
+                const updateForTerrain = this._source.type === 'raster-dem' && this.usedForTerrain;
+                this.update(this.transform, undefined, updateForTerrain);
+            }
             return;
         }
 
