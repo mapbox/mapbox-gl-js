@@ -315,6 +315,7 @@ class VectorTileSource extends Evented implements Source {
 
     /**
      * Preloads tiles in the requested viewport.
+     *
      * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
      * @param {Object} [options] Options supports all properties from {@link CameraOptions}.
@@ -337,7 +338,7 @@ class VectorTileSource extends Evented implements Source {
         let pending = 0;
         let requested = 0;
 
-        function tileLoaded(err: ?Error, tile: ?Tile) {
+        function tileLoaded(err: ?Error, _: ?Tile) {
             if (err) errored++;
             else completed++;
             pending = requested - (errored + completed);
