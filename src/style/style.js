@@ -9,7 +9,7 @@ import loadSprite from './load_sprite.js';
 import ImageManager from '../render/image_manager.js';
 import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
 import Light from './light.js';
-import Terrain from './terrain.js';
+import Terrain, {DrapeRenderMode} from './terrain.js';
 import Fog from './fog.js';
 import LineAtlas from '../render/line_atlas.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
@@ -331,7 +331,7 @@ class Style extends Evented {
 
         this.light = new Light(this.stylesheet.light);
         if (this.stylesheet.terrain) {
-            this._createTerrain(this.stylesheet.terrain);
+            this._createTerrain(this.stylesheet.terrain, DrapeRenderMode.elevated);
         }
         if (this.stylesheet.fog) {
             this._createFog(this.stylesheet.fog);
@@ -356,22 +356,11 @@ class Style extends Evented {
         const projection = this.map.transform.projection;
 
         // eslint-disable-next-line no-warning-comments
-        // TODO: Allow globe to be set without style loaded at map creation
+        // TODO: Allow globe to be set without style loaded at map creation (map._lazyInitEmptyStyle)
         if (this._loaded) {
-            if (projection.requiresDraping) {
-                // eslint-disable-next-line no-warning-comments
-                // TODO:
-                // - Allow draping to work without an explicit DEM source (dummy source)
-                // - Prevent override of exaggeration when terrain is already enabled
-                this.map._setTerrain({source: 'mapbox-dem', exaggeration: 0.0}, "projection");
-            } else {
-                // eslint-disable-next-line no-warning-comments
-                // TODO:
-                // - Revert terrain if terrain use is only for globe draping
-                // - Make sure that terrain set as part of stylesheet is set with 'explicit' mode
-                // if (!this.map._terrainRefCount['explicit']) {
-                //   this.map._setTerrain(null, "projection");
-                // }
+            const terrain = this.getTerrain();
+            if (!terrain && projection.requiresDraping) {
+                this.setTerrain({'source': '', 'exaggeration': 0}, DrapeRenderMode.deferred);
             }
         }
 
@@ -379,14 +368,14 @@ class Style extends Evented {
 
         if (!projectionChanged) return;
 
-        // eslint-disable-next-line no-warning-comments
-        // TODO: Only do that for runtime reprojection, otherwise
-        // reduce to only _forceSymbolLayerUpdate for faster switch
-        this.map.painter.clearBackgroundTiles();
-        for (const id in this._sourceCaches) {
-            this._sourceCaches[id].clearTiles();
+        if (projection.isReprojectedInTileSpace) {
+            this.map.painter.clearBackgroundTiles();
+            for (const id in this._sourceCaches) {
+                this._sourceCaches[id].clearTiles();
+            }
+        } else {
+            this._forceSymbolLayerUpdate();
         }
-        // this._forceSymbolLayerUpdate();
 
         this.map._update(true);
     }
@@ -1447,16 +1436,16 @@ class Style extends Evented {
     }
 
     getTerrain() {
-        return this.terrain ? this.terrain.get() : null;
+        return this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.elevated ? this.terrain.get() : null;
     }
 
     // eslint-disable-next-line no-warning-comments
     // TODO: generic approach for root level property: light, terrain, skybox.
     // It is not done here to prevent rebasing issues.
-    setTerrain(terrainOptions: ?TerrainSpecification) {
+    setTerrain(terrainOptions: ?TerrainSpecification, drapeRenderMode: number = DrapeRenderMode.elevated) {
         this._checkLoaded();
 
-        //Disabling
+        // Disabling
         if (!terrainOptions) {
             delete this.terrain;
             delete this.stylesheet.terrain;
@@ -1467,17 +1456,22 @@ class Style extends Evented {
         }
 
         // Input validation and source object unrolling
-        if (typeof terrainOptions.source === 'object') {
-            const id = 'terrain-dem-src';
-            this.addSource(id, ((terrainOptions.source): any));
-            terrainOptions = clone(terrainOptions);
-            terrainOptions = (extend(terrainOptions, {source: id}): any);
+        if (drapeRenderMode === DrapeRenderMode.elevated) {
+            if (typeof terrainOptions.source === 'object') {
+                const id = 'terrain-dem-src';
+                this.addSource(id, ((terrainOptions.source): any));
+                terrainOptions = clone(terrainOptions);
+                terrainOptions = (extend(terrainOptions, {source: id}): any);
+            }
+
+            if (this._validate(validateStyle.terrain, 'terrain', terrainOptions)) {
+                return;
+            }
         }
-        if (this._validate(validateStyle.terrain, 'terrain', terrainOptions)) return;
 
         // Enabling
-        if (!this.terrain) {
-            this._createTerrain(terrainOptions);
+        if (!this.terrain || (this.terrain && drapeRenderMode !== this.terrain.drapeRenderMode)) {
+            this._createTerrain(terrainOptions, drapeRenderMode);
         } else { // Updating
             const terrain = this.terrain;
             const currSpec = terrain.get();
@@ -1585,8 +1579,8 @@ class Style extends Evented {
         this._drapedFirstOrder.push(...nonDraped);
     }
 
-    _createTerrain(terrainOptions: TerrainSpecification) {
-        const terrain = this.terrain = new Terrain(terrainOptions);
+    _createTerrain(terrainOptions: TerrainSpecification, drapeRenderMode: number) {
+        const terrain = this.terrain = new Terrain(terrainOptions, drapeRenderMode);
         this.stylesheet.terrain = terrainOptions;
         this.dispatcher.broadcast('enableTerrain', true);
         this._force3DLayerUpdate();

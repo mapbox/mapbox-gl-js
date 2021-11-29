@@ -364,7 +364,6 @@ class Map extends Camera {
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
     _runtimeProjection: ProjectionSpecification | void | null;
-    _terrainRefCount: { String: boolean };
 
     /** @section {Interaction handlers} */
 
@@ -463,7 +462,6 @@ class Map extends Camera {
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
         this._cooperativeGestures = options.cooperativeGestures;
-        this._terrainRefCount = {};
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevation = new EasedVariable(0);
@@ -2428,7 +2426,10 @@ class Map extends Camera {
      * map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
      */
     setTerrain(terrain: TerrainSpecification) {
-        return this._setTerrain(terrain, "explicit");
+        this._lazyInitEmptyStyle();
+        this.style.setTerrain(terrain);
+        this._averageElevationLastSampledAt = -Infinity;
+        return this._update(true);
     }
 
     _updateProjection() {
@@ -2441,29 +2442,6 @@ class Map extends Camera {
         } else if (this._transitionFromGlobe && zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
             this.setProjection({name: 'globe'});
         }
-    }
-
-    _setTerrain(options: ?TerrainSpecification, user: string) {
-        // There are multiple different consumers for the terrain.
-        // For example user might toggle it on/off explicitly while some of the projections
-        // might require it without user's knowledge. For reason a simple reference counter
-        // is used to track whether the terrain used by some feature
-        const shouldEnable = !!options;
-
-        if (shouldEnable) {
-            this._terrainRefCount[user] = true;
-        } else {
-            delete this._terrainRefCount[user];
-        }
-
-        if (!shouldEnable && Object.keys(this._terrainRefCount).length !== 0) {
-            return;
-        }
-
-        this._lazyInitEmptyStyle();
-        this.style.setTerrain(options);
-        this._averageElevationLastSampledAt = -Infinity;
-        return this._update(true);
     }
 
     /**
