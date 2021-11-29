@@ -123,8 +123,6 @@ class Tile {
     needsDEMTextureUpload: ?boolean;
     request: ?Cancelable;
     texture: any;
-    textureImageData: ?ImageData;
-    _textureUpdateTaskId: ?number;
 
     fbo: ?Framebuffer;
     demTexture: ?Texture;
@@ -313,7 +311,6 @@ class Tile {
         if (this.lineAtlasTexture) {
             this.lineAtlasTexture.destroy();
         }
-
 
         if (this._tileBoundsBuffer) {
             this._tileBoundsBuffer.destroy();
@@ -585,44 +582,6 @@ class Tile {
                 gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
             }
         }
-    }
-
-    scheduleTextureUpdate(source: RasterTileSource) {
-        const map = source.map;
-        const painter = map.painter;
-
-        if (this._textureUpdateTaskId) {
-            map._frameBudgetTaskQueue.remove(this._textureUpdateTaskId);
-            delete this._frameBudgetTaskQueue;
-        }
-
-        this._textureUpdateTaskId = map._frameBudgetTaskQueue.add(() =>{
-            const invalidateRenderCache = () => {
-                if (painter._terrain && painter._terrain.enabled) {
-                    painter._terrain._clearRenderCacheForTile(source.id, this.tileID);
-                }
-                map.triggerRepaint();
-            };
-
-            if (this.textureImageData) {
-                const imageTransformer = source._imageTransformer;
-                const tileId = {
-                    z: this.tileID.canonical.z,
-                    x: this.tileID.canonical.x,
-                    y: this.tileID.canonical.y
-                };
-                if (imageTransformer) {
-                    imageTransformer(this.textureImageData, tileId).then((transformedImg) => {
-                        this.setTexture(transformedImg, painter);
-                        invalidateRenderCache();
-                    });
-                } else {
-                    this.setTexture(this.textureImageData, painter);
-                    invalidateRenderCache();
-                }
-            }
-            delete this._textureUpdateTaskId;
-        });
     }
 
     hasDependency(namespaces: Array<string>, keys: Array<string>) {

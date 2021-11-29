@@ -23,14 +23,15 @@
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script type="module">
-import * as Comlink from "https://unpkg.com/comlink/dist/esm/comlink.mjs";
+import * as Comlink from "https://unpkg.com/comlink/dist/esm/comlink.mjs"; // eslint-disable-line
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [-122.4194, 37.7749],
     style: 'mapbox://styles/mapbox/empty-v9',
-    hash: true
+    hash: true,
+    rasterFadeDuration: 0
 });
 
 const worker = new Worker('./image-transform-worker.js');
@@ -40,7 +41,7 @@ map.on('load', () => {
     map.addSource('dem-custom', {
         "type": "raster",
         "url": "mapbox://mapbox.terrain-rgb",
-        "tileSize": 512
+        "tileSize": 256
     });
 
     map.addSource('mapbox-dem', {
@@ -81,14 +82,14 @@ map.on('load', () => {
                     const transformedImage = new Uint8Array(img.data);
                     const MIN = params.min;
                     const MAX = params.max;
-                    for(let i=0; i < img.data.length/4; i++) {
+                    for (let i = 0; i < img.data.length / 4; i++) {
                         const R = img.data[4 * i];
                         const G = img.data[4 * i + 1];
                         const B = img.data[4 * i + 2];
                         const elevation = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
                         const t = Math.min(1, Math.max(0, elevation / (MAX - MIN)));
 
-                        const transformedColor = d3.rgb(d3[`interpolate${params.interpolation}`](t));
+                        const transformedColor = d3.rgb(d3[`interpolate${params.interpolation}`](t)); // eslint-disable-line
 
                         transformedImage[4 * i] = transformedColor.r;
                         transformedImage[4 * i + 1] = transformedColor.g;
@@ -133,9 +134,9 @@ map.on('load', () => {
 
     const enable3dTerrain = gui.add(params, 'terrain');
     enable3dTerrain.onFinishChange(() => {
-        if(params.terrain) {
+        if (params.terrain) {
             map.setTerrain({"source": "mapbox-dem"});
-        }else {
+        } else {
             map.setTerrain(null);
         }
     });
@@ -147,7 +148,10 @@ map.on('load', () => {
     map.addLayer({
         "id": "dem-custom-layer",
         "source": "dem-custom",
-        "type": "raster"
+        "type": "raster",
+        "paint": {
+            "raster-fade-duration": 0
+        }
     });
 
 });

@@ -5,7 +5,6 @@ import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import {rasterUniformValues} from './program/raster_program.js';
-import browser from '../util/browser.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -35,8 +34,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         painter.stencilConfigForOverlap(tileIDs);
 
     const minTileZ = coords[coords.length - 1].overscaledZ;
-
-    let totalTileUpdateTime = 0;
 
     const align = !painter.options.moving;
     for (const coord of coords) {

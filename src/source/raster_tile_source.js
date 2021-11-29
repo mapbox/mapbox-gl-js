@@ -7,7 +7,6 @@ import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import loadTileJSON from './load_tilejson.js';
 import {postTurnstileEvent} from '../util/mapbox.js';
 import TileBounds from './tile_bounds.js';
-import Texture from '../render/texture.js';
 import browser from '../util/browser.js';
 
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
@@ -115,12 +114,11 @@ class RasterTileSource extends Evented implements Source {
 
     setImageTransformer(func: Function) {
         this._imageTransformer = func;
-        this.map.triggerRepaint();
         // invalidate currently loaded tiles
         // We only need to do this if we have loaded any tiles in the past
         // If we haven't loaded anything yet, then we can skip this since tile loading will apply the transformation
         if (this._loadedAnyTiles) {
-            this.fire(new Event('invalidate-texture', {dataType: 'source'}));
+            this.fire(new Event('image-transformer-update', {dataType: 'source'}));
         }
 
     }
@@ -156,7 +154,6 @@ class RasterTileSource extends Evented implements Source {
                         x: tile.tileID.canonical.x,
                         y: tile.tileID.canonical.y
                     };
-                    tile.textureImageData = imageData;
                     imageTransformer(imageData, tileId).then((transformedImg) => {
                         tileLoaded(transformedImg);
                     });
@@ -177,7 +174,6 @@ class RasterTileSource extends Evented implements Source {
     }
 
     unloadTile(tile: Tile, callback: Callback<void>) {
-        if (tile._textureUpdateTaskId) this.map._frameBudgetTaskQueue.remove(tile._textureUpdateTaskId);
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
         callback();
     }
