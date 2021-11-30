@@ -189,15 +189,6 @@ class TileCache {
         return this;
     }
 
-    forEachTile(cb: Function) {
-        for (const key in this.data) {
-            for (const entry of this.data[key]) {
-                const tile = entry.value;
-                cb(tile);
-            }
-        }
-    }
-
     /**
      * Remove entries that do not pass a filter function. Used for removing
      * stale tiles from the cache.
