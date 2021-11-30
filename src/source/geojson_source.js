@@ -6,6 +6,7 @@ import {extend} from '../util/util.js';
 import EXTENT from '../data/extent.js';
 import {ResourceType} from '../util/ajax.js';
 import browser from '../util/browser.js';
+import {preloadTiles} from './source.js';
 
 import type {Source} from './source.js';
 import type Map from '../ui/map.js';
@@ -16,6 +17,9 @@ import type {Callback} from '../types/callback.js';
 import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
 import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
 import type {Cancelable} from '../types/cancelable.js';
+import type {CameraOptions} from '../ui/camera.js';
+import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+import type {TilesPreloadProgress} from './source_cache.js';
 
 /**
  * A source containing GeoJSON.
@@ -395,6 +399,30 @@ class GeoJSONSource extends Evented implements Source {
             type: this.type,
             data: this._data
         });
+    }
+
+    /**
+     * Preloads tiles in the requested viewport.
+     *
+     * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
+     *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
+     * @param {Object} [options] Options supports all properties from {@link CameraOptions}.
+     * @param {Function} [callback] Called when each of the requested tiles is ready or errored.
+     * @returns {number} Number of tiles to load.
+     * @example
+     * map.addSource('some id', {
+     *     type: 'vector',
+     *     url: 'mapbox://mapbox.mapbox-streets-v8'
+     * });
+     *
+     * map.getSource('some id').preloadTiles(bbox, {padding: 20}, ({pending}) => {
+     *     if (pending === 0) {
+     *         map.fitBounds(bbox, {duration:0});
+     *     }
+     * });
+     */
+    preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions, callback?: (progress: TilesPreloadProgress) => void): number {
+        return preloadTiles.call(this, bounds, options, callback);
     }
 
     hasTransition() {

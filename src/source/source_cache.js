@@ -938,6 +938,7 @@ class SourceCache extends Evented {
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
      * @param {Object} [options] Options supports all properties from {@link CameraOptions}.
      * @param {Function} callback Called when the requested tile is ready or errored.
+     * @returns {number} Number of tiles to load.
      */
     preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions, callback?: Callback<Tile>): number {
         const transform = this.transform.clone();
@@ -964,7 +965,8 @@ class SourceCache extends Evented {
 
         const painter = this.map ? this.map.painter : null;
         for (const tileID of tileIDs) {
-            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._source.type === 'raster' || this._source.type === 'raster-dem');
+            const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
+            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, isRaster);
             this._loadTile(tile, tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 

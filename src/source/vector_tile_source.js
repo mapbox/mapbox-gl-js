@@ -10,6 +10,7 @@ import {ResourceType} from '../util/ajax.js';
 import browser from '../util/browser.js';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 import {DedupedRequest, loadVectorTile} from './vector_tile_worker_source.js';
+import {preloadTiles} from './source.js';
 
 import type {Source} from './source.js';
 import type {OverscaledTileID} from './tile_id.js';
@@ -319,40 +320,22 @@ class VectorTileSource extends Evented implements Source {
      * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
      * @param {Object} [options] Options supports all properties from {@link CameraOptions}.
-     * @param {Function} callback Called when the requested tile is ready or errored.
-     * @returns {TilesPreloadProgress} The current preload progress.
+     * @param {Function} [callback] Called when each of the requested tiles is ready or errored.
+     * @returns {number} Number of tiles to load.
      * @example
      * map.addSource('some id', {
      *     type: 'vector',
      *     url: 'mapbox://mapbox.mapbox-streets-v8'
      * });
      *
-     * const bbox = [[-79, 43], [-73, 45]];
-     * map.getSource('some id').preloadTiles(bbox, {
-     *     padding: 20
+     * map.getSource('some id').preloadTiles(bbox, {padding: 20}, ({pending}) => {
+     *     if (pending === 0) {
+     *         map.fitBounds(bbox, {duration:0});
+     *     }
      * });
      */
-    preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions, callback?: (progress: TilesPreloadProgress) => void): TilesPreloadProgress {
-        let errored = 0;
-        let completed = 0;
-        let pending = 0;
-        let requested = 0;
-
-        function tileLoaded(err: ?Error, _: ?Tile) {
-            if (err) errored++;
-            else completed++;
-            pending = requested - (errored + completed);
-
-            // $FlowFixMe
-            callback({errored, completed, pending, requested});
-        }
-
-        const sourceCaches = this.map.style._getSourceCaches(this.id);
-        for (const sourceCache of sourceCaches) {
-            requested += sourceCache.preloadTiles(bounds, options, callback ? tileLoaded : undefined);
-        }
-
-        return {errored, completed, pending, requested};
+    preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions, callback?: (progress: TilesPreloadProgress) => void): number {
+        return preloadTiles.call(this, bounds, options, callback);
     }
 
     hasTransition() {

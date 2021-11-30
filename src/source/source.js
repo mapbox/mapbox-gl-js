@@ -8,6 +8,9 @@ import type Map from '../ui/map.js';
 import type Tile from './tile.js';
 import type {OverscaledTileID} from './tile_id.js';
 import type {Callback} from '../types/callback.js';
+import type {CameraOptions} from '../ui/camera.js';
+import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+import type {TilesPreloadProgress} from './source_cache.js';
 import {CanonicalTileID} from './tile_id.js';
 
 /**
@@ -114,7 +117,7 @@ const sourceTypes = {
  * @param id
  * @param {Object} source A source definition object compliant with
  * [`mapbox-gl-style-spec`](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or, for a third-party source type,
-  * with that type's requirements.
+ * with that type's requirements.
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
@@ -135,6 +138,31 @@ export const getType = function (name: string) {
 
 export const setType = function (name: string, type: Class<Source>) {
     sourceTypes[name] = type;
+};
+
+export const preloadTiles = function(bounds: LngLatBoundsLike, options?: CameraOptions, callback?: (progress: TilesPreloadProgress) => void): number {
+    const progress = {
+        errored: 0,
+        completed: 0,
+        pending: 0,
+        requested: 0,
+    };
+
+    function tileLoaded(err: ?Error, _: ?Tile) {
+        if (err) progress.errored++;
+        else progress.completed++;
+        progress.pending = progress.requested - (progress.errored + progress.completed);
+
+        // $FlowFixMe
+        callback(progress);
+    }
+
+    const sourceCaches = this.map.style._getSourceCaches(this.id);
+    for (const sourceCache of sourceCaches) {
+        progress.requested += sourceCache.preloadTiles(bounds, options, callback ? tileLoaded : undefined);
+    }
+
+    return progress.requested;
 };
 
 export interface Actor {
