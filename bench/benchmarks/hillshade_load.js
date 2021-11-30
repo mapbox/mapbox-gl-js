@@ -35,7 +35,7 @@ export default class HillshadeLoad extends Benchmark {
         };
     }
 
-    bench() {
+    bench(): Promise<void> {
         return createMap({
             width: 1024,
             height: 1024,

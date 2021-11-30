@@ -63,7 +63,7 @@ export type StructArrayLayout = {
 
 export type SerializedStructArray = {
     length: number,
-    arrayBuffer: ArrayBuffer
+    arrayBuffer: ArrayBuffer | undefined
 };
 
 /**
@@ -91,7 +91,7 @@ class StructArray {
     capacity: number;
     length: number;
     isTransferred: boolean;
-    arrayBuffer: ArrayBuffer;
+    arrayBuffer: ArrayBuffer | undefined;
     uint8: Uint8Array;
 
     // The following properties are defined on the prototype.

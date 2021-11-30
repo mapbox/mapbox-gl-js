@@ -26,7 +26,7 @@ export default class SymbolLayout extends Layout {
         });
     }
 
-    bench() {
+    bench(): Promise<void> {
         let promise = Promise.resolve();
         for (const tileResult of this.parsedTiles) {
             promise = promise.then(() => {

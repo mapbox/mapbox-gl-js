@@ -69,11 +69,11 @@ class GeoJSONSource extends Evented implements Source {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
-    attribution: string;
+    attribution: ?string;
     promoteId: ?PromoteIdSpecification;
 
-    isTileClipped: boolean;
-    reparseOverscaled: boolean;
+    isTileClipped: ?boolean;
+    reparseOverscaled: ?boolean;
     _data: GeoJSON | string;
     _options: any;
     workerOptions: any;
@@ -176,7 +176,7 @@ class GeoJSONSource extends Evented implements Source {
      *     }]
      * });
      */
-    setData(data: GeoJSON | string) {
+    setData(data: GeoJSON | string): this {
         this._data = data;
         this._updateWorkerData();
         return this;
@@ -212,7 +212,7 @@ class GeoJSONSource extends Evented implements Source {
      *     );
      * });
      */
-    getClusterExpansionZoom(clusterId: number, callback: Callback<number>) {
+    getClusterExpansionZoom(clusterId: number, callback: Callback<number>): this {
         this.actor.send('geojson.getClusterExpansionZoom', {clusterId, source: this.id}, callback);
         return this;
     }
@@ -240,7 +240,7 @@ class GeoJSONSource extends Evented implements Source {
      * });
      *
      */
-    getClusterChildren(clusterId: number, callback: Callback<Array<GeoJSONFeature>>) {
+    getClusterChildren(clusterId: number, callback: Callback<Array<GeoJSONFeature>>): this {
         this.actor.send('geojson.getClusterChildren', {clusterId, source: this.id}, callback);
         return this;
     }
@@ -270,7 +270,7 @@ class GeoJSONSource extends Evented implements Source {
      *     });
      * });
      */
-    getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
+    getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>): this {
         this.actor.send('geojson.getClusterLeaves', {
             source: this.id,
             clusterId,
@@ -390,14 +390,14 @@ class GeoJSONSource extends Evented implements Source {
         }
     }
 
-    serialize() {
+    serialize(): Object {
         return extend({}, this._options, {
             type: this.type,
             data: this._data
         });
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return false;
     }
 }

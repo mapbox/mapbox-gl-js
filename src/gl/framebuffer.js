@@ -8,7 +8,7 @@ class Framebuffer {
     context: Context;
     width: number;
     height: number;
-    framebuffer: WebGLFramebuffer;
+    framebuffer: ?WebGLFramebuffer;
     colorAttachment: ColorAttachment;
     depthAttachment: DepthAttachment;
 

@@ -85,7 +85,7 @@ class SourceCache extends Evented {
 
         this._source = source;
         this._tiles = {};
-        this._cache = new TileCache(0, this._unloadTile.bind(this));
+        this._cache = new TileCache(0, (tile) => this._unloadTile(tile));
         this._timers = {};
         this._cacheTimers = {};
         this._maxTileCacheSize = null;
@@ -134,19 +134,19 @@ class SourceCache extends Evented {
         if (this.transform) this.update(this.transform);
     }
 
-    _loadTile(tile: Tile, callback: Callback<void>) {
+    _loadTile(tile: Tile, callback: Callback<void>)  {
         tile.isSymbolTile = this._onlySymbols;
-        return this._source.loadTile(tile, callback);
+        this._source.loadTile(tile, callback);
     }
 
     _unloadTile(tile: Tile) {
         if (this._source.unloadTile)
-            return this._source.unloadTile(tile, () => {});
+            this._source.unloadTile(tile, () => {});
     }
 
     _abortTile(tile: Tile) {
         if (this._source.abortTile)
-            return this._source.abortTile(tile, () => {});
+            this._source.abortTile(tile, () => {});
     }
 
     serialize() {

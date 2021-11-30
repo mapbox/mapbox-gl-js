@@ -54,7 +54,7 @@ class LngLat {
      * const wrapped = ll.wrap();
      * console.log(wrapped.lng); // = -73.9749
      */
-    wrap() {
+    wrap(): LngLat {
         return new LngLat(wrap(this.lng, -180, 180), this.lat);
     }
 
@@ -66,7 +66,7 @@ class LngLat {
      * const ll = new mapboxgl.LngLat(-73.9749, 40.7736);
      * ll.toArray(); // = [-73.9749, 40.7736]
      */
-    toArray() {
+    toArray(): [number, number] {
         return [this.lng, this.lat];
     }
 
@@ -78,7 +78,7 @@ class LngLat {
      * const ll = new mapboxgl.LngLat(-73.9749, 40.7736);
      * ll.toString(); // = "LngLat(-73.9749, 40.7736)"
      */
-    toString() {
+    toString(): string {
         return `LngLat(${this.lng}, ${this.lat})`;
     }
 
@@ -93,7 +93,7 @@ class LngLat {
      * const losAngeles = new mapboxgl.LngLat(-118.2437, 34.0522);
      * newYork.distanceTo(losAngeles); // = 3935751.690893987, "true distance" using a non-spherical approximation is ~3966km
      */
-    distanceTo(lngLat: LngLat) {
+    distanceTo(lngLat: LngLat): number {
         const rad = Math.PI / 180;
         const lat1 = this.lat * rad;
         const lat2 = lngLat.lat * rad;
@@ -112,7 +112,7 @@ class LngLat {
      * const ll = new mapboxgl.LngLat(-73.9749, 40.7736);
      * ll.toBounds(100).toArray(); // = [[-73.97501862141328, 40.77351016847229], [-73.97478137858673, 40.77368983152771]]
      */
-    toBounds(radius?: number = 0) {
+    toBounds(radius?: number = 0): LngLatBounds {
         const earthCircumferenceInMetersAtEquator = 40075017;
         const latAccuracy = 360 * radius / earthCircumferenceInMetersAtEquator,
             lngAccuracy = latAccuracy / Math.cos((Math.PI / 180) * this.lat);

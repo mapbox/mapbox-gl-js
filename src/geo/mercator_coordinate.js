@@ -11,32 +11,32 @@ const earthCircumference = 2 * Math.PI * earthRadius; // meters
 /*
  * The circumference at a line of latitude in meters.
  */
-function circumferenceAtLatitude(latitude: number) {
+function circumferenceAtLatitude(latitude: number): number {
     return earthCircumference * Math.cos(latitude * Math.PI / 180);
 }
 
-export function mercatorXfromLng(lng: number) {
+export function mercatorXfromLng(lng: number): number {
     return (180 + lng) / 360;
 }
 
-export function mercatorYfromLat(lat: number) {
+export function mercatorYfromLat(lat: number): number {
     return (180 - (180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)))) / 360;
 }
 
-export function mercatorZfromAltitude(altitude: number, lat: number) {
+export function mercatorZfromAltitude(altitude: number, lat: number): number {
     return altitude / circumferenceAtLatitude(lat);
 }
 
-export function lngFromMercatorX(x: number) {
+export function lngFromMercatorX(x: number): number {
     return x * 360 - 180;
 }
 
-export function latFromMercatorY(y: number) {
+export function latFromMercatorY(y: number): number {
     const y2 = 180 - y * 360;
     return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
 }
 
-export function altitudeFromMercatorZ(z: number, y: number) {
+export function altitudeFromMercatorZ(z: number, y: number): number {
     return z * circumferenceAtLatitude(latFromMercatorY(y));
 }
 
@@ -52,7 +52,7 @@ export const MAX_MERCATOR_LATITUDE = 85.051129;
  * @returns {number} scale factor
  * @private
  */
-export function mercatorScale(lat: number) {
+export function mercatorScale(lat: number): number {
     return 1 / Math.cos(lat * Math.PI / 180);
 }
 
@@ -99,7 +99,7 @@ class MercatorCoordinate {
      * const coord = mapboxgl.MercatorCoordinate.fromLngLat({lng: 0, lat: 0}, 0);
      * console.log(coord); // MercatorCoordinate(0.5, 0.5, 0)
      */
-    static fromLngLat(lngLatLike: LngLatLike, altitude: number = 0) {
+    static fromLngLat(lngLatLike: LngLatLike, altitude: number = 0): MercatorCoordinate {
         const lngLat = LngLat.convert(lngLatLike);
 
         return new MercatorCoordinate(
@@ -116,7 +116,7 @@ class MercatorCoordinate {
      * const coord = new mapboxgl.MercatorCoordinate(0.5, 0.5, 0);
      * const lngLat = coord.toLngLat(); // LngLat(0, 0)
      */
-    toLngLat() {
+    toLngLat(): LngLat {
         return new LngLat(
                 lngFromMercatorX(this.x),
                 latFromMercatorY(this.y));
@@ -130,7 +130,7 @@ class MercatorCoordinate {
      * const coord = new mapboxgl.MercatorCoordinate(0, 0, 0.02);
      * coord.toAltitude(); // 6914.281956295339
      */
-    toAltitude() {
+    toAltitude(): number {
         return altitudeFromMercatorZ(this.z, this.y);
     }
 
@@ -148,7 +148,7 @@ class MercatorCoordinate {
      * const offsetInMercatorCoordinateUnits = offsetInMeters * coord.meterInMercatorCoordinateUnits();
      * const westCoord = new mapboxgl.MercatorCoordinate(coord.x - offsetInMercatorCoordinateUnits, coord.y, coord.z);
      */
-    meterInMercatorCoordinateUnits() {
+    meterInMercatorCoordinateUnits(): number {
         // 1 meter / circumference at equator in meters * Mercator projection scale factor at this latitude
         return 1 / earthCircumference * mercatorScale(latFromMercatorY(this.y));
     }

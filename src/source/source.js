@@ -4,11 +4,8 @@ import {bindAll} from '../util/util.js';
 
 import type Dispatcher from '../util/dispatcher.js';
 import type {Event, Evented} from '../util/evented.js';
-import type Map from '../ui/map.js';
 import type Tile from './tile.js';
-import type {OverscaledTileID} from './tile_id.js';
 import type {Callback} from '../types/callback.js';
-import {CanonicalTileID} from './tile_id.js';
 
 /**
  * The `Source` interface must be implemented by each source type, including "core" types like `vector`, `raster`,
@@ -41,13 +38,11 @@ export interface Source {
     minzoom: number,
     maxzoom: number,
     tileSize: number,
-    attribution?: string,
+    attribution?: ?string,
 
-    roundZoom?: boolean,
-    isTileClipped?: boolean,
+    isTileClipped?: ?boolean,
     mapbox_logo?: boolean,
-    tileID?: CanonicalTileID;
-    reparseOverscaled?: boolean,
+    reparseOverscaled?: ?boolean,
     vectorLayerIds?: Array<string>,
 
     hasTransition(): boolean;
@@ -56,13 +51,7 @@ export interface Source {
     fire(event: Event): mixed;
     on(type: *, listener: (Object) => any): Evented;
 
-    +onAdd?: (map: Map) => void;
-    +onRemove?: (map: Map) => void;
-
     loadTile(tile: Tile, callback: Callback<void>, tileWorkers?: {[string]: Actor}): void;
-    +hasTile?: (tileID: OverscaledTileID) => boolean;
-    +abortTile?: (tile: Tile, callback: Callback<void>) => void;
-    +unloadTile?: (tile: Tile, callback: Callback<void>) => void;
 
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.
@@ -72,10 +61,7 @@ export interface Source {
      */
     serialize(): Object;
 
-    +prepare?: () => void;
-
     +afterUpdate?: () => void;
-    +_clear?: () => void;
 }
 
 type SourceStatics = {
@@ -118,7 +104,7 @@ const sourceTypes = {
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
-export const create = function(id: string, specification: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+export const create = function(id: string, specification: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented): Source {
     const source = new sourceTypes[specification.type](id, (specification: any), dispatcher, eventedParent);
 
     if (source.id !== id) {
@@ -129,7 +115,7 @@ export const create = function(id: string, specification: SourceSpecification, d
     return source;
 };
 
-export const getType = function (name: string) {
+export const getType = function (name: string): Source {
     return sourceTypes[name];
 };
 

@@ -28,6 +28,7 @@ import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/ty
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
 import type {FeatureIndex as FeatureIndexStruct} from './array_types.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
+import type {VectorTileLayer, VectorTileFeature} from '@mapbox/vector-tile';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array,
@@ -47,6 +48,14 @@ type FeatureIndices = {
     featureIndex: number,
     layoutVertexArrayOffset: number
 } | FeatureIndexStruct;
+
+type MatchingFeature = {
+    featureIndex: number,
+    feature: GeoJSONFeature,
+    intersectionZ: boolean | number
+};
+
+type MatchingResult = ?{[layerId: string]: Array<MatchingFeature>};
 
 class FeatureIndex {
     tileID: OverscaledTileID;
@@ -175,7 +184,7 @@ class FeatureIndex {
         styleLayers: {[_: string]: StyleLayer},
         serializedLayers: {[_: string]: Object},
         sourceFeatureState?: SourceFeatureState,
-        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, layoutVertexArrayOffset: number) => boolean | number) {
+        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, layoutVertexArrayOffset: number) => boolean | number): MatchingResult {
 
         const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
         const layerIDs = this.bucketLayerIDs[bucketIndex];
@@ -244,7 +253,7 @@ class FeatureIndex {
                          filterSpec: FilterSpecification,
                          filterLayerIDs: Array<string>,
                          availableImages: Array<string>,
-                         styleLayers: {[_: string]: StyleLayer}) {
+                         styleLayers: {[_: string]: StyleLayer}): MatchingResult {
         const result = {};
         this.loadVTLayers();
 
@@ -286,7 +295,7 @@ class FeatureIndex {
         return feature;
     }
 
-    hasLayer(id: string) {
+    hasLayer(id: string): boolean {
         for (const layerIDs of this.bucketLayerIDs) {
             for (const layerID of layerIDs) {
                 if (id === layerID) return true;

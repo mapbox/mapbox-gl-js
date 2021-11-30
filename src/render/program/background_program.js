@@ -16,8 +16,8 @@ import type Context from '../../gl/context.js';
 import type Color from '../../style-spec/util/color.js';
 import type {CrossFaded} from '../../style/properties.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
-import type {OverscaledTileID} from '../../source/tile_id.js';
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
+import type Tile from '../../source/tile.js';
 
 export type BackgroundUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -85,7 +85,7 @@ const backgroundPatternUniformValues = (
     opacity: number,
     painter: Painter,
     image: CrossFaded<ResolvedImage>,
-    tile: {tileID: OverscaledTileID, tileSize: number},
+    tile: Tile,
     crossfade: CrossfadeParameters
 ): UniformValues<BackgroundPatternUniformsType> => extend(
     bgPatternUniformValues(image, crossfade, painter, tile),

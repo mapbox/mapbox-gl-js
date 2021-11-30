@@ -13,7 +13,6 @@ import browser from '../util/browser.js';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 
 import type {Source} from './source.js';
-import type {OverscaledTileID} from './tile_id.js';
 import type Map from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type Tile from './tile.js';
@@ -101,12 +100,8 @@ class RasterTileSource extends Evented implements Source {
         }
     }
 
-    serialize() {
+    serialize(): Object {
         return extend({}, this._options);
-    }
-
-    hasTile(tileID: OverscaledTileID) {
-        return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
@@ -160,7 +155,7 @@ class RasterTileSource extends Evented implements Source {
         callback();
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return false;
     }
 }

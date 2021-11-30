@@ -32,6 +32,7 @@ import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
+import type {VectorTileLayer} from '@mapbox/vector-tile';
 
 class FillBucket implements Bucket {
     index: number;
@@ -140,7 +141,7 @@ class FillBucket implements Bucket {
         }
     }
 
-    isEmpty() {
+    isEmpty(): boolean {
         return this.layoutVertexArray.length === 0;
     }
 

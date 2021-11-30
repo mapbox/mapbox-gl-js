@@ -1,3 +1,4 @@
+// @flow strict
 declare module "potpack" {
     declare type Bin = {
         x: number,

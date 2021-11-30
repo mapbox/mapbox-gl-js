@@ -7,7 +7,7 @@ import type Context from '../gl/context.js';
 
 class IndexBuffer {
     context: Context;
-    buffer: WebGLBuffer;
+    buffer: ?WebGLBuffer;
     dynamicDraw: boolean;
 
     constructor(context: Context, array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean) {

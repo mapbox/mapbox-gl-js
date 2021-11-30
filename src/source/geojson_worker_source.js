@@ -11,6 +11,7 @@ import geojsonvt from 'geojson-vt';
 import assert from 'assert';
 import VectorTileWorkerSource from './vector_tile_worker_source.js';
 import {createExpression} from '../style-spec/expression/index.js';
+import EvaluationParameters from '../style/evaluation_parameters.js';
 
 import type {
     RequestedTileParameters,
@@ -139,7 +140,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                         if (compiled.result === 'error')
                             throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
 
-                        const features = data.features.filter(feature => compiled.value.evaluate({zoom: 0}, feature));
+                        const features = data.features.filter(feature => compiled.value.evaluate(new EvaluationParameters(0), feature));
                         data = {type: 'FeatureCollection', features};
                     }
 
@@ -182,9 +183,9 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             uid = params.uid;
 
         if (loaded && loaded[uid]) {
-            return super.reloadTile(params, callback);
+            super.reloadTile(params, callback);
         } else {
-            return this.loadTile(params, callback);
+            this.loadTile(params, callback);
         }
     }
 
@@ -209,12 +210,12 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             getJSON(params.request, callback);
         } else if (typeof params.data === 'string') {
             try {
-                return callback(null, JSON.parse(params.data));
+                callback(null, JSON.parse(params.data));
             } catch (e) {
-                return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
+                callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
             }
         } else {
-            return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
+            callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
         }
     }
 

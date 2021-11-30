@@ -60,7 +60,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundTiles ? backgroundTiles[tileID.key] : new Tile(tileID, tileSize, transform.zoom, painter);
 
         const uniformValues = image ?
-            backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}, crossfade) :
+            backgroundPatternUniformValues(matrix, opacity, painter, image, tile, crossfade) :
             backgroundUniformValues(matrix, opacity, color);
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);

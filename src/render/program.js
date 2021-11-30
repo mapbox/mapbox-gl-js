@@ -15,8 +15,9 @@ import Context from '../gl/context.js';
 import {terrainUniforms} from '../terrain/terrain.js';
 import type {TerrainUniformsType} from '../terrain/terrain.js';
 import {fogUniforms} from './fog.js';
-import type {FogUniformsType} from './fog.js';
+import EvaluationParameters from '../style/evaluation_parameters.js';
 
+import type {FogUniformsType} from './fog.js';
 import type SegmentVector from '../data/segment.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type IndexBuffer from '../gl/index_buffer.js';
@@ -43,7 +44,7 @@ function getTokenizedAttributesAndUniforms (array: Array<string>): Array<string>
     return result;
 }
 class Program<Us: UniformBindings> {
-    program: WebGLProgram;
+    program: ?WebGLProgram;
     attributes: {[_: string]: number};
     numAttributes: number;
     fixedUniforms: Us;
@@ -67,7 +68,7 @@ class Program<Us: UniformBindings> {
                 fixedUniforms: (Context, UniformLocations) => Us,
                 fixedDefines: string[]) {
         const gl = context.gl;
-        this.program = gl.createProgram();
+        const program = this.program = gl.createProgram();
 
         const staticAttrInfo = getTokenizedAttributesAndUniforms(source.staticAttributes);
         const dynamicAttrInfo = configuration ? configuration.getBinderAttributes() : [];
@@ -99,24 +100,24 @@ class Program<Us: UniformBindings> {
             preludeTerrain.vertexSource,
             source.vertexSource).join('\n');
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        if (gl.isContextLost()) {
+        if (!program || !fragmentShader || gl.isContextLost()) {
             this.failedToCreate = true;
             return;
         }
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
         assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
-        gl.attachShader(this.program, fragmentShader);
+        gl.attachShader(program, fragmentShader);
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-        if (gl.isContextLost()) {
+        if (!vertexShader || gl.isContextLost()) {
             this.failedToCreate = true;
             return;
         }
         gl.shaderSource(vertexShader, vertexSource);
         gl.compileShader(vertexShader);
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
-        gl.attachShader(this.program, vertexShader);
+        gl.attachShader(program, vertexShader);
 
         this.attributes = {};
         const uniformLocations = {};
@@ -125,13 +126,13 @@ class Program<Us: UniformBindings> {
 
         for (let i = 0; i < this.numAttributes; i++) {
             if (allAttrInfo[i]) {
-                gl.bindAttribLocation(this.program, i, allAttrInfo[i]);
+                gl.bindAttribLocation(program, i, allAttrInfo[i]);
                 this.attributes[allAttrInfo[i]] = i;
             }
         }
 
-        gl.linkProgram(this.program);
-        assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), (gl.getProgramInfoLog(this.program): any));
+        gl.linkProgram(program);
+        assert(gl.getProgramParameter(program, gl.LINK_STATUS), (gl.getProgramInfoLog(program): any));
 
         gl.deleteShader(vertexShader);
         gl.deleteShader(fragmentShader);
@@ -139,7 +140,7 @@ class Program<Us: UniformBindings> {
         for (let it = 0; it < allUniformsInfo.length; it++) {
             const uniform = allUniformsInfo[it];
             if (uniform && !uniformLocations[uniform]) {
-                const uniformLocation = gl.getUniformLocation(this.program, uniform);
+                const uniformLocation = gl.getUniformLocation(program, uniform);
                 if (uniformLocation) {
                     uniformLocations[uniform] = uniformLocation;
                 }
@@ -215,7 +216,7 @@ class Program<Us: UniformBindings> {
         }
 
         if (configuration) {
-            configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
+            configuration.setUniforms(context, this.binderUniforms, currentProperties, new EvaluationParameters(zoom || 0));
         }
 
         const primitiveSize = {

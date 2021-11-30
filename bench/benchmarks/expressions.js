@@ -6,6 +6,7 @@ import spec from '../../src/style-spec/reference/latest.js';
 import convertFunction from '../../src/style-spec/function/convert.js';
 import {isFunction, createFunction} from '../../src/style-spec/function/index.js';
 import {createPropertyExpression} from '../../src/style-spec/expression/index.js';
+import EvaluationParameters from '../../src/style/evaluation_parameters.js';
 import fetchStyle from '../lib/fetch_style.js';
 
 import type {StyleSpecification} from '../../src/style-spec/types.js';
@@ -27,7 +28,7 @@ class ExpressionBenchmark extends Benchmark {
         this.style = style;
     }
 
-    setup() {
+    setup(): Promise<void> {
         return fetchStyle(this.style)
             .then(json => {
                 this.data = [];
@@ -82,7 +83,7 @@ export class FunctionCreate extends ExpressionBenchmark {
 export class FunctionEvaluate extends ExpressionBenchmark {
     bench() {
         for (const {compiledFunction} of this.data) {
-            compiledFunction.evaluate({zoom: 0});
+            compiledFunction.evaluate(new EvaluationParameters(0));
         }
     }
 }
@@ -98,7 +99,7 @@ export class ExpressionCreate extends ExpressionBenchmark {
 export class ExpressionEvaluate extends ExpressionBenchmark {
     bench() {
         for (const {compiledExpression} of this.data) {
-            compiledExpression.evaluate({zoom: 0});
+            compiledExpression.evaluate(new EvaluationParameters(0));
         }
     }
 }

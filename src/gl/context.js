@@ -191,15 +191,15 @@ class Context {
         this.pixelStoreUnpackFlipY.dirty = true;
     }
 
-    createIndexBuffer(array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean) {
+    createIndexBuffer(array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean): IndexBuffer {
         return new IndexBuffer(this, array, dynamicDraw);
     }
 
-    createVertexBuffer(array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean) {
+    createVertexBuffer(array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean): VertexBuffer {
         return new VertexBuffer(this, array, attributes, dynamicDraw);
     }
 
-    createRenderbuffer(storageFormat: number, width: number, height: number) {
+    createRenderbuffer(storageFormat: number, width: number, height: number): ?WebGLRenderbuffer {
         const gl = this.gl;
 
         const rbo = gl.createRenderbuffer();
@@ -210,7 +210,7 @@ class Context {
         return rbo;
     }
 
-    createFramebuffer(width: number, height: number, hasDepth: boolean) {
+    createFramebuffer(width: number, height: number, hasDepth: boolean): Framebuffer {
         return new Framebuffer(this, width, height, hasDepth);
     }
 

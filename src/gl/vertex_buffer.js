@@ -36,7 +36,7 @@ class VertexBuffer {
     itemSize: number;
     dynamicDraw: ?boolean;
     context: Context;
-    buffer: WebGLBuffer;
+    buffer: ?WebGLBuffer;
 
     /**
      * @param dynamicDraw Whether this buffer will be repeatedly updated.

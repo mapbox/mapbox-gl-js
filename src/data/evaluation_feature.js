@@ -2,9 +2,12 @@
 
 import loadGeometry from './load_geometry.js';
 
+import type Point from '@mapbox/point-geometry';
+import type {VectorTileFeature} from '@mapbox/vector-tile';
+
 type EvaluationFeature = {
-    +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
-    +id?: any,
+    +type: 1 | 2 | 3,
+    +id?: number,
     +properties: {[_: string]: any},
     +patterns?: {[_: string]: {"min": string, "mid": string, "max": string}},
     geometry: Array<Array<Point>>

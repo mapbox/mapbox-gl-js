@@ -1,30 +1,31 @@
-import type Pbf from 'pbf';
-import type Point from '@mapbox/point-geometry';
-import type { GeoJSONFeature } from '@mapbox/geojson-types';
-
-declare interface VectorTile {
-    layers: {[_: string]: VectorTileLayer};
-}
-
-declare interface VectorTileLayer {
-    version?: number;
-    name: string;
-    extent: number;
-    length: number;
-    feature(i: number): VectorTileFeature;
-}
-
-declare interface VectorTileFeature {
-    extent: number;
-    type: 1 | 2 | 3;
-    id: number;
-    properties: {[_: string]: string | number | boolean};
-
-    loadGeometry(): Array<Array<Point>>;
-    toGeoJSON(x: number, y: number, z: number): GeoJSONFeature;
-}
-
+// @flow strict
 declare module "@mapbox/vector-tile" {
+    import type Point from '@mapbox/point-geometry';
+    import type Pbf from 'pbf';
+    import type { GeoJSONFeature } from '@mapbox/geojson-types';
+
+    declare interface VectorTile {
+        layers: {[_: string]: VectorTileLayer};
+    }
+
+    declare interface VectorTileLayer {
+        version?: number;
+        name: string;
+        extent: number;
+        length: number;
+        feature(i: number): VectorTileFeature;
+    }
+
+    declare interface VectorTileFeature {
+        extent: number;
+        type: 1 | 2 | 3;
+        id?: number;
+        properties: {[_: string]: string | number | boolean};
+
+        loadGeometry(): Array<Array<Point>>;
+        toGeoJSON(x: number, y: number, z: number): GeoJSONFeature;
+    }
+
     declare class VectorTileImpl {
         constructor(pbf: Pbf): VectorTile;
     }

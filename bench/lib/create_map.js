@@ -28,8 +28,8 @@ export default function (options: any): Promise<Map> {
         map
             .on(options.idle ? 'idle' : 'load', () => {
                 if (options.stubRender) {
-                    // Stub out `_rerender`; benchmarks need to be the only trigger of `_render` from here on out.
-                    map._rerender = () => {};
+                    // Stub out `triggerRepaint`; benchmarks need to be the only trigger of `_render` from here on out.
+                    (map: any).triggerRepaint = () => {};
 
                     // If there's a pending rerender, cancel it.
                     if (map._frame) {

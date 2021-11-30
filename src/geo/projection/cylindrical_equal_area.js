@@ -2,8 +2,9 @@
 import LngLat from '../lng_lat.js';
 import {clamp, degToRad, radToDeg} from '../../util/util.js';
 import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
+import type {Projection} from './index.js';
 
-export default function(phi: number) {
+export default function(phi: number): $Shape<Projection> {
     const cosPhi = Math.max(0.01, Math.cos(degToRad(phi)));
     // scale coordinates between 0 and 1 to avoid constraint issues
     const scale = 1 / (2 * Math.max(Math.PI * cosPhi, 1 / cosPhi));

@@ -18,7 +18,7 @@ class Uniform<T> {
         this.location = location;
     }
 
-    +set: (v: T) => void;
+    set(_: T) {}
 }
 
 class Uniform1i extends Uniform<number> {
@@ -27,7 +27,7 @@ class Uniform1i extends Uniform<number> {
         this.current = 0;
     }
 
-    set(v: number): void {
+    set(v: number) {
         if (this.current !== v) {
             this.current = v;
             this.gl.uniform1i(this.location, v);

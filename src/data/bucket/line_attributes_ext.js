@@ -1,7 +1,9 @@
 // @flow
 import {createLayout} from '../../util/struct_array.js';
 
-const lineLayoutAttributesExt = createLayout([
+import type {StructArrayLayout} from '../../util/struct_array.js';
+
+const lineLayoutAttributesExt: StructArrayLayout = createLayout([
     {name: 'a_packed', components: 3, type: 'Float32'}
 ]);
 

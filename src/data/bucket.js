@@ -10,6 +10,8 @@ import type {ImagePosition} from '../render/image_atlas.js';
 import type LineAtlas from '../render/line_atlas.js';
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
+import type Point from '@mapbox/point-geometry';
+import type {VectorTileFeature, VectorTileLayer} from '@mapbox/vector-tile';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
@@ -34,7 +36,7 @@ export type PopulateParameters = {
 
 export type IndexedFeature = {
     feature: VectorTileFeature,
-    id: number | string,
+    id: number,
     index: number,
     sourceLayerIndex: number,
 }

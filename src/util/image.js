@@ -4,10 +4,10 @@ import assert from 'assert';
 
 import {register} from './web_worker_transfer.js';
 
-export type Size = {
+export interface Size {
     width: number,
     height: number
-};
+}
 
 type Point = {
     x: number,

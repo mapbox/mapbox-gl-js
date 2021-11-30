@@ -12,6 +12,10 @@ export type CrossfadeParameters = {
     t: number
 };
 
+function isSupportedScript(str: string): boolean {
+    return isStringInSupportedScript(str, rtlTextPlugin.isLoaded());
+}
+
 class EvaluationParameters {
     zoom: number;
     pitch: number;
@@ -19,6 +23,7 @@ class EvaluationParameters {
     fadeDuration: number;
     zoomHistory: ZoomHistory;
     transition: TransitionSpecification;
+    isSupportedScript: (string) => boolean;
 
     // "options" may also be another EvaluationParameters to copy, see CrossFadedProperty.possiblyEvaluate
     constructor(zoom: number, options?: *) {
@@ -37,10 +42,8 @@ class EvaluationParameters {
             this.transition = {};
             this.pitch = 0;
         }
-    }
 
-    isSupportedScript(str: string): boolean {
-        return isStringInSupportedScript(str, rtlTextPlugin.isLoaded());
+        this.isSupportedScript = isSupportedScript;
     }
 
     crossFadingFactor() {

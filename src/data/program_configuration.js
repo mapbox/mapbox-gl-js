@@ -26,8 +26,8 @@ import type {CrossfadeParameters} from '../style/evaluation_parameters.js';
 import type {StructArray, StructArrayMember} from '../util/struct_array.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type {ImagePosition} from '../render/image_atlas.js';
+import type {SpritePosition} from '../render/line_atlas.js';
 import type {
-    Feature,
     FeatureState,
     GlobalProperties,
     SourceExpression,
@@ -36,6 +36,8 @@ import type {
 import type {PossiblyEvaluated} from '../style/properties.js';
 import type {FeatureStates} from '../source/source_state.js';
 import type {FormattedSection} from '../style-spec/expression/types/formatted.js';
+import type {VectorTileLayer} from '@mapbox/vector-tile';
+
 import assert from 'assert';
 
 export type BinderUniform = {
@@ -79,9 +81,16 @@ function packColor(color: Color): [number, number] {
  * @private
  */
 
+interface EvaluatedFeature {
+    type: 1 | 2 | 3;
+    id?: number;
+    properties: {[_: string]: any},
+    +patterns?: {[_: string]: {"min": string, "mid": string, "max": string}},
+}
+
 interface AttributeBinder {
-    populatePaintArray(length: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection): void;
-    updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}): void;
+    populatePaintArray(length: number, feature: EvaluatedFeature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection): void;
+    updatePaintArray(start: number, length: number, feature: EvaluatedFeature, featureState: FeatureState, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}): void;
     upload(Context): void;
     destroy(): void;
 }
@@ -89,7 +98,7 @@ interface AttributeBinder {
 interface UniformBinder {
     uniformNames: Array<string>;
     setUniform(uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<*>, uniformName: string): void;
-    getBinding(context: Context, location: WebGLUniformLocation, name: string): $Shape<Uniform<*>>;
+    getBinding(context: Context, location: WebGLUniformLocation, name: string): Uniform<*>;
 }
 
 class ConstantBinder implements UniformBinder {
@@ -107,7 +116,7 @@ class ConstantBinder implements UniformBinder {
         uniform.set(currentValue.constantOr(this.value));
     }
 
-    getBinding(context: Context, location: WebGLUniformLocation, _: string): $Shape<Uniform<any>> {
+    getBinding(context: Context, location: WebGLUniformLocation, _: string): Uniform<*> {
         return (this.type === 'color') ?
             new UniformColor(context, location) :
             new Uniform1f(context, location);
@@ -129,7 +138,7 @@ class CrossFadedConstantBinder implements UniformBinder {
         this.pixelRatioTo = 1.0;
     }
 
-    setConstantPatternPositions(posTo: ImagePosition, posFrom: ImagePosition) {
+    setConstantPatternPositions(posTo: SpritePosition, posFrom: SpritePosition) {
         this.pixelRatioFrom = posFrom.pixelRatio;
         this.pixelRatioTo = posTo.pixelRatio;
         this.patternFrom = posFrom.tl.concat(posFrom.br);
@@ -145,7 +154,7 @@ class CrossFadedConstantBinder implements UniformBinder {
         if (pos) uniform.set(pos);
     }
 
-    getBinding(context: Context, location: WebGLUniformLocation, name: string): $Shape<Uniform<any>> {
+    getBinding(context: Context, location: WebGLUniformLocation, name: string): Uniform<*> {
         return name === 'u_pattern_from' || name === 'u_pattern_to' || name === 'u_dash_from' || name === 'u_dash_to' ?
             new Uniform4f(context, location) :
             new Uniform1f(context, location);
@@ -174,7 +183,7 @@ class SourceExpressionBinder implements AttributeBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
+    populatePaintArray(newLength: number, feature: EvaluatedFeature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
         const start = this.paintVertexArray.length;
         assert(Array.isArray(availableImages));
         const value = this.expression.evaluate(new EvaluationParameters(0), feature, {}, canonical, availableImages, formattedSection);
@@ -182,8 +191,8 @@ class SourceExpressionBinder implements AttributeBinder {
         this._setPaintValue(start, newLength, value);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>) {
-        const value = this.expression.evaluate({zoom: 0}, feature, featureState, undefined, availableImages);
+    updatePaintArray(start: number, end: number, feature: EvaluatedFeature, featureState: FeatureState, availableImages: Array<string>) {
+        const value = this.expression.evaluate(new EvaluationParameters(0), feature, featureState, undefined, availableImages);
         this._setPaintValue(start, end, value);
     }
 
@@ -246,7 +255,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
+    populatePaintArray(newLength: number, feature: EvaluatedFeature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
         const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, canonical, availableImages, formattedSection);
         const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, canonical, availableImages, formattedSection);
         const start = this.paintVertexArray.length;
@@ -254,9 +263,9 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this._setPaintValue(start, newLength, min, max);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>) {
-        const min = this.expression.evaluate({zoom: this.zoom}, feature, featureState, undefined, availableImages);
-        const max = this.expression.evaluate({zoom: this.zoom + 1}, feature, featureState, undefined, availableImages);
+    updatePaintArray(start: number, end: number, feature: EvaluatedFeature, featureState: FeatureState, availableImages: Array<string>) {
+        const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, featureState, undefined, availableImages);
+        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, featureState, undefined, availableImages);
         this._setPaintValue(start, end, min, max);
     }
 
@@ -331,14 +340,14 @@ class CrossFadedCompositeBinder implements AttributeBinder {
         this.zoomOutPaintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(length: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}) {
+    populatePaintArray(length: number, feature: EvaluatedFeature, imagePositions: {[_: string]: ImagePosition}) {
         const start = this.zoomInPaintVertexArray.length;
         this.zoomInPaintVertexArray.resize(length);
         this.zoomOutPaintVertexArray.resize(length);
         this._setPaintValues(start, length, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
+    updatePaintArray(start: number, end: number, feature: EvaluatedFeature, featureState: FeatureState, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
         this._setPaintValues(start, end, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
@@ -456,14 +465,14 @@ export default class ProgramConfiguration {
         return binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ? binder.maxValue : 0;
     }
 
-    populatePaintArrays(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
+    populatePaintArrays(newLength: number, feature: EvaluatedFeature, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof CrossFadedCompositeBinder)
                 (binder: AttributeBinder).populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, formattedSection);
         }
     }
-    setConstantPatternPositions(posTo: ImagePosition, posFrom: ImagePosition) {
+    setConstantPatternPositions(posTo: SpritePosition, posFrom: SpritePosition) {
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof CrossFadedConstantBinder)
@@ -609,7 +618,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         this._bufferOffset = 0;
     }
 
-    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical: CanonicalTileID, formattedSection?: FormattedSection) {
+    populatePaintArrays(length: number, feature: EvaluatedFeature, index: number, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>, canonical: CanonicalTileID, formattedSection?: FormattedSection) {
         for (const key in this.programConfigurations) {
             this.programConfigurations[key].populatePaintArrays(length, feature, imagePositions, availableImages, canonical, formattedSection);
         }
@@ -628,7 +637,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         }
     }
 
-    get(layerId: string) {
+    get(layerId: string): ProgramConfiguration {
         return this.programConfigurations[layerId];
     }
 

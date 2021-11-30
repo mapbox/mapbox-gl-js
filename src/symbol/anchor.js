@@ -4,10 +4,10 @@ import Point from '@mapbox/point-geometry';
 
 import {register} from '../util/web_worker_transfer.js';
 
-class Anchor extends Point {
-    angle: any;
+export default class Anchor extends Point {
+    angle: number;
     z: number;
-    segment: number | void;
+    segment: number | undefined;
 
     constructor(x: number, y: number, z: number, angle: number, segment?: number) {
         super(x, y);
@@ -18,11 +18,9 @@ class Anchor extends Point {
         }
     }
 
-    clone() {
+    clone(): Anchor {
         return new Anchor(this.x, this.y, this.z, this.angle, this.segment);
     }
 }
 
 register('Anchor', Anchor);
-
-export default Anchor;

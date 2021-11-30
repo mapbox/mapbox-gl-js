@@ -29,6 +29,7 @@ import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
+import type {VectorTileLayer} from '@mapbox/vector-tile';
 
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(
@@ -134,11 +135,11 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions);
     }
 
-    isEmpty() {
+    isEmpty(): boolean {
         return this.layoutVertexArray.length === 0;
     }
 
-    uploadPending() {
+    uploadPending(): boolean {
         return !this.uploaded || this.programConfigurations.needsUpload;
     }
 

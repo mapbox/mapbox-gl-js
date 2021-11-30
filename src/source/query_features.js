@@ -7,13 +7,15 @@ import type Transform from '../geo/transform.js';
 import type {RetainedQueryData} from '../symbol/placement.js';
 import type {FilterSpecification} from '../style-spec/types.js';
 import type {QueryGeometry} from '../style/query_geometry.js';
+import type Point from '@mapbox/point-geometry';
+
 import assert from 'assert';
 import {mat4} from 'gl-matrix';
 
 /*
  * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
  */
-function getPixelPosMatrix(transform, tileID) {
+function getPixelPosMatrix(transform, tileID): Float32Array {
     const t = mat4.identity([]);
     mat4.scale(t, t, [transform.width * 0.5, -transform.height * 0.5, 1]);
     mat4.translate(t, t, [1, -1, 0]);

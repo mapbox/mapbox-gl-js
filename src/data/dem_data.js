@@ -23,6 +23,18 @@ const unpackVectors = {
     terrarium: [256.0, 1.0, 1.0 / 256.0, 32768.0]
 };
 
+function unpackMapbox(r: number, g: number, b: number): number {
+    // unpacking formula for mapbox.terrain-rgb:
+    // https://www.mapbox.com/help/access-elevation-data/#mapbox-terrain-rgb
+    return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
+}
+
+function unpackTerrarium(r: number, g: number, b: number): number {
+    // unpacking formula for mapzen terrarium:
+    // https://aws.amazon.com/public-datasets/terrain/
+    return ((r * 256 + g + b / 256) - 32768.0);
+}
+
 export default class DEMData {
     uid: number;
     data: Uint32Array;
@@ -79,14 +91,14 @@ export default class DEMData {
         this._tree = new DemMinMaxQuadTree(this);
     }
 
-    get(x: number, y: number, clampToEdge: boolean = false) {
+    get(x: number, y: number, clampToEdge: boolean = false): number {
         const pixels = new Uint8Array(this.data.buffer);
         if (clampToEdge) {
             x = clamp(x, -1, this.dim);
             y = clamp(y, -1, this.dim);
         }
         const index = this._idx(x, y) * 4;
-        const unpack = this.encoding === "terrarium" ? this._unpackTerrarium : this._unpackMapbox;
+        const unpack = this.encoding === "terrarium" ? unpackTerrarium : unpackMapbox;
         return unpack(pixels[index], pixels[index + 1], pixels[index + 2]);
     }
 
@@ -98,21 +110,9 @@ export default class DEMData {
         return unpackVectors[this.encoding];
     }
 
-    _idx(x: number, y: number) {
+    _idx(x: number, y: number): number {
         if (x < -1 || x >= this.dim + 1 ||  y < -1 || y >= this.dim + 1) throw new RangeError('out of range source coordinates for DEM data');
         return (y + 1) * this.stride + (x + 1);
-    }
-
-    _unpackMapbox(r: number, g: number, b: number) {
-        // unpacking formula for mapbox.terrain-rgb:
-        // https://www.mapbox.com/help/access-elevation-data/#mapbox-terrain-rgb
-        return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
-    }
-
-    _unpackTerrarium(r: number, g: number, b: number) {
-        // unpacking formula for mapzen terrarium:
-        // https://aws.amazon.com/public-datasets/terrain/
-        return ((r * 256 + g + b / 256) - 32768.0);
     }
 
     static pack(altitude: number, encoding: DEMEncoding): [number, number, number, number] {
@@ -127,7 +127,7 @@ export default class DEMData {
         return color;
     }
 
-    getPixels() {
+    getPixels(): RGBAImage {
         return new RGBAImage({width: this.stride, height: this.stride}, new Uint8Array(this.data.buffer));
     }
 

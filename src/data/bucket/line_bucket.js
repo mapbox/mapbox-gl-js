@@ -36,6 +36,7 @@ import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
 import type LineAtlas from '../../render/line_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
+import type {VectorTileLayer} from '@mapbox/vector-tile';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -196,7 +197,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    addConstantDashes(lineAtlas: LineAtlas) {
+    addConstantDashes(lineAtlas: LineAtlas): boolean {
         let hasFeatureDashes = false;
 
         for (const layer of this.layers) {
@@ -239,18 +240,18 @@ class LineBucket implements Bucket {
                 maxDashArray = constDash.from;
 
             } else {
-                minDashArray = dashPropertyValue.evaluate({zoom: zoom - 1}, feature);
-                midDashArray = dashPropertyValue.evaluate({zoom}, feature);
-                maxDashArray = dashPropertyValue.evaluate({zoom: zoom + 1}, feature);
+                minDashArray = dashPropertyValue.evaluate(new EvaluationParameters(zoom - 1), feature);
+                midDashArray = dashPropertyValue.evaluate(new EvaluationParameters(zoom), feature);
+                maxDashArray = dashPropertyValue.evaluate(new EvaluationParameters(zoom + 1), feature);
             }
 
             if (capPropertyValue.kind === 'constant') {
                 minCap = midCap = maxCap = capPropertyValue.value;
 
             } else {
-                minCap = capPropertyValue.evaluate({zoom: zoom - 1}, feature);
-                midCap = capPropertyValue.evaluate({zoom}, feature);
-                maxCap = capPropertyValue.evaluate({zoom: zoom + 1}, feature);
+                minCap = capPropertyValue.evaluate(new EvaluationParameters(zoom - 1), feature);
+                midCap = capPropertyValue.evaluate(new EvaluationParameters(zoom), feature);
+                maxCap = capPropertyValue.evaluate(new EvaluationParameters(zoom + 1), feature);
             }
 
             lineAtlas.addDash(minDashArray, minCap);
@@ -278,11 +279,11 @@ class LineBucket implements Bucket {
         }
     }
 
-    isEmpty() {
+    isEmpty(): boolean {
         return this.layoutVertexArray.length === 0;
     }
 
-    uploadPending() {
+    uploadPending(): boolean {
         return !this.uploaded || this.programConfigurations.needsUpload;
     }
 

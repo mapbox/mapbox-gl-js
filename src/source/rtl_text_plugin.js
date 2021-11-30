@@ -15,8 +15,10 @@ const status = {
     error: 'error'
 };
 
+type Status = $Values<typeof status>;
+
 export type PluginState = {
-    pluginStatus: $Values<typeof status>;
+    pluginStatus: Status;
     pluginURL: ?string
 };
 
@@ -42,13 +44,13 @@ function sendPluginStateToWorker() {
     evented.fire(new Event('pluginStateChange', {pluginStatus, pluginURL}));
 }
 
-export const evented = new Evented();
+export const evented: Evented = new Evented();
 
-export const getRTLTextPluginStatus = function () {
+export const getRTLTextPluginStatus = function (): Status {
     return pluginStatus;
 };
 
-export const registerForPluginStateChange = function(callback: PluginStateSyncCallback) {
+export const registerForPluginStateChange = function(callback: PluginStateSyncCallback): PluginStateSyncCallback {
     // Do an initial sync of the state
     callback({pluginStatus, pluginURL});
     // Listen for all future state changes

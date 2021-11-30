@@ -321,7 +321,7 @@ export class FrontFace extends BaseValue<FrontFaceType> {
 }
 
 export class Program extends BaseValue<?WebGLProgram> {
-    getDefault(): WebGLProgram {
+    getDefault(): ?WebGLProgram {
         return null;
     }
     set(v: ?WebGLProgram) {
@@ -359,7 +359,7 @@ export class Viewport extends BaseValue<ViewportType> {
 }
 
 export class BindFramebuffer extends BaseValue<?WebGLFramebuffer> {
-    getDefault(): WebGLFramebuffer {
+    getDefault(): ?WebGLFramebuffer {
         return null;
     }
     set(v: ?WebGLFramebuffer) {
@@ -372,7 +372,7 @@ export class BindFramebuffer extends BaseValue<?WebGLFramebuffer> {
 }
 
 export class BindRenderbuffer extends BaseValue<?WebGLRenderbuffer> {
-    getDefault(): WebGLRenderbuffer {
+    getDefault(): ?WebGLRenderbuffer {
         return null;
     }
     set(v: ?WebGLRenderbuffer) {
@@ -385,7 +385,7 @@ export class BindRenderbuffer extends BaseValue<?WebGLRenderbuffer> {
 }
 
 export class BindTexture extends BaseValue<?WebGLTexture> {
-    getDefault(): WebGLTexture {
+    getDefault(): ?WebGLTexture {
         return null;
     }
     set(v: ?WebGLTexture) {
@@ -398,7 +398,7 @@ export class BindTexture extends BaseValue<?WebGLTexture> {
 }
 
 export class BindVertexBuffer extends BaseValue<?WebGLBuffer> {
-    getDefault(): WebGLBuffer {
+    getDefault(): ?WebGLBuffer {
         return null;
     }
     set(v: ?WebGLBuffer) {
@@ -411,7 +411,7 @@ export class BindVertexBuffer extends BaseValue<?WebGLBuffer> {
 }
 
 export class BindElementBuffer extends BaseValue<?WebGLBuffer> {
-    getDefault(): WebGLBuffer {
+    getDefault(): ?WebGLBuffer {
         return null;
     }
     set(v: ?WebGLBuffer) {
@@ -481,15 +481,15 @@ export class PixelStoreUnpackFlipY extends BaseValue<boolean> {
 }
 
 class FramebufferAttachment<T> extends BaseValue<?T> {
-    parent: WebGLFramebuffer;
+    parent: ?WebGLFramebuffer;
     context: Context;
 
-    constructor(context: Context, parent: WebGLFramebuffer) {
+    constructor(context: Context, parent: ?WebGLFramebuffer) {
         super(context);
         this.context = context;
         this.parent = parent;
     }
-    getDefault() {
+    getDefault(): null {
         return null;
     }
 }

@@ -37,6 +37,7 @@ import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
+import type {VectorTileLayer} from '@mapbox/vector-tile';
 
 const FACTOR = Math.pow(2, 13);
 
@@ -266,11 +267,11 @@ class FillExtrusionBucket implements Bucket {
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions);
     }
 
-    isEmpty() {
+    isEmpty(): boolean {
         return this.layoutVertexArray.length === 0;
     }
 
-    uploadPending() {
+    uploadPending(): boolean {
         return !this.uploaded || this.programConfigurations.needsUpload;
     }
 

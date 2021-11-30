@@ -29,9 +29,9 @@ function addResampled(resampled, mx0, my0, mx2, my2, start, end, reproject, tole
 
 // reproject and resample a line, adding point where necessary for lines that become curves;
 // note that this operation is mutable (modifying original points) for performance
-export default function resample(line: Array<Point>, reproject: (Point) => Point, tolerance: number): Array<Point> {
+export default function resample(line: Array<Point>, reproject: (Point) => void, tolerance: number): Array<Point> {
     const resampled = [];
-    let mx0, my0, prev;
+    let mx0 = 0, my0 = 0, prev;
 
     for (const point of line) {
         const {x, y} = point;

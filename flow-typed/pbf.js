@@ -1,3 +1,4 @@
+// @flow strict
 declare module "pbf" {
     declare type ReadFunction<T> = (tag: number, result: T, pbf: Pbf) => void;
 

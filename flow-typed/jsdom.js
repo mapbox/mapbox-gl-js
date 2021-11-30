@@ -1,11 +1,9 @@
 // @flow strict
 
-import type Window from '../src/types/window';
-
 declare module "jsdom" {
     declare class JSDOM {
         constructor(content: string, options: Object): JSDOM;
-        window: Window;
+        window: WindowProxy;
     }
     declare class VirtualConsole {
         constructor(): VirtualConsole;

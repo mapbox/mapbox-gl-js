@@ -75,7 +75,7 @@ import type {DynamicDefinesType} from './program/program_uniforms.js';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky';
 export type CanvasCopyInstances = {
-    canvasCopies: WebGLTexture[],
+    canvasCopies: Array<?WebGLTexture>,
     timeStamps: number[]
 }
 
@@ -92,6 +92,12 @@ type PainterOptions = {
     fadeDuration: number,
     isInitialLoad: boolean,
     speedIndexTiming: boolean
+}
+
+interface TileBoundsBuffers {
+    tileBoundsBuffer: VertexBuffer,
+    tileBoundsIndexBuffer: IndexBuffer,
+    tileBoundsSegments: SegmentVector
 }
 
 /**
@@ -140,12 +146,12 @@ class Painter {
     symbolFadeChange: number;
     gpuTimers: {[_: string]: any };
     emptyTexture: Texture;
-    identityMat: mat4;
+    identityMat: Float32Array;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
     tileLoaded: boolean;
-    frameCopies: Array<WebGLTexture>;
+    frameCopies: Array<?WebGLTexture>;
     loadTimeStamps: Array<number>;
     _backgroundTiles: {[_: number | string]: Tile};
 
@@ -280,7 +286,7 @@ class Painter {
         this.loadTimeStamps.push(window.performance.now());
     }
 
-    getMercatorTileBoundsBuffers() {
+    getMercatorTileBoundsBuffers(): TileBoundsBuffers {
         return {
             tileBoundsBuffer: this.mercatorBoundsBuffer,
             tileBoundsIndexBuffer: this.quadTriangleIndexBuffer,
@@ -288,7 +294,7 @@ class Painter {
         };
     }
 
-    getTileBoundsBuffers(tile: Tile) {
+    getTileBoundsBuffers(tile: Tile): TileBoundsBuffers {
         tile._makeTileBoundsBuffers(this.context, this.transform.projection);
         if (tile._tileBoundsBuffer) {
             const tileBoundsBuffer = tile._tileBoundsBuffer;
@@ -684,13 +690,13 @@ class Painter {
         ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
     }
 
-    collectGpuTimers() {
+    collectGpuTimers(): {[string]: any} {
         const currentLayerTimers = this.gpuTimers;
         this.gpuTimers = {};
         return currentLayerTimers;
     }
 
-    queryGpuTimers(gpuTimers: {[_: string]: any}) {
+    queryGpuTimers(gpuTimers: {[_: string]: any}): {[string]: number} {
         const layers = {};
         for (const layerId in gpuTimers) {
             const gpuTimer = gpuTimers[layerId];
@@ -708,7 +714,7 @@ class Painter {
      * @returns {Float32Array} matrix
      * @private
      */
-    translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean) {
+    translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean): Float32Array {
         if (!translate[0] && !translate[1]) return matrix;
 
         const angle = inViewportPixelUnitsUnits ?
@@ -744,7 +750,7 @@ class Painter {
         }
     }
 
-    getTileTexture(size: number) {
+    getTileTexture(size: number): ?Texture {
         const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
     }
@@ -885,7 +891,7 @@ class Painter {
         this.tileLoaded = false;
     }
 
-    canvasCopy() {
+    canvasCopy(): ?WebGLTexture {
         const gl = this.context.gl;
         const texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -900,7 +906,7 @@ class Painter {
         };
     }
 
-    averageElevationNeedsEasing() {
+    averageElevationNeedsEasing(): boolean {
         if (!this.transform._elevation) return false;
 
         const fog = this.style && this.style.fog;
@@ -912,7 +918,7 @@ class Painter {
         return true;
     }
 
-    getBackgroundTiles() {
+    getBackgroundTiles(): {[number]: Tile} {
         const oldTiles = this._backgroundTiles;
         const newTiles = this._backgroundTiles = {};
 

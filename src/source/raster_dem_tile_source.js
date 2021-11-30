@@ -86,7 +86,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         }
     }
 
-    _getNeighboringTiles(tileID: OverscaledTileID) {
+    _getNeighboringTiles(tileID: OverscaledTileID): {[number]: {backfilled: boolean}} {
         const canonical = tileID.canonical;
         const dim = Math.pow(2, canonical.z);
 

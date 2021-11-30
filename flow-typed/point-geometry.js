@@ -1,3 +1,4 @@
+// @flow strict
 declare module "@mapbox/point-geometry" {
     declare type PointLike = Point | [number, number];
 

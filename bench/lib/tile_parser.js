@@ -42,6 +42,8 @@ function fetchTileJSON(requestManager: RequestManager, sourceURL: string): Promi
         .then(response => response.json());
 }
 
+type TileResult = {tileID: OverscaledTileID, buffer: ArrayBuffer};
+
 export default class TileParser {
     styleJSON: StyleSpecification;
     tileJSON: TileJSON;
@@ -107,13 +109,13 @@ export default class TileParser {
         });
     }
 
-    fetchTile(tileID: OverscaledTileID) {
+    fetchTile(tileID: OverscaledTileID): Promise<TileResult> {
         return fetch(this.style.map._requestManager.normalizeTileURL(tileID.canonical.url(this.tileJSON.tiles)))
             .then(response => response.arrayBuffer())
             .then(buffer => ({tileID, buffer}));
     }
 
-    parseTile(tile: {tileID: OverscaledTileID, buffer: ArrayBuffer}, returnDependencies?: boolean): Promise<?WorkerTileResult> {
+    parseTile(tile: TileResult, returnDependencies?: boolean): Promise<?WorkerTileResult> {
         const workerTile = new WorkerTile({
             tileID: tile.tileID,
             tileZoom: tile.tileID.overscaledZ,

@@ -1,5 +1,5 @@
-// @flow
-'use strict';
+// @flow strict
+
 declare module "@mapbox/mapbox-gl-supported" {
     declare type SupportedOptions = {failIfMajorPerformanceCaveat: boolean};
 

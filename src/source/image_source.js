@@ -106,8 +106,8 @@ class ImageSource extends Evented implements Source {
     texture: Texture | null;
     image: ImageData;
     tileID: CanonicalTileID;
-    _boundsArray: RasterBoundsArray;
-    boundsBuffer: VertexBuffer;
+    _boundsArray: ?RasterBoundsArray;
+    boundsBuffer: ?VertexBuffer;
     boundsSegments: SegmentVector;
     _loaded: boolean;
     perspectiveTransform: [number, number];
@@ -196,7 +196,7 @@ class ImageSource extends Evented implements Source {
      *     ]
      * });
      */
-    updateImage(options: {url: string, coordinates?: Coordinates}) {
+    updateImage(options: {url: string, coordinates?: Coordinates}): this {
         if (!this.image || !options.url) {
             return this;
         }
@@ -245,7 +245,7 @@ class ImageSource extends Evented implements Source {
      *     [-76.5452, 39.1787]
      * ]);
      */
-    setCoordinates(coordinates: Coordinates) {
+    setCoordinates(coordinates: Coordinates): this {
         this.coordinates = coordinates;
         delete this._boundsArray;
 
@@ -254,7 +254,7 @@ class ImageSource extends Evented implements Source {
         // may be outside the tile, because raster tiles aren't clipped when rendering.
 
         // transform the geo coordinates into (zoom 0) tile space coordinates
-        const cornerCoords = coordinates.map(MercatorCoordinate.fromLngLat);
+        const cornerCoords = coordinates.map(c => MercatorCoordinate.fromLngLat(c));
 
         // Compute the coordinates of the tile we'll use to hold this image's
         // render data
@@ -273,7 +273,7 @@ class ImageSource extends Evented implements Source {
         delete this._boundsArray;
     }
 
-    _makeBoundsArray() {
+    _makeBoundsArray(): this {
         const tileTr = tileTransform(this.tileID, this.map.transform.projection);
 
         // Transform the corner coordinates into the coordinate space of our tile.
@@ -285,11 +285,11 @@ class ImageSource extends Evented implements Source {
         this.perspectiveTransform = getPerspectiveTransform(
             this.width, this.height, tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y);
 
-        this._boundsArray = new RasterBoundsArray();
-        this._boundsArray.emplaceBack(tl.x, tl.y, 0, 0);
-        this._boundsArray.emplaceBack(tr.x, tr.y, EXTENT, 0);
-        this._boundsArray.emplaceBack(bl.x, bl.y, 0, EXTENT);
-        this._boundsArray.emplaceBack(br.x, br.y, EXTENT, EXTENT);
+        const array = this._boundsArray = new RasterBoundsArray();
+        array.emplaceBack(tl.x, tl.y, 0, 0);
+        array.emplaceBack(tr.x, tr.y, EXTENT, 0);
+        array.emplaceBack(bl.x, bl.y, 0, EXTENT);
+        array.emplaceBack(br.x, br.y, EXTENT, EXTENT);
 
         if (this.boundsBuffer) {
             this.boundsBuffer.destroy();
@@ -311,7 +311,7 @@ class ImageSource extends Evented implements Source {
             this._makeBoundsArray();
         }
 
-        if (!this.boundsBuffer) {
+        if (this._boundsArray && !this.boundsBuffer) {
             this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
         }
 
@@ -358,7 +358,7 @@ class ImageSource extends Evented implements Source {
         };
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return false;
     }
 }
@@ -369,7 +369,7 @@ class ImageSource extends Evented implements Source {
  * @returns centerpoint
  * @private
  */
-export function getCoordinatesCenterTileID(coords: Array<MercatorCoordinate>) {
+export function getCoordinatesCenterTileID(coords: Array<MercatorCoordinate>): CanonicalTileID {
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;

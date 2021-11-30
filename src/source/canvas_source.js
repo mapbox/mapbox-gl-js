@@ -160,7 +160,7 @@ class CanvasSource extends ImageSource {
      * });
      * map.getSource('canvas-source').getCanvas(); // <canvas id="canvasID" width="400" height="400"></canvas>
      */
-    getCanvas() {
+    getCanvas(): HTMLCanvasElement {
         return this.canvas;
     }
 
@@ -213,7 +213,7 @@ class CanvasSource extends ImageSource {
             this._makeBoundsArray();
         }
 
-        if (!this.boundsBuffer) {
+        if (this._boundsArray && !this.boundsBuffer) {
             this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
         }
 
@@ -243,11 +243,11 @@ class CanvasSource extends ImageSource {
         };
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return this._playing;
     }
 
-    _hasInvalidDimensions() {
+    _hasInvalidDimensions(): boolean {
         for (const x of [this.canvas.width, this.canvas.height]) {
             if (isNaN(x) || x <= 0) return true;
         }

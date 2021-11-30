@@ -49,22 +49,24 @@ function getGeometry(feature, geometry, canonical) {
     if (geometry.coordinates) {
         const coords = geometry.coordinates;
         const type = geometry.type;
-        feature.type = type;
         feature.geometry = [];
         if (type === 'Point') {
+            feature.type = 1;
             convertPoint(coords, canonical, feature.geometry);
         } else if (type === 'MultiPoint') {
-            feature.type = 'Point';
+            feature.type = 1;
             convertPoints(coords, canonical, feature.geometry);
         } else if (type === 'LineString') {
+            feature.type = 2;
             convertLine(coords, canonical, feature.geometry);
         } else if (type === 'MultiLineString') {
-            feature.type = 'LineString';
+            feature.type = 2;
             convertLines(coords, canonical, feature.geometry);
         } else if (type === 'Polygon') {
+            feature.type = 3;
             convertLines(coords, canonical, feature.geometry);
         } else if (type === 'MultiPolygon') {
-            feature.type = 'Polygon';
+            feature.type = 3;
             for (let i = 0; i < coords.length; i++) {
                 const polygon = [];
                 convertLines(coords[i], canonical, polygon);

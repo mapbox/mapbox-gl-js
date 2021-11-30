@@ -1,5 +1,4 @@
-'use strict';
-// @flow
+// @flow strict
 
 declare module "@mapbox/unitbezier" {
     declare class UnitBezier {

@@ -10,7 +10,6 @@ import {
 import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
 
 import type Painter from '../painter.js';
-import type {OverscaledTileID} from '../../source/tile_id.js';
 import type {CrossFaded} from '../../style/properties.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
 import type {UniformValues} from '../uniform_binding.js';
@@ -67,9 +66,7 @@ function patternUniformValues(crossfade: CrossfadeParameters, painter: Painter,
     };
 }
 
-function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, crossfade: CrossfadeParameters, painter: Painter,
-        tile: {tileID: OverscaledTileID, tileSize: number}
-): UniformValues<BackgroundPatternUniformsType> {
+function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, crossfade: CrossfadeParameters, painter: Painter, tile: Tile): UniformValues<BackgroundPatternUniformsType> {
     const imagePosA = painter.imageManager.getPattern(image.from.toString());
     const imagePosB = painter.imageManager.getPattern(image.to.toString());
     assert(imagePosA && imagePosB);
