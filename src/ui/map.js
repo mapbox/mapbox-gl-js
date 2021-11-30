@@ -2628,7 +2628,7 @@ class Map extends Camera {
             const getTransformValues = (el) => {
                 while (el) {
                     const transformMatrix = window.getComputedStyle(el).transform;
-                    if (transformMatrix && transformMatrix !== "none") return transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+                    if (transformMatrix && transformMatrix !== 'none') return transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
                     if (!el.parentElement) return;
                     el = el.parentElement;
                 }
