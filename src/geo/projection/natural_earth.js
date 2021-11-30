@@ -2,13 +2,14 @@
 import LngLat from '../lng_lat.js';
 import {clamp, degToRad, radToDeg} from '../../util/util.js';
 import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
+import type {ProjectionSpecification} from '../../style-spec/types.js';
 
 const maxPhi = degToRad(MAX_MERCATOR_LATITUDE);
 
-export default {
+export default (_: ProjectionSpecification) => ({
     name: 'naturalEarth',
-    center: [0, 0],
-    range: [3.5, 7],
+    center: ([0, 0]: [number, number]),
+    range: ([3.5, 7]: [number, number]),
 
     project(lng: number, lat: number) {
         // based on https://github.com/d3/d3-geo, MIT-licensed
@@ -52,4 +53,4 @@ export default {
 
         return new LngLat(lng, lat);
     }
-};
+});

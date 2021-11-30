@@ -2,6 +2,7 @@
 import LngLat from '../lng_lat.js';
 import {clamp} from '../../util/util.js';
 import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
+import type {ProjectionSpecification} from '../../style-spec/types.js';
 
 const a1 = 1.340264;
 const a2 = -0.081106;
@@ -9,10 +10,10 @@ const a3 = 0.000893;
 const a4 = 0.003796;
 const M = Math.sqrt(3) / 2;
 
-export default {
+export default (_: ProjectionSpecification) => ({
     name: 'equalEarth',
-    center: [0, 0],
-    range: [3.5, 7],
+    center: ([0, 0]: [number, number]),
+    range: ([3.5, 7]: [number, number]),
 
     project(lng: number, lat: number) {
         // based on https://github.com/d3/d3-geo, MIT-licensed
@@ -55,4 +56,4 @@ export default {
 
         return new LngLat(lng, lat);
     }
-};
+});
