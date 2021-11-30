@@ -2625,16 +2625,24 @@ class Map extends Camera {
             const width = this._container.getBoundingClientRect().width;
             const height = this._container.getBoundingClientRect().height;
 
-            // If css transform(scale) property value was applied, getBoundingClientRect will return its values after calculating with transform.
-            // In order to circumvent this scenario, the difference between getBoundingClientRect and clientWidth/clientHeight is used to get the expected width/height values.
-            if (Math.round(width) !== this._container.clientWidth || Math.round(height) !== this._container.clientHeight) {
-                this._containerWidth = width / (width / this._container.clientWidth) || 400;
-                this._containerHeight = height / (height / this._container.clientHeight) || 300;
+            const getTransformValues = (el) => {
+                while (el) {
+                    const transformMatrix = window.getComputedStyle(el).transform;
+                    if (transformMatrix && transformMatrix !== "none") return transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+                    if (!el.parentElement) return;
+                    el = el.parentElement;
+                }
+            };
+            const transformValues = getTransformValues(this._container);
+
+            if (transformValues) {
+                const scaleValue = Math.sqrt(transformValues[0] * transformValues[0] + transformValues[1] * transformValues[1]);
+                this._containerWidth = width / scaleValue || 400;
+                this._containerHeight = height / scaleValue || 300;
             } else {
                 this._containerWidth = width || 400;
                 this._containerHeight = height || 300;
             }
-
             return [this._containerWidth, this._containerHeight];
         }
     }

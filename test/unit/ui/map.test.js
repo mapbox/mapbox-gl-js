@@ -751,8 +751,6 @@ test('Map', (t) => {
 
             Object.defineProperty(container, 'getBoundingClientRect',
                 {value: () => ({height: 250, width: 250})});
-            Object.defineProperty(container, 'clientWidth', {value: 250, configurable: true});
-            Object.defineProperty(container, 'clientHeight', {value: 250, configurable: true});
 
             map.resize();
 
@@ -781,8 +779,6 @@ test('Map', (t) => {
 
             Object.defineProperty(map.getContainer(), 'getBoundingClientRect',
                 {value: () => ({height: 250, width: 250})});
-            Object.defineProperty(map.getContainer(), 'clientWidth', {value: 250, configurable: true});
-            Object.defineProperty(map.getContainer(), 'clientHeight', {value: 250, configurable: true});
 
             t.spy(map, 'stop');
 
@@ -799,8 +795,6 @@ test('Map', (t) => {
 
             Object.defineProperty(map.getContainer(), 'getBoundingClientRect',
                 {value: () => ({height: 250, width: 250})});
-            Object.defineProperty(map.getContainer(), 'clientWidth', {value: 250, configurable: true});
-            Object.defineProperty(map.getContainer(), 'clientHeight', {value: 250, configurable: true});
 
             ['movestart', 'move', 'resize', 'moveend'].forEach((event) => {
                 map.on(event, (e) => {
@@ -2734,8 +2728,6 @@ test('Map', (t) => {
 
         Object.defineProperty(container, 'getBoundingClientRect',
             {value: () => ({height: 250, width: 250})});
-        Object.defineProperty(container, 'clientWidth', {value: 250, configurable: true});
-        Object.defineProperty(container, 'clientHeight', {value: 250, configurable: true});
 
         map.resize();
 

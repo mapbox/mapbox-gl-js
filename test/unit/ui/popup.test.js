@@ -14,8 +14,6 @@ function createMap(t, options) {
     const container = window.document.createElement('div');
     Object.defineProperty(container, 'getBoundingClientRect',
         {value: () => ({height: options.height || containerHeight, width: options.width || containerWidth})});
-    Object.defineProperty(container, 'clientWidth', {value: options.width || containerWidth, configurable: true});
-    Object.defineProperty(container, 'clientHeight', {value: options.height || containerHeight, configurable: true});
     return globalCreateMap(t, {container});
 }
 
