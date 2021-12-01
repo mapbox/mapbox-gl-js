@@ -2427,7 +2427,11 @@ class Map extends Camera {
      */
     setTerrain(terrain: TerrainSpecification) {
         this._lazyInitEmptyStyle();
-        this.style.setTerrain(terrain);
+        if (!terrain && this.transform.projection.requiresDraping) {
+            this.style.setTerrainForDraping();
+        } else {
+            this.style.setTerrain(terrain);
+        }
         this._averageElevationLastSampledAt = -Infinity;
         return this._update(true);
     }

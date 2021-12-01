@@ -331,7 +331,7 @@ class Style extends Evented {
 
         this.light = new Light(this.stylesheet.light);
         if (this.stylesheet.terrain) {
-            this._createTerrain(this.stylesheet.terrain, DrapeRenderMode.elevated);
+            this._createTerrain(this.stylesheet.terrain, this.terrain ? this.terrain.drapeRenderMode : DrapeRenderMode.elevated);
         }
         if (this.stylesheet.fog) {
             this._createFog(this.stylesheet.fog);
@@ -355,12 +355,10 @@ class Style extends Evented {
         const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
         const projection = this.map.transform.projection;
 
-        // eslint-disable-next-line no-warning-comments
-        // TODO: Allow globe to be set without style loaded at map creation (map._lazyInitEmptyStyle)
         if (this._loaded) {
             const terrain = this.getTerrain();
-            if (!terrain && projection.requiresDraping) {
-                this.setTerrain({'source': '', 'exaggeration': 0}, DrapeRenderMode.deferred);
+            if (!terrain && !this.stylesheet.terrain && projection.requiresDraping) {
+                this.setTerrainForDraping();
             }
         }
 
@@ -1439,6 +1437,11 @@ class Style extends Evented {
         return this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.elevated ? this.terrain.get() : null;
     }
 
+    setTerrainForDraping() {
+        const mockTerrainOptions = {source: '', exaggeration: 0};
+        this.setTerrain(mockTerrainOptions, DrapeRenderMode.deferred);
+    }
+
     // eslint-disable-next-line no-warning-comments
     // TODO: generic approach for root level property: light, terrain, skybox.
     // It is not done here to prevent rebasing issues.
@@ -1456,17 +1459,15 @@ class Style extends Evented {
         }
 
         // Input validation and source object unrolling
-        if (drapeRenderMode === DrapeRenderMode.elevated) {
-            if (typeof terrainOptions.source === 'object') {
-                const id = 'terrain-dem-src';
-                this.addSource(id, ((terrainOptions.source): any));
-                terrainOptions = clone(terrainOptions);
-                terrainOptions = (extend(terrainOptions, {source: id}): any);
-            }
+        if (typeof terrainOptions.source === 'object') {
+            const id = 'terrain-dem-src';
+            this.addSource(id, ((terrainOptions.source): any));
+            terrainOptions = clone(terrainOptions);
+            terrainOptions = (extend(terrainOptions, {source: id}): any);
+        }
 
-            if (this._validate(validateStyle.terrain, 'terrain', terrainOptions)) {
-                return;
-            }
+        if (this._validate(validateStyle.terrain, 'terrain', terrainOptions)) {
+            return;
         }
 
         // Enabling
