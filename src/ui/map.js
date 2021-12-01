@@ -2621,9 +2621,12 @@ class Map extends Camera {
     }
 
     _containerDimensions(): any {
+        let width = 0;
+        let height = 0;
+
         if (this._container) {
-            const width = this._container.getBoundingClientRect().width || 400;
-            const height = this._container.getBoundingClientRect().height || 300;
+            width = this._container.getBoundingClientRect().width || 400;
+            height = this._container.getBoundingClientRect().height || 300;
 
             const getTransformValues = (el) => {
                 while (el) {
@@ -2636,15 +2639,15 @@ class Map extends Camera {
             const transformValues = getTransformValues(this._container);
 
             if (transformValues) {
-                const scaleValue = Math.sqrt(transformValues[0] * transformValues[0] + transformValues[1] * transformValues[1]);
-                this._containerWidth = width / scaleValue;
-                this._containerHeight = height / scaleValue;
+                this._containerWidth = transformValues[0] && transformValues[0] !== '0' ? Math.abs(width / transformValues[0]) : width;
+                this._containerHeight = transformValues[3] && transformValues[3] !== '0' ? Math.abs(height / transformValues[3]) : height;
             } else {
                 this._containerWidth = width;
                 this._containerHeight = height;
             }
             return [this._containerWidth, this._containerHeight];
         }
+
     }
 
     _detectMissingCSS(): void {
