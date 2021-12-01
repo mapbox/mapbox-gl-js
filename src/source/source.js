@@ -8,9 +8,6 @@ import type Map from '../ui/map.js';
 import type Tile from './tile.js';
 import type {OverscaledTileID} from './tile_id.js';
 import type {Callback} from '../types/callback.js';
-import type {CameraOptions} from '../ui/camera.js';
-import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
-import type {TilesPreloadProgress} from './source_cache.js';
 import {CanonicalTileID} from './tile_id.js';
 
 /**

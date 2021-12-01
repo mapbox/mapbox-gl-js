@@ -19,7 +19,7 @@ import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-
 import type {Cancelable} from '../types/cancelable.js';
 import type {CameraOptions} from '../ui/camera.js';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
-import type {TilesPreloadProgress} from './source_cache.js';
+import type {TilesPreloadProgress} from './preload_tiles.js';
 
 /**
  * A source containing GeoJSON.
@@ -410,12 +410,12 @@ class GeoJSONSource extends Evented implements Source {
      * @param {Function} [callback] Called when each of the requested tiles is ready or errored.
      * @returns {number} Number of tiles to load.
      * @example
-     * map.addSource('some id', {
+     * map.addSource('id', {
      *     type: 'vector',
      *     url: 'mapbox://mapbox.mapbox-streets-v8'
      * });
      *
-     * map.getSource('some id').preloadTiles(bbox, {padding: 20}, ({pending}) => {
+     * map.getSource('id').preloadTiles(bbox, {padding: 20}, ({requested, pending, completed, errored}) => {
      *     if (pending === 0) {
      *         map.fitBounds(bbox, {duration:0});
      *     }

@@ -9,6 +9,7 @@ import {postTurnstileEvent} from '../util/mapbox.js';
 import TileBounds from './tile_bounds.js';
 import Texture from '../render/texture.js';
 import browser from '../util/browser.js';
+import {preloadTiles} from './preload_tiles.js';
 
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 
@@ -23,6 +24,9 @@ import type {
     RasterSourceSpecification,
     RasterDEMSourceSpecification
 } from '../style-spec/types.js';
+import type {CameraOptions} from '../ui/camera.js';
+import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+import type {TilesPreloadProgress} from './preload_tiles.js';
 
 class RasterTileSource extends Evented implements Source {
     type: 'raster' | 'raster-dem';
@@ -158,6 +162,30 @@ class RasterTileSource extends Evented implements Source {
     unloadTile(tile: Tile, callback: Callback<void>) {
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
         callback();
+    }
+
+    /**
+     * Preloads tiles in the requested viewport.
+     *
+     * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
+     *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
+     * @param {Object} [options] Options supports all properties from {@link CameraOptions}.
+     * @param {Function} [callback] Called when each of the requested tiles is ready or errored.
+     * @returns {number} Number of tiles to load.
+     * @example
+     * map.addSource('mapbox-dem', {
+     *     'type': 'raster-dem',
+     *     'url': 'mapbox://mapbox.mapbox-terrain-dem-v1'
+     * });
+     *
+     * map.getSource('id').preloadTiles(bbox, {padding: 20}, ({requested, pending, completed, errored}) => {
+     *     if (pending === 0) {
+     *         map.fitBounds(bbox, {duration:0});
+     *     }
+     * });
+     */
+    preloadTiles(bounds: LngLatBoundsLike, options?: CameraOptions, callback?: (progress: TilesPreloadProgress) => void): number {
+        return preloadTiles.call(this, bounds, options, callback);
     }
 
     hasTransition() {

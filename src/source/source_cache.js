@@ -21,13 +21,6 @@ import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometr
 import type {CameraOptions} from '../ui/camera.js';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
 
-export type TilesPreloadProgress = {
-  completed: number,
-  errored: number,
-  requested: number,
-  pending: number,
-};
-
 /**
  * `SourceCache` is responsible for
  *
