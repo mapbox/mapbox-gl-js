@@ -127,40 +127,32 @@ export default class Marker extends Evented {
                 viewBox: `0 0 ${defaultWidth} ${defaultHeight}`
             }, this._element);
 
-            const page1 = DOM.createSVG('g', {'fill-rule': 'nonzero'}, svg);
-            const shadow = DOM.createSVG('g', {transform: 'translate(3.0, 29.0)', 'fill': '#000000'}, page1);
+            const defs = DOM.createSVG('defs', {}, svg);
+            const gradient = DOM.createSVG('radialGradient', {id: 'shadowGradient'}, defs);
+            DOM.createSVG('stop', {offset: '10%', 'stop-opacity': 0.4}, gradient);
+            DOM.createSVG('stop', {offset: '100%', 'stop-opacity': 0.05}, gradient);
 
-            const ellipses = [
-                ['10.5', '5.25002273'],
-                ['10.5', '5.25002273'],
-                ['9.5', '4.77275007'],
-                ['8.5', '4.29549936'],
-                ['7.5', '3.81822308'],
-                ['6.5', '3.34094679'],
-                ['5.5', '2.86367051'],
-                ['4.5', '2.38636864']
-            ];
-            for (const [rx, ry] of ellipses) {
-                DOM.createSVG('ellipse', {opacity: '0.04', cx: '10.5', cy: '5.80029008', rx, ry}, shadow);
-            }
+            DOM.createSVG('ellipse', {cx: 13.5, cy: 34.8, rx: 10.5, ry: 5.25, fill: 'url(#shadowGradient)'}, svg); // shadow
 
-            const background = DOM.createSVG('g', {fill: this._color}, page1);
-            DOM.createSVG('path', {d: 'M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z'}, background);
+            DOM.createSVG('path', { // marker shape
+                fill: this._color,
+                d: 'M27,13.5C27,19.07 20.25,27 14.75,34.5C14.02,35.5 12.98,35.5 12.25,34.5C6.75,27 0,19.22 0,13.5C0,6.04 6.04,0 13.5,0C20.96,0 27,6.04 27,13.5Z'
+            }, svg);
 
-            const border = DOM.createSVG('g', {opacity: '0.25', fill: '#000000'}, page1);
-            DOM.createSVG('path', {d: 'M13.5,0 C6.0441559,0 0,6.0441559 0,13.5 C0,19.222562 6.7499993,27 12.25,34.5 C13,35.522727 14.016664,35.500004 14.75,34.5 C20.250001,27 27,19.074644 27,13.5 C27,6.0441559 20.955844,0 13.5,0 Z M13.5,1 C20.415404,1 26,6.584596 26,13.5 C26,15.898657 24.495584,19.181431 22.220703,22.738281 C19.945823,26.295132 16.705119,30.142167 13.943359,33.908203 C13.743445,34.180814 13.612715,34.322738 13.5,34.441406 C13.387285,34.322738 13.256555,34.180814 13.056641,33.908203 C10.284481,30.127985 7.4148684,26.314159 5.015625,22.773438 C2.6163816,19.232715 1,15.953538 1,13.5 C1,6.584596 6.584596,1 13.5,1 Z'}, border);
-            DOM.createSVG('g', {transform: 'translate(6.0, 7.0)', fill: '#FFFFFF'}, page1);
+            DOM.createSVG('path', { // border
+                opacity: 0.25,
+                fill: 'black',
+                d: 'M13.5,0C6.04,0 0,6.04 0,13.5C0,19.22 6.75,27 12.25,34.5C13,35.52 14.02,35.5 14.75,34.5C20.25,27 27,19.07 27,13.5C27,6.04 20.96,0 13.5,0ZM13.5,1C20.42,1 26,6.58 26,13.5C26,15.9 24.5,19.18 22.22,22.74C19.95,26.3 16.71,30.14 13.94,33.91C13.74,34.18 13.61,34.32 13.5,34.44C13.39,34.32 13.26,34.18 13.06,33.91C10.28,30.13 7.41,26.31 5.02,22.77C2.62,19.23 1,15.95 1,13.5C1,6.58 6.58,1 13.5,1Z'
+            }, svg);
 
-            const circles = DOM.createSVG('g', {transform: 'translate(8.0, 8.0)'}, page1);
-            DOM.createSVG('circle', {fill: '#000000', opacity: '0.25', cx: '5.5', cy: '5.5', r: '5.4999962'}, circles);
-            DOM.createSVG('circle', {fill: '#FFFFFF', cx: '5.5', cy: '5.5', r: '5.4999962'}, circles);
+            DOM.createSVG('circle', {fill: 'white', cx: 13.5, cy: 13.5, r: 5.5}, svg); // circle
 
             // if no element and no offset option given apply an offset for the default marker
             // the -14 as the y value of the default marker offset was determined as follows
             //
             // the marker tip is at the center of the shadow ellipse from the default svg
-            // the y value of the center of the shadow ellipse relative to the svg top left is "shadow transform translate-y (29.0) + ellipse cy (5.80029008)"
-            // offset to the svg center "height (41 / 2)" gives (29.0 + 5.80029008) - (41 / 2) and rounded for an integer pixel offset gives 14
+            // the y value of the center of the shadow ellipse relative to the svg top left is 34.8
+            // offset to the svg center "height (41 / 2)" gives 34.8 - (41 / 2) and rounded for an integer pixel offset gives 14
             // negative is used to move the marker up from the center so the tip is at the Marker lngLat
             this._offset = Point.convert(options && options.offset || [0, -14]);
         } else {
