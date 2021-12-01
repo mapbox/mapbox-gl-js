@@ -356,9 +356,13 @@ class Style extends Evented {
         const projection = this.map.transform.projection;
 
         if (this._loaded) {
-            const terrain = this.getTerrain();
-            if (!terrain && !this.stylesheet.terrain && projection.requiresDraping) {
-                this.setTerrainForDraping();
+            if (projection.requiresDraping) {
+                const hasTerrain = this.getTerrain() || this.stylesheet.terrain;
+                if (!hasTerrain) {
+                    this.setTerrainForDraping();
+                }
+            } else if (!this.getTerrain()) {
+                this.setTerrain(null);
             }
         }
 
@@ -1458,16 +1462,18 @@ class Style extends Evented {
             return;
         }
 
-        // Input validation and source object unrolling
-        if (typeof terrainOptions.source === 'object') {
-            const id = 'terrain-dem-src';
-            this.addSource(id, ((terrainOptions.source): any));
-            terrainOptions = clone(terrainOptions);
-            terrainOptions = (extend(terrainOptions, {source: id}): any);
-        }
+        if (drapeRenderMode === DrapeRenderMode.elevated) {
+            // Input validation and source object unrolling
+            if (typeof terrainOptions.source === 'object') {
+                const id = 'terrain-dem-src';
+                this.addSource(id, ((terrainOptions.source): any));
+                terrainOptions = clone(terrainOptions);
+                terrainOptions = (extend(terrainOptions, {source: id}): any);
+            }
 
-        if (this._validate(validateStyle.terrain, 'terrain', terrainOptions)) {
-            return;
+            if (this._validate(validateStyle.terrain, 'terrain', terrainOptions)) {
+                return;
+            }
         }
 
         // Enabling

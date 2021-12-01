@@ -3,7 +3,6 @@ import ValidationError from '../error/validation_error.js';
 import validate from './validate.js';
 import getType from '../util/get_type.js';
 import {unbundle} from '../util/unbundle_jsonlint.js';
-import {DrapeRenderMode} from '../../style/terrain.js';
 
 export default function validateTerrain(options) {
     const terrain = options.value;
@@ -45,17 +44,15 @@ export default function validateTerrain(options) {
         }
     }
 
-    if (terrain.drapeRenderMode === DrapeRenderMode.elevated) {
-        if (!terrain.source) {
-            errors.push(new ValidationError(key, terrain, `terrain is missing required property "source"`));
-        } else {
-            const source = style.sources && style.sources[terrain.source];
-            const sourceType = source && unbundle(source.type);
-            if (!source) {
-                errors.push(new ValidationError(key, terrain.source, `source "${terrain.source}" not found`));
-            } else if (sourceType !== 'raster-dem') {
-                errors.push(new ValidationError(key, terrain.source, `terrain cannot be used with a source of type ${sourceType}, it only be used with a "raster-dem" source type`));
-            }
+    if (!terrain.source) {
+        errors.push(new ValidationError(key, terrain, `terrain is missing required property "source"`));
+    } else {
+        const source = style.sources && style.sources[terrain.source];
+        const sourceType = source && unbundle(source.type);
+        if (!source) {
+            errors.push(new ValidationError(key, terrain.source, `source "${terrain.source}" not found`));
+        } else if (sourceType !== 'raster-dem') {
+            errors.push(new ValidationError(key, terrain.source, `terrain cannot be used with a source of type ${sourceType}, it only be used with a "raster-dem" source type`));
         }
     }
 

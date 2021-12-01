@@ -342,7 +342,7 @@ test('Map', (t) => {
                     map.setStyle(styleWithTerrain);
                     t.equal(initStyleObj, map.style);
                     t.equal(initStyleObj.setState.callCount, 1);
-                    t.equal(initStyleObj.setTerrain.callCount, 1);
+                    t.equal(initStyleObj.setTerrain.callCount, 2);
                     t.ok(map.style.terrain);
                     t.end();
                 });
