@@ -170,7 +170,7 @@ class GeolocateControl extends Evented {
             this._accuracyCircleMarker.remove();
         }
 
-        DOM.remove(this._container);
+        this._container.remove();
         this._map.off('zoom', this._onZoom);
         this._map = (undefined: any);
         numberOfWatches = 0;

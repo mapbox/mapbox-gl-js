@@ -84,7 +84,7 @@ class AttributionControl {
     }
 
     onRemove() {
-        DOM.remove(this._container);
+        this._container.remove();
 
         this._map.off('styledata', this._updateData);
         this._map.off('sourcedata', this._updateData);

@@ -204,11 +204,11 @@ export default class Popup extends Evented {
      */
     remove() {
         if (this._content) {
-            DOM.remove(this._content);
+            this._content.remove();
         }
 
         if (this._container) {
-            DOM.remove(this._container);
+            this._container.remove();
             delete this._container;
         }
 
@@ -621,7 +621,7 @@ export default class Popup extends Evented {
             const offsetedPos = pos.add(offset[anchor]).round();
             this._map._requestDomTask(() => {
                 if (this._container && anchor) {
-                    DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
+                    this._container.style.transform = `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`;
                 }
             });
         }

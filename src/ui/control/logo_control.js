@@ -47,7 +47,7 @@ class LogoControl {
     }
 
     onRemove() {
-        DOM.remove(this._container);
+        this._container.remove();
         this._map.off('sourcedata', this._updateLogo);
         this._map.off('resize', this._updateCompact);
     }
