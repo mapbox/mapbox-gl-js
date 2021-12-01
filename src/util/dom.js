@@ -15,8 +15,12 @@ DOM.create = function (tagName: string, className: ?string, container?: HTMLElem
     return el;
 };
 
-DOM.createNS = function (namespaceURI: string, tagName: string) {
-    const el = window.document.createElementNS(namespaceURI, tagName);
+DOM.createSVG = function (tagName: string, attributes: {[string]: string}, container?: HTMLElement) {
+    const el = window.document.createElementNS('http://www.w3.org/2000/svg', tagName);
+    for (const name of Object.keys(attributes)) {
+        el.setAttributeNS(null, name, attributes[name]);
+    }
+    if (container) container.appendChild(el);
     return el;
 };
 
