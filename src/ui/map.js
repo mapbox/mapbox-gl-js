@@ -2622,8 +2622,8 @@ class Map extends Camera {
 
     _containerDimensions(): any {
         if (this._container) {
-            const width = this._container.getBoundingClientRect().width;
-            const height = this._container.getBoundingClientRect().height;
+            const width = this._container.getBoundingClientRect().width || 400;
+            const height = this._container.getBoundingClientRect().height || 300;
 
             const getTransformValues = (el) => {
                 while (el) {
@@ -2637,11 +2637,11 @@ class Map extends Camera {
 
             if (transformValues) {
                 const scaleValue = Math.sqrt(transformValues[0] * transformValues[0] + transformValues[1] * transformValues[1]);
-                this._containerWidth = width / scaleValue || 400;
-                this._containerHeight = height / scaleValue || 300;
+                this._containerWidth = width / scaleValue;
+                this._containerHeight = height / scaleValue;
             } else {
-                this._containerWidth = width || 400;
-                this._containerHeight = height || 300;
+                this._containerWidth = width;
+                this._containerHeight = height;
             }
             return [this._containerWidth, this._containerHeight];
         }
