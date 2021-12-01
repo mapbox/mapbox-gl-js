@@ -361,7 +361,7 @@ class Style extends Evented {
                 if (!hasTerrain) {
                     this.setTerrainForDraping();
                 }
-            } else if (!this.getTerrain()) {
+            } else if (this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.deferred) {
                 this.setTerrain(null);
             }
         }
