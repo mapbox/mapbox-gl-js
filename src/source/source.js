@@ -140,31 +140,6 @@ export const setType = function (name: string, type: Class<Source>) {
     sourceTypes[name] = type;
 };
 
-export const preloadTiles = function(bounds: LngLatBoundsLike, options?: CameraOptions, callback?: (progress: TilesPreloadProgress) => void): number {
-    const progress = {
-        errored: 0,
-        completed: 0,
-        pending: 0,
-        requested: 0,
-    };
-
-    function tileLoaded(err: ?Error, _: ?Tile) {
-        if (err) progress.errored++;
-        else progress.completed++;
-        progress.pending = progress.requested - (progress.errored + progress.completed);
-
-        // $FlowFixMe
-        callback(progress);
-    }
-
-    const sourceCaches = this.map.style._getSourceCaches(this.id);
-    for (const sourceCache of sourceCaches) {
-        progress.requested += sourceCache.preloadTiles(bounds, options, callback ? tileLoaded : undefined);
-    }
-
-    return progress.requested;
-};
-
 export interface Actor {
     send(type: string, data: Object, callback: Callback<any>): void;
 }

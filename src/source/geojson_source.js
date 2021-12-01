@@ -6,7 +6,7 @@ import {extend} from '../util/util.js';
 import EXTENT from '../data/extent.js';
 import {ResourceType} from '../util/ajax.js';
 import browser from '../util/browser.js';
-import {preloadTiles} from './source.js';
+import {preloadTiles} from './preload_tiles.js';
 
 import type {Source} from './source.js';
 import type Map from '../ui/map.js';

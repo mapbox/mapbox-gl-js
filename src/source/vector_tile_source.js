@@ -10,7 +10,7 @@ import {ResourceType} from '../util/ajax.js';
 import browser from '../util/browser.js';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 import {DedupedRequest, loadVectorTile} from './vector_tile_worker_source.js';
-import {preloadTiles} from './source.js';
+import {preloadTiles} from './preload_tiles.js';
 
 import type {Source} from './source.js';
 import type {OverscaledTileID} from './tile_id.js';
