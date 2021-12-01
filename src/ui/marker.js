@@ -295,7 +295,7 @@ export default class Marker extends Evented {
             delete this._map;
         }
         this._clearFadeTimer();
-        DOM.remove(this._element);
+        this._element.remove();
         if (this._popup) this._popup.remove();
         return this;
     }
@@ -549,7 +549,7 @@ export default class Marker extends Evented {
             if (!this._map) return;
 
             if (this._element && this._pos && this._anchor) {
-                DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
+                this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`;
             }
 
             if ((this._map.getTerrain() || this._map.getFog()) && !this._fadeTimer) {

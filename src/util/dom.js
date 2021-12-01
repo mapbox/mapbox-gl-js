@@ -37,43 +37,6 @@ DOM.enableDrag = function () {
     }
 };
 
-DOM.setTransform = function(el: HTMLElement, value: string) {
-    el.style.transform = value;
-};
-
-// Feature detection for {passive: false} support in add/removeEventListener.
-let passiveSupported = false;
-
-try {
-    // https://github.com/facebook/flow/issues/285
-    // $FlowFixMe
-    const options = Object.defineProperty({}, "passive", {
-        get() { // eslint-disable-line
-            passiveSupported = true;
-        }
-    });
-    window.addEventListener("test", options, options);
-    window.removeEventListener("test", options, options);
-} catch (err) {
-    passiveSupported = false;
-}
-
-DOM.addEventListener = function(target: *, type: *, callback: *, options: {passive?: boolean, capture?: boolean} = {}) {
-    if ('passive' in options && passiveSupported) {
-        target.addEventListener(type, callback, options);
-    } else {
-        target.addEventListener(type, callback, options.capture);
-    }
-};
-
-DOM.removeEventListener = function(target: *, type: *, callback: *, options: {passive?: boolean, capture?: boolean} = {}) {
-    if ('passive' in options && passiveSupported) {
-        target.removeEventListener(type, callback, options);
-    } else {
-        target.removeEventListener(type, callback, options.capture);
-    }
-};
-
 // Suppress the next click, but only if it's immediate.
 const suppressClick: MouseEventListener = function (e) {
     e.preventDefault();
@@ -113,12 +76,6 @@ DOM.mouseButton = function (e: MouseEvent) {
         return 0;
     }
     return e.button;
-};
-
-DOM.remove = function(node: HTMLElement) {
-    if (node.parentNode) {
-        node.parentNode.removeChild(node);
-    }
 };
 
 function getScaledPoint(el: HTMLElement, rect: ClientRect, e: MouseEvent | WheelEvent | Touch) {

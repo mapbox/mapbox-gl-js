@@ -124,7 +124,7 @@ class NavigationControl {
     }
 
     onRemove() {
-        DOM.remove(this._container);
+        this._container.remove();
         if (this.options.showZoom) {
             this._map.off('zoom', this._updateZoomButtons);
         }
@@ -172,11 +172,11 @@ class MouseRotateWrapper {
         if (pitch) this.mousePitch = new MousePitchHandler({clickTolerance: map.dragRotate._mousePitch._clickTolerance});
 
         bindAll(['mousedown', 'mousemove', 'mouseup', 'touchstart', 'touchmove', 'touchend', 'reset'], this);
-        DOM.addEventListener(element, 'mousedown', this.mousedown);
-        DOM.addEventListener(element, 'touchstart', this.touchstart, {passive: false});
-        DOM.addEventListener(element, 'touchmove', this.touchmove);
-        DOM.addEventListener(element, 'touchend', this.touchend);
-        DOM.addEventListener(element, 'touchcancel', this.reset);
+        element.addEventListener('mousedown', this.mousedown);
+        element.addEventListener('touchstart', this.touchstart, {passive: false});
+        element.addEventListener('touchmove', this.touchmove);
+        element.addEventListener('touchend', this.touchend);
+        element.addEventListener('touchcancel', this.reset);
     }
 
     down(e: MouseEvent, point: Point) {
@@ -197,24 +197,24 @@ class MouseRotateWrapper {
 
     off() {
         const element = this.element;
-        DOM.removeEventListener(element, 'mousedown', this.mousedown);
-        DOM.removeEventListener(element, 'touchstart', this.touchstart, {passive: false});
-        DOM.removeEventListener(element, 'touchmove', this.touchmove);
-        DOM.removeEventListener(element, 'touchend', this.touchend);
-        DOM.removeEventListener(element, 'touchcancel', this.reset);
+        element.removeEventListener('mousedown', this.mousedown);
+        element.removeEventListener('touchstart', this.touchstart, {passive: false});
+        element.removeEventListener('touchmove', this.touchmove);
+        element.removeEventListener('touchend', this.touchend);
+        element.removeEventListener('touchcancel', this.reset);
         this.offTemp();
     }
 
     offTemp() {
         DOM.enableDrag();
-        DOM.removeEventListener(window, 'mousemove', this.mousemove);
-        DOM.removeEventListener(window, 'mouseup', this.mouseup);
+        window.removeEventListener('mousemove', this.mousemove);
+        window.removeEventListener('mouseup', this.mouseup);
     }
 
     mousedown(e: MouseEvent) {
         this.down(extend({}, e, {ctrlKey: true, preventDefault: () => e.preventDefault()}), DOM.mousePos(this.element, e));
-        DOM.addEventListener(window, 'mousemove', this.mousemove);
-        DOM.addEventListener(window, 'mouseup', this.mouseup);
+        window.addEventListener('mousemove', this.mousemove);
+        window.addEventListener('mouseup', this.mouseup);
     }
 
     mousemove(e: MouseEvent) {

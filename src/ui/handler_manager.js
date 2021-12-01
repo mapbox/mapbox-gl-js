@@ -153,7 +153,7 @@ class HandlerManager {
     _updatingCamera: boolean;
     _changes: Array<[HandlerResult, Object, any]>;
     _previousActiveHandlers: { [string]: Handler };
-    _listeners: Array<[HTMLElement, string, void | {passive?: boolean, capture?: boolean}]>;
+    _listeners: Array<[HTMLElement, string, void | EventListenerOptionsOrUseCapture]>;
     _trackingEllipsoid: TrackingEllipsoid;
     _dragOrigin: ?vec3;
 
@@ -219,13 +219,15 @@ class HandlerManager {
         ];
 
         for (const [target, type, listenerOptions] of this._listeners) {
-            DOM.addEventListener(target, type, target === window.document ? this.handleWindowEvent : this.handleEvent, listenerOptions);
+            const listener = target === window.document ? this.handleWindowEvent : this.handleEvent;
+            target.addEventListener((type: any), (listener: any), listenerOptions);
         }
     }
 
     destroy() {
         for (const [target, type, listenerOptions] of this._listeners) {
-            DOM.removeEventListener(target, type, target === window.document ? this.handleWindowEvent : this.handleEvent, listenerOptions);
+            const listener = target === window.document ? this.handleWindowEvent : this.handleEvent;
+            target.removeEventListener((type: any), (listener: any), listenerOptions);
         }
     }
 
