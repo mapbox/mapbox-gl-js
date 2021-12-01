@@ -2697,6 +2697,20 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('should calculate correct canvas size when transform css property is applied', (t) => {
+        const map = createMap(t);
+        Object.defineProperty(window, 'getComputedStyle',
+            {value: () => ({transform: 'matrix(0.5, 0, 0, 0.5, 0, 0)'})});
+
+        map.resize();
+
+        t.equal(map._containerWidth, 400);
+        t.equal(map._containerHeight, 400);
+
+        map.remove();
+        t.end();
+    });
+
     t.test('should not warn when CSS is present', (t) => {
         const stub = t.stub(console, 'warn');
 
