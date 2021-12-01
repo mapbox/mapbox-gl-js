@@ -326,12 +326,10 @@ class GeoJSONSource extends Evented implements Source {
                 this._metadataFired = true;
             }
 
-            //if (this.map._isInitialGeoJSONData) this.map._isInitialGeoJSONData = false;
             if (this._coalesce) {
                 this._updateWorkerData();
                 this._coalesce = false;
             }
-
         });
     }
 
