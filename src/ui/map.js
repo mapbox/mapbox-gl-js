@@ -462,6 +462,8 @@ class Map extends Camera {
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
         this._cooperativeGestures = options.cooperativeGestures;
+        this._containerWidth = 0;
+        this._containerHeight = 0;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevation = new EasedVariable(0);
@@ -2621,12 +2623,9 @@ class Map extends Camera {
     }
 
     _containerDimensions(): any {
-        let width = 0;
-        let height = 0;
-
         if (this._container) {
-            width = this._container.getBoundingClientRect().width || 400;
-            height = this._container.getBoundingClientRect().height || 300;
+            const width = this._container.getBoundingClientRect().width || 400;
+            const height = this._container.getBoundingClientRect().height || 300;
 
             const getTransformValues = (el) => {
                 while (el) {
@@ -2645,9 +2644,9 @@ class Map extends Camera {
                 this._containerWidth = width;
                 this._containerHeight = height;
             }
-            return [this._containerWidth, this._containerHeight];
         }
 
+        return [this._containerWidth, this._containerHeight];
     }
 
     _detectMissingCSS(): void {
