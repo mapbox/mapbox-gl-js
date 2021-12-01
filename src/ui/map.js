@@ -338,6 +338,7 @@ class Map extends Camera {
     _hash: Hash;
     _delegatedListeners: any;
     _isInitialLoad: boolean;
+    _isInitialGeoJSONData: boolean;
     _shouldCheckAccess: boolean;
     _fadeDuration: number;
     _crossSourceCollisions: boolean;
@@ -448,6 +449,7 @@ class Map extends Camera {
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
         this._isInitialLoad = true;
+        this._isInitialGeoJSONData = false;
         this._crossSourceCollisions = options.crossSourceCollisions;
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
@@ -2847,7 +2849,7 @@ class Map extends Camera {
         if (this._removed) return;
 
         let crossFading = false;
-        const fadeDuration = this._isInitialLoad ? 0 : this._fadeDuration;
+        const fadeDuration = this._isInitialLoad || this._isInitialGeoJSONData ? 0 : this._fadeDuration;
 
         // If the style has changed, the map is being zoomed, or a transition or fade is in progress:
         //  - Apply style changes (in a batch)
@@ -2987,6 +2989,7 @@ class Map extends Camera {
                 if (willIdle) {
                     this.fire(new Event('idle'));
                     this._isInitialLoad = false;
+                    if (this._isInitialGeoJSONData) this._isInitialGeoJSONData = false;
                     // check the options to see if need to calculate the speed index
                     if (this.speedIndexTiming) {
                         const speedIndexNumber = this._calculateSpeedIndex();
