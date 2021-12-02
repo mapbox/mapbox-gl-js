@@ -136,7 +136,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         };
 
         if (useStencilMaskRenderPass) {
-            const stencilId = painter._tileClippingMaskIDs[coord.key];
+            const stencilId = painter.stencilModeForClipping(coord).ref;
+            if (stencilId === 0) { context.clear({stencil: 0}); }
             const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
 
             uniformValues['u_alpha_discard_threshold'] = 0.75;

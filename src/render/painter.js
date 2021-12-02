@@ -324,8 +324,10 @@ class Painter {
     }
 
     resetStencilClippingMasks() {
-        this.currentStencilSource = undefined;
-        this._tileClippingMaskIDs = {};
+        if (!this.terrain) {
+            this.currentStencilSource = undefined;
+            this._tileClippingMaskIDs = {};
+        }
     }
 
     _renderTileClippingMasks(layer: StyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
@@ -333,7 +335,7 @@ class Painter {
             return;
         }
 
-        if (this._tileClippingMaskIDs) {
+        if (this._tileClippingMaskIDs && !this.terrain) {
             let dirtyStencilClippingMasks = false;
             // Equivalent tile set is already rendered in stencil
             for (const coord of tileIDs) {
