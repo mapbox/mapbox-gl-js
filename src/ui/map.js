@@ -1002,9 +1002,9 @@ class Map extends Camera {
     /** @section {Point conversion} */
 
     /**
-     * Returns a {@link ProjectionSpecification} object that defines the current map projection.
+     * Returns a [projection](https://www.mapbox.com/mapbox-gl-style-spec/#projection) object that defines the current map projection.
      *
-     * @returns {ProjectionSpecification} The {@link ProjectionSpecification} defining the current map projection.
+     * @returns {ProjectionSpecification} The [projection](https://www.mapbox.com/mapbox-gl-style-spec/#projection) defining the current map projection.
      * @example
      * const projection = map.getProjection();
      */
@@ -1016,7 +1016,7 @@ class Map extends Camera {
      * Sets the map's projection. If called with `null` or `undefined`, the map will reset to Mercator.
      *
      * @param {ProjectionSpecification | string | null | undefined} projection The projection that the map should be rendered in.
-     * This can be a {@link ProjectionSpecification} object or a string of the projection's name.
+     * This can be a [projection](https://www.mapbox.com/mapbox-gl-style-spec/#projection) object or a string of the projection's name.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setProjection('albers');
