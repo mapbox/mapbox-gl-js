@@ -2627,15 +2627,13 @@ class Map extends Camera {
             const width = this._container.getBoundingClientRect().width || 400;
             const height = this._container.getBoundingClientRect().height || 300;
 
-            const getTransformValues = (el) => {
-                while (el) {
-                    const transformMatrix = window.getComputedStyle(el).transform;
-                    if (transformMatrix && transformMatrix !== 'none') return transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
-                    if (!el.parentElement) return;
-                    el = el.parentElement;
-                }
-            };
-            const transformValues = getTransformValues(this._container);
+            let transformValues;
+            let el = this._container;
+            while (el && !transformValues) {
+                const transformMatrix = window.getComputedStyle(el).transform;
+                if (transformMatrix && transformMatrix !== 'none') transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+                el = el.parentElement;
+            }
 
             if (transformValues) {
                 this._containerWidth = transformValues[0] && transformValues[0] !== '0' ? Math.abs(width / transformValues[0]) : width;
