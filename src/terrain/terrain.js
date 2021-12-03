@@ -22,6 +22,7 @@ import ImageSource from '../source/image_source.js';
 import RasterDEMTileSource from '../source/raster_dem_tile_source.js';
 import RasterTileSource from '../source/raster_tile_source.js';
 import Color from '../style-spec/util/color.js';
+import type {Callback} from '../types/callback.js';
 import StencilMode from '../gl/stencil_mode.js';
 import {DepthStencilAttachment} from '../gl/value.js';
 import {drawTerrainRaster, drawTerrainDepth} from './draw_terrain_raster.js';
@@ -35,6 +36,7 @@ import {clippingMaskUniformValues} from '../render/program/clipping_mask_program
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import browser from '../util/browser.js';
 import DEMData from '../data/dem_data.js';
+import {DrapeRenderMode} from '../style/terrain.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
 
@@ -49,7 +51,7 @@ import type {UniformLocations, UniformValues} from '../render/uniform_binding.js
 import type Transform from '../geo/transform.js';
 import type {DEMEncoding} from '../data/dem_data.js';
 
-export const GRID_DIM = 128;
+const GRID_DIM = 128;
 
 const FBO_POOL_SIZE = 5;
 const RENDER_CACHE_MAX_SIZE = 50;
@@ -57,6 +59,25 @@ const RENDER_CACHE_MAX_SIZE = 50;
 type RenderBatch = {
     start: number;
     end: number;
+}
+
+class MockSourceCache extends SourceCache {
+    constructor(map: Map) {
+        const sourceSpec = {type: 'raster-dem', maxzoom: map.transform.maxZoom};
+        const sourceDispatcher = new Dispatcher(getWorkerPool(), null);
+        const source = createSource('mock-dem', sourceSpec, sourceDispatcher, map.style);
+
+        super('mock-dem', source, false);
+
+        source.setEventedParent(this);
+
+        this._sourceLoaded = true;
+    }
+
+    _loadTile(tile: Tile, callback: Callback<void>) {
+        tile.state = 'loaded';
+        callback(null);
+    }
 }
 
 /**
@@ -180,8 +201,10 @@ export class Terrain extends Elevation {
     proxySourceCache: ProxySourceCache;
     renderingToTexture: boolean;
     _style: Style;
+    _mockSourceCache: MockSourceCache;
     orthoMatrix: mat4;
     enabled: boolean;
+    renderMode: number;
 
     _visibleDemTiles: Array<Tile>;
     _sourceTilesOverlap: {[string]: boolean};
@@ -243,6 +266,7 @@ export class Terrain extends Elevation {
         this.style = style;
         this._useVertexMorphing = true;
         this._exaggeration = 1;
+        this._mockSourceCache = new MockSourceCache(style.map);
     }
 
     set style(style: Style) {
@@ -265,7 +289,9 @@ export class Terrain extends Elevation {
             }
             this.enabled = true;
             const terrainProps = style.terrain.properties;
-            this.sourceCache = ((style._getSourceCache(terrainProps.get('source')): any): SourceCache);
+            const isDrapeModeDeferred = style.terrain.drapeRenderMode === DrapeRenderMode.deferred;
+            this.sourceCache = isDrapeModeDeferred ? this._mockSourceCache :
+                ((style._getSourceCache(terrainProps.get('source')): any): SourceCache);
             this._exaggeration = terrainProps.get('exaggeration');
 
             const updateSourceCache = () => {

@@ -14,6 +14,11 @@ type Props = {|
     "exaggeration": DataConstantProperty<number>,
 |};
 
+export const DrapeRenderMode = {
+    deferred: 0,
+    elevated: 1
+};
+
 const properties: Properties<Props> = new Properties({
     "source": new DataConstantProperty(styleSpec.terrain.source),
     "exaggeration": new DataConstantProperty(styleSpec.terrain.exaggeration),
@@ -25,12 +30,14 @@ class Terrain extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
+    drapeRenderMode: number;
 
-    constructor(terrainOptions: TerrainSpecification) {
+    constructor(terrainOptions: TerrainSpecification, drapeRenderMode: number) {
         super();
         this._transitionable = new Transitionable(properties);
         this.set(terrainOptions);
         this._transitioning = this._transitionable.untransitioned();
+        this.drapeRenderMode = drapeRenderMode;
     }
 
     get() {
