@@ -294,6 +294,69 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('Setting globe projection as part of the style enables draping but does not enable terrain', (t) => {
+            const map = createMap(t, {style: createStyle(), projection: 'globe'});
+            t.equal(map.getProjection().name, 'globe');
+            const initStyleObj = map.style;
+            t.spy(initStyleObj, 'setTerrain');
+            map.on('style.load', () => {
+                t.equal(initStyleObj.setTerrain.callCount, 1);
+                t.ok(map.style.terrain);
+                t.equal(map.getTerrain(), null);
+                t.end();
+            });
+        });
+
+        t.test('Setting globe projection on the map enables draping but does not enable terrain', (t) => {
+            const map = createMap(t, {style: createStyle()});
+            t.equal(map.getProjection().name, 'mercator');
+            const initStyleObj = map.style;
+            t.spy(initStyleObj, 'setTerrain');
+            map.on('style.load', () => {
+                map.setProjection('globe');
+                t.equal(initStyleObj.setTerrain.callCount, 1);
+                t.ok(map.style.terrain);
+                t.equal(map.getTerrain(), null);
+                t.end();
+            });
+        });
+
+        t.test('Setting globe projection retains style.terrain when terrain is set to null', (t) => {
+            const map = createMap(t, {style: createStyle(), projection: 'globe'});
+            t.equal(map.getProjection().name, 'globe');
+            const initStyleObj = map.style;
+            t.spy(initStyleObj, 'setTerrain');
+            map.on('style.load', () => {
+                map.setTerrain(null);
+                t.equal(initStyleObj.setTerrain.callCount, 2);
+                t.ok(map.style.terrain);
+                t.equal(map.getTerrain(), null);
+                t.end();
+            });
+        });
+
+        t.test('Setting globe and terrain as part of the style retains the terrain properties', (t) => {
+            const style = createStyle();
+            style['projection'] = {
+                'name': 'globe'
+            };
+            style['sources']['mapbox-dem'] = {
+                'type': 'raster-dem',
+                'tiles': ['http://example.com/{z}/{x}/{y}.png']
+            };
+            style['terrain'] = {
+                'source': 'mapbox-dem'
+            };
+            const map = createMap(t, {style});
+            map.on('style.load', () => {
+                t.equal(map.getProjection().name, 'globe');
+                t.ok(map.style.terrain);
+                t.deepEqual(map.getTerrain(), style['terrain']);
+
+                t.end();
+            });
+        });
+
         t.test('updating terrain triggers style diffing using setTerrain operation', (t) => {
             t.test('removing terrain', (t) => {
                 const style = createStyle();
