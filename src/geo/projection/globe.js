@@ -24,7 +24,8 @@ import {TriangleIndexArray, GlobeVertexArray, LineIndexArray} from '../../data/a
 import type Transform from '../transform.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
 import GlobeTileTransform from './globe_tile_transform.js';
-import {furthestPixelDistanceOnSphere} from './far_z.js';
+import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from './far_z.js';
+import {number as interpolate} from '../../style-spec/util/interpolate.js';
 
 export const NORMALIZATION_BIT_RANGE = 15;
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
@@ -95,7 +96,14 @@ export default {
 
     farthestPixelDistance(tr: Transform): number {
         const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
-        return furthestPixelDistanceOnSphere(tr, pixelsPerMeter);
+        const globePixelDistance = farthestPixelDistanceOnSphere(tr, pixelsPerMeter);
+        const t = globeToMercatorTransition(tr.zoom);
+        if (t > 0.0) {
+            const mercatorPixelsPerMeter = mercatorZfromAltitude(1, tr.center.lat) * tr.worldSize;
+            const mercatorPixelDistance = farthestPixelDistanceOnPlane(tr, mercatorPixelsPerMeter);
+            return interpolate(globePixelDistance, mercatorPixelDistance, t);
+        }
+        return globePixelDistance;
     }
 };
 
