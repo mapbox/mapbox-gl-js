@@ -31,7 +31,7 @@ class Ray {
             return false;
         }
 
-        const centerToP = vec3.sub([], center, this.pos);
+        const centerToP = vec3.sub([], this.pos, center);
         const a = vec3.dot(this.dir, this.dir);
         const b = 2.0 * vec3.dot(centerToP, this.dir);
         const c = vec3.dot(centerToP, centerToP) - r * r;
@@ -55,7 +55,7 @@ class Ray {
             const t = (-b - Math.sqrt(d)) / (2.0 * a);
             if (t < 0.0) {
                 // Ray is pointing away from the sphere
-                out = vec3.scale(centerToP, r / vec3.length(centerToP));
+                vec3.scale(out, centerToP, r / vec3.length(centerToP));
                 return false;
             } else {
                 const dir = vec3.scale([], this.dir, t);
