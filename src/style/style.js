@@ -330,8 +330,9 @@ class Style extends Evented {
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
-        if (this.stylesheet.terrain) {
-            this._createTerrain(this.stylesheet.terrain, this.terrain ? this.terrain.drapeRenderMode : DrapeRenderMode.elevated);
+        const terrainSetForDrapingOnly = this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.deferred;
+        if (this.stylesheet.terrain && !terrainSetForDrapingOnly) {
+            this._createTerrain(this.stylesheet.terrain, DrapeRenderMode.elevated);
         }
         if (this.stylesheet.fog) {
             this._createFog(this.stylesheet.fog);
