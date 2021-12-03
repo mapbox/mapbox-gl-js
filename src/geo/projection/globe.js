@@ -27,8 +27,9 @@ import GlobeTileTransform from './globe_tile_transform.js';
 import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from './far_z.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 
-export const NORMALIZATION_BIT_RANGE = 15;
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
+const GLOBE_NORMALIZATION_BIT_RANGE = 15;
+const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
 const GLOBE_VERTEX_GRID_SIZE = 64;
 
 export default {
@@ -63,7 +64,7 @@ export default {
         // eslint-disable-next-line no-warning-comments
         // TODO: cached matrices!
         const bounds = globeTileBounds(id);
-        const normalizationMatrix = normalizeECEF(bounds);
+        const normalizationMatrix = globeNormalizeECEF(bounds);
         vec3.transformMat4(pos, pos, normalizationMatrix);
 
         return {x: pos[0], y: pos[1], z: pos[2]};
@@ -183,37 +184,36 @@ export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<n
     return [sx, sy, sz];
 }
 
-function normalizeECEF(bounds: Aabb): Float64Array {
+export function globeECEFNormalizationScale(bounds: Aabb) {
+    const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
+    return GLOBE_NORMALIZATION_MASK / maxExt;
+}
+
+export function globeNormalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
-
-    const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
-    const st = (1 << (NORMALIZATION_BIT_RANGE - 1)) - 1;
-
-    mat4.scale(m, m, [st, st, st]);
-    mat4.scale(m, m, [maxExtInv, maxExtInv, maxExtInv]);
+    const scale = globeECEFNormalizationScale(bounds);
+    mat4.scale(m, m, [scale, scale, scale]);
     mat4.translate(m, m, vec3.negate([], bounds.min));
-
     return m;
 }
 
-export function denormalizeECEF(bounds: Aabb): Float64Array {
+export function globeDenormalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
-
-    const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
-
-    // Denormalize points to the correct range
-    const st = 1.0 / ((1 << (NORMALIZATION_BIT_RANGE - 1)) - 1);
+    const scale = 1.0 / globeECEFNormalizationScale(bounds);
     mat4.translate(m, m, bounds.min);
-    mat4.scale(m, m, [maxExt, maxExt, maxExt]);
-    mat4.scale(m, m, [st, st, st]);
-
+    mat4.scale(m, m, [scale, scale, scale]);
     return m;
+}
+
+export function globeECEFUnitsToPixelScale(worldSize: number) {
+    const localRadius = EXTENT / (2.0 * Math.PI);
+    const wsRadius = worldSize / (2.0 * Math.PI);
+    return wsRadius / localRadius;
 }
 
 export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): mat4 {
-    const localRadius = EXTENT / (2.0 * Math.PI);
     const wsRadius = worldSize / (2.0 * Math.PI);
-    const s = wsRadius / localRadius;
+    const scale = globeECEFUnitsToPixelScale(worldSize);
 
     if (!offset) {
         const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
@@ -228,7 +228,7 @@ export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: 
     // transform the globe from reference coordinate space to world space
     const posMatrix = mat4.identity(new Float64Array(16));
     mat4.translate(posMatrix, posMatrix, [offset[0], offset[1], -wsRadius]);
-    mat4.scale(posMatrix, posMatrix, [s, s, s]);
+    mat4.scale(posMatrix, posMatrix, [scale, scale, scale]);
     mat4.rotateX(posMatrix, posMatrix, degToRad(-tr._center.lat));
     mat4.rotateY(posMatrix, posMatrix, degToRad(-tr._center.lng));
 
@@ -284,7 +284,7 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
 export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4) {
     const gridTileId = new CanonicalTileID(id.z, Math.pow(2, id.z) / 2, id.y);
     const bounds = globeTileBounds(gridTileId);
-    const decode = denormalizeECEF(bounds);
+    const decode = globeDenormalizeECEF(bounds);
     const posMatrix = mat4.clone(globeMatrix);
     mat4.mul(posMatrix, posMatrix, decode);
 
@@ -421,7 +421,7 @@ export class GlobeSharedBuffers {
         const boundsArray = new GlobeVertexArray();
 
         const bounds = globeTileBounds(new CanonicalTileID(sz, tiles / 2, sy));
-        const norm = normalizeECEF(bounds);
+        const norm = globeNormalizeECEF(bounds);
 
         const vertexExt = GLOBE_VERTEX_GRID_SIZE + 1;
         boundsArray.reserve(GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE);
