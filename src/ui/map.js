@@ -54,6 +54,7 @@ import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom.js';
 import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate.js';
 import defaultLocale from './default_locale.js';
 import type {TaskID} from '../util/task_queue.js';
+import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {
     LayerSpecification,
@@ -3229,6 +3230,39 @@ class Map extends Camera {
                     this._render(paintStartTimeStamp);
                 }
             });
+        }
+    }
+
+    _promiseTransform(transform: Transform) {
+        const sources = this.style && this.style._sourceCaches;
+        for (const id in sources) {
+            const source = sources[id];
+            source._promiseTransform(transform);
+        }
+    }
+
+    _rejectPromisedTransforms() {
+        const sources = this.style && this.style._sourceCaches;
+        for (const id in sources) {
+            const source = sources[id];
+            source._rejectPromisedTransforms();
+        }
+    }
+
+    _resolvePromisedTransforms(callback?: Callback<void>) {
+        const sources = this.style && this.style._sourceCaches;
+
+        let pending = Object.keys(sources).length;
+        function promiseResolved() {
+            pending--;
+            if (pending === 0 && callback) {
+                if (callback) callback();
+            }
+        }
+
+        for (const id in sources) {
+            const source = sources[id];
+            source._resolvePromisedTransforms(promiseResolved);
         }
     }
 

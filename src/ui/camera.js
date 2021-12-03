@@ -148,6 +148,10 @@ class Camera extends Evented {
     +_requestRenderFrame: (() => void) => TaskID;
     +_cancelRenderFrame: (_: TaskID) => void;
 
+    +_promiseTransform: (_: any) => void;
+    +_rejectPromisedTransforms: () => void;
+    +_resolvePromisedTransforms: (() => void) => void;
+
     constructor(transform: Transform, options: {bearingSnap: number}) {
         super();
         this._moving = false;
@@ -1361,6 +1365,7 @@ class Camera extends Evented {
         // function in van Wijk (2003).
 
         this.stop();
+        if (options.preload) this._rejectPromisedTransforms();
 
         options = extend({
             offset: [0, 0],
@@ -1474,7 +1479,7 @@ class Camera extends Evented {
 
         this._prepareEase(eventData, false);
 
-        this._ease((k) => {
+        const frame = (tr) => (k) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
             const scale = 1 / w(s);
@@ -1497,9 +1502,28 @@ class Camera extends Evented {
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             tr._updateCenterElevation();
 
-            this._fireMoveEvents(eventData);
+            if (options.preload) {
+                this._promiseTransform(tr);
+            } else {
+                this._fireMoveEvents(eventData);
+            }
+        };
 
-        }, () => this._afterEase(eventData), options);
+        if (options.preload) {
+            const framerateTarget = 60;
+            const frameTimeTarget = 1000 / (framerateTarget * options.duration);
+            const emulateFrame = frame(this.transform.clone());
+            for (let i = 0; i <= 1; i += frameTimeTarget) {
+                emulateFrame(i);
+            }
+
+            this._resolvePromisedTransforms(() => {
+                delete options.preload;
+                this._ease(frame(tr), () => this._afterEase(eventData), options);
+            });
+        } else {
+            this._ease(frame(tr), () => this._afterEase(eventData), options);
+        }
 
         return this;
     }

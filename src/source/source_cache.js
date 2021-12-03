@@ -47,6 +47,7 @@ class SourceCache extends Evented {
     _paused: boolean;
     _shouldReloadOnResume: boolean;
     _coveredTiles: {[_: number | string]: boolean};
+    _promisedTileIDs: {[_: number | string]: OverscaledTileID};
     transform: Transform;
     _isIdRenderable: (id: number, symbolLayer?: boolean) => boolean;
     used: boolean;
@@ -92,6 +93,7 @@ class SourceCache extends Evented {
         this._loadedParentTiles = {};
 
         this._coveredTiles = {};
+        this._promisedTileIDs = {};
         this._state = new SourceFeatureState();
     }
 
@@ -920,6 +922,46 @@ class SourceCache extends Evented {
             }
         }
         this._cache.filter(tile => !tile.hasDependency(namespaces, keys));
+    }
+
+    _promiseTransform(transform: Transform) {
+        const tileIDs = transform.coveringTiles({
+            tileSize: this._source.tileSize,
+            minzoom: this._source.minzoom,
+            maxzoom: this._source.maxzoom,
+            roundZoom: this._source.roundZoom,
+            reparseOverscaled: this._source.reparseOverscaled,
+            isTerrainDEM: this.usedForTerrain
+        });
+
+        for (const tileID of tileIDs) {
+            this._promisedTileIDs[tileID.key] = tileID;
+        }
+    }
+
+    _rejectPromisedTransforms() {
+        this._promisedTileIDs = {};
+    }
+
+    _resolvePromisedTransforms(callback?: Callback<void>) {
+        let pending = Object.keys(this._promisedTileIDs).length;
+        function tileLoaded(tile: Tile, id: number, previousState: TileState, err: ?Error) {
+            this._tileLoaded(tile, id, previousState, err);
+
+            pending--;
+            if (pending === 0) {
+                this._rejectPromisedTransforms();
+                if (callback) callback();
+            }
+        }
+
+        const painter = this.map ? this.map.painter : null;
+        for (const key in this._promisedTileIDs) {
+            const tileID = this._promisedTileIDs[key];
+            const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
+            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, isRaster);
+            this._loadTile(tile, tileLoaded.bind(this, tile, tileID.key, tile.state));
+        }
     }
 }
 
