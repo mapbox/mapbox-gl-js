@@ -16,7 +16,7 @@ import type {
 } from '../data/array_types.js';
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix, denormalizeECEF, globeTileBounds} from '../geo/projection/globe.js';
+import {calculateGlobeMatrix, globeDenormalizeECEF, globeTileBounds} from '../geo/projection/globe.js';
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 const FlipState = {
@@ -91,7 +91,7 @@ function getLabelPlaneMatrix(posMatrix: mat4,
             const labelWorldSize = transform.worldSize / transform._projectionScaler;
             m = calculateGlobeMatrix(transform, labelWorldSize, [0, 0]);
 
-            mat4.multiply(m, m, denormalizeECEF(globeTileBounds(tileID)));
+            mat4.multiply(m, m, globeDenormalizeECEF(globeTileBounds(tileID)));
         } else {
             const s = mat2.invert([], pixelsToTileUnits);
             m[0] = s[0];
