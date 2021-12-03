@@ -9,18 +9,13 @@ import {
     latLngToECEF,
     globeTileLatLngCorners,
     globeTileBounds,
+    globeECEFNormalizationScale,
+    globeECEFUnitsToPixelScale,
     calculateGlobeMatrix,
-    denormalizeECEF,
-    NORMALIZATION_BIT_RANGE,
+    globeNormalizeECEF,
+    globeDenormalizeECEF,
     GLOBE_RADIUS
 } from './globe.js';
-
-function tileNormalizationScale(id: CanonicalTileID) {
-    const bounds = globeTileBounds(id);
-    const maxExtInv = 1.0 / Math.max(...vec3.sub([], bounds.max, bounds.min));
-    const st = (1 << (NORMALIZATION_BIT_RANGE - 1)) - 1;
-    return st * maxExtInv;
-}
 
 export default class GlobeTileTransform {
     _tr: Transform;
@@ -34,34 +29,30 @@ export default class GlobeTileTransform {
     }
 
     createTileMatrix(id: UnwrappedTileID): mat4 {
-        const decode = denormalizeECEF(globeTileBounds(id.canonical));
+        const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
         return mat4.multiply([], this._globeMatrix, decode);
     }
 
     createInversionMatrix(id: UnwrappedTileID): mat4 {
         const center = this._tr.center;
-        const localRadius = EXTENT / (2.0 * Math.PI);
-        const wsRadiusGlobe = this._worldSize / (2.0 * Math.PI);
-        const sGlobe = wsRadiusGlobe / localRadius;
-
+        const ecefUnitsToPixels = globeECEFUnitsToPixelScale(this._worldSize);
         const matrix = mat4.identity(new Float64Array(16));
-        mat4.scale(matrix, matrix, [sGlobe, sGlobe, 1.0]);
-        mat4.rotateX(matrix, matrix, degToRad(-center.lat));
-        mat4.rotateY(matrix, matrix, degToRad(-center.lng));
+        const encode = globeNormalizeECEF(globeTileBounds(id.canonical));
+        mat4.multiply(matrix, matrix, encode);
+        mat4.rotateY(matrix, matrix, degToRad(center.lng));
+        mat4.rotateX(matrix, matrix, degToRad(center.lat));
 
-        const decode = denormalizeECEF(globeTileBounds(id.canonical));
-        mat4.multiply(matrix, matrix, decode);
-        mat4.invert(matrix, matrix);
+        mat4.scale(matrix, matrix, [1.0 / ecefUnitsToPixels, 1.0 / ecefUnitsToPixels, 1.0]);
 
-        const z = mercatorZfromAltitude(1, center.lat) * this._worldSize;
-        const projectionScaler = z / this._tr.pixelsPerMeter;
-
-        const ws = this._worldSize / projectionScaler;
-        const wsRadiusScaled = ws / (2.0 * Math.PI);
-        const sMercator = wsRadiusScaled / localRadius;
+        const PPMMercator = mercatorZfromAltitude(1.0, center.lat) * this._worldSize;
+        const globeToMercatorPPMRatio = PPMMercator / this._tr.pixelsPerMeter;
+        const worldSizeMercator = this._worldSize / globeToMercatorPPMRatio;
+        const wsRadius = worldSizeMercator / (2.0 * Math.PI);
+        const localRadius = EXTENT / (2.0 * Math.PI);
+        const ecefUnitsToMercatorPixels = wsRadius / localRadius;
 
         const scaling = mat4.identity(new Float64Array(16));
-        mat4.scale(scaling, scaling, [sMercator, sMercator, 1.0]);
+        mat4.scale(scaling, scaling, [ecefUnitsToMercatorPixels, ecefUnitsToMercatorPixels, 1.0]);
 
         return mat4.multiply(matrix, matrix, scaling);
     }
@@ -92,8 +83,7 @@ export default class GlobeTileTransform {
 
     upVectorScale(id: CanonicalTileID): number {
         const pixelsPerMeterECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
-        const maxTileScale = tileNormalizationScale(id);
-        return pixelsPerMeterECEF * maxTileScale;
+        return pixelsPerMeterECEF * globeECEFNormalizationScale(globeTileBounds(id));
     }
 
     pointCoordinate(x: number, y: number): MercatorCoordinate {
