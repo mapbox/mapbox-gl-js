@@ -1,5 +1,5 @@
 import {test} from '../../../util/test.js';
-import {farthestPixelDistanceOnPlane, furthestPixelDistanceOnSphere} from '../../../../src/geo/projection/far_z.js';
+import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from '../../../../src/geo/projection/far_z.js';
 import {getProjection} from '../../../../src/geo/projection/index.js';
 import Transform from '../../../../src/geo/transform.js';
 
@@ -34,7 +34,7 @@ test('FarZ', (t) => {
         t.end();
     });
 
-    t.test('furthestPixelDistanceOnSphere', (t) => {
+    t.test('farthestPixelDistanceOnSphere', (t) => {
         const tr = new Transform();
         tr.resize(100, 100);
 
@@ -42,22 +42,22 @@ test('FarZ', (t) => {
         const pixelsPerMeter = globe.pixelsPerMeter(tr.center.lat, tr.worldSize);
 
         // whole globe is visible. Farthest point on the surface where normal is parallel to the ray
-        t.same(furthestPixelDistanceOnSphere(tr, pixelsPerMeter).toFixed(7), 204.8304807);
+        t.same(farthestPixelDistanceOnSphere(tr, pixelsPerMeter).toFixed(7), 204.8304807);
 
         tr.center = {lng: 0.0, lat: 70.0};
-        t.same(furthestPixelDistanceOnSphere(tr, pixelsPerMeter).toFixed(7), 204.8304807);
+        t.same(farthestPixelDistanceOnSphere(tr, pixelsPerMeter).toFixed(7), 204.8304807);
 
         tr.zoom = 4.0;
         tr.center = {lng: 0.0, lat: 0.0};
         tr.pitch = 45.0;
-        t.same(furthestPixelDistanceOnSphere(tr, pixelsPerMeter).toFixed(7), 257.0070650);
+        t.same(farthestPixelDistanceOnSphere(tr, pixelsPerMeter).toFixed(7), 257.0070650);
 
         tr.zoom = 4.5;
         tr.pitch = 0.0;
-        t.same(furthestPixelDistanceOnSphere(tr, pixelsPerMeter).toFixed(7), 160.3579244);
+        t.same(farthestPixelDistanceOnSphere(tr, pixelsPerMeter).toFixed(7), 160.3579244);
 
         tr.zoom = 5.0;
-        t.same(furthestPixelDistanceOnSphere(tr, pixelsPerMeter).toFixed(7), 159.9235165);
+        t.same(farthestPixelDistanceOnSphere(tr, pixelsPerMeter).toFixed(7), 159.9235165);
 
         t.end();
     });

@@ -26,7 +26,7 @@ export function farthestPixelDistanceOnPlane(tr: Transform, pixelsPerMeter: numb
     return Math.min(furthestDistance * 1.01, horizonDistance);
 }
 
-export function furthestPixelDistanceOnSphere(tr: Transform, pixelsPerMeter: number): number {
+export function farthestPixelDistanceOnSphere(tr: Transform, pixelsPerMeter: number): number {
     // Find farthest distance of the globe that is potentially visible to the camera.
     // First check if the view frustum is fully covered by the map by casting a ray
     // from the top left/right corner and see if it intersects with the globe. In case
