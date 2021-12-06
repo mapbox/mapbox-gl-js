@@ -29,7 +29,7 @@ export default class GlobeTileTransform {
     }
 
     createTileMatrix(id: UnwrappedTileID): mat4 {
-        const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
+        const decode = globeDenormalizeECEF(id.canonical);
         return mat4.multiply([], this._globeMatrix, decode);
     }
 
@@ -37,7 +37,7 @@ export default class GlobeTileTransform {
         const center = this._tr.center;
         const ecefUnitsToPixels = globeECEFUnitsToPixelScale(this._worldSize);
         const matrix = mat4.identity(new Float64Array(16));
-        const encode = globeNormalizeECEF(globeTileBounds(id.canonical));
+        const encode = globeNormalizeECEF(id.canonical);
         mat4.multiply(matrix, matrix, encode);
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
         mat4.rotateX(matrix, matrix, degToRad(center.lat));

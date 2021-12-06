@@ -31,6 +31,7 @@ export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
 const GLOBE_VERTEX_GRID_SIZE = 64;
+const GLOBE_MAX_ECEF_ZOOM_PRECISION = 14;
 
 export default {
     name: 'globe',
@@ -63,8 +64,7 @@ export default {
 
         // eslint-disable-next-line no-warning-comments
         // TODO: cached matrices!
-        const bounds = globeTileBounds(id);
-        const normalizationMatrix = globeNormalizeECEF(bounds);
+        const normalizationMatrix = globeNormalizeECEF(id);
         vec3.transformMat4(pos, pos, normalizationMatrix);
 
         return {x: pos[0], y: pos[1], z: pos[2]};
@@ -189,19 +189,25 @@ export function globeECEFNormalizationScale(bounds: Aabb) {
     return GLOBE_NORMALIZATION_MASK / maxExt;
 }
 
-export function globeNormalizeECEF(bounds: Aabb): Float64Array {
+export function globeNormalizeECEF(id: CanonicalTileID): Float64Array {
+    const bounds = globeTileBounds(id);
     const m = mat4.identity(new Float64Array(16));
-    const scale = globeECEFNormalizationScale(bounds);
-    mat4.scale(m, m, [scale, scale, scale]);
-    mat4.translate(m, m, vec3.negate([], bounds.min));
+    if (id.z >= GLOBE_MAX_ECEF_ZOOM_PRECISION) {
+        const scale = globeECEFNormalizationScale(bounds);
+        mat4.scale(m, m, [scale, scale, scale]);
+        mat4.translate(m, m, vec3.negate([], bounds.min));
+    }
     return m;
 }
 
-export function globeDenormalizeECEF(bounds: Aabb): Float64Array {
+export function globeDenormalizeECEF(id: CanonicalTileID): Float64Array {
+    const bounds = globeTileBounds(id);
     const m = mat4.identity(new Float64Array(16));
-    const scale = 1.0 / globeECEFNormalizationScale(bounds);
-    mat4.translate(m, m, bounds.min);
-    mat4.scale(m, m, [scale, scale, scale]);
+    if (id.z >= GLOBE_MAX_ECEF_ZOOM_PRECISION) {
+        const scale = 1.0 / globeECEFNormalizationScale(bounds);
+        mat4.translate(m, m, bounds.min);
+        mat4.scale(m, m, [scale, scale, scale]);
+    }
     return m;
 }
 
@@ -283,8 +289,7 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
 
 export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4) {
     const gridTileId = new CanonicalTileID(id.z, Math.pow(2, id.z) / 2, id.y);
-    const bounds = globeTileBounds(gridTileId);
-    const decode = globeDenormalizeECEF(bounds);
+    const decode = globeDenormalizeECEF(gridTileId);
     const posMatrix = mat4.clone(globeMatrix);
     mat4.mul(posMatrix, posMatrix, decode);
 
@@ -419,9 +424,7 @@ export class GlobeSharedBuffers {
         const gridTileId = new CanonicalTileID(sz, sx, sy);
         const [latLngTL, latLngBR] = globeTileLatLngCorners(gridTileId);
         const boundsArray = new GlobeVertexArray();
-
-        const bounds = globeTileBounds(new CanonicalTileID(sz, tiles / 2, sy));
-        const norm = globeNormalizeECEF(bounds);
+        const norm = globeNormalizeECEF(new CanonicalTileID(sz, tiles / 2, sy));
 
         const vertexExt = GLOBE_VERTEX_GRID_SIZE + 1;
         boundsArray.reserve(GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE);

@@ -91,7 +91,7 @@ function getLabelPlaneMatrix(posMatrix: mat4,
             const labelWorldSize = transform.worldSize / transform._projectionScaler;
             m = calculateGlobeMatrix(transform, labelWorldSize, [0, 0]);
 
-            mat4.multiply(m, m, globeDenormalizeECEF(globeTileBounds(tileID)));
+            mat4.multiply(m, m, globeDenormalizeECEF(tileID));
         } else {
             const s = mat2.invert([], pixelsToTileUnits);
             m[0] = s[0];
