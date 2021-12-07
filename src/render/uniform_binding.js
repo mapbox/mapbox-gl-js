@@ -118,17 +118,19 @@ class UniformMatrix4f extends Uniform<Float32Array> {
         // The vast majority of matrix comparisons that will trip this set
         // happen at i=12 or i=0, so we check those first to avoid lots of
         // unnecessary iteration:
-        if (v[12] !== this.current[12] || v[0] !== this.current[0]) {
-            this.current = v;
-            this.gl.uniformMatrix4fv(this.location, false, v);
-            return;
-        }
-
-        for (let i = 1; i < 16; i++) {
-            if (v[i] !== this.current[i]) {
+        if (v !== undefined) {
+            if (v[12] !== this.current[12] || v[0] !== this.current[0]) {
                 this.current = v;
                 this.gl.uniformMatrix4fv(this.location, false, v);
-                break;
+                return;
+            }
+
+            for (let i = 1; i < 16; i++) {
+                if (v[i] !== this.current[i]) {
+                    this.current = v;
+                    this.gl.uniformMatrix4fv(this.location, false, v);
+                    break;
+                }
             }
         }
     }
