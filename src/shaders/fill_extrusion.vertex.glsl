@@ -64,12 +64,14 @@ void main() {
 #endif
 
 #ifdef PROJECTION_GLOBE_VIEW
-    // If t > 0 (top) we always add the lift, otherwise (group) we only add it if z > 0
-    float top_offset = float((t + pos.z) > 0.0) * u_height_lift;
+    float lift = u_height_lift;
+#ifndef TERRAIN
+    // If t > 0 (top) we always add the lift, otherwise (ground) we only add it if z > 0
+    lift = float((t + pos.z) > 0.0) * lift;
+#endif
     vec3 globe_normal = normalize(mix(a_pos_normal_3 / 16384.0, u_up_dir, u_zoom_transition));
-    vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * (pos.z + top_offset));
+    vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * (pos.z + lift));
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, pos.xy, u_tile_id, u_merc_center) + u_up_dir * u_tile_up_scale * pos.z;
-
     pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
 #endif
 
