@@ -228,6 +228,7 @@ export class Terrain extends Elevation {
     _tilesDirty: {[string]: {[number]: boolean}};
     _invalidateRenderCache: boolean;
 
+    _emptyDepthBufferTexture: ?Texture;
     _emptyDEMTexture: ?Texture;
     _initializing: ?boolean;
     _emptyDEMTextureDirty: ?boolean;
@@ -378,6 +379,7 @@ export class Terrain extends Elevation {
     destroy() {
         this._disable();
         if (this._emptyDEMTexture) this._emptyDEMTexture.destroy();
+        if (this._emptyDepthBufferTexture) this._emptyDepthBufferTexture.destroy();
         this.pool.forEach(fbo => fbo.fb.destroy());
         this.pool = [];
         if (this._depthFBO) {
@@ -532,6 +534,19 @@ export class Terrain extends Elevation {
             this._emptyDEMTexture : this._updateEmptyDEMTexture();
     }
 
+    get emptyDepthBufferTexture(): Texture {
+        const context = this.painter.context;
+        const gl = context.gl;
+        if (!this._emptyDepthBufferTexture) {
+            const image = {
+                width: 1, height: 1,
+                data: new Uint8Array([255, 255, 255, 255])
+            };
+            this._emptyDepthBufferTexture = new Texture(context, image, gl.RGBA, {premultiply: false});
+        }
+        return this._emptyDepthBufferTexture;
+    }
+
     _getLoadedAreaMinimum(): number {
         let nonzero = 0;
         const min = this._visibleDemTiles.reduce((acc, tile) => {
@@ -629,10 +644,13 @@ export class Terrain extends Elevation {
             demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
+        context.activeTexture.set(gl.TEXTURE3);
         if (options && options.useDepthForOcclusion) {
-            context.activeTexture.set(gl.TEXTURE3);
             this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
             uniforms['u_depth_size_inv'] = [1 / this._depthFBO.width, 1 / this._depthFBO.height];
+        } else {
+            this.emptyDepthBufferTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            uniforms['u_depth_size_inv'] = [1, 1];
         }
 
         if (options && options.useMeterToDem && demTile) {

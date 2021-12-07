@@ -106,10 +106,14 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         segmentsRenderStates.sort((a, b) => a.sortKey - b.sortKey);
     }
 
+    const isGlobeProjection = painter.transform.projection.name === 'globe';
+    const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
+
     for (const segmentsState of segmentsRenderStates) {
         const {programConfiguration, program, layoutVertexBuffer, indexBuffer, uniformValues, tile} = segmentsState.state;
         const segments = segmentsState.segments;
-        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, {useDepthForOcclusion: true});
+
+        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, terrainOptions);
 
         painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
 

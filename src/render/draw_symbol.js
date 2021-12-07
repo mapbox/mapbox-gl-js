@@ -414,7 +414,10 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     for (const segmentState of tileRenderState) {
         const state = segmentState.state;
         if (painter.terrain) {
-            const options = {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv};
+            const options = {
+                useDepthForOcclusion: !isGlobeProjection,
+                labelPlaneMatrixInv: state.labelPlaneMatrixInv
+            };
             painter.terrain.setupElevationDraw(state.tile, state.program, options);
         }
         context.activeTexture.set(gl.TEXTURE0);
