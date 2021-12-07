@@ -47,7 +47,6 @@ class SourceCache extends Evented {
     _paused: boolean;
     _shouldReloadOnResume: boolean;
     _coveredTiles: {[_: number | string]: boolean};
-    _promisedTileIDs: {[_: number | string]: OverscaledTileID};
     transform: Transform;
     _isIdRenderable: (id: number, symbolLayer?: boolean) => boolean;
     used: boolean;
@@ -93,7 +92,6 @@ class SourceCache extends Evented {
         this._loadedParentTiles = {};
 
         this._coveredTiles = {};
-        this._promisedTileIDs = {};
         this._state = new SourceFeatureState();
     }
 
