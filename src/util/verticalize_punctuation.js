@@ -2,91 +2,12 @@
 
 import {charHasRotatedVerticalOrientation} from './script_detection.js';
 
-export const verticalizedCharacterMap = {
-    '!': '︕',
-    '#': '＃',
-    '$': '＄',
-    '%': '％',
-    '&': '＆',
-    '(': '︵',
-    ')': '︶',
-    '*': '＊',
-    '+': '＋',
-    ',': '︐',
-    '-': '︲',
-    '.': '・',
-    '/': '／',
-    ':': '︓',
-    ';': '︔',
-    '<': '︿',
-    '=': '＝',
-    '>': '﹀',
-    '?': '︖',
-    '@': '＠',
-    '[': '﹇',
-    '\\': '＼',
-    ']': '﹈',
-    '^': '＾',
-    '_': '︳',
-    '`': '｀',
-    '{': '︷',
-    '|': '―',
-    '}': '︸',
-    '~': '～',
-    '¢': '￠',
-    '£': '￡',
-    '¥': '￥',
-    '¦': '￤',
-    '¬': '￢',
-    '¯': '￣',
-    '–': '︲',
-    '—': '︱',
-    '‘': '﹃',
-    '’': '﹄',
-    '“': '﹁',
-    '”': '﹂',
-    '…': '︙',
-    '‧': '・',
-    '₩': '￦',
-    '、': '︑',
-    '。': '︒',
-    '〈': '︿',
-    '〉': '﹀',
-    '《': '︽',
-    '》': '︾',
-    '「': '﹁',
-    '」': '﹂',
-    '『': '﹃',
-    '』': '﹄',
-    '【': '︻',
-    '】': '︼',
-    '〔': '︹',
-    '〕': '︺',
-    '〖': '︗',
-    '〗': '︘',
-    '！': '︕',
-    '（': '︵',
-    '）': '︶',
-    '，': '︐',
-    '－': '︲',
-    '．': '・',
-    '：': '︓',
-    '；': '︔',
-    '＜': '︿',
-    '＞': '﹀',
-    '？': '︖',
-    '［': '﹇',
-    '］': '﹈',
-    '＿': '︳',
-    '｛': '︷',
-    '｜': '―',
-    '｝': '︸',
-    '｟': '︵',
-    '｠': '︶',
-    '｡': '︒',
-    '｢': '﹁',
-    '｣': '﹂'
-};
+export const verticalizedCharacterMap = (() => {
+    const pairs = '!︕#＃$＄%％&＆(︵)*＊+＋,︐-︲.・/／:︓;︔<︿=＝>﹀?︖@＠[﹇\\＼]^＾_︳`｀{︷|―}~～¢￠£￡¥￥¦￤¬￢¯￣–︲—︱‘﹃’﹄“﹁”﹂…︙‧・₩￦、︑。︒〈︿〉﹀《︽》︾「﹁」﹂『﹃』﹄【︻】︼〔︹〕︺〖︗〗︘！︕（︵）︶，︐－︲．・：︓；︔＜︿＞﹀？︖［﹇］﹈＿︳｛︷｜―｝︸｟︵｠︶｡︒｢﹁｣﹂';
+    const map = {};
+    for (let i = 0; i < pairs.length; i += 2) map[pairs[i]] = pairs[i + 1];
+    return map;
+})();
 
 export default function verticalizePunctuation(input: string, skipContextChecking: boolean) {
     let output = '';
@@ -111,12 +32,9 @@ export default function verticalizePunctuation(input: string, skipContextCheckin
 }
 
 export function isVerticalClosePunctuation(chr: string) {
-    return chr === '︶' || chr === '﹈' || chr === '︸' || chr === '﹄' || chr === '﹂' || chr === '︾' ||
-           chr === '︼' || chr === '︺' || chr === '︘' || chr === '﹀' || chr === '︐' || chr === '︓' ||
-           chr === '︔' || chr === '｀' || chr === '￣' || chr === '︑' || chr === '︒';
+    return '︶﹈︸﹄﹂︾︼︺︘﹀︐︓︔｀￣︑︒'.includes(chr);
 }
 
 export function isVerticalOpenPunctuation(chr: string) {
-    return chr === '︵' || chr === '﹇' || chr === '︷' || chr === '﹃' || chr === '﹁' || chr === '︽' ||
-           chr === '︻' || chr === '︹' || chr === '︗' || chr === '︿';
+    return '︵﹇︷﹃﹁︽︻︹︗︿'.includes(chr);
 }
