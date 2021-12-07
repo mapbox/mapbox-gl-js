@@ -1,7 +1,7 @@
 // @flow
 
 import {version} from '../../package.json';
-import {extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
+import {asyncAll, extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
@@ -30,6 +30,7 @@ import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
+import SourceCache from '../source/source_cache.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -3233,37 +3234,19 @@ class Map extends Camera {
         }
     }
 
-    _promiseTransform(transform: Transform) {
-        const sources = this.style && this.style._sourceCaches;
-        for (const id in sources) {
-            const source = sources[id];
-            source._promiseTransform(transform);
-        }
-    }
-
-    _rejectPromisedTransforms() {
-        const sources = this.style && this.style._sourceCaches;
-        for (const id in sources) {
-            const source = sources[id];
-            source._rejectPromisedTransforms();
-        }
-    }
-
-    _resolvePromisedTransforms(callback?: Callback<void>) {
-        const sources = this.style && this.style._sourceCaches;
-
-        let pending = Object.keys(sources).length;
-        function promiseResolved() {
-            pending--;
-            if (pending === 0 && callback) {
-                if (callback) callback();
-            }
+    _preloadTiles(transform: Transform | Array<Transform>, callback?: Callback<void>) {
+        if (!callback) {
+            return new Promise(resolve => this._preloadTiles(transform, resolve));
         }
 
-        for (const id in sources) {
-            const source = sources[id];
-            source._resolvePromisedTransforms(promiseResolved);
-        }
+        // $FlowFixMe
+        const sources: Array<SourceCache> = this.style && Object.values(this.style._sourceCaches);
+        asyncAll(sources, (source, done) => source._preloadTiles(transform, done), () => {
+            this.triggerRepaint();
+            callback();
+        });
+
+        return this;
     }
 
     _onWindowOnline() {

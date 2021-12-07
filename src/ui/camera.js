@@ -25,6 +25,7 @@ import type Transform from '../geo/transform.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
 import type {TaskID} from '../util/task_queue.js';
+import type {Callback} from '../types/callback.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import {Aabb, Frustum} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets.js';
@@ -148,9 +149,7 @@ class Camera extends Evented {
     +_requestRenderFrame: (() => void) => TaskID;
     +_cancelRenderFrame: (_: TaskID) => void;
 
-    +_promiseTransform: (_: any) => void;
-    +_rejectPromisedTransforms: () => void;
-    +_resolvePromisedTransforms: (() => void) => void;
+    +_preloadTiles: (transform: Transform | Array<Transform>, callback?: Callback<any>) => any;
 
     constructor(transform: Transform, options: {bearingSnap: number}) {
         super();
@@ -1365,7 +1364,6 @@ class Camera extends Evented {
         // function in van Wijk (2003).
 
         this.stop();
-        if (options.preload) this._rejectPromisedTransforms();
 
         options = extend({
             offset: [0, 0],
@@ -1472,13 +1470,7 @@ class Camera extends Evented {
             options.duration = 0;
         }
 
-        this._zooming = true;
-        this._rotating = (startBearing !== bearing);
-        this._pitching = (pitch !== startPitch);
-        this._padding = !tr.isPaddingEqual(padding);
-
-        this._prepareEase(eventData, false);
-
+        const predictedTransforms = [];
         const frame = (tr) => (k) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
@@ -1503,27 +1495,34 @@ class Camera extends Evented {
             tr._updateCenterElevation();
 
             if (options.preload) {
-                this._promiseTransform(tr);
+                predictedTransforms.push(tr.clone());
             } else {
                 this._fireMoveEvents(eventData);
             }
         };
 
-        if (options.preload) {
-            const framerateTarget = 60;
-            const frameTimeTarget = 1000 / (framerateTarget * options.duration);
-            const emulateFrame = frame(this.transform.clone());
-            for (let i = 0; i <= 1; i += frameTimeTarget) {
-                emulateFrame(i);
-            }
-
-            this._resolvePromisedTransforms(() => {
-                delete options.preload;
-                this._ease(frame(tr), () => this._afterEase(eventData), options);
-            });
-        } else {
-            this._ease(frame(tr), () => this._afterEase(eventData), options);
+        const framerateTarget = 60;
+        const frameTimeTarget = 1000 / (framerateTarget * options.duration);
+        const emulateFrame = frame(tr.clone());
+        for (let i = 0; i <= 1; i += frameTimeTarget) {
+            emulateFrame(i);
         }
+
+        // always preload tiles for predicted transforms
+        this._preloadTiles(predictedTransforms);
+
+        // do not move camera on preload
+        if (options.preload) {
+            return;
+        }
+
+        this._zooming = true;
+        this._rotating = (startBearing !== bearing);
+        this._pitching = (pitch !== startPitch);
+        this._padding = !tr.isPaddingEqual(padding);
+
+        this._prepareEase(eventData, false);
+        this._ease(frame(tr), () => this._afterEase(eventData), options);
 
         return this;
     }

@@ -3,7 +3,7 @@
 import Tile from './tile.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import TileCache from './tile_cache.js';
-import {keysDifference, values} from '../util/util.js';
+import {asyncAll, keysDifference, values} from '../util/util.js';
 import Context from '../gl/context.js';
 import Point from '@mapbox/point-geometry';
 import browser from '../util/browser.js';
@@ -924,44 +924,44 @@ class SourceCache extends Evented {
         this._cache.filter(tile => !tile.hasDependency(namespaces, keys));
     }
 
-    _promiseTransform(transform: Transform) {
-        const tileIDs = transform.coveringTiles({
-            tileSize: this._source.tileSize,
-            minzoom: this._source.minzoom,
-            maxzoom: this._source.maxzoom,
-            roundZoom: this._source.roundZoom,
-            reparseOverscaled: this._source.reparseOverscaled,
-            isTerrainDEM: this.usedForTerrain
-        });
-
-        for (const tileID of tileIDs) {
-            this._promisedTileIDs[tileID.key] = tileID;
+    /**
+     * Preloads all tiles that will be requested for one or a series of transformations
+     * @private
+     * @returns {Object} Returns `this` | Promise.
+     */
+    _preloadTiles(transform: Transform | Array<Transform>, callback?: Callback<any>) {
+        if (!callback) {
+            return new Promise(resolve => this._preloadTiles(transform, resolve));
         }
-    }
 
-    _rejectPromisedTransforms() {
-        this._promisedTileIDs = {};
-    }
+        // $FlowFixMe
+        const coveringTilesIDs = new Map();
+        const transforms = Array.isArray(transform) ? transform : [transform];
 
-    _resolvePromisedTransforms(callback?: Callback<void>) {
-        let pending = Object.keys(this._promisedTileIDs).length;
-        function tileLoaded(tile: Tile, id: number, previousState: TileState, err: ?Error) {
-            this._tileLoaded(tile, id, previousState, err);
+        for (const tr of transforms) {
+            const tileIDs = tr.coveringTiles({
+                tileSize: this._source.tileSize,
+                minzoom: this._source.minzoom,
+                maxzoom: this._source.maxzoom,
+                roundZoom: this._source.roundZoom,
+                reparseOverscaled: this._source.reparseOverscaled,
+                isTerrainDEM: this.usedForTerrain
+            });
 
-            pending--;
-            if (pending === 0) {
-                this._rejectPromisedTransforms();
-                if (callback) callback();
+            for (const tileID of tileIDs) {
+                coveringTilesIDs.set(tileID.key, tileID);
             }
         }
 
+        const tileIDs = Array.from(coveringTilesIDs.values());
         const painter = this.map ? this.map.painter : null;
-        for (const key in this._promisedTileIDs) {
-            const tileID = this._promisedTileIDs[key];
-            const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
+        const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
+        const loadTileID = (tileID, done) => {
             const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, isRaster);
-            this._loadTile(tile, tileLoaded.bind(this, tile, tileID.key, tile.state));
-        }
+            this._loadTile(tile, done);
+        };
+
+        asyncAll(tileIDs, loadTileID, callback);
     }
 }
 
