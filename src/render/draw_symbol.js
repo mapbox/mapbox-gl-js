@@ -415,7 +415,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const state = segmentState.state;
         if (painter.terrain) {
             const options = {
-                useDepthForOcclusion: isGlobeProjection ? false : true,
+                useDepthForOcclusion: !isGlobeProjection,
                 labelPlaneMatrixInv: state.labelPlaneMatrixInv
             };
             painter.terrain.setupElevationDraw(state.tile, state.program, options);

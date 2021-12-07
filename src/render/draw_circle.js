@@ -107,7 +107,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     }
 
     const isGlobeProjection = painter.transform.projection.name === 'globe';
-    const terrainOptions = {useDepthForOcclusion: isGlobeProjection ? false : true};
+    const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
 
     for (const segmentsState of segmentsRenderStates) {
         const {programConfiguration, program, layoutVertexBuffer, indexBuffer, uniformValues, tile} = segmentsState.state;
