@@ -538,27 +538,6 @@ export class Terrain extends Elevation {
         return this._emptyDepthBufferTexture;
     }
 
-    _updateEmptyDepthBufferTexture(): Texture {
-        const context = this.painter.context;
-        const gl = context.gl;
-        context.activeTexture.set(gl.TEXTURE2);
-
-        const min = this._getLoadedAreaMinimum();
-        const image = {
-            width: 1, height: 1,
-            data: new Uint8Array(DEMData.pack(min, ((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding))
-        };
-
-        this._emptyDEMTextureDirty = false;
-        let texture = this._emptyDEMTexture;
-        if (!texture) {
-            texture = this._emptyDEMTexture = new Texture(context, image, gl.RGBA, {premultiply: false});
-        } else {
-            texture.update(image, {premultiply: false});
-        }
-        return texture;
-    }
-
     _getLoadedAreaMinimum(): number {
         let nonzero = 0;
         const min = this._visibleDemTiles.reduce((acc, tile) => {
