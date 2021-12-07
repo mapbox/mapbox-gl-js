@@ -324,59 +324,25 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
 function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>) {
     if (painter.transform.projection.name === 'globe') {
-        assert(painter.renderPass === 'offscreen');
+        return;
+    }
 
-        const context = painter.context;
-        const gl = context.gl;
-        const tr = painter.transform;
+    assert(painter.renderPass === 'offscreen');
 
-        context.clear({depth: 1});
-        const program = painter.useProgram('globeDepth');
-        const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
-        const globeMercatorMatrix = calculateGlobeMercatorMatrix(tr);
-        const globeMatrix = calculateGlobeMatrix(tr, tr.worldSize);
-        const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
-        const sharedBuffers = painter.globeSharedBuffers;
+    const context = painter.context;
+    const gl = context.gl;
 
-        for (const coord of tileIDs) {
-            const tile = sourceCache.getTile(coord);
-            const tiles = Math.pow(2, coord.canonical.z);
+    context.clear({depth: 1});
+    const program = painter.useProgram('terrainDepth');
+    const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
-            const [gridBuffer] = globeBuffersForTileMesh(painter, tile, coord, tiles);
+    for (const coord of tileIDs) {
+        const tile = sourceCache.getTile(coord);
+        const uniformValues = terrainRasterUniformValues(coord.projMatrix, 0);
+        terrain.setupElevationDraw(tile, program);
 
-            const gridTileId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
-            const elevationOptions = {elevationTileID: gridTileId};
-            terrain.setupElevationDraw(tile, program, elevationOptions);
-
-            const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
-            const uniformValues = globeRasterUniformValues(
-                tr.projMatrix, posMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter,
-                globeUpVectorMatrix(coord.canonical, tiles));
-
-            if (sharedBuffers) {
-                program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
-                    uniformValues, "globe_raster_depth", gridBuffer, sharedBuffers.gridIndexBuffer, sharedBuffers.gridSegments);
-            }
-        }
-    } else {
-        assert(painter.renderPass === 'offscreen');
-
-        const context = painter.context;
-        const gl = context.gl;
-
-        context.clear({depth: 1});
-        const program = painter.useProgram('terrainDepth');
-        const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
-
-        for (const coord of tileIDs) {
-            const tile = sourceCache.getTile(coord);
-            const uniformValues = terrainRasterUniformValues(coord.projMatrix, 0);
-            terrain.setupElevationDraw(tile, program);
-
-            program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
-                uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
-        }
+        program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
+            uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
     }
 }
 
