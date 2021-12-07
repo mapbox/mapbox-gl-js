@@ -211,7 +211,7 @@ class Program<Us: UniformBindings> {
         context.setCullFace(cullFaceMode);
 
         for (const name in this.fixedUniforms) {
-            if (uniformValues[name] !== undefined) this.fixedUniforms[name].set(uniformValues[name]);
+            this.fixedUniforms[name].set(uniformValues[name]);
         }
 
         if (configuration) {
