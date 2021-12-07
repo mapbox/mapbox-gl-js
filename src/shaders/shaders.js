@@ -144,8 +144,7 @@ export default {
     skyboxGradient: compile(skyboxGradientFrag, skyboxVert),
     skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert),
     globeRaster: compile(globeFrag, globeVert),
-    globeAtmosphere: compile(atmosphereFrag, atmosphereVert),
-    globeDepth: compile(globeDepthFrag, globeDepthVert)
+    globeAtmosphere: compile(atmosphereFrag, atmosphereVert)
 };
 
 // Expand #pragmas to #ifdefs.
