@@ -1494,11 +1494,11 @@ class Camera extends Evented {
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             tr._updateCenterElevation();
 
-            if (options.preload) {
-                predictedTransforms.push(tr.clone());
-            } else {
+            if (!options.preload) {
                 this._fireMoveEvents(eventData);
             }
+
+            predictedTransforms.push(tr.clone());
         };
 
         const framerateTarget = 60;
