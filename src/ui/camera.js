@@ -92,7 +92,8 @@ export type AnimationOptions = {
     easing?: (_: number) => number,
     offset?: PointLike,
     animate?: boolean,
-    essential?: boolean
+    essential?: boolean,
+    preload?: boolean
 };
 
 export type ElevationBoxRaycast = {
@@ -1174,32 +1175,18 @@ class Camera extends Evented {
             aroundPoint = tr.locationPoint(around);
         }
 
-        const currently = {
-            moving: this._moving,
-            zooming: this._zooming,
-            rotating: this._rotating,
-            pitching: this._pitching
-        };
-
-        this._zooming = this._zooming || (zoom !== startZoom);
-        this._rotating = this._rotating || (startBearing !== bearing);
-        this._pitching = this._pitching || (pitch !== startPitch);
-        this._padding = !tr.isPaddingEqual(padding);
-
-        this._easeId = options.easeId;
-        this._prepareEase(eventData, options.noMoveStart, currently);
-
-        this._ease((k) => {
-            if (this._zooming) {
+        const predictedTransforms = [];
+        const frame = (tr) => (k) => {
+            if (this._zooming || options.preload) {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
-            if (this._rotating) {
+            if (this._rotating || options.preload) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
-            if (this._pitching) {
+            if (this._pitching || options.preload) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
-            if (this._padding) {
+            if (this._padding || options.preload) {
                 tr.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every fra,e
@@ -1218,9 +1205,44 @@ class Camera extends Evented {
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
 
-            this._fireMoveEvents(eventData);
+            if (!options.preload) {
+                this._fireMoveEvents(eventData);
+            }
 
-        }, (interruptingEaseId?: string) => {
+            predictedTransforms.push(tr.clone());
+        };
+
+        const framerateTarget = 60;
+        const frameTimeTarget = 1000 / (framerateTarget * options.duration);
+        const emulateFrame = frame(tr.clone());
+        for (let i = 0; i <= 1; i += frameTimeTarget) {
+            emulateFrame(i);
+        }
+
+        // always preload tiles for predicted transforms
+        this._preloadTiles(predictedTransforms);
+
+        // do not move camera on preload
+        if (options.preload) {
+            return;
+        }
+
+        const currently = {
+            moving: this._moving,
+            zooming: this._zooming,
+            rotating: this._rotating,
+            pitching: this._pitching
+        };
+
+        this._zooming = this._zooming || (zoom !== startZoom);
+        this._rotating = this._rotating || (startBearing !== bearing);
+        this._pitching = this._pitching || (pitch !== startPitch);
+        this._padding = !tr.isPaddingEqual(padding);
+
+        this._easeId = options.easeId;
+        this._prepareEase(eventData, options.noMoveStart, currently);
+
+        this._ease(frame(tr), (interruptingEaseId?: string) => {
             tr.recenterOnTerrain();
             this._afterEase(eventData, interruptingEaseId);
         }, options);

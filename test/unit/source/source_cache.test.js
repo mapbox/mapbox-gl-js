@@ -1772,3 +1772,59 @@ test('SourceCache sets max cache size correctly', (t) => {
 
     t.end();
 });
+
+test('SourceCache#_preloadTiles', (t) => {
+    t.test('preloads tiles', (t) => {
+        const initialTransform = new Transform();
+        initialTransform.resize(511, 511);
+        initialTransform.zoom = 0;
+
+        const transforms = Array.from({length: 3}, (_, i) => {
+            const transform = initialTransform.clone();
+            transform.zoom = i + 1;
+            return transform;
+        });
+
+        const expected = [
+            // initial transform tiles
+            new OverscaledTileID(0, 0, 0, 0, 0).key,
+            // preload transform tiles
+            new OverscaledTileID(1, 0, 1, 1, 1).key,
+            new OverscaledTileID(1, 0, 1, 0, 1).key,
+            new OverscaledTileID(1, 0, 1, 1, 0).key,
+            new OverscaledTileID(1, 0, 1, 0, 0).key,
+            new OverscaledTileID(2, 0, 2, 2, 2).key,
+            new OverscaledTileID(2, 0, 2, 1, 2).key,
+            new OverscaledTileID(2, 0, 2, 2, 1).key,
+            new OverscaledTileID(2, 0, 2, 1, 1).key,
+            new OverscaledTileID(3, 0, 3, 4, 4).key,
+            new OverscaledTileID(3, 0, 3, 3, 4).key,
+            new OverscaledTileID(3, 0, 3, 4, 3).key,
+            new OverscaledTileID(3, 0, 3, 3, 3).key,
+        ];
+
+        t.plan(expected.length);
+
+        const {sourceCache, eventedParent} = createSourceCache({
+            reparseOverscaled: true,
+            loadTile (tile, callback) {
+                t.equal(tile.tileID.key, expected.shift());
+                tile.state = 'loaded';
+                callback(null);
+            }
+        });
+
+        eventedParent.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(initialTransform);
+                sourceCache._preloadTiles(transforms, () => {
+                    t.end();
+                });
+            }
+        });
+
+        sourceCache.getSource().onAdd();
+    });
+
+    t.end();
+});

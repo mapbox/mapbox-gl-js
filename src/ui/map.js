@@ -3239,8 +3239,7 @@ class Map extends Camera {
             return new Promise(resolve => this._preloadTiles(transform, resolve));
         }
 
-        // $FlowFixMe
-        const sources: Array<SourceCache> = this.style && Object.values(this.style._sourceCaches);
+        const sources: Array<SourceCache> = this.style && (Object.values(this.style._sourceCaches): any) || [];
         asyncAll(sources, (source, done) => source._preloadTiles(transform, done), () => {
             this.triggerRepaint();
             callback();

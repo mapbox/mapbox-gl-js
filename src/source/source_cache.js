@@ -12,7 +12,7 @@ import assert from 'assert';
 import SourceFeatureState from './source_state.js';
 
 import type {Source} from './source.js';
-import type Map from '../ui/map.js';
+import type {default as MapboxMap} from '../ui/map.js';
 import type Style from '../style/style.js';
 import type Transform from '../geo/transform.js';
 import type {TileState} from './tile.js';
@@ -32,7 +32,7 @@ import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometr
  */
 class SourceCache extends Evented {
     id: string;
-    map: Map;
+    map: MapboxMap;
     style: Style;
 
     _source: Source;
@@ -95,7 +95,7 @@ class SourceCache extends Evented {
         this._state = new SourceFeatureState();
     }
 
-    onAdd(map: Map) {
+    onAdd(map: MapboxMap) {
         this.map = map;
         this._maxTileCacheSize = map ? map._maxTileCacheSize : null;
     }
@@ -932,8 +932,7 @@ class SourceCache extends Evented {
             return new Promise(resolve => this._preloadTiles(transform, resolve));
         }
 
-        // $FlowFixMe
-        const coveringTilesIDs = new Map();
+        const coveringTilesIDs: Map<number, OverscaledTileID> = new Map();
         const transforms = Array.isArray(transform) ? transform : [transform];
 
         for (const tr of transforms) {
@@ -954,12 +953,10 @@ class SourceCache extends Evented {
         const tileIDs = Array.from(coveringTilesIDs.values());
         const painter = this.map ? this.map.painter : null;
         const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
-        const loadTileID = (tileID, done) => {
+        asyncAll(tileIDs, (tileID, done) => {
             const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, isRaster);
             this._loadTile(tile, done);
-        };
-
-        asyncAll(tileIDs, loadTileID, callback);
+        }, callback);
     }
 }
 
