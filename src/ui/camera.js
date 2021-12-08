@@ -1205,25 +1205,22 @@ class Camera extends Evented {
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
 
-            if (!options.preload) {
+            if (options.preload) {
+                predictedTransforms.push(tr.clone());
+            } else {
                 this._fireMoveEvents(eventData);
             }
-
-            predictedTransforms.push(tr.clone());
         };
 
-        const framerateTarget = 60;
-        const frameTimeTarget = 1000 / (framerateTarget * options.duration);
-        const emulateFrame = frame(tr.clone());
-        for (let i = 0; i <= 1; i += frameTimeTarget) {
-            emulateFrame(i);
-        }
-
-        // always preload tiles for predicted transforms
-        this._preloadTiles(predictedTransforms);
-
-        // do not move camera on preload
         if (options.preload) {
+            const framerateTarget = 60;
+            const frameTimeTarget = 1000 / (framerateTarget * options.duration);
+            const emulateFrame = frame(tr.clone());
+            for (let i = 0; i <= 1; i += frameTimeTarget) {
+                emulateFrame(i);
+            }
+
+            this._preloadTiles(predictedTransforms);
             return;
         }
 
@@ -1516,25 +1513,22 @@ class Camera extends Evented {
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             tr._updateCenterElevation();
 
-            if (!options.preload) {
+            if (options.preload) {
+                predictedTransforms.push(tr.clone());
+            } else {
                 this._fireMoveEvents(eventData);
             }
-
-            predictedTransforms.push(tr.clone());
         };
 
-        const framerateTarget = 60;
-        const frameTimeTarget = 1000 / (framerateTarget * options.duration);
-        const emulateFrame = frame(tr.clone());
-        for (let i = 0; i <= 1; i += frameTimeTarget) {
-            emulateFrame(i);
-        }
-
-        // always preload tiles for predicted transforms
-        this._preloadTiles(predictedTransforms);
-
-        // do not move camera on preload
         if (options.preload) {
+            const framerateTarget = 60;
+            const frameTimeTarget = 1000 / (framerateTarget * options.duration);
+            const emulateFrame = frame(tr.clone());
+            for (let i = 0; i <= 1; i += frameTimeTarget) {
+                emulateFrame(i);
+            }
+
+            this._preloadTiles(predictedTransforms);
             return;
         }
 
