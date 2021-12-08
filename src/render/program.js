@@ -214,7 +214,7 @@ class Program<Us: UniformBindings> {
             this.fixedUniforms[name].set(uniformValues[name]);
         }
 
-        if (configuration ) {
+        if (configuration) {
             configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
         }
 
