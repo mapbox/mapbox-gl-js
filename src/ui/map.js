@@ -2627,7 +2627,7 @@ class Map extends Camera {
     * @private
     * @returns {object}
     */
-    _getCurrentContainerDimensions(): {width: number, height: number} {
+    _getContainerDimensions(): {width: number, height: number} {
         return {width: this._containerWidth, height: this._containerHeight};
     }
 

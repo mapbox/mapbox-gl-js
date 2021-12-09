@@ -92,7 +92,7 @@ function updateScale(map, container, options) {
     // found between the two coordinates.
     const maxWidth = options && options.maxWidth || 100;
 
-    const y = map._getCurrentContainerDimensions().height / 2;
+    const y = map._getContainerDimensions().height / 2;
     const left = map.unproject([0, y]);
     const right = map.unproject([maxWidth, y]);
     const maxMeters = left.distanceTo(right);
