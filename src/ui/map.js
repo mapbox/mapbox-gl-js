@@ -2632,25 +2632,25 @@ class Map extends Camera {
     }
 
     _updateContainerDimensions() {
-        if (this._container) {
-            const width = this._container.getBoundingClientRect().width || 400;
-            const height = this._container.getBoundingClientRect().height || 300;
+        if (!this._container) return;
 
-            let transformValues;
-            let el = this._container;
-            while (el && !transformValues) {
-                const transformMatrix = window.getComputedStyle(el).transform;
-                if (transformMatrix && transformMatrix !== 'none') transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
-                el = el.parentElement;
-            }
+        const width = this._container.getBoundingClientRect().width || 400;
+        const height = this._container.getBoundingClientRect().height || 300;
 
-            if (transformValues) {
-                this._containerWidth = transformValues[0] && transformValues[0] !== '0' ? Math.abs(width / transformValues[0]) : width;
-                this._containerHeight = transformValues[3] && transformValues[3] !== '0' ? Math.abs(height / transformValues[3]) : height;
-            } else {
-                this._containerWidth = width;
-                this._containerHeight = height;
-            }
+        let transformValues;
+        let el = this._container;
+        while (el && !transformValues) {
+            const transformMatrix = window.getComputedStyle(el).transform;
+            if (transformMatrix && transformMatrix !== 'none') transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+            el = el.parentElement;
+        }
+
+        if (transformValues) {
+            this._containerWidth = transformValues[0] && transformValues[0] !== '0' ? Math.abs(width / transformValues[0]) : width;
+            this._containerHeight = transformValues[3] && transformValues[3] !== '0' ? Math.abs(height / transformValues[3]) : height;
+        } else {
+            this._containerWidth = width;
+            this._containerHeight = height;
         }
     }
 
