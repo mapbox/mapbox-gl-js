@@ -2627,11 +2627,11 @@ class Map extends Camera {
     * @private
     * @returns {object}
     */
-    _getCurrentContainerDimensions(): [number, number] {
+    _getCurrentContainerDimensions(): {width: number, heidth: number} {
         return {width: this._containerWidth, height: this._containerHeight};
     }
 
-    _updateContainerDimensions(): [number, number] {
+    _updateContainerDimensions(): void {
         if (this._container) {
             const width = this._container.getBoundingClientRect().width || 400;
             const height = this._container.getBoundingClientRect().height || 300;
