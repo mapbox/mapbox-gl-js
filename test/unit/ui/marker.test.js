@@ -292,7 +292,7 @@ test('Popup anchors around default Marker', (t) => {
     // open the popup
     marker.togglePopup();
 
-    const mapHeight = map._containerHeight;
+    const mapHeight = map._getCurrentContainerDimensions().height;
     const markerTop = -marker.getPopup().options.offset.bottom[1]; // vertical distance from tip of marker to the top in pixels
     const markerRight = -marker.getPopup().options.offset.right[0]; // horizontal distance from the tip of the marker to the right in pixels
 

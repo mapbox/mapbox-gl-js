@@ -719,15 +719,15 @@ class Map extends Camera {
      * if (mapDiv.style.visibility === true) map.resize();
      */
     resize(eventData?: Object) {
-        const [width, height] = this._containerDimensions();
+        this._updateContainerDimensions();
 
         // do nothing if container remained the same size
-        if (width === this.transform.width && height === this.transform.height) return this;
+        if (this._containerWidth === this.transform.width && this._containerHeight === this.transform.height) return this;
 
-        this._resizeCanvas(width, height);
+        this._resizeCanvas(this._containerWidth, this._containerHeight);
 
-        this.transform.resize(width, height);
-        this.painter.resize(Math.ceil(width), Math.ceil(height));
+        this.transform.resize(this._containerWidth, this._containerHeight);
+        this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
 
         const fireMoving = !this._moving;
         if (fireMoving) {
@@ -2622,7 +2622,16 @@ class Map extends Camera {
         return this.style.getFeatureState(feature);
     }
 
-    _containerDimensions(): any {
+    /*
+    * Returns height and width of map container.
+    * @private
+    * @returns {object}
+    */
+    _getCurrentContainerDimensions(): [number, number] {
+        return { width: this._containerWidth, height: this._containerHeight};
+    }
+
+    _updateContainerDimensions(): [number, number] {
         if (this._container) {
             const width = this._container.getBoundingClientRect().width || 400;
             const height = this._container.getBoundingClientRect().height || 300;
@@ -2643,8 +2652,6 @@ class Map extends Camera {
                 this._containerHeight = height;
             }
         }
-
-        return [this._containerWidth, this._containerHeight];
     }
 
     _detectMissingCSS(): void {
@@ -2677,8 +2684,8 @@ class Map extends Camera {
         this._canvas.setAttribute('aria-label', 'Map');
         this._canvas.setAttribute('role', 'region');
 
-        const [containerWidth, containerHeight] = this._containerDimensions();
-        this._resizeCanvas(containerWidth, containerHeight);
+        this._updateContainerDimensions();
+        this._resizeCanvas(this._containerWidth, this._containerHeight);
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         const positions = this._controlPositions = {};
