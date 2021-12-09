@@ -35,6 +35,7 @@ const GLOBE_VERTEX_GRID_SIZE = 64;
 export default {
     name: 'globe',
     requiresDraping: true,
+    wrap: true,
     supportsWorldCopies: false,
     supportsTerrain: true,
     supportsFreeCamera: true,
