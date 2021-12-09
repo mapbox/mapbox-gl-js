@@ -64,7 +64,7 @@ function getConicProjection(projection: Projection, config: ProjectionSpecificat
 
             if (config.name === 'lambertConformalConic') {
                 const {project, unproject} = projections['mercator'];
-                cylindricalFunctions = {supportsWorldCopies: true, project, unproject};
+                cylindricalFunctions = {wrap: true, supportsWorldCopies: true, project, unproject};
             }
 
             return extend({}, projection, config, cylindricalFunctions);
