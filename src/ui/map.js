@@ -2631,7 +2631,7 @@ class Map extends Camera {
         return {width: this._containerWidth, height: this._containerHeight};
     }
 
-    _updateContainerDimensions(): void {
+    _updateContainerDimensions() {
         if (this._container) {
             const width = this._container.getBoundingClientRect().width || 400;
             const height = this._container.getBoundingClientRect().height || 300;
