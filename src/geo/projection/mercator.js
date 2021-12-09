@@ -14,6 +14,7 @@ import {farthestPixelDistanceOnPlane} from './far_z.js';
 
 export default {
     name: 'mercator',
+    wrap: true,
     requiresDraping: false,
     supportsWorldCopies: true,
     supportsTerrain: true,

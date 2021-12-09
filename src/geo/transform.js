@@ -1009,7 +1009,7 @@ class Transform {
 
     setLocation(location: MercatorCoordinate) {
         this.center = this.coordinateLocation(location);
-        if (this.renderWorldCopies) {
+        if (this.projection.wrap) {
             this.center = this.center.wrap();
         }
     }
@@ -1551,7 +1551,7 @@ class Transform {
             y2 = (maxY + minY) / 2;
         }
 
-        if (this.maxBounds || !this.renderWorldCopies) {
+        if (this.maxBounds || !this._renderWorldCopies || !this.projection.wrap) {
             const minX = this.worldMinX * this.scale;
             const maxX = this.worldMaxX * this.scale;
 
