@@ -785,6 +785,26 @@ class Transform {
         const square = a => a * a;
         const cameraHeightSqr = square((cameraAltitude - this._centerAltitude) * meterToTile); // in tile coordinates.
 
+        const getAABBFromElevation = (it) => {
+            assert(this._elevation);
+            if (!this._elevation || !it.tileID || !isMercator) return; // To silence flow.
+            const minmax = this._elevation.getMinMaxForTile(it.tileID);
+            const aabb = it.aabb;
+            if (minmax) {
+                aabb.min[2] = minmax.min;
+                aabb.max[2] = minmax.max;
+                aabb.center[2] = (aabb.min[2] + aabb.max[2]) / 2;
+            } else {
+                it.shouldSplit = shouldSplit(it);
+                if (!it.shouldSplit) {
+                    // At final zoom level, while corresponding DEM tile is not loaded yet,
+                    // assume center elevation. This covers ground to horizon and prevents
+                    // loading unnecessary tiles until DEM cover is fully loaded.
+                    aabb.min[2] = aabb.max[2] = aabb.center[2] = this._centerAltitude;
+                }
+            }
+        };
+
         // Scale distance to split for acute angles.
         // dzSqr: z component of camera to tile distance, square.
         // dSqr: 3D distance of camera to tile, square.
@@ -890,12 +910,12 @@ class Transform {
             for (let i = 0; i < 4; i++) {
                 const childX = (x << 1) + (i % 2);
                 const childY = (y << 1) + (i >> 1);
-                const aabb = isMercator ?
-                    it.aabb.quadrant(i) :
-                    tileAABB(this, numTiles, it.zoom + 1, childX, childY, it.wrap, it.minZ, it.maxZ, this.projection);
+
+                const aabb = isMercator ? it.aabb.quadrant(i) : tileAABB(this, numTiles, it.zoom + 1, childX, childY, it.wrap, it.minZ, it.maxZ, this.projection);
                 const child = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined, minZ: it.minZ, maxZ: it.maxZ};
                 if (useElevationData) {
                     child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
+                    getAABBFromElevation(child);
                 }
                 stack.push(child);
             }
