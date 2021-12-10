@@ -31,13 +31,30 @@
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script>
+mapboxgl.accessToken = 'pk.eyJ1Ijoia25hYWppIiwiYSI6Il9zaDktSnMifQ.gQBedLe-gjrCq4LEXU3O9w';
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/streets-v10',
+    style: 'mapbox://styles/knaaji/ckolnqm010uk717qlv51vgb1c',
     hash: true
+});
+map.repaint = true;
+let counter = 0;
+let totalGPUTime = 0;
+map.on('gpu-timing-layer', function(data) {
+    // totalGPUTime += data.gpuTime;
+    counter += 1;
+    if (data.layerTimes['road-primary-navigation'])
+        totalGPUTime += data.layerTimes['road-primary-navigation'];
+    if (data.layerTimes['road-motorway-trunk-navigation'])
+        totalGPUTime += data.layerTimes['road-motorway-trunk-navigation'];
+    if (data.layerTimes['admin-1-boundary-bg'])
+        totalGPUTime += data.layerTimes['admin-1-boundary-bg'];
+    if (data.layerTimes['admin-1-boundary'])
+        totalGPUTime += data.layerTimes['admin-1-boundary'];
+    console.log(totalGPUTime / counter);
 });
 
 map.addControl(new mapboxgl.NavigationControl());
