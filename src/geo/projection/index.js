@@ -15,7 +15,9 @@ import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import Transform from '../transform.js';
 import LngLat from '../lng_lat.js';
 import Point from '@mapbox/point-geometry';
-import MercatorCoordinate from '../mercator_coordinate.js';
+import MercatorCoordinate, {mercatorZfromAltitude} from '../mercator_coordinate.js';
+import FlatTileTransform from './flat_tile_transform.js';
+import {farthestPixelDistanceOnPlane} from './far_z.js';
 
 export type Projection = {
     name: string,
@@ -54,30 +56,62 @@ const projections = {
     winkelTripel
 };
 
-function getConicProjection(projection: Projection, config: ProjectionSpecification) {
-    if (config.parallels) {
-        // parallels that are equal but with opposite signs (e.g. [10, -10])
-        // create a cylindrical projection so we replace the
-        // project and unproject functions with equivalent cylindrical versions
-        if (Math.abs(config.parallels[0] + config.parallels[1]) < 0.01) {
-            let cylindricalFunctions = cylindricalEqualArea((config: any).parallels[0]);
+function projectTilePoint(x, y) {
+    return {x, y, z: 0};
+}
 
-            if (config.name === 'lambertConformalConic') {
-                const {project, unproject} = projections['mercator'];
-                cylindricalFunctions = {wrap: true, supportsWorldCopies: true, project, unproject};
+function locationPoint(tr, lngLat) {
+    return tr._coordinatePoint(tr.locationCoordinate(lngLat), false);
+}
+
+function pixelsPerMeter(lat, worldSize) {
+    return mercatorZfromAltitude(1, lat) * worldSize;
+}
+
+function farthestPixelDistance(tr) {
+    return farthestPixelDistanceOnPlane(tr, pixelsPerMeter(tr.center.lat, tr.worldSize));
+}
+
+function createTileTransform(tr, worldSize) {
+    return new FlatTileTransform(tr, worldSize);
+}
+
+const defaultFlatProjectionFunctions = {
+    projectTilePoint,
+    locationPoint,
+    pixelsPerMeter,
+    farthestPixelDistance,
+    createTileTransform
+};
+
+function extendProjection(projection: Projection, config: ProjectionSpecification) {
+    const defaultFunctions = projection.name === 'globe' ? {} : defaultFlatProjectionFunctions;
+    if (projection.conic) {
+        if (config.parallels) {
+            // parallels that are equal but with opposite signs (e.g. [10, -10])
+            // create a cylindrical projection so we replace the
+            // project and unproject functions with equivalent cylindrical versions
+            if (Math.abs(config.parallels[0] + config.parallels[1]) < 0.01) {
+                let cylindricalFunctions = cylindricalEqualArea((config: any).parallels[0]);
+
+                if (config.name === 'lambertConformalConic') {
+                    const {project, unproject} = projections['mercator'];
+                    cylindricalFunctions = {wrap: true, supportsWorldCopies: true, project, unproject};
+                }
+
+                return extend(projection, config, cylindricalFunctions, defaultFunctions);
             }
-
-            return extend({}, projection, config, cylindricalFunctions);
         }
     }
-
-    return extend({}, projection, config);
+    return extend(projection, config, defaultFunctions);
 }
 
 export function getProjection(config: ProjectionSpecification) {
-    const projection = projections[config.name];
-    if (!projection) throw new Error(`Invalid projection name: ${config.name}`);
-    return projection.conic ? getConicProjection(projection, config) : projection;
+    let projection = projections[config.name];
+    if (!projection) {
+        throw new Error(`Invalid projection name: ${config.name}`);
+    }
+    return extendProjection(projection, config);
 }
 
 export type TileTransform = {
