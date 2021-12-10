@@ -353,6 +353,7 @@ class Style extends Evented {
     }
 
     updateProjection() {
+        const prevProjection = this.map.transform.projection;
         const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
         const projection = this.map.transform.projection;
 
@@ -371,7 +372,7 @@ class Style extends Evented {
 
         if (!projectionChanged) return;
 
-        if (projection.isReprojectedInTileSpace) {
+        if (projection.isReprojectedInTileSpace || prevProjection.isReprojectedInTileSpace) {
             this.map.painter.clearBackgroundTiles();
             for (const id in this._sourceCaches) {
                 this._sourceCaches[id].clearTiles();
