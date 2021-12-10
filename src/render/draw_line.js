@@ -137,9 +137,21 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         if (useStencilMaskRenderPass) {
             const stencilId = painter.stencilModeForClipping(coord).ref;
-            if (stencilId === 0) { context.clear({stencil: 0}); }
+            // When terrain is on, ensure that the stencil buffer has 0 values.
+            // As stencil may be disabled when it is not in overlapping stencil
+            // mode. Refer to stencilModeForRTTOverlap logic.
+            if (stencilId === 0 && painter.terrain) {
+                context.clear({stencil: 0});
+            }
             const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
 
+            // Allow line geometry fragment to be drawn only once:
+            // - Invert the stencil identifier left by stencil clipping, this
+            // ensures that we are not conflicting with neighborhing tiles.
+            // - Draw Anti-Aliased pixels with a threshold set to 0.75, this
+            // may draw Anti-Aliased pixels more than once, but due to their
+            // low opacity, these pixels are usually invisible and potential
+            // overlapping pixel artifacts locally minimized.
             uniformValues['u_alpha_discard_threshold'] = 0.75;
             renderLine(new StencilMode(stencilFunc, stencilId, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT));
             uniformValues['u_alpha_discard_threshold'] = 0.0;
@@ -149,6 +161,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
     }
 
+    // When rendering to stencil, reset the mask to make sure that the tile
+    // clipping reverts the stencil mask we may have drawn in the buffer.
+    // The stamp could be reverted by an extra draw call of line geometry,
+    // but tile clipping drawing is usually faster to draw than lines.
     if (useStencilMaskRenderPass) {
         painter.resetStencilClippingMasks();
     }
