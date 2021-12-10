@@ -148,11 +148,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             // Allow line geometry fragment to be drawn only once:
             // - Invert the stencil identifier left by stencil clipping, this
             // ensures that we are not conflicting with neighborhing tiles.
-            // - Draw Anti-Aliased pixels with a threshold set to 0.75, this
+            // - Draw Anti-Aliased pixels with a threshold set to 0.8, this
             // may draw Anti-Aliased pixels more than once, but due to their
             // low opacity, these pixels are usually invisible and potential
             // overlapping pixel artifacts locally minimized.
-            uniformValues['u_alpha_discard_threshold'] = 0.75;
+            uniformValues['u_alpha_discard_threshold'] = 0.8;
             renderLine(new StencilMode(stencilFunc, stencilId, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT));
             uniformValues['u_alpha_discard_threshold'] = 0.0;
             renderLine(new StencilMode(stencilFunc, stencilId, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP));
