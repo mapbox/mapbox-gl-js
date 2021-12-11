@@ -114,7 +114,7 @@ class SourceCache extends Evented {
             if (tile.state !== 'loaded' && tile.state !== 'errored')
                 return false;
         }
-        // If initial geojson is set to true (trigged in `setData`), reset to false.
+        // If initial geojson is set to true (triggered in `setData`), reset to false.
         if (this._isInitialGeoJSONData) this.map._isInitialGeoJSONData = false;
         return true;
     }
