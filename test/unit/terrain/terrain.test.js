@@ -1534,6 +1534,33 @@ test('terrain getBounds', (t) => {
         });
     });
 
+    test("Does not break with no visible DEM tiles (#10610)", (t) => {
+        const style = createStyle();
+        const map = createMap(t, { style, zoom: 1, bearing: 45 });
+        map.setCenter([0, 0]);
+
+        map.on("load", () => {
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+            map.setTerrain({ source: "mapbox-dem" });
+            map.once("render", () => {
+                t.ok(map.transform.elevation);
+                const bounds = toFixed(map.getBounds().toArray());
+
+                // Mocking the behavior when the map zooms quickly
+                map.transform.elevation._visibleDemTiles = [];
+
+                t.same(
+                    toFixed([
+                        [-49.7184455522, -44.445415806],
+                        [49.7184455522, 44.445415806],
+                    ]),
+                    bounds
+                );
+                t.end();
+            });
+        });
+    });
+
     function toFixed(bounds) {
         const n = 9;
         return [

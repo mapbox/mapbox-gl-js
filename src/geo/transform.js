@@ -1269,6 +1269,7 @@ class Transform {
     }
 
     _getBounds(min: number, max: number) {
+        assert(min < Number.MAX_VALUE);
 
         const topLeft = new Point(this._edgeInsets.left, this._edgeInsets.top);
         const topRight = new Point(this.width - this._edgeInsets.right, this._edgeInsets.top);
@@ -1301,6 +1302,7 @@ class Transform {
     _getBounds3D(): LngLatBounds {
         assert(this.elevation);
         const elevation = ((this.elevation: any): Elevation);
+        if (!elevation.visibleDemTiles.length){ return this._getBounds(0, 0); }
         const minmax = elevation.visibleDemTiles.reduce((acc, t) => {
             if (t.dem) {
                 const tree = t.dem.tree;
@@ -1309,6 +1311,7 @@ class Transform {
             }
             return acc;
         }, {min: Number.MAX_VALUE, max: 0});
+        assert(minmax.min !== Number.MAX_VALUE);
         return this._getBounds(minmax.min * elevation.exaggeration(), minmax.max * elevation.exaggeration());
     }
 
