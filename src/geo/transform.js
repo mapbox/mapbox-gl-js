@@ -1302,7 +1302,7 @@ class Transform {
     _getBounds3D(): LngLatBounds {
         assert(this.elevation);
         const elevation = ((this.elevation: any): Elevation);
-        if (!elevation.visibleDemTiles.length){ return this._getBounds(0, 0); }
+        if (!elevation.visibleDemTiles.length) { return this._getBounds(0, 0); }
         const minmax = elevation.visibleDemTiles.reduce((acc, t) => {
             if (t.dem) {
                 const tree = t.dem.tree;

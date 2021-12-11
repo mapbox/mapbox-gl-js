@@ -1536,12 +1536,12 @@ test('terrain getBounds', (t) => {
 
     test("Does not break with no visible DEM tiles (#10610)", (t) => {
         const style = createStyle();
-        const map = createMap(t, { style, zoom: 1, bearing: 45 });
+        const map = createMap(t, {style, zoom: 1, bearing: 45});
         map.setCenter([0, 0]);
 
         map.on("load", () => {
             setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-            map.setTerrain({ source: "mapbox-dem" });
+            map.setTerrain({source: "mapbox-dem"});
             map.once("render", () => {
                 t.ok(map.transform.elevation);
                 const bounds = toFixed(map.getBounds().toArray());
