@@ -2989,7 +2989,6 @@ class Map extends Camera {
                 if (willIdle) {
                     this.fire(new Event('idle'));
                     this._isInitialLoad = false;
-                    if (this._isInitialGeoJSONData) this._isInitialGeoJSONData = false;
                     // check the options to see if need to calculate the speed index
                     if (this.speedIndexTiming) {
                         const speedIndexNumber = this._calculateSpeedIndex();
