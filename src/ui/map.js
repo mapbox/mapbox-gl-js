@@ -2935,11 +2935,6 @@ class Map extends Camera {
             // all tiles held for fading. If we didn't do this, the tiles
             // would just sit in the SourceCaches until the next render
             this.style._releaseSymbolFadeTiles();
-
-            // `_isInitialGeoJSONData` is used to temporarily set `fadeDuration` to zero
-            // as a workaround to prevent placement from fading symbols when triggered by `setData`.
-            // Reset to false, since fade operations are no longer in progress.
-            if (this._isInitialGeoJSONData) this._isInitialGeoJSONData = false;
         }
 
         if (this.listens('gpu-timing-frame')) {
@@ -2994,6 +2989,11 @@ class Map extends Camera {
                 if (willIdle) {
                     this.fire(new Event('idle'));
                     this._isInitialLoad = false;
+
+                    // `_isInitialGeoJSONData` is used to temporarily set `fadeDuration` to zero
+                    // as a workaround to prevent placement from fading symbols when triggered by `setData`.
+                    if (this._isInitialGeoJSONData) this._isInitialGeoJSONData = false;
+
                     // check the options to see if need to calculate the speed index
                     if (this.speedIndexTiming) {
                         const speedIndexNumber = this._calculateSpeedIndex();
