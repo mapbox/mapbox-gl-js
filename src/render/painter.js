@@ -310,7 +310,8 @@ class Painter {
         const gl = context.gl;
 
         this.nextStencilID = 1;
-        this.resetStencilClippingMasks();
+        this.currentStencilSource = undefined;
+        this._tileClippingMaskIDs = {};
 
         // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
