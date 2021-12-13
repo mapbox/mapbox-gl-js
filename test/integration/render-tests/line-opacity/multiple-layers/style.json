@@ -1,0 +1,145 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 14,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "road0",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 4,
+        "line-color": "blue",
+        "line-opacity": 0.6
+      },
+      "filter": [
+          "==",
+          "class",
+          "path"
+      ]
+    },
+    {
+      "id": "road1",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 4,
+        "line-color": "red",
+        "line-opacity": 0.5
+      },
+      "filter": [
+          "==",
+          "class",
+          "driveway"
+      ]
+    },
+    {
+      "id": "road2",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 4,
+        "line-color": "yellow",
+        "line-opacity": 0.4
+      },
+      "filter": [
+          "==",
+          "class",
+          "service"
+      ]
+    },
+    {
+      "id": "road3",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 4,
+        "line-color": "green",
+        "line-opacity": 0.3
+      },
+      "filter": [
+          "==",
+          "class",
+          "service"
+      ]
+    },
+    {
+      "id": "road4",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 4,
+        "line-color": "orange",
+        "line-opacity": 0.2
+      },
+      "filter": [
+          "==",
+          "class",
+          "street"
+      ]
+    },
+    {
+      "id": "road5",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 4,
+        "line-color": "brown",
+        "line-opacity": 0.7
+      },
+      "filter": [
+          "==",
+          "class",
+          "main"
+      ]
+    }
+  ]
+}

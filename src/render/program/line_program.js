@@ -29,7 +29,8 @@ export type LineUniformsType = {|
     'u_image_height': Uniform1f,
     'u_texsize': Uniform2f,
     'u_scale': Uniform3f,
-    'u_mix': Uniform1f
+    'u_mix': Uniform1f,
+    'u_alpha_discard_threshold': Uniform1f
 |};
 
 export type LinePatternUniformsType = {|
@@ -40,10 +41,11 @@ export type LinePatternUniformsType = {|
     'u_units_to_pixels': Uniform2f,
     'u_image': Uniform1i,
     'u_scale': Uniform3f,
-    'u_fade': Uniform1f
+    'u_fade': Uniform1f,
+    'u_alpha_discard_threshold': Uniform1f
 |};
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_ALPHA_DISCARD';
 
 const lineUniforms = (context: Context, locations: UniformLocations): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
@@ -55,7 +57,8 @@ const lineUniforms = (context: Context, locations: UniformLocations): LineUnifor
     'u_image_height': new Uniform1f(context, locations.u_image_height),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_scale': new Uniform3f(context, locations.u_scale),
-    'u_mix': new Uniform1f(context, locations.u_mix)
+    'u_mix': new Uniform1f(context, locations.u_mix),
+    'u_alpha_discard_threshold': new Uniform1f(context, locations.u_alpha_discard_threshold)
 });
 
 const linePatternUniforms = (context: Context, locations: UniformLocations): LinePatternUniformsType => ({
@@ -66,7 +69,8 @@ const linePatternUniforms = (context: Context, locations: UniformLocations): Lin
     'u_image': new Uniform1i(context, locations.u_image),
     'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
     'u_scale': new Uniform3f(context, locations.u_scale),
-    'u_fade': new Uniform1f(context, locations.u_fade)
+    'u_fade': new Uniform1f(context, locations.u_fade),
+    'u_alpha_discard_threshold': new Uniform1f(context, locations.u_alpha_discard_threshold)
 });
 
 const lineUniformValues = (
@@ -93,7 +97,8 @@ const lineUniformValues = (
         'u_image_height': imageHeight,
         'u_texsize': [0, 0],
         'u_scale': [0, 0, 0],
-        'u_mix': 0
+        'u_mix': 0,
+        'u_alpha_discard_threshold': 0.0
     };
     if (hasDash(layer)) {
         const tileZoomRatio = calculateTileRatio(tile, painter.transform);
@@ -125,7 +130,8 @@ const linePatternUniformValues = (
         'u_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
-        ]
+        ],
+        'u_alpha_discard_threshold': 0.0
     };
 };
 
@@ -146,6 +152,13 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     const values = [];
     if (hasDash(layer)) values.push('RENDER_LINE_DASH');
     if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
+
+    const hasPattern = layer.paint.get('line-pattern').constantOr((1: any));
+    const hasOpacity = layer.paint.get('line-opacity').constantOr(1.0) !== 1.0;
+    const hasWidthOver1 = layer.paint.get('line-width').constantOr(1.0) > 1.0;
+    if (!hasPattern && hasWidthOver1 && hasOpacity) {
+        values.push('RENDER_LINE_ALPHA_DISCARD');
+    }
     return values;
 };
 
