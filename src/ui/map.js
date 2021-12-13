@@ -2622,15 +2622,6 @@ class Map extends Camera {
         return this.style.getFeatureState(feature);
     }
 
-    /*
-    * Returns height and width of map container.
-    * @private
-    * @returns {object}
-    */
-    _getContainerDimensions(): {width: number, height: number} {
-        return {width: this._containerWidth, height: this._containerHeight};
-    }
-
     _updateContainerDimensions() {
         if (!this._container) return;
 

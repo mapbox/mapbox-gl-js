@@ -2704,8 +2704,8 @@ test('Map', (t) => {
 
         map.resize();
 
-        t.equal(map._getContainerDimensions().width, 400);
-        t.equal(map._getContainerDimensions().height, 400);
+        t.equal(map._containerWidth, 400);
+        t.equal(map._containerHeight, 400);
 
         map.remove();
         t.end();
