@@ -177,7 +177,7 @@ class GeoJSONSource extends Evented implements Source {
      * });
      */
     setData(data: GeoJSON | string) {
-        // `_isInitialGeoJSONData` is used to temporarily set `fadeDuration` to zero. 
+        // `_isInitialGeoJSONData` is used to temporarily set `fadeDuration` to zero.
         // This prevents placement from triggering a fade-in/out of updated symbols.
         if (this.map) this.map._isInitialGeoJSONData = true;
         this._data = data;
