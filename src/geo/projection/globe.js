@@ -169,8 +169,7 @@ export function globeTileLatLngCorners(id: CanonicalTileID) {
     return [latLngTL, latLngBR];
 }
 
-export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<number> {
-    lat = degToRad(lat);
+export function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: ?number): Array<number> {
     lng = degToRad(lng);
 
     if (!radius) {
@@ -178,11 +177,15 @@ export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<n
     }
 
     // Convert lat & lng to spherical representation. Use zoom=0 as a reference
-    const sx = Math.cos(lat) * Math.sin(lng) * radius;
-    const sy = -Math.sin(lat) * radius;
-    const sz = Math.cos(lat) * Math.cos(lng) * radius;
+    const sx = cosLat * Math.sin(lng) * radius;
+    const sy = -sinLat * radius;
+    const sz = cosLat * Math.cos(lng) * radius;
 
     return [sx, sy, sz];
+}
+
+export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<number> {
+    return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
 }
 
 export function globeECEFNormalizationScale(bounds: Aabb) {
@@ -394,11 +397,13 @@ export class GlobeSharedBuffers {
 
         const startAngle = 0;
         const endAngle = 360.0 / tiles;
+        const cosLat = Math.cos(degToRad(85.0));
+        const sinLat = Math.sin(degToRad(85.0));
 
         for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
             const uvX = i / GLOBE_VERTEX_GRID_SIZE;
             const angle = lerp(startAngle, endAngle, uvX);
-            const p = latLngToECEF(85, angle, radius);
+            const p = csLatLngToECEF(cosLat, sinLat, angle, radius);
 
             arr.emplaceBack(p[0], p[1], p[2], 0, 0, uvX, isTopCap ? 0.0 : 1.0);
         }
@@ -429,17 +434,18 @@ export class GlobeSharedBuffers {
 
         for (let y = 0; y < vertexExt; y++) {
             const lat = lerp(latLngTL[0], latLngBR[0], y / GLOBE_VERTEX_GRID_SIZE);
-            const mercY = clamp(mercatorYfromLat(lat), 0, 1);
-            const uvY = (mercY * tiles) - sy;
+            const mercatorY = mercatorYfromLat(lat);
+            const uvY = (mercatorY * tiles) - sy;
+            const sinLat = Math.sin(degToRad(lat));
+            const cosLat = Math.cos(degToRad(lat));
             for (let x = 0; x < vertexExt; x++) {
                 const uvX = x / GLOBE_VERTEX_GRID_SIZE;
                 const lng = lerp(latLngTL[1], latLngBR[1], uvX);
 
-                const pGlobe = latLngToECEF(lat, lng);
+                const pGlobe = csLatLngToECEF(cosLat, sinLat, lng);
                 vec3.transformMat4(pGlobe, pGlobe, norm);
 
                 const mercatorX = mercatorXfromLng(lng);
-                const mercatorY = mercatorYfromLat(lat);
 
                 boundsArray.emplaceBack(pGlobe[0], pGlobe[1], pGlobe[2], mercatorX, mercatorY, uvX, uvY);
             }
