@@ -92,8 +92,7 @@ export type AnimationOptions = {
     easing?: (_: number) => number,
     offset?: PointLike,
     animate?: boolean,
-    essential?: boolean,
-    preload?: boolean
+    essential?: boolean
 };
 
 export type ElevationBoxRaycast = {
@@ -935,10 +934,10 @@ class Camera extends Evented {
      * @see [Example: Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
      * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
-    jumpTo(options: CameraOptions, eventData?: Object) {
+    jumpTo(options: CameraOptions & {preload?: boolean}, eventData?: Object) {
         this.stop();
 
-        const tr = this.transform;
+        const tr = options.preload ? this.transform.clone() : this.transform;
         let zoomChanged = false,
             bearingChanged = false,
             pitchChanged = false;
@@ -964,6 +963,11 @@ class Camera extends Evented {
 
         if (options.padding != null && !tr.isPaddingEqual(options.padding)) {
             tr.padding = options.padding;
+        }
+
+        if (options.preload) {
+            this._preloadTiles(tr);
+            return this;
         }
 
         this.fire(new Event('movestart', eventData))
@@ -1136,7 +1140,7 @@ class Camera extends Evented {
      * });
      * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    easeTo(options: CameraOptions & AnimationOptions & {easeId?: string}, eventData?: Object) {
+    easeTo(options: CameraOptions & AnimationOptions & {easeId?: string, preload?: boolean}, eventData?: Object) {
         this._stop(false, options.easeId);
 
         options = extend({
@@ -1373,10 +1377,10 @@ class Camera extends Evented {
      * @see [Example: Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
      * @see [Example: Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
-    flyTo(options: Object, eventData?: Object) {
+    flyTo(options: CameraOptions & AnimationOptions & {preload?: boolean}, eventData?: Object) {
         // Fall through to jumpTo if user has set prefers-reduced-motion
         if (!options.essential && browser.prefersReducedMotion) {
-            const coercedOptions = (pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']): CameraOptions);
+            const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']);
             return this.jumpTo(coercedOptions, eventData);
         }
 
