@@ -924,14 +924,11 @@ class SourceCache extends Evented {
 
     /**
      * Preloads all tiles that will be requested for one or a series of transformations
+     *
      * @private
      * @returns {Object} Returns `this` | Promise.
      */
-    _preloadTiles(transform: Transform | Array<Transform>, callback?: Callback<any>) {
-        if (!callback) {
-            return new Promise(resolve => this._preloadTiles(transform, resolve));
-        }
-
+    _preloadTiles(transform: Transform | Array<Transform>, callback: Callback<any>) {
         const coveringTilesIDs: Map<number, OverscaledTileID> = new Map();
         const transforms = Array.isArray(transform) ? transform : [transform];
 

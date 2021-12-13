@@ -55,7 +55,6 @@ import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom.js';
 import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate.js';
 import defaultLocale from './default_locale.js';
 import type {TaskID} from '../util/task_queue.js';
-import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {
     LayerSpecification,
@@ -3234,15 +3233,16 @@ class Map extends Camera {
         }
     }
 
-    _preloadTiles(transform: Transform | Array<Transform>, callback?: Callback<void>) {
-        if (!callback) {
-            return new Promise(resolve => this._preloadTiles(transform, resolve));
-        }
-
+    /**
+     * Preloads all tiles that will be requested for one or a series of transformations
+     *
+     * @private
+     * @returns {Object} Returns `this` | Promise.
+     */
+    _preloadTiles(transform: Transform | Array<Transform>) {
         const sources: Array<SourceCache> = this.style && (Object.values(this.style._sourceCaches): any) || [];
         asyncAll(sources, (source, done) => source._preloadTiles(transform, done), () => {
             this.triggerRepaint();
-            callback();
         });
 
         return this;

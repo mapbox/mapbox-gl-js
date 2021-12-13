@@ -143,7 +143,7 @@ class Camera extends Evented {
     _easeOptions: {duration: number, easing: (_: number) => number};
     _easeId: string | void;
 
-    _onEaseFrame: (_: number) => void;
+    _onEaseFrame: (_: number) => Transform | void;
     _onEaseEnd: (easeId?: string) => void;
     _easeFrameId: ?TaskID;
 
@@ -1175,7 +1175,6 @@ class Camera extends Evented {
             aroundPoint = tr.locationPoint(around);
         }
 
-        const predictedTransforms = [];
         const frame = (tr) => (k) => {
             if (this._zooming || options.preload) {
                 tr.zoom = interpolate(startZoom, zoom, k);
@@ -1205,24 +1204,31 @@ class Camera extends Evented {
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
 
-            if (options.preload) {
-                predictedTransforms.push(tr.clone());
-            } else {
+            if (!options.preload) {
                 this._fireMoveEvents(eventData);
             }
+
+            return tr.clone();
         };
 
         if (options.preload) {
-            const framerateTarget = 60;
+            const framerateTarget = 15;
             const frameTimeTarget = 1000 / (framerateTarget * options.duration);
             const emulateFrame = frame(tr.clone());
+
+            const predictedTransforms = [];
             for (let i = 0; i <= 1; i += frameTimeTarget) {
-                emulateFrame(i);
+                const transform = emulateFrame(i);
+                predictedTransforms.push(transform);
             }
 
             this._preloadTiles(predictedTransforms);
             return;
         }
+
+        // emulate the last transform and start preloading tiles for it
+        const lastTransform = frame(tr.clone())(1);
+        this._preloadTiles(lastTransform);
 
         const currently = {
             moving: this._moving,
@@ -1489,7 +1495,6 @@ class Camera extends Evented {
             options.duration = 0;
         }
 
-        const predictedTransforms = [];
         const frame = (tr) => (k) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
@@ -1513,24 +1518,31 @@ class Camera extends Evented {
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             tr._updateCenterElevation();
 
-            if (options.preload) {
-                predictedTransforms.push(tr.clone());
-            } else {
+            if (!options.preload) {
                 this._fireMoveEvents(eventData);
             }
+
+            return tr.clone();
         };
 
         if (options.preload) {
-            const framerateTarget = 60;
+            const framerateTarget = 15;
             const frameTimeTarget = 1000 / (framerateTarget * options.duration);
             const emulateFrame = frame(tr.clone());
+
+            const predictedTransforms = [];
             for (let i = 0; i <= 1; i += frameTimeTarget) {
-                emulateFrame(i);
+                const transform = emulateFrame(i);
+                predictedTransforms.push(transform);
             }
 
             this._preloadTiles(predictedTransforms);
             return;
         }
+
+        // emulate the last transform and start preloading tiles for it
+        const lastTransform = frame(tr.clone())(1);
+        this._preloadTiles(lastTransform);
 
         this._zooming = true;
         this._rotating = (startBearing !== bearing);
@@ -1581,7 +1593,7 @@ class Camera extends Evented {
         return this;
     }
 
-    _ease(frame: (_: number) => void,
+    _ease(frame: (_: number) => Transform | void,
           finish: () => void,
           options: {animate: boolean, duration: number, easing: (_: number) => number}) {
         if (options.animate === false || options.duration === 0) {
