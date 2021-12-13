@@ -2939,7 +2939,7 @@ class Map extends Camera {
             // `_isInitialGeoJSONData` is used to temporarily set `fadeDuration` to zero
             // as a workaround to prevent placement from fading symbols when triggered by `setData`.
             // Reset to false, since fade operations are no longer in progress.
-            if (this.map._isInitialGeoJSONData) this.map._isInitialGeoJSONData = false;
+            if (this._isInitialGeoJSONData) this._isInitialGeoJSONData = false;
         }
 
         if (this.listens('gpu-timing-frame')) {

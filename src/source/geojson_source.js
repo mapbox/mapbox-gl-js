@@ -332,7 +332,6 @@ class GeoJSONSource extends Evented implements Source {
                 this._updateWorkerData();
                 this._coalesce = false;
             }
-
         });
     }
 
