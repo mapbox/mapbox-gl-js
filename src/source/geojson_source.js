@@ -177,7 +177,9 @@ class GeoJSONSource extends Evented implements Source {
      * });
      */
     setData(data: GeoJSON | string) {
-        if (this.map && this._loaded) this.map._isInitialGeoJSONData = true;
+        // `_isInitialGeoJSONData` is used to temporarily set `fadeDuration` to zero. 
+        // This prevents placement from triggering a fade-in/out of updated symbols.
+        if (this.map) this.map._isInitialGeoJSONData = true;
         this._data = data;
         this._updateWorkerData();
         return this;
@@ -330,6 +332,7 @@ class GeoJSONSource extends Evented implements Source {
                 this._updateWorkerData();
                 this._coalesce = false;
             }
+
         });
     }
 
