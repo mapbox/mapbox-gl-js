@@ -31,6 +31,8 @@ export type Projection = {
     supportsCustomLayers?: boolean,
     supportsFreeCamera?: boolean,
     supportsWorldCopies?: boolean,
+    unsupportedLayers?: Set<string>,
+
     // Whether the projection reprojects data in tile space
     isReprojectedInTileSpace?: boolean;
     zAxisUnit: "meters" | "pixels",
