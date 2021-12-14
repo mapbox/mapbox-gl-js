@@ -483,7 +483,7 @@ export default class Marker extends Evented {
             this._updateFrameId = window.requestAnimationFrame(() => {
                 if (this._element && this._pos && this._anchor) {
                     this._pos = this._pos.round();
-                    DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
+                    this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`;
                 }
             });
         } else {
