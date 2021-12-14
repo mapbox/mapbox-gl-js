@@ -1,0 +1,555 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1200,
+      "height": 400,
+      "operations": [
+        ["wait"],
+        ["setTerrain", {
+            "source": "rgbterrain",
+            "exaggeration": 10
+        }],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 1.05,
+  "center": [-180, 8],
+  "pitch": 50,
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 1
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.512.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 512
+    },
+    "latlngs": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "id": 1,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            1.0,
+                            1.0
+                        ],
+                        [
+                            0.0,
+                            1.0
+                        ],
+                        [
+                            0.0,
+                            0.0
+                        ],
+                        [
+                            1.0,
+                            0.0
+                        ],
+                        [
+                            1.0,
+                            1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 100.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 2,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            2.0,
+                            1.0
+                        ],
+                        [
+                            1.0,
+                            1.0
+                        ],
+                        [
+                            1.0,
+                            0.0
+                        ],
+                        [
+                            2.0,
+                            0.0
+                        ],
+                        [
+                            2.0,
+                            1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 200.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 3,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            3.0,
+                            1.0
+                        ],
+                        [
+                            2.0,
+                            1.0
+                        ],
+                        [
+                            2.0,
+                            0.0
+                        ],
+                        [
+                            3.0,
+                            0.0
+                        ],
+                        [
+                            2.0,
+                            1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 300.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": -1,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            1.0,
+                            -1.0
+                        ],
+                        [
+                            0.0,
+                            -1.0
+                        ],
+                        [
+                            0.0,
+                            0.0
+                        ],
+                        [
+                            1.0,
+                            0.0
+                        ],
+                        [
+                            1.0,
+                            -1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 0.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": -2,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            2.0,
+                            -1.0
+                        ],
+                        [
+                            1.0,
+                            -1.0
+                        ],
+                        [
+                            1.0,
+                            0.0
+                        ],
+                        [
+                            2.0,
+                            0.0
+                        ],
+                        [
+                            2.0,
+                            -1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 0.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": -3,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            3.0,
+                            -1.0
+                        ],
+                        [
+                            2.0,
+                            -1.0
+                        ],
+                        [
+                            2.0,
+                            0.0
+                        ],
+                        [
+                            3.0,
+                            0.0
+                        ],
+                        [
+                            2.0,
+                            -1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 0.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 761,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -76.0,
+                            1.0
+                        ],
+                        [
+                            -75.0,
+                            1.0
+                        ],
+                        [
+                            -75.0,
+                            0.0
+                        ],
+                        [
+                            -76.0,
+                            0.0
+                        ],
+                        [
+                            -76.0,
+                            1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 0.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": -761,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -76.0,
+                            -1.0
+                        ],
+                        [
+                            -75.0,
+                            -1.0
+                        ],
+                        [
+                            -75.0,
+                            0.0
+                        ],
+                        [
+                            -76.0,
+                            0.0
+                        ],
+                        [
+                            -76.0,
+                            -1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 0.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 771,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -77.0,
+                            1.0
+                        ],
+                        [
+                            -76.0,
+                            1.0
+                        ],
+                        [
+                            -76.0,
+                            0.0
+                        ],
+                        [
+                            -77.0,
+                            0.0
+                        ],
+                        [
+                            -77.0,
+                            1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 0.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": -771,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -77.0,
+                            -1.0
+                        ],
+                        [
+                            -76.0,
+                            -1.0
+                        ],
+                        [
+                            -76.0,
+                            0.0
+                        ],
+                        [
+                            -77.0,
+                            0.0
+                        ],
+                        [
+                            -77.0,
+                            -1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 0.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 180,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            180.0,
+                            1.0
+                        ],
+                        [
+                            179.0,
+                            1.0
+                        ],
+                        [
+                            179.0,
+                            0.0
+                        ],
+                        [
+                            180.0,
+                            0.0
+                        ],
+                        [
+                            180.0,
+                            1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 1000.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": -180,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            180.0,
+                            -1.0
+                        ],
+                        [
+                            179.0,
+                            -1.0
+                        ],
+                        [
+                            179.0,
+                            0.0
+                        ],
+                        [
+                            180.0,
+                            0.0
+                        ],
+                        [
+                            180.0,
+                            -1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 0.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 1801,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -180.0,
+                            1.0
+                        ],
+                        [
+                            -179.0,
+                            1.0
+                        ],
+                        [
+                            -179.0,
+                            0.0
+                        ],
+                        [
+                            -180.0,
+                            0.0
+                        ],
+                        [
+                            -180.0,
+                            1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 500.0
+            }
+          },
+          {
+            "type": "Feature",
+            "id": -1801,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -180.0,
+                            -1.0
+                        ],
+                        [
+                            -179.0,
+                            -1.0
+                        ],
+                        [
+                            -179.0,
+                            0.0
+                        ],
+                        [
+                            -180.0,
+                            0.0
+                        ],
+                        [
+                            -180.0,
+                            -1.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "data": 0.0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "fill-extrusion",
+      "type": "fill-extrusion",
+      "source": "latlngs",
+      "paint": {
+        "fill-extrusion-color": ["interpolate", ["linear"], ["get", "data"], 0, "#00FF00", 100.0, "#0000FF", 1000, "#FF0000"],
+        "fill-extrusion-height": ["*", ["get", "data"], 1000]
+      }
+    }
+  ]
+}

@@ -153,7 +153,7 @@ class HandlerManager {
     _updatingCamera: boolean;
     _changes: Array<[HandlerResult, Object, any]>;
     _previousActiveHandlers: { [string]: Handler };
-    _listeners: Array<[HTMLElement, string, void | {passive?: boolean, capture?: boolean}]>;
+    _listeners: Array<[HTMLElement, string, void | EventListenerOptionsOrUseCapture]>;
     _trackingEllipsoid: TrackingEllipsoid;
     _dragOrigin: ?vec3;
 
@@ -219,13 +219,15 @@ class HandlerManager {
         ];
 
         for (const [target, type, listenerOptions] of this._listeners) {
-            DOM.addEventListener(target, type, target === window.document ? this.handleWindowEvent : this.handleEvent, listenerOptions);
+            const listener = target === window.document ? this.handleWindowEvent : this.handleEvent;
+            target.addEventListener((type: any), (listener: any), listenerOptions);
         }
     }
 
     destroy() {
         for (const [target, type, listenerOptions] of this._listeners) {
-            DOM.removeEventListener(target, type, target === window.document ? this.handleWindowEvent : this.handleEvent, listenerOptions);
+            const listener = target === window.document ? this.handleWindowEvent : this.handleEvent;
+            target.removeEventListener((type: any), (listener: any), listenerOptions);
         }
     }
 
@@ -246,7 +248,7 @@ class HandlerManager {
         const tapDragZoom = new TapDragZoomHandler();
         this._add('tapDragZoom', tapDragZoom);
 
-        const touchPitch = map.touchPitch = new TouchPitchHandler();
+        const touchPitch = map.touchPitch = new TouchPitchHandler(map);
         this._add('touchPitch', touchPitch);
 
         const mouseRotate = new MouseRotateHandler(options);
@@ -256,7 +258,7 @@ class HandlerManager {
         this._add('mousePitch', mousePitch, ['mouseRotate']);
 
         const mousePan = new MousePanHandler(options);
-        const touchPan = new TouchPanHandler(options);
+        const touchPan = new TouchPanHandler(map, options);
         map.dragPan = new DragPanHandler(el, mousePan, touchPan);
         this._add('mousePan', mousePan);
         this._add('touchPan', touchPan, ['touchZoom', 'touchRotate']);
@@ -309,6 +311,7 @@ class HandlerManager {
     isZooming() {
         return !!this._eventsInProgress.zoom || this._map.scrollZoom.isZooming();
     }
+
     isRotating() {
         return !!this._eventsInProgress.rotate;
     }

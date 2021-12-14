@@ -3,7 +3,7 @@
 import ImageSource from './image_source.js';
 
 import window from '../util/window.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import {ErrorEvent} from '../util/evented.js';
@@ -63,8 +63,6 @@ class CanvasSource extends ImageSource {
     options: CanvasSourceSpecification;
     animate: boolean;
     canvas: HTMLCanvasElement;
-    width: number;
-    height: number;
     play: () => void;
     pause: () => void;
     _playing: boolean;
@@ -211,8 +209,12 @@ class CanvasSource extends ImageSource {
         const context = this.map.painter.context;
         const gl = context.gl;
 
+        if (!this._boundsArray) {
+            this._makeBoundsArray();
+        }
+
         if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
         }
 
         if (!this.boundsSegments) {

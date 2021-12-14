@@ -140,6 +140,31 @@ const pages = [
         "key": "canvas-size",
         "title": "Canvas Size",
         "url": "./canvas-size.html"
+    },
+    {
+        "key": "projections",
+        "title": "Projections",
+        "url": "./projections.html"
+    },
+    {
+        "key": "featurestate",
+        "title": "Feature state",
+        "url": "./featurestate.html"
+    },
+    {
+        "key": "markers",
+        "title": "Markers",
+        "url": "./markers.html"
+    },
+    {
+        "key": "video",
+        "title": "Video",
+        "url": "./video.html"
+    },
+    {
+        "key": "scroll_zoom_blocker",
+        "title": "Cooperative gesture handling",
+        "url": "./scroll_zoom_blocker.html"
     }
 ];
 

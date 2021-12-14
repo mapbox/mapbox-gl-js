@@ -1,13 +1,8 @@
 // @flow
 
 import {getTileBBox} from '@mapbox/whoots-js';
-import EXTENT from '../data/extent.js';
-import Point from '@mapbox/point-geometry';
-import MercatorCoordinate, {altitudeFromMercatorZ} from '../geo/mercator_coordinate.js';
-import {MAX_SAFE_INTEGER} from '../util/util.js';
 import assert from 'assert';
 import {register} from '../util/web_worker_transfer.js';
-import {vec3} from 'gl-matrix';
 
 export class CanonicalTileID {
     z: number;
@@ -41,20 +36,6 @@ export class CanonicalTileID {
             .replace('{y}', String(scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y))
             .replace('{quadkey}', quadkey)
             .replace('{bbox-epsg-3857}', bbox);
-    }
-
-    getTilePoint(coord: MercatorCoordinate) {
-        const tilesAtZoom = Math.pow(2, this.z);
-        return new Point(
-            (coord.x * tilesAtZoom - this.x) * EXTENT,
-            (coord.y * tilesAtZoom - this.y) * EXTENT);
-    }
-
-    getTileVec3(coord: MercatorCoordinate): vec3 {
-        const tilesAtZoom = Math.pow(2, this.z);
-        const x = (coord.x * tilesAtZoom - this.x) * EXTENT;
-        const y = (coord.y * tilesAtZoom - this.y) * EXTENT;
-        return vec3.fromValues(x, y, altitudeFromMercatorZ(coord.z, coord.y));
     }
 
     toString() {
@@ -181,14 +162,6 @@ export class OverscaledTileID {
     toString() {
         return `${this.overscaledZ}/${this.canonical.x}/${this.canonical.y}`;
     }
-
-    getTilePoint(coord: MercatorCoordinate) {
-        return this.canonical.getTilePoint(new MercatorCoordinate(coord.x - this.wrap, coord.y));
-    }
-
-    getTileVec3(coord: MercatorCoordinate) {
-        return this.canonical.getTileVec3(new MercatorCoordinate(coord.x - this.wrap, coord.y, coord.z));
-    }
 }
 
 function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number): number {
@@ -204,7 +177,7 @@ function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y
 
     // encode z into 5 bits (24 max) and overscaledZ into 4 bits (10 max)
     const key = ((xy * 32) + z) * 16 + (overscaledZ - z);
-    assert(key >= 0 && key <= MAX_SAFE_INTEGER);
+    assert(key >= 0 && key <= Number.MAX_SAFE_INTEGER);
 
     return key;
 }

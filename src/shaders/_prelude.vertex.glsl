@@ -32,6 +32,15 @@ vec3 mix_globe_mercator(vec3 globe, vec3 mercator, float t) {
 #endif
 }
 
+#ifdef PROJECTION_GLOBE_VIEW
+mat3 globe_mercator_surface_vectors(vec3 pos_normal, vec3 up_dir, float zoom_transition) {
+    vec3 normal = zoom_transition == 0.0 ? pos_normal : normalize(mix(pos_normal, up_dir, zoom_transition));
+    vec3 xAxis = normalize(vec3(normal.z, 0.0, -normal.x));
+    vec3 yAxis = normalize(cross(normal, xAxis));
+    return mat3(xAxis, yAxis, normal);
+}
+#endif
+
 // Unpack a pair of values that have been packed into a single float.
 // The packed values are assumed to be 8-bit unsigned integers, and are
 // packed like so:

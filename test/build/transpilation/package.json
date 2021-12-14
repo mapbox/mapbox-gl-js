@@ -8,6 +8,15 @@
     },
     "author": "",
     "license": "ISC",
+    "browserslist": {
+      "development": [
+        ">0.2%",
+        "not dead",
+        "not ie 11",
+        "not chrome < 51",
+        "not safari < 10"
+      ]
+    },
     "devDependencies": {
       "@babel/core": "^7.12.10",
       "@babel/preset-env": "^7.12.10",

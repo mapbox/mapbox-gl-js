@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 
-import {mat4, vec3, vec4} from 'gl-matrix';
+import {mat2, mat4, vec3, vec4} from 'gl-matrix';
 import * as symbolSize from './symbol_size.js';
 import {addDynamicAttributes} from '../data/bucket/symbol_bucket.js';
 
@@ -78,10 +78,14 @@ function getLabelPlaneMatrix(posMatrix: mat4,
                              pitchWithMap: boolean,
                              rotateWithMap: boolean,
                              transform: Transform,
-                             pixelsToTileUnits: number) {
+                             pixelsToTileUnits: Float32Array) {
     const m = mat4.create();
     if (pitchWithMap) {
-        mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
+        const s = mat2.invert([], pixelsToTileUnits);
+        m[0] = s[0];
+        m[1] = s[1];
+        m[4] = s[2];
+        m[5] = s[3];
         if (!rotateWithMap) {
             mat4.rotateZ(m, m, transform.angle);
         }
@@ -98,10 +102,15 @@ function getGlCoordMatrix(posMatrix: mat4,
                           pitchWithMap: boolean,
                           rotateWithMap: boolean,
                           transform: Transform,
-                          pixelsToTileUnits: number) {
+                          pixelsToTileUnits: Float32Array) {
     if (pitchWithMap) {
         const m = mat4.clone(posMatrix);
-        mat4.scale(m, m, [pixelsToTileUnits, pixelsToTileUnits, 1]);
+        const s = mat4.identity([]);
+        s[0] = pixelsToTileUnits[0];
+        s[1] = pixelsToTileUnits[1];
+        s[4] = pixelsToTileUnits[2];
+        s[5] = pixelsToTileUnits[3];
+        mat4.multiply(m, m, s);
         if (!rotateWithMap) {
             mat4.rotateZ(m, m, -transform.angle);
         }

@@ -145,6 +145,7 @@ async function runTest(t) {
             fadeDuration: options.fadeDuration || 0,
             optimizeForTerrain: options.optimizeForTerrain || false,
             localIdeographFontFamily: options.localIdeographFontFamily || false,
+            projection: options.projection,
             crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
             transformRequest: (url, resourceType) => {
                 // some tests have the port hardcoded to 2900
@@ -309,7 +310,7 @@ async function runTest(t) {
             updateHTML(testMetaData);
         }
 
-        if (!process.env.CI) browserWriteFile.postMessage(fileInfo);
+        if (!process.env.CI || process.env.UPDATE) browserWriteFile.postMessage(fileInfo);
 
     } catch (e) {
         t.error(e);
