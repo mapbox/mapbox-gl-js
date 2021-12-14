@@ -1269,8 +1269,6 @@ class Transform {
     }
 
     _getBounds(min: number, max: number) {
-        assert(min < Number.MAX_VALUE);
-
         const topLeft = new Point(this._edgeInsets.left, this._edgeInsets.top);
         const topRight = new Point(this.width - this._edgeInsets.right, this._edgeInsets.top);
         const bottomRight = new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom);
