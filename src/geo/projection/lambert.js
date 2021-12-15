@@ -24,6 +24,7 @@ export default {
 
     conic: true,
     isReprojectedInTileSpace: true,
+    unsupportedLayers: ['custom'],
 
     initializeConstants() {
         if (this.constants && vec2.exactEquals(this.parallels, this.constants.parallels)) {
