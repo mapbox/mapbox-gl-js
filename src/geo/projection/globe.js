@@ -280,7 +280,7 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
     let poleBuffer = tile.globePoleBuffer;
 
     if (!gridBuffer) {
-        const gridMesh = GlobeSharedBuffers.createGridVertices(id.x, id.y, id.z);
+        const gridMesh = GlobeSharedBuffers.createGridVertices(id);
         gridBuffer = tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
     }
 
@@ -293,23 +293,10 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
 }
 
 export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4) {
-    const gridTileId = new CanonicalTileID(id.z, Math.pow(2, id.z) / 2, id.y);
-    const bounds = globeTileBounds(gridTileId);
-    const decode = globeDenormalizeECEF(bounds);
+    const decode = globeDenormalizeECEF(globeTileBounds(id));
     const posMatrix = mat4.clone(globeMatrix);
     mat4.mul(posMatrix, posMatrix, decode);
-
     return posMatrix;
-}
-
-export function globeUpVectorMatrix(id: CanonicalTileID, tiles: number) {
-    // Tile up vectors and can be reused for each tiles on the same x-row.
-    // i.e. for each tile id (x, y, z) use pregenerated mesh of (0, y, z).
-    // For this reason the up vectors are rotated first by 'yRotation' to
-    // place them in the correct longitude location.
-    const xOffset = id.x - tiles / 2;
-    const yRotation = xOffset / tiles * Math.PI * 2.0;
-    return mat4.fromYRotation([], yRotation);
 }
 
 export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: Transform) {
@@ -426,15 +413,13 @@ export class GlobeSharedBuffers {
         return arr;
     }
 
-    static createGridVertices(sx: number, sy: number, sz: number): GlobeVertexArray {
+    static createGridVertices(id: CanonicalTileID): GlobeVertexArray {
+        const tiles = Math.pow(2, id.z);
         const lerp = (a, b, t) => a * (1 - t) + b * t;
-        const tiles = Math.pow(2, sz);
-        const gridTileId = new CanonicalTileID(sz, sx, sy);
-        const [latLngTL, latLngBR] = globeTileLatLngCorners(gridTileId);
+        const [latLngTL, latLngBR] = globeTileLatLngCorners(id);
         const boundsArray = new GlobeVertexArray();
 
-        const bounds = globeTileBounds(new CanonicalTileID(sz, tiles / 2, sy));
-        const norm = globeNormalizeECEF(bounds);
+        const norm = globeNormalizeECEF(globeTileBounds(id));
 
         const vertexExt = GLOBE_VERTEX_GRID_SIZE + 1;
         boundsArray.reserve(GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE);
@@ -442,7 +427,7 @@ export class GlobeSharedBuffers {
         for (let y = 0; y < vertexExt; y++) {
             const lat = lerp(latLngTL[0], latLngBR[0], y / GLOBE_VERTEX_GRID_SIZE);
             const mercatorY = mercatorYfromLat(lat);
-            const uvY = (mercatorY * tiles) - sy;
+            const uvY = (mercatorY * tiles) - id.y;
             const sinLat = Math.sin(degToRad(lat));
             const cosLat = Math.cos(degToRad(lat));
             for (let x = 0; x < vertexExt; x++) {

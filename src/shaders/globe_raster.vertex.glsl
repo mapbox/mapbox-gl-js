@@ -1,7 +1,6 @@
 uniform mat4 u_proj_matrix;
 uniform mat4 u_globe_matrix;
 uniform mat4 u_merc_matrix;
-uniform mat4 u_up_vector_matrix;
 uniform float u_zoom_transition;
 uniform vec2 u_merc_center;
 
@@ -17,7 +16,7 @@ void main() {
     v_pos0 = a_uv;
 
     vec2 uv = a_uv * EXTENT;
-    vec4 up_vector = u_up_vector_matrix * vec4(elevationVector(uv), 1.0);
+    vec4 up_vector = vec4(elevationVector(uv), 1.0);
     float height = elevation(uv);
 
 #ifdef TERRAIN_WIREFRAME

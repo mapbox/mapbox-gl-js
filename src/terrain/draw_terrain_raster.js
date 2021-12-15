@@ -20,7 +20,6 @@ import {
     globeBuffersForTileMesh,
     globeToMercatorTransition,
     globeMatrixForTile,
-    globeUpVectorMatrix,
     globePoleMatrixForTile
 } from '../geo/projection/globe.js';
 import extend from '../style-spec/util/extend.js';
@@ -199,12 +198,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             }
 
             const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
-            const upvectorMatrix = globeUpVectorMatrix(coord.canonical, tiles);
-
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, posMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom),
-                mercatorCenter, upvectorMatrix);
+                globeToMercatorTransition(tr.zoom), mercatorCenter);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -236,8 +232,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                     }
 
                     const poleUniforms = globeRasterUniformValues(
-                        tr.projMatrix, poleMatrix, poleMatrix,
-                        0.0, mercatorCenter, upvectorMatrix);
+                        tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter);
 
                     if (sharedBuffers) {
                         program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
