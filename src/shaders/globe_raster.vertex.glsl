@@ -25,10 +25,13 @@ void main() {
 
     vec4 globe = u_globe_matrix * vec4(a_globe_pos + up_vector.xyz * height, 1.0);
 
-    vec4 mercator = vec4(a_merc_pos, height, 1.0);
-    mercator.xy -= u_merc_center;
-    mercator.x = wrap(mercator.x, -0.5, 0.5);
-    mercator = u_merc_matrix * mercator;
+    vec4 mercator = vec4(0.0);
+    if (u_zoom_transition > 0.0) {
+        mercator = vec4(a_merc_pos, height, 1.0);
+        mercator.xy -= u_merc_center;
+        mercator.x = wrap(mercator.x, -0.5, 0.5);
+        mercator = u_merc_matrix * mercator;
+    }
 
     vec3 position = mix(globe.xyz, mercator.xyz, u_zoom_transition);
 

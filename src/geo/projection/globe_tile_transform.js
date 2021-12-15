@@ -7,14 +7,13 @@ import EXTENT from '../../data/extent.js';
 import {degToRad, clamp} from '../../util/util.js';
 import {
     latLngToECEF,
-    globeTileLatLngCorners,
     globeTileBounds,
     globeECEFNormalizationScale,
     globeECEFUnitsToPixelScale,
     calculateGlobeMatrix,
     globeNormalizeECEF,
     globeDenormalizeECEF,
-    GLOBE_RADIUS
+    GLOBE_RADIUS,
 } from './globe.js';
 
 export default class GlobeTileTransform {
@@ -34,6 +33,8 @@ export default class GlobeTileTransform {
     }
 
     createInversionMatrix(id: UnwrappedTileID): mat4 {
+        const identity = mat4.identity(new Float64Array(16));
+
         const center = this._tr.center;
         const ecefUnitsToPixels = globeECEFUnitsToPixelScale(this._worldSize);
         const matrix = mat4.identity(new Float64Array(16));
@@ -51,10 +52,9 @@ export default class GlobeTileTransform {
         const localRadius = EXTENT / (2.0 * Math.PI);
         const ecefUnitsToMercatorPixels = wsRadius / localRadius;
 
-        const scaling = mat4.identity(new Float64Array(16));
-        mat4.scale(scaling, scaling, [ecefUnitsToMercatorPixels, ecefUnitsToMercatorPixels, 1.0]);
+        mat4.scale(identity, identity, [ecefUnitsToMercatorPixels, ecefUnitsToMercatorPixels, 1.0]);
 
-        return mat4.multiply(matrix, matrix, scaling);
+        return mat4.multiply(matrix, matrix, identity);
     }
 
     upVector(id: CanonicalTileID, x: number, y: number): vec3 {
