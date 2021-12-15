@@ -452,8 +452,28 @@ export default class Marker extends Evented {
             position.y >= 0 && position.y < tr.height;
     }
 
-    _updateTransform(pitch: number, rotation: number) {
-        this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`;
+    _updateDOM(pos: Point) {
+        const pitch = this._calculatePitch();
+        const rotation  = this._calculateRotation();
+        this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${pos.x}px, ${pos.y}px) rotateX(${pitch}deg) rotateZ(${rotation}deg)`;
+    }
+
+    _calculatePitch() {
+        if (this._pitchAlignment === "viewport" || this._pitchAlignment === "auto") {
+            return 0;
+        } if (this._pitchAlignment === "map") {
+            return this._map.getPitch();
+        }
+        return 0;
+    }
+
+    _calculateRotation() {
+        if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
+            return this._rotation;
+        } if (this._rotationAlignment === "map") {
+            return this._rotation - this._map.getBearing();
+        }
+        return 0;
     }
 
     _update(delaySnap?: boolean) {
@@ -466,20 +486,6 @@ export default class Marker extends Evented {
 
         this._pos = this._map.project(this._lngLat)._add(this._transformedOffset());
 
-        let rotation = "";
-        if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
-            rotation = `rotateZ(${this._rotation}deg)`;
-        } else if (this._rotationAlignment === "map") {
-            rotation = `rotateZ(${this._rotation - this._map.getBearing()}deg)`;
-        }
-
-        let pitch = "";
-        if (this._pitchAlignment === "viewport" || this._pitchAlignment === "auto") {
-            pitch = "rotateX(0deg)";
-        } else if (this._pitchAlignment === "map") {
-            pitch = `rotateX(${this._map.getPitch()}deg)`;
-        }
-
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
@@ -487,7 +493,7 @@ export default class Marker extends Evented {
             this._updateFrameId = window.requestAnimationFrame(() => {
                 if (this._element && this._pos && this._anchor) {
                     this._pos = this._pos.round();
-                    this._updateTransform(pitch, rotation);
+                    this._updateDOM(this._pos);
                 }
             });
         } else {
@@ -498,7 +504,7 @@ export default class Marker extends Evented {
             if (!this._map) return;
 
             if (this._element && this._pos && this._anchor) {
-                this._updateTransform(pitch, rotation);
+                this._updateDOM(this._pos);
             }
 
             if ((this._map.getTerrain() || this._map.getFog()) && !this._fadeTimer) {
