@@ -8,101 +8,52 @@ import Context from '../gl/context.js';
 import Texture from './texture.js';
 import Program from './program.js';
 import {smoothstep} from '../util/util.js';
-import {calculateGlobeMatrix} from './../geo/projection/globe.js';
 import type SourceCache from '../source/source_cache.js';
 import SkyboxGeometry from './skybox_geometry.js';
 import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program.js';
-import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import {skyboxCaptureUniformValues} from './program/skybox_capture_program.js';
 import SkyLayer from '../style/style_layer/sky_style_layer.js';
 import type Painter from './painter.js';
 import {vec3, mat3, mat4} from 'gl-matrix';
-import browser from '../util/browser.js';
 import assert from 'assert';
 
 export default drawSky;
-
-function drawGlobeAtmosphere(painter: Painter) {
-    const context = painter.context;
-    const gl = context.gl;
-    const transform = painter.transform;
-    const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
-    const program = painter.useProgram('globeAtmosphere');
-
-    // Compute center and approximate radius of the globe on screen coordinates
-    const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1.0);
-    const viewToProj = transform._camera.getCameraToClipPerspective(transform._fov, transform.width / transform.height, transform._nearZ, transform._farZ);
-    const globeToView = mat4.mul([], viewMatrix, calculateGlobeMatrix(transform, transform.worldSize));
-    const viewToScreen = mat4.mul([], transform.labelPlaneMatrix, viewToProj);
-
-    const centerOnViewSpace = vec3.transformMat4([], [0, 0, 0], globeToView);
-    const radiusOnViewSpace = vec3.add([], centerOnViewSpace, [transform.worldSize / Math.PI / 2.0, 0, 0]);
-
-    const centerOnScreen = vec3.transformMat4([], centerOnViewSpace, viewToScreen);
-    const radiusOnScreen = vec3.transformMat4([], radiusOnViewSpace, viewToScreen);
-
-    const pixelRadius = vec3.length(vec3.sub([], radiusOnScreen, centerOnScreen));
-
-    const uniforms = atmosphereUniformValues(
-        centerOnScreen,
-        pixelRadius,
-        [transform.width, transform.height],
-        browser.devicePixelRatio,
-        1.0,                        // opacity
-        2.0,                        // fadeout range
-        [1.0, 1.0, 1.0],            // start color
-        [0.0118, 0.7451, 0.9882]);  // end color
-
-    painter.prepareDrawProgram(context, program);
-
-    const sharedBuffers = painter.globeSharedBuffers;
-    if (sharedBuffers) {
-        program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
-            ColorMode.alphaBlendedReal, CullFaceMode.backCW, uniforms, "skybox",
-            sharedBuffers.atmosphereVertexBuffer,
-            sharedBuffers.atmosphereIndexBuffer,
-            sharedBuffers.atmosphereSegments);
-    }
-}
 
 const TRANSITION_OPACITY_ZOOM_START = 7;
 const TRANSITION_OPACITY_ZOOM_END = 8;
 
 function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
-    if (painter.transform.projection.name === 'globe') {
-        drawGlobeAtmosphere(painter);
+    const tr = painter.transform;
+    const globeOrMercator = (tr.projection.name === 'mercator' || tr.projection.name === 'globe');
+    // For non-mercator projection, use a forced opacity transition. This transition is set to be
+    // 1.0 after the sheer adjustment upper bound which ensures to be in the mercator projection.
+    // Note: we only render sky for globe projection during the transition to mercator.
+    const transitionOpacity = globeOrMercator ? 1.0 : smoothstep(TRANSITION_OPACITY_ZOOM_START, TRANSITION_OPACITY_ZOOM_END, tr.zoom);
+    const opacity = layer.paint.get('sky-opacity') * transitionOpacity;
+    if (opacity === 0) {
+        return;
+    }
+
+    const context = painter.context;
+    const type = layer.paint.get('sky-type');
+    const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
+    const temporalOffset = (painter.frameCounter / 1000.0) % 1;
+
+    if (type === 'atmosphere') {
+        if (painter.renderPass === 'offscreen') {
+            if (layer.needsSkyboxCapture(painter)) {
+                captureSkybox(painter, layer, 32, 32);
+                layer.markSkyboxValid(painter);
+            }
+        } else if (painter.renderPass === 'sky') {
+            drawSkyboxFromCapture(painter, layer, depthMode, opacity, temporalOffset);
+        }
+    } else if (type === 'gradient') {
+        if (painter.renderPass === 'sky') {
+            drawSkyboxGradient(painter, layer, depthMode, opacity, temporalOffset);
+        }
     } else {
-        const tr = painter.transform;
-        const isMercator = tr.projection.name === 'mercator';
-        // For non-mercator projection, use a forced opacity transition. This transition is set to be
-        // 1.0 after the sheer adjustment upper bound which ensures to be in the mercator projection.
-        const transitionOpacity = isMercator ? 1.0 : smoothstep(TRANSITION_OPACITY_ZOOM_START, TRANSITION_OPACITY_ZOOM_END, tr.zoom);
-        const opacity = layer.paint.get('sky-opacity') * transitionOpacity;
-        if (opacity === 0) {
-            return;
-        }
-
-        const context = painter.context;
-        const type = layer.paint.get('sky-type');
-        const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
-        const temporalOffset = (painter.frameCounter / 1000.0) % 1;
-
-        if (type === 'atmosphere') {
-            if (painter.renderPass === 'offscreen') {
-                if (layer.needsSkyboxCapture(painter)) {
-                    captureSkybox(painter, layer, 32, 32);
-                    layer.markSkyboxValid(painter);
-                }
-            } else if (painter.renderPass === 'sky') {
-                drawSkyboxFromCapture(painter, layer, depthMode, opacity, temporalOffset);
-            }
-        } else if (type === 'gradient') {
-            if (painter.renderPass === 'sky') {
-                drawSkyboxGradient(painter, layer, depthMode, opacity, temporalOffset);
-            }
-        } else {
-            assert(false, `${type} is unsupported sky-type`);
-        }
+        assert(false, `${type} is unsupported sky-type`);
     }
 }
 
