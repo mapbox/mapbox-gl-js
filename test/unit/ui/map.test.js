@@ -55,6 +55,18 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('warns when map container is not empty', (t) => {
+        const container = window.document.createElement('div');
+        container.textContent = 'Hello World';
+
+        const stub = t.stub(console, 'warn');
+        new Map({container, testMode: true});
+
+        t.ok(stub.calledOnce);
+
+        t.end();
+    });
+
     t.test('bad map-specific token breaks map', (t) => {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});

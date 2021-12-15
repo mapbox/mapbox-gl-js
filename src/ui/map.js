@@ -483,6 +483,10 @@ class Map extends Camera {
             throw new Error(`Invalid type: 'container' must be a String or HTMLElement.`);
         }
 
+        if (this._container.childNodes.length > 0) {
+            warnOnce(`The map container element should be empty; otherwise the map's interactivity will be negatively impacted. If you want to display a message when WebGL is not supported, use the Mapbox GL Supported plugin instead.`);
+        }
+
         if (options.maxBounds) {
             this.setMaxBounds(options.maxBounds);
         }
