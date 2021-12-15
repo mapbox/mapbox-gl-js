@@ -83,8 +83,7 @@ export default class GlobeTileTransform {
         const dir = vec3.normalize([], p0p1);
 
         // Compute globe origo in world space
-        const matrix = calculateGlobeMatrix(this._tr, this._worldSize);
-        const center = vec3.transformMat4([], [0, 0, 0], matrix);
+        const center = vec3.transformMat4([], [0, 0, 0], this._globeMatrix);
         const radius = this._worldSize / (2.0 * Math.PI);
 
         const oc = vec3.sub([], p0, center);
@@ -107,9 +106,9 @@ export default class GlobeTileTransform {
         }
 
         // Transform coordinate axes to find lat & lng of the position
-        const xa = vec3.normalize([], vec4.transformMat4([], [1, 0, 0, 0], matrix));
-        const ya = vec3.normalize([], vec4.transformMat4([], [0, -1, 0, 0], matrix));
-        const za = vec3.normalize([], vec4.transformMat4([], [0, 0, 1, 0], matrix));
+        const xa = vec3.normalize([], vec4.transformMat4([], [1, 0, 0, 0], this._globeMatrix));
+        const ya = vec3.normalize([], vec4.transformMat4([], [0, -1, 0, 0], this._globeMatrix));
+        const za = vec3.normalize([], vec4.transformMat4([], [0, 0, 1, 0], this._globeMatrix));
 
         const lat = Math.asin(vec3.dot(ya, pOnGlobe) / radius) * 180 / Math.PI;
         const xp = vec3.dot(xa, pOnGlobe);
