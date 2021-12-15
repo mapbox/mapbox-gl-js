@@ -15,6 +15,7 @@ export default {
     range: [3.5, 7],
     zAxisUnit: "meters",
     isReprojectedInTileSpace: true,
+    unsupportedLayers: ['custom'],
 
     project(lng: number, lat: number) {
         lat = degToRad(lat);

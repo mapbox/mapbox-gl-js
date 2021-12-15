@@ -16,6 +16,7 @@ export default {
     zAxisUnit: "meters",
     conic: true,
     isReprojectedInTileSpace: true,
+    unsupportedLayers: ['custom'],
 
     // based on https://github.com/d3/d3-geo-projection, MIT-licensed
 

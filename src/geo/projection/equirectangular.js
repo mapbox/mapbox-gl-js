@@ -15,6 +15,7 @@ export default {
     zAxisUnit: "meters",
     wrap: true,
     isReprojectedInTileSpace: true,
+    unsupportedLayers: ['custom'],
 
     project(lng: number, lat: number) {
         const x = 0.5 + lng / 360;

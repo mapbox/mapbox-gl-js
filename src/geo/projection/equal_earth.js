@@ -19,6 +19,7 @@ export default {
     range: [3.5, 7],
     zAxisUnit: "meters",
     isReprojectedInTileSpace: true,
+    unsupportedLayers: ['custom'],
 
     project(lng: number, lat: number) {
         // based on https://github.com/d3/d3-geo, MIT-licensed
