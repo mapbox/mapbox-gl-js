@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 import SourceCache from '../source/source_cache.js';
-import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
+import {OverscaledTileID} from '../source/tile_id.js';
 import Tile from '../source/tile.js';
 import boundsAttributes from '../data/bounds_attributes.js';
 import {RasterBoundsArray, TriangleIndexArray, LineIndexArray} from '../data/array_types.js';
@@ -592,10 +592,7 @@ export class Terrain extends Elevation {
         const tr = this.painter.transform;
         const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
-        let id = tile.tileID.canonical;
-        if (options && options.elevationTileID) {
-            id = options.elevationTileID;
-        }
+        const id = tile.tileID.canonical;
         uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
         uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
         uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
