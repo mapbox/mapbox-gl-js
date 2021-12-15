@@ -204,8 +204,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             setShaderMode(shaderMode, isWireframe);
 
-            const gridTileId = new CanonicalTileID(coord.canonical.z, tiles / 2, coord.canonical.y);
-            elevationOptions = extend(elevationOptions, {elevationTileID: gridTileId});
             terrain.setupElevationDraw(tile, program, elevationOptions);
 
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
