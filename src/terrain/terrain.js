@@ -657,7 +657,7 @@ export class Terrain extends Elevation {
             this.renderedToTile = false; // reset flag.
             if (fbo.dirty) {
                 // Clear on start.
-                context.clear({color: Color.transparent});
+                context.clear({color: Color.transparent, stencil: 0});
                 fbo.dirty = false;
             }
 
