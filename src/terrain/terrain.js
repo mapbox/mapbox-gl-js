@@ -589,8 +589,7 @@ export class Terrain extends Elevation {
             useDepthForOcclusion?: boolean,
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
-            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number },
-            elevationTileID?: CanonicalTileID
+            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number }
         }) {
         const context = this.painter.context;
         const gl = context.gl;
@@ -601,7 +600,7 @@ export class Terrain extends Elevation {
         const tr = this.painter.transform;
         const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
-        const id = tile.tileID.canonical;
+        let id = tile.tileID.canonical;
         uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
         uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
         uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
