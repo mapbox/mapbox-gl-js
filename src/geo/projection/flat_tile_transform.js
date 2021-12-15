@@ -7,6 +7,8 @@ import Point from '@mapbox/point-geometry';
 import EXTENT from '../../data/extent.js';
 import tileTransform from './tile_transform.js';
 
+const identiy = mat4.identity(new Float64Array(16));
+
 export default class FlatTileTransform {
     _tr: Transform;
     _worldSize: number;
@@ -15,13 +17,10 @@ export default class FlatTileTransform {
     constructor(tr: Transform, worldSize: number) {
         this._tr = tr;
         this._worldSize = worldSize;
-        // eslint-disable-next-line no-warning-comments
-        // TODO: Cache this elsewhere?
-        this._identity = mat4.identity(new Float64Array(16));
     }
 
     createInversionMatrix(): mat4 {
-        return this._identity;
+        return identiy;
     }
 
     createTileMatrix(id: UnwrappedTileID): mat4 {
