@@ -2,7 +2,7 @@
 import type Transform from '../transform.js';
 import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import {mat4, vec4, vec3} from 'gl-matrix';
-import MercatorCoordinate, {mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
+import MercatorCoordinate, {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import {degToRad, clamp} from '../../util/util.js';
 import {
@@ -58,27 +58,10 @@ export default class GlobeTileTransform {
     }
 
     upVector(id: CanonicalTileID, x: number, y: number): vec3 {
-        const corners = globeTileLatLngCorners(id);
-        const tl = corners[0];
-        const br = corners[1];
-
-        const tlUp = latLngToECEF(tl[0], tl[1]);
-        const trUp = latLngToECEF(tl[0], br[1]);
-        const brUp = latLngToECEF(br[0], br[1]);
-        const blUp = latLngToECEF(br[0], tl[1]);
-
-        vec3.normalize(tlUp, tlUp);
-        vec3.normalize(trUp, trUp);
-        vec3.normalize(brUp, brUp);
-        vec3.normalize(blUp, blUp);
-
-        const u = x / EXTENT;
-        const v = y / EXTENT;
-
-        const tltr = vec3.lerp([], tlUp, trUp, u);
-        const blbr = vec3.lerp([], blUp, brUp, u);
-
-        return vec3.lerp([], tltr, blbr, v);
+        const tiles = 1 << id.z;
+        const mercX = (x / EXTENT + id.x) / tiles;
+        const mercY = (y / EXTENT + id.y) / tiles;
+        return latLngToECEF(latFromMercatorY(mercY), lngFromMercatorX(mercX), 1.0);
     }
 
     upVectorScale(id: CanonicalTileID): number {
