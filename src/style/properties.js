@@ -315,27 +315,27 @@ type TransitioningPropertyValues<Props: Object>
 export class Transitioning<Props: Object> {
     _properties: Properties<Props>;
     _values: TransitioningPropertyValues<Props>;
+    _hasTransition: boolean;
 
     constructor(properties: Properties<Props>) {
         this._properties = properties;
         this._values = (Object.create(properties.defaultTransitioningPropertyValues): any);
+        this._hasTransition = false;
     }
 
     possiblyEvaluate(parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): PossiblyEvaluated<Props> {
         const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
+        this._hasTransition = false;
         for (const property of Object.keys(this._values)) {
-            result._values[property] = this._values[property].possiblyEvaluate(parameters, canonical, availableImages);
+            const value = this._values[property];
+            result._values[property] = value.possiblyEvaluate(parameters, canonical, availableImages);
+            if (value.prior) this._hasTransition = true;
         }
         return result;
     }
 
     hasTransition() {
-        for (const property of Object.keys(this._values)) {
-            if (this._values[property].prior) {
-                return true;
-            }
-        }
-        return false;
+        return this._hasTransition;
     }
 }
 
