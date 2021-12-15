@@ -591,7 +591,7 @@ export class Terrain extends Elevation {
         const tr = this.painter.transform;
         const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
-        let id = tile.tileID.canonical;
+        const id = tile.tileID.canonical;
         uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
         uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
         uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);

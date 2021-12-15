@@ -69,8 +69,6 @@ export default {
         const lng = lngFromMercatorX(mx);
         const pos = latLngToECEF(lat, lng);
 
-        // eslint-disable-next-line no-warning-comments
-        // TODO: cached matrices!
         const bounds = globeTileBounds(id);
         const normalizationMatrix = globeNormalizeECEF(bounds);
         vec3.transformMat4(pos, pos, normalizationMatrix);
