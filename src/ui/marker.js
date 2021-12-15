@@ -452,6 +452,10 @@ export default class Marker extends Evented {
             position.y >= 0 && position.y < tr.height;
     }
 
+    _updateTransform(pitch: number, rotation: number) {
+        this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`;
+    }
+
     _update(delaySnap?: boolean) {
         window.cancelAnimationFrame(this._updateFrameId);
         if (!this._map) return;
@@ -483,7 +487,7 @@ export default class Marker extends Evented {
             this._updateFrameId = window.requestAnimationFrame(() => {
                 if (this._element && this._pos && this._anchor) {
                     this._pos = this._pos.round();
-                    this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`;
+                    this._updateTransform(pitch, rotation);
                 }
             });
         } else {
@@ -494,7 +498,7 @@ export default class Marker extends Evented {
             if (!this._map) return;
 
             if (this._element && this._pos && this._anchor) {
-                this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`;
+                this._updateTransform(pitch, rotation);
             }
 
             if ((this._map.getTerrain() || this._map.getFog()) && !this._fadeTimer) {
