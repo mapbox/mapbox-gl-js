@@ -41,6 +41,13 @@ export default {
     supportsFreeCamera: true,
     zAxisUnit: "pixels",
     center: [0, 0],
+    unsupportedLayers: [
+        'circle',
+        'heatmap',
+        'fill-extrusion',
+        'debug',
+        'custom'
+    ],
 
     project(lng: number, lat: number) {
         const x = mercatorXfromLng(lng);

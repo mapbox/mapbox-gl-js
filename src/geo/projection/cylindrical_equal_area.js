@@ -11,6 +11,7 @@ export default function(phi: number) {
     return {
         wrap: true,
         supportsWorldCopies: true,
+        unsupportedLayers: ['custom'],
         project(lng: number, lat: number) {
             const x = degToRad(lng) * cosPhi;
             const y = Math.sin(degToRad(lat)) / cosPhi;
