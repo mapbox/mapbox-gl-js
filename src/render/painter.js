@@ -40,7 +40,8 @@ import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
-import {GlobeSharedBuffers} from '../geo/projection/globe.js';
+import drawGlobeAtmosphere from './draw_globe_atmosphere.js';
+import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
@@ -580,7 +581,8 @@ class Painter {
         // They are drawn at max depth, they are drawn after opaque and before
         // translucent to fail depth testing and mix with translucent objects.
         this.renderPass = 'sky';
-        if (this.transform.isHorizonVisible() || this.transform.projection.name === 'globe') {
+        const isTransitioning = globeToMercatorTransition(this.transform.zoom) > 0.0;
+        if ((isTransitioning || this.transform.projection.name !== 'globe') && this.transform.isHorizonVisible()) {
             for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
                 const layer = this.style._layers[layerIds[this.currentLayer]];
                 const sourceCache = style._getLayerSourceCache(layer);
@@ -589,6 +591,9 @@ class Painter {
 
                 this.renderLayer(this, sourceCache, layer, coords);
             }
+        }
+        if (this.transform.projection.name === 'globe') {
+            drawGlobeAtmosphere(this);
         }
 
         // Translucent pass ===============================================
