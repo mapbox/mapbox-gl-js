@@ -4,7 +4,8 @@ import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import {mat4, vec4, vec3} from 'gl-matrix';
 import MercatorCoordinate, {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
-import {degToRad, clamp} from '../../util/util.js';
+import {degToRad, radToDeg, getColumn} from '../../util/util.js';
+import {Ray} from '../../util/primitives.js';
 import {
     latLngToECEF,
     globeTileBounds,
@@ -70,51 +71,42 @@ export default class GlobeTileTransform {
     }
 
     pointCoordinate(x: number, y: number): MercatorCoordinate {
-        const p0 = [x, y, 0, 1];
-        const p1 = [x, y, 1, 1];
+        const point0 = [x, y, 0, 1];
+        const point1 = [x, y, 1, 1];
 
-        vec4.transformMat4(p0, p0, this._tr.pixelMatrixInverse);
-        vec4.transformMat4(p1, p1, this._tr.pixelMatrixInverse);
+        vec4.transformMat4(point0, point0, this._tr.pixelMatrixInverse);
+        vec4.transformMat4(point1, point1, this._tr.pixelMatrixInverse);
 
-        vec4.scale(p0, p0, 1 / p0[3]);
-        vec4.scale(p1, p1, 1 / p1[3]);
+        vec4.scale(point0, point0, 1 / point0[3]);
+        vec4.scale(point1, point1, 1 / point1[3]);
 
-        const p0p1 = vec3.sub([], p1, p0);
-        const dir = vec3.normalize([], p0p1);
+        const p0p1 = vec3.sub([], point1, point0);
+        const direction = vec3.normalize([], p0p1);
 
         // Compute globe origo in world space
-        const center = vec3.transformMat4([], [0, 0, 0], this._globeMatrix);
+        const globeCenter = vec3.transformMat4([], [0, 0, 0], this._globeMatrix);
         const radius = this._worldSize / (2.0 * Math.PI);
 
-        const oc = vec3.sub([], p0, center);
-        const a = vec3.dot(dir, dir);
-        const b = 2.0 * vec3.dot(oc, dir);
-        const c = vec3.dot(oc, oc) - radius * radius;
-        const d = b * b - 4 * a * c;
-        let pOnGlobe;
+        const pointOnGlobe = [];
+        const ray = new Ray(point0, direction);
 
-        if (d < 0) {
-            // Not intersecting with the globe. Find shortest distance between the ray and the globe
-            const t = clamp(vec3.dot(vec3.negate([], oc), p0p1) / vec3.dot(p0p1, p0p1), 0, 1);
-            const pointOnRay = vec3.lerp([], p0, p1, t);
-            const pointToGlobe = vec3.sub([], center, pointOnRay);
-
-            pOnGlobe = vec3.sub([], vec3.add([], pointOnRay, vec3.scale([], pointToGlobe, (1.0 - radius / vec3.length(pointToGlobe)))), center);
-        } else {
-            const t = (-b - Math.sqrt(d)) / (2.0 * a);
-            pOnGlobe = vec3.sub([], vec3.scaleAndAdd([], p0, dir, t), center);
-        }
+        ray.closestPointOnSphere(globeCenter, radius, pointOnGlobe);
 
         // Transform coordinate axes to find lat & lng of the position
-        const xa = vec3.normalize([], vec4.transformMat4([], [1, 0, 0, 0], this._globeMatrix));
-        const ya = vec3.normalize([], vec4.transformMat4([], [0, -1, 0, 0], this._globeMatrix));
-        const za = vec3.normalize([], vec4.transformMat4([], [0, 0, 1, 0], this._globeMatrix));
+        const xa = vec3.normalize([], getColumn(this._globeMatrix, 0));
+        const ya = vec3.normalize([], getColumn(this._globeMatrix, 1));
+        const za = vec3.normalize([], getColumn(this._globeMatrix, 2));
 
-        const lat = Math.asin(vec3.dot(ya, pOnGlobe) / radius) * 180 / Math.PI;
-        const xp = vec3.dot(xa, pOnGlobe);
-        const zp = vec3.dot(za, pOnGlobe);
-        const lng = Math.atan2(xp, zp) * 180 / Math.PI;
+        const xp = vec3.dot(xa, pointOnGlobe);
+        const yp = vec3.dot(ya, pointOnGlobe);
+        const zp = vec3.dot(za, pointOnGlobe);
 
-        return new MercatorCoordinate(mercatorXfromLng(lng), mercatorYfromLat(lat));
+        const lat = radToDeg(Math.asin(-yp / radius));
+        const lng = radToDeg(Math.atan2(xp, zp));
+
+        const mx = mercatorXfromLng(lng);
+        const my = mercatorYfromLat(lat);
+
+        return new MercatorCoordinate(mx, my);
     }
 }
