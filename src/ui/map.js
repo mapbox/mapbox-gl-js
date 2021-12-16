@@ -322,6 +322,7 @@ class Map extends Camera {
     _repaint: ?boolean;
     _vertices: ?boolean;
     _canvas: HTMLCanvasElement;
+    _minTileCacheSize: number;
     _maxTileCacheSize: number;
     _frame: ?Cancelable;
     _renderNextFrame: ?boolean;
@@ -440,6 +441,7 @@ class Map extends Camera {
         super(transform, options);
 
         this._interactive = options.interactive;
+        this._minTileCacheSize = options.minTileCacheSize;
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;

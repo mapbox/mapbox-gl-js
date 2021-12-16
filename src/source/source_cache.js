@@ -43,6 +43,7 @@ class SourceCache extends Evented {
     _cache: TileCache;
     _timers: {[_: any]: TimeoutID};
     _cacheTimers: {[_: any]: TimeoutID};
+    _minTileCacheSize: ?number;
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
@@ -88,6 +89,7 @@ class SourceCache extends Evented {
         this._cache = new TileCache(0, this._unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
+        this._minTileCacheSize = null;
         this._maxTileCacheSize = null;
         this._loadedParentTiles = {};
 
@@ -97,6 +99,7 @@ class SourceCache extends Evented {
 
     onAdd(map: MapboxMap) {
         this.map = map;
+        this._minTileCacheSize = map ? map._minTileCacheSize : null;
         this._maxTileCacheSize = map ? map._maxTileCacheSize : null;
     }
 
@@ -408,7 +411,8 @@ class SourceCache extends Evented {
         const commonZoomRange = 5;
 
         const viewDependentMaxSize = Math.floor(approxTilesInView * commonZoomRange);
-        const maxSize = typeof this._maxTileCacheSize === 'number' ? Math.min(this._maxTileCacheSize, viewDependentMaxSize) : viewDependentMaxSize;
+        const minSize = typeof this._minTileCacheSize === 'number' ? Math.max(this._minTileCacheSize, viewDependentMaxSize) : viewDependentMaxSize;
+        const maxSize = typeof this._maxTileCacheSize === 'number' ? Math.min(this._maxTileCacheSize, minSize) : minSize;
 
         this._cache.setMaxSize(maxSize);
     }
@@ -738,7 +742,8 @@ class SourceCache extends Evented {
         const cached = Boolean(tile);
         if (!cached) {
             const painter = this.map ? this.map.painter : null;
-            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._source.type === 'raster' || this._source.type === 'raster-dem');
+            const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
+            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, isRaster);
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
@@ -932,12 +937,16 @@ class SourceCache extends Evented {
         const coveringTilesIDs: Map<number, OverscaledTileID> = new Map();
         const transforms = Array.isArray(transform) ? transform : [transform];
 
+        const painter = this.map ? this.map.painter : null;
+        const terrain = painter ? painter.terrain : null;
+        const tileSize = this.usedForTerrain && terrain ? terrain.getScaledDemTileSize() : this._source.tileSize;
+
         for (const tr of transforms) {
             const tileIDs = tr.coveringTiles({
-                tileSize: this._source.tileSize,
+                tileSize,
                 minzoom: this._source.minzoom,
                 maxzoom: this._source.maxzoom,
-                roundZoom: this._source.roundZoom,
+                roundZoom: this._source.roundZoom && !this.usedForTerrain,
                 reparseOverscaled: this._source.reparseOverscaled,
                 isTerrainDEM: this.usedForTerrain
             });
@@ -945,14 +954,21 @@ class SourceCache extends Evented {
             for (const tileID of tileIDs) {
                 coveringTilesIDs.set(tileID.key, tileID);
             }
+
+            if (this.usedForTerrain) {
+                tr.updateElevation(false);
+            }
         }
 
         const tileIDs = Array.from(coveringTilesIDs.values());
-        const painter = this.map ? this.map.painter : null;
         const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
+
         asyncAll(tileIDs, (tileID, done) => {
             const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, isRaster);
-            this._loadTile(tile, done);
+            this._loadTile(tile, (err) => {
+                if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
+                done(err, tile);
+            });
         }, callback);
     }
 }
