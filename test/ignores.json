@@ -53,5 +53,6 @@
   "render-tests/globe/globe-heatmap/default-zoomed": "skip - pending globe-view implementation",
   "render-tests/globe/globe-heatmap/horizontal": "skip - pending globe-view implementation",
   "render-tests/globe/globe-heatmap/near-horizon": "skip - pending globe-view implementation",
-  "render-tests/globe/globe-heatmap/vertical": "skip - pending globe-view implementation"
+  "render-tests/globe/globe-heatmap/vertical": "skip - pending globe-view implementation",
+  "render-tests/globe/globe-padding": "skip - pending globe-view implementation"
 }
