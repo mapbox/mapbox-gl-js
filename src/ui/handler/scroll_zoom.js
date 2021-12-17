@@ -254,9 +254,7 @@ class ScrollZoomHandler {
 
         const pos = DOM.mousePos(this._el, e);
         this._aroundPoint = this._aroundCenter ? this._map.transform.centerPoint : pos;
-        // eslint-disable-next-line no-warning-comments
-        // TODO: this._aroundCoord = this._map.transform.pointCoordinate3D(this._aroundPoint);
-        this._aroundCoord = this._map.transform.pointCoordinate(this._aroundPoint);
+        this._aroundCoord = this._map.transform.pointCoordinate3D(this._aroundPoint);
         this._targetZoom = undefined;
 
         if (!this._frameId) {

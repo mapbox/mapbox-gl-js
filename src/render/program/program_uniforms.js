@@ -53,5 +53,4 @@ export const programUniforms = {
     skyboxCapture: skyboxCaptureUniforms,
     globeRaster: globeRasterUniforms,
     globeAtmosphere: atmosphereUniforms,
-    globeDepth: globeRasterUniforms,
 };

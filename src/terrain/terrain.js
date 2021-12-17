@@ -1129,6 +1129,10 @@ export class Terrain extends Elevation {
         }
     }
 
+    clipOrMaskOverlapStencilType() {
+        return this._overlapStencilType === 'Clip' || this._overlapStencilType === 'Mask';
+    }
+
     stencilModeForRTTOverlap(id: OverscaledTileID) {
         if (!this.renderingToTexture || !this._overlapStencilType) {
             return StencilMode.disabled;
