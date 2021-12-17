@@ -274,11 +274,10 @@ export class Terrain extends Elevation {
                         'This leads to lower resolution of hillshade. For full hillshade resolution but higher memory consumption, define another raster DEM source.');
                 }
                 // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
-                const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
-                const proxyTileSize = this.proxySourceCache.getSource().tileSize;
+                const scaledDemTileSize = this.getScaledDemTileSize();
                 // Dem tile needs to be parent or at least of the same zoom level as proxy tile.
                 // Tile cover roundZoom behavior is set to the same as for proxy (false) in SourceCache.update().
-                this.sourceCache.update(transform, demScale * proxyTileSize, true);
+                this.sourceCache.update(transform, scaledDemTileSize, true);
                 // As a result of update, we get new set of tiles: reset lookup cache.
                 this._findCoveringTileCache[this.sourceCache.id] = {};
             };
@@ -306,6 +305,12 @@ export class Terrain extends Elevation {
         } else {
             this._disable();
         }
+    }
+
+    getScaledDemTileSize() {
+        const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
+        const proxyTileSize = this.proxySourceCache.getSource().tileSize;
+        return demScale * proxyTileSize;
     }
 
     _checkRenderCacheEfficiency() {
