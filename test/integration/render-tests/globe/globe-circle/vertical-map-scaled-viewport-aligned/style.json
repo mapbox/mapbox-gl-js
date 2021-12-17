@@ -1,0 +1,79 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform.",
+      "operations": [
+        ["setProjection", "globe"],
+        [ "wait" ]
+      ]
+    }
+  },
+  "center": [
+    20,
+    35
+  ],
+  "zoom": 0.8,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "Point",
+            "coordinates": [
+              0, 0
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              10, 25
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              -15, 50
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              -2, 62.5
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              8, 75
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 30,
+        "circle-color": "purple",
+        "circle-pitch-alignment": "viewport",
+        "circle-pitch-scale": "map"
+      }
+    }
+  ]
+}
