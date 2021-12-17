@@ -1,0 +1,80 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 14,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/12-759-1609.terrain.png"
+      ],
+      "maxzoom": 11,
+      "tileSize": 256
+    },
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "road_label",
+      "layout": {
+        "icon-image": "triangle-stroked-12",
+        "symbol-placement": "line",
+        "symbol-spacing": 20
+      },
+      "paint": {
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "point",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "filter": [
+        "==",
+        "maki",
+        "restaurant"
+      ],
+      "layout": {
+        "icon-image": "{maki}-12",
+        "symbol-placement": "point"
+      },
+      "paint": {
+        "icon-opacity": 0
+      }
+    }
+  ]
+}

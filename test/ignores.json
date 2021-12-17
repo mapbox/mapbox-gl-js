@@ -54,5 +54,7 @@
   "render-tests/globe/globe-heatmap/horizontal": "skip - pending globe-view implementation",
   "render-tests/globe/globe-heatmap/near-horizon": "skip - pending globe-view implementation",
   "render-tests/globe/globe-heatmap/vertical": "skip - pending globe-view implementation",
-  "render-tests/globe/globe-padding": "skip - pending globe-view implementation"
+  "render-tests/globe/globe-padding": "skip - pending globe-view implementation",
+  "render-tests/globe/globe-symbols/variable-anchor-icon": "skip - pending globe-view implementation",
+  "render-tests/globe/globe-symbols/variable-anchor-text": "skip - pending globe-view implementation"
 }
