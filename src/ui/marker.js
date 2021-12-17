@@ -334,6 +334,7 @@ export default class Marker extends Evented {
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
             this._element.setAttribute('role', 'button');
+            if (!this._element.hasAttribute('aria-label')) this._element.setAttribute('aria-label', 'Map marker');
             this._originalTabIndex = this._element.getAttribute('tabindex');
             if (!this._originalTabIndex) {
                 this._element.setAttribute('tabindex', '0');
