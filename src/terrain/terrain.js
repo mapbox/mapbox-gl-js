@@ -1299,9 +1299,7 @@ export class Terrain extends Elevation {
         tile = key ? sourceCache.getTileByID(key) : null;
         if ((tile && tile.hasData()) || key === null) return tile;
 
-        if (key && !tile) {
-            return null;
-        }
+        assert(!key || tile);
 
         let sourceTileID = tile ? tile.tileID : tileID;
         let z = sourceTileID.overscaledZ;
@@ -1339,14 +1337,12 @@ export class Terrain extends Elevation {
             const id = sourceTileID.calculateScaledKey(z);
             tile = sourceCache.getTileByID(id);
             if (tile && tile.hasData()) break;
-            const nextKey = lookup[id];
-            if (nextKey === null) {
+            const key = lookup[id];
+            if (key === null) {
                 break; // There's no tile loaded and no point searching further.
-            } else if (nextKey !== undefined) {
-                tile = sourceCache.getTileByID(nextKey);
-                if (!tile) {
-                    break;
-                }
+            } else if (key !== undefined) {
+                tile = sourceCache.getTileByID(key);
+                assert(tile);
                 continue;
             }
             path.push(id);
