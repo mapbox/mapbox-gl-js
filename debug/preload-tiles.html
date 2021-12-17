@@ -31,6 +31,7 @@ var map = window.map = new mapboxgl.Map({
     zoom: 10,
     center: [-119.5375, 37.7425],
     style: 'mapbox://styles/mapbox/streets-v11',
+    minTileCacheSize: 1000,
 });
 
 const halfDome = [-119.5329, 37.7460];
@@ -54,7 +55,7 @@ const easeToOptions = {
 
 document.getElementById('flyTo-preload').onclick = async function () {
     this.innerText = 'Preload flyTo 🔄';
-    map.flyTo({...flyToOptions, preload: true});
+    map.flyTo({...flyToOptions, preloadOnly: true});
     await map.once('idle');
     this.innerText = 'Preload flyTo ✅';
 };
@@ -68,7 +69,7 @@ document.getElementById('flyTo-run').onclick = async function () {
 
 document.getElementById('easeTo-preload').onclick = async function () {
     this.innerText = 'Preload easeTo 🔄';
-    map.easeTo({...easeToOptions, preload: true});
+    map.easeTo({...easeToOptions, preloadOnly: true});
     await map.once('idle');
     this.innerText = 'Preload easeTo ✅';
 };
