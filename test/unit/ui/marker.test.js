@@ -4,6 +4,7 @@ import {createMap as globalCreateMap} from '../../util/index.js';
 import Marker from '../../../src/ui/marker.js';
 import Popup from '../../../src/ui/popup.js';
 import LngLat from '../../../src/geo/lng_lat.js';
+import {Event} from '../../../src/util/evented.js';
 import Point from '@mapbox/point-geometry';
 import simulate from '../../util/simulate_interaction.js';
 
@@ -920,4 +921,48 @@ test('Marker and fog', (t) => {
             t.end();
         });
     });
+});
+
+test('Snap To Pixel', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({draggable: true})
+        .setLngLat([1, 2])
+        .addTo(map);
+    t.test("Snap To Pixel immediately after initializing marker", (t) => {
+        t.same(marker._pos, marker._pos.round());
+        t.end();
+    });
+    t.test("Not Immediately Snap To Pixel After setLngLat", (t) => {
+        marker.setLngLat([2, 1]);
+        const pos = marker._pos;
+        setTimeout(() => {
+            t.notSame(marker._pos, pos);
+            t.same(marker._pos, pos.round());
+            t.end();
+        }, 100);
+    });
+    t.test("Immediately Snap To Pixel on moveend", (t) => {
+        map.fire(new Event("moveend"));
+        t.same(marker._pos, marker._pos.round());
+        t.end();
+    });
+    t.test("Not Immediately Snap To Pixel when Map move", (t) => {
+        map.fire(new Event("move"));
+        t.notSame(marker._pos, marker._pos.round());
+        window.requestAnimationFrame(() => {
+            t.same(marker._pos, marker._pos.round());
+            t.end();
+        });
+    });
+    t.test("Not Immediately Snap To Pixel when Map move and setLngLat", (t) => {
+        marker.setLngLat([1, 2]);
+        map.fire(new Event("move"));
+        t.notSame(marker._pos, marker._pos.round());
+        setTimeout(() => {
+            t.same(marker._pos, marker._pos.round());
+            t.end();
+        }, 100);
+    });
+    map.remove();
+    t.end();
 });
