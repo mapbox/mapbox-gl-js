@@ -6,7 +6,7 @@ import drawCollisionDebug from './draw_collision_debug.js';
 import SegmentVector from '../data/segment.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
-import {mat4, vec3} from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
@@ -153,13 +153,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
     const placedTextShifts = {};
     const projMatrix = coord.projMatrix;
     const elevation = transform.elevation;
-    const getElevation = elevation ? (p => {
-        const e = elevation.getAtTileOffset(coord, p.x, p.y);
-        const up = tileTransform.upVector(coord.canonical, p.x, p.y);
-        const upScale = tileTransform.upVectorScale(coord.canonical);
-        vec3.scale(up, up, e * upScale);
-        return up;
-    }) : (_ => [0, 0, 0]);
+    const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tileTransform) : (_ => [0, 0, 0]);
 
     dynamicTextLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
@@ -336,13 +330,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (alongLine) {
             const elevation = tr.elevation;
-            const getElevation = elevation ? (p => {
-                const e = elevation.getAtTileOffset(coord, p.x, p.y);
-                const up = tileTransform.upVector(coord.canonical, p.x, p.y);
-                const upScale = tileTransform.upVectorScale(coord.canonical);
-                vec3.scale(up, up, e * upScale);
-                return up;
-            }) : (_ => [0, 0, 0]);
+            const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tileTransform) : (_ => [0, 0, 0]);
             symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
         }
 
