@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [
+    20.5,
+    12.57    
+  ],
+  "zoom": 0.88,
+  "pitch": 85.0,
+  "bearing": 123.69,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "red"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "blue"
+      }
+    }
+  ]
+}
