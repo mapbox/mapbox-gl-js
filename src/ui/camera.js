@@ -1179,22 +1179,22 @@ class Camera extends Evented {
             aroundPoint = tr.locationPoint(around);
         }
 
-        this._zooming = this._zooming || (zoom !== startZoom);
-        this._rotating = this._rotating || (startBearing !== bearing);
-        this._pitching = this._pitching || (pitch !== startPitch);
-        this._padding = !tr.isPaddingEqual(padding);
+        const zoomChanged = this._zooming || (zoom !== startZoom);
+        const bearingChanged = this._rotating || (startBearing !== bearing);
+        const pitchChanged = this._pitching || (pitch !== startPitch);
+        const paddingChanged = !tr.isPaddingEqual(padding);
 
         const frame = (tr) => (k) => {
-            if (this._zooming) {
+            if (zoomChanged) {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
-            if (this._rotating) {
+            if (bearingChanged) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
-            if (this._pitching) {
+            if (pitchChanged) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
-            if (this._padding) {
+            if (paddingChanged) {
                 tr.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every fra,e
@@ -1233,11 +1233,6 @@ class Camera extends Evented {
 
             this._preloadTiles(predictedTransforms);
 
-            this._zooming = false;
-            this._rotating = false;
-            this._pitching = false;
-            this._padding = false;
-
             return;
         }
 
@@ -1251,6 +1246,11 @@ class Camera extends Evented {
             rotating: this._rotating,
             pitching: this._pitching
         };
+
+        this._zooming = zoomChanged;
+        this._rotating = bearingChanged;
+        this._pitching = pitchChanged;
+        this._padding = paddingChanged;
 
         this._easeId = options.easeId;
         this._prepareEase(eventData, options.noMoveStart, currently);
@@ -1505,10 +1505,10 @@ class Camera extends Evented {
             options.duration = 0;
         }
 
-        this._zooming = true;
-        this._rotating = (startBearing !== bearing);
-        this._pitching = (pitch !== startPitch);
-        this._padding = !tr.isPaddingEqual(padding);
+        const zoomChanged = true;
+        const bearingChanged = (startBearing !== bearing);
+        const pitchChanged = (pitch !== startPitch);
+        const paddingChanged = !tr.isPaddingEqual(padding);
 
         const frame = (tr) => (k) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
@@ -1516,13 +1516,13 @@ class Camera extends Evented {
             const scale = 1 / w(s);
             tr.zoom = k === 1 ? zoom : startZoom + tr.scaleZoom(scale);
 
-            if (this._rotating) {
+            if (bearingChanged) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
-            if (this._pitching) {
+            if (pitchChanged) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
-            if (this._padding) {
+            if (paddingChanged) {
                 tr.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every frame
@@ -1553,17 +1553,17 @@ class Camera extends Evented {
 
             this._preloadTiles(predictedTransforms);
 
-            this._zooming = false;
-            this._rotating = false;
-            this._pitching = false;
-            this._padding = false;
-
             return;
         }
 
         // emulate the last transform and start preloading tiles for it
         const lastTransform = frame(tr.clone())(1);
         this._preloadTiles(lastTransform);
+
+        this._zooming = zoomChanged;
+        this._rotating = bearingChanged;
+        this._pitching = pitchChanged;
+        this._padding = paddingChanged;
 
         this._prepareEase(eventData, false);
         this._ease(frame(tr), () => this._afterEase(eventData), options);
