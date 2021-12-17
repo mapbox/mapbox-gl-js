@@ -243,10 +243,16 @@ class SourceCache extends Evented {
             // continue to try loading parent/children tiles if a tile doesn't exist (404)
             else {
                 const updateForTerrain = this._source.type === 'raster-dem' && this.usedForTerrain;
+                if (!updateForTerrain) {
+                    this.update(this.transform);
+                    return;
+                }
+
                 const painter = this.map ? this.map.painter : null;
                 const terrain = painter ? painter.terrain : null;
-                const tileSize = updateForTerrain && terrain ? terrain.getScaledDemTileSize() : this._source.tileSize;
+                const tileSize = terrain ? terrain.getScaledDemTileSize() : this._source.tileSize;
                 this.update(this.transform, tileSize, updateForTerrain);
+                if (terrain) terrain.resetTileLookupCache();
             }
             return;
         }

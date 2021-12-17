@@ -279,12 +279,12 @@ export class Terrain extends Elevation {
                 // Tile cover roundZoom behavior is set to the same as for proxy (false) in SourceCache.update().
                 this.sourceCache.update(transform, scaledDemTileSize, true);
                 // As a result of update, we get new set of tiles: reset lookup cache.
-                this._findCoveringTileCache[this.sourceCache.id] = {};
+                this.resetTileLookupCache();
             };
 
             if (!this.sourceCache.usedForTerrain) {
                 // Init cache entry.
-                this._findCoveringTileCache[this.sourceCache.id] = {};
+                this.resetTileLookupCache();
                 // When toggling terrain on/off load available terrain tiles from cache
                 // before reading elevation at center.
                 this.sourceCache.usedForTerrain = true;
@@ -305,6 +305,10 @@ export class Terrain extends Elevation {
         } else {
             this._disable();
         }
+    }
+
+    resetTileLookupCache() {
+        this._findCoveringTileCache[this.sourceCache.id] = {};
     }
 
     getScaledDemTileSize() {
