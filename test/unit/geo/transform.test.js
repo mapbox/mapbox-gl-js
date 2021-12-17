@@ -840,8 +840,6 @@ test('transform', (t) => {
         transform.elevation = null;
         transform.elevation = elevation;
 
-        // eslint-disable-next-line no-warning-comments
-        // FIXME(globe-view)
         const cover10k = transform.coveringTiles(options);
         t.deepEqual(cover, cover10k);
 
@@ -855,8 +853,6 @@ test('transform', (t) => {
         for (const t of lowTiles) {
             tileElevation[t] = 0;
         }
-        // eslint-disable-next-line no-warning-comments
-        // FIXME(globe-view)
         const coverLowSide = transform.coveringTiles(options);
         t.true(coverLowSide.filter(t => lowTiles.includes(t.key)).length === 0);
 
@@ -922,8 +918,6 @@ test('transform', (t) => {
             t.end();
         });
 
-        // eslint-disable-next-line no-warning-comments
-        // FIXME(globe-view)
         t.test('zoom 22 somewhere in Mile High City should load only visible tiles', (t) => {
             tilesDefaultElevation = null;
             centerElevation = 1600;
@@ -996,8 +990,6 @@ test('transform', (t) => {
 
         const cover = transform.coveringTiles(options);
 
-        // eslint-disable-next-line no-warning-comments
-        // FIXME(globe-view)
         t.assert(cover.length === 43);
         t.assert(cover.find(tileID => tileID.canonical.z === 13 && tileID.canonical.x === 4270 && tileID.canonical.y === 2927));
         t.assert(cover.find(tileID => tileID.canonical.z === 12 && tileID.canonical.x === 2134 && tileID.canonical.y === 1461));
