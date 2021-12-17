@@ -6,7 +6,7 @@ import PathInterpolator from './path_interpolator.js';
 
 import * as intersectionTests from '../util/intersection_tests.js';
 import Grid from './grid_index.js';
-import {mat4, vec3, vec4} from 'gl-matrix';
+import {mat4, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em.js';
 import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers.js';
 import assert from 'assert';
@@ -137,15 +137,8 @@ class CollisionIndex {
                           tileID: OverscaledTileID): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
         const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
-        const getElevation = elevation ? (p => {
-            const tileTransform = this.transform.projection.createTileTransform(this.transform, this.transform.worldSize);
-            const e = elevation.getAtTileOffset(tileID, p.x, p.y);
-            const up = tileTransform.upVector(tileID.canonical, p.x, p.y);
-            const upScale = tileTransform.upVectorScale(tileID.canonical);
-            vec3.scale(up, up, e * upScale);
-            return up;
-        }) : (_ => [0, 0, 0]);
-
+        const tileTransform = this.transform.projection.createTileTransform(this.transform, this.transform.worldSize);
+        const getElevation = elevation ? elevation.getAtTileOffsetFunc(tileID, tileTransform) : (_ => [0, 0, 0]);
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         const projectedAnchor = this.transform.projection.projectTilePoint(symbol.tileAnchorX, symbol.tileAnchorY, tileID.canonical);
         const anchorElevation = getElevation(tileUnitAnchorPoint);

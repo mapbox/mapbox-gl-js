@@ -8,6 +8,7 @@ import EXTENT from '../data/extent.js';
 import {vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
+import type {TileTransform} from '../geo/projection/index.js';
 
 import type Tile from '../source/tile.js';
 
@@ -86,6 +87,16 @@ export class Elevation {
         return this.getAtPointOrZero(new MercatorCoordinate(
             tileID.wrap + (tileID.canonical.x + x / EXTENT) / tilesAtTileZoom,
             (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom));
+    }
+
+    getAtTileOffsetFunc(tileID: OverscaledTileID, tileTransform: TileTransform): Function {
+        return (p => {
+            const elevation = this.getAtTileOffset(tileID, p.x, p.y);
+            const upVector = tileTransform.upVector(tileID.canonical, p.x, p.y);
+            const upVectorScale = tileTransform.upVectorScale(tileID.canonical);
+            vec3.scale(upVector, upVector, elevation * upVectorScale);
+            return upVector;
+        });
     }
 
     /*
