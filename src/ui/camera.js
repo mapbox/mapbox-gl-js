@@ -934,10 +934,10 @@ class Camera extends Evented {
      * @see [Example: Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
      * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
-    jumpTo(options: CameraOptions & {preload?: boolean}, eventData?: Object) {
+    jumpTo(options: CameraOptions & {preloadOnly?: boolean}, eventData?: Object) {
         this.stop();
 
-        const tr = options.preload ? this.transform.clone() : this.transform;
+        const tr = options.preloadOnly ? this.transform.clone() : this.transform;
         let zoomChanged = false,
             bearingChanged = false,
             pitchChanged = false;
@@ -965,7 +965,7 @@ class Camera extends Evented {
             tr.padding = options.padding;
         }
 
-        if (options.preload) {
+        if (options.preloadOnly) {
             this._preloadTiles(tr);
             return this;
         }
@@ -1140,7 +1140,7 @@ class Camera extends Evented {
      * });
      * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    easeTo(options: CameraOptions & AnimationOptions & {easeId?: string, preload?: boolean}, eventData?: Object) {
+    easeTo(options: CameraOptions & AnimationOptions & {easeId?: string, preloadOnly?: boolean}, eventData?: Object) {
         this._stop(false, options.easeId);
 
         options = extend({
@@ -1179,17 +1179,22 @@ class Camera extends Evented {
             aroundPoint = tr.locationPoint(around);
         }
 
+        this._zooming = this._zooming || (zoom !== startZoom);
+        this._rotating = this._rotating || (startBearing !== bearing);
+        this._pitching = this._pitching || (pitch !== startPitch);
+        this._padding = !tr.isPaddingEqual(padding);
+
         const frame = (tr) => (k) => {
-            if (this._zooming || options.preload) {
+            if (this._zooming) {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
-            if (this._rotating || options.preload) {
+            if (this._rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
-            if (this._pitching || options.preload) {
+            if (this._pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
-            if (this._padding || options.preload) {
+            if (this._padding) {
                 tr.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every fra,e
@@ -1208,14 +1213,14 @@ class Camera extends Evented {
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
 
-            if (!options.preload) {
+            if (!options.preloadOnly) {
                 this._fireMoveEvents(eventData);
             }
 
             return tr.clone();
         };
 
-        if (options.preload) {
+        if (options.preloadOnly) {
             const framerateTarget = 15;
             const frameTimeTarget = 1000 / (framerateTarget * options.duration);
             const emulateFrame = frame(tr.clone());
@@ -1227,6 +1232,12 @@ class Camera extends Evented {
             }
 
             this._preloadTiles(predictedTransforms);
+
+            this._zooming = false;
+            this._rotating = false;
+            this._pitching = false;
+            this._padding = false;
+
             return;
         }
 
@@ -1240,11 +1251,6 @@ class Camera extends Evented {
             rotating: this._rotating,
             pitching: this._pitching
         };
-
-        this._zooming = this._zooming || (zoom !== startZoom);
-        this._rotating = this._rotating || (startBearing !== bearing);
-        this._pitching = this._pitching || (pitch !== startPitch);
-        this._padding = !tr.isPaddingEqual(padding);
 
         this._easeId = options.easeId;
         this._prepareEase(eventData, options.noMoveStart, currently);
@@ -1377,7 +1383,7 @@ class Camera extends Evented {
      * @see [Example: Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
      * @see [Example: Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
-    flyTo(options: CameraOptions & AnimationOptions & {preload?: boolean}, eventData?: Object) {
+    flyTo(options: CameraOptions & AnimationOptions & {preloadOnly?: boolean}, eventData?: Object) {
         // Fall through to jumpTo if user has set prefers-reduced-motion
         if (!options.essential && browser.prefersReducedMotion) {
             const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']);
@@ -1499,6 +1505,11 @@ class Camera extends Evented {
             options.duration = 0;
         }
 
+        this._zooming = true;
+        this._rotating = (startBearing !== bearing);
+        this._pitching = (pitch !== startPitch);
+        this._padding = !tr.isPaddingEqual(padding);
+
         const frame = (tr) => (k) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
@@ -1522,14 +1533,14 @@ class Camera extends Evented {
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             tr._updateCenterElevation();
 
-            if (!options.preload) {
+            if (!options.preloadOnly) {
                 this._fireMoveEvents(eventData);
             }
 
             return tr.clone();
         };
 
-        if (options.preload) {
+        if (options.preloadOnly) {
             const framerateTarget = 15;
             const frameTimeTarget = 1000 / (framerateTarget * options.duration);
             const emulateFrame = frame(tr.clone());
@@ -1541,17 +1552,18 @@ class Camera extends Evented {
             }
 
             this._preloadTiles(predictedTransforms);
+
+            this._zooming = false;
+            this._rotating = false;
+            this._pitching = false;
+            this._padding = false;
+
             return;
         }
 
         // emulate the last transform and start preloading tiles for it
         const lastTransform = frame(tr.clone())(1);
         this._preloadTiles(lastTransform);
-
-        this._zooming = true;
-        this._rotating = (startBearing !== bearing);
-        this._pitching = (pitch !== startPitch);
-        this._padding = !tr.isPaddingEqual(padding);
 
         this._prepareEase(eventData, false);
         this._ease(frame(tr), () => this._afterEase(eventData), options);
