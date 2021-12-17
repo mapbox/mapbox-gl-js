@@ -452,7 +452,8 @@ export default class Marker extends Evented {
             position.y >= 0 && position.y < tr.height;
     }
 
-    _updateDOM(pos: Point) {
+    _updateDOM() {
+        const pos = this._pos || new Point(0, 0);
         const pitch = this._calculatePitch();
         const rotation  = this._calculateRotation();
         this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${pos.x}px, ${pos.y}px) rotateX(${pitch}deg) rotateZ(${rotation}deg)`;
@@ -493,7 +494,7 @@ export default class Marker extends Evented {
             this._updateFrameId = window.requestAnimationFrame(() => {
                 if (this._element && this._pos && this._anchor) {
                     this._pos = this._pos.round();
-                    this._updateDOM(this._pos);
+                    this._updateDOM();
                 }
             });
         } else {
@@ -504,7 +505,7 @@ export default class Marker extends Evented {
             if (!this._map) return;
 
             if (this._element && this._pos && this._anchor) {
-                this._updateDOM(this._pos);
+                this._updateDOM();
             }
 
             if ((this._map.getTerrain() || this._map.getFog()) && !this._fadeTimer) {
