@@ -117,7 +117,6 @@ export default class Marker extends Evented {
         if (!options || !options.element) {
             this._defaultMarker = true;
             this._element = DOM.create('div');
-            this._element.setAttribute('aria-label', 'Map marker');
 
             // create default map marker SVG
             const defaultHeight = 41;
@@ -159,7 +158,10 @@ export default class Marker extends Evented {
             this._offset = Point.convert(options && options.offset || [0, 0]);
         }
 
+        if (!this._element.hasAttribute('aria-label')) this._element.setAttribute('aria-label', 'Map marker');
+
         this._element.classList.add('mapboxgl-marker');
+
         this._element.addEventListener('dragstart', (e: DragEvent) => {
             e.preventDefault();
         });
@@ -334,7 +336,6 @@ export default class Marker extends Evented {
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
             this._element.setAttribute('role', 'button');
-            if (!this._element.hasAttribute('aria-label')) this._element.setAttribute('aria-label', 'Map marker');
             this._originalTabIndex = this._element.getAttribute('tabindex');
             if (!this._originalTabIndex) {
                 this._element.setAttribute('tabindex', '0');
