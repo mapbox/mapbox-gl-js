@@ -113,6 +113,7 @@ export default class Marker extends Evented {
         this._rotationAlignment = options && options.rotationAlignment || 'auto';
         this._pitchAlignment = options && options.pitchAlignment && options.pitchAlignment !== 'auto' ?  options.pitchAlignment : this._rotationAlignment;
         this._updateMoving = () => this._update(true);
+
         if (!options || !options.element) {
             this._defaultMarker = true;
             this._element = DOM.create('div');
