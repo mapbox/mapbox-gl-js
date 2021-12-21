@@ -1639,7 +1639,7 @@ class Camera extends Evented {
     // emulates frame function for some transform
     _emulate(frame: Function, duration: number, initialTransform: Transform) {
         const frameRate = 15;
-        const numFrames = duration * frameRate / 1000;
+        const numFrames = Math.ceil(duration * frameRate / 1000);
 
         const transforms = [];
         const emulateFrame = frame(initialTransform.clone());
