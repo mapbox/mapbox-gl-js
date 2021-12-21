@@ -307,7 +307,7 @@ export class Terrain extends Elevation {
         }
     }
 
-    getScaledDemTileSize() {
+    getScaledDemTileSize(): number {
         const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
         const proxyTileSize = this.proxySourceCache.getSource().tileSize;
         return demScale * proxyTileSize;

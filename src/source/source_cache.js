@@ -937,8 +937,7 @@ class SourceCache extends Evented {
         const coveringTilesIDs: Map<number, OverscaledTileID> = new Map();
         const transforms = Array.isArray(transform) ? transform : [transform];
 
-        const painter = this.map ? this.map.painter : null;
-        const terrain = painter ? painter.terrain : null;
+        const terrain = this.map.painter.terrain;
         const tileSize = this.usedForTerrain && terrain ? terrain.getScaledDemTileSize() : this._source.tileSize;
 
         for (const tr of transforms) {
@@ -964,7 +963,7 @@ class SourceCache extends Evented {
         const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
 
         asyncAll(tileIDs, (tileID, done) => {
-            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, isRaster);
+            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, this.map.painter, isRaster);
             this._loadTile(tile, (err) => {
                 if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
                 done(err, tile);

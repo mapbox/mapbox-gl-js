@@ -1217,19 +1217,15 @@ class Camera extends Evented {
                 this._fireMoveEvents(eventData);
             }
 
-            return tr.clone();
+            return tr;
         };
 
         if (options.preloadOnly) {
-            const framerateTarget = 15;
-            const frameTimeTarget = 1000 / (framerateTarget * options.duration);
-            const emulateFrame = frame(tr.clone());
-
-            const predictedTransforms = [];
-            for (let i = 0; i <= 1; i += frameTimeTarget) {
-                const transform = emulateFrame(i);
-                predictedTransforms.push(transform);
-            }
+            const predictedTransforms = this._emulate(frame, {
+                frameRate: 15,
+                duration: options.duration,
+                initialTransform: tr,
+            });
 
             this._preloadTiles(predictedTransforms);
 
@@ -1537,19 +1533,15 @@ class Camera extends Evented {
                 this._fireMoveEvents(eventData);
             }
 
-            return tr.clone();
+            return tr;
         };
 
         if (options.preloadOnly) {
-            const framerateTarget = 15;
-            const frameTimeTarget = 1000 / (framerateTarget * options.duration);
-            const emulateFrame = frame(tr.clone());
-
-            const predictedTransforms = [];
-            for (let i = 0; i <= 1; i += frameTimeTarget) {
-                const transform = emulateFrame(i);
-                predictedTransforms.push(transform);
-            }
+            const predictedTransforms = this._emulate(frame, {
+                frameRate: 15,
+                duration: options.duration,
+                initialTransform: tr,
+            });
 
             this._preloadTiles(predictedTransforms);
 
@@ -1654,6 +1646,22 @@ class Camera extends Evented {
         center.lng +=
             delta > 180 ? -360 :
             delta < -180 ? 360 : 0;
+    }
+
+    // emulates frame function for some transform
+    _emulate(frame: Function, options: {duration: number, frameRate?: number, initialTransform?: Transform}) {
+        const frameRate = options.frameRate || 15;
+        const frameTime = 1000 / (frameRate * options.duration);
+        const tr = options.initialTransform || this.transform;
+
+        const transforms = [];
+        const emulateFrame = frame(tr.clone());
+        for (let i = 0; i <= 1; i += frameTime) {
+            const transform = emulateFrame(i);
+            transforms.push(transform.clone());
+        }
+
+        return transforms;
     }
 }
 
