@@ -1221,14 +1221,8 @@ class Camera extends Evented {
         };
 
         if (options.preloadOnly) {
-            const predictedTransforms = this._emulate(frame, {
-                frameRate: 15,
-                duration: options.duration,
-                initialTransform: tr,
-            });
-
+            const predictedTransforms = this._emulate(frame, options.duration, tr);
             this._preloadTiles(predictedTransforms);
-
             return this;
         }
 
@@ -1537,15 +1531,9 @@ class Camera extends Evented {
         };
 
         if (options.preloadOnly) {
-            const predictedTransforms = this._emulate(frame, {
-                frameRate: 15,
-                duration: options.duration,
-                initialTransform: tr,
-            });
-
+            const predictedTransforms = this._emulate(frame, options.duration, tr);
             this._preloadTiles(predictedTransforms);
-
-            return;
+            return this;
         }
 
         // emulate the last transform and start preloading tiles for it
@@ -1649,15 +1637,14 @@ class Camera extends Evented {
     }
 
     // emulates frame function for some transform
-    _emulate(frame: Function, options: {duration: number, frameRate?: number, initialTransform?: Transform}) {
-        const frameRate = options.frameRate || 15;
-        const frameTime = 1000 / (frameRate * options.duration);
-        const tr = options.initialTransform || this.transform;
+    _emulate(frame: Function, duration: number, initialTransform: Transform) {
+        const frameRate = 15;
+        const numFrames = duration * frameRate / 1000;
 
         const transforms = [];
-        const emulateFrame = frame(tr.clone());
-        for (let i = 0; i <= 1; i += frameTime) {
-            const transform = emulateFrame(i);
+        const emulateFrame = frame(initialTransform.clone());
+        for (let i = 0; i <= numFrames; i++) {
+            const transform = emulateFrame(i / numFrames);
             transforms.push(transform.clone());
         }
 
