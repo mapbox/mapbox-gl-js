@@ -279,12 +279,12 @@ export class Terrain extends Elevation {
                 // Tile cover roundZoom behavior is set to the same as for proxy (false) in SourceCache.update().
                 this.sourceCache.update(transform, scaledDemTileSize, true);
                 // As a result of update, we get new set of tiles: reset lookup cache.
-                this.resetTileLookupCache();
+                this.resetTileLookupCache(this.sourceCache.id);
             };
 
             if (!this.sourceCache.usedForTerrain) {
                 // Init cache entry.
-                this.resetTileLookupCache();
+                this.resetTileLookupCache(this.sourceCache.id);
                 // When toggling terrain on/off load available terrain tiles from cache
                 // before reading elevation at center.
                 this.sourceCache.usedForTerrain = true;
@@ -298,7 +298,7 @@ export class Terrain extends Elevation {
             transform.updateElevation(!cameraChanging);
 
             // Reset tile lookup cache and update draped tiles coordinates.
-            this._findCoveringTileCache[this.proxySourceCache.id] = {};
+            this.resetTileLookupCache(this.proxySourceCache.id);
             this.proxySourceCache.update(transform);
 
             this._emptyDEMTextureDirty = true;
@@ -307,11 +307,11 @@ export class Terrain extends Elevation {
         }
     }
 
-    resetTileLookupCache() {
-        this._findCoveringTileCache[this.sourceCache.id] = {};
+    resetTileLookupCache(sourceCacheID: string) {
+        this._findCoveringTileCache[sourceCacheID] = {};
     }
 
-    getScaledDemTileSize() {
+    getScaledDemTileSize(): number {
         const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
         const proxyTileSize = this.proxySourceCache.getSource().tileSize;
         return demScale * proxyTileSize;
@@ -426,7 +426,7 @@ export class Terrain extends Elevation {
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (!sourceCache.used) continue;
-            if (sourceCache !== this.sourceCache) this._findCoveringTileCache[sourceCache.id] = {};
+            if (sourceCache !== this.sourceCache) this.resetTileLookupCache(sourceCache.id);
             this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[id], previousProxyToSource);
             if (sourceCache.usedForTerrain) continue;
             const coordinates = sourcesCoords[id];
