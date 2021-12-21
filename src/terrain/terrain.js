@@ -274,18 +274,17 @@ export class Terrain extends Elevation {
                         'This leads to lower resolution of hillshade. For full hillshade resolution but higher memory consumption, define another raster DEM source.');
                 }
                 // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
-                const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
-                const proxyTileSize = this.proxySourceCache.getSource().tileSize;
+                const scaledDemTileSize = this.getScaledDemTileSize();
                 // Dem tile needs to be parent or at least of the same zoom level as proxy tile.
                 // Tile cover roundZoom behavior is set to the same as for proxy (false) in SourceCache.update().
-                this.sourceCache.update(transform, demScale * proxyTileSize, true);
+                this.sourceCache.update(transform, scaledDemTileSize, true);
                 // As a result of update, we get new set of tiles: reset lookup cache.
-                this._findCoveringTileCache[this.sourceCache.id] = {};
+                this.resetTileLookupCache(this.sourceCache.id);
             };
 
             if (!this.sourceCache.usedForTerrain) {
                 // Init cache entry.
-                this._findCoveringTileCache[this.sourceCache.id] = {};
+                this.resetTileLookupCache(this.sourceCache.id);
                 // When toggling terrain on/off load available terrain tiles from cache
                 // before reading elevation at center.
                 this.sourceCache.usedForTerrain = true;
@@ -299,13 +298,23 @@ export class Terrain extends Elevation {
             transform.updateElevation(!cameraChanging);
 
             // Reset tile lookup cache and update draped tiles coordinates.
-            this._findCoveringTileCache[this.proxySourceCache.id] = {};
+            this.resetTileLookupCache(this.proxySourceCache.id);
             this.proxySourceCache.update(transform);
 
             this._emptyDEMTextureDirty = true;
         } else {
             this._disable();
         }
+    }
+
+    resetTileLookupCache(sourceCacheID: string) {
+        this._findCoveringTileCache[sourceCacheID] = {};
+    }
+
+    getScaledDemTileSize(): number {
+        const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
+        const proxyTileSize = this.proxySourceCache.getSource().tileSize;
+        return demScale * proxyTileSize;
     }
 
     _checkRenderCacheEfficiency() {
@@ -417,7 +426,7 @@ export class Terrain extends Elevation {
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (!sourceCache.used) continue;
-            if (sourceCache !== this.sourceCache) this._findCoveringTileCache[sourceCache.id] = {};
+            if (sourceCache !== this.sourceCache) this.resetTileLookupCache(sourceCache.id);
             this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[id], previousProxyToSource);
             if (sourceCache.usedForTerrain) continue;
             const coordinates = sourcesCoords[id];
@@ -1295,6 +1304,7 @@ export class Terrain extends Elevation {
         if ((tile && tile.hasData()) || key === null) return tile;
 
         assert(!key || tile);
+
         let sourceTileID = tile ? tile.tileID : tileID;
         let z = sourceTileID.overscaledZ;
         const minzoom = sourceCache.getSource().minzoom;

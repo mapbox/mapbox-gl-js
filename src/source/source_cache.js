@@ -240,15 +240,24 @@ class SourceCache extends Evented {
         if (err) {
             tile.state = 'errored';
             if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
-            // continue to try loading parent/children tiles if a tile doesn't exist (404)
-            else this.update(this.transform);
+            else {
+                // continue to try loading parent/children tiles if a tile doesn't exist (404)
+                const updateForTerrain = this._source.type === 'raster-dem' && this.usedForTerrain;
+                if (updateForTerrain && this.map.painter.terrain) {
+                    const terrain = this.map.painter.terrain;
+                    this.update(this.transform, terrain.getScaledDemTileSize(), true);
+                    terrain.resetTileLookupCache(this.id);
+                } else {
+                    this.update(this.transform);
+                }
+            }
             return;
         }
 
         tile.timeAdded = browser.now();
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
-        if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
+        if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._state.initializeTileState(tile, this.map ? this.map.painter : null);
 
         this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID, 'sourceCacheId': this.id}));

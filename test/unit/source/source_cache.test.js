@@ -1772,3 +1772,74 @@ test('SourceCache sets max cache size correctly', (t) => {
 
     t.end();
 });
+
+test('SourceCache loads tiles recursively', (t) => {
+    t.test('loads parent tiles on 404', (t) => {
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 16;
+
+        const maxAvailableZoom = 10;
+        let loadedTiles = 0;
+
+        const {sourceCache, eventedParent} = createSourceCache({
+            maxzoom: 14,
+            loadTile (tile, callback) {
+                if (tile.tileID.canonical.z > maxAvailableZoom) {
+                    setTimeout(() => callback({status: 404}), 0);
+                } else {
+                    tile.state = 'loaded';
+                    callback(null);
+                }
+            }
+        });
+
+        eventedParent.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                return;
+            }
+
+            if (e.tile) loadedTiles++;
+            if (loadedTiles === 4) setTimeout(assert, 0);
+        });
+
+        function assert() {
+            t.deepEqual(sourceCache.getRenderableIds(), [
+                new OverscaledTileID(10, 0, 10, 512, 512).key,
+                new OverscaledTileID(10, 0, 10, 511, 512).key,
+                new OverscaledTileID(10, 0, 10, 512, 511).key,
+                new OverscaledTileID(10, 0, 10, 511, 511).key,
+            ], 'contains first renderable tiles');
+
+            t.deepEqual(sourceCache.getIds(), [
+                new OverscaledTileID(10, 0, 10, 512, 512).key,
+                new OverscaledTileID(10, 0, 10, 511, 512).key,
+                new OverscaledTileID(10, 0, 10, 512, 511).key,
+                new OverscaledTileID(10, 0, 10, 511, 511).key,
+                new OverscaledTileID(11, 0, 11, 1024, 1024).key,
+                new OverscaledTileID(11, 0, 11, 1023, 1024).key,
+                new OverscaledTileID(11, 0, 11, 1024, 1023).key,
+                new OverscaledTileID(11, 0, 11, 1023, 1023).key,
+                new OverscaledTileID(12, 0, 12, 2048, 2048).key,
+                new OverscaledTileID(12, 0, 12, 2047, 2048).key,
+                new OverscaledTileID(12, 0, 12, 2048, 2047).key,
+                new OverscaledTileID(12, 0, 12, 2047, 2047).key,
+                new OverscaledTileID(13, 0, 13, 4096, 4096).key,
+                new OverscaledTileID(13, 0, 13, 4095, 4096).key,
+                new OverscaledTileID(13, 0, 13, 4096, 4095).key,
+                new OverscaledTileID(13, 0, 13, 4095, 4095).key,
+                new OverscaledTileID(14, 0, 14, 8192, 8192).key,
+                new OverscaledTileID(14, 0, 14, 8191, 8192).key,
+                new OverscaledTileID(14, 0, 14, 8192, 8191).key,
+                new OverscaledTileID(14, 0, 14, 8191, 8191).key,
+            ], 'recursively loads parent tiles if current tiles not found');
+
+            t.end();
+        }
+
+        sourceCache.getSource().onAdd();
+    });
+
+    t.end();
+});
