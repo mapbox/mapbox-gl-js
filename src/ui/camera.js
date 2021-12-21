@@ -1229,7 +1229,7 @@ class Camera extends Evented {
 
             this._preloadTiles(predictedTransforms);
 
-            return;
+            return this;
         }
 
         // emulate the last transform and start preloading tiles for it
