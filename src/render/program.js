@@ -210,9 +210,8 @@ class Program<Us: UniformBindings> {
         context.setColorMode(colorMode);
         context.setCullFace(cullFaceMode);
 
-        for (const name in this.fixedUniforms) {
-            this.fixedUniforms[name].set(uniformValues[name]);
-        }
+        const names = Object.keys(this.fixedUniforms);
+        for (const name of names) this.fixedUniforms[name].set(uniformValues[name]);
 
         if (configuration) {
             configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
