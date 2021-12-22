@@ -5,7 +5,6 @@ import {bindAll} from '../../util/util.js';
 import config from '../../util/config.js';
 
 import type Map from '../map.js';
-import { addConsoleHandler } from 'selenium-webdriver/lib/logging';
 
 type Options = {
     compact?: boolean,
