@@ -1,7 +1,7 @@
 // @flow
 
 import {version} from '../../package.json';
-import {extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
+import {asyncAll, extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
@@ -30,6 +30,7 @@ import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
+import SourceCache from '../source/source_cache.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -321,6 +322,7 @@ class Map extends Camera {
     _repaint: ?boolean;
     _vertices: ?boolean;
     _canvas: HTMLCanvasElement;
+    _minTileCacheSize: number;
     _maxTileCacheSize: number;
     _frame: ?Cancelable;
     _renderNextFrame: ?boolean;
@@ -441,6 +443,7 @@ class Map extends Camera {
         super(transform, options);
 
         this._interactive = options.interactive;
+        this._minTileCacheSize = options.minTileCacheSize;
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
@@ -3245,6 +3248,21 @@ class Map extends Camera {
                 }
             });
         }
+    }
+
+    /**
+     * Preloads all tiles that will be requested for one or a series of transformations
+     *
+     * @private
+     * @returns {Object} Returns `this` | Promise.
+     */
+    _preloadTiles(transform: Transform | Array<Transform>) {
+        const sources: Array<SourceCache> = this.style && (Object.values(this.style._sourceCaches): any) || [];
+        asyncAll(sources, (source, done) => source._preloadTiles(transform, done), () => {
+            this.triggerRepaint();
+        });
+
+        return this;
     }
 
     _onWindowOnline() {

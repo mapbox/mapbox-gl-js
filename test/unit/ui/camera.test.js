@@ -29,6 +29,7 @@ test('camera', (t) => {
             .jumpTo(options);
 
         camera._update = () => {};
+        camera._preloadTiles = () => {};
 
         return camera;
     }
@@ -1015,6 +1016,7 @@ test('camera', (t) => {
             const camera = attachSimulateFrame(new Camera(transform, {}))
                 .jumpTo({zoom: 21, center:[0, 0]});
             camera._update = () => {};
+            camera._preloadTiles = () => {};
             t.doesNotThrow(() => camera.flyTo({zoom:7.5, center:[0, 0], offset:[0, 70]}));
             t.end();
         });
@@ -1583,6 +1585,7 @@ test('camera', (t) => {
 
             const camera = attachSimulateFrame(new Camera(transform, {}));
             camera._update = () => {};
+            camera._preloadTiles = () => {};
 
             camera.on('moveend', () => {
                 equalWithPrecision(t, camera.getZoom(), 10, 1e-10);
@@ -1609,6 +1612,7 @@ test('camera', (t) => {
 
             const camera = attachSimulateFrame(new Camera(transform, {}));
             camera._update = () => {};
+            camera._preloadTiles = () => {};
 
             camera.on('moveend', () => {
                 equalWithPrecision(t, camera.getZoom(), 2, 1e-10);
