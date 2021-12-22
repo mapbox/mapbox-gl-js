@@ -171,6 +171,21 @@ test('Enter key on Marker opens a popup that was closed', (t) => {
     t.end();
 });
 
+test('Interactive markers should have a default aria-label and a role attribute set to button', (t) => {
+    const map = createMap(t);
+    const element = window.document.createElement('div');
+    const marker = new Marker({color: "#FFFFFF", element})
+        .setLngLat([0, 0])
+        .addTo(map)
+        .setPopup(new Popup());
+
+    t.ok(marker.getElement().hasAttribute('aria-label'));
+    t.equal(marker.getElement().getAttribute('role'), 'button');
+
+    map.remove();
+    t.end();
+});
+
 test('Space key on Marker opens a popup that was closed', (t) => {
     const map = createMap(t);
     const marker = new Marker()
