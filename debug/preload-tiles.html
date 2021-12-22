@@ -28,28 +28,21 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 10,
-    center: [-119.5375, 37.7425],
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
     style: 'mapbox://styles/mapbox/streets-v11',
     minTileCacheSize: 1000,
 });
 
-const halfDome = [-119.5329, 37.7460];
-const elCapitan = [-119.6358, 37.7422];
-
 const flyToOptions = {
-    center: halfDome,
-    zoom: 13,
-    bearing: 135,
-    pitch: 45,
-    duration: 5000
+    center: [-118.25, 34.05],
+    zoom: 12,
+    duration: 20000
 };
 
 const easeToOptions = {
-    center: elCapitan,
-    zoom: 14,
-    bearing: 90,
-    pitch: 65,
+    center: [-119.63, 37.74],
+    zoom: 10,
     duration: 5000
 };
 
