@@ -749,14 +749,8 @@ test('Map', (t) => {
             const map = createMap(t),
                 container = map.getContainer();
 
-            Object.defineProperty(container, 'getBoundingClientRect', {value:
-                () => {
-                    return {
-                        height: 250,
-                        width: 250
-                    };
-                }
-            });
+            Object.defineProperty(container, 'getBoundingClientRect',
+                {value: () => ({height: 250, width: 250})});
 
             map.resize();
 
@@ -2703,6 +2697,20 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('should calculate correct canvas size when transform css property is applied', (t) => {
+        const map = createMap(t);
+        Object.defineProperty(window, 'getComputedStyle',
+            {value: () => ({transform: 'matrix(0.5, 0, 0, 0.5, 0, 0)'})});
+
+        map.resize();
+
+        t.equal(map._containerWidth, 400);
+        t.equal(map._containerHeight, 400);
+
+        map.remove();
+        t.end();
+    });
+
     t.test('should not warn when CSS is present', (t) => {
         const stub = t.stub(console, 'warn');
 
@@ -2732,14 +2740,8 @@ test('Map', (t) => {
 
         map.flyTo({center: [200, 0], duration: 100});
 
-        Object.defineProperty(container, 'getBoundingClientRect', {value:
-            () => {
-                return {
-                    height: 250,
-                    width: 250
-                };
-            }
-        });
+        Object.defineProperty(container, 'getBoundingClientRect',
+            {value: () => ({height: 250, width: 250})});
 
         map.resize();
 

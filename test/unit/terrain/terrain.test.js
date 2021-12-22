@@ -415,7 +415,7 @@ test('Elevation', (t) => {
                     const gl = map.painter.context.gl;
                     const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
                     gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-                    const centerOffset = map.getContainer().getBoundingClientRect().width / 2 * (map.getContainer().getBoundingClientRect().height + 1) * 4;
+                    const centerOffset = map._containerWidth / 2 * (map._containerHeight + 1) * 4;
                     const isCenterRendered = pixels[centerOffset] === 255;
                     if (!beganRenderingContent) {
                         beganRenderingContent = isCenterRendered;
@@ -1534,6 +1534,33 @@ test('terrain getBounds', (t) => {
         });
     });
 
+    test("Does not break with no visible DEM tiles (#10610)", (t) => {
+        const style = createStyle();
+        const map = createMap(t, {style, zoom: 1, bearing: 45});
+        map.setCenter([0, 0]);
+
+        map.on("load", () => {
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+            map.setTerrain({source: "mapbox-dem"});
+            map.once("render", () => {
+                t.ok(map.transform.elevation);
+                const bounds = toFixed(map.getBounds().toArray());
+
+                // Mocking the behavior when the map zooms quickly
+                map.transform.elevation._visibleDemTiles = [];
+
+                t.same(
+                    toFixed([
+                        [-49.7184455522, -44.445415806],
+                        [49.7184455522, 44.445415806],
+                    ]),
+                    bounds
+                );
+                t.end();
+            });
+        });
+    });
+
     function toFixed(bounds) {
         const n = 9;
         return [
@@ -1544,3 +1571,63 @@ test('terrain getBounds', (t) => {
 
 });
 
+test('terrain recursively loads parent tiles on 404', (t) => {
+    t.plan(2);
+
+    const style = createStyle();
+    const map = createMap(t, {style, center: [0, 0], zoom: 16});
+
+    map.once('style.load', () => {
+        map.addSource('mapbox-dem', {
+            'type': 'raster-dem',
+            'tiles': ['http://example.com/{z}/{x}/{y}.png'],
+            'tileSize': TILE_SIZE,
+            'maxzoom': 14
+        });
+
+        const cache = map.style._getSourceCache('mapbox-dem');
+        cache.used = cache._sourceLoaded = true;
+        cache._loadTile = (tile, callback) => {
+            if (tile.tileID.canonical.z > 10) {
+                setTimeout(() => callback({status: 404}), 0);
+            } else {
+                tile.state = 'loaded';
+                callback(null);
+            }
+        };
+
+        map.setTerrain({'source': 'mapbox-dem'});
+
+        map.once('idle', () => {
+            t.deepEqual(cache.getRenderableIds(), [
+                new OverscaledTileID(10, 0, 10, 512, 512).key,
+                new OverscaledTileID(10, 0, 10, 511, 512).key,
+                new OverscaledTileID(10, 0, 10, 512, 511).key,
+                new OverscaledTileID(10, 0, 10, 511, 511).key,
+            ], 'contains first renderable tiles');
+
+            t.deepEqual(cache.getIds(), [
+                new OverscaledTileID(10, 0, 10, 512, 512).key,
+                new OverscaledTileID(10, 0, 10, 511, 512).key,
+                new OverscaledTileID(10, 0, 10, 512, 511).key,
+                new OverscaledTileID(10, 0, 10, 511, 511).key,
+                new OverscaledTileID(11, 0, 11, 1024, 1024).key,
+                new OverscaledTileID(11, 0, 11, 1023, 1024).key,
+                new OverscaledTileID(11, 0, 11, 1024, 1023).key,
+                new OverscaledTileID(11, 0, 11, 1023, 1023).key,
+                new OverscaledTileID(12, 0, 12, 2048, 2048).key,
+                new OverscaledTileID(12, 0, 12, 2047, 2048).key,
+                new OverscaledTileID(12, 0, 12, 2048, 2047).key,
+                new OverscaledTileID(12, 0, 12, 2047, 2047).key,
+                new OverscaledTileID(13, 0, 13, 4096, 4096).key,
+                new OverscaledTileID(13, 0, 13, 4095, 4096).key,
+                new OverscaledTileID(13, 0, 13, 4096, 4095).key,
+                new OverscaledTileID(13, 0, 13, 4095, 4095).key,
+                new OverscaledTileID(14, 0, 14, 8192, 8192).key,
+                new OverscaledTileID(14, 0, 14, 8191, 8192).key,
+                new OverscaledTileID(14, 0, 14, 8192, 8191).key,
+                new OverscaledTileID(14, 0, 14, 8191, 8191).key,
+            ], 'recursively loads parent tiles if current tiles not found');
+        });
+    });
+});

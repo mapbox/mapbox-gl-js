@@ -46,6 +46,8 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             drawExtrusionTiles(painter, source, layer, coords, depthMode,
                 painter.stencilModeFor3D(),
                 painter.colorModeForRenderPass());
+
+            painter.resetStencilClippingMasks();
         }
     }
 }

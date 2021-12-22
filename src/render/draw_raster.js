@@ -95,5 +95,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 tileBoundsIndexBuffer, tileBoundsSegments);
         }
     }
+
+    painter.resetStencilClippingMasks();
 }
 

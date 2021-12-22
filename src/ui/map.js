@@ -364,6 +364,8 @@ class Map extends Camera {
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
     _runtimeProjection: ProjectionSpecification | void | null;
+    _containerWidth: number;
+    _containerHeight: number
 
     /** @section {Interaction handlers} */
 
@@ -463,6 +465,8 @@ class Map extends Camera {
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
         this._cooperativeGestures = options.cooperativeGestures;
+        this._containerWidth = 0;
+        this._containerHeight = 0;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevation = new EasedVariable(0);
@@ -718,15 +722,15 @@ class Map extends Camera {
      * if (mapDiv.style.visibility === true) map.resize();
      */
     resize(eventData?: Object) {
-        const [width, height] = this._containerDimensions();
+        this._updateContainerDimensions();
 
         // do nothing if container remained the same size
-        if (width === this.transform.width && height === this.transform.height) return this;
+        if (this._containerWidth === this.transform.width && this._containerHeight === this.transform.height) return this;
 
-        this._resizeCanvas(width, height);
+        this._resizeCanvas(this._containerWidth, this._containerHeight);
 
-        this.transform.resize(width, height);
-        this.painter.resize(Math.ceil(width), Math.ceil(height));
+        this.transform.resize(this._containerWidth, this._containerHeight);
+        this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
 
         const fireMoving = !this._moving;
         if (fireMoving) {
@@ -2621,16 +2625,27 @@ class Map extends Camera {
         return this.style.getFeatureState(feature);
     }
 
-    _containerDimensions() {
-        let width = 0;
-        let height = 0;
+    _updateContainerDimensions() {
+        if (!this._container) return;
 
-        if (this._container) {
-            width = this._container.getBoundingClientRect().width || 400;
-            height = this._container.getBoundingClientRect().height || 300;
+        const width = this._container.getBoundingClientRect().width || 400;
+        const height = this._container.getBoundingClientRect().height || 300;
+
+        let transformValues;
+        let el = this._container;
+        while (el && !transformValues) {
+            const transformMatrix = window.getComputedStyle(el).transform;
+            if (transformMatrix && transformMatrix !== 'none') transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+            el = el.parentElement;
         }
 
-        return [width, height];
+        if (transformValues) {
+            this._containerWidth = transformValues[0] && transformValues[0] !== '0' ? Math.abs(width / transformValues[0]) : width;
+            this._containerHeight = transformValues[3] && transformValues[3] !== '0' ? Math.abs(height / transformValues[3]) : height;
+        } else {
+            this._containerWidth = width;
+            this._containerHeight = height;
+        }
     }
 
     _detectMissingCSS(): void {
@@ -2663,8 +2678,8 @@ class Map extends Camera {
         this._canvas.setAttribute('aria-label', 'Map');
         this._canvas.setAttribute('role', 'region');
 
-        const dimensions = this._containerDimensions();
-        this._resizeCanvas(dimensions[0], dimensions[1]);
+        this._updateContainerDimensions();
+        this._resizeCanvas(this._containerWidth, this._containerHeight);
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         const positions = this._controlPositions = {};
