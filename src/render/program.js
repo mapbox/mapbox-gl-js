@@ -211,7 +211,9 @@ class Program<Us: UniformBindings> {
         context.setCullFace(cullFaceMode);
 
         const names = Object.keys(this.fixedUniforms);
-        for (const name of names) this.fixedUniforms[name].set(uniformValues[name]);
+        for (const name of names) {
+            this.fixedUniforms[name].set(uniformValues[name]);
+        }
 
         if (configuration) {
             configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
