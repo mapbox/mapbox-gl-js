@@ -210,8 +210,8 @@ class Program<Us: UniformBindings> {
         context.setColorMode(colorMode);
         context.setCullFace(cullFaceMode);
 
-        const names = Object.keys(this.fixedUniforms);
-        for (const name of names) {
+        const fixedUniformNames = Object.keys(this.fixedUniforms);
+        for (const name of fixedUniformNames) {
             this.fixedUniforms[name].set(uniformValues[name]);
         }
 
