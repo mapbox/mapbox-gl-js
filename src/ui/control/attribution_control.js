@@ -5,6 +5,7 @@ import {bindAll} from '../../util/util.js';
 import config from '../../util/config.js';
 
 import type Map from '../map.js';
+import { addConsoleHandler } from 'selenium-webdriver/lib/logging';
 
 type Options = {
     compact?: boolean,
@@ -97,7 +98,7 @@ class AttributionControl {
 
     _setElementTitle(element: HTMLElement, title: string) {
         const str = this._map._getUIString(`AttributionControl.${title}`);
-        element.setAttribute('aria-label', str);
+        if (element.hasAttribute('title')) element.removeAttribute('title');
         if (element.firstElementChild) element.firstElementChild.setAttribute('title', str);
     }
 
