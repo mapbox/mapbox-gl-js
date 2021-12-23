@@ -327,6 +327,7 @@ class SymbolBucket implements Bucket {
     bucketInstanceId: number;
     justReloaded: boolean;
     hasPattern: boolean;
+    fullyClipped: boolean;
 
     textSizeData: SizeData;
     iconSizeData: SizeData;
@@ -374,6 +375,7 @@ class SymbolBucket implements Bucket {
         this.sourceLayerIndex = options.sourceLayerIndex;
         this.hasPattern = false;
         this.hasRTLText = false;
+        this.fullyClipped = false;
         this.sortKeyRanges = [];
 
         this.collisionCircleArray = [];
