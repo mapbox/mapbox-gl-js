@@ -1226,10 +1226,6 @@ class Camera extends Evented {
             return this;
         }
 
-        // emulate the last transform and start preloading tiles for it
-        const lastTransform = frame(tr.clone())(1);
-        this._preloadTiles(lastTransform);
-
         const currently = {
             moving: this._moving,
             zooming: this._zooming,
@@ -1535,10 +1531,6 @@ class Camera extends Evented {
             this._preloadTiles(predictedTransforms);
             return this;
         }
-
-        // emulate the last transform and start preloading tiles for it
-        const lastTransform = frame(tr.clone())(1);
-        this._preloadTiles(lastTransform);
 
         this._zooming = zoomChanged;
         this._rotating = bearingChanged;
