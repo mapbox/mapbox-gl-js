@@ -51,30 +51,36 @@
       "paint": {
         "line-color":
         [ "case",
-          ["to-boolean", ["coalesce",
-              ["image", ["get", "icon"]],
-              ""
-          ]],
-          "blue",
-          "red" 
+            ["==", "missing",
+              ["to-string", ["coalesce",
+                  ["image", ["get", "icon"]],
+                  "missing"
+              ]]
+            ],
+          "red",
+          "blue" 
         ],
         "line-width":
         [ "case",
-          ["to-boolean", ["coalesce",
-              ["image", ["get", "icon"]],
-              ""
-          ]],
-          20,
-          10 
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+                "missing"
+              ]]
+            ],
+          10,
+          20 
         ],
         "line-opacity":
         [ "case",
-          ["to-boolean", ["coalesce",
-              ["image", ["get", "icon"]],
-              ""
-          ]],
-          0.2,
-          1
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+                "missing"
+              ]]
+            ],
+          1,
+          0.2
         ]
       }
     }

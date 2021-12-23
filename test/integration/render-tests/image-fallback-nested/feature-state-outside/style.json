@@ -103,22 +103,20 @@
       "paint": {
         "circle-radius": 5,
         "circle-color": [ "case",
-          ["==", "missing",
-            ["to-string", ["coalesce",
-                ["image", ["get", "icon"]],
-              "missing"
-              ]
+          ["to-boolean", ["coalesce",
+            ["image", ["get", "icon"]],
+            ""
             ]
-          ],
-          [ "case",
-            ["boolean", [ "feature-state", "hover"], false ],
-            "yellow",
-            "red"
           ],
           [ "case",
             ["boolean", [ "feature-state", "hover"], false ],
             "green",
             "blue"
+          ],
+          [ "case",
+            ["boolean", [ "feature-state", "hover"], false ],
+            "yellow",
+            "red"
           ]
         ]
       }

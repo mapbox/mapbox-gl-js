@@ -102,26 +102,23 @@
       "source": "geojson",
       "paint": {
         "circle-radius": 5,
-        "circle-color": 
+        "circle-color": [ "case",
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+              "missing"
+              ]
+            ]
+          ],
           [ "case",
             ["boolean", [ "feature-state", "hover"], false ],
-            [ "case",
-                ["to-boolean", ["coalesce",
-                  ["image", ["get", "icon"]],
-                  ""
-                ]
-              ],
-              "green",
-              "yellow"
-            ],
-            [ "case",
-                ["to-boolean", ["coalesce",
-                  ["image", ["get", "icon"]],
-                  ""
-              ]
-            ],
-            "blue",
+            "yellow",
             "red"
+          ],
+          [ "case",
+            ["boolean", [ "feature-state", "hover"], false ],
+            "green",
+            "blue"
           ]
         ]
       }

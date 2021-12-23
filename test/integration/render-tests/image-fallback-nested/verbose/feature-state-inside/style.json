@@ -106,22 +106,26 @@
           [ "case",
             ["boolean", [ "feature-state", "hover"], false ],
             [ "case",
-                ["to-boolean", ["coalesce",
-                  ["image", ["get", "icon"]],
-                  ""
+              ["==", "missing",
+                ["to-string", ["coalesce",
+                    ["image", ["get", "icon"]],
+                  "missing"
+                  ]
                 ]
               ],
-              "green",
-              "yellow"
+              "yellow",
+              "green"
             ],
             [ "case",
-                ["to-boolean", ["coalesce",
+              ["==", "missing",
+                ["to-string", ["coalesce",
                   ["image", ["get", "icon"]],
-                  ""
+                "missing"
+                ]
               ]
             ],
-            "blue",
-            "red"
+            "red",
+            "blue"
           ]
         ]
       }

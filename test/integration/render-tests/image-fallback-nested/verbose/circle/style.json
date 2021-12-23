@@ -41,49 +41,41 @@
       }
     }
   },
-  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "text",
-      "type": "symbol",
+      "type": "circle",
       "source": "geojson",
-      "layout": {
-        "text-allow-overlap": true,
-        "icon-allow-overlap": true,
-        "icon-image": [
-            "coalesce",
-            ["image", ["get", "icon"]],
-            ["image", "park"]
-        ],
-        "text-field": ["to-string",
-            ["coalesce",
-                ["image", ["get", "icon"]],
-                "no icon found"
-            ]
-        ],
-        "text-font": [
-            "Open Sans Semibold",
-            "Arial Unicode MS Bold"
-        ],
-        "text-offset": [0, 0.6],
-        "text-anchor": "top"
-    },
       "paint": {
-        "text-color": [ "case",
-          ["to-boolean", ["coalesce",
-              ["image", ["get", "icon"]],
-              ""
-          ]],
-          "blue",
-          "red" 
+        "circle-color": [ "case",
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+              "missing"
+              ]]
+            ],
+          "red",
+          "blue" 
         ],
-        "text-opacity": [ "case",
-          ["to-boolean", ["coalesce",
-              ["image", ["get", "icon"]],
-              ""
-          ]],
-          0.2,
-          1 
+        "circle-radius": [ "case",
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+              "missing"
+              ]]
+            ],
+          8,
+          16
+        ],
+        "circle-opacity": [ "case",
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+              "missing"
+              ]]
+            ],
+          1,
+          0.2
         ]
       }
     }
