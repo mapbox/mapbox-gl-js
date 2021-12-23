@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mapbox GL JS debug page</title>
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel='stylesheet' href='../dist/mapbox-gl.css' />
+<style>
+  body { margin: 0; padding: 0; }
+  #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  button {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+  }
+</style>
+</head>
+
+<body>
+<div id="map"></div>
+<button id="button">Rebuild</button>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+let map;
+
+const style = {
+  version: 8,
+  center: [0, 20],
+  zoom: 0,
+  sources: {
+    composite: {
+      url: 'mapbox://mapbox.mapbox-streets-v8',
+      type: 'vector'
+    }
+  },
+  sprite: 'mapbox://sprites/mapbox/streets-v11',
+  glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
+  layers: [
+    {
+      id: 'land',
+      type: 'background',
+      paint: {
+        'background-color': '#ccc'
+      }
+    },
+    {
+      id: 'water',
+      type: 'fill',
+      source: 'composite',
+      'source-layer': 'water',
+      paint: {
+        'fill-color': '#fff'
+      }
+    }
+  ]
+};
+
+function initialize() {
+    map = new mapboxgl.Map({
+        container: 'map',
+        style
+    });
+
+    map.on('load', () => {
+        map.setProjection('globe');
+        // map.setCenter(DEFAULT_CENTER);
+    });
+}
+
+document.getElementById('button').addEventListener('click', () => {
+    map.remove();
+    initialize();
+});
+
+initialize();
+</script>
