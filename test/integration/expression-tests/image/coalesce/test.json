@@ -7,6 +7,10 @@
     [
         {"availableImages": ["monument-15"]},
         {}
+    ],
+    [
+      {},
+      {}
     ]
   ],
   "expected": {
@@ -17,7 +21,8 @@
       "type": "resolvedImage"
     },
     "outputs": [
-      {"name":"monument-15","available":true}
+      {"name":"monument-15","available":true},
+      "foo"
     ],
     "serialized": [
       "coalesce",

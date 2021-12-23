@@ -9,7 +9,6 @@
   "center": [ 0, 0 ],
   "zoom": 0,
   "sprite": "local://sprites/sprite",
-  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sources": {
     "geojson": {
       "type": "geojson",
@@ -42,6 +41,7 @@
       }
     }
   },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "text",
@@ -50,14 +50,17 @@
       "layout": {
         "text-allow-overlap": true,
         "icon-allow-overlap": true,
-        "icon-image": "dot.sdf",
+        "icon-image": [
+            "coalesce",
+            ["image", ["get", "icon"]],
+            ["image", "park"]
+        ],
         "text-field": ["to-string",
             ["coalesce",
                 ["image", ["get", "icon"]],
                 "no icon found"
             ]
         ],
-        
         "text-font": [
             "Open Sans Semibold",
             "Arial Unicode MS Bold"
@@ -66,37 +69,25 @@
         "text-anchor": "top"
     },
       "paint": {
-        "icon-color": [ "case",
-          ["to-boolean", ["coalesce",
-              ["image", ["get", "icon"]],
-              ""
-          ]],
-          "blue",
-          "red" 
-        ],
         "text-color": [ "case",
-          ["to-boolean", ["coalesce",
-              ["image", ["get", "icon"]],
-              ""
-          ]],
-          "blue",
-          "red" 
-        ],
-        "icon-opacity": [ "case",
-          ["to-boolean", ["coalesce",
-              ["image", ["get", "icon"]],
-              ""
-          ]],
-          0.2,
-          1 
+            ["==", "missing",
+              ["to-string", ["coalesce",
+                  ["image", ["get", "icon"]],
+                  "missing"
+              ]]
+            ],
+          "red",
+          "blue" 
         ],
         "text-opacity": [ "case",
-          ["to-boolean", ["coalesce",
-              ["image", ["get", "icon"]],
-              ""
-          ]],
-          0.2,
-          1 
+          ["==", "missing",
+            ["to-string", ["coalesce",
+                ["image", ["get", "icon"]],
+                "missing"
+              ]]
+            ],
+          1,
+          0.2 
         ]
       }
     }

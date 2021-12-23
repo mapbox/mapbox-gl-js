@@ -48,34 +48,28 @@
       "source": "geojson",
       "paint": {
         "circle-color": [ "case",
-          ["==", "missing",
-            ["to-string", ["coalesce",
-                ["image", ["get", "icon"]],
-              "missing"
-              ]]
-            ],
-          "red",
-          "blue" 
+          ["to-boolean", ["coalesce",
+              ["image", ["get", "icon"]],
+              ""
+          ]],
+          "blue",
+          "red" 
         ],
         "circle-radius": [ "case",
-          ["==", "missing",
-            ["to-string", ["coalesce",
-                ["image", ["get", "icon"]],
-              "missing"
-              ]]
-            ],
-          8,
-          16
+          ["to-boolean", ["coalesce",
+              ["image", ["get", "icon"]],
+              ""
+          ]],
+          16,
+          8
         ],
         "circle-opacity": [ "case",
-          ["==", "missing",
-            ["to-string", ["coalesce",
-                ["image", ["get", "icon"]],
-              "missing"
-              ]]
-            ],
-          1,
-          0.2
+            ["to-boolean", ["coalesce",
+              ["image", ["get", "icon"]],
+              ""
+          ]],
+          0.2,
+          1
         ]
       }
     }
