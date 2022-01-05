@@ -330,8 +330,7 @@ class Style extends Evented {
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
-        const terrainSetForDrapingOnly = this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.deferred;
-        if (this.stylesheet.terrain && !terrainSetForDrapingOnly) {
+        if (this.stylesheet.terrain && !this.terrainSetForDrapingOnly()) {
             this._createTerrain(this.stylesheet.terrain, DrapeRenderMode.elevated);
         }
         if (this.stylesheet.fog) {
@@ -341,6 +340,10 @@ class Style extends Evented {
 
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
+    }
+
+    terrainSetForDrapingOnly() {
+        return this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.deferred;
     }
 
     setProjection(projection?: ?ProjectionSpecification) {
@@ -363,7 +366,7 @@ class Style extends Evented {
                 if (!hasTerrain) {
                     this.setTerrainForDraping();
                 }
-            } else if (this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.deferred) {
+            } else if (this.terrainSetForDrapingOnly()) {
                 this.setTerrain(null);
             }
         }
@@ -1833,8 +1836,16 @@ class Style extends Evented {
         return this._numCircleLayers > 0;
     }
 
-    clearWorkerCaches() {
+    _clearWorkerCaches() {
         this.dispatcher.broadcast('clearCaches');
+    }
+
+    destroy() {
+        this._clearWorkerCaches();
+        if (this.terrainSetForDrapingOnly()) {
+            delete this.terrain;
+            delete this.stylesheet.terrain;
+        }
     }
 }
 
