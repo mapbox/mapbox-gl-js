@@ -22,7 +22,7 @@
     },
     "outputs": [
       {"name":"monument-15","available":true},
-      "foo"
+      {"name": "foo", "available": false}
     ],
     "serialized": [
       "coalesce",
