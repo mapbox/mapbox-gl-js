@@ -513,7 +513,7 @@ class LineBucket implements Bucket {
                         Math.hypot(prevNormalX - nextNormalX, prevNormalY - nextNormalY);
                     const tmp = joinNormalX;
                     joinNormalX = -joinNormalY * bevelLength;
-                    joinNormalY = tmp;
+                    joinNormalY = tmp * bevelLength;
                 }
                 this.addCurrentVertex(currentVertex, joinNormalX, joinNormalY, 0, 0, segment);
                 this.addCurrentVertex(currentVertex, -joinNormalX, -joinNormalY, 0, 0, segment);
