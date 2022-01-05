@@ -369,42 +369,53 @@ class LineBucket implements Bucket {
         // we could be more precise, but it would only save a negligible amount of space
         const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
 
-        let currentVertex;
         let prevVertex = ((undefined: any): Point);
-        let nextVertex = ((undefined: any): Point);
-        let prevNormal = ((undefined: any): Point);
-        let nextNormal = ((undefined: any): Point);
+        let prevNormalX = 0;
+        let prevNormalY = 0;
 
         // the last two vertices added
         this.e1 = this.e2 = -1;
 
         if (isPolygon) {
-            currentVertex = vertices[len - 2];
-            nextNormal = vertices[first].sub(currentVertex)._unit()._perp();
+            prevVertex = vertices[len - 2];
+            const dx = vertices[first].x - prevVertex.x;
+            const dy = vertices[first].y - prevVertex.y;
+            const mag = Math.hypot(dx, dy);
+            prevNormalX = -dy / mag;
+            prevNormalY = dx / mag;
         }
 
         for (let i = first; i < len; i++) {
 
-            nextVertex = i === len - 1 ?
+            const nextVertex = i === len - 1 ?
                 (isPolygon ? vertices[first + 1] : (undefined: any)) : // if it's a polygon, treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
 
             // if two consecutive vertices exist, skip the current one
             if (nextVertex && vertices[i].equals(nextVertex)) continue;
 
-            if (nextNormal) prevNormal = nextNormal;
-            if (currentVertex) prevVertex = currentVertex;
+            let currentVertex = vertices[i];
 
-            currentVertex = vertices[i];
-
-            // Calculate the normal towards the next vertex in this line. In case
-            // there is no next vertex, pretend that the line is continuing straight,
+            // if there is no next vertex, pretend that the line is continuing straight,
             // meaning that we are just using the previous normal.
-            nextNormal = nextVertex ? nextVertex.sub(currentVertex)._unit()._perp() : prevNormal;
+            let nextNormalX = prevNormalX;
+            let nextNormalY = prevNormalY;
 
-            // If we still don't have a previous normal, this is the beginning of a
-            // non-closed line, so we're doing a straight "join".
-            prevNormal = prevNormal || nextNormal;
+            // otherwise, calculate the normal towards the next vertex in this line.
+            if (nextVertex) {
+                const dx = nextVertex.x - currentVertex.x;
+                const dy = nextVertex.y - currentVertex.y;
+                const mag = Math.hypot(dx, dy);
+                nextNormalX = -dy / mag;
+                nextNormalY = dx / mag;
+
+                // if we don't have a previous vertex, this is the beginning of a
+                // non-closed line, so we're doing a straight "join".
+                if (!prevVertex) {
+                    prevNormalX = nextNormalX;
+                    prevNormalY = nextNormalY;
+                }
+            }
 
             // Determine the normal of the join extrusion. It is the angle bisector
             // of the segments between the previous line and the next line.
@@ -412,10 +423,15 @@ class LineBucket implements Bucket {
             // prevNormal + nextNormal = (0, 0), its magnitude is 0, so the unit vector would be
             // undefined. In that case, we're keeping the joinNormal at (0, 0), so that the cosHalfAngle
             // below will also become 0 and miterLength will become Infinity.
-            let joinNormal = prevNormal.add(nextNormal);
-            if (joinNormal.x !== 0 || joinNormal.y !== 0) {
-                joinNormal._unit();
+            let joinNormalX = prevNormalX + nextNormalX;
+            let joinNormalY = prevNormalY + nextNormalY;
+
+            if (joinNormalX !== 0 || joinNormalY !== 0) {
+                const mag = Math.hypot(joinNormalX, joinNormalY);
+                joinNormalX /= mag;
+                joinNormalY /= mag;
             }
+
             /*  joinNormal     prevNormal
              *             ↖      ↑
              *                .________. prevVertex
@@ -427,25 +443,22 @@ class LineBucket implements Bucket {
              */
 
             // calculate cosines of the angle (and its half) using dot product
-            const cosAngle = prevNormal.x * nextNormal.x + prevNormal.y * nextNormal.y;
-            const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
+            const cosAngle = prevNormalX * nextNormalX + prevNormalY * nextNormalY;
+            const cosHalfAngle = joinNormalX * nextNormalX + joinNormalY * nextNormalY;
 
             // Calculate the length of the miter (the ratio of the miter to the width)
             // as the inverse of cosine of the angle between next and join normals
             const miterLength = cosHalfAngle !== 0 ? 1 / cosHalfAngle : Infinity;
 
-            // approximate angle from cosine
-            const approxAngle = 2 * Math.sqrt(2 - 2 * cosHalfAngle);
-
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
-            const lineTurnsLeft = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0;
+            const lineTurnsLeft = prevNormalX * nextNormalY - prevNormalY * nextNormalX > 0;
 
             if (isSharpCorner && i > first) {
                 const prevSegmentLength = currentVertex.dist(prevVertex);
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
                     this.updateDistance(prevVertex, newPrevVertex);
-                    this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, segment);
+                    this.addCurrentVertex(newPrevVertex, prevNormalX, prevNormalY, 0, 0, segment);
                     prevVertex = newPrevVertex;
                 }
             }
@@ -480,23 +493,30 @@ class LineBucket implements Bucket {
             if (prevVertex) this.updateDistance(prevVertex, currentVertex);
 
             if (currentJoin === 'miter') {
+                joinNormalX *= miterLength;
+                joinNormalY *= miterLength;
 
-                joinNormal._mult(miterLength);
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
+                this.addCurrentVertex(currentVertex, joinNormalX, joinNormalY, 0, 0, segment);
 
             } else if (currentJoin === 'flipbevel') {
                 // miter is too big, flip the direction to make a beveled join
 
                 if (miterLength > 100) {
                     // Almost parallel lines
-                    joinNormal = nextNormal.mult(-1);
+                    joinNormalX = -nextNormalX;
+                    joinNormalY = -nextNormalY;
 
                 } else {
-                    const bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
-                    joinNormal._perp()._mult(bevelLength * (lineTurnsLeft ? -1 : 1));
+
+                    const bevelLength = miterLength * (lineTurnsLeft ? -1 : 1) *
+                        Math.hypot(prevNormalX + nextNormalX, prevNormalY + nextNormalY) /
+                        Math.hypot(prevNormalX - nextNormalX, prevNormalY - nextNormalY);
+                    const tmp = joinNormalX;
+                    joinNormalX = -joinNormalY * bevelLength;
+                    joinNormalY = tmp;
                 }
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
-                this.addCurrentVertex(currentVertex, joinNormal.mult(-1), 0, 0, segment);
+                this.addCurrentVertex(currentVertex, joinNormalX, joinNormalY, 0, 0, segment);
+                this.addCurrentVertex(currentVertex, -joinNormalX, -joinNormalY, 0, 0, segment);
 
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
                 const offset = -Math.sqrt(miterLength * miterLength - 1);
@@ -505,7 +525,7 @@ class LineBucket implements Bucket {
 
                 // Close previous segment with a bevel
                 if (prevVertex) {
-                    this.addCurrentVertex(currentVertex, prevNormal, offsetA, offsetB, segment);
+                    this.addCurrentVertex(currentVertex, prevNormalX, prevNormalY, offsetA, offsetB, segment);
                 }
 
                 if (currentJoin === 'fakeround') {
@@ -513,6 +533,9 @@ class LineBucket implements Bucket {
                     // Bevel joins fill the gap between segments with a single pie slice triangle.
                     // Create a round join by adding multiple pie slices. The join isn't actually round, but
                     // it looks like it is at the sizes we render lines at.
+
+                    // approximate angle from cosine
+                    const approxAngle = 2 * Math.sqrt(2 - 2 * cosHalfAngle);
 
                     // pick the number of triangles for approximating round join by based on the angle between normals
                     const n = Math.round((approxAngle * 180 / Math.PI) / DEG_PER_TRIANGLE);
@@ -526,48 +549,50 @@ class LineBucket implements Bucket {
                             const B = 0.848013 + cosAngle * (-1.06021 + cosAngle * 0.215638);
                             t = t + t * t2 * (t - 1) * (A * t2 * t2 + B);
                         }
-                        const extrude = nextNormal.sub(prevNormal)._mult(t)._add(prevNormal)._unit()._mult(lineTurnsLeft ? -1 : 1);
-                        this.addHalfVertex(currentVertex, extrude.x, extrude.y, false, lineTurnsLeft, 0, segment);
+                        const extrudeX = prevNormalX + (nextNormalX - prevNormalX) * t;
+                        const extrudeY = prevNormalY + (nextNormalY - prevNormalY) * t;
+                        const mag = Math.hypot(extrudeX, extrudeY) * (lineTurnsLeft ? -1 : 1);
+                        this.addHalfVertex(currentVertex, extrudeX / mag, extrudeY / mag, false, lineTurnsLeft, 0, segment);
                     }
                 }
 
                 if (nextVertex) {
                     // Start next segment
-                    this.addCurrentVertex(currentVertex, nextNormal, -offsetA, -offsetB, segment);
+                    this.addCurrentVertex(currentVertex, nextNormalX, nextNormalY, -offsetA, -offsetB, segment);
                 }
 
             } else if (currentJoin === 'butt') {
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment); // butt cap
+                this.addCurrentVertex(currentVertex, joinNormalX, joinNormalY, 0, 0, segment); // butt cap
 
             } else if (currentJoin === 'square') {
                 const offset = prevVertex ? 1 : -1; // closing or starting square cap
 
                 if (!prevVertex) {
-                    this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
+                    this.addCurrentVertex(currentVertex, joinNormalX, joinNormalY, offset, offset, segment);
                 }
 
                 // make the cap it's own quad to avoid the cap affecting the line distance
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
+                this.addCurrentVertex(currentVertex, joinNormalX, joinNormalY, 0, 0, segment);
 
                 if (prevVertex) {
-                    this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
+                    this.addCurrentVertex(currentVertex, joinNormalX, joinNormalY, offset, offset, segment);
                 }
 
             } else if (currentJoin === 'round') {
 
                 if (prevVertex) {
                     // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, prevNormal, 0, 0, segment);
+                    this.addCurrentVertex(currentVertex, prevNormalX, prevNormalY, 0, 0, segment);
 
                     // Add round cap or linejoin at end of segment
-                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, segment, true);
+                    this.addCurrentVertex(currentVertex, prevNormalX, prevNormalY, 1, 1, segment, true);
                 }
                 if (nextVertex) {
                     // Add round cap before first segment
-                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, segment, true);
+                    this.addCurrentVertex(currentVertex, nextNormalX, nextNormalY, -1, -1, segment, true);
 
                     // Start next segment with a butt
-                    this.addCurrentVertex(currentVertex, nextNormal, 0, 0, segment);
+                    this.addCurrentVertex(currentVertex, nextNormalX, nextNormalY, 0, 0, segment);
                 }
             }
 
@@ -576,10 +601,15 @@ class LineBucket implements Bucket {
                 if (nextSegmentLength > 2 * sharpCornerOffset) {
                     const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
                     this.updateDistance(currentVertex, newCurrentVertex);
-                    this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, segment);
+                    this.addCurrentVertex(newCurrentVertex, nextNormalX, nextNormalY, 0, 0, segment);
                     currentVertex = newCurrentVertex;
                 }
             }
+
+            prevNormalX = nextNormalX;
+            prevNormalY = nextNormalY;
+
+            prevVertex = currentVertex;
         }
     }
 
@@ -587,19 +617,20 @@ class LineBucket implements Bucket {
      * Add two vertices to the buffers.
      *
      * @param p the line vertex to add buffer vertices for
-     * @param normal vertex normal
+     * @param normalX vertex normal x
+     * @param normalY vertex normal y
      * @param endLeft extrude to shift the left vertex along the line
      * @param endRight extrude to shift the left vertex along the line
      * @param segment the segment object to add the vertex to
      * @param round whether this is a round cap
      * @private
      */
-    addCurrentVertex(p: Point, normal: Point, endLeft: number, endRight: number, segment: Segment, round: boolean = false) {
+    addCurrentVertex(p: Point, normalX: number, normalY: number, endLeft: number, endRight: number, segment: Segment, round: boolean = false) {
         // left and right extrude vectors, perpendicularly shifted by endLeft/endRight
-        const leftX = normal.x + normal.y * endLeft;
-        const leftY = normal.y - normal.x * endLeft;
-        const rightX = -normal.x + normal.y * endRight;
-        const rightY = -normal.y - normal.x * endRight;
+        const leftX = normalX + normalY * endLeft;
+        const leftY = normalY - normalX * endLeft;
+        const rightX = -normalX + normalY * endRight;
+        const rightY = -normalY - normalX * endRight;
 
         this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment);
         this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment);
