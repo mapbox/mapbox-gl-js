@@ -49,7 +49,7 @@ function drawGlobeAtmosphere(painter: Painter) {
     const sharedBuffers = painter.globeSharedBuffers;
     if (sharedBuffers) {
         program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
-            ColorMode.alphaBlendedReal, CullFaceMode.backCW, uniforms, "skybox",
+            ColorMode.alphaBlended, CullFaceMode.backCW, uniforms, "skybox",
             sharedBuffers.atmosphereVertexBuffer,
             sharedBuffers.atmosphereIndexBuffer,
             sharedBuffers.atmosphereSegments);
