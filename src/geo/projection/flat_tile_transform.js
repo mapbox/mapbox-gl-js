@@ -7,7 +7,7 @@ import Point from '@mapbox/point-geometry';
 import EXTENT from '../../data/extent.js';
 import tileTransform from './tile_transform.js';
 
-const identiy = mat4.identity(new Float64Array(16));
+const identity = mat4.identity(new Float64Array(16));
 
 export default class FlatTileTransform {
     _tr: Transform;
@@ -20,7 +20,7 @@ export default class FlatTileTransform {
     }
 
     createInversionMatrix(): mat4 {
-        return identiy;
+        return identity;
     }
 
     createTileMatrix(id: UnwrappedTileID): mat4 {

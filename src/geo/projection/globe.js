@@ -290,7 +290,7 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
 
 export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4) {
     const decode = globeDenormalizeECEF(globeTileBounds(id));
-    const posMatrix = mat4.clone(globeMatrix);
+    const posMatrix = mat4.copy(new Float64Array(16), globeMatrix);
     mat4.mul(posMatrix, posMatrix, decode);
     return posMatrix;
 }
