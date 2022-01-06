@@ -84,7 +84,7 @@ class AttributionControl {
     }
 
     onRemove() {
-        DOM.remove(this._container);
+        this._container.remove();
 
         this._map.off('styledata', this._updateData);
         this._map.off('sourcedata', this._updateData);
@@ -98,6 +98,7 @@ class AttributionControl {
     _setElementTitle(element: HTMLElement, title: string) {
         const str = this._map._getUIString(`AttributionControl.${title}`);
         element.setAttribute('aria-label', str);
+        element.removeAttribute('title');
         if (element.firstElementChild) element.firstElementChild.setAttribute('title', str);
     }
 

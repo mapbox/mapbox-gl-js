@@ -160,7 +160,10 @@ class GeoJSONSource extends Evented implements Source {
      * @example
      * map.addSource('source_id', {
      *     type: 'geojson',
-     *     data: {}
+     *     data: {
+     *         type: 'FeatureCollection',
+     *         features: []
+     *     }
      * });
      * const geojsonSource = map.getSource('source_id');
      * // Update the data after the GeoJSON source was created

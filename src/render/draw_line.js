@@ -2,6 +2,7 @@
 
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
+import StencilMode from '../gl/stencil_mode.js';
 import Texture from './texture.js';
 import {
     lineUniformValues,
@@ -43,6 +44,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const context = painter.context;
     const gl = context.gl;
 
+    const definesValues = lineDefinesValues(layer);
+    const useStencilMaskRenderPass = definesValues.includes('RENDER_LINE_ALPHA_DISCARD');
+
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         if (image && !tile.patternsLoaded()) continue;
@@ -52,7 +56,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.prepareDrawTile(coord);
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const definesValues = lineDefinesValues(layer);
         const program = painter.useProgram(programId, programConfiguration, ((definesValues: any): DynamicDefinesType[]));
 
         const constantPattern = patternProperty.constantOr(null);
@@ -125,9 +128,44 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
-        program.draw(context, gl.TRIANGLES, depthMode,
-            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
-            layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-            layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+        const renderLine = (stencilMode) => {
+            program.draw(context, gl.TRIANGLES, depthMode,
+                stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
+                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
+                layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
+        };
+
+        if (useStencilMaskRenderPass) {
+            const stencilId = painter.stencilModeForClipping(coord).ref;
+            // When terrain is on, ensure that the stencil buffer has 0 values.
+            // As stencil may be disabled when it is not in overlapping stencil
+            // mode. Refer to stencilModeForRTTOverlap logic.
+            if (stencilId === 0 && painter.terrain) {
+                context.clear({stencil: 0});
+            }
+            const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
+
+            // Allow line geometry fragment to be drawn only once:
+            // - Invert the stencil identifier left by stencil clipping, this
+            // ensures that we are not conflicting with neighborhing tiles.
+            // - Draw Anti-Aliased pixels with a threshold set to 0.8, this
+            // may draw Anti-Aliased pixels more than once, but due to their
+            // low opacity, these pixels are usually invisible and potential
+            // overlapping pixel artifacts locally minimized.
+            uniformValues['u_alpha_discard_threshold'] = 0.8;
+            renderLine(new StencilMode(stencilFunc, stencilId, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT));
+            uniformValues['u_alpha_discard_threshold'] = 0.0;
+            renderLine(new StencilMode(stencilFunc, stencilId, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP));
+        } else {
+            renderLine(painter.stencilModeForClipping(coord));
+        }
+    }
+
+    // When rendering to stencil, reset the mask to make sure that the tile
+    // clipping reverts the stencil mask we may have drawn in the buffer.
+    // The stamp could be reverted by an extra draw call of line geometry,
+    // but tile clipping drawing is usually faster to draw than lines.
+    if (useStencilMaskRenderPass) {
+        painter.resetStencilClippingMasks();
     }
 }

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #controls { position: absolute; top: 0; left: 0; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='controls'>
+    <button id="flyTo-preload">Preload flyTo</button><br />
+    <button id="flyTo-run">Run flyTo</button><br />
+    <button id="easeTo-preload">Preload easeTo</button><br />
+    <button id="easeTo-run">Run easeTo</button><br />
+    <button id="enable-dem">Enable DEM</button><br />
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    minTileCacheSize: 1000,
+});
+
+const flyToOptions = {
+    center: [-118.25, 34.05],
+    zoom: 12,
+    duration: 20000
+};
+
+const easeToOptions = {
+    center: [-119.63, 37.74],
+    zoom: 10,
+    duration: 5000
+};
+
+document.getElementById('flyTo-preload').onclick = async function () {
+    this.innerText = 'Preload flyTo 🔄';
+    map.flyTo({...flyToOptions, preloadOnly: true});
+    await map.once('idle');
+    this.innerText = 'Preload flyTo ✅';
+};
+
+document.getElementById('flyTo-run').onclick = async function () {
+    this.innerText = 'Run flyTo 🔄';
+    map.flyTo(flyToOptions);
+    await map.once('idle');
+    this.innerText = 'Run flyTo ✅';
+};
+
+document.getElementById('easeTo-preload').onclick = async function () {
+    this.innerText = 'Preload easeTo 🔄';
+    map.easeTo({...easeToOptions, preloadOnly: true});
+    await map.once('idle');
+    this.innerText = 'Preload easeTo ✅';
+};
+
+document.getElementById('easeTo-run').onclick = async function () {
+    this.innerText = 'Run easeTo 🔄';
+    map.easeTo(easeToOptions);
+    await map.once('idle');
+    this.innerText = 'Run easeTo ✅';
+};
+
+document.getElementById('enable-dem').onclick = async function () {
+    map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        'tileSize': 512
+    });
+
+    map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
+    await map.once('idle');
+
+    this.innerText = 'Enable DEM ✅';
+};
+
+</script>
+</body>
+</html>

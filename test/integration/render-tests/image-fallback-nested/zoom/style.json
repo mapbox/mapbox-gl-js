@@ -54,14 +54,12 @@
           "black",
           1,
           [ "case",
-            ["==", "missing",
-              ["to-string", ["coalesce",
-                  ["image", ["get", "icon"]],
-                "missing"
-                ]]
-              ],
-            "red",
-            "blue" 
+            ["to-boolean", ["coalesce",
+                ["image", ["get", "icon"]],
+                ""
+            ]],
+            "blue",
+            "red" 
           ]
         ]
       }

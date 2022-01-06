@@ -17,6 +17,7 @@ uniform vec2 u_merc_center;
 uniform vec3 u_tile_id;
 uniform float u_zoom_transition;
 uniform vec3 u_up_dir;
+uniform float u_height_lift;
 #endif
 
 varying vec4 v_color;
@@ -63,11 +64,12 @@ void main() {
 #endif
 
 #ifdef PROJECTION_GLOBE_VIEW
-    vec3 globeNormal = normalize(mix(a_pos_normal_3 / 16384.0, u_up_dir, u_zoom_transition));
-    vec3 globePos = a_pos_3 + globeNormal * u_tile_up_scale * pos.z;
-    vec3 mercPos = mercator_tile_position(u_inv_rot_matrix, pos.xy, u_tile_id, u_merc_center) + u_up_dir * u_tile_up_scale * pos.z;
-
-    pos = mix_globe_mercator(globePos, mercPos, u_zoom_transition);
+    // If t > 0 (top) we always add the lift, otherwise (ground) we only add it if base height is > 0
+    float lift = float((t + base) > 0.0) * u_height_lift;
+    vec3 globe_normal = normalize(mix(a_pos_normal_3 / 16384.0, u_up_dir, u_zoom_transition));
+    vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * (pos.z + lift));
+    vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, pos.xy, u_tile_id, u_merc_center) + u_up_dir * u_tile_up_scale * pos.z;
+    pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
 #endif
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);

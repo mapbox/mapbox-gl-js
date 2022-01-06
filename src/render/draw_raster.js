@@ -78,7 +78,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
         }
 
-        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
+        const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
+        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform);
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
@@ -94,5 +95,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 tileBoundsIndexBuffer, tileBoundsSegments);
         }
     }
+
+    painter.resetStencilClippingMasks();
 }
 

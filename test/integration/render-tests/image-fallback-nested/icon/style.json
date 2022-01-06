@@ -67,44 +67,36 @@
     },
       "paint": {
         "icon-color": [ "case",
-            ["==", "missing",
-              ["to-string", ["coalesce",
-                  ["image", ["get", "icon"]],
-                  "missing"
-              ]]
-            ],
-          "red",
-          "blue" 
+          ["to-boolean", ["coalesce",
+              ["image", ["get", "icon"]],
+              ""
+          ]],
+          "blue",
+          "red" 
         ],
         "text-color": [ "case",
-            ["==", "missing",
-              ["to-string", ["coalesce",
-                  ["image", ["get", "icon"]],
-                  "missing"
-              ]]
-            ],
-          "red",
-          "blue" 
+          ["to-boolean", ["coalesce",
+              ["image", ["get", "icon"]],
+              ""
+          ]],
+          "blue",
+          "red" 
         ],
         "icon-opacity": [ "case",
-          ["==", "missing",
-            ["to-string", ["coalesce",
-                ["image", ["get", "icon"]],
-                "missing"
-              ]]
-            ],
-          1,
-          0.2 
+          ["to-boolean", ["coalesce",
+              ["image", ["get", "icon"]],
+              ""
+          ]],
+          0.2,
+          1 
         ],
         "text-opacity": [ "case",
-          ["==", "missing",
-            ["to-string", ["coalesce",
-                ["image", ["get", "icon"]],
-                "missing"
-              ]]
-            ],
-          1,
-          0.2 
+          ["to-boolean", ["coalesce",
+              ["image", ["get", "icon"]],
+              ""
+          ]],
+          0.2,
+          1 
         ]
       }
     }

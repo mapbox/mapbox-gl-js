@@ -139,10 +139,10 @@ class ScrollZoomHandler {
      * @example
      * map.scrollZoom.enable({around: 'center'});
      */
-    enable(options: any) {
+    enable(options: ?{around?: 'center'}) {
         if (this.isEnabled()) return;
         this._enabled = true;
-        this._aroundCenter = options && options.around === 'center';
+        this._aroundCenter = !!options && options.around === 'center';
         if (this._map._cooperativeGestures) this._addScrollZoomBlocker();
     }
 

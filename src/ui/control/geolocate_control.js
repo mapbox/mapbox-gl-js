@@ -170,7 +170,7 @@ class GeolocateControl extends Evented {
             this._accuracyCircleMarker.remove();
         }
 
-        DOM.remove(this._container);
+        this._container.remove();
         this._map.off('zoom', this._onZoom);
         this._map = (undefined: any);
         numberOfWatches = 0;
@@ -332,7 +332,7 @@ class GeolocateControl extends Evented {
 
     _updateCircleRadius() {
         assert(this._circleElement);
-        const y = this._map._container.getBoundingClientRect().height / 2;
+        const y = this._map._containerHeight / 2;
         const a = this._map.unproject([0, y]);
         const b = this._map.unproject([100, y]);
         const metersPerPixel = a.distanceTo(b) / 100;

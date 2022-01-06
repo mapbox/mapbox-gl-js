@@ -165,6 +165,11 @@ const pages = [
         "key": "scroll_zoom_blocker",
         "title": "Cooperative gesture handling",
         "url": "./scroll_zoom_blocker.html"
+    },
+    {
+        "key": "preload-tiles",
+        "title": "Preload tiles",
+        "url": "./preload-tiles.html"
     }
 ];
 

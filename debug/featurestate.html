@@ -8,7 +8,7 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-        #controls { position: absolute; top: 0; left: 0; }
+        #controls { position: absolute; top: 0; left: 0; padding:10px;}
     </style>
 </head>
 
@@ -26,6 +26,7 @@
             <option value="naturalEarth">Natural Earth</option>
             <option value="winkelTripel">Winkel Tripel</option>
         </select>
+        <label><input id='terrain-checkbox' type='checkbox'> terrain</label>
     </div>
 </div>
 
@@ -37,10 +38,17 @@ var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 4,
     center: [-96, 38],
-    style: {version: 8, layers: [], sources: {}}
+    // style: {version: 8, layers: [], sources: {}}
+    style: 'mapbox://styles/mapbox/streets-v11', // style URL
 });
 
 map.on('load', () => {
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
 
     map.addSource('counties', {
         "type": "vector",
@@ -87,6 +95,10 @@ document.getElementById('projName').addEventListener('change', (e) => {
     const el = document.getElementById('projName');
     map.setProjection(el.options[el.selectedIndex].value);
 });
+
+document.getElementById('terrain-checkbox').onclick = function() {
+    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
+};
 </script>
 </body>
 </html>

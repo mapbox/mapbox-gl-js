@@ -45,6 +45,8 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     }
 
     context.viewport.set([0, 0, painter.width, painter.height]);
+
+    painter.resetStencilClippingMasks();
 }
 
 function renderHillshade(painter, coord, tile, layer, depthMode, stencilMode, colorMode) {

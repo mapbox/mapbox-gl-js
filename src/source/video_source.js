@@ -208,6 +208,17 @@ class VideoSource extends ImageSource {
         const context = this.map.painter.context;
         const gl = context.gl;
 
+        if (!this.texture) {
+            this.texture = new Texture(context, this.video, gl.RGBA);
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            this.width = this.video.videoWidth;
+            this.height = this.video.videoHeight;
+
+        } else if (!this.video.paused) {
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
+        }
+
         if (!this._boundsArray) {
             this._makeBoundsArray();
         }
@@ -218,14 +229,6 @@ class VideoSource extends ImageSource {
 
         if (!this.boundsSegments) {
             this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
-        }
-
-        if (!this.texture) {
-            this.texture = new Texture(context, this.video, gl.RGBA);
-            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        } else if (!this.video.paused) {
-            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
 
         for (const w in this.tiles) {

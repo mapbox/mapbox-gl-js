@@ -1,7 +1,7 @@
 // @flow
 
 import {version} from '../../package.json';
-import {extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
+import {asyncAll, extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
@@ -30,6 +30,7 @@ import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
+import SourceCache from '../source/source_cache.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -321,6 +322,7 @@ class Map extends Camera {
     _repaint: ?boolean;
     _vertices: ?boolean;
     _canvas: HTMLCanvasElement;
+    _minTileCacheSize: number;
     _maxTileCacheSize: number;
     _frame: ?Cancelable;
     _renderNextFrame: ?boolean;
@@ -363,6 +365,8 @@ class Map extends Camera {
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
     _runtimeProjection: ProjectionSpecification | void | null;
+    _containerWidth: number;
+    _containerHeight: number
 
     /** @section {Interaction handlers} */
 
@@ -440,6 +444,7 @@ class Map extends Camera {
         super(transform, options);
 
         this._interactive = options.interactive;
+        this._minTileCacheSize = options.minTileCacheSize;
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
@@ -462,6 +467,8 @@ class Map extends Camera {
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
         this._cooperativeGestures = options.cooperativeGestures;
+        this._containerWidth = 0;
+        this._containerHeight = 0;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevation = new EasedVariable(0);
@@ -717,15 +724,15 @@ class Map extends Camera {
      * if (mapDiv.style.visibility === true) map.resize();
      */
     resize(eventData?: Object) {
-        const [width, height] = this._containerDimensions();
+        this._updateContainerDimensions();
 
         // do nothing if container remained the same size
-        if (width === this.transform.width && height === this.transform.height) return this;
+        if (this._containerWidth === this.transform.width && this._containerHeight === this.transform.height) return this;
 
-        this._resizeCanvas(width, height);
+        this._resizeCanvas(this._containerWidth, this._containerHeight);
 
-        this.transform.resize(width, height);
-        this.painter.resize(Math.ceil(width), Math.ceil(height));
+        this.transform.resize(this._containerWidth, this._containerHeight);
+        this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
 
         const fireMoving = !this._moving;
         if (fireMoving) {
@@ -1004,9 +1011,9 @@ class Map extends Camera {
     /** @section {Point conversion} */
 
     /**
-     * Returns a {@link ProjectionSpecification} object that defines the current map projection.
+     * Returns a [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) object that defines the current map projection.
      *
-     * @returns {ProjectionSpecification} The {@link ProjectionSpecification} defining the current map projection.
+     * @returns {ProjectionSpecification} The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) defining the current map projection.
      * @example
      * const projection = map.getProjection();
      */
@@ -1018,7 +1025,7 @@ class Map extends Camera {
      * Sets the map's projection. If called with `null` or `undefined`, the map will reset to Mercator.
      *
      * @param {ProjectionSpecification | string | null | undefined} projection The projection that the map should be rendered in.
-     * This can be a {@link ProjectionSpecification} object or a string of the projection's name.
+     * This can be a [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) object or a string of the projection's name.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setProjection('albers');
@@ -2620,16 +2627,27 @@ class Map extends Camera {
         return this.style.getFeatureState(feature);
     }
 
-    _containerDimensions() {
-        let width = 0;
-        let height = 0;
+    _updateContainerDimensions() {
+        if (!this._container) return;
 
-        if (this._container) {
-            width = this._container.getBoundingClientRect().width || 400;
-            height = this._container.getBoundingClientRect().height || 300;
+        const width = this._container.getBoundingClientRect().width || 400;
+        const height = this._container.getBoundingClientRect().height || 300;
+
+        let transformValues;
+        let el = this._container;
+        while (el && !transformValues) {
+            const transformMatrix = window.getComputedStyle(el).transform;
+            if (transformMatrix && transformMatrix !== 'none') transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+            el = el.parentElement;
         }
 
-        return [width, height];
+        if (transformValues) {
+            this._containerWidth = transformValues[0] && transformValues[0] !== '0' ? Math.abs(width / transformValues[0]) : width;
+            this._containerHeight = transformValues[3] && transformValues[3] !== '0' ? Math.abs(height / transformValues[3]) : height;
+        } else {
+            this._containerWidth = width;
+            this._containerHeight = height;
+        }
     }
 
     _detectMissingCSS(): void {
@@ -2662,8 +2680,8 @@ class Map extends Camera {
         this._canvas.setAttribute('aria-label', 'Map');
         this._canvas.setAttribute('role', 'region');
 
-        const dimensions = this._containerDimensions();
-        this._resizeCanvas(dimensions[0], dimensions[1]);
+        this._updateContainerDimensions();
+        this._resizeCanvas(this._containerWidth, this._containerHeight);
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         const positions = this._controlPositions = {};
@@ -3236,6 +3254,21 @@ class Map extends Camera {
                 }
             });
         }
+    }
+
+    /**
+     * Preloads all tiles that will be requested for one or a series of transformations
+     *
+     * @private
+     * @returns {Object} Returns `this` | Promise.
+     */
+    _preloadTiles(transform: Transform | Array<Transform>) {
+        const sources: Array<SourceCache> = this.style && (Object.values(this.style._sourceCaches): any) || [];
+        asyncAll(sources, (source, done) => source._preloadTiles(transform, done), () => {
+            this.triggerRepaint();
+        });
+
+        return this;
     }
 
     _onWindowOnline() {

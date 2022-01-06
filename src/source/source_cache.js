@@ -3,7 +3,7 @@
 import Tile from './tile.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import TileCache from './tile_cache.js';
-import {keysDifference, values} from '../util/util.js';
+import {asyncAll, keysDifference, values} from '../util/util.js';
 import Context from '../gl/context.js';
 import Point from '@mapbox/point-geometry';
 import browser from '../util/browser.js';
@@ -12,7 +12,7 @@ import assert from 'assert';
 import SourceFeatureState from './source_state.js';
 
 import type {Source} from './source.js';
-import type Map from '../ui/map.js';
+import type {default as MapboxMap} from '../ui/map.js';
 import type Style from '../style/style.js';
 import type Transform from '../geo/transform.js';
 import type {TileState} from './tile.js';
@@ -32,7 +32,7 @@ import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometr
  */
 class SourceCache extends Evented {
     id: string;
-    map: Map;
+    map: MapboxMap;
     style: Style;
 
     _source: Source;
@@ -43,6 +43,7 @@ class SourceCache extends Evented {
     _cache: TileCache;
     _timers: {[_: any]: TimeoutID};
     _cacheTimers: {[_: any]: TimeoutID};
+    _minTileCacheSize: ?number;
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
@@ -88,6 +89,7 @@ class SourceCache extends Evented {
         this._cache = new TileCache(0, this._unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
+        this._minTileCacheSize = null;
         this._maxTileCacheSize = null;
         this._loadedParentTiles = {};
 
@@ -95,8 +97,9 @@ class SourceCache extends Evented {
         this._state = new SourceFeatureState();
     }
 
-    onAdd(map: Map) {
+    onAdd(map: MapboxMap) {
         this.map = map;
+        this._minTileCacheSize = map ? map._minTileCacheSize : null;
         this._maxTileCacheSize = map ? map._maxTileCacheSize : null;
     }
 
@@ -240,15 +243,24 @@ class SourceCache extends Evented {
         if (err) {
             tile.state = 'errored';
             if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
-            // continue to try loading parent/children tiles if a tile doesn't exist (404)
-            else this.update(this.transform);
+            else {
+                // continue to try loading parent/children tiles if a tile doesn't exist (404)
+                const updateForTerrain = this._source.type === 'raster-dem' && this.usedForTerrain;
+                if (updateForTerrain && this.map.painter.terrain) {
+                    const terrain = this.map.painter.terrain;
+                    this.update(this.transform, terrain.getScaledDemTileSize(), true);
+                    terrain.resetTileLookupCache(this.id);
+                } else {
+                    this.update(this.transform);
+                }
+            }
             return;
         }
 
         tile.timeAdded = browser.now();
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
-        if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
+        if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._state.initializeTileState(tile, this.map ? this.map.painter : null);
 
         this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID, 'sourceCacheId': this.id}));
@@ -408,7 +420,8 @@ class SourceCache extends Evented {
         const commonZoomRange = 5;
 
         const viewDependentMaxSize = Math.floor(approxTilesInView * commonZoomRange);
-        const maxSize = typeof this._maxTileCacheSize === 'number' ? Math.min(this._maxTileCacheSize, viewDependentMaxSize) : viewDependentMaxSize;
+        const minSize = typeof this._minTileCacheSize === 'number' ? Math.max(this._minTileCacheSize, viewDependentMaxSize) : viewDependentMaxSize;
+        const maxSize = typeof this._maxTileCacheSize === 'number' ? Math.min(this._maxTileCacheSize, minSize) : minSize;
 
         this._cache.setMaxSize(maxSize);
     }
@@ -738,7 +751,8 @@ class SourceCache extends Evented {
         const cached = Boolean(tile);
         if (!cached) {
             const painter = this.map ? this.map.painter : null;
-            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._source.type === 'raster' || this._source.type === 'raster-dem');
+            const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
+            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, isRaster);
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
@@ -920,6 +934,50 @@ class SourceCache extends Evented {
             }
         }
         this._cache.filter(tile => !tile.hasDependency(namespaces, keys));
+    }
+
+    /**
+     * Preloads all tiles that will be requested for one or a series of transformations
+     *
+     * @private
+     * @returns {Object} Returns `this` | Promise.
+     */
+    _preloadTiles(transform: Transform | Array<Transform>, callback: Callback<any>) {
+        const coveringTilesIDs: Map<number, OverscaledTileID> = new Map();
+        const transforms = Array.isArray(transform) ? transform : [transform];
+
+        const terrain = this.map.painter.terrain;
+        const tileSize = this.usedForTerrain && terrain ? terrain.getScaledDemTileSize() : this._source.tileSize;
+
+        for (const tr of transforms) {
+            const tileIDs = tr.coveringTiles({
+                tileSize,
+                minzoom: this._source.minzoom,
+                maxzoom: this._source.maxzoom,
+                roundZoom: this._source.roundZoom && !this.usedForTerrain,
+                reparseOverscaled: this._source.reparseOverscaled,
+                isTerrainDEM: this.usedForTerrain
+            });
+
+            for (const tileID of tileIDs) {
+                coveringTilesIDs.set(tileID.key, tileID);
+            }
+
+            if (this.usedForTerrain) {
+                tr.updateElevation(false);
+            }
+        }
+
+        const tileIDs = Array.from(coveringTilesIDs.values());
+        const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
+
+        asyncAll(tileIDs, (tileID, done) => {
+            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, this.map.painter, isRaster);
+            this._loadTile(tile, (err) => {
+                if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
+                done(err, tile);
+            });
+        }, callback);
     }
 }
 

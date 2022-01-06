@@ -1,12 +1,9 @@
 {
   "expression":
-  ["==", "missing",
-    ["to-string", ["coalesce",
-      ["image", "monument-15"],
-      "missing"
-      ]
-    ]
-  ],
+  ["to-boolean", ["coalesce",
+    ["image", "monument-15"],
+    ""
+  ]],
   "propertySpec": {
     "type": "boolean"
   },
@@ -25,16 +22,13 @@
       "type": "boolean"
     },
     "outputs": [
-      false,
-      true
+      true,
+      false
     ],
     "serialized":
-      ["==", "missing",
-      ["to-string", ["coalesce",
-        ["image", "monument-15"],
-        "missing"
-        ]
-      ]
-    ]
+    ["to-boolean", ["coalesce",
+      ["image", "monument-15"],
+      ""
+    ]]
   }
 }

@@ -10,7 +10,8 @@ export class FormattedSection {
     textColor: Color | null;
 
     constructor(text: string, image: ResolvedImage | null, scale: number | null, fontStack: string | null, textColor: Color | null) {
-        this.text = text;
+        // combine characters so that diacritic marks are not separate code points
+        this.text = text.normalize ? text.normalize() : text;
         this.image = image;
         this.scale = scale;
         this.fontStack = fontStack;

@@ -25,6 +25,7 @@ import type Transform from '../geo/transform.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
 import type {TaskID} from '../util/task_queue.js';
+import type {Callback} from '../types/callback.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import {Aabb, Frustum} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets.js';
@@ -141,12 +142,14 @@ class Camera extends Evented {
     _easeOptions: {duration: number, easing: (_: number) => number};
     _easeId: string | void;
 
-    _onEaseFrame: (_: number) => void;
+    _onEaseFrame: (_: number) => Transform | void;
     _onEaseEnd: (easeId?: string) => void;
     _easeFrameId: ?TaskID;
 
     +_requestRenderFrame: (() => void) => TaskID;
     +_cancelRenderFrame: (_: TaskID) => void;
+
+    +_preloadTiles: (transform: Transform | Array<Transform>, callback?: Callback<any>) => any;
 
     constructor(transform: Transform, options: {bearingSnap: number}) {
         super();
@@ -931,10 +934,10 @@ class Camera extends Evented {
      * @see [Example: Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
      * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
-    jumpTo(options: CameraOptions, eventData?: Object) {
+    jumpTo(options: CameraOptions & {preloadOnly?: boolean}, eventData?: Object) {
         this.stop();
 
-        const tr = this.transform;
+        const tr = options.preloadOnly ? this.transform.clone() : this.transform;
         let zoomChanged = false,
             bearingChanged = false,
             pitchChanged = false;
@@ -960,6 +963,11 @@ class Camera extends Evented {
 
         if (options.padding != null && !tr.isPaddingEqual(options.padding)) {
             tr.padding = options.padding;
+        }
+
+        if (options.preloadOnly) {
+            this._preloadTiles(tr);
+            return this;
         }
 
         this.fire(new Event('movestart', eventData))
@@ -1132,7 +1140,7 @@ class Camera extends Evented {
      * });
      * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    easeTo(options: CameraOptions & AnimationOptions & {easeId?: string}, eventData?: Object) {
+    easeTo(options: CameraOptions & AnimationOptions & {easeId?: string, preloadOnly?: boolean}, eventData?: Object) {
         this._stop(false, options.easeId);
 
         options = extend({
@@ -1171,32 +1179,22 @@ class Camera extends Evented {
             aroundPoint = tr.locationPoint(around);
         }
 
-        const currently = {
-            moving: this._moving,
-            zooming: this._zooming,
-            rotating: this._rotating,
-            pitching: this._pitching
-        };
+        const zoomChanged = this._zooming || (zoom !== startZoom);
+        const bearingChanged = this._rotating || (startBearing !== bearing);
+        const pitchChanged = this._pitching || (pitch !== startPitch);
+        const paddingChanged = !tr.isPaddingEqual(padding);
 
-        this._zooming = this._zooming || (zoom !== startZoom);
-        this._rotating = this._rotating || (startBearing !== bearing);
-        this._pitching = this._pitching || (pitch !== startPitch);
-        this._padding = !tr.isPaddingEqual(padding);
-
-        this._easeId = options.easeId;
-        this._prepareEase(eventData, options.noMoveStart, currently);
-
-        this._ease((k) => {
-            if (this._zooming) {
+        const frame = (tr) => (k) => {
+            if (zoomChanged) {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
-            if (this._rotating) {
+            if (bearingChanged) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
-            if (this._pitching) {
+            if (pitchChanged) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
-            if (this._padding) {
+            if (paddingChanged) {
                 tr.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every fra,e
@@ -1215,9 +1213,35 @@ class Camera extends Evented {
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
 
-            this._fireMoveEvents(eventData);
+            if (!options.preloadOnly) {
+                this._fireMoveEvents(eventData);
+            }
 
-        }, (interruptingEaseId?: string) => {
+            return tr;
+        };
+
+        if (options.preloadOnly) {
+            const predictedTransforms = this._emulate(frame, options.duration, tr);
+            this._preloadTiles(predictedTransforms);
+            return this;
+        }
+
+        const currently = {
+            moving: this._moving,
+            zooming: this._zooming,
+            rotating: this._rotating,
+            pitching: this._pitching
+        };
+
+        this._zooming = zoomChanged;
+        this._rotating = bearingChanged;
+        this._pitching = pitchChanged;
+        this._padding = paddingChanged;
+
+        this._easeId = options.easeId;
+        this._prepareEase(eventData, options.noMoveStart, currently);
+
+        this._ease(frame(tr), (interruptingEaseId?: string) => {
             tr.recenterOnTerrain();
             this._afterEase(eventData, interruptingEaseId);
         }, options);
@@ -1345,10 +1369,10 @@ class Camera extends Evented {
      * @see [Example: Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
      * @see [Example: Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
-    flyTo(options: Object, eventData?: Object) {
+    flyTo(options: CameraOptions & AnimationOptions & {preloadOnly?: boolean}, eventData?: Object) {
         // Fall through to jumpTo if user has set prefers-reduced-motion
         if (!options.essential && browser.prefersReducedMotion) {
-            const coercedOptions = (pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']): CameraOptions);
+            const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']);
             return this.jumpTo(coercedOptions, eventData);
         }
 
@@ -1467,26 +1491,24 @@ class Camera extends Evented {
             options.duration = 0;
         }
 
-        this._zooming = true;
-        this._rotating = (startBearing !== bearing);
-        this._pitching = (pitch !== startPitch);
-        this._padding = !tr.isPaddingEqual(padding);
+        const zoomChanged = true;
+        const bearingChanged = (startBearing !== bearing);
+        const pitchChanged = (pitch !== startPitch);
+        const paddingChanged = !tr.isPaddingEqual(padding);
 
-        this._prepareEase(eventData, false);
-
-        this._ease((k) => {
+        const frame = (tr) => (k) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
             const scale = 1 / w(s);
             tr.zoom = k === 1 ? zoom : startZoom + tr.scaleZoom(scale);
 
-            if (this._rotating) {
+            if (bearingChanged) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
-            if (this._pitching) {
+            if (pitchChanged) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
-            if (this._padding) {
+            if (paddingChanged) {
                 tr.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every frame
@@ -1497,9 +1519,26 @@ class Camera extends Evented {
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             tr._updateCenterElevation();
 
-            this._fireMoveEvents(eventData);
+            if (!options.preloadOnly) {
+                this._fireMoveEvents(eventData);
+            }
 
-        }, () => this._afterEase(eventData), options);
+            return tr;
+        };
+
+        if (options.preloadOnly) {
+            const predictedTransforms = this._emulate(frame, options.duration, tr);
+            this._preloadTiles(predictedTransforms);
+            return this;
+        }
+
+        this._zooming = zoomChanged;
+        this._rotating = bearingChanged;
+        this._pitching = pitchChanged;
+        this._padding = paddingChanged;
+
+        this._prepareEase(eventData, false);
+        this._ease(frame(tr), () => this._afterEase(eventData), options);
 
         return this;
     }
@@ -1542,7 +1581,7 @@ class Camera extends Evented {
         return this;
     }
 
-    _ease(frame: (_: number) => void,
+    _ease(frame: (_: number) => Transform | void,
           finish: () => void,
           options: {animate: boolean, duration: number, easing: (_: number) => number}) {
         if (options.animate === false || options.duration === 0) {
@@ -1587,6 +1626,21 @@ class Camera extends Evented {
         center.lng +=
             delta > 180 ? -360 :
             delta < -180 ? 360 : 0;
+    }
+
+    // emulates frame function for some transform
+    _emulate(frame: Function, duration: number, initialTransform: Transform) {
+        const frameRate = 15;
+        const numFrames = Math.ceil(duration * frameRate / 1000);
+
+        const transforms = [];
+        const emulateFrame = frame(initialTransform.clone());
+        for (let i = 0; i <= numFrames; i++) {
+            const transform = emulateFrame(i / numFrames);
+            transforms.push(transform.clone());
+        }
+
+        return transforms;
     }
 }
 

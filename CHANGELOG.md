@@ -1,3 +1,8 @@
+## 2.6.1
+
+### 🐞 Bug fixes
+* Remove Object spread syntax to ensure older build systems continue to work as expected. ([#11295](https://github.com/mapbox/mapbox-gl-js/pull/11295))
+
 ## 2.6.0
 
 ### ✨ Features and improvements

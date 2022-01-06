@@ -1772,3 +1772,130 @@ test('SourceCache sets max cache size correctly', (t) => {
 
     t.end();
 });
+
+test('SourceCache loads tiles recursively', (t) => {
+    t.test('loads parent tiles on 404', (t) => {
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 16;
+
+        const maxAvailableZoom = 10;
+        let loadedTiles = 0;
+
+        const {sourceCache, eventedParent} = createSourceCache({
+            maxzoom: 14,
+            loadTile (tile, callback) {
+                if (tile.tileID.canonical.z > maxAvailableZoom) {
+                    setTimeout(() => callback({status: 404}), 0);
+                } else {
+                    tile.state = 'loaded';
+                    callback(null);
+                }
+            }
+        });
+
+        eventedParent.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                return;
+            }
+
+            if (e.tile) loadedTiles++;
+            if (loadedTiles === 4) setTimeout(assert, 0);
+        });
+
+        function assert() {
+            t.deepEqual(sourceCache.getRenderableIds(), [
+                new OverscaledTileID(10, 0, 10, 512, 512).key,
+                new OverscaledTileID(10, 0, 10, 511, 512).key,
+                new OverscaledTileID(10, 0, 10, 512, 511).key,
+                new OverscaledTileID(10, 0, 10, 511, 511).key,
+            ], 'contains first renderable tiles');
+
+            t.deepEqual(sourceCache.getIds(), [
+                new OverscaledTileID(10, 0, 10, 512, 512).key,
+                new OverscaledTileID(10, 0, 10, 511, 512).key,
+                new OverscaledTileID(10, 0, 10, 512, 511).key,
+                new OverscaledTileID(10, 0, 10, 511, 511).key,
+                new OverscaledTileID(11, 0, 11, 1024, 1024).key,
+                new OverscaledTileID(11, 0, 11, 1023, 1024).key,
+                new OverscaledTileID(11, 0, 11, 1024, 1023).key,
+                new OverscaledTileID(11, 0, 11, 1023, 1023).key,
+                new OverscaledTileID(12, 0, 12, 2048, 2048).key,
+                new OverscaledTileID(12, 0, 12, 2047, 2048).key,
+                new OverscaledTileID(12, 0, 12, 2048, 2047).key,
+                new OverscaledTileID(12, 0, 12, 2047, 2047).key,
+                new OverscaledTileID(13, 0, 13, 4096, 4096).key,
+                new OverscaledTileID(13, 0, 13, 4095, 4096).key,
+                new OverscaledTileID(13, 0, 13, 4096, 4095).key,
+                new OverscaledTileID(13, 0, 13, 4095, 4095).key,
+                new OverscaledTileID(14, 0, 14, 8192, 8192).key,
+                new OverscaledTileID(14, 0, 14, 8191, 8192).key,
+                new OverscaledTileID(14, 0, 14, 8192, 8191).key,
+                new OverscaledTileID(14, 0, 14, 8191, 8191).key,
+            ], 'recursively loads parent tiles if current tiles not found');
+
+            t.end();
+        }
+
+        sourceCache.getSource().onAdd();
+    });
+
+    t.end();
+});
+
+test('SourceCache#_preloadTiles', (t) => {
+    t.test('preloads tiles', (t) => {
+        const initialTransform = new Transform();
+        initialTransform.resize(511, 511);
+        initialTransform.zoom = 0;
+
+        const transforms = Array.from({length: 3}, (_, i) => {
+            const transform = initialTransform.clone();
+            transform.zoom = i + 1;
+            return transform;
+        });
+
+        const expected = [
+            // initial transform tiles
+            new OverscaledTileID(0, 0, 0, 0, 0).key,
+            // preload transform tiles
+            new OverscaledTileID(1, 0, 1, 1, 1).key,
+            new OverscaledTileID(1, 0, 1, 0, 1).key,
+            new OverscaledTileID(1, 0, 1, 1, 0).key,
+            new OverscaledTileID(1, 0, 1, 0, 0).key,
+            new OverscaledTileID(2, 0, 2, 2, 2).key,
+            new OverscaledTileID(2, 0, 2, 1, 2).key,
+            new OverscaledTileID(2, 0, 2, 2, 1).key,
+            new OverscaledTileID(2, 0, 2, 1, 1).key,
+            new OverscaledTileID(3, 0, 3, 4, 4).key,
+            new OverscaledTileID(3, 0, 3, 3, 4).key,
+            new OverscaledTileID(3, 0, 3, 4, 3).key,
+            new OverscaledTileID(3, 0, 3, 3, 3).key,
+        ];
+
+        t.plan(expected.length);
+
+        const {sourceCache, eventedParent} = createSourceCache({
+            reparseOverscaled: true,
+            loadTile (tile, callback) {
+                t.equal(tile.tileID.key, expected.shift());
+                tile.state = 'loaded';
+                callback(null);
+            }
+        });
+
+        eventedParent.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(initialTransform);
+                sourceCache._preloadTiles(transforms, () => {
+                    t.end();
+                });
+            }
+        });
+
+        sourceCache.getSource().onAdd();
+    });
+
+    t.end();
+});
