@@ -94,7 +94,6 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
     // Construct vertex data
     const vertexData = new CollisionCircleLayoutArray();
     vertexData.resize(circleCount * 4);
-    vertexData._trim();
 
     let vertexOffset = 0;
 
@@ -156,7 +155,6 @@ function createQuadTriangles(quadCount: number): QuadTriangleArray {
     const array = new QuadTriangleArray();
 
     array.resize(triCount);
-    array._trim();
 
     // Two triangles and 4 vertices per quad.
     for (let i = 0; i < triCount; i++) {

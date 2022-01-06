@@ -22,7 +22,7 @@ class IndexBuffer {
         this.context.unbindVAO();
 
         context.bindElementBuffer.set(this.buffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array.uint8.subarray(0, array.length * array.bytesPerElement), this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
         if (!this.dynamicDraw) {
             delete array.arrayBuffer;
@@ -40,7 +40,7 @@ class IndexBuffer {
         // See https://github.com/mapbox/mapbox-gl-js/issues/5620
         this.context.unbindVAO();
         this.bind();
-        gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, array.arrayBuffer);
+        gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, array.uint8.subarray(0, array.length * array.bytesPerElement));
     }
 
     destroy() {

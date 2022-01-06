@@ -52,7 +52,7 @@ class VertexBuffer {
         const gl = context.gl;
         this.buffer = gl.createBuffer();
         context.bindVertexBuffer.set(this.buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, array.uint8.subarray(0, array.length * array.bytesPerElement), this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
         if (!this.dynamicDraw) {
             delete array.arrayBuffer;
@@ -67,7 +67,7 @@ class VertexBuffer {
         assert(array.length === this.length);
         const gl = this.context.gl;
         this.bind();
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.arrayBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.uint8.subarray(0, array.length * array.bytesPerElement));
     }
 
     enableAttributes(gl: WebGLRenderingContext, program: Program<*>) {

@@ -115,7 +115,6 @@ class StructArray {
     static serialize(array: StructArray, transferables?: Array<Transferable>): SerializedStructArray {
         assert(!array.isTransferred);
 
-        array._trim();
 
         if (transferables) {
             array.isTransferred = true;
@@ -135,17 +134,6 @@ class StructArray {
         structArray.capacity = input.arrayBuffer.byteLength / structArray.bytesPerElement;
         structArray._refreshViews();
         return structArray;
-    }
-
-    /**
-     * Resize the array to discard unused capacity.
-     */
-    _trim() {
-        if (this.length !== this.capacity) {
-            this.capacity = this.length;
-            this.arrayBuffer = this.arrayBuffer.slice(0, this.length * this.bytesPerElement);
-            this._refreshViews();
-        }
     }
 
     /**
