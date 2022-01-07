@@ -932,8 +932,10 @@ export class Placement {
         // See https://github.com/mapbox/mapbox-gl-js/issues/7032
         const defaultOpacityState = new JointOpacityState(null, 0,
                 textAllowOverlap && (iconAllowOverlap || !bucket.hasIconData() || layout.get('icon-optional')),
-                iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || layout.get('text-optional')),
+                iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || layout.get('text-optional')) || bucket.justReloaded,
                 true);
+
+        bucket.justReloaded = false;
 
         if (!bucket.collisionArrays && collisionBoxArray && ((bucket.hasIconCollisionBoxData() || bucket.hasTextCollisionBoxData()))) {
             bucket.deserializeCollisionBoxes(collisionBoxArray);

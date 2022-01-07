@@ -84,6 +84,7 @@ class GeoJSONSource extends Evented implements Source {
     _metadataFired: ?boolean;
     _collectResourceTiming: boolean;
     _pendingLoad: ?Cancelable;
+    _forceZeroFadeDuration: boolean;
 
     /**
      * @private
@@ -103,6 +104,7 @@ class GeoJSONSource extends Evented implements Source {
         this.isTileClipped = true;
         this.reparseOverscaled = true;
         this._loaded = false;
+        this._forceZeroFadeDuration = false;
 
         this.actor = dispatcher.getActor();
         this.setEventedParent(eventedParent);
@@ -180,9 +182,7 @@ class GeoJSONSource extends Evented implements Source {
      * });
      */
     setData(data: GeoJSON | string) {
-        // `_isInitialGeoJSONData` is used to temporarily set `fadeDuration` to zero.
-        // This prevents placement from triggering a fade-in/out of updated symbols.
-        if (this.map) this.map._isInitialGeoJSONData = true;
+        this._forceZeroFadeDuration = true;
         this._data = data;
         this._updateWorkerData();
         return this;
@@ -343,7 +343,7 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const message = !tile.actor ? 'loadTile' : 'reloadTile';
+        const message = !tile.actor || !this._forceZeroFadeDuration ? 'loadTile' : 'reloadTile';
         tile.actor = this.actor;
         const params = {
             type: this.type,
@@ -370,7 +370,7 @@ class GeoJSONSource extends Evented implements Source {
             if (err) {
                 return callback(err);
             }
-
+ 
             tile.loadVectorData(data, this.map.painter, message === 'reloadTile');
 
             return callback(null);
