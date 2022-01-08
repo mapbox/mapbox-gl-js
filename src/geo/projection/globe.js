@@ -114,24 +114,22 @@ export default {
     }
 };
 
+const GLOBE_MIN = -GLOBE_RADIUS;
+const GLOBE_MAX = GLOBE_RADIUS;
+
+const GLOBE_LOW_ZOOM_TILE_AABBS = [
+    // z == 0
+    new Aabb([GLOBE_MIN, GLOBE_MIN, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX]),
+    // z == 1
+    new Aabb([GLOBE_MIN, GLOBE_MIN, GLOBE_MIN], [0, 0, GLOBE_MAX]), // x=0, y=0
+    new Aabb([0, GLOBE_MIN, GLOBE_MIN], [GLOBE_MAX, 0, GLOBE_MAX]), // x=1, y=0
+    new Aabb([GLOBE_MIN, 0, GLOBE_MIN], [0, GLOBE_MAX, GLOBE_MAX]), // x=0, y=1
+    new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
+];
+
 export function globeTileBounds(id: CanonicalTileID): Aabb {
-    const z = id.z;
-
-    const mn = -GLOBE_RADIUS;
-    const mx = GLOBE_RADIUS;
-
-    if (z === 0) {
-        return new Aabb([mn, mn, mn], [mx, mx, mx]);
-    } else if (z === 1) {
-        if (id.x === 0 && id.y === 0) {
-            return new Aabb([mn, mn, mn], [0, 0, mx]);
-        } else if (id.x === 1 && id.y === 0) {
-            return new Aabb([0, mn, mn], [mx, 0, mx]);
-        } else if (id.x === 0 && id.y === 1) {
-            return new Aabb([mn, 0, mn], [0, mx, mx]);
-        } else if (id.x === 1 && id.y === 1) {
-            return new Aabb([0, 0, mn], [mx, mx, mx]);
-        }
+    if (id.z <= 1) {
+        return GLOBE_LOW_ZOOM_TILE_AABBS[id.z + id.y * 2 + id.x];
     }
 
     // After zoom 1 surface function is monotonic for all tile patches
@@ -139,14 +137,14 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     const [min, max] = globeTileLatLngCorners(id);
 
     const corners = [
-        latLngToECEF(min[0], min[1], GLOBE_RADIUS),
-        latLngToECEF(min[0], max[1], GLOBE_RADIUS),
-        latLngToECEF(max[0], min[1], GLOBE_RADIUS),
-        latLngToECEF(max[0], max[1], GLOBE_RADIUS)
+        latLngToECEF(min[0], min[1]),
+        latLngToECEF(min[0], max[1]),
+        latLngToECEF(max[0], min[1]),
+        latLngToECEF(max[0], max[1])
     ];
 
-    const bMin = [mx, mx, mx];
-    const bMax = [mn, mn, mn];
+    const bMin = [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX];
+    const bMax = [GLOBE_MIN, GLOBE_MIN, GLOBE_MIN];
 
     for (const p of corners) {
         bMin[0] = Math.min(bMin[0], p[0]);
@@ -292,7 +290,7 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
 
 export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4) {
     const decode = globeDenormalizeECEF(globeTileBounds(id));
-    const posMatrix = mat4.clone(globeMatrix);
+    const posMatrix = mat4.copy(new Float64Array(16), globeMatrix);
     mat4.mul(posMatrix, posMatrix, decode);
     return posMatrix;
 }
