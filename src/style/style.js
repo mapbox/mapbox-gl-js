@@ -666,6 +666,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
+        this.updateProjection();
 
         return true;
     }

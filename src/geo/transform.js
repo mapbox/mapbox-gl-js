@@ -174,6 +174,7 @@ class Transform {
 
     clone(): Transform {
         const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies);
+        clone.setProjection(this.getProjection());
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone.tileSize = this.tileSize;
@@ -195,7 +196,6 @@ class Transform {
         clone._camera = this._camera.clone();
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
-        clone.setProjection(this.getProjection());
         return clone;
     }
 
