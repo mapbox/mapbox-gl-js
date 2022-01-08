@@ -357,6 +357,31 @@ test('Map', (t) => {
             });
         });
 
+        t.test('https://github.com/mapbox/mapbox-gl-js/issues/11352', (t) => {
+            const styleSheet = new window.CSSStyleSheet();
+            styleSheet.insertRule('.mapboxgl-canary { background-color: rgb(250, 128, 114); }', 0);
+            window.document.styleSheets[0] = styleSheet;
+            window.document.styleSheets.length = 1;
+            const style = createStyle();
+            const div = window.document.createElement('div');
+            let map = new Map({style, container: div, testMode: true});
+            map.on('load', () => {
+                map.setProjection('globe');
+                t.equal(map.getProjection().name, 'globe');
+                t.ok(map.style.terrain);
+                t.equal(map.getTerrain(), null);
+                t.ok(style.terrain);
+                t.equal(style.terrain.source, '');
+                map.remove();
+
+                map = new Map({style, container: div, testMode: true});
+                t.equal(map.getProjection().name, 'mercator');
+                t.equal(map.getTerrain(), null);
+                t.equal(style.terrain, undefined);
+                t.end();
+            });
+        });
+
         t.test('updating terrain triggers style diffing using setTerrain operation', (t) => {
             t.test('removing terrain', (t) => {
                 const style = createStyle();
