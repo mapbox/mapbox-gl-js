@@ -18,50 +18,66 @@ class Ray {
         // ray is parallel to plane, so it misses
         if (Math.abs(D) < 1e-6) { return false; }
 
-        const t = vec3.dot(vec3.sub(vec3.create(), pt, this.pos), normal) / D;
-        const intersection = vec3.scaleAndAdd(vec3.create(), this.pos, this.dir, t);
-        vec3.copy(out, intersection);
+        const t = (
+            (pt[0] - this.pos[0]) * normal[0] +
+            (pt[1] - this.pos[1]) * normal[1] +
+            (pt[2] - this.pos[2]) * normal[2]) / D;
+
+        out[0] = this.pos[0] + this.dir[0] * t;
+        out[1] = this.pos[1] + this.dir[1] * t;
+        out[2] = this.pos[2] + this.dir[2] * t;
+
         return true;
     }
 
     closestPointOnSphere(center: vec3, r: number, out: vec3): boolean {
         assert(vec3.squaredLength(this.dir) > 0.0 && r >= 0.0);
+
         if (vec3.equals(this.pos, center) || r === 0.0) {
-            out = [0.0, 0.0, 0.0];
+            out[0] = out[1] = out[2] = 0;
             return false;
         }
 
-        const centerToP = vec3.sub([], this.pos, center);
-        const a = vec3.dot(this.dir, this.dir);
-        const b = 2.0 * vec3.dot(centerToP, this.dir);
-        const c = vec3.dot(centerToP, centerToP) - r * r;
+        const [dx, dy, dz] = this.dir;
+        const [cx, cy, cz] = center;
+
+        const px = this.pos[0] - cx;
+        const py = this.pos[1] - cy;
+        const pz = this.pos[2] - cz;
+
+        const a = dx * dx + dy * dy + dz * dz;
+        const b = 2.0 * (px * dx + py * dy + pz * dz);
+        const c = (px * px + py * py + pz * pz) - r * r;
         const d = b * b - 4 * a * c;
 
         if (d < 0.0) {
             // No intersection, find distance between closest points
-            vec3.scale(centerToP, centerToP, -1.0);
-
-            const t = Math.max(vec3.dot(centerToP, this.dir), 0.0);
-            const pointOnRay = vec3.add([], this.pos, vec3.scale([], this.dir, t));
-            const pointToGlobe = vec3.sub([], center, pointOnRay);
-
-            const pointToGlobeLength = vec3.length(pointToGlobe);
-            vec3.scale(pointToGlobe, pointToGlobe, 1.0 - r / pointToGlobeLength);
-            vec3.sub(out, vec3.add([], pointOnRay, pointToGlobe), center);
-
+            const t = Math.max(-b / 2, 0.0);
+            const gx = px + dx * t; // point to globe
+            const gy = py + dy * t;
+            const gz = pz + dz * t;
+            const d = Math.hypot(gx, gy, gz);
+            out[0] = gx * r / d;
+            out[1] = gy * r / d;
+            out[2] = gz * r / d;
             return false;
+
         } else {
             assert(a > 0.0);
             const t = (-b - Math.sqrt(d)) / (2.0 * a);
+
             if (t < 0.0) {
                 // Ray is pointing away from the sphere
-                vec3.scale(out, centerToP, r / vec3.length(centerToP));
+                const d = Math.hypot(px, py, pz);
+                out[0] = px * r / d;
+                out[1] = py * r / d;
+                out[2] = pz * r / d;
                 return false;
-            } else {
-                const dir = vec3.scale([], this.dir, t);
-                const pos = vec3.add([], this.pos, dir);
 
-                vec3.sub(out, pos, center);
+            } else {
+                out[0] = this.pos[0] + dx * t - cx;
+                out[1] = this.pos[1] + dy * t - cy;
+                out[2] = this.pos[2] + dz * t - cz;
                 return true;
             }
         }
