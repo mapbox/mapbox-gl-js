@@ -39,11 +39,10 @@ class Ray {
         }
 
         const [dx, dy, dz] = this.dir;
-        const [cx, cy, cz] = center;
 
-        const px = this.pos[0] - cx;
-        const py = this.pos[1] - cy;
-        const pz = this.pos[2] - cz;
+        const px = this.pos[0] - center[0];
+        const py = this.pos[1] - center[1];
+        const pz = this.pos[2] - center[2];
 
         const a = dx * dx + dy * dy + dz * dz;
         const b = 2.0 * (px * dx + py * dy + pz * dz);
@@ -56,10 +55,10 @@ class Ray {
             const gx = px + dx * t; // point to globe
             const gy = py + dy * t;
             const gz = pz + dz * t;
-            const d = Math.hypot(gx, gy, gz);
-            out[0] = gx * r / d;
-            out[1] = gy * r / d;
-            out[2] = gz * r / d;
+            const glen = Math.hypot(gx, gy, gz);
+            out[0] = gx * r / glen;
+            out[1] = gy * r / glen;
+            out[2] = gz * r / glen;
             return false;
 
         } else {
@@ -68,16 +67,16 @@ class Ray {
 
             if (t < 0.0) {
                 // Ray is pointing away from the sphere
-                const d = Math.hypot(px, py, pz);
-                out[0] = px * r / d;
-                out[1] = py * r / d;
-                out[2] = pz * r / d;
+                const plen = Math.hypot(px, py, pz);
+                out[0] = px * r / plen;
+                out[1] = py * r / plen;
+                out[2] = pz * r / plen;
                 return false;
 
             } else {
-                out[0] = this.pos[0] + dx * t - cx;
-                out[1] = this.pos[1] + dy * t - cy;
-                out[2] = this.pos[2] + dz * t - cz;
+                out[0] = px + dx * t;
+                out[1] = py + dy * t;
+                out[2] = pz + dz * t;
                 return true;
             }
         }
