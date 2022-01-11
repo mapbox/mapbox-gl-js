@@ -261,7 +261,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     let sortFeaturesByKey = false;
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
-    const mercCenter = [
+    const mercatorCenter = [
         mercatorXfromLng(tr.center.lng),
         mercatorYfromLat(tr.center.lat)
     ];
@@ -293,7 +293,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const transformed = pitchWithMap || tr.pitch !== 0;
 
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
-        const coordId = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
 
         let texSize: [number, number];
         let texSizeIcon: [number, number] = [0, 0];
@@ -346,25 +345,17 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;
 
         let uniformValues;
-        const invMatrix = tileTransform.createInversionMatrix(coord.toUnwrapped());
-
         if (isSDF) {
             if (!bucket.iconsInText) {
-                uniformValues = symbolSDFUniformValues(sizeData.kind,
-                size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true,
-                coordId, globeToMercator, invMatrix, mercCenter);
+                uniformValues = symbolSDFUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter,
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true, coord, globeToMercator, mercatorCenter, tileTransform);
             } else {
-                uniformValues = symbolTextAndIconUniformValues(sizeData.kind,
-                size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon,
-                coordId, globeToMercator, invMatrix, mercCenter);
+                uniformValues = symbolTextAndIconUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter,
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, tileTransform);
             }
         } else {
-            uniformValues = symbolIconUniformValues(sizeData.kind,
-                size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize,
-                coordId, globeToMercator, invMatrix, mercCenter);
+            uniformValues = symbolIconUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter, matrix,
+                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, tileTransform);
         }
 
         const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration, defines);

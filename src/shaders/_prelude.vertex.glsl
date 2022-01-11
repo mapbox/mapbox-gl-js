@@ -6,8 +6,9 @@ float wrap(float n, float min, float max) {
     return (w == min) ? max : w;
 }
 
+#ifdef PROJECTION_GLOBE_VIEW
 vec3 mercator_tile_position(mat4 matrix, vec2 tile_anchor, vec3 tile_id, vec2 mercator_center) {
-#if defined(PROJECTION_GLOBE_VIEW) && !defined(PROJECTED_POS_ON_VIEWPORT)
+#ifndef PROJECTED_POS_ON_VIEWPORT
     // tile_id.z contains pow(2.0, coord.canonical.z)
     float tiles = tile_id.z;
 
@@ -25,21 +26,16 @@ vec3 mercator_tile_position(mat4 matrix, vec2 tile_anchor, vec3 tile_id, vec2 me
 }
 
 vec3 mix_globe_mercator(vec3 globe, vec3 mercator, float t) {
-#if defined(PROJECTION_GLOBE_VIEW) && !defined(PROJECTED_POS_ON_VIEWPORT)
     return mix(globe, mercator, t);
-#else
-    return globe;
-#endif
 }
 
-#ifdef PROJECTION_GLOBE_VIEW
 mat3 globe_mercator_surface_vectors(vec3 pos_normal, vec3 up_dir, float zoom_transition) {
     vec3 normal = zoom_transition == 0.0 ? pos_normal : normalize(mix(pos_normal, up_dir, zoom_transition));
     vec3 xAxis = normalize(vec3(normal.z, 0.0, -normal.x));
     vec3 yAxis = normalize(cross(normal, xAxis));
     return mat3(xAxis, yAxis, normal);
 }
-#endif
+#endif // GLOBE_VIEW_PROJECTION
 
 // Unpack a pair of values that have been packed into a single float.
 // The packed values are assumed to be 8-bit unsigned integers, and are
