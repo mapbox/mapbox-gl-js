@@ -27,10 +27,16 @@ uniform highp float u_camera_to_center_distance;
 uniform float u_fade_change;
 uniform vec2 u_texsize;
 uniform vec2 u_texsize_icon;
+
+#ifdef PROJECTION_GLOBE_VIEW
+uniform vec3 u_tile_id;
 uniform mat4 u_inv_rot_matrix;
 uniform vec2 u_merc_center;
-uniform vec3 u_tile_id;
+uniform vec3 u_forward;
 uniform float u_zoom_transition;
+uniform vec3 u_globe_center;
+uniform mat4 u_tile_matrix;
+#endif
 
 varying vec4 v_data0;
 varying vec4 v_data1;
@@ -68,16 +74,28 @@ void main() {
         size = u_size;
     }
 
-    float anchorZ = a_z_tile_anchor.x;
-    vec2 tileAnchor = a_z_tile_anchor.yz;
-    vec3 h = elevationVector(tileAnchor) * elevation(tileAnchor);
+    float anchor_z = a_z_tile_anchor.x;
+    vec2 tile_anchor = a_z_tile_anchor.yz;
+    vec3 h = elevationVector(tile_anchor) * elevation(tile_anchor);
 
-    vec3 mercator_pos = mercator_tile_position(u_inv_rot_matrix, tileAnchor, u_tile_id, u_merc_center);
-    vec3 world_pos = mix_globe_mercator(vec3(a_pos, anchorZ) + h, mercator_pos, u_zoom_transition);
+#ifdef PROJECTION_GLOBE_VIEW
+    vec3 mercator_pos = mercator_tile_position(u_inv_rot_matrix, tile_anchor, u_tile_id, u_merc_center);
+    vec3 world_pos = mix_globe_mercator(vec3(a_pos, anchor_z) + h, mercator_pos, u_zoom_transition);
 
-    vec4 projectedPoint = u_matrix * vec4(world_pos, 1);
+    vec4 globe_ecef_origin = u_tile_matrix * vec4(u_globe_center, 1.0);
+    vec4 globe_ecef_point = u_tile_matrix * vec4(world_pos, 1.0);
+    vec3 origin_to_point = globe_ecef_point.xyz - globe_ecef_origin.xyz;
 
-    highp float camera_to_anchor_distance = projectedPoint.w;
+    // Occlude symbols that are on the non-visible side of the globe sphere
+    float globe_occlusion_fade = dot(origin_to_point, u_forward) >= 0.0 ? 0.0 : 1.0;
+#else
+    vec3 world_pos = vec3(a_pos, anchor_z) + h;
+    float globe_occlusion_fade = 1.0;
+#endif
+
+    vec4 projected_point = u_matrix * vec4(world_pos, 1);
+
+    highp float camera_to_anchor_distance = projected_point.w;
     // If the label is pitched with the map, layout is done in pitched space,
     // which makes labels in the distance smaller relative to viewport space.
     // We counteract part of that effect by multiplying by the perspective ratio.
@@ -94,22 +112,26 @@ void main() {
 
     size *= perspective_ratio;
 
-    float fontScale = size / 24.0;
+    float font_scale = size / 24.0;
 
     highp float symbol_rotation = 0.0;
     if (u_rotate_symbol) {
         // Point labels with 'rotation-alignment: map' are horizontal with respect to tile units
         // To figure out that angle in projected space, we draw a short horizontal line in tile
         // space, project it, and measure its angle in projected space.
-        vec4 offsetProjectedPoint = u_matrix * vec4(a_pos + vec2(1, 0), anchorZ, 1);
+        vec4 offset_projected_point = u_matrix * vec4(a_pos + vec2(1, 0), anchor_z, 1);
 
-        vec2 a = projectedPoint.xy / projectedPoint.w;
-        vec2 b = offsetProjectedPoint.xy / offsetProjectedPoint.w;
+        vec2 a = projected_point.xy / projected_point.w;
+        vec2 b = offset_projected_point.xy / offset_projected_point.w;
 
         symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
     }
 
-    vec3 proj_pos = mix_globe_mercator(vec3(a_projected_pos.xy, anchorZ), mercator_pos, u_zoom_transition);
+#ifdef PROJECTION_GLOBE_VIEW
+    vec3 proj_pos = mix_globe_mercator(vec3(a_projected_pos.xy, anchor_z), mercator_pos, u_zoom_transition);
+#else
+    vec3 proj_pos = vec3(a_projected_pos.xy, anchor_z);
+#endif
 
 #ifdef PROJECTED_POS_ON_VIEWPORT
     vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos.xy, 0.0, 1.0);
@@ -122,13 +144,13 @@ void main() {
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
     float z = 0.0;
-    vec2 offset = rotation_matrix * (a_offset / 32.0 * fontScale);
+    vec2 offset = rotation_matrix * (a_offset / 32.0 * font_scale);
 #ifdef PITCH_WITH_MAP_TERRAIN
     vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
     z = elevation(tile_pos.xy);
 #endif
-    float occlusion_fade = occlusionFade(projectedPoint);
-    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projectedPoint.w <= 0.0 || occlusion_fade == 0.0));
+    float occlusion_fade = occlusionFade(projected_point) * globe_occlusion_fade;
+    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projected_point.w <= 0.0 || occlusion_fade == 0.0));
     float gamma_scale = gl_Position.w;
 
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);

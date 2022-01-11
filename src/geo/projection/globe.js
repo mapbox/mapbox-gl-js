@@ -12,7 +12,7 @@ import {
     mercatorXfromLng,
     mercatorYfromLat
 } from '../mercator_coordinate.js';
-import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
+import {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
 import Tile from '../../source/tile.js';
 import IndexBuffer from '../../gl/index_buffer.js';
@@ -189,6 +189,12 @@ export function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radi
 
 export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<number> {
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
+}
+
+export function globeEncodePosition(position: vec3, id: UnwrappedTileID) {
+    const bounds = globeTileBounds(id.canonical);
+    const normalizationMatrix = globeNormalizeECEF(bounds);
+    return vec3.transformMat4([], position, normalizationMatrix);
 }
 
 export function globeECEFNormalizationScale(bounds: Aabb) {
