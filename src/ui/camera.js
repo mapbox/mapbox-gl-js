@@ -697,6 +697,7 @@ class Camera extends Evented {
         const centerIntersectionPoint = tr.pointRayIntersection(tr.centerPoint, focusAltitude);
         const centerIntersectionCoord = toVec3(tr.rayIntersectionCoordinate(centerIntersectionPoint));
         const centerMercatorRay = tr.screenPointToMercatorRay(tr.centerPoint);
+        const zInMeters = tr.projection.name !== 'globe';
 
         const maxMarchingSteps = 10;
 
@@ -713,7 +714,7 @@ class Camera extends Evented {
 
             const aabb = new Aabb([minX, minY, minAltitude], [maxX, maxY, maxAltitude]);
 
-            const frustum = Frustum.fromInvProjectionMatrix(tr.invProjMatrix, tr.worldSize, z);
+            const frustum = Frustum.fromInvProjectionMatrix(tr.invProjMatrix, tr.worldSize, z, zInMeters);
 
             // Stop marching when frustum intersection
             // reports any aabb point not fully inside
@@ -1013,7 +1014,7 @@ class Camera extends Evented {
      * map.setFreeCameraOptions(camera);
      */
     getFreeCameraOptions(): FreeCameraOptions {
-        if (this.transform.projection.name !== 'mercator') {
+        if (!this.transform.projection.supportsFreeCamera) {
             warnOnce(freeCameraNotSupportedWarning);
         }
         return this.transform.getFreeCameraOptions();
@@ -1057,7 +1058,7 @@ class Camera extends Evented {
     setFreeCameraOptions(options: FreeCameraOptions, eventData?: Object) {
         const tr = this.transform;
 
-        if (tr.projection.name !== 'mercator') {
+        if (!tr.projection.supportsFreeCamera) {
             warnOnce(freeCameraNotSupportedWarning);
             return;
         }
@@ -1164,7 +1165,9 @@ class Camera extends Evented {
 
         const offsetAsPoint = Point.convert(options.offset);
         let pointAtOffset = tr.centerPoint.add(offsetAsPoint);
-        const locationAtOffset = tr.pointLocation(pointAtOffset);
+        const locationAtOffset = tr.projection.name === 'globe' ?
+            tr.pointCoordinate(pointAtOffset).toLngLat() :
+            tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
         this._normalizeCenter(center);
 

@@ -1,7 +1,11 @@
 // @flow
 import LngLat from '../lng_lat.js';
 import {clamp, degToRad, radToDeg} from '../../util/util.js';
-import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
+import {mercatorZfromAltitude, MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
+import type Transform from '../../geo/transform.js';
+import Point from '@mapbox/point-geometry';
+import FlatTileTransform from './flat_tile_transform.js';
+import {farthestPixelDistanceOnPlane} from './far_z.js';
 
 const maxPhi = degToRad(MAX_MERCATOR_LATITUDE);
 
@@ -9,6 +13,9 @@ export default {
     name: 'winkelTripel',
     center: [0, 0],
     range: [3.5, 7],
+    zAxisUnit: "meters",
+    isReprojectedInTileSpace: true,
+    unsupportedLayers: ['custom'],
 
     project(lng: number, lat: number) {
         lat = degToRad(lat);
@@ -21,7 +28,8 @@ export default {
         const y = 0.5 * (lat + Math.sin(lat) / sinAlphaOverAlpha) || 0;
         return {
             x: (x / Math.PI + 0.5) * 0.5,
-            y: 1 - (y / Math.PI + 1) * 0.5
+            y: 1 - (y / Math.PI + 1) * 0.5,
+            z: 0
         };
     },
 
@@ -63,5 +71,26 @@ export default {
         } while ((Math.abs(dlambda) > epsilon || Math.abs(dphi) > epsilon) && --i > 0);
 
         return new LngLat(radToDeg(lambda), radToDeg(phi));
+    },
+
+    projectTilePoint(x: number, y: number): {x: number, y: number, z: number} {
+        return {x, y, z: 0};
+    },
+
+    locationPoint(tr: Transform, lngLat: LngLat): Point {
+        return tr._coordinatePoint(tr.locationCoordinate(lngLat), false);
+    },
+
+    pixelsPerMeter(lat: number, worldSize: number) {
+        return mercatorZfromAltitude(1, lat) * worldSize;
+    },
+
+    farthestPixelDistance(tr: Transform): number {
+        const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
+        return farthestPixelDistanceOnPlane(tr, pixelsPerMeter);
+    },
+
+    createTileTransform(tr: Transform, worldSize: number): Object {
+        return new FlatTileTransform(tr, worldSize);
     }
 };

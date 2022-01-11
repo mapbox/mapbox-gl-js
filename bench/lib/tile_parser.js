@@ -15,6 +15,7 @@ import type {StyleSpecification} from '../../src/style-spec/types.js';
 import type {WorkerTileResult} from '../../src/source/worker_source.js';
 import type {OverscaledTileID} from '../../src/source/tile_id.js';
 import type {TileJSON} from '../../src/types/tilejson.js';
+import {getProjection} from '../../src/geo/projection/index.js';
 
 class StubMap extends Evented {
     _requestManager: RequestManager;
@@ -132,7 +133,8 @@ export default class TileParser {
             cameraToTileDistance: 0,
             returnDependencies,
             promoteId: undefined,
-            isSymbolTile: false
+            isSymbolTile: false,
+            projection: getProjection({name: 'mercator'})
         });
 
         const vectorTile = new VT.VectorTile(new Protobuf(tile.buffer));

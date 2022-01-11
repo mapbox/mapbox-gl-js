@@ -40,6 +40,8 @@ import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
+import drawGlobeAtmosphere from './draw_globe_atmosphere.js';
+import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
@@ -144,6 +146,7 @@ class Painter {
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
+    globeSharedBuffers: ?GlobeSharedBuffers;
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
@@ -171,7 +174,7 @@ class Painter {
     }
 
     updateTerrain(style: Style, cameraChanging: boolean) {
-        const enabled = !!style && !!style.terrain && this.transform.projection.name === 'mercator';
+        const enabled = !!style && !!style.terrain && this.transform.projection.supportsTerrain;
         if (!enabled && (!this._terrain || !this._terrain.enabled)) return;
         if (!this._terrain) {
             this._terrain = new Terrain(this, style);
@@ -509,6 +512,10 @@ class Painter {
             this.opaquePassCutoff = 0;
         }
 
+        if (this.transform.projection.name === 'globe' && !this.globeSharedBuffers) {
+            this.globeSharedBuffers = new GlobeSharedBuffers(this.context);
+        }
+
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
 
@@ -574,7 +581,8 @@ class Painter {
         // They are drawn at max depth, they are drawn after opaque and before
         // translucent to fail depth testing and mix with translucent objects.
         this.renderPass = 'sky';
-        if (this.transform.isHorizonVisible()) {
+        const isTransitioning = globeToMercatorTransition(this.transform.zoom) > 0.0;
+        if ((isTransitioning || this.transform.projection.name !== 'globe') && this.transform.isHorizonVisible()) {
             for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
                 const layer = this.style._layers[layerIds[this.currentLayer]];
                 const sourceCache = style._getLayerSourceCache(layer);
@@ -583,6 +591,9 @@ class Painter {
 
                 this.renderLayer(this, sourceCache, layer, coords);
             }
+        }
+        if (this.transform.projection.name === 'globe') {
+            drawGlobeAtmosphere(this);
         }
 
         // Translucent pass ===============================================
@@ -679,7 +690,9 @@ class Painter {
         this.id = layer.id;
 
         this.gpuTimingStart(layer);
-        draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
+        if (!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type)) {
+            draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
+        }
         this.gpuTimingEnd();
     }
 
@@ -869,6 +882,9 @@ class Painter {
     destroy() {
         if (this._terrain) {
             this._terrain.destroy();
+        }
+        if (this.globeSharedBuffers) {
+            this.globeSharedBuffers.destroy();
         }
         this.emptyTexture.destroy();
         if (this.debugOverlayTexture) {

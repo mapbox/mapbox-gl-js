@@ -5,6 +5,7 @@ import UnitBezier from '@mapbox/unitbezier';
 import Point from '@mapbox/point-geometry';
 import window from './window.js';
 import assert from 'assert';
+import {vec4, mat4} from 'gl-matrix';
 
 import type {Callback} from '../types/callback.js';
 
@@ -661,4 +662,15 @@ export function b64DecodeUnicode(str: string) {
     return decodeURIComponent(window.atob(str).split('').map((c) => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); //eslint-disable-line
     }).join(''));
+}
+
+export function getColumn(matrix: mat4, col: number): vec4 {
+    return [matrix[col * 4], matrix[col * 4 + 1], matrix[col * 4 + 2], matrix[col * 4 + 3]];
+}
+
+export function setColumn(matrix: mat4, col: number, values: vec4) {
+    matrix[col * 4 + 0] = values[0];
+    matrix[col * 4 + 1] = values[1];
+    matrix[col * 4 + 2] = values[2];
+    matrix[col * 4 + 3] = values[3];
 }

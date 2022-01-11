@@ -839,8 +839,8 @@ test('transform', (t) => {
 
         transform.elevation = null;
         transform.elevation = elevation;
-        const cover10k = transform.coveringTiles(options);
 
+        const cover10k = transform.coveringTiles(options);
         t.deepEqual(cover, cover10k);
 
         // Lower tiles on side get clipped.
@@ -989,6 +989,7 @@ test('transform', (t) => {
         transform.pitch = 62;
 
         const cover = transform.coveringTiles(options);
+
         t.assert(cover.length === 43);
         t.assert(cover.find(tileID => tileID.canonical.z === 13 && tileID.canonical.x === 4270 && tileID.canonical.y === 2927));
         t.assert(cover.find(tileID => tileID.canonical.z === 12 && tileID.canonical.x === 2134 && tileID.canonical.y === 1461));

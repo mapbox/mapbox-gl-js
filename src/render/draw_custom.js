@@ -15,7 +15,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
     const context = painter.context;
     const implementation = layer.implementation;
 
-    if (painter.transform.projection.name !== 'mercator') {
+    if (painter.transform.projection.unsupportedLayers && painter.transform.projection.unsupportedLayers.includes("custom")) {
         warnOnce('Custom layers are not yet supported with non-mercator projections. Use mercator to enable custom layers.');
         return;
     }

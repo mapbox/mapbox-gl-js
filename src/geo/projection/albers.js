@@ -1,17 +1,22 @@
 // @flow
 import LngLat from '../lng_lat.js';
 import {clamp, wrap, degToRad, radToDeg} from '../../util/util.js';
-import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
+import {mercatorZfromAltitude, MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 import {vec2} from 'gl-matrix';
+import type Transform from '../../geo/transform.js';
+import Point from '@mapbox/point-geometry';
+import FlatTileTransform from './flat_tile_transform.js';
+import {farthestPixelDistanceOnPlane} from './far_z.js';
 
 export default {
     name: 'albers',
     range: [4, 7],
-
     center: [-96, 37.5],
     parallels: [29.5, 45.5],
-
+    zAxisUnit: "meters",
     conic: true,
+    isReprojectedInTileSpace: true,
+    unsupportedLayers: ['custom'],
 
     // based on https://github.com/d3/d3-geo-projection, MIT-licensed
 
@@ -38,7 +43,7 @@ export default {
         const r = Math.sqrt(c - 2 * n * Math.sin(phi)) / n;
         const x = r * Math.sin(lambda * n);
         const y = r * Math.cos(lambda * n) - r0;
-        return {x, y};
+        return {x, y, z: 0};
     },
 
     unproject(x: number, y: number) {
@@ -58,5 +63,26 @@ export default {
         const lat = clamp(radToDeg(phi), -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
 
         return new LngLat(lng, lat);
+    },
+
+    projectTilePoint(x: number, y: number): {x: number, y: number, z: number} {
+        return {x, y, z: 0};
+    },
+
+    locationPoint(tr: Transform, lngLat: LngLat): Point {
+        return tr._coordinatePoint(tr.locationCoordinate(lngLat), false);
+    },
+
+    pixelsPerMeter(lat: number, worldSize: number) {
+        return mercatorZfromAltitude(1, lat) * worldSize;
+    },
+
+    farthestPixelDistance(tr: Transform): number {
+        const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
+        return farthestPixelDistanceOnPlane(tr, pixelsPerMeter);
+    },
+
+    createTileTransform(tr: Transform, worldSize: number): Object {
+        return new FlatTileTransform(tr, worldSize);
     }
 };

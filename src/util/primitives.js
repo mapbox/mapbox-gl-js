@@ -1,6 +1,7 @@
 // @flow
 
 import {vec3, vec4} from 'gl-matrix';
+import assert from 'assert';
 
 class Ray {
     pos: vec3;
@@ -17,10 +18,68 @@ class Ray {
         // ray is parallel to plane, so it misses
         if (Math.abs(D) < 1e-6) { return false; }
 
-        const t = vec3.dot(vec3.sub(vec3.create(), pt, this.pos), normal) / D;
-        const intersection = vec3.scaleAndAdd(vec3.create(), this.pos, this.dir, t);
-        vec3.copy(out, intersection);
+        const t = (
+            (pt[0] - this.pos[0]) * normal[0] +
+            (pt[1] - this.pos[1]) * normal[1] +
+            (pt[2] - this.pos[2]) * normal[2]) / D;
+
+        out[0] = this.pos[0] + this.dir[0] * t;
+        out[1] = this.pos[1] + this.dir[1] * t;
+        out[2] = this.pos[2] + this.dir[2] * t;
+
         return true;
+    }
+
+    closestPointOnSphere(center: vec3, r: number, out: vec3): boolean {
+        assert(vec3.squaredLength(this.dir) > 0.0 && r >= 0.0);
+
+        if (vec3.equals(this.pos, center) || r === 0.0) {
+            out[0] = out[1] = out[2] = 0;
+            return false;
+        }
+
+        const [dx, dy, dz] = this.dir;
+
+        const px = this.pos[0] - center[0];
+        const py = this.pos[1] - center[1];
+        const pz = this.pos[2] - center[2];
+
+        const a = dx * dx + dy * dy + dz * dz;
+        const b = 2.0 * (px * dx + py * dy + pz * dz);
+        const c = (px * px + py * py + pz * pz) - r * r;
+        const d = b * b - 4 * a * c;
+
+        if (d < 0.0) {
+            // No intersection, find distance between closest points
+            const t = Math.max(-b / 2, 0.0);
+            const gx = px + dx * t; // point to globe
+            const gy = py + dy * t;
+            const gz = pz + dz * t;
+            const glen = Math.hypot(gx, gy, gz);
+            out[0] = gx * r / glen;
+            out[1] = gy * r / glen;
+            out[2] = gz * r / glen;
+            return false;
+
+        } else {
+            assert(a > 0.0);
+            const t = (-b - Math.sqrt(d)) / (2.0 * a);
+
+            if (t < 0.0) {
+                // Ray is pointing away from the sphere
+                const plen = Math.hypot(px, py, pz);
+                out[0] = px * r / plen;
+                out[1] = py * r / plen;
+                out[2] = pz * r / plen;
+                return false;
+
+            } else {
+                out[0] = px + dx * t;
+                out[1] = py + dy * t;
+                out[2] = pz + dz * t;
+                return true;
+            }
+        }
     }
 }
 
@@ -33,7 +92,7 @@ class Frustum {
         this.planes = planes_;
     }
 
-    static fromInvProjectionMatrix(invProj: Float64Array, worldSize: number, zoom: number): Frustum {
+    static fromInvProjectionMatrix(invProj: Float64Array, worldSize: number, zoom: number, zInMeters: boolean): Frustum {
         const clipSpaceCorners = [
             [-1, 1, -1, 1],
             [ 1, 1, -1, 1],
@@ -53,7 +112,7 @@ class Frustum {
                 const s = vec4.transformMat4([], v, invProj);
                 const k = 1.0 / s[3] / worldSize * scale;
                 // Z scale in meters.
-                return vec4.mul(s, s, [k, k, 1.0 / s[3], k]);
+                return vec4.mul(s, s, [k, k, zInMeters ? 1.0 / s[3] : k, k]);
             });
 
         const frustumPlanePointIndices = [
@@ -116,23 +175,28 @@ class Aabb {
         return pointOnAabb - point[2];
     }
 
+    getCorners() {
+        const mn = this.min;
+        const mx = this.max;
+        return [
+            [mn[0], mn[1], mn[2]],
+            [mx[0], mn[1], mn[2]],
+            [mx[0], mx[1], mn[2]],
+            [mn[0], mx[1], mn[2]],
+            [mn[0], mn[1], mx[2]],
+            [mx[0], mn[1], mx[2]],
+            [mx[0], mx[1], mx[2]],
+            [mn[0], mx[1], mx[2]],
+        ];
+    }
+
     // Performs a frustum-aabb intersection test. Returns 0 if there's no intersection,
     // 1 if shapes are intersecting and 2 if the aabb if fully inside the frustum.
     intersects(frustum: Frustum): number {
         // Execute separating axis test between two convex objects to find intersections
         // Each frustum plane together with 3 major axes define the separating axes
 
-        const aabbPoints = [
-            [this.min[0], this.min[1], this.min[2], 1],
-            [this.max[0], this.min[1], this.min[2], 1],
-            [this.max[0], this.max[1], this.min[2], 1],
-            [this.min[0], this.max[1], this.min[2], 1],
-            [this.min[0], this.min[1], this.max[2], 1],
-            [this.max[0], this.min[1], this.max[2], 1],
-            [this.max[0], this.max[1], this.max[2], 1],
-            [this.min[0], this.max[1], this.max[2], 1],
-        ];
-
+        const aabbPoints = this.getCorners();
         let fullyInside = true;
 
         for (let p = 0; p < frustum.planes.length; p++) {
@@ -140,7 +204,7 @@ class Aabb {
             let pointsInside = 0;
 
             for (let i = 0; i < aabbPoints.length; i++) {
-                pointsInside += vec4.dot(plane, aabbPoints[i]) >= 0;
+                pointsInside += vec3.dot(plane, aabbPoints[i]) + plane[3] >= 0;
             }
 
             if (pointsInside === 0)

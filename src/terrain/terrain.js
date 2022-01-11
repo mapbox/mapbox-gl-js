@@ -22,6 +22,7 @@ import ImageSource from '../source/image_source.js';
 import RasterDEMTileSource from '../source/raster_dem_tile_source.js';
 import RasterTileSource from '../source/raster_tile_source.js';
 import Color from '../style-spec/util/color.js';
+import type {Callback} from '../types/callback.js';
 import StencilMode from '../gl/stencil_mode.js';
 import {DepthStencilAttachment} from '../gl/value.js';
 import {drawTerrainRaster, drawTerrainDepth} from './draw_terrain_raster.js';
@@ -35,6 +36,7 @@ import {clippingMaskUniformValues} from '../render/program/clipping_mask_program
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import browser from '../util/browser.js';
 import DEMData from '../data/dem_data.js';
+import {DrapeRenderMode} from '../style/terrain.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
 
@@ -49,7 +51,7 @@ import type {UniformLocations, UniformValues} from '../render/uniform_binding.js
 import type Transform from '../geo/transform.js';
 import type {DEMEncoding} from '../data/dem_data.js';
 
-export const GRID_DIM = 128;
+const GRID_DIM = 128;
 
 const FBO_POOL_SIZE = 5;
 const RENDER_CACHE_MAX_SIZE = 50;
@@ -57,6 +59,25 @@ const RENDER_CACHE_MAX_SIZE = 50;
 type RenderBatch = {
     start: number;
     end: number;
+}
+
+class MockSourceCache extends SourceCache {
+    constructor(map: Map) {
+        const sourceSpec = {type: 'raster-dem', maxzoom: map.transform.maxZoom};
+        const sourceDispatcher = new Dispatcher(getWorkerPool(), null);
+        const source = createSource('mock-dem', sourceSpec, sourceDispatcher, map.style);
+
+        super('mock-dem', source, false);
+
+        source.setEventedParent(this);
+
+        this._sourceLoaded = true;
+    }
+
+    _loadTile(tile: Tile, callback: Callback<void>) {
+        tile.state = 'loaded';
+        callback(null);
+    }
 }
 
 /**
@@ -180,8 +201,10 @@ export class Terrain extends Elevation {
     proxySourceCache: ProxySourceCache;
     renderingToTexture: boolean;
     _style: Style;
+    _mockSourceCache: MockSourceCache;
     orthoMatrix: mat4;
     enabled: boolean;
+    renderMode: number;
 
     _visibleDemTiles: Array<Tile>;
     _sourceTilesOverlap: {[string]: boolean};
@@ -205,6 +228,7 @@ export class Terrain extends Elevation {
     _tilesDirty: {[string]: {[number]: boolean}};
     _invalidateRenderCache: boolean;
 
+    _emptyDepthBufferTexture: ?Texture;
     _emptyDEMTexture: ?Texture;
     _initializing: ?boolean;
     _emptyDEMTextureDirty: ?boolean;
@@ -243,6 +267,7 @@ export class Terrain extends Elevation {
         this.style = style;
         this._useVertexMorphing = true;
         this._exaggeration = 1;
+        this._mockSourceCache = new MockSourceCache(style.map);
     }
 
     set style(style: Style) {
@@ -265,7 +290,9 @@ export class Terrain extends Elevation {
             }
             this.enabled = true;
             const terrainProps = style.terrain.properties;
-            this.sourceCache = ((style._getSourceCache(terrainProps.get('source')): any): SourceCache);
+            const isDrapeModeDeferred = style.terrain.drapeRenderMode === DrapeRenderMode.deferred;
+            this.sourceCache = isDrapeModeDeferred ? this._mockSourceCache :
+                ((style._getSourceCache(terrainProps.get('source')): any): SourceCache);
             this._exaggeration = terrainProps.get('exaggeration');
 
             const updateSourceCache = () => {
@@ -352,6 +379,7 @@ export class Terrain extends Elevation {
     destroy() {
         this._disable();
         if (this._emptyDEMTexture) this._emptyDEMTexture.destroy();
+        if (this._emptyDepthBufferTexture) this._emptyDepthBufferTexture.destroy();
         this.pool.forEach(fbo => fbo.fb.destroy());
         this.pool = [];
         if (this._depthFBO) {
@@ -506,6 +534,19 @@ export class Terrain extends Elevation {
             this._emptyDEMTexture : this._updateEmptyDEMTexture();
     }
 
+    get emptyDepthBufferTexture(): Texture {
+        const context = this.painter.context;
+        const gl = context.gl;
+        if (!this._emptyDepthBufferTexture) {
+            const image = {
+                width: 1, height: 1,
+                data: new Uint8Array([255, 255, 255, 255])
+            };
+            this._emptyDepthBufferTexture = new Texture(context, image, gl.RGBA, {premultiply: false});
+        }
+        return this._emptyDepthBufferTexture;
+    }
+
     _getLoadedAreaMinimum(): number {
         let nonzero = 0;
         const min = this._visibleDemTiles.reduce((acc, tile) => {
@@ -556,6 +597,16 @@ export class Terrain extends Elevation {
         uniforms['u_dem_size'] = this.sourceCache.getSource().tileSize;
         uniforms['u_exaggeration'] = this.exaggeration();
 
+        const tr = this.painter.transform;
+        const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
+
+        const id = tile.tileID.canonical;
+        uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
+        uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
+        uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
+        uniforms['u_tile_bl_up'] = tileTransform.upVector(id, 0, EXTENT);
+        uniforms['u_tile_up_scale'] = tileTransform.upVectorScale(id);
+
         let demTile = null;
         let prevDemTile = null;
         let morphingPhase = 1.0;
@@ -579,6 +630,7 @@ export class Terrain extends Elevation {
             (demTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
             context.activeTexture.set(gl.TEXTURE4);
             (prevDemTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+
             uniforms["u_dem_lerp"] = morphingPhase;
         } else {
             demTile = this.terrainTileForTile[tile.tileID.key];
@@ -588,10 +640,13 @@ export class Terrain extends Elevation {
             demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
+        context.activeTexture.set(gl.TEXTURE3);
         if (options && options.useDepthForOcclusion) {
-            context.activeTexture.set(gl.TEXTURE3);
             this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
             uniforms['u_depth_size_inv'] = [1 / this._depthFBO.width, 1 / this._depthFBO.height];
+        } else {
+            this.emptyDepthBufferTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            uniforms['u_depth_size_inv'] = [1, 1];
         }
 
         if (options && options.useMeterToDem && demTile) {
@@ -1072,6 +1127,10 @@ export class Terrain extends Elevation {
         if (layer.isTileClipped()) {
             this._renderTileClippingMasks(proxiedCoords, this._overlapStencilMode.ref);
         }
+    }
+
+    clipOrMaskOverlapStencilType() {
+        return this._overlapStencilType === 'Clip' || this._overlapStencilType === 'Mask';
     }
 
     stencilModeForRTTOverlap(id: OverscaledTileID) {

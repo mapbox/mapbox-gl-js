@@ -31,6 +31,7 @@ import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
+import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -346,6 +347,7 @@ class Map extends Camera {
     _crossFadingFactor: number;
     _collectResourceTiming: boolean;
     _optimizeForTerrain: boolean;
+    _transitionFromGlobe: boolean;
     _renderTaskQueue: TaskQueue;
     _domRenderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
@@ -1042,6 +1044,7 @@ class Map extends Camera {
         }
         this._runtimeProjection = projection;
         this.style.updateProjection();
+        this._transitionFromGlobe = false;
         return this;
     }
 
@@ -2431,9 +2434,25 @@ class Map extends Camera {
      */
     setTerrain(terrain: TerrainSpecification) {
         this._lazyInitEmptyStyle();
-        this.style.setTerrain(terrain);
+        if (!terrain && this.transform.projection.requiresDraping) {
+            this.style.setTerrainForDraping();
+        } else {
+            this.style.setTerrain(terrain);
+        }
         this._averageElevationLastSampledAt = -Infinity;
         return this._update(true);
+    }
+
+    _updateProjection() {
+        const proj = this.transform.projection;
+        const zoom = this.transform.zoom;
+
+        if (proj.name === 'globe' && zoom >= GLOBE_ZOOM_THRESHOLD_MAX && !this._transitionFromGlobe) {
+            this.setProjection({name: 'mercator'});
+            this._transitionFromGlobe = true;
+        } else if (this._transitionFromGlobe && zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
+            this.setProjection({name: 'globe'});
+        }
     }
 
     /**
@@ -2864,6 +2883,8 @@ class Map extends Camera {
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
 
+        this._updateProjection();
+
         let crossFading = false;
         const fadeDuration = this._isInitialLoad ? 0 : this._fadeDuration;
 
@@ -3194,7 +3215,7 @@ class Map extends Camera {
         this._renderTaskQueue.clear();
         this._domRenderTaskQueue.clear();
         if (this.style) {
-            this.style.clearWorkerCaches();
+            this.style.destroy();
         }
         this.painter.destroy();
         this.handlers.destroy();

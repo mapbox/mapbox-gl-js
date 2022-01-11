@@ -74,13 +74,22 @@ class CollisionIndex {
     placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
 
-        const anchorX = collisionBox.projectedAnchorX;
-        const anchorY = collisionBox.projectedAnchorY;
+        let anchorX = collisionBox.projectedAnchorX;
+        let anchorY = collisionBox.projectedAnchorY;
         let anchorZ = collisionBox.projectedAnchorZ;
 
         // Apply elevation vector to the anchor point
-        if (collisionBox.elevation) {
-            anchorZ += collisionBox.elevation;
+        const elevation = collisionBox.elevation;
+        const tileID = collisionBox.tileID;
+        if (elevation && tileID) {
+            const tileTransform = this.transform.projection
+                .createTileTransform(this.transform, this.transform.worldSize);
+            const up = tileTransform.upVector(tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
+            const upScale = tileTransform.upVectorScale(tileID.canonical);
+
+            anchorX += up[0] * elevation * upScale;
+            anchorY += up[1] * elevation * upScale;
+            anchorZ += up[2] * elevation * upScale;
         }
 
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID);
@@ -128,15 +137,17 @@ class CollisionIndex {
                           tileID: OverscaledTileID): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
         const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
-        const getElevation = elevation ? (p => elevation.getAtTileOffset(tileID, p.x, p.y)) : (_ => 0);
-
+        const tileTransform = this.transform.projection.createTileTransform(this.transform, this.transform.worldSize);
+        const getElevation = elevation ? elevation.getAtTileOffsetFunc(tileID, tileTransform) : (_ => [0, 0, 0]);
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
+        const projectedAnchor = this.transform.projection.projectTilePoint(symbol.tileAnchorX, symbol.tileAnchorY, tileID.canonical);
         const anchorElevation = getElevation(tileUnitAnchorPoint);
-        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, anchorElevation, tileID);
+        const elevatedAnchor = [projectedAnchor.x + anchorElevation[0], projectedAnchor.y + anchorElevation[1], projectedAnchor.z + anchorElevation[2]];
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2], tileID);
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
-        const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix, anchorElevation).point;
+        const labelPlaneAnchorPoint = projection.project(new Point(elevatedAnchor[0], elevatedAnchor[1]), labelPlaneMatrix, elevatedAnchor[2]).point;
 
         const projectionCache = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
@@ -155,7 +166,9 @@ class CollisionIndex {
             labelPlaneMatrix,
             projectionCache,
             elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
-            pitchWithMap && !!elevation
+            pitchWithMap && !!elevation,
+            this.transform.projection,
+            tileID
         ) : null;
 
         let collisionDetected = false;
@@ -189,8 +202,8 @@ class CollisionIndex {
                 assert(pitchWithMap);
                 const screenSpacePath = elevation ?
                     projectedPath.map((p, index) => {
-                        const z = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
-                        return projection.project(p, labelToScreenMatrix, z);
+                        const elevation = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
+                        return projection.project(p, labelToScreenMatrix, elevation[2]);
                     }) :
                     projectedPath.map(p => projection.project(p, labelToScreenMatrix));
 
@@ -390,6 +403,7 @@ class CollisionIndex {
             (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
             (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding
         );
+
         return {
             point: a,
             // See perspective ratio comment in symbol_sdf.vertex

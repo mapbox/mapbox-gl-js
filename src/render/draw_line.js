@@ -45,7 +45,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const gl = context.gl;
 
     const definesValues = lineDefinesValues(layer);
-    const useStencilMaskRenderPass = definesValues.includes('RENDER_LINE_ALPHA_DISCARD');
+    let useStencilMaskRenderPass = definesValues.includes('RENDER_LINE_ALPHA_DISCARD');
+    if (painter.terrain && painter.terrain.clipOrMaskOverlapStencilType()) {
+        useStencilMaskRenderPass = false;
+    }
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -167,5 +170,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     // but tile clipping drawing is usually faster to draw than lines.
     if (useStencilMaskRenderPass) {
         painter.resetStencilClippingMasks();
+        if (painter.terrain) { context.clear({stencil: 0}); }
     }
 }

@@ -96,7 +96,7 @@
     },
     "projection": {
       "type": "projection",
-      "doc": "The projection the map should be rendered in. Supported projections are Albers, Equal Earth, Equirectangular (WGS84), Lambert conformal conic, Mercator, Natural Earth, and Winkel Tripel. Terrain, fog, sky and CustomLayerInterface are not supported for projections other than mercator.",
+      "doc": "The projection the map should be rendered in. Supported projections are Albers, Equal Earth, Equirectangular (WGS84), Lambert conformal conic, Mercator, Natural Earth, Globe, and Winkel Tripel. Terrain, fog, sky and CustomLayerInterface are not supported for projections other than mercator.",
       "example": {
         "name": "albers",
         "center": [-154, 50],
@@ -3991,6 +3991,9 @@
         },
         "winkelTripel": {
           "doc": "A Winkel Tripel projection."
+        },
+        "globe": {
+          "doc": "A globe projection."
         }
       },
       "default": "mercator",

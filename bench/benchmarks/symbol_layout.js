@@ -4,6 +4,7 @@ import Layout from './layout.js';
 import SymbolBucket from '../../src/data/bucket/symbol_bucket.js';
 import {performSymbolLayout} from '../../src/symbol/symbol_layout.js';
 import {OverscaledTileID} from '../../src/source/tile_id.js';
+import {getProjection} from '../../src/geo/projection/index.js';
 
 export default class SymbolLayout extends Layout {
     parsedTiles: Array<any>;
@@ -40,7 +41,8 @@ export default class SymbolLayout extends Layout {
                                             false,
                                             this.parser.style.listImages(),
                                             tileResult.tileID.canonical,
-                                            tileResult.tileZoom);
+                                            tileResult.tileZoom,
+                                            getProjection({name: 'mercator'}));
                     }
                 }
             });
