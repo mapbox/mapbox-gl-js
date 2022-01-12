@@ -706,7 +706,7 @@ class Style extends Evented {
         const sourceInstance = createSource(id, source, this.dispatcher, this);
 
         sourceInstance.setEventedParent(this, () => ({
-            isSourceLoaded: this.map.isSourceLoaded(id),
+            isSourceLoaded: this._isSourceCacheLoaded(id),
             source: sourceInstance.serialize(),
             sourceId: id
         }));
@@ -1781,6 +1781,15 @@ class Style extends Evented {
             sourceCaches.push(this._symbolSourceCaches[source]);
         }
         return sourceCaches;
+    }
+
+    _isSourceCacheLoaded(source: string) {
+        const sourceCaches = this && this._getSourceCaches(source);
+        if (sourceCaches.length === 0) {
+            this.fire(new ErrorEvent(new Error(`There is no source with ID '${source}'`)));
+            return;
+        }
+        return sourceCaches.every(sc => sc.loaded());
     }
 
     has3DLayers(): boolean {
