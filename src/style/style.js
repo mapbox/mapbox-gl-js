@@ -704,9 +704,8 @@ class Style extends Evented {
         if (this.map && this.map._collectResourceTiming) (source: any).collectResourceTiming = true;
 
         const sourceInstance = createSource(id, source, this.dispatcher, this);
-
         sourceInstance.setEventedParent(this, () => ({
-            isSourceLoaded: this.loaded(),
+            isSourceLoaded: this.map.isSourceLoaded(id),
             source: sourceInstance.serialize(),
             sourceId: id
         }));
