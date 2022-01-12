@@ -1784,7 +1784,7 @@ class Style extends Evented {
     }
 
     _isSourceCacheLoaded(source: string) {
-        const sourceCaches = this && this._getSourceCaches(source);
+        const sourceCaches = this._getSourceCaches(source);
         if (sourceCaches.length === 0) {
             this.fire(new ErrorEvent(new Error(`There is no source with ID '${source}'`)));
             return;

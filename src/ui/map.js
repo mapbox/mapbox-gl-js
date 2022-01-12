@@ -1789,7 +1789,7 @@ class Map extends Camera {
      * const sourceLoaded = map.isSourceLoaded('bathymetry-data');
      */
     isSourceLoaded(id: string) {
-        return this.style._isSourceCacheLoaded(id);
+        return this.style && this.style._isSourceCacheLoaded(id);
     }
 
     /**
