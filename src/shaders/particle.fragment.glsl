@@ -1,3 +1,5 @@
+uniform sampler2D u_image0;
+
 varying vec3 v_data;
 varying float v_visibility;
 
@@ -44,7 +46,10 @@ void main() {
 
     out_color = vec4(color.r * brightness * alpha, color.g * brightness * alpha, color.b * brightness * alpha, alpha);
 
-    gl_FragColor = out_color * (v_visibility * opacity_t);
+    vec4 color0 = texture2D(u_image0, extrude * 0.5 + 0.5);
+    out_color = vec4(vec3(brightness * color0), color0.a);
+
+    gl_FragColor = out_color; // * (v_visibility * opacity_t);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

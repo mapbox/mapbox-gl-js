@@ -88,6 +88,8 @@ function getPerspectiveTransform(w, h, x1, y1, x2, y2, x3, y3, x4, y4) {
  * map.removeSource('some id');  // remove
  * @see [Example: Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  */
+
+var globalTexture = undefined;
 class ImageSource extends Evented implements Source {
     type: string;
     id: string;
@@ -322,6 +324,7 @@ class ImageSource extends Evented implements Source {
         if (!this.texture) {
             this.texture = new Texture(context, this.image, gl.RGBA);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            globalTexture = this.texture;
         }
 
         for (const w in this.tiles) {
@@ -395,3 +398,5 @@ export function getCoordinatesCenterTileID(coords: Array<MercatorCoordinate>) {
 }
 
 export default ImageSource;
+
+export { globalTexture };

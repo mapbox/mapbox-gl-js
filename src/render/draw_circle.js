@@ -8,7 +8,7 @@ import {circleUniformValues, circleDefinesValues} from './program/circle_program
 import SegmentVector from '../data/segment.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import ColorMode from '../gl/color_mode.js';
-import ImageSource from '../source/image_source.js';
+import ImageSource, { globalTexture } from '../source/image_source.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -108,8 +108,15 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         segmentsRenderStates.sort((a, b) => a.sortKey - b.sortKey);
     }
 
+    console.log(segmentsRenderStates);
+
     const isGlobeProjection = painter.transform.projection.name === 'globe';
     const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
+
+    if (globalTexture) {
+        context.activeTexture.set(gl.TEXTURE0);
+        globalTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+    }
 
     for (const segmentsState of segmentsRenderStates) {
         const {programConfiguration, program, layoutVertexBuffer, indexBuffer, uniformValues, tile} = segmentsState.state;

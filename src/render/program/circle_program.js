@@ -1,6 +1,7 @@
 // @flow
 
 import {
+    Uniform1i,
     Uniform1f,
     UniformMatrix2f,
     UniformMatrix4f
@@ -18,7 +19,9 @@ export type CircleUniformsType = {|
     'u_camera_to_center_distance': Uniform1f,
     'u_extrude_scale': UniformMatrix2f,
     'u_device_pixel_ratio': Uniform1f,
-    'u_matrix': UniformMatrix4f
+    'u_matrix': UniformMatrix4f,
+    'u_matrix': UniformMatrix4f,
+    'u_image0': Uniform1i,
 |};
 
 export type CircleDefinesType = 'PITCH_WITH_MAP' | 'SCALE_WITH_MAP';
@@ -27,7 +30,8 @@ const circleUniforms = (context: Context, locations: UniformLocations): CircleUn
     'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
     'u_extrude_scale': new UniformMatrix2f(context, locations.u_extrude_scale),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix)
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_image0': new Uniform1i(context, locations.u_image0),
 });
 
 const circleUniformValues = (
@@ -56,6 +60,7 @@ const circleUniformValues = (
             tile,
             layer.paint.get('circle-translate'),
             layer.paint.get('circle-translate-anchor')),
+        'u_image0': 0,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_extrude_scale': extrudeScale
     };
