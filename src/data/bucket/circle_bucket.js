@@ -30,6 +30,86 @@ import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
+// This should be moved to a separate file
+class ParticleSystem {
+    emitters: Array<Emitter>;
+    lastUpdate: any;
+
+    constructor() {
+        this.emitters = [];
+        this.lastUpdate = new Date().getTime();
+    }
+    
+    update() {
+        let now = new Date().getTime();
+        let sinceLastUpdateMillis = now - this.lastUpdate;
+        if (sinceLastUpdateMillis < 100) {
+            return;
+        }
+        for (const emitter of this.emitters) {
+            emitter.update();
+        }
+        this.lastUpdate = new Date().getTime();
+    }
+
+    addEmitter(location: Point) {
+        for (const emitter of this.emitters) {
+            if (emitter.location == location) {
+                // Workaround: Don't add twice (we need unique feature ID or something)
+                return;
+            }
+        }
+        this.emitters.push(new Emitter(location));
+    }
+
+}
+
+register('ParticleSystem', ParticleSystem);
+class Emitter {
+    particles: Array<Particle>;
+    location: Point;
+    maxParticleCount: number;
+
+    constructor(location: Point) {
+        this.particles = [];
+        this.location = location;
+        this.maxParticleCount = 10;
+    }
+    
+    update() {
+        if (this.particles.length < this.maxParticleCount) {
+            this.particles.push(new Particle());
+        }
+        for (const particle of this.particles) {
+            particle.update();
+        }
+    }
+
+}
+
+register('Emitter', Emitter);
+class Particle {
+    isAlive: boolean;
+    locationOffset: any;
+    elevation: number;
+
+    constructor() {
+        this.isAlive = true;
+        this.locationOffset = {x:0,y:0};
+        this.locationOffset.x = Math.random() * 500.0 - 250.0;
+        this.locationOffset.y = Math.random() * 500.0 - 250.0;
+        console.count("New particle");
+    }
+    
+    update() {
+        this.locationOffset.x += (Math.random() - 0.5) * 100.0;
+        this.locationOffset.y += (Math.random() - 0.5) * 100.0;
+    }
+
+}
+
+register('Particle', Particle);
+
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(
         (x * 2) + ((extrudeX + 1) / 2),
@@ -44,6 +124,7 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
  * @private
  */
 class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
+    system: ParticleSystem;
     index: number;
     zoom: number;
     overscaling: number;
@@ -64,6 +145,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     uploaded: boolean;
 
     constructor(options: BucketParameters<Layer>) {
+        this.system = new ParticleSystem();
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
@@ -123,13 +205,14 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
             const feature = features[index].feature;
-
+            this.system.addEmitter(geometry[0][0]);
             this.addFeature(bucketFeature, geometry, index, options.availableImages, canonical);
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
+        this.system.update();
         if (!this.stateDependentLayers.length) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions);
     }
@@ -160,38 +243,34 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, availableImages: Array<string>, canonical: CanonicalTileID) {
-        for (const ring of geometry) {
-            for (const point of ring) {
-                const x = point.x;
-                const y = point.y;
-
-                // Do not include points that are outside the tile boundaries.
-                if (x < 0 || x >= EXTENT || y < 0 || y >= EXTENT) continue;
-
-                // this geometry will be of the Point type, and we'll derive
-                // two triangles from it.
-                //
-                // ┌─────────┐
-                // │ 3     2 │
-                // │         │
-                // │ 0     1 │
-                // └─────────┘
-
-                const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray, feature.sortKey);
-                const index = segment.vertexLength;
-
-                addCircleVertex(this.layoutVertexArray, x, y, -1, -1);
-                addCircleVertex(this.layoutVertexArray, x, y, 1, -1);
-                addCircleVertex(this.layoutVertexArray, x, y, 1, 1);
-                addCircleVertex(this.layoutVertexArray, x, y, -1, 1);
-
-                this.indexArray.emplaceBack(index, index + 1, index + 2);
-                this.indexArray.emplaceBack(index, index + 3, index + 2);
-
-                segment.vertexLength += 4;
-                segment.primitiveLength += 2;
-            }
+        if (this.segments.segments.length > 0) {
+            return;
         }
+        const x = 0;
+        const y = 0;
+
+        // this geometry will be of the Point type, and we'll derive
+        // two triangles from it.
+        //
+        // ┌─────────┐
+        // │ 3     2 │
+        // │         │
+        // │ 0     1 │
+        // └─────────┘
+
+        const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray, feature.sortKey);
+        const index2 = segment.vertexLength;
+
+        addCircleVertex(this.layoutVertexArray, x, y, -1, -1);
+        addCircleVertex(this.layoutVertexArray, x, y, 1, -1);
+        addCircleVertex(this.layoutVertexArray, x, y, 1, 1);
+        addCircleVertex(this.layoutVertexArray, x, y, -1, 1);
+
+        this.indexArray.emplaceBack(index2, index2 + 1, index2 + 2);
+        this.indexArray.emplaceBack(index2, index2 + 3, index2 + 2);
+
+        segment.vertexLength += 4;
+        segment.primitiveLength += 2;
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, {}, availableImages, canonical);
     }

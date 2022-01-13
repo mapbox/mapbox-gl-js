@@ -24,6 +24,9 @@ uniform float u_zoom_transition;
 uniform vec3 u_up_dir;
 #endif
 
+uniform vec3 u_pos_offset;
+
+
 varying vec3 v_data;
 varying float v_visibility;
 
@@ -97,6 +100,8 @@ void main(void) {
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
     vec2 circle_center = floor(a_pos * 0.5);
+    circle_center += u_pos_offset.xy;
+
 
 #ifdef PROJECTION_GLOBE_VIEW
     // Compute positions on both globe and mercator plane to support transition between the two modes
