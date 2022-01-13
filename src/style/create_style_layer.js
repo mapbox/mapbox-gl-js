@@ -1,6 +1,7 @@
 // @flow
 
 import circle from './style_layer/circle_style_layer.js';
+import particle from './style_layer/particle_style_layer.js';
 import heatmap from './style_layer/heatmap_style_layer.js';
 import hillshade from './style_layer/hillshade_style_layer.js';
 import fill from './style_layer/fill_style_layer.js';
@@ -17,7 +18,7 @@ import type {LayerSpecification} from '../style-spec/types.js';
 
 const subclasses = {
     circle,
-    particle: circle,
+    particle,
     heatmap,
     hillshade,
     fill,

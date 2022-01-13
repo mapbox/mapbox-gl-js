@@ -1,11 +1,13 @@
 // @flow
 
 import type {CircleDefinesType} from './circle_program.js';
+import type {ParticleDefinesType} from './particle_program.js';
 import type {SymbolDefinesType} from './symbol_program.js';
 import type {LineDefinesType} from './line_program.js';
 import {fillExtrusionUniforms, fillExtrusionPatternUniforms} from './fill_extrusion_program.js';
 import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms} from './fill_program.js';
 import {circleUniforms} from './circle_program.js';
+import {particleUniforms} from './particle_program.js';
 import {collisionUniforms, collisionCircleUniforms} from './collision_program.js';
 import {debugUniforms} from './debug_program.js';
 import {clippingMaskUniforms} from './clipping_mask_program.js';
@@ -20,7 +22,7 @@ import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program.js';
 import {skyboxCaptureUniforms} from './skybox_capture_program.js';
 import {globeRasterUniforms, atmosphereUniforms} from '../../terrain/globe_raster_program.js';
 
-export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType;
+export type DynamicDefinesType = CircleDefinesType | ParticleDefinesType| SymbolDefinesType | LineDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,
@@ -30,7 +32,7 @@ export const programUniforms = {
     fillOutline: fillOutlineUniforms,
     fillOutlinePattern: fillOutlinePatternUniforms,
     circle: circleUniforms,
-    particle: circleUniforms,
+    particle: particleUniforms,
     collisionBox: collisionUniforms,
     collisionCircle: collisionCircleUniforms,
     debug: debugUniforms,

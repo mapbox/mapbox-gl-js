@@ -421,8 +421,8 @@ export default class ProgramConfiguration {
             if (!(value instanceof PossiblyEvaluatedPropertyValue) || !supportsPropertyExpression(value.property.specification)) {
                 continue;
             }
-            const typeother = layer.type == "particle" ? "circle" : layer.type;
-            const names = paintAttributeNames(property, typeother);
+
+            const names = paintAttributeNames(property, layer.type);
             const expression = value.value;
             const type = value.property.specification.type;
             const useIntegerZoom = value.property.useIntegerZoom;

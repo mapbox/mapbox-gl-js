@@ -332,6 +332,34 @@ export type CircleLayerSpecification = {|
     |}
 |}
 
+export type ParticleLayerSpecification = {|
+    "id": string,
+    "type": "particle",
+    "metadata"?: mixed,
+    "source": string,
+    "source-layer"?: string,
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "filter"?: FilterSpecification,
+    "layout"?: {|
+        "particle-sort-key"?: DataDrivenPropertyValueSpecification<number>,
+        "visibility"?: "visible" | "none"
+    |},
+    "paint"?: {|
+        "particle-radius"?: DataDrivenPropertyValueSpecification<number>,
+        "particle-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "particle-blur"?: DataDrivenPropertyValueSpecification<number>,
+        "particle-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "particle-translate"?: PropertyValueSpecification<[number, number]>,
+        "particle-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "particle-pitch-scale"?: PropertyValueSpecification<"map" | "viewport">,
+        "particle-pitch-alignment"?: PropertyValueSpecification<"map" | "viewport">,
+        "particle-stroke-width"?: DataDrivenPropertyValueSpecification<number>,
+        "particle-stroke-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "particle-stroke-opacity"?: DataDrivenPropertyValueSpecification<number>
+    |}
+|}
+
 export type HeatmapLayerSpecification = {|
     "id": string,
     "type": "heatmap",

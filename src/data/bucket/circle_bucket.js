@@ -21,6 +21,7 @@ import type {
     PopulateParameters
 } from '../bucket.js';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer.js';
+import type ParticleStyleLayer from '../../style/style_layer/particle_style_layer.js';
 import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer.js';
 import type Context from '../../gl/context.js';
 import type IndexBuffer from '../../gl/index_buffer.js';
@@ -84,8 +85,12 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         let circleSortKey = null;
 
         // Heatmap layers are handled in this bucket and have no evaluated properties, so we check our access
-        if (styleLayer.type in ['circle', 'particle']) {
+        if (styleLayer.type === 'circle') {
             circleSortKey = ((styleLayer: any): CircleStyleLayer).layout.get('circle-sort-key');
+        }
+
+        if (styleLayer.type === 'particle') {
+            circleSortKey = ((styleLayer: any): ParticleStyleLayer).layout.get('particle-sort-key');
         }
 
         for (const {feature, id, index, sourceLayerIndex} of features) {

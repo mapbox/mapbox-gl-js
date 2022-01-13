@@ -566,6 +566,17 @@
             }
           }
         },
+        "particle": {
+          "doc": "A particle.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "android": "2.0.1",
+              "ios": "2.0.0",
+              "macos": "0.1.0"
+            }
+          }
+        },
         "heatmap": {
           "doc": "A heatmap.",
           "sdk-support": {
@@ -676,6 +687,7 @@
     "layout_fill",
     "layout_line",
     "layout_circle",
+    "layout_particle",
     "layout_heatmap",
     "layout_fill-extrusion",
     "layout_symbol",
@@ -783,6 +795,56 @@
   },
   "layout_circle": {
     "circle-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "1.2.0",
+          "android": "9.2.0",
+          "ios": "5.9.0",
+          "macos": "0.16.0"
+        },
+        "data-driven styling": {
+          "js": "1.2.0",
+          "android": "9.2.0",
+          "ios": "5.9.0",
+          "macos": "0.16.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+          "doc": "The layer is shown."
+        },
+        "none": {
+          "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        }
+      },
+      "property-type": "constant"
+    }
+  },
+  "layout_particle": {
+    "particle-sort-key": {
       "type": "number",
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
       "sdk-support": {
@@ -4096,6 +4158,7 @@
     "paint_fill",
     "paint_line",
     "paint_circle",
+    "paint_particle",
     "paint_heatmap",
     "paint_fill-extrusion",
     "paint_symbol",
@@ -5179,6 +5242,333 @@
     "circle-stroke-opacity": {
       "type": "number",
       "doc": "The opacity of the circle's stroke.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    }
+  },
+  "paint_particle": {
+    "particle-radius": {
+      "type": "number",
+      "default": 5,
+      "minimum": 0,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Circle radius.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.18.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "particle-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The fill color of the circle.",
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.18.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "particle-blur": {
+      "type": "number",
+      "default": 0,
+      "doc": "Amount to blur the circle. 1 blurs the circle such that only the centerpoint is full opacity.",
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.20.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "particle-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the circle will be drawn.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.20.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "particle-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "transition": true,
+      "units": "pixels",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "particle-translate-anchor": {
+      "type": "enum",
+      "values": {
+        "map": {
+          "doc": "The particle is translated relative to the map."
+        },
+        "viewport": {
+          "doc": "The particle is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the frame of reference for `particle-translate`.",
+      "default": "map",
+      "requires": [
+        "particle-translate"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "particle-pitch-scale": {
+      "type": "enum",
+      "values": {
+        "map": {
+          "doc": "Circles are scaled according to their apparent distance to the camera."
+        },
+        "viewport": {
+          "doc": "Circles are not scaled."
+        }
+      },
+      "default": "map",
+      "doc": "Controls the scaling behavior of the particle when the map is pitched.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.21.0",
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.2.1"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "particle-pitch-alignment": {
+      "type": "enum",
+      "values": {
+        "map": {
+          "doc": "The particle is aligned to the plane of the map."
+        },
+        "viewport": {
+          "doc": "The particle is aligned to the plane of the viewport."
+        }
+      },
+      "default": "viewport",
+      "doc": "Orientation of particle when map is pitched.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.39.0",
+          "android": "5.2.0",
+          "ios": "3.7.0",
+          "macos": "0.6.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "particle-stroke-width": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The width of the particle's stroke. Strokes are placed outside of the `particle-radius`.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "particle-stroke-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The stroke color of the particle.",
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "particle-stroke-opacity": {
+      "type": "number",
+      "doc": "The opacity of the particle's stroke.",
       "default": 1,
       "minimum": 0,
       "maximum": 1,

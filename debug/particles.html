@@ -47,7 +47,7 @@ map.addControl(new mapboxgl.GeolocateControl());
 
 map.on('load', function() {
 
-    map.addSource('circles', {
+    map.addSource('particles', {
         "type": "geojson",
         "data": "/test/integration/data/places.geojson"
     });
@@ -62,32 +62,12 @@ map.on('load', function() {
     map.addLayer({
         "id": "particles",
         "type": "particle",
-        "source": "circles",
+        "source": "particles",
         "paint": {
-            "circle-radius": 20,
-            "circle-color": ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
-            "circle-pitch-scale": "viewport",
-            "circle-pitch-alignment": "viewport"
-        }
-    });
-
-    map.addLayer({
-        "id": "labels",
-        "type": "symbol",
-        "source": "circles",
-        "minzoom": 1,
-        "layout": {
-            "text-field": [
-                "concat",
-                ["get", "name"],
-                " (",
-                [
-                    "coalesce",
-                    ["get", "subregion"],
-                    ["get", "region"]
-                ],
-                ")"
-            ]
+            "particle-radius": 20,
+            "particle-color": ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+            "particle-pitch-scale": "viewport",
+            "particle-pitch-alignment": "viewport"
         }
     });
 
