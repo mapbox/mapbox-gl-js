@@ -102,7 +102,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
                 const uniformValues = circleUniformValues(painter, coord, tile, layer, 
                     emitter.location.x + particle.locationOffset.x, 
                     emitter.location.y + particle.locationOffset.y, 
-                    1000,
+                    3000,
                     particle.opacity);
                    
                 const segments = bucket.segments;

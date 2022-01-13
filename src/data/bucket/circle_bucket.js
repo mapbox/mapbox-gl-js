@@ -52,14 +52,14 @@ class ParticleSystem {
         this.lastUpdate = new Date().getTime();
     }
 
-    addEmitter(location: Point) {
+    addEmitter(location: Point, featureId: number) {
         for (const emitter of this.emitters) {
-            if (emitter.location == location) {
-                // Workaround: Don't add twice (we need unique feature ID or something)
+            if (emitter.featureId === featureId) {
+                emitter.location = location;
                 return;
             }
         }
-        this.emitters.push(new Emitter(location));
+        this.emitters.push(new Emitter(location, featureId));
     }
 
 }
@@ -69,11 +69,13 @@ class Emitter {
     particles: Array<Particle>;
     location: Point;
     maxParticleCount: number;
+    featureId: number;
 
-    constructor(location: Point) {
+    constructor(location: Point, featureId: number) {
         this.particles = [];
         this.location = location;
         this.maxParticleCount = 10;
+        this.featureId = featureId;
     }
     
     update() {
@@ -152,6 +154,8 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
         (y * 2) + ((extrudeY + 1) / 2));
 }
 
+let globalSystem = new ParticleSystem();
+
 /**
  * Circles are represented by two triangles.
  *
@@ -181,7 +185,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     uploaded: boolean;
 
     constructor(options: BucketParameters<Layer>) {
-        this.system = new ParticleSystem();
+        this.system = globalSystem;
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
@@ -241,7 +245,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
             const feature = features[index].feature;
-            this.system.addEmitter(geometry[0][0]);
+            this.system.addEmitter(geometry[0][0], bucketFeature.id);
             this.addFeature(bucketFeature, geometry, index, options.availableImages, canonical);
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
