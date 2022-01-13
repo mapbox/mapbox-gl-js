@@ -30,7 +30,6 @@ import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
-
 // This should be moved to a separate file
 class ParticleSystem {
     emitters: Array<Emitter>;
@@ -79,7 +78,7 @@ class Emitter {
     
     update() {
         if (this.particles.length < this.maxParticleCount) {
-            this.particles.push(new Particle(location));
+            this.particles.push(new Particle());
         }
         for (const particle of this.particles) {
             particle.update();
@@ -91,18 +90,20 @@ class Emitter {
 register('Emitter', Emitter);
 class Particle {
     isAlive: boolean;
-    location: Point;
+    locationOffset: any;
     elevation: number;
 
-    constructor(location: Point) {
+    constructor() {
         this.isAlive = true;
-        this.location = location;
+        this.locationOffset = {x:0,y:0};
+        this.locationOffset.x = Math.random() * 500.0 - 250.0;
+        this.locationOffset.y = Math.random() * 500.0 - 250.0;
         console.count("New particle");
     }
     
     update() {
-        this.location.x += 1.0;
-        this.location.y += 1.0;
+        this.locationOffset.x += (Math.random() - 0.5) * 100.0;
+        this.locationOffset.y += (Math.random() - 0.5) * 100.0;
     }
 
 }
@@ -242,38 +243,34 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, availableImages: Array<string>, canonical: CanonicalTileID) {
-        for (const ring of geometry) {
-            for (const point of ring) {
-                const x = point.x;
-                const y = point.y;
-
-                // Do not include points that are outside the tile boundaries.
-                if (x < 0 || x >= EXTENT || y < 0 || y >= EXTENT) continue;
-
-                // this geometry will be of the Point type, and we'll derive
-                // two triangles from it.
-                //
-                // ┌─────────┐
-                // │ 3     2 │
-                // │         │
-                // │ 0     1 │
-                // └─────────┘
-
-                const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray, feature.sortKey);
-                const index = segment.vertexLength;
-
-                addCircleVertex(this.layoutVertexArray, x, y, -1, -1);
-                addCircleVertex(this.layoutVertexArray, x, y, 1, -1);
-                addCircleVertex(this.layoutVertexArray, x, y, 1, 1);
-                addCircleVertex(this.layoutVertexArray, x, y, -1, 1);
-
-                this.indexArray.emplaceBack(index, index + 1, index + 2);
-                this.indexArray.emplaceBack(index, index + 3, index + 2);
-
-                segment.vertexLength += 4;
-                segment.primitiveLength += 2;
-            }
+        if (this.segments.segments.length > 0) {
+            return;
         }
+        const x = 0;
+        const y = 0;
+
+        // this geometry will be of the Point type, and we'll derive
+        // two triangles from it.
+        //
+        // ┌─────────┐
+        // │ 3     2 │
+        // │         │
+        // │ 0     1 │
+        // └─────────┘
+
+        const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray, feature.sortKey);
+        const index2 = segment.vertexLength;
+
+        addCircleVertex(this.layoutVertexArray, x, y, -1, -1);
+        addCircleVertex(this.layoutVertexArray, x, y, 1, -1);
+        addCircleVertex(this.layoutVertexArray, x, y, 1, 1);
+        addCircleVertex(this.layoutVertexArray, x, y, -1, 1);
+
+        this.indexArray.emplaceBack(index2, index2 + 1, index2 + 2);
+        this.indexArray.emplaceBack(index2, index2 + 3, index2 + 2);
+
+        segment.vertexLength += 4;
+        segment.primitiveLength += 2;
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, {}, availableImages, canonical);
     }

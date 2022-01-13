@@ -2,6 +2,7 @@
 
 import {
     Uniform1f,
+    Uniform3f,
     UniformMatrix2f,
     UniformMatrix4f
 } from '../uniform_binding.js';
@@ -18,7 +19,8 @@ export type CircleUniformsType = {|
     'u_camera_to_center_distance': Uniform1f,
     'u_extrude_scale': UniformMatrix2f,
     'u_device_pixel_ratio': Uniform1f,
-    'u_matrix': UniformMatrix4f
+    'u_matrix': UniformMatrix4f,
+    'u_pos_offset': Uniform3f,
 |};
 
 export type CircleDefinesType = 'PITCH_WITH_MAP' | 'SCALE_WITH_MAP';
@@ -27,14 +29,18 @@ const circleUniforms = (context: Context, locations: UniformLocations): CircleUn
     'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
     'u_extrude_scale': new UniformMatrix2f(context, locations.u_extrude_scale),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix)
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_pos_offset': new Uniform3f(context, locations.u_pos_offset),
 });
 
 const circleUniformValues = (
     painter: Painter,
     coord: OverscaledTileID,
     tile: Tile,
-    layer: CircleStyleLayer
+    layer: CircleStyleLayer,
+    x: Number,
+    y: Number,
+    z: Number,
 ): UniformValues<CircleUniformsType> => {
     const transform = painter.transform;
 
@@ -56,6 +62,7 @@ const circleUniformValues = (
             tile,
             layer.paint.get('circle-translate'),
             layer.paint.get('circle-translate-anchor')),
+        'u_pos_offset': [x,y,z],
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_extrude_scale': extrudeScale
     };
