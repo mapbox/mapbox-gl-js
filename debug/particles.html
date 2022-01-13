@@ -35,7 +35,7 @@ var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 3,
     center: [-77.01866, 38.888],
-    style: 'mapbox://styles/dzianis-sheka/ckycx05mz25k114mjd1f365fv',
+    style: 'mapbox://styles/mapbox/streets-v9',
     hash: true
 });
 window.map = map;
@@ -65,7 +65,6 @@ map.on('load', function() {
         "source": "circles",
         "paint": {
             "circle-radius": 20,
-            // "circle-color": '#e55e5e',
             "circle-color": ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
             "circle-pitch-scale": "viewport",
             "circle-pitch-alignment": "viewport"
