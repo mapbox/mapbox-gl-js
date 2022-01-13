@@ -11,7 +11,7 @@ import DictionaryCoder from '../util/dictionary_coder.js';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import GeoJSONFeature from '../util/vectortile_to_geojson.js';
-import {arraysIntersect, mapObject, extend} from '../util/util.js';
+import {arraysIntersect, extend} from '../util/util.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import {register} from '../util/web_worker_transfer.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
@@ -216,8 +216,8 @@ class FeatureIndex {
 
             const serializedLayer = extend({}, serializedLayers[layerID]);
 
-            serializedLayer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
-            serializedLayer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
+            serializedLayer.paint = evaluateProperties(styleLayer._transitionablePaint, styleLayer.paint, feature, featureState, this.tileID.canonical, availableImages);
+            serializedLayer.layout = evaluateProperties(styleLayer._unevaluatedLayout, styleLayer.layout, feature, featureState, this.tileID.canonical, availableImages);
 
             const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, featureState, layoutVertexArrayOffset);
             if (!intersectionZ) {
@@ -315,11 +315,17 @@ register(
 
 export default FeatureIndex;
 
-function evaluateProperties(serializedProperties, styleLayerProperties, feature, featureState, availableImages) {
-    return mapObject(serializedProperties, (property, key) => {
+function evaluateProperties(paintOrLayout, styleLayerProperties, feature, featureState, canonical, availableImages) {
+    const keys = paintOrLayout ? Object.keys(paintOrLayout._values) : [];
+    const evaluated = {};
+
+    for (const key of keys) {
         const prop = styleLayerProperties instanceof PossiblyEvaluated ? styleLayerProperties.get(key) : null;
-        return prop && prop.evaluate ? prop.evaluate(feature, featureState, availableImages) : prop;
-    });
+        const value = prop && prop.evaluate ? prop.evaluate(feature, featureState, canonical, availableImages) : prop;
+        evaluated[key] = value;
+    }
+
+    return evaluated;
 }
 
 function topDownFeatureComparator(a, b) {
