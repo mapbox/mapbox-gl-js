@@ -17,6 +17,7 @@ import type {LayerSpecification} from '../style-spec/types.js';
 
 const subclasses = {
     circle,
+    particle: circle,
     heatmap,
     hillshade,
     fill,

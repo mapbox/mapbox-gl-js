@@ -29,6 +29,7 @@ import {clippingMaskUniformValues} from './program/clipping_mask_program.js';
 import Color from '../style-spec/util/color.js';
 import symbol from './draw_symbol.js';
 import circle from './draw_circle.js';
+import particle from './draw_particle.js';
 import assert from 'assert';
 import heatmap from './draw_heatmap.js';
 import line from './draw_line.js';
@@ -49,6 +50,7 @@ import Tile from '../source/tile.js';
 const draw = {
     symbol,
     circle,
+    particle,
     heatmap,
     line,
     fill,

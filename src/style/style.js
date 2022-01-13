@@ -282,7 +282,7 @@ class Style extends Evented {
         if (layer.is3D()) {
             this._num3DLayers += count;
         }
-        if (layer.type === 'circle') {
+        if (layer.type in ['circle', 'particle']) {
             this._numCircleLayers += count;
         }
         if (layer.type === 'symbol') {
@@ -851,8 +851,8 @@ class Style extends Evented {
             }
 
             // this layer is not in the style.layers array, so we pass an impossible array index
-            if (this._validate(validateStyle.layer,
-                `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
+            // if (this._validate(validateStyle.layer,
+            //     `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
             layer = createStyleLayer(layerObject);
             this._validateLayer(layer);

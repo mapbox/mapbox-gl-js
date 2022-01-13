@@ -20,7 +20,7 @@ import type {CircleUniformsType} from './program/circle_program.js';
 import type Tile from '../source/tile.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
 
-export default drawCircles;
+export default drawParticles;
 
 type TileRenderState = {
     programConfiguration: ProgramConfiguration,
@@ -37,7 +37,7 @@ type SegmentsTileRenderState = {
     state: TileRenderState
 };
 
-function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
+function drawParticles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
 
     const opacity = layer.paint.get('circle-opacity');
@@ -117,7 +117,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
         painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
 
-        console.log('cicle draw', layer, programConfiguration);
+        // console.log('particles draw', layer, programConfiguration);
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id,
             layoutVertexBuffer, indexBuffer, segments,

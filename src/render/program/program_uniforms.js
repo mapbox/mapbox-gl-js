@@ -30,6 +30,7 @@ export const programUniforms = {
     fillOutline: fillOutlineUniforms,
     fillOutlinePattern: fillOutlinePatternUniforms,
     circle: circleUniforms,
+    particle: circleUniforms,
     collisionBox: collisionUniforms,
     collisionCircle: collisionCircleUniforms,
     debug: debugUniforms,
