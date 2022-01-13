@@ -68,6 +68,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const tile = sourceCache.getTile(coord);
         const bucket: ?CircleBucket<*> = (tile.getBucket(layer): any);
         if (!bucket) continue;
+        bucket.update();
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const definesValues = circleDefinesValues(layer);

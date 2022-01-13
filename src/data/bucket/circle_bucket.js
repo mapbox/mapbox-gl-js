@@ -43,7 +43,7 @@ class ParticleSystem {
     update() {
         let now = new Date().getTime();
         let sinceLastUpdateMillis = now - this.lastUpdate;
-        if (sinceLastUpdateMillis < 100) {
+        if (sinceLastUpdateMillis < 10) {
             return;
         }
         for (const emitter of this.emitters) {
@@ -92,18 +92,30 @@ class Particle {
     isAlive: boolean;
     locationOffset: any;
     elevation: number;
+    direction: any;
+    velocity: number;
+    opacity: number;
+    scale: any;
 
     constructor() {
         this.isAlive = true;
         this.locationOffset = {x:0,y:0};
-        this.locationOffset.x = Math.random() * 500.0 - 250.0;
-        this.locationOffset.y = Math.random() * 500.0 - 250.0;
+        var dir = Math.random();
+        this.direction = {x: dir, y: 1.0 - dir, z: 0.0 };
+
+        let minVelocity = 1.0;
+        let maxVelocity = 5.0;
+        this.velocity = Math.random() * (maxVelocity - minVelocity) + minVelocity;
+
+        this.opacity = 1.0;
+        this.scale = {x:1.0, y:1.0};
+
         console.count("New particle");
     }
     
     update() {
-        this.locationOffset.x += (Math.random() - 0.5) * 100.0;
-        this.locationOffset.y += (Math.random() - 0.5) * 100.0;
+        this.locationOffset.x += this.direction.x * this.velocity;
+        this.locationOffset.y += this.direction.y * this.velocity;
     }
 
 }
