@@ -89,11 +89,11 @@ export class Elevation {
             (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom));
     }
 
-    getAtTileOffsetFunc(tileID: OverscaledTileID, tileTransform: TileTransform): Function {
+    getAtTileOffsetFunc(tileID: OverscaledTileID, lat: number, worldSize: number, tileTransform: TileTransform): Function {
         return (p => {
             const elevation = this.getAtTileOffset(tileID, p.x, p.y);
             const upVector = tileTransform.upVector(tileID.canonical, p.x, p.y);
-            const upVectorScale = tileTransform.upVectorScale(tileID.canonical);
+            const upVectorScale = tileTransform.upVectorScale(tileID.canonical, lat, worldSize).metersToTile;
             vec3.scale(upVector, upVector, elevation * upVectorScale);
             return upVector;
         });

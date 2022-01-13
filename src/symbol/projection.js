@@ -17,7 +17,7 @@ import type {
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
 import {calculateGlobeMatrix, globeDenormalizeECEF, globeTileBounds} from '../geo/projection/globe.js';
-export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
+export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, projectVector, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 const FlipState = {
     unknown: 0,
@@ -148,6 +148,16 @@ function project(point: Point, matrix: mat4, elevation: ?number = 0) {
     } else {
         xyTransformMat4(pos, pos, matrix);
     }
+    const w = pos[3];
+    return {
+        point: new Point(pos[0] / w, pos[1] / w),
+        signedDistanceFromCamera: w
+    };
+}
+
+function projectVector(point: vec3 | [number, number, number], matrix: mat4) {
+    const pos = [point[0], point[1], point[2], 1];
+    vec4.transformMat4(pos, pos, matrix);
     const w = pos[3];
     return {
         point: new Point(pos[0] / w, pos[1] / w),

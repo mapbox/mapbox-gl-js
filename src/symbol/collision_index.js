@@ -85,7 +85,7 @@ class CollisionIndex {
             const tileTransform = this.transform.projection
                 .createTileTransform(this.transform, this.transform.worldSize);
             const up = tileTransform.upVector(tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
-            const upScale = tileTransform.upVectorScale(tileID.canonical);
+            const upScale = tileTransform.upVectorScale(tileID.canonical, this.transform.center.lat, this.transform.worldSize).metersToTile;
 
             anchorX += up[0] * elevation * upScale;
             anchorY += up[1] * elevation * upScale;
@@ -138,7 +138,7 @@ class CollisionIndex {
         const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
         const tileTransform = this.transform.projection.createTileTransform(this.transform, this.transform.worldSize);
-        const getElevation = elevation ? elevation.getAtTileOffsetFunc(tileID, tileTransform) : (_ => [0, 0, 0]);
+        const getElevation = elevation ? elevation.getAtTileOffsetFunc(tileID, this.transform.center.lat, this.transform.worldSize, tileTransform) : (_ => [0, 0, 0]);
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         const projectedAnchor = this.transform.projection.projectTilePoint(symbol.tileAnchorX, symbol.tileAnchorY, tileID.canonical);
         const anchorElevation = getElevation(tileUnitAnchorPoint);

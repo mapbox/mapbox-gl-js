@@ -81,10 +81,20 @@ export function getProjection(config: ProjectionSpecification) {
     return projection.conic ? getConicProjection(projection, config) : projection;
 }
 
+export type ElevationScale = {
+    // `metersToTile` converts meters to units used to describe elevation in tile space.
+    // Default units in mercator space are x & y: [0, 8192] and z: meters
+    metersToTile: number,
+
+    // `metersToLabelSpace` converts meters to units used for elevation for map aligned
+    // labels. Default unit in mercator space is meter.
+    metersToLabelSpace: number
+}
+
 export type TileTransform = {
     createTileMatrix: (id: UnwrappedTileID) => mat4,
     createInversionMatrix: (id: UnwrappedTileID) => mat4,
     upVector: (id: CanonicalTileID, x: number, y: number) => vec3,
-    upVectorScale: (id: CanonicalTileID) => number,
+    upVectorScale: (id: CanonicalTileID, latitude: number, worldSize: number) => ElevationScale,
     pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate
 };

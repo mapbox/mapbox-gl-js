@@ -1,5 +1,6 @@
 // @flow
 import type Transform from '../transform.js';
+import type {ElevationScale} from './index.js';
 import {UnwrappedTileID} from '../../source/tile_id.js';
 import {mat4, vec3} from 'gl-matrix';
 import MercatorCoordinate from '../mercator_coordinate.js';
@@ -58,7 +59,7 @@ export default class FlatTileTransform {
         return [0, 0, 1];
     }
 
-    upVectorScale(): number {
-        return 1;
+    upVectorScale(): ElevationScale {
+        return {metersToTile: 1, metersToLabelSpace: 1};
     }
 }
