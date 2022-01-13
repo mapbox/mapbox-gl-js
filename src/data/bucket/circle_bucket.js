@@ -30,6 +30,85 @@ import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
+
+// This should be moved to a separate file
+class ParticleSystem {
+    emitters: Array<Emitter>;
+    lastUpdate: any;
+
+    constructor() {
+        this.emitters = [];
+        this.lastUpdate = new Date().getTime();
+    }
+    
+    update() {
+        let now = new Date().getTime();
+        let sinceLastUpdateMillis = now - this.lastUpdate;
+        if (sinceLastUpdateMillis < 100) {
+            return;
+        }
+        for (const emitter of this.emitters) {
+            emitter.update();
+        }
+        this.lastUpdate = new Date().getTime();
+    }
+
+    addEmitter(location: Point) {
+        for (const emitter of this.emitters) {
+            if (emitter.location == location) {
+                // Workaround: Don't add twice (we need unique feature ID or something)
+                return;
+            }
+        }
+        this.emitters.push(new Emitter(location));
+    }
+
+}
+
+register('ParticleSystem', ParticleSystem);
+class Emitter {
+    particles: Array<Particle>;
+    location: Point;
+    maxParticleCount: number;
+
+    constructor(location: Point) {
+        this.particles = [];
+        this.location = location;
+        this.maxParticleCount = 10;
+    }
+    
+    update() {
+        if (this.particles.length < this.maxParticleCount) {
+            this.particles.push(new Particle(location));
+        }
+        for (const particle of this.particles) {
+            particle.update();
+        }
+    }
+
+}
+
+register('Emitter', Emitter);
+class Particle {
+    isAlive: boolean;
+    location: Point;
+    elevation: number;
+
+    constructor(location: Point) {
+        this.isAlive = true;
+        this.location = location;
+        console.count("New particle");
+    }
+    
+    update() {
+        this.location.x += 1.0;
+        this.location.y += 1.0;
+    }
+
+}
+
+register('Particle', Particle);
+
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(
         (x * 2) + ((extrudeX + 1) / 2),
@@ -44,6 +123,7 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
  * @private
  */
 class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
+    system: ParticleSystem;
     index: number;
     zoom: number;
     overscaling: number;
@@ -64,6 +144,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     uploaded: boolean;
 
     constructor(options: BucketParameters<Layer>) {
+        this.system = new ParticleSystem();
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
@@ -123,13 +204,14 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
             const feature = features[index].feature;
-
+            this.system.addEmitter(geometry[0][0]);
             this.addFeature(bucketFeature, geometry, index, options.availableImages, canonical);
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
+        this.system.update();
         if (!this.stateDependentLayers.length) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions);
     }

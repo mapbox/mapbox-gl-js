@@ -122,9 +122,9 @@ document.getElementById('repaint-checkbox').onclick = function() {
 let hovered = [];
 window.addEventListener('mousemove', function(e) {
     e.point = new mapboxgl.Point(e.clientX, e.clientY);
-    console.time('query');
+    //console.time('query');
     const features = map.queryRenderedFeatures(e.point, {layers: ['circles']});
-    console.timeEnd('query');
+    // console.timeEnd('query');
 
     for (const feature of hovered) {
         map.setFeatureState(feature, {
