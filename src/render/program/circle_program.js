@@ -23,6 +23,7 @@ export type CircleUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_image0': Uniform1i,
     'u_pos_offset': Uniform3f,
+    'u_particle_opacity': Uniform1f,
 |};
 
 export type CircleDefinesType = 'PITCH_WITH_MAP' | 'SCALE_WITH_MAP';
@@ -34,6 +35,7 @@ const circleUniforms = (context: Context, locations: UniformLocations): CircleUn
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_image0': new Uniform1i(context, locations.u_image0),
     'u_pos_offset': new Uniform3f(context, locations.u_pos_offset),
+    'u_particle_opacity': new Uniform1f(context, locations.u_particle_opacity),
 });
 
 const circleUniformValues = (
@@ -44,6 +46,7 @@ const circleUniformValues = (
     x: Number,
     y: Number,
     z: Number,
+    particleOpacity: Number,
 ): UniformValues<CircleUniformsType> => {
     const transform = painter.transform;
 
@@ -68,7 +71,8 @@ const circleUniformValues = (
         'u_image0': 0,
         'u_pos_offset': [x,y,z],
         'u_device_pixel_ratio': browser.devicePixelRatio,
-        'u_extrude_scale': extrudeScale
+        'u_extrude_scale': extrudeScale,
+        'u_particle_opacity': particleOpacity
     };
 };
 

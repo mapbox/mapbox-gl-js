@@ -83,6 +83,7 @@ class Emitter {
         for (const particle of this.particles) {
             particle.update();
         }
+        this.particles = this.particles.filter(item => item.isAlive);
     }
 
 }
@@ -96,11 +97,18 @@ class Particle {
     velocity: number;
     opacity: number;
     scale: any;
+    timeToLive: number;
+    birthTime: number;
 
     constructor() {
         this.isAlive = true;
-        this.locationOffset = {x:0,y:0};
-        var dir = Math.random();
+        this.locationOffset = {
+            x: Math.random() * 2000.0 - 1000.0,
+            y: Math.random() * 2000.0 - 1000.0
+        };
+
+        //var dir = Math.random();
+        var dir = 0.5;
         this.direction = {x: dir, y: 1.0 - dir, z: 0.0 };
 
         let minVelocity = 1.0;
@@ -109,11 +117,27 @@ class Particle {
 
         this.opacity = 1.0;
         this.scale = {x:1.0, y:1.0};
+        this.timeToLive = Math.random() * 2000 + 5000;
+        this.birthTime = new Date().getTime();
 
         console.count("New particle");
     }
     
     update() {
+        let now = new Date().getTime();
+        let timeSinceBith = now - this.birthTime;
+        let lifePosition = timeSinceBith / this.timeToLive;
+        if (lifePosition >= 1.0) {
+            this.isAlive = false;
+        }
+
+        if (lifePosition < 0.2) {
+            this.opacity = (lifePosition / 0.2);
+        } else if (lifePosition > 0.8) {
+            this.opacity = (1.0 - lifePosition) / 0.2;
+        } else {
+            this.opacity = 1.0;
+        }
         this.locationOffset.x += this.direction.x * this.velocity;
         this.locationOffset.y += this.direction.y * this.velocity;
     }

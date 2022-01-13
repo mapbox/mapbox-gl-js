@@ -38,8 +38,8 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/streets-v9',
     hash: true
 });
-map.showTileBoundaries = true;
-map._showQueryGeometry = true;
+map.showTileBoundaries = false;
+map._showQueryGeometry = false;
 map.repaint = true;
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
@@ -63,13 +63,14 @@ map.on('load', function() {
         "type": "circle",
         "source": "circles",
         "paint": {
-            "circle-radius": 20,
+            "circle-radius": 50,
             "circle-color": ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
             "circle-pitch-scale": "viewport",
             "circle-pitch-alignment": "viewport"
         }
     });
 
+    /*
     map.addLayer({
         "id": "labels",
         "type": "symbol",
@@ -89,6 +90,7 @@ map.on('load', function() {
             ]
         }
     });
+    */
 
     map.addSource('radar', {
     'type': 'image',

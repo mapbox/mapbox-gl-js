@@ -8,6 +8,7 @@ uniform mat4 u_matrix;
 uniform mat2 u_extrude_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
+uniform vec3 u_pos_offset;
 
 attribute vec2 a_pos;
 
@@ -23,8 +24,6 @@ uniform vec3 u_tile_id;
 uniform float u_zoom_transition;
 uniform vec3 u_up_dir;
 #endif
-
-uniform vec3 u_pos_offset;
 
 
 varying vec3 v_data;
@@ -120,7 +119,7 @@ void main(void) {
 #else 
     mat3 surface_vectors = mat3(1.0);
     // extract height offset for terrain, this returns 0 if terrain is not active
-    float height = circle_elevation(circle_center);
+    float height = circle_elevation(circle_center) + u_pos_offset.z;
     vec4 world_center = vec4(circle_center, height, 1);
 #endif
 
