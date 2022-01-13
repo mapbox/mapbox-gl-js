@@ -7,6 +7,8 @@ import Program from './program.js';
 import {circleUniformValues, circleDefinesValues} from './program/circle_program.js';
 import SegmentVector from '../data/segment.js';
 import {OverscaledTileID} from '../source/tile_id.js';
+import ColorMode from '../gl/color_mode.js';
+import ImageSource from '../source/image_source.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -117,7 +119,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
         painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
 
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
             uniformValues, layer.id,
             layoutVertexBuffer, indexBuffer, segments,
             layer.paint, painter.transform.zoom, programConfiguration);

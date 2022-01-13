@@ -86,6 +86,7 @@ class Texture {
     }
 
     bind(filter: TextureFilter, wrap: TextureWrap) {
+        debugger;
         const {context} = this;
         const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);

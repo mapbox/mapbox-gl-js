@@ -48,7 +48,142 @@ map.on('load', function() {
 
     map.addSource('circles', {
         "type": "geojson",
-        "data": "/test/integration/data/places.geojson"
+        "data": {
+        "type": "FeatureCollection",
+        "features": [
+            {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                24.94068145751953,
+                60.17072018908486
+                ]
+            }
+            },
+            {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                24.938793182373047,
+                60.17114712304643
+                ]
+            }
+            },
+            {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                24.9444580078125,
+                60.1720009743249
+                ]
+            }
+            },
+            {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                24.947547912597656,
+                60.17054941394673
+                ]
+            }
+            },
+            {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                24.944114685058594,
+                60.169439353910285
+                ]
+            }
+            }
+        ]
+        }
+    });
+
+
+    map.addSource('othercircles', {
+        "type": "geojson",
+        "data": {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.938278198242188,
+          60.17138193436037
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.939908981323242,
+          60.17010112498546
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.941840171813965,
+          60.17136058794661
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.942140579223633,
+          60.16982360970588
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94020938873291,
+          60.171232509172945
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.943513870239258,
+          60.17078422953281
+        ]
+      }
+    }
+  ]
+}
     });
 
     map.addSource('mapbox-dem', {
@@ -58,18 +193,51 @@ map.on('load', function() {
         "maxzoom": 14
     });
 
+
+    map.addSource('radar', {
+    'type': 'image',
+    'url': '/test/integration/data/smoke.png',
+    'coordinates': [
+    [-80.425, 46.437],
+    [-71.516, 46.437],
+    [-71.516, 37.936],
+    [-80.425, 37.936]
+    ]
+    });
+    map.addLayer({
+    id: 'radar-layer',
+    'type': 'raster',
+    'source': 'radar',
+    'paint': {
+    'raster-fade-duration': 0
+    }
+    });
+
     map.addLayer({
         "id": "circles",
         "type": "circle",
         "source": "circles",
         "paint": {
-            "circle-radius": 20,
-            "circle-color": ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+            "circle-radius": 50,
+            "circle-color": '#AAAAAA',
             "circle-pitch-scale": "viewport",
             "circle-pitch-alignment": "viewport"
         }
     });
 
+    map.addLayer({
+        "id": "othercircles",
+        "type": "circle",
+        "source": "othercircles",
+        "paint": {
+            "circle-radius": 50,
+            "circle-color": '#AAAAFF',
+            "circle-pitch-scale": "viewport",
+            "circle-pitch-alignment": "viewport"
+        }
+    });
+
+    /*
     map.addLayer({
         "id": "labels",
         "type": "symbol",
@@ -89,7 +257,7 @@ map.on('load', function() {
             ]
         }
     });
-
+*/
     document.getElementById('terrain-checkbox').onclick();
 });
 
