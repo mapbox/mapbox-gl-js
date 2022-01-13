@@ -14,8 +14,8 @@ There are two test suites associated with Mapbox GL JS
 
  - Unit tests: `yarn test-unit path/to/file.test.js` where path *does not include* `test/unit/`
    - e.g. `yarn test-unit ui/handler/scroll_zoom.test.js`
- - Render tests: `yarn test-render tests=render-test-name` where render test name is a subdirectory of `test/integration/render-tests/`
-   - e.g. `yarn test-render tests=background-color/default`
+ - Render tests: `yarn test-render tests=render-test-name` where the render test name can be any substring in the `test/integration/render-tests/` subdirectories
+   - e.g. `yarn test-render tests=background-color/default` or `yarn test-render tests=line`
 
 See [`test/integration/README.md#running-specific-tests`](./integration/README.md#running-specific-tests).
 
