@@ -82,7 +82,6 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         const styleLayer = this.layers[0];
         const bucketFeatures = [];
         let circleSortKey = null;
-        console.log('bucket populated', this.layers, this);
 
         // Heatmap layers are handled in this bucket and have no evaluated properties, so we check our access
         if (styleLayer.type in ['circle', 'particle']) {
@@ -144,7 +143,6 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     }
 
     upload(context: Context) {
-        console.log('cicle bucket upload');
         if (!this.uploaded) {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
             this.indexBuffer = context.createIndexBuffer(this.indexArray);

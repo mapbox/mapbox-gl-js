@@ -117,7 +117,6 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
 
         painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
 
-        // console.log('particles draw', layer, programConfiguration);
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id,
             layoutVertexBuffer, indexBuffer, segments,

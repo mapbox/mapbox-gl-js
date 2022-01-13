@@ -202,7 +202,6 @@ class SourceExpressionBinder implements AttributeBinder {
     }
 
     upload(context: Context) {
-        console.log('upload - SourceExpressionBinder', );
         if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
             if (this.paintVertexBuffer && this.paintVertexBuffer.buffer) {
                 this.paintVertexBuffer.updateData(this.paintVertexArray);
@@ -566,7 +565,6 @@ export default class ProgramConfiguration {
 
     updatePaintBuffers(crossfade?: CrossfadeParameters) {
         this._buffers = [];
-        console.log('updatePaintBuffers');
 
         for (const property in this.binders) {
             const binder = this.binders[property];
@@ -578,7 +576,6 @@ export default class ProgramConfiguration {
                 this._buffers.push(binder.paintVertexBuffer);
             }
         }
-        console.log('end - updatePaintBuffers', this._buffers.length);
     }
 
     upload(context: Context) {
@@ -639,10 +636,8 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     }
 
     upload(context: Context) {
-        console.log('try to upload program configuration');
         if (!this.needsUpload) return;
         for (const layerId in this.programConfigurations) {
-            console.log('make actual upload program configuration', layerId);
             this.programConfigurations[layerId].upload(context);
         }
         this.needsUpload = false;
