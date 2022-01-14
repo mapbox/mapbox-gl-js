@@ -8,10 +8,10 @@ uniform mat4 u_matrix;
 uniform mat2 u_extrude_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
-uniform vec3 u_pos_offset;
 uniform float u_particle_scale;
 
 attribute vec2 a_pos;
+attribute vec3 a_pos_offset;
 
 #ifdef PROJECTION_GLOBE_VIEW
 attribute vec3 a_pos_3;         // Projected position on the globe

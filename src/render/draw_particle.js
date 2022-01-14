@@ -10,6 +10,8 @@ import {OverscaledTileID} from '../source/tile_id.js';
 import ColorMode from '../gl/color_mode.js';
 import ImageSource, { globalTexture } from '../source/image_source.js';
 import { globalSystem } from '../data/particle_system.js';
+import {createLayout} from '../util/struct_array.js';
+import {ParticlePosArray} from '../data/array_types.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -34,11 +36,9 @@ type TileRenderState = {
     tile: Tile
 };
 
-type SegmentsTileRenderState = {
-    segments: SegmentVector,
-    sortKey: number,
-    state: TileRenderState
-};
+const instanceLayout = createLayout([
+    {name: 'a_pos_offset', components: 3, type: 'Float32'}
+], 4);
 
 function drawParticles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
@@ -60,13 +60,16 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
     const stencilMode = StencilMode.disabled;
     const colorMode = cloudMode ? ColorMode.alphaBlended : ColorMode.additiveBlended;
 
-    //const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
+    let particleCount = 0;
+    const particlePositions = [];
+    const tileParticleRanges = [];
 
-    for (let i = 0; i < coords.length; i++) {
-        const coord = coords[i];
+    for (const coord of coords) {
+        const start = particleCount;
 
         const tile = sourceCache.getTile(coord);
         const bucket: ?ParticleBucket<*> = (tile.getBucket(layer): any);
+
         if (!bucket) continue;
 
         for (const feature of bucket.features) {
@@ -75,33 +78,6 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
 
         globalSystem.update();
 
-        const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const definesValues = particleDefinesValues(layer);
-
-        const program = painter.useProgram('particle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
-        const layoutVertexBuffer = bucket.layoutVertexBuffer;
-        const indexBuffer = bucket.indexBuffer;
-
-
-        /*
-        if (sortFeaturesByKey) {
-            const oldSegments = bucket.segments.get();
-            for (const segment of oldSegments) {
-                segmentsRenderStates.push({
-                    segments: new SegmentVector([segment]),
-                    sortKey: ((segment.sortKey: any): number),
-                    state
-                });
-            }
-        } else {
-            segmentsRenderStates.push({
-                segments: bucket.segments,
-                sortKey: 0,
-                state
-            });
-        }
-        */
-
         for (var emitter of globalSystem.emitters) {
             if (!emitter.tileId.equals(bucket.tileId)) {
                 continue;
@@ -109,67 +85,62 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
             if (emitter.paint.get('particle-emitter-type') != layer.paint.get('particle-emitter-type')) {
                 continue;
             }
-            for (var particle of emitter.particles) {
-
-                const uniformValues = particleUniformValues(painter, coord, tile, layer,
-                    emitter.location.x + emitter.zoom * particle.locationOffset.x,
-                    emitter.location.y + emitter.zoom * particle.locationOffset.y,
-                    emitter.elevation + particle.locationOffset.z,
-                    particle.opacity,
-                    particle.scale,
-                    particle.color);
-                const segments = bucket.segments;
-
-                const isGlobeProjection = painter.transform.projection.name === 'globe';
-                const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
-
-                if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, terrainOptions);
-
-                painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
-
-                if (globalTexture) {
-                    context.activeTexture.set(gl.TEXTURE0);
-                    globalTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-                }
-
-                program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                    uniformValues, layer.id,
-                    layoutVertexBuffer, indexBuffer, segments,
-                    layer.paint, painter.transform.zoom, programConfiguration);
-
+            for (const particle of emitter.particles) {
+                particleCount += 1;
+                particlePositions.push([
+                    emitter.location.x + emitter.zoom * particle.locationOffset.x, 
+                    emitter.location.y + emitter.zoom * particle.locationOffset.y, 
+                    emitter.elevation]);
             }
         }
 
+        tileParticleRanges.push({start: start, count: particleCount - start});
     }
 
-    /*
-    if (sortFeaturesByKey) {
-        segmentsRenderStates.sort((a, b) => a.sortKey - b.sortKey);
+    const tileParticleBuffers = [];
+
+    for (const tileRange of tileParticleRanges) {
+        // Create instance data
+        const positionData = new Float32Array(tileRange.count * 3);
+        for (let i = 0; i < tileRange.count; ++i) {
+            positionData[i * 3 + 0] = particlePositions[(tileRange.start + i) * 3 + 0];
+            positionData[i * 3 + 1] = particlePositions[(tileRange.start + i) * 3 + 1];
+            positionData[i * 3 + 2] = particlePositions[(tileRange.start + i) * 3 + 2];
+        }
+
+        const positionBuffer = context.createVertexBuffer(__TODO__, instanceLayout.members);
+        tileParticleBuffers.push(positionBuffer);
     }
-    */
 
-    //const isGlobeProjection = painter.transform.projection.name === 'globe';
-    //const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
+    let validTileIndex = 0;
+    for (let i = 0; i < coords.length; i++) {
+        const tile = sourceCache.getTile(coord);
+        const bucket: ?ParticleBucket<*> = (tile.getBucket(layer): any);
+        if (!bucket) continue;
 
-    //console.log(segmentsRenderStates);
+        const programConfiguration = bucket.programConfigurations.get(layer.id);
+        const definesValues = particleDefinesValues(layer);
+        if (gradientMode) {
+            definesValues.push("PARTICLE_GRADIENT");
+        }
+        const program = painter.useProgram('particle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
+        const layoutVertexBuffer = bucket.layoutVertexBuffer;
+        const indexBuffer = bucket.indexBuffer;
 
-    //const isGlobeProjection = painter.transform.projection.name === 'globe';
-    //const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
-
-
-    /*
-    for (const segmentsState of segmentsRenderStates) {
-        const {programConfiguration, program, layoutVertexBuffer, indexBuffer, uniformValues, tile} = segmentsState.state;
-        const segments = segmentsState.segments;
-
-        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, terrainOptions);
-
-        painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
-
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
+        const uniformValues = particleUniformValues(painter, coord, tile, layer, 
+            emitter.location.x + emitter.zoom * particle.locationOffset.x, 
+            emitter.location.y + emitter.zoom * particle.locationOffset.y, 
+            emitter.elevation,
+            particle.opacity,
+            particle.scale,
+            particle.color);
+            
+        program.drawInstanced(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id,
-            layoutVertexBuffer, indexBuffer, segments,
-            layer.paint, painter.transform.zoom, programConfiguration);
+            layoutVertexBuffer, indexBuffer, bucket.segments, tileParticleRanges[validTileIndex].count,
+            layer.paint, painter.transform.zoom, programConfiguration, tileParticleBuffers[validTileIndex]);
+
+        validTileIndex += 1;
     }
-    */
+
 }

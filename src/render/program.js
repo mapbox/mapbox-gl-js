@@ -246,6 +246,77 @@ class Program<Us: UniformBindings> {
                 segment.primitiveOffset * primitiveSize * 2);
         }
     }
+
+    drawInstanced(
+        context: Context,
+        drawMode: DrawMode,
+        depthMode: $ReadOnly<DepthMode>,
+        stencilMode: $ReadOnly<StencilMode>,
+        colorMode: $ReadOnly<ColorMode>,
+        cullFaceMode: $ReadOnly<CullFaceMode>,
+        uniformValues: UniformValues<Us>,
+        layerID: string,
+        layoutVertexBuffer: VertexBuffer,
+        indexBuffer: IndexBuffer,
+        segments: SegmentVector,
+        instanceCount: Number,
+        currentProperties: any,
+        zoom: ?number,
+        configuration: ?ProgramConfiguration,
+        instancedVertexBuffer: ?VertexBuffer) {
+
+        const gl = context.gl;
+
+        const ext = gl.getExtension('ANGLE_instanced_arrays');
+        if (!ext) return;
+
+        if (this.failedToCreate) return;
+
+        context.program.set(this.program);
+        context.setDepthMode(depthMode);
+        context.setStencilMode(stencilMode);
+        context.setColorMode(colorMode);
+        context.setCullFace(cullFaceMode);
+
+        for (const name of Object.keys(this.fixedUniforms)) {
+            this.fixedUniforms[name].set(uniformValues[name]);
+        }
+
+        if (configuration) {
+            configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
+        }
+
+        const primitiveSize = {
+            [gl.LINES]: 2,
+            [gl.TRIANGLES]: 3,
+            [gl.LINE_STRIP]: 1
+        }[drawMode];
+
+        const segment = segments.get()[0];
+        const vaos = segment.vaos || (segment.vaos = {});
+        const vao: VertexArrayObject = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
+
+        vao.bind(
+            context,
+            this,
+            layoutVertexBuffer,
+            configuration ? configuration.getPaintVertexBuffers() : [],
+            indexBuffer,
+            segment.vertexOffset,
+            undefined,
+            undefined,
+            instancedVertexBuffer,
+            ext
+        );
+
+        ext.drawElementsInstancedANGLE(
+            drawMode, // mode
+            segment.primitiveLength * primitiveSize, // count
+            gl.UNSIGNED_SHORT, // type
+            segment.primitiveOffset * primitiveSize * 2, // offset
+            instanceCount // instances
+            );
+    }
 }
 
 export default Program;

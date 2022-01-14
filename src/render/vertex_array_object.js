@@ -35,7 +35,9 @@ class VertexArrayObject {
          indexBuffer: ?IndexBuffer,
          vertexOffset: ?number,
          dynamicVertexBuffer: ?VertexBuffer,
-         dynamicVertexBuffer2: ?VertexBuffer) {
+         dynamicVertexBuffer2: ?VertexBuffer,
+         instancedVertexBuffer: ?VertexBuffer,
+         instanceExtension) {
 
         this.context = context;
 
@@ -58,7 +60,7 @@ class VertexArrayObject {
         );
 
         if (!context.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(program, layoutVertexBuffer, paintVertexBuffers, indexBuffer, vertexOffset, dynamicVertexBuffer, dynamicVertexBuffer2);
+            this.freshBind(program, layoutVertexBuffer, paintVertexBuffers, indexBuffer, vertexOffset, dynamicVertexBuffer, dynamicVertexBuffer2, instancedVertexBuffer, instanceExtension);
         } else {
             context.bindVertexArrayOES.set(this.vao);
 
@@ -74,6 +76,10 @@ class VertexArrayObject {
             if (dynamicVertexBuffer2) {
                 dynamicVertexBuffer2.bind();
             }
+
+            if (instancedVertexBuffer) {
+                instancedVertexBuffer.bind();
+            }
         }
     }
 
@@ -83,7 +89,9 @@ class VertexArrayObject {
               indexBuffer: ?IndexBuffer,
               vertexOffset: ?number,
               dynamicVertexBuffer: ?VertexBuffer,
-              dynamicVertexBuffer2: ?VertexBuffer) {
+              dynamicVertexBuffer2: ?VertexBuffer,
+              instancedVertexBuffer: ?VertexBuffer,
+              instanceExtension) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
@@ -129,6 +137,9 @@ class VertexArrayObject {
         if (dynamicVertexBuffer2) {
             dynamicVertexBuffer2.enableAttributes(gl, program);
         }
+        if (instancedVertexBuffer) {
+            instancedVertexBuffer.enableAttributes(gl, program);
+        }        
 
         layoutVertexBuffer.bind();
         layoutVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
@@ -147,6 +158,15 @@ class VertexArrayObject {
         if (dynamicVertexBuffer2) {
             dynamicVertexBuffer2.bind();
             dynamicVertexBuffer2.setVertexAttribPointers(gl, program, vertexOffset);
+        }
+        if (instancedVertexBuffer) {
+            instancedVertexBuffer.bind();
+            instancedVertexBuffer.setVertexAttribPointers(gl, program)
+
+            for (const attr of instancedVertexBuffer.attributes) {
+                const attribIndex = program.attributes[attr.name];
+                instanceExtension.vertexAttribDivisorANGLE(attribIndex, 1);
+            }
         }
 
         context.currentNumAttributes = numNextAttributes;
