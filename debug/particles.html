@@ -22,7 +22,7 @@
 <div id='checkboxes'>
     <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
     <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
-    <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
+    <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
     <label><input id='repaint-checkbox' type='checkbox'> repaint. FPS: </label><label id='fps'>0</label><br />
 </div>
 
@@ -68,6 +68,15 @@ map.on('load', function() {
         [-71.516, 37.936],
         [-80.425, 37.936]
         ]
+    });
+
+    map.addLayer({
+        id: 'radar-layer',
+        'type': 'raster',
+        'source': 'radar',
+        'paint': {
+        'raster-fade-duration': 0
+        }
     });
 
     map.addSource('citylight-budapest', {
@@ -321,19 +330,69 @@ map.on('load', function() {
             }
     });
 
-    /*
-    map.addLayer({
-        "id": "particles",
-        "type": "particle",
-        "source": "particles",
-        "paint": {
-            "particle-radius": 20,
-            "particle-color": ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
-            "particle-pitch-scale": "viewport",
-            "particle-pitch-alignment": "viewport"
-        }
+    map.addSource('clouds-budapest', {
+        "type": "geojson",
+        "data": {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.03656005859375,
+          47.52091047852614
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.04582977294922,
+          47.49679221520181
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.072608947753906,
+          47.475911695481756
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.071578979492188,
+          47.511403640384124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.093551635742188,
+          47.499111760583766
+        ]
+      }
+    }
+  ]
+}
     });
-    */
 
     map.addLayer({
         "id": "particles-citylight",
@@ -346,9 +405,17 @@ map.on('load', function() {
             "particle-emitter-velocity": 10.5,
             "particle-emitter-timeToLive": 10,
         }
-    });
+    }, 'landcover');
 
-    document.getElementById('terrain-checkbox').onclick();
+    map.addLayer({
+        "id": "particles-clouds",
+        "type": "particle",
+        "source": "clouds-budapest",
+        "paint": {
+            "particle-radius": 1.0,
+            "particle-emitter-type": "cloud",
+        }
+    });
 });
 
 document.getElementById('terrain-checkbox').onclick = function() {
@@ -376,38 +443,6 @@ document.getElementById('repaint-checkbox').onclick = function() {
         document.getElementById('fps').innerHTML = `0`;
     }
 };
-
-let hovered = [];
-window.addEventListener('mousemove', function(e) {
-    return;
-    e.point = new mapboxgl.Point(e.clientX, e.clientY);
-    //console.time('query');
-    const features = map.queryRenderedFeatures(e.point, {layers: ['particles']});
-    //console.timeEnd('query');
-
-    for (const feature of hovered) {
-        map.setFeatureState(feature, {
-            'hover-r': r,
-            'hover-g': r,
-            'hover-b': r
-        });
-    }
-
-    const seen = {};
-    hovered = features;
-    let i = 0;
-    for (const feature of hovered) {
-        if (seen[feature.id]) continue;
-
-        seen[feature.id] = true;
-        map.setFeatureState(feature, {
-            'hover-r': i === 0 ? 255 : r,
-            'hover-g': i === 1 ? 255 : r,
-            'hover-b': i >= 2 ? 255 : r
-        });
-        i++;
-    }
-});
 
 </script>
 </body>

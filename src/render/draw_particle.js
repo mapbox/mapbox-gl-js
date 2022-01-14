@@ -9,6 +9,7 @@ import SegmentVector from '../data/segment.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import ColorMode from '../gl/color_mode.js';
 import ImageSource, { globalTexture } from '../source/image_source.js';
+import { globalSystem } from '../data/particle_system.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -42,6 +43,8 @@ type SegmentsTileRenderState = {
 function drawParticles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
 
+    console.log('emitter type',  layer.paint.get('particle-emitter-type'), layer);
+    const cloudMode = layer.paint.get('particle-emitter-type') === 'cloud';
     const opacity = layer.paint.get('particle-opacity');
     const sortFeaturesByKey = layer.layout.get('particle-sort-key').constantOr(1) !== undefined;
 
@@ -55,9 +58,8 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     // Turn off stencil testing to allow circles to be drawn across boundaries,
     // so that large circles are not clipped to tiles
-    const gradientMode = true;
     const stencilMode = StencilMode.disabled;
-    const colorMode = gradientMode ? ColorMode.additiveBlended : painter.colorModeForRenderPass();
+    const colorMode = cloudMode ? ColorMode.alphaBlended : ColorMode.additiveBlended;
 
     //const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
 
@@ -67,7 +69,12 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
         const tile = sourceCache.getTile(coord);
         const bucket: ?ParticleBucket<*> = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        bucket.update();
+
+        for (const feature of bucket.features) {
+            globalSystem.addEmitter(undefined, feature.point, feature.tileId, feature.mercatorPoint, cloudMode);
+        }
+
+        globalSystem.update();
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const definesValues = particleDefinesValues(layer);
@@ -96,13 +103,19 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
         }
         */
 
-        for (var emitter of bucket.system.emitters) {
+        for (var emitter of globalSystem.emitters) {
+            if (!emitter.tileId.equals(bucket.tileId)) {
+                continue;
+            }
+            if (emitter.clouds != cloudMode) {
+                continue;
+            }
             for (var particle of emitter.particles) {
 
                 const uniformValues = particleUniformValues(painter, coord, tile, layer,
                     emitter.location.x + emitter.zoom * particle.locationOffset.x,
                     emitter.location.y + emitter.zoom * particle.locationOffset.y,
-                    emitter.elevation,
+                    emitter.elevation + particle.locationOffset.z,
                     particle.opacity,
                     particle.scale,
                     particle.color);
