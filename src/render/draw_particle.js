@@ -91,7 +91,7 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
                 particlePositions.push([
                     emitter.location.x + emitter.zoom * particle.locationOffset.x, 
                     emitter.location.y + emitter.zoom * particle.locationOffset.y, 
-                    emitter.elevation,
+                    emitter.elevation + particle.locationOffset.z,
                     particle.scale,
                     particle.color.r,
                     particle.color.g,

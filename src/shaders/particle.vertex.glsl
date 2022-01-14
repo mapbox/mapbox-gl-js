@@ -121,7 +121,7 @@ void main(void) {
     mat3 surface_vectors = mat3(1.0);
     // extract height offset for terrain, this returns 0 if terrain is not active
     float height = circle_elevation(circle_center);
-    //height += a_pos_offset.z * 0.00001;
+    height += a_offset_and_scale.z;
     vec4 world_center = vec4(circle_center, height, 1);
 #endif
 
