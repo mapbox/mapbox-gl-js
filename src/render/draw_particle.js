@@ -9,6 +9,7 @@ import SegmentVector from '../data/segment.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import ColorMode from '../gl/color_mode.js';
 import ImageSource, { globalTexture } from '../source/image_source.js';
+import { globalSystem } from '../data/particle_system.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -69,7 +70,12 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
         const tile = sourceCache.getTile(coord);
         const bucket: ?ParticleBucket<*> = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        bucket.update();
+        
+        for (const feature of bucket.features) {
+            globalSystem.addEmitter(undefined, feature.point, feature.tileId, feature.mercatorPoint);
+        }
+
+        globalSystem.update();
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const definesValues = particleDefinesValues(layer);
@@ -100,7 +106,10 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
         }
         */
 
-        for (var emitter of bucket.system.emitters) {
+        for (var emitter of globalSystem.emitters) {
+            if (!emitter.tileId.equals(bucket.tileId)) {
+                continue;
+            }
             for (var particle of emitter.particles) {
                 
                 const uniformValues = particleUniformValues(painter, coord, tile, layer, 

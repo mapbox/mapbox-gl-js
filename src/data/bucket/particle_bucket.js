@@ -31,167 +31,34 @@ import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
-// This should be moved to a separate file
-class ParticleSystem {
-    emitters: Array<Emitter>;
-    lastUpdate: any;
-    zoomLevel: number;
-
-    constructor() {
-        this.emitters = [];
-        this.lastUpdate = new Date().getTime();
-        this.update();
-        this.zoomLevel = 0;
-        console.count("new system");
-    }
-    
-    update() {
-        let now = new Date().getTime();
-        let sinceLastUpdateMillis = now - this.lastUpdate;
-        if (sinceLastUpdateMillis < 10) {
-            return;
-        }
-        this.lastUpdate = new Date().getTime();
-        for (const emitter of this.emitters) {
-            emitter.update();
-        }
-        //setTimeout(() => { this.update() }, 100);
-    }
-
-    addEmitter(feature: any, location: Point, zoom: number) {
-        /*
-        for (const emitter of this.emitters) {
-            if (emitter.feature.geometry.x == feature.geometry.x && emitter.feature.geometry.y == feature.geometry.y) {
-                emitter.location = location;
-                emitter.zoom = zoom;
-                console.log(feature.geometry);
-                return;
-            }
-        }
-        */
-        this.emitters.push(new Emitter(feature, location, zoom));
-    }
-
-}
-
-register('ParticleSystem', ParticleSystem);
-class Emitter {
-    particles: Array<Particle>;
-    location: Point;
-    feature: any;
-    elevation: number;
-    zoom: number;
-    maxParticleCount: number;
-    featureId: number;
-
-    constructor(feature: any, location: Point, zoom: number, featureId: number) {
-        this.feature = feature;
-        this.particles = [];
-        this.location = location;
-        this.elevation = 1.0;
-        this.zoom = zoom;
-        this.maxParticleCount = 50;
-        this.featureId = featureId;
-
-        while (this.particles.length < this.maxParticleCount) {
-            this.particles.push(new Particle());
-        }
-    }
-    
-    update() {
-        for (const particle of this.particles) {
-            particle.update();
-        }
-        this.particles = this.particles.filter(item => item.isAlive);
-    }
-
-}
-
-register('Emitter', Emitter);
-class Particle {
-    direction: any;
-    velocity: number;
-    timeToLive: number;
-
-    isAlive: boolean;
-    locationOffset: any;
-    elevation: number;
-    opacity: number;
-    scale: number;
-    birthTime: number;
-    color: any;
-
-    constructor() {
-        this.isAlive = true;
-        // Distribute position in a circle
-        const r = Math.sqrt(Math.random()) * 100.0;
-        const theta = Math.random() * 2 * Math.PI;
-        this.locationOffset = {
-            x: r * Math.cos(theta),
-            y: r * Math.sin(theta)
-        };
-
-        //var dir = Math.random();
-        var dir = 0.5;
-        this.direction = {x: dir, y: 1.0 - dir, z: 0.0 };
-
-        let minVelocity = 1.0;
-        let maxVelocity = 5.0;
-        this.velocity = Math.random() * (maxVelocity - minVelocity) + minVelocity;
-        this.velocity = 0;
-
-        this.opacity = 1.0;
-        this.scale = Math.random() * 1.0 + 0.5;
-        this.timeToLive = -1; //Math.random() * 2000 + 5000;
-        this.birthTime = new Date().getTime();
-        
-        const colorA = {r: 1.0, g: 1.0, b: 0.0};
-        const colorB = {r: 0.2, g: 0.2, b: 1.0};
-        const lerp = (a, b, t) => a * (1 - t) + b * t;
-        const randomColorProg = Math.pow(Math.random(), 2.0);
-        this.color = {
-            r: lerp(colorA.r, colorB.r, randomColorProg),
-            g: lerp(colorA.g, colorB.g, randomColorProg),
-            b: lerp(colorA.b, colorB.b, randomColorProg)
-        };
-
-        //console.count("New particle");
-    }
-    
-    update() {
-        let now = new Date().getTime();
-        let timeSinceBith = now - this.birthTime;
-        let lifePosition = this.timeToLive > 0 ? timeSinceBith / this.timeToLive : 0.5;
-        if (lifePosition >= 1.0) {
-            this.isAlive = false;
-        }
-
-        if (lifePosition < 0.2) {
-            this.opacity = (lifePosition / 0.2);
-        } else if (lifePosition > 0.8) {
-            this.opacity = (1.0 - lifePosition) / 0.2;
-        } else {
-            this.opacity = 1.0;
-        }
-        this.locationOffset.x += this.direction.x * this.velocity;
-        this.locationOffset.y += this.direction.y * this.velocity;
-    }
-
-}
-
-register('Particle', Particle);
-
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(
         (x * 2) + ((extrudeX + 1) / 2),
         (y * 2) + ((extrudeY + 1) / 2));
 }
 
-let globalSystem = new ParticleSystem();
+class FeatureWorkaround {
+    tileId: CanonicalTileID;
+    point: Point;
+    mercatorPoint: any;
+
+    constructor(tileId: CanonicalTileID, point: Point) {
+        this.tileId = tileId;
+        this.point = point;
+
+        const extent = 8192;
+        const z2 = 1 << tileId.z;
+        const lng = (tileId.x + point.x / extent) / z2;
+        const lat = (tileId.y + point.y / extent) / z2;
+        this.mercatorPoint = { x: lat, y: lng };
+    }
+}
+
+register('FeatureWorkaround', FeatureWorkaround);
+
 
 // TODO: Add comments
 class ParticleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
-    system: ParticleSystem;
     index: number;
     zoom: number;
     overscaling: number;
@@ -210,9 +77,10 @@ class ParticleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Buc
     programConfigurations: ProgramConfigurationSet<Layer>;
     segments: SegmentVector;
     uploaded: boolean;
-
+    features: Array<FeatureWorkaround>;
+    tileId: CanonicalTileID;
+    
     constructor(options: BucketParameters<Layer>) {
-        this.system = globalSystem;
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
@@ -225,12 +93,14 @@ class ParticleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Buc
         this.segments = new SegmentVector();
         this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
+        this.features = [];
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         const styleLayer = this.layers[0];
         const bucketFeatures = [];
         let circleSortKey = null;
+        this.tileId = canonical;
 
         // Heatmap layers are handled in this bucket and have no evaluated properties, so we check our access
         if (styleLayer.type === 'circle') {
@@ -273,14 +143,10 @@ class ParticleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Buc
             });
         }
 
-        if (this.system.zoomLevel != canonical.z) {
-            this.system.emitters = [];
-        }
-
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
             const feature = features[index].feature;
-            this.system.addEmitter(feature._feature, geometry[0][0], canonical.z);
+            this.features.push(new FeatureWorkaround(canonical, geometry[0][0]));
             this.addFeature(bucketFeature, geometry, index, options.availableImages, canonical);
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }

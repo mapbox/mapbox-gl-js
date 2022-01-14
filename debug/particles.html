@@ -375,37 +375,6 @@ document.getElementById('repaint-checkbox').onclick = function() {
     }
 };
 
-let hovered = [];
-window.addEventListener('mousemove', function(e) {
-    e.point = new mapboxgl.Point(e.clientX, e.clientY);
-    //console.time('query');
-    const features = map.queryRenderedFeatures(e.point, {layers: ['particles']});
-    //console.timeEnd('query');
-
-    for (const feature of hovered) {
-        map.setFeatureState(feature, {
-            'hover-r': r,
-            'hover-g': r,
-            'hover-b': r
-        });
-    }
-
-    const seen = {};
-    hovered = features;
-    let i = 0;
-    for (const feature of hovered) {
-        if (seen[feature.id]) continue;
-
-        seen[feature.id] = true;
-        map.setFeatureState(feature, {
-            'hover-r': i === 0 ? 255 : r,
-            'hover-g': i === 1 ? 255 : r,
-            'hover-b': i >= 2 ? 255 : r
-        });
-        i++;
-    }
-});
-
 </script>
 </body>
 </html>
