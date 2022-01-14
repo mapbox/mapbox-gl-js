@@ -116,8 +116,8 @@ class Particle {
         var dir = 0.9;
         this.direction = {x: dir, y: 1.0 - dir, z: 0.0 };
 
-        let minVelocity = clouds ? 0.01 : 0.0;
-        let maxVelocity = clouds ? 0.05 : 0.0;
+        let minVelocity = paint.get('particle-emitter-velocity-min').constantOr(0);
+        let maxVelocity = paint.get('particle-emitter-velocity-min').constantOr(0);
         this.velocity = Math.random() * (maxVelocity - minVelocity) + minVelocity;
 
         this.opacity = 1.0;
@@ -126,8 +126,8 @@ class Particle {
         this.minScale = clouds ? 10.0 : 0.5;
         this.scale = Math.random() * (this.maxScale - this.minScale) + this.minScale;
         
-        this.minTimeToLive = clouds ? 5000 : 5000;
-        this.maxTimeToLive = clouds ? 15000 : 10000;
+        this.minTimeToLive = paint.get('particle-emitter-ttl-min').constantOr(-1);
+        this.maxTimeToLive = paint.get('particle-emitter-ttl-max').constantOr(-1);
         this.timeToLive = Math.random() * (this.maxTimeToLive - this.minTimeToLive) + this.minTimeToLive;
         this.birthTime = new Date().getTime();
         

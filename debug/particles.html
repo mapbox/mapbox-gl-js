@@ -479,8 +479,10 @@ map.on('load', function() {
             "particle-radius": 1.0,
             "particle-emitter-type": "gradient",
             "particle-emitter-direction": [1, 1, 0],
-            "particle-emitter-velocity": 10.5,
-            "particle-emitter-timeToLive": 10,
+            "particle-emitter-ttl-min": 5000,
+            "particle-emitter-ttl-max": 10000,
+            "particle-emitter-velocity-min": 0,
+            "particle-emitter-velocity-max": 0,
         }
     }, 'landcover');
 
@@ -491,6 +493,10 @@ map.on('load', function() {
         "paint": {
             "particle-radius": 1.0,
             "particle-emitter-type": "cloud",
+            "particle-emitter-ttl-min": 5000,
+            "particle-emitter-ttl-max": 10000,
+            "particle-emitter-velocity-min": 0.1,
+            "particle-emitter-velocity-max": 0.3,
         }
     });
 });
