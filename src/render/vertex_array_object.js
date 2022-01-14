@@ -56,7 +56,8 @@ class VertexArrayObject {
             this.boundIndexBuffer !== indexBuffer ||
             this.boundVertexOffset !== vertexOffset ||
             this.boundDynamicVertexBuffer !== dynamicVertexBuffer ||
-            this.boundDynamicVertexBuffer2 !== dynamicVertexBuffer2
+            this.boundDynamicVertexBuffer2 !== dynamicVertexBuffer2 ||
+            instancedVertexBuffer
         );
 
         if (!context.extVertexArrayObject || isFreshBindRequired) {

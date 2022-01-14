@@ -22,7 +22,6 @@ export type ParticleUniformsType = {|
     'u_device_pixel_ratio': Uniform1f,
     'u_matrix': UniformMatrix4f,
     'u_image0': Uniform1i,
-    'u_pos_offset': Uniform3f,
     'u_particle_opacity': Uniform1f,
     'u_particle_scale': Uniform1f,
     'u_particle_color': Uniform3f,
@@ -36,7 +35,6 @@ const particleUniforms = (context: Context, locations: UniformLocations): Partic
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_image0': new Uniform1i(context, locations.u_image0),
-    'u_pos_offset': new Uniform3f(context, locations.u_pos_offset),
     'u_particle_opacity': new Uniform1f(context, locations.u_particle_opacity),
     'u_particle_scale': new Uniform1f(context, locations.u_particle_scale),
     'u_particle_color': new Uniform3f(context, locations.u_particle_color)

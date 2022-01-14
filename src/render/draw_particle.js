@@ -11,7 +11,7 @@ import ColorMode from '../gl/color_mode.js';
 import ImageSource, { globalTexture } from '../source/image_source.js';
 import { globalSystem } from '../data/particle_system.js';
 import {createLayout} from '../util/struct_array.js';
-import {ParticlePosArray} from '../data/array_types.js';
+import {ParticleInstanceArray} from '../data/array_types.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -101,19 +101,23 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
 
     for (const tileRange of tileParticleRanges) {
         // Create instance data
-        const positionData = new Float32Array(tileRange.count * 3);
+
+        const instanceArray = new ParticleInstanceArray();
+
         for (let i = 0; i < tileRange.count; ++i) {
-            positionData[i * 3 + 0] = particlePositions[(tileRange.start + i) * 3 + 0];
-            positionData[i * 3 + 1] = particlePositions[(tileRange.start + i) * 3 + 1];
-            positionData[i * 3 + 2] = particlePositions[(tileRange.start + i) * 3 + 2];
+            instanceArray.emplaceBack(
+                particlePositions[tileRange.start + i][0],
+                particlePositions[tileRange.start + i][1],
+                particlePositions[tileRange.start + i][2]);
         }
 
-        const positionBuffer = context.createVertexBuffer(__TODO__, instanceLayout.members);
+        const positionBuffer = context.createVertexBuffer(instanceArray, instanceLayout.members);
         tileParticleBuffers.push(positionBuffer);
     }
 
     let validTileIndex = 0;
     for (let i = 0; i < coords.length; i++) {
+        const coord = coords[i];
         const tile = sourceCache.getTile(coord);
         const bucket: ?ParticleBucket<*> = (tile.getBucket(layer): any);
         if (!bucket) continue;
@@ -128,12 +132,10 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
         const indexBuffer = bucket.indexBuffer;
 
         const uniformValues = particleUniformValues(painter, coord, tile, layer, 
-            emitter.location.x + emitter.zoom * particle.locationOffset.x, 
-            emitter.location.y + emitter.zoom * particle.locationOffset.y, 
-            emitter.elevation,
-            particle.opacity,
-            particle.scale,
-            particle.color);
+            1, //particle.opacity,
+            1, //particle.scale,
+            [1, 1, 1] //particle.color
+            );
             
         program.drawInstanced(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id,

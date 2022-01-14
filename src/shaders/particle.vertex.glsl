@@ -99,7 +99,7 @@ void main(void) {
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
     vec2 circle_center = floor(a_pos * 0.5);
-    circle_center += u_pos_offset.xy;
+    circle_center += a_pos_offset.xy;
     radius *= u_particle_scale;
 
 #ifdef PROJECTION_GLOBE_VIEW
@@ -119,7 +119,7 @@ void main(void) {
 #else 
     mat3 surface_vectors = mat3(1.0);
     // extract height offset for terrain, this returns 0 if terrain is not active
-    float height = circle_elevation(circle_center) + u_pos_offset.z;
+    float height = circle_elevation(circle_center) + a_pos_offset.z;
     vec4 world_center = vec4(circle_center, height, 1);
 #endif
 

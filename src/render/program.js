@@ -281,7 +281,6 @@ class Program<Us: UniformBindings> {
         for (const name of Object.keys(this.fixedUniforms)) {
             this.fixedUniforms[name].set(uniformValues[name]);
         }
-
         if (configuration) {
             configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
         }
