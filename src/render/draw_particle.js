@@ -55,10 +55,6 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     // Turn off stencil testing to allow circles to be drawn across boundaries,
     // so that large circles are not clipped to tiles
-    // console.log('particle-emitter-type', layer.paint.get('particle-emitter-type'));
-    // console.log('particle-emitter-direction', layer.paint.get('particle-emitter-direction'));
-    // console.log('particle-emitter-velocity', layer.paint.get('particle-emitter-velocity'));
-    // console.log('particle-emitter-timeToLive', layer.paint.get('particle-emitter-timeToLive'));
     const gradientMode = true;
     const stencilMode = StencilMode.disabled;
     const colorMode = gradientMode ? ColorMode.additiveBlended : painter.colorModeForRenderPass();
