@@ -58,9 +58,9 @@ test('Map', (t) => {
     t.test('warns when map container is not empty', (t) => {
         const container = window.document.createElement('div');
         container.textContent = 'Hello World';
-
         const stub = t.stub(console, 'warn');
-        new Map({container, testMode: true});
+
+        createMap(t, {container, testMode: true});
 
         t.ok(stub.calledOnce);
 

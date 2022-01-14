@@ -484,7 +484,7 @@ class Map extends Camera {
         }
 
         if (this._container.childNodes.length > 0) {
-            warnOnce(`The map container element should be empty; otherwise the map's interactivity will be negatively impacted. If you want to display a message when WebGL is not supported, use the Mapbox GL Supported plugin instead.`);
+            warnOnce(`The map container element should be empty, otherwise the map's interactivity will be negatively impacted. If you want to display a message when WebGL is not supported, use the Mapbox GL Supported plugin instead.`);
         }
 
         if (options.maxBounds) {
