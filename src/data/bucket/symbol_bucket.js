@@ -76,6 +76,7 @@ export type SingleCollisionBox = {
     elevation?: number;
     tileID?: OverscaledTileID;
 };
+import type {Mat4} from 'gl-matrix';
 
 export type CollisionArrays = {
     textBox?: SingleCollisionBox;
@@ -349,8 +350,8 @@ class SymbolBucket implements Bucket {
     featureSortOrder: Array<number>;
 
     collisionCircleArray: Array<number>;
-    placementInvProjMatrix: mat4;
-    placementViewportMatrix: mat4;
+    placementInvProjMatrix: Mat4;
+    placementViewportMatrix: Mat4;
 
     text: SymbolBuffers;
     icon: SymbolBuffers;

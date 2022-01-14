@@ -10,6 +10,8 @@ import type Transform from '../transform.js';
 import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
 import assert from 'assert';
 
+import type {Vec3} from 'gl-matrix';
+
 export type TileTransform = {
     scale: number,
     x: number,
@@ -134,7 +136,7 @@ export function getTilePoint(tileTransform: TileTransform, {x, y}: {x: number, y
         (y * tileTransform.scale - tileTransform.y) * EXTENT);
 }
 
-export function getTileVec3(tileTransform: TileTransform, coord: MercatorCoordinate, wrap: number = 0): vec3 {
+export function getTileVec3(tileTransform: TileTransform, coord: MercatorCoordinate, wrap: number = 0): Vec3 {
     const x = ((coord.x - wrap) * tileTransform.scale - tileTransform.x) * EXTENT;
     const y = (coord.y * tileTransform.scale - tileTransform.y) * EXTENT;
     return vec3.fromValues(x, y, altitudeFromMercatorZ(coord.z, coord.y));

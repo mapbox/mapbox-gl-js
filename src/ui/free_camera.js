@@ -3,31 +3,32 @@
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {degToRad, wrap, getColumn, setColumn} from '../util/util.js';
 import {vec3, vec4, quat, mat4} from 'gl-matrix';
+
 import type {Elevation} from '../terrain/elevation.js';
-
 import type {LngLatLike} from '../geo/lng_lat.js';
+import type {Mat4, Vec3, Vec4, Quat} from 'gl-matrix';
 
-function updateTransformOrientation(matrix: mat4, orientation: quat) {
+function updateTransformOrientation(matrix: Mat4, orientation: Quat) {
     // Take temporary copy of position to prevent it from being overwritten
-    const position: vec4 = getColumn(matrix, 3);
+    const position: Vec4 = getColumn(matrix, 3);
 
     // Convert quaternion to rotation matrix
     mat4.fromQuat(matrix, orientation);
     setColumn(matrix, 3, position);
 }
 
-function updateTransformPosition(matrix: mat4, position: vec3) {
+function updateTransformPosition(matrix: Mat4, position: Vec3) {
     setColumn(matrix, 3, [position[0], position[1], position[2], 1.0]);
 }
 
-function wrapCameraPosition(position: vec3 | MercatorCoordinate) {
+function wrapCameraPosition(position: Vec3 | MercatorCoordinate) {
     if (!position) return;
     const mercatorCoordinate = Array.isArray(position) ? new MercatorCoordinate(position[0], position[1], position[2]) : position;
     mercatorCoordinate.x = wrap(mercatorCoordinate.x, 0, 1);
     return mercatorCoordinate;
 }
 
-function orientationFromPitchBearing(pitch: number, bearing: number): quat {
+function orientationFromPitchBearing(pitch: number, bearing: number): Quat {
     // Both angles are considered to define CW rotation around their respective axes.
     // Values have to be negated to achieve the proper quaternion in left handed coordinate space
     const orientation = quat.identity([]);
@@ -36,7 +37,7 @@ function orientationFromPitchBearing(pitch: number, bearing: number): quat {
     return orientation;
 }
 
-export function orientationFromFrame(forward: vec3, up: vec3): ?quat {
+export function orientationFromFrame(forward: Vec3, up: Vec3): ?Quat {
     // Find right-vector of the resulting coordinate frame. Up-vector has to be
     // sanitized first in order to remove the roll component from the orientation
     const xyForward = [forward[0], forward[1], 0];
@@ -100,12 +101,12 @@ export function orientationFromFrame(forward: vec3, up: vec3): ?quat {
  * @see [Example: Animate the camera along a path](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-path/)
 */
 class FreeCameraOptions {
-    orientation: ?quat;
+    orientation: ?Quat;
     _position: ?MercatorCoordinate;
     _elevation: ?Elevation;
     _renderWorldCopies: boolean;
 
-    constructor(position: ?MercatorCoordinate, orientation: ?quat) {
+    constructor(position: ?MercatorCoordinate, orientation: ?Quat) {
         this.position = position;
         this.orientation = orientation;
     }
@@ -136,7 +137,7 @@ class FreeCameraOptions {
      * // Apply camera changes
      * map.setFreeCameraOptions(camera);
      */
-    lookAtPoint(location: LngLatLike, up?: vec3) {
+    lookAtPoint(location: LngLatLike, up?: Vec3) {
         this.orientation = null;
         if (!this.position) {
             return;
@@ -185,10 +186,10 @@ class FreeCameraOptions {
  */
 
 class FreeCamera {
-    _transform: mat4;
-    _orientation: quat;
+    _transform: Mat4;
+    _orientation: Quat;
 
-    constructor(position: ?vec3, orientation: ?quat) {
+    constructor(position: ?Vec3, orientation: ?Quat) {
         this._transform = mat4.identity([]);
         this._orientation = quat.identity([]);
 
@@ -207,20 +208,20 @@ class FreeCamera {
         return new MercatorCoordinate(pos[0], pos[1], pos[2]);
     }
 
-    get position(): vec3 {
-        const col: vec4 = getColumn(this._transform, 3);
+    get position(): Vec3 {
+        const col: Vec4 = getColumn(this._transform, 3);
         return [col[0], col[1], col[2]];
     }
 
-    set position(value: vec3) {
+    set position(value: Vec3) {
         updateTransformPosition(this._transform, value);
     }
 
-    get orientation(): quat {
+    get orientation(): Quat {
         return this._orientation;
     }
 
-    set orientation(value: quat) {
+    set orientation(value: Quat) {
         this._orientation = value;
         updateTransformOrientation(this._transform, this._orientation);
     }
@@ -240,20 +241,20 @@ class FreeCamera {
         updateTransformOrientation(this._transform, this._orientation);
     }
 
-    forward(): vec3 {
-        const col: vec4 = getColumn(this._transform, 2);
+    forward(): Vec3 {
+        const col: Vec4 = getColumn(this._transform, 2);
         // Forward direction is towards the negative Z-axis
         return [-col[0], -col[1], -col[2]];
     }
 
-    up(): vec3 {
-        const col: vec4 = getColumn(this._transform, 1);
+    up(): Vec3 {
+        const col: Vec4 = getColumn(this._transform, 1);
         // Up direction has to be flipped to point towards north
         return [-col[0], -col[1], -col[2]];
     }
 
-    right(): vec3 {
-        const col: vec4 = getColumn(this._transform, 0);
+    right(): Vec3 {
+        const col: Vec4 = getColumn(this._transform, 0);
         return [col[0], col[1], col[2]];
     }
 

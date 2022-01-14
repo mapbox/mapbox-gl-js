@@ -11,6 +11,7 @@ import {degToRad} from '../../util/util.js';
 
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type Context from '../../gl/context.js';
+import type {Vec3} from 'gl-matrix';
 
 export type SkyboxUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -40,7 +41,7 @@ const skyboxUniforms = (context: Context, locations: UniformLocations): SkyboxUn
 
 const skyboxUniformValues = (
     matrix: Float32Array,
-    sunDirection: vec3,
+    sunDirection: Vec3,
     cubemap: number,
     opacity: number,
     temporalOffset: number
@@ -64,7 +65,7 @@ const skyboxGradientUniforms = (context: Context, locations: UniformLocations): 
 
 const skyboxGradientUniformValues = (
     matrix: Float32Array,
-    centerDirection: vec3,
+    centerDirection: Vec3,
     radius: number, //degrees
     opacity: number,
     temporalOffset: number

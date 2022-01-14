@@ -8,6 +8,7 @@ import assert from 'assert';
 import {vec4, mat4} from 'gl-matrix';
 
 import type {Callback} from '../types/callback.js';
+import type {Mat4, Vec4} from 'gl-matrix';
 
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
@@ -664,11 +665,11 @@ export function b64DecodeUnicode(str: string) {
     }).join(''));
 }
 
-export function getColumn(matrix: mat4, col: number): vec4 {
+export function getColumn(matrix: Mat4, col: number): Vec4 {
     return [matrix[col * 4], matrix[col * 4 + 1], matrix[col * 4 + 2], matrix[col * 4 + 3]];
 }
 
-export function setColumn(matrix: mat4, col: number, values: vec4) {
+export function setColumn(matrix: Mat4, col: number, values: Vec4) {
     matrix[col * 4 + 0] = values[0];
     matrix[col * 4 + 1] = values[1];
     matrix[col * 4 + 2] = values[2];

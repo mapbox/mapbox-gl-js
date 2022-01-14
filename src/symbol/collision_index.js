@@ -10,6 +10,7 @@ import {mat4, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em.js';
 import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers.js';
 import assert from 'assert';
+import {OverscaledTileID} from '../source/tile_id.js';
 
 import * as projection from '../symbol/projection.js';
 import type Transform from '../geo/transform.js';
@@ -19,7 +20,7 @@ import type {
     SymbolLineVertexArray
 } from '../data/array_types.js';
 import type {FogState} from '../style/fog_helpers.js';
-import {OverscaledTileID} from '../source/tile_id.js';
+import type {Mat4} from 'gl-matrix';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around
@@ -71,7 +72,7 @@ class CollisionIndex {
         this.fogState = fogState;
     }
 
-    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
+    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: Mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
 
         let anchorX = collisionBox.projectedAnchorX;
@@ -126,9 +127,9 @@ class CollisionIndex {
                           lineVertexArray: SymbolLineVertexArray,
                           glyphOffsetArray: GlyphOffsetArray,
                           fontSize: number,
-                          posMatrix: mat4,
-                          labelPlaneMatrix: mat4,
-                          labelToScreenMatrix?: mat4,
+                          posMatrix: Mat4,
+                          labelPlaneMatrix: Mat4,
+                          labelToScreenMatrix?: Mat4,
                           showCollisionCircles: boolean,
                           pitchWithMap: boolean,
                           collisionGroupPredicate?: any,
@@ -383,7 +384,7 @@ class CollisionIndex {
         }
     }
 
-    projectAndGetPerspectiveRatio(posMatrix: mat4, x: number, y: number, elevation?: number, tileID: ?OverscaledTileID) {
+    projectAndGetPerspectiveRatio(posMatrix: Mat4, x: number, y: number, elevation?: number, tileID: ?OverscaledTileID) {
         const p = [x, y, elevation || 0, 1];
         let aboveHorizon = false;
         if (elevation || this.transform.pitch > 0) {
@@ -428,7 +429,7 @@ class CollisionIndex {
     * Use this function to render e.g. collision circles on the screen.
     *   example transformation: clipPos = glCoordMatrix * viewportMatrix * circle_pos
     */
-    getViewportMatrix(): mat4 {
+    getViewportMatrix(): Mat4 {
         const m = mat4.identity([]);
         mat4.translate(m, m, [-viewportPadding, -viewportPadding, 0.0]);
         return m;

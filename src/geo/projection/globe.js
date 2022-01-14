@@ -27,6 +27,8 @@ import GlobeTileTransform from './globe_tile_transform.js';
 import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from './far_z.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 
+import type {Mat4} from 'gl-matrix';
+
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
@@ -218,7 +220,7 @@ export function globeECEFUnitsToPixelScale(worldSize: number) {
     return wsRadius / localRadius;
 }
 
-export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): mat4 {
+export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): Mat4 {
     const wsRadius = worldSize / (2.0 * Math.PI);
     const scale = globeECEFUnitsToPixelScale(worldSize);
 
@@ -242,7 +244,7 @@ export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: 
     return posMatrix;
 }
 
-export function calculateGlobeMercatorMatrix(tr: Transform): mat4 {
+export function calculateGlobeMercatorMatrix(tr: Transform): Mat4 {
     const worldSize = tr.worldSize;
     const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
     const point = new Point(
@@ -288,7 +290,7 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
     return [gridBuffer, poleBuffer];
 }
 
-export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4) {
+export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Mat4) {
     const decode = globeDenormalizeECEF(globeTileBounds(id));
     const posMatrix = mat4.copy(new Float64Array(16), globeMatrix);
     mat4.mul(posMatrix, posMatrix, decode);

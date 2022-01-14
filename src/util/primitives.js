@@ -3,16 +3,18 @@
 import {vec3, vec4} from 'gl-matrix';
 import assert from 'assert';
 
-class Ray {
-    pos: vec3;
-    dir: vec3;
+import type {Vec3} from 'gl-matrix';
 
-    constructor(pos_: vec3, dir_: vec3) {
+class Ray {
+    pos: Vec3;
+    dir: Vec3;
+
+    constructor(pos_: Vec3, dir_: Vec3) {
         this.pos = pos_;
         this.dir = dir_;
     }
 
-    intersectsPlane(pt: vec3, normal: vec3, out: vec3): boolean {
+    intersectsPlane(pt: Vec3, normal: Vec3, out: Vec3): boolean {
         const D = vec3.dot(normal, this.dir);
 
         // ray is parallel to plane, so it misses
@@ -30,7 +32,7 @@ class Ray {
         return true;
     }
 
-    closestPointOnSphere(center: vec3, r: number, out: vec3): boolean {
+    closestPointOnSphere(center: Vec3, r: number, out: Vec3): boolean {
         assert(vec3.squaredLength(this.dir) > 0.0 && r >= 0.0);
 
         if (vec3.equals(this.pos, center) || r === 0.0) {
@@ -137,11 +139,11 @@ class Frustum {
 }
 
 class Aabb {
-    min: vec3;
-    max: vec3;
-    center: vec3;
+    min: Vec3;
+    max: Vec3;
+    center: Vec3;
 
-    constructor(min_: vec3, max_: vec3) {
+    constructor(min_: Vec3, max_: Vec3) {
         this.min = min_;
         this.max = max_;
         this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);

@@ -15,7 +15,9 @@ import type {LightPosition} from '../light.js';
 import {warnOnce, degToRad} from '../../util/util.js';
 import {vec3, quat} from 'gl-matrix';
 
-function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean): vec3 {
+import type {Vec3} from 'gl-matrix';
+
+function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean): Vec3 {
     const up = vec3.fromValues(0, 0, 1);
     const rotation = quat.identity(quat.create());
 

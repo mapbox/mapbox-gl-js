@@ -5,7 +5,7 @@ import {vec3} from 'gl-matrix';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import {clamp} from '../util/util.js';
 
-type vec3Like = vec3 | [number, number, number];
+import type {Vec3} from 'gl-matrix';
 
 class MipLevel {
     size: number;
@@ -37,7 +37,7 @@ class MipLevel {
     }
 }
 
-function aabbRayIntersect(min: vec3Like, max: vec3Like, pos: vec3Like, dir: vec3Like): ?number {
+function aabbRayIntersect(min: Vec3, max: Vec3, pos: Vec3, dir: Vec3): ?number {
     let tMin = 0;
     let tMax = Number.MAX_VALUE;
 
@@ -69,7 +69,7 @@ function aabbRayIntersect(min: vec3Like, max: vec3Like, pos: vec3Like, dir: vec3
     return tMin;
 }
 
-function triangleRayIntersect(ax, ay, az, bx, by, bz, cx, cy, cz, pos: vec3Like, dir: vec3Like): ?number {
+function triangleRayIntersect(ax, ay, az, bx, by, bz, cx, cy, cz, pos: Vec3, dir: Vec3): ?number {
     // Compute barycentric coordinates u and v to find the intersection
     const abX = bx - ax;
     const abY = by - ay;
@@ -178,13 +178,13 @@ export default class DemMinMaxQuadTree {
     }
 
     // Performs raycast against the tree root only. Min and max coordinates defines the size of the root node
-    raycastRoot(minx: number, miny: number, maxx: number, maxy: number, p: vec3Like, d: vec3Like, exaggeration: number = 1): ?number {
+    raycastRoot(minx: number, miny: number, maxx: number, maxy: number, p: Vec3, d: Vec3, exaggeration: number = 1): ?number {
         const min = [minx, miny, -aabbSkirtPadding];
         const max = [maxx, maxy, this.maximums[0] * exaggeration];
         return aabbRayIntersect(min, max, p, d);
     }
 
-    raycast(rootMinx: number, rootMiny: number, rootMaxx: number, rootMaxy: number, p: vec3Like, d: vec3Like, exaggeration: number = 1): ?number {
+    raycast(rootMinx: number, rootMiny: number, rootMaxx: number, rootMaxy: number, p: Vec3, d: Vec3, exaggeration: number = 1): ?number {
         if (!this.nodeCount)
             return null;
 

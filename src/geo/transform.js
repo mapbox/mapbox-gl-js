@@ -23,11 +23,12 @@ import type {PaddingOptions} from './edge_insets.js';
 import type Tile from '../source/tile.js';
 import type {ProjectionSpecification} from '../style-spec/types.js';
 import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
+import type {Vec3, Vec4, Quat} from 'gl-matrix';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
 
-type RayIntersectionResult = { p0: vec4, p1: vec4, t: number};
+type RayIntersectionResult = { p0: Vec4, p1: Vec4, t: number};
 type ElevationReference = "sea" | "ground";
 
 /**
@@ -498,7 +499,7 @@ class Transform {
         // Direct distance to the target position is used if the target position is above camera position.
         const centerOnTargetAltitude = this.rayIntersectionCoordinate(this.pointRayIntersection(this.centerPoint, position.toAltitude()));
 
-        let targetPosition: ?vec3;
+        let targetPosition: ?Vec3;
         if (position.z < this._camera.position[2]) {
             targetPosition = [centerOnTargetAltitude.x, centerOnTargetAltitude.y, centerOnTargetAltitude.z];
         } else {
@@ -550,7 +551,7 @@ class Transform {
         return options;
     }
 
-    _setCameraOrientation(orientation: quat): boolean {
+    _setCameraOrientation(orientation: Quat): boolean {
         // zero-length quaternions are not valid
         if (!quat.length(orientation))
             return false;
@@ -573,7 +574,7 @@ class Transform {
         return true;
     }
 
-    _setCameraPosition(position: vec3) {
+    _setCameraPosition(position: Vec3) {
         // Altitude must be clamped to respect min and max zoom
         const minWorldSize = this.zoomScale(this.minZoom) * this.tileSize;
         const maxWorldSize = this.zoomScale(this.maxZoom) * this.tileSize;
@@ -1115,7 +1116,7 @@ class Transform {
      *
      * @param {Point} p Viewport pixel co-ordinates.
      * @param {number} z Optional altitude of the map plane, defaulting to elevation at center.
-     * @returns {{ p0: vec4, p1: vec4, t: number }} p0,p1 are two points on the ray.
+     * @returns {{ p0: Vec4, p1: Vec4, t: number }} p0,p1 are two points on the ray.
      * t is the fractional extent along the ray at which the ray intersects the map plane.
      * @private
      */
@@ -1770,7 +1771,7 @@ class Transform {
         this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
     }
 
-    _computeCameraPosition(targetPixelsPerMeter: ?number): vec3 {
+    _computeCameraPosition(targetPixelsPerMeter: ?number): Vec3 {
         targetPixelsPerMeter = targetPixelsPerMeter || this.pixelsPerMeter;
         const pixelSpaceConversion = targetPixelsPerMeter / this.pixelsPerMeter;
 
@@ -1805,7 +1806,7 @@ class Transform {
      *
      * @param {vec3} translation The translation vector.
      */
-    _translateCameraConstrained(translation: vec3) {
+    _translateCameraConstrained(translation: Vec3) {
         const maxDistance = this._maxCameraBoundsDistance();
         // Define a ceiling in mercator Z
         const maxZ = maxDistance * Math.cos(this._pitch);
@@ -1946,7 +1947,7 @@ class Transform {
      * @param {number} zoomDelta Change in the zoom value.
      * @returns {number} The distance in mercator coordinates.
      */
-    zoomDeltaToMovement(center: vec3, zoomDelta: number): number {
+    zoomDeltaToMovement(center: Vec3, zoomDelta: number): number {
         const distance = vec3.length(vec3.sub([], this._camera.position, center));
         const relativeZoom = this._zoomFromMercatorZ(distance) + zoomDelta;
         return distance - this._mercatorZfromZoom(relativeZoom);

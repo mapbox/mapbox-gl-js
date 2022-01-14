@@ -14,6 +14,7 @@ import type {
     UniformLocations,
 } from '../uniform_binding.js';
 import type Context from '../../gl/context.js';
+import type {Vec3} from 'gl-matrix';
 
 export type SkyboxCaptureUniformsType = {|
     'u_matrix_3f': UniformMatrix3f,
@@ -35,7 +36,7 @@ const skyboxCaptureUniforms = (context: Context, locations: UniformLocations): S
 
 const skyboxCaptureUniformValues = (
     matrix: Float32Array,
-    sunDirection: vec3,
+    sunDirection: Vec3,
     sunIntensity: number,
     atmosphereColor: Color,
     atmosphereHaloColor: Color

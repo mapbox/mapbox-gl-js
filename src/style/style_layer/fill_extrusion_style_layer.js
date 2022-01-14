@@ -17,6 +17,7 @@ import type Transform from '../../geo/transform.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
+import type {Vec2, Vec4} from 'gl-matrix';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -188,7 +189,7 @@ function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Poin
     return closestDistance === Infinity ? false : closestDistance;
 }
 
-function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: ?DEMSampler, centroid: vec2, exaggeration: number, lat: number) {
+function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: ?DEMSampler, centroid: Vec2, exaggeration: number, lat: number) {
     if (demSampler) {
         return projectExtrusion3D(geometry, zBase, zTop, translation, m, demSampler, centroid, exaggeration, lat);
     } else {
@@ -261,7 +262,7 @@ function projectExtrusion2D(geometry: Array<Array<Point>>, zBase: number, zTop: 
  * - Texture querying is performed in texture pixel coordinates instead of  normalized uv coordinates.
  * - Height offset calculation for fill-extrusion-base is offset with -1 instead of -5 to prevent underground picking.
  */
-function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: DEMSampler, centroid: vec2, exaggeration: number, lat: number) {
+function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: DEMSampler, centroid: Vec2, exaggeration: number, lat: number) {
     const projectedBase = [];
     const projectedTop = [];
     const v = [0, 0, 0, 1];
@@ -299,13 +300,13 @@ function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: 
     return [projectedBase, projectedTop];
 }
 
-function toPoint(v: vec4): Point {
+function toPoint(v: Vec4): Point {
     const p = new Point(v[0], v[1]);
     p.z = v[2];
     return p;
 }
 
-function getTerrainHeightOffset(x: number, y: number, zBase: number, zTop: number, demSampler: DEMSampler, centroid: vec2, exaggeration: number, lat: number): { base: number, top: number} {
+function getTerrainHeightOffset(x: number, y: number, zBase: number, zTop: number, demSampler: DEMSampler, centroid: Vec2, exaggeration: number, lat: number): { base: number, top: number} {
     const ele = exaggeration * demSampler.getElevationAt(x, y, true, true);
     const flatRoof = centroid[0] !== 0;
     const centroidElevation = flatRoof ? centroid[1] === 0 ? exaggeration * elevationFromUint16(centroid[0]) : exaggeration * flatElevation(demSampler, centroid, lat) : ele;
@@ -321,7 +322,7 @@ function elevationFromUint16(n: number): number {
 }
 
 // Equivalent GPU side function is in _prelude_terrain.vertex.glsl
-function flatElevation(demSampler: DEMSampler, centroid: vec2, lat: number): number {
+function flatElevation(demSampler: DEMSampler, centroid: Vec2, lat: number): number {
     // Span and pos are packed two 16 bit uint16 values in fill_extrusion_bucket.js FillExtrusionBucket#encodeCentroid
     // pos is encoded by << by 3 bits thus dividing by 8 performs equivalent of right shifting it back.
     const posX = Math.floor(centroid[0] / 8);
@@ -358,7 +359,7 @@ function flatElevation(demSampler: DEMSampler, centroid: vec2, lat: number): num
     return z + Math.max(slopeX * spanX, slopeY * spanY);
 }
 
-function fourSample(demSampler: DEMSampler, posX: number, posY: number, offsetX: number, offsetY: number): vec4 {
+function fourSample(demSampler: DEMSampler, posX: number, posY: number, offsetX: number, offsetY: number): Vec4 {
     return [
         demSampler.getElevationAtPixel(posX, posY, true),
         demSampler.getElevationAtPixel(posX + offsetY, posY, true),

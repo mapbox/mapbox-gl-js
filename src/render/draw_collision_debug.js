@@ -17,13 +17,15 @@ import {mat4} from 'gl-matrix';
 import VertexBuffer from '../gl/vertex_buffer.js';
 import IndexBuffer from '../gl/index_buffer.js';
 
+import type {Mat4} from 'gl-matrix';
+
 export default drawCollisionDebug;
 
 type TileBatch = {
     circleArray: Array<number>,
     circleOffset: number,
-    transform: mat4,
-    invTransform: mat4
+    transform: Mat4,
+    invTransform: Mat4
 };
 
 let quadTriangles: ?QuadTriangleArray;

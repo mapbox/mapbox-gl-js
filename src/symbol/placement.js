@@ -19,6 +19,7 @@ import type FeatureIndex from '../data/feature_index.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type {TextAnchor} from './symbol_layout.js';
 import type {FogState} from '../style/fog_helpers.js';
+import type {Mat4} from 'gl-matrix';
 
 class OpacityState {
     opacity: number;
@@ -71,8 +72,8 @@ class JointPlacement {
 
 class CollisionCircleArray {
     // Stores collision circles and placement matrices of a bucket for debug rendering.
-    invProjMatrix: mat4;
-    viewportMatrix: mat4;
+    invProjMatrix: Mat4;
+    viewportMatrix: Mat4;
     circles: Array<number>;
 
     constructor() {
@@ -167,9 +168,9 @@ export type VariableOffset = {
 type TileLayerParameters = {
     bucket: SymbolBucket,
     layout: any,
-    posMatrix: mat4,
-    textLabelPlaneMatrix: mat4,
-    labelToScreenMatrix: mat4,
+    posMatrix: Mat4,
+    textLabelPlaneMatrix: Mat4,
+    labelToScreenMatrix: Mat4,
     scale: number,
     textPixelRatio: number,
     holdingForFade: boolean,
@@ -326,7 +327,7 @@ export class Placement {
 
     attemptAnchorPlacement(anchor: TextAnchor, textBox: SingleCollisionBox, width: number, height: number,
                            textScale: number, rotateWithMap: boolean, pitchWithMap: boolean, textPixelRatio: number,
-                           posMatrix: mat4, collisionGroup: CollisionGroup, textAllowOverlap: boolean,
+                           posMatrix: Mat4, collisionGroup: CollisionGroup, textAllowOverlap: boolean,
                            symbolInstance: SymbolInstance, symbolIndex: number, bucket: SymbolBucket,
                            orientation: number, iconBox: ?SingleCollisionBox, textSize: any, iconSize: any): ?{ shift: Point, placedGlyphBoxes: { box: Array<number>, offscreen: boolean } }  {
 

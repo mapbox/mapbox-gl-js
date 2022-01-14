@@ -14,6 +14,8 @@ import type {
     SymbolLineVertexArray,
     SymbolDynamicLayoutArray
 } from '../data/array_types.js';
+import type {Mat4, Vec3, Vec4} from 'gl-matrix';
+
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
 import {calculateGlobeMatrix, globeDenormalizeECEF, globeTileBounds} from '../geo/projection/globe.js';
@@ -75,7 +77,7 @@ const maxTangent = Math.tan(85 * Math.PI / 180);
 /*
  * Returns a matrix for converting from tile units to the correct label coordinate space.
  */
-function getLabelPlaneMatrix(posMatrix: mat4,
+function getLabelPlaneMatrix(posMatrix: Mat4,
                              tileID: CanonicalTileID,
                              pitchWithMap: boolean,
                              rotateWithMap: boolean,
@@ -111,7 +113,7 @@ function getLabelPlaneMatrix(posMatrix: mat4,
 /*
  * Returns a matrix for converting from the correct label coordinate space to gl coords.
  */
-function getGlCoordMatrix(posMatrix: mat4,
+function getGlCoordMatrix(posMatrix: Mat4,
                           tileID: CanonicalTileID,
                           pitchWithMap: boolean,
                           rotateWithMap: boolean,
@@ -141,7 +143,7 @@ function getGlCoordMatrix(posMatrix: mat4,
     }
 }
 
-function project(point: Point, matrix: mat4, elevation: ?number = 0) {
+function project(point: Point, matrix: Mat4, elevation: ?number = 0) {
     const pos = [point.x, point.y, elevation, 1];
     if (elevation) {
         vec4.transformMat4(pos, pos, matrix);
@@ -176,11 +178,11 @@ function isVisible(anchorPos: [number, number, number, number],
  *  This is only run on labels that are aligned with lines. Horizontal labels are handled entirely in the shader.
  */
 function updateLineLabels(bucket: SymbolBucket,
-                          posMatrix: mat4,
+                          posMatrix: Mat4,
                           painter: Painter,
                           isText: boolean,
-                          labelPlaneMatrix: mat4,
-                          glCoordMatrix: mat4,
+                          labelPlaneMatrix: Mat4,
+                          glCoordMatrix: Mat4,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
                           getElevation: ?((p: Point) => Array<number>),
@@ -278,7 +280,7 @@ function updateLineLabels(bucket: SymbolBucket,
     }
 }
 
-function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffsetArray, lineOffsetX: number, lineOffsetY: number, flip: boolean, anchorPoint: Point, tileAnchorPoint: Point, symbol: any, lineVertexArray: SymbolLineVertexArray, labelPlaneMatrix: mat4, projectionCache: any, getElevation: ?((p: Point) => Array<number>), returnPathInTileCoords: ?boolean, projection: Projection, tileID: OverscaledTileID) {
+function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffsetArray, lineOffsetX: number, lineOffsetY: number, flip: boolean, anchorPoint: Point, tileAnchorPoint: Point, symbol: any, lineVertexArray: SymbolLineVertexArray, labelPlaneMatrix: Mat4, projectionCache: any, getElevation: ?((p: Point) => Array<number>), returnPathInTileCoords: ?boolean, projection: Projection, tileID: OverscaledTileID) {
     const glyphEndIndex = symbol.glyphStartIndex + symbol.numGlyphs;
     const lineStartIndex = symbol.lineStartIndex;
     const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
@@ -411,7 +413,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
     return {};
 }
 
-function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: mat4, projection: Projection, getElevation: ?((p: Point) => Array<number>)): vec3 {
+function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Mat4, projection: Projection, getElevation: ?((p: Point) => Array<number>)): Vec3 {
     const point = projection.projectTilePoint(p.x, p.y, tileID);
     if (!getElevation) {
         return project(point, posMatrix, point.z);
@@ -421,7 +423,7 @@ function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: ma
     return project(new Point(point.x + elevation[0], point.y + elevation[1]), posMatrix, point.z + elevation[2]);
 }
 
-function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Point, minimumLength: number, projectionMatrix: mat4, getElevation: ?((p: Point) => Array<number>), projection: Projection, tileID: CanonicalTileID) {
+function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Point, minimumLength: number, projectionMatrix: Mat4, getElevation: ?((p: Point) => Array<number>), projection: Projection, tileID: CanonicalTileID) {
     // We are assuming "previousTilePoint" won't project to a point within one unit of the camera plane
     // If it did, that would mean our label extended all the way out from within the viewport to a (very distant)
     // point near the plane of the camera. We wouldn't be able to render the label anyway once it crossed the
@@ -448,7 +450,7 @@ function placeGlyphAlongLine(offsetX: number,
                              lineStartIndex: number,
                              lineEndIndex: number,
                              lineVertexArray: SymbolLineVertexArray,
-                             labelPlaneMatrix: mat4,
+                             labelPlaneMatrix: Mat4,
                              projectionCache: {[_: number]: Point},
                              getElevation: ?((p: Point) => Array<number>),
                              returnPathInTileCoords: ?boolean,
@@ -577,7 +579,7 @@ function hideGlyphs(num: number, dynamicLayoutVertexArray: SymbolDynamicLayoutAr
 
 // For line label layout, we're not using z output and our w input is always 1
 // This custom matrix transformation ignores those components to make projection faster
-function xyTransformMat4(out: vec4, a: vec4, m: mat4) {
+function xyTransformMat4(out: Vec4, a: Vec4, m: Mat4) {
     const x = a[0], y = a[1];
     out[0] = m[0] * x + m[4] * y + m[12];
     out[1] = m[1] * x + m[5] * y + m[13];

@@ -17,6 +17,8 @@ import type Painter from './painter.js';
 import {vec3, mat3, mat4} from 'gl-matrix';
 import assert from 'assert';
 
+import type {Mat4, Vec3} from 'gl-matrix';
+
 export default drawSky;
 
 const TRANSITION_OPACITY_ZOOM_START = 7;
@@ -109,7 +111,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
 
-function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, faceRotate: mat4, sunDirection: vec3, i: number) {
+function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, faceRotate: Mat4, sunDirection: Vec3, i: number) {
     const gl = context.gl;
 
     const atmosphereColor = layer.paint.get('sky-atmosphere-color');

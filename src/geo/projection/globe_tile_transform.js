@@ -17,6 +17,8 @@ import {
     GLOBE_RADIUS,
 } from './globe.js';
 
+import type {Mat4, Vec3} from 'gl-matrix';
+
 export default class GlobeTileTransform {
     _tr: Transform;
     _worldSize: number;
@@ -28,12 +30,12 @@ export default class GlobeTileTransform {
         this._globeMatrix = calculateGlobeMatrix(tr, worldSize);
     }
 
-    createTileMatrix(id: UnwrappedTileID): mat4 {
+    createTileMatrix(id: UnwrappedTileID): Mat4 {
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
         return mat4.multiply([], this._globeMatrix, decode);
     }
 
-    createInversionMatrix(id: UnwrappedTileID): mat4 {
+    createInversionMatrix(id: UnwrappedTileID): Mat4 {
         const identity = mat4.identity(new Float64Array(16));
 
         const center = this._tr.center;
@@ -58,7 +60,7 @@ export default class GlobeTileTransform {
         return mat4.multiply(matrix, matrix, identity);
     }
 
-    upVector(id: CanonicalTileID, x: number, y: number): vec3 {
+    upVector(id: CanonicalTileID, x: number, y: number): Vec3 {
         const tiles = 1 << id.z;
         const mercX = (x / EXTENT + id.x) / tiles;
         const mercY = (y / EXTENT + id.y) / tiles;
