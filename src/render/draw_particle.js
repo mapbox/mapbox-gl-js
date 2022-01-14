@@ -43,11 +43,9 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
     if (painter.renderPass !== 'translucent') return;
 
     const opacity = layer.paint.get('particle-opacity');
-    const strokeWidth = layer.paint.get('particle-stroke-width');
-    const strokeOpacity = layer.paint.get('particle-stroke-opacity');
     const sortFeaturesByKey = layer.layout.get('particle-sort-key').constantOr(1) !== undefined;
 
-    if (opacity.constantOr(1) === 0 && (strokeWidth.constantOr(1) === 0 || strokeOpacity.constantOr(1) === 0)) {
+    if (opacity.constantOr(1) === 0 ) {
         return;
     }
 
@@ -57,6 +55,10 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     // Turn off stencil testing to allow circles to be drawn across boundaries,
     // so that large circles are not clipped to tiles
+    // console.log('particle-emitter-type', layer.paint.get('particle-emitter-type'));
+    // console.log('particle-emitter-direction', layer.paint.get('particle-emitter-direction'));
+    // console.log('particle-emitter-velocity', layer.paint.get('particle-emitter-velocity'));
+    // console.log('particle-emitter-timeToLive', layer.paint.get('particle-emitter-timeToLive'));
     const gradientMode = true;
     const stencilMode = StencilMode.disabled;
     const colorMode = gradientMode ? ColorMode.additiveBlended : painter.colorModeForRenderPass();
@@ -73,9 +75,7 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const definesValues = particleDefinesValues(layer);
-        if (gradientMode) {
-            definesValues.push("PARTICLE_GRADIENT");
-        }
+
         const program = painter.useProgram('particle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
@@ -102,28 +102,28 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
 
         for (var emitter of bucket.system.emitters) {
             for (var particle of emitter.particles) {
-                
-                const uniformValues = particleUniformValues(painter, coord, tile, layer, 
-                    emitter.location.x + emitter.zoom * particle.locationOffset.x, 
-                    emitter.location.y + emitter.zoom * particle.locationOffset.y, 
+
+                const uniformValues = particleUniformValues(painter, coord, tile, layer,
+                    emitter.location.x + emitter.zoom * particle.locationOffset.x,
+                    emitter.location.y + emitter.zoom * particle.locationOffset.y,
                     emitter.elevation,
                     particle.opacity,
                     particle.scale,
                     particle.color);
                 const segments = bucket.segments;
-        
+
                 const isGlobeProjection = painter.transform.projection.name === 'globe';
                 const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
 
                 if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, terrainOptions);
-        
+
                 painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
 
                 if (globalTexture) {
                     context.activeTexture.set(gl.TEXTURE0);
                     globalTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
                 }
-        
+
                 program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                     uniformValues, layer.id,
                     layoutVertexBuffer, indexBuffer, segments,

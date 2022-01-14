@@ -341,8 +341,10 @@ map.on('load', function() {
         "source": "citylight-budapest",
         "paint": {
             "particle-radius": 1.0,
-            "particle-pitch-scale": "viewport",
-            "particle-pitch-alignment": "viewport"
+            "particle-emitter-type": "gradient",
+            "particle-emitter-direction": [1, 1, 0],
+            "particle-emitter-velocity": 10.5,
+            "particle-emitter-timeToLive": 10,
         }
     });
 
@@ -377,6 +379,7 @@ document.getElementById('repaint-checkbox').onclick = function() {
 
 let hovered = [];
 window.addEventListener('mousemove', function(e) {
+    return;
     e.point = new mapboxgl.Point(e.clientX, e.clientY);
     //console.time('query');
     const features = map.queryRenderedFeatures(e.point, {layers: ['particles']});

@@ -350,13 +350,12 @@ export type ParticleLayerSpecification = {|
         "particle-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "particle-blur"?: DataDrivenPropertyValueSpecification<number>,
         "particle-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "particle-emitter-velocity"?: DataDrivenPropertyValueSpecification<number>,
+        "particle-emitter-timeToLive"?: DataDrivenPropertyValueSpecification<number>,
         "particle-translate"?: PropertyValueSpecification<[number, number]>,
+        "particle-emitter-direction"?: PropertyValueSpecification<[number, number, number]>,
         "particle-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
-        "particle-pitch-scale"?: PropertyValueSpecification<"map" | "viewport">,
-        "particle-pitch-alignment"?: PropertyValueSpecification<"map" | "viewport">,
-        "particle-stroke-width"?: DataDrivenPropertyValueSpecification<number>,
-        "particle-stroke-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
-        "particle-stroke-opacity"?: DataDrivenPropertyValueSpecification<number>
+        "particle-emitter-type"?: PropertyValueSpecification<"cloud" | "gradient">,
     |}
 |}
 

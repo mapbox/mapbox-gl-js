@@ -32,13 +32,12 @@ export type PaintProps = {|
     "particle-color": DataDrivenProperty<Color>,
     "particle-blur": DataDrivenProperty<number>,
     "particle-opacity": DataDrivenProperty<number>,
+    "particle-emitter-velocity": DataDrivenProperty<number>,
+    "particle-emitter-timeToLive": DataDrivenProperty<number>,
     "particle-translate": DataConstantProperty<[number, number]>,
+    "particle-emitter-direction": DataConstantProperty<[number, number, number]>,
     "particle-translate-anchor": DataConstantProperty<"map" | "viewport">,
-    "particle-pitch-scale": DataConstantProperty<"map" | "viewport">,
-    "particle-pitch-alignment": DataConstantProperty<"map" | "viewport">,
-    "particle-stroke-width": DataDrivenProperty<number>,
-    "particle-stroke-color": DataDrivenProperty<Color>,
-    "particle-stroke-opacity": DataDrivenProperty<number>,
+    "particle-emitter-type": DataConstantProperty<"cloud" | "gradient">,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -46,13 +45,12 @@ const paint: Properties<PaintProps> = new Properties({
     "particle-color": new DataDrivenProperty(styleSpec["paint_particle"]["particle-color"]),
     "particle-blur": new DataDrivenProperty(styleSpec["paint_particle"]["particle-blur"]),
     "particle-opacity": new DataDrivenProperty(styleSpec["paint_particle"]["particle-opacity"]),
+    "particle-emitter-velocity": new DataDrivenProperty(styleSpec["paint_particle"]["particle-emitter-velocity"]),
+    "particle-emitter-timeToLive": new DataDrivenProperty(styleSpec["paint_particle"]["particle-emitter-timeToLive"]),
     "particle-translate": new DataConstantProperty(styleSpec["paint_particle"]["particle-translate"]),
+    "particle-emitter-direction": new DataConstantProperty(styleSpec["paint_particle"]["particle-emitter-direction"]),
     "particle-translate-anchor": new DataConstantProperty(styleSpec["paint_particle"]["particle-translate-anchor"]),
-    "particle-pitch-scale": new DataConstantProperty(styleSpec["paint_particle"]["particle-pitch-scale"]),
-    "particle-pitch-alignment": new DataConstantProperty(styleSpec["paint_particle"]["particle-pitch-alignment"]),
-    "particle-stroke-width": new DataDrivenProperty(styleSpec["paint_particle"]["particle-stroke-width"]),
-    "particle-stroke-color": new DataDrivenProperty(styleSpec["paint_particle"]["particle-stroke-color"]),
-    "particle-stroke-opacity": new DataDrivenProperty(styleSpec["paint_particle"]["particle-stroke-opacity"]),
+    "particle-emitter-type": new DataConstantProperty(styleSpec["paint_particle"]["particle-emitter-type"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types
