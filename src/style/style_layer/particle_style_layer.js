@@ -41,7 +41,6 @@ class ParticleStyleLayer extends StyleLayer {
     queryRadius(bucket: Bucket): number {
         const circleBucket: CircleBucket<ParticleStyleLayer> = (bucket: any);
         return getMaximumPaintValue('particle-radius', this, circleBucket) +
-            getMaximumPaintValue('particle-stroke-width', this, circleBucket) +
             translateDistance(this.paint.get('particle-translate'));
     }
 
@@ -59,12 +58,10 @@ class ParticleStyleLayer extends StyleLayer {
             this.paint.get('particle-translate-anchor'),
             transform.angle, queryGeometry.pixelToTileUnitsFactor);
 
-        const size = this.paint.get('particle-radius').evaluate(feature, featureState) +
-            this.paint.get('particle-stroke-width').evaluate(feature, featureState);
+        const size = this.paint.get('particle-radius').evaluate(feature, featureState);
 
         return queryIntersectsCircle(queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
-            this.paint.get('particle-pitch-alignment') === 'map',
-            this.paint.get('particle-pitch-scale') === 'map', translation, size);
+            false, false, translation, size);
     }
 
     getProgramIds() {

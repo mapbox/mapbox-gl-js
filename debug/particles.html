@@ -471,28 +471,16 @@ map.on('load', function() {
 }
     });
 
-    /*
-    map.addLayer({
-        "id": "particles",
-        "type": "particle",
-        "source": "particles",
-        "paint": {
-            "particle-radius": 20,
-            "particle-color": ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
-            "particle-pitch-scale": "viewport",
-            "particle-pitch-alignment": "viewport"
-        }
-    });
-    */
-
     map.addLayer({
         "id": "particles-citylight",
         "type": "particle",
         "source": "citylight-budapest",
         "paint": {
             "particle-radius": 1.0,
-            "particle-pitch-scale": "viewport",
-            "particle-pitch-alignment": "viewport"
+            "particle-emitter-type": "gradient",
+            "particle-emitter-direction": [1, 1, 0],
+            "particle-emitter-velocity": 10.5,
+            "particle-emitter-timeToLive": 10,
         }
     }, 'landcover');
 
@@ -502,8 +490,7 @@ map.on('load', function() {
         "source": "clouds-budapest",
         "paint": {
             "particle-radius": 1.0,
-            "particle-pitch-scale": "viewport",
-            "particle-pitch-alignment": "viewport"
+            "particle-emitter-type": "cloud",
         }
     });
 });

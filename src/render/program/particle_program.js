@@ -56,16 +56,11 @@ const particleUniformValues = (
 ): UniformValues<ParticleUniformsType> => {
     const transform = painter.transform;
 
-    let extrudeScale;
-    if (layer.paint.get('particle-pitch-alignment') === 'map') {
-        extrudeScale = transform.calculatePixelsToTileUnitsMatrix(tile);
-    } else {
-        extrudeScale = new Float32Array([
-            transform.pixelsToGLUnits[0],
-            0,
-            0,
-            transform.pixelsToGLUnits[1]]);
-    }
+    const extrudeScale = new Float32Array([
+        transform.pixelsToGLUnits[0],
+        0,
+        0,
+        transform.pixelsToGLUnits[1]]);
 
     return {
         'u_camera_to_center_distance': transform.cameraToCenterDistance,
@@ -74,10 +69,8 @@ const particleUniformValues = (
             tile,
             layer.paint.get('particle-translate'),
             layer.paint.get('particle-translate-anchor')),
-        'u_device_pixel_ratio': browser.devicePixelRatio,
-        'u_extrude_scale': extrudeScale,
         'u_image0': 0,
-        'u_pos_offset': [x,y,z],
+        'u_pos_offset': [x, y, z],
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_extrude_scale': extrudeScale,
         'u_particle_opacity': particleOpacity,
@@ -88,9 +81,7 @@ const particleUniformValues = (
 
 const particleDefinesValues = (layer: ParticleStyleLayer): ParticleDefinesType[] => {
     const values = [];
-    if (layer.paint.get('particle-pitch-alignment') === 'map') values.push('PITCH_WITH_MAP');
-    if (layer.paint.get('particle-pitch-scale') === 'map') values.push('SCALE_WITH_MAP');
-
+    if (layer.paint.get('particle-emitter-type') === 'gradient') values.push('PARTICLE_GRADIENT');
     return values;
 };
 

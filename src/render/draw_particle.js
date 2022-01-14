@@ -43,13 +43,12 @@ type SegmentsTileRenderState = {
 function drawParticles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
 
-    const cloudMode = (sourceCache.id == "other:clouds-budapest");
+    console.log('emitter type',  layer.paint.get('particle-emitter-type'), layer);
+    const cloudMode = layer.paint.get('particle-emitter-type') === 'cloud';
     const opacity = layer.paint.get('particle-opacity');
-    const strokeWidth = layer.paint.get('particle-stroke-width');
-    const strokeOpacity = layer.paint.get('particle-stroke-opacity');
     const sortFeaturesByKey = layer.layout.get('particle-sort-key').constantOr(1) !== undefined;
 
-    if (opacity.constantOr(1) === 0 && (strokeWidth.constantOr(1) === 0 || strokeOpacity.constantOr(1) === 0)) {
+    if (opacity.constantOr(1) === 0 ) {
         return;
     }
 
@@ -70,7 +69,7 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
         const tile = sourceCache.getTile(coord);
         const bucket: ?ParticleBucket<*> = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        
+
         for (const feature of bucket.features) {
             globalSystem.addEmitter(undefined, feature.point, feature.tileId, feature.mercatorPoint, cloudMode);
         }
@@ -79,9 +78,7 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const definesValues = particleDefinesValues(layer);
-        if (!cloudMode) {
-            definesValues.push("PARTICLE_GRADIENT");
-        }
+
         const program = painter.useProgram('particle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
@@ -114,28 +111,28 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
                 continue;
             }
             for (var particle of emitter.particles) {
-                
-                const uniformValues = particleUniformValues(painter, coord, tile, layer, 
-                    emitter.location.x + emitter.zoom * particle.locationOffset.x, 
-                    emitter.location.y + emitter.zoom * particle.locationOffset.y, 
+
+                const uniformValues = particleUniformValues(painter, coord, tile, layer,
+                    emitter.location.x + emitter.zoom * particle.locationOffset.x,
+                    emitter.location.y + emitter.zoom * particle.locationOffset.y,
                     emitter.elevation + particle.locationOffset.z,
                     particle.opacity,
                     particle.scale,
                     particle.color);
                 const segments = bucket.segments;
-        
+
                 const isGlobeProjection = painter.transform.projection.name === 'globe';
                 const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
 
                 if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, terrainOptions);
-        
+
                 painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
 
                 if (globalTexture) {
                     context.activeTexture.set(gl.TEXTURE0);
                     globalTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
                 }
-        
+
                 program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                     uniformValues, layer.id,
                     layoutVertexBuffer, indexBuffer, segments,
