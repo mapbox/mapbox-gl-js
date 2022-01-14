@@ -65,6 +65,8 @@ function ensureTeardown(t) {
         }
     }
 
+    if (testName.includes('globe')) { options.skip = true; }
+
     t.test(testName, options, runTest);
 
     //Teardown all global resources

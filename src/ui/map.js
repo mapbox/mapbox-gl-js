@@ -2450,8 +2450,6 @@ class Map extends Camera {
         if (proj.name === 'globe' && zoom >= GLOBE_ZOOM_THRESHOLD_MAX && !this._transitionFromGlobe) {
             this.setProjection({name: 'mercator'});
             this._transitionFromGlobe = true;
-        } else if (this._transitionFromGlobe && zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
-            this.setProjection({name: 'globe'});
         }
     }
 

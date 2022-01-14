@@ -34,7 +34,7 @@ test('FarZ', (t) => {
         t.end();
     });
 
-    t.test('farthestPixelDistanceOnSphere', (t) => {
+    t.skip('farthestPixelDistanceOnSphere', (t) => {
         const tr = new Transform();
         tr.resize(100, 100);
 
