@@ -22,7 +22,7 @@
 <div id='checkboxes'>
     <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
     <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
-    <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
+    <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
     <label><input id='repaint-checkbox' type='checkbox'> repaint. FPS: </label><label id='fps'>0</label><br />
 </div>
 
@@ -344,9 +344,9 @@ map.on('load', function() {
             "particle-pitch-scale": "viewport",
             "particle-pitch-alignment": "viewport"
         }
-    });
+    }, 'landcover');
 
-    document.getElementById('terrain-checkbox').onclick();
+    console.log(map.getStyle().layers);
 });
 
 document.getElementById('terrain-checkbox').onclick = function() {

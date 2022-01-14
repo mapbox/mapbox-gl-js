@@ -59,7 +59,7 @@ class Emitter {
         this.location = location;
         this.elevation = 1.0;
         this.zoom = tileId.z;
-        this.maxParticleCount = 50;
+        this.maxParticleCount = 250;
         this.featureId = undefined;
         this.tileId = tileId;
         this.mercatorPoint = mercatorPoint;
@@ -93,7 +93,7 @@ class Particle {
     constructor() {
         this.isAlive = true;
         // Distribute position in a circle
-        const r = Math.sqrt(Math.random()) * 100.0;
+        const r = Math.sqrt(Math.random()) * 300.0;
         const theta = Math.random() * 2 * Math.PI;
         this.locationOffset = {
             x: r * Math.cos(theta),
@@ -111,7 +111,7 @@ class Particle {
 
         this.opacity = 1.0;
         this.scale = Math.random() * 2.0 + 0.5;
-        this.timeToLive = Math.random() * 1000 + 1000;
+        this.timeToLive = Math.random() * 5000 + 5000;
         this.birthTime = new Date().getTime();
         
         const colorA = {r: 1.0, g: 1.0, b: 0.0};
