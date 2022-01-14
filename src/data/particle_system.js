@@ -100,13 +100,13 @@ class Particle {
         this.isAlive = true;
         this.clouds = clouds;
         // Distribute position in a circle
-        const offsetRange = this.clouds ? 50.0 : 300.0;
+        const offsetRange = this.clouds ? 50.0 : 200.0;
         const r = Math.sqrt(Math.random()) * offsetRange;
         const theta = Math.random() * 2 * Math.PI;
         this.locationOffset = {
             x: r * Math.cos(theta),
             y: r * Math.sin(theta),
-            z: clouds ? 2000.0 : 0.0
+            z: clouds ? 2000.0 + Math.random() * 500.0 : 0.0
         };
 
         //var dir = Math.random();
@@ -124,7 +124,7 @@ class Particle {
         this.scale = Math.random() * (this.maxScale - this.minScale) + this.minScale;
         
         this.minTimeToLive = this.clouds ? 5000 : 5000;
-        this.maxTimeToLive = this.clouds ? 8000 : 10000;
+        this.maxTimeToLive = this.clouds ? 15000 : 10000;
         this.timeToLive = Math.random() * (this.maxTimeToLive - this.minTimeToLive) + this.minTimeToLive;
         this.birthTime = new Date().getTime();
         
