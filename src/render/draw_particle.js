@@ -4,7 +4,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import Program from './program.js';
-import {circleUniformValues, circleDefinesValues} from './program/circle_program.js';
+import {particleUniformValues, particleDefinesValues} from './program/particle_program.js';
 import SegmentVector from '../data/segment.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import ColorMode from '../gl/color_mode.js';
@@ -13,23 +13,23 @@ import ImageSource, { globalTexture } from '../source/image_source.js';
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type CircleStyleLayer from '../style/style_layer/circle_style_layer.js';
-import type CircleBucket from '../data/bucket/circle_bucket.js';
+import type ParticleBucket from '../data/bucket/particle_bucket.js';
 import type ProgramConfiguration from '../data/program_configuration.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type IndexBuffer from '../gl/index_buffer.js';
 import type {UniformValues} from './uniform_binding.js';
-import type {CircleUniformsType} from './program/circle_program.js';
+import type {ParticleUniformsType} from './program/particle_program.js';
 import type Tile from '../source/tile.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
 
-export default drawCircles;
+export default drawParticles;
 
 type TileRenderState = {
     programConfiguration: ProgramConfiguration,
     program: Program<*>,
     layoutVertexBuffer: VertexBuffer,
     indexBuffer: IndexBuffer,
-    uniformValues: UniformValues<CircleUniformsType>,
+    uniformValues: UniformValues<ParticleUniformsType>,
     tile: Tile
 };
 
@@ -39,13 +39,13 @@ type SegmentsTileRenderState = {
     state: TileRenderState
 };
 
-function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
+function drawParticles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
 
-    const opacity = layer.paint.get('circle-opacity');
-    const strokeWidth = layer.paint.get('circle-stroke-width');
-    const strokeOpacity = layer.paint.get('circle-stroke-opacity');
-    const sortFeaturesByKey = layer.layout.get('circle-sort-key').constantOr(1) !== undefined;
+    const opacity = layer.paint.get('particle-opacity');
+    const strokeWidth = layer.paint.get('particle-stroke-width');
+    const strokeOpacity = layer.paint.get('particle-stroke-opacity');
+    const sortFeaturesByKey = layer.layout.get('particle-sort-key').constantOr(1) !== undefined;
 
     if (opacity.constantOr(1) === 0 && (strokeWidth.constantOr(1) === 0 || strokeOpacity.constantOr(1) === 0)) {
         return;
@@ -67,16 +67,16 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const coord = coords[i];
 
         const tile = sourceCache.getTile(coord);
-        const bucket: ?CircleBucket<*> = (tile.getBucket(layer): any);
+        const bucket: ?ParticleBucket<*> = (tile.getBucket(layer): any);
         if (!bucket) continue;
         bucket.update();
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const definesValues = circleDefinesValues(layer);
+        const definesValues = particleDefinesValues(layer);
         if (gradientMode) {
             definesValues.push("PARTICLE_GRADIENT");
         }
-        const program = painter.useProgram('circle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
+        const program = painter.useProgram('particle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
 
@@ -103,7 +103,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         for (var emitter of bucket.system.emitters) {
             for (var particle of emitter.particles) {
                 
-                const uniformValues = circleUniformValues(painter, coord, tile, layer, 
+                const uniformValues = particleUniformValues(painter, coord, tile, layer, 
                     emitter.location.x + emitter.zoom * particle.locationOffset.x, 
                     emitter.location.y + emitter.zoom * particle.locationOffset.y, 
                     emitter.elevation,
