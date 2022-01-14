@@ -1,7 +1,9 @@
 // @flow
 
 import {
+    Uniform1i,
     Uniform1f,
+    Uniform3f,
     UniformMatrix2f,
     UniformMatrix4f
 } from '../uniform_binding.js';
@@ -18,7 +20,12 @@ export type ParticleUniformsType = {|
     'u_camera_to_center_distance': Uniform1f,
     'u_extrude_scale': UniformMatrix2f,
     'u_device_pixel_ratio': Uniform1f,
-    'u_matrix': UniformMatrix4f
+    'u_matrix': UniformMatrix4f,
+    'u_image0': Uniform1i,
+    'u_pos_offset': Uniform3f,
+    'u_particle_opacity': Uniform1f,
+    'u_particle_scale': Uniform1f,
+    'u_particle_color': Uniform3f,
 |};
 
 export type ParticleDefinesType = 'PITCH_WITH_MAP' | 'SCALE_WITH_MAP';
@@ -27,14 +34,25 @@ const particleUniforms = (context: Context, locations: UniformLocations): Partic
     'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
     'u_extrude_scale': new UniformMatrix2f(context, locations.u_extrude_scale),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix)
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_image0': new Uniform1i(context, locations.u_image0),
+    'u_pos_offset': new Uniform3f(context, locations.u_pos_offset),
+    'u_particle_opacity': new Uniform1f(context, locations.u_particle_opacity),
+    'u_particle_scale': new Uniform1f(context, locations.u_particle_scale),
+    'u_particle_color': new Uniform3f(context, locations.u_particle_color)
 });
 
 const particleUniformValues = (
     painter: Painter,
     coord: OverscaledTileID,
     tile: Tile,
-    layer: ParticleStyleLayer
+    layer: ParticleStyleLayer,
+    x: Number,
+    y: Number,
+    z: Number,
+    particleOpacity: Number,
+    particleScale: Number,
+    particleColor: any,
 ): UniformValues<ParticleUniformsType> => {
     const transform = painter.transform;
 
@@ -57,7 +75,14 @@ const particleUniformValues = (
             layer.paint.get('particle-translate'),
             layer.paint.get('particle-translate-anchor')),
         'u_device_pixel_ratio': browser.devicePixelRatio,
-        'u_extrude_scale': extrudeScale
+        'u_extrude_scale': extrudeScale,
+        'u_image0': 0,
+        'u_pos_offset': [x,y,z],
+        'u_device_pixel_ratio': browser.devicePixelRatio,
+        'u_extrude_scale': extrudeScale,
+        'u_particle_opacity': particleOpacity,
+        'u_particle_scale': particleScale,
+        'u_particle_color': [particleColor.r,particleColor.g,particleColor.b],
     };
 };
 

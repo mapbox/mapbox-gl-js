@@ -39,8 +39,8 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 window.map = map;
-map.showTileBoundaries = true;
-map._showQueryGeometry = true;
+map.showTileBoundaries = false;
+map._showQueryGeometry = false;
 map.repaint = true;
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
@@ -57,6 +57,17 @@ map.on('load', function() {
         "url": "mapbox://mapbox.terrain-rgb",
         "tileSize": 512,
         "maxzoom": 14
+    });
+
+    map.addSource('radar', {
+        'type': 'image',
+        'url': '/test/integration/data/smoke.png',
+        'coordinates': [
+        [-80.425, 46.437],
+        [-71.516, 46.437],
+        [-71.516, 37.936],
+        [-80.425, 37.936]
+        ]
     });
 
     map.addLayer({
@@ -103,9 +114,9 @@ document.getElementById('repaint-checkbox').onclick = function() {
 let hovered = [];
 window.addEventListener('mousemove', function(e) {
     e.point = new mapboxgl.Point(e.clientX, e.clientY);
-    console.time('query');
+    //console.time('query');
     const features = map.queryRenderedFeatures(e.point, {layers: ['particles']});
-    console.timeEnd('query');
+    //console.timeEnd('query');
 
     for (const feature of hovered) {
         map.setFeatureState(feature, {
