@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.001,
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [
+    0,
+    -80.0
+  ],
+  "zoom": 0.8,
+  "pitch": 0.0,
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "satellite",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

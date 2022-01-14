@@ -11,16 +11,17 @@ import {easeCubicInOut} from '../util/util.js';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import type Painter from '../render/painter.js';
 import type SourceCache from '../source/source_cache.js';
+import type Program from '../render/program.js';
 import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import {
     calculateGlobeMatrix,
     calculateGlobeMercatorMatrix,
-    globeBuffersForTileMesh,
     globeToMercatorTransition,
     globeMatrixForTile,
-    globePoleMatrixForTile
+    globePoleMatrixForTile,
+    globeVertexBufferForTileMesh
 } from '../geo/projection/globe.js';
 import extend from '../style-spec/util/extend.js';
 
@@ -175,7 +176,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         for (const coord of tileIDs) {
             const tile = sourceCache.getTile(coord);
             const tiles = Math.pow(2, coord.canonical.z);
-            const [gridBuffer, poleBuffer] = globeBuffersForTileMesh(painter, tile, coord, tiles);
+            const gridBuffer = globeVertexBufferForTileMesh(painter, tile, coord);
             const stencilMode = StencilMode.disabled;
 
             const prevDemTile = terrain.prevTerrainTileForTile[coord.key];
@@ -217,25 +218,27 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                     uniformValues, "globe_raster", gridBuffer, buffer, segments);
             }
 
-            if (!isWireframe) {
+            if (!isWireframe && sharedBuffers) {
                 // Fill poles by extrapolating adjacent border tiles
-                const poleMatrices = [
-                    coord.canonical.y === 0 ? globePoleMatrixForTile(coord.canonical, false, tr) : null,
-                    coord.canonical.y === tiles - 1 ? globePoleMatrixForTile(coord.canonical, true, tr) : null
-                ];
+                const drawGlobePole = (program: Program<any>, isTopCap: boolean) => {
+                    const [poleBuffer, segment] = sharedBuffers.getPoleBuffersForTile(coord.canonical.z, isTopCap);
 
-                for (const poleMatrix of poleMatrices) {
-                    if (!poleMatrix) {
-                        continue;
-                    }
+                    if (segment) {
+                        const poleMatrix = globePoleMatrixForTile(coord.canonical, isTopCap, tr);
+                        const poleUniforms = globeRasterUniformValues(
+                            tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter);
 
-                    const poleUniforms = globeRasterUniformValues(
-                        tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter);
-
-                    if (sharedBuffers) {
                         program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                            poleUniforms, "globe_pole_raster", poleBuffer, sharedBuffers.poleIndexBuffer, sharedBuffers.poleSegments);
+                            poleUniforms, "globe_pole_raster", poleBuffer, sharedBuffers.poleIndexBuffer, segment);
                     }
+                };
+
+                if (coord.canonical.y === 0) {
+                    drawGlobePole(program, true);
+                }
+
+                if (coord.canonical.y === tiles - 1) {
+                    drawGlobePole(program, false);
                 }
             }
         }

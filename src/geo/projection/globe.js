@@ -32,6 +32,8 @@ const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
 const GLOBE_VERTEX_GRID_SIZE = 64;
 
+const TILE_SIZE = 512;
+
 export default {
     name: 'globe',
     requiresDraping: true,
@@ -268,24 +270,17 @@ export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
 }
 
-export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID, tiles: number): [VertexBuffer, VertexBuffer] {
+export function globeVertexBufferForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID): VertexBuffer {
     const context = painter.context;
     const id = coord.canonical;
-    const tr = painter.transform;
     let gridBuffer = tile.globeGridBuffer;
-    let poleBuffer = tile.globePoleBuffer;
 
     if (!gridBuffer) {
         const gridMesh = GlobeSharedBuffers.createGridVertices(id);
         gridBuffer = tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
     }
 
-    if (!poleBuffer) {
-        const poleMesh = GlobeSharedBuffers.createPoleTriangleVertices(tiles, tr.tileSize * tiles, coord.canonical.y === 0);
-        poleBuffer = tile.globePoleBuffer = context.createVertexBuffer(poleMesh, globeLayoutAttributes, false);
-    }
-
-    return [gridBuffer, poleBuffer];
+    return gridBuffer;
 }
 
 export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Array): Float32Array {
@@ -293,7 +288,7 @@ export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Arra
     return mat4.mul(mat4.create(), globeMatrix, decode);
 }
 
-export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: Transform): Float32Array {
+export function globePoleMatrixForTile(id: CanonicalTileID, isTopCap: boolean, tr: Transform): Float32Array {
     const poleMatrix = mat4.identity(new Float64Array(16));
 
     const tileDim = Math.pow(2, id.z);
@@ -309,7 +304,7 @@ export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: 
     mat4.rotateX(poleMatrix, poleMatrix, degToRad(-tr._center.lat));
     mat4.rotateY(poleMatrix, poleMatrix, degToRad(-tr._center.lng));
     mat4.rotateY(poleMatrix, poleMatrix, yRotation);
-    if (south) {
+    if (!isTopCap) {
         mat4.scale(poleMatrix, poleMatrix, [1, -1, 1]);
     }
 
@@ -317,6 +312,8 @@ export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: 
 }
 
 export class GlobeSharedBuffers {
+    poleNorthVertexBuffer: VertexBuffer;
+    poleSouthVertexBuffer: VertexBuffer;
     poleIndexBuffer: IndexBuffer;
     poleSegments: SegmentVector;
 
@@ -341,9 +338,12 @@ export class GlobeSharedBuffers {
         const poleIndices = this._createPoleTriangleIndices();
         this.poleIndexBuffer = context.createIndexBuffer(poleIndices, true);
 
-        const polePrimitives = GLOBE_VERTEX_GRID_SIZE;
-        const poleVertices = GLOBE_VERTEX_GRID_SIZE + 2;
-        this.poleSegments = SegmentVector.simpleSegment(0, 0, poleVertices, polePrimitives);
+        const poleNorthVertices = this._createPoleVerticesForAllZooms(true);
+        const poleSouthVertices = this._createPoleVerticesForAllZooms(false);
+
+        this.poleNorthVertexBuffer = context.createVertexBuffer(poleNorthVertices, globeLayoutAttributes, false);
+        this.poleSouthVertexBuffer = context.createVertexBuffer(poleSouthVertices, globeLayoutAttributes, false);
+        this.poleSegments = this._createPoleSegments();
 
         const atmosphereVertices = new GlobeVertexArray();
         atmosphereVertices.emplaceBack(-1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
@@ -363,6 +363,8 @@ export class GlobeSharedBuffers {
     destroy() {
         this.poleIndexBuffer.destroy();
         this.gridIndexBuffer.destroy();
+        this.poleNorthVertexBuffer.destroy();
+        this.poleSouthVertexBuffer.destroy();
         this.poleSegments.destroy();
         this.gridSegments.destroy();
         this.atmosphereVertexBuffer.destroy();
@@ -375,13 +377,14 @@ export class GlobeSharedBuffers {
         }
     }
 
-    static createPoleTriangleVertices(tiles: number, ws: number, isTopCap: boolean): GlobeVertexArray {
+    _createPoleVertices(zoom: number, isTopCap: boolean, outArr: GlobeVertexArray) {
         const lerp = (a, b, t) => a * (1 - t) + b * t;
-        const arr = new GlobeVertexArray();
-        const radius = ws / Math.PI / 2.0;
+        const tiles = 1 << zoom;
+        const worldSize = tiles * TILE_SIZE;
+        const radius = worldSize / Math.PI / 2.0;
 
         // Place the tip
-        arr.emplaceBack(0, -radius, 0, 0, 0, 0.5, isTopCap ? 0.0 : 1.0);
+        outArr.emplaceBack(0, -radius, 0, 0, 0, 0.5, isTopCap ? 0.0 : 1.0);
 
         const startAngle = 0;
         const endAngle = 360.0 / tiles;
@@ -393,18 +396,49 @@ export class GlobeSharedBuffers {
             const angle = lerp(startAngle, endAngle, uvX);
             const p = csLatLngToECEF(cosLat, sinLat, angle, radius);
 
-            arr.emplaceBack(p[0], p[1], p[2], 0, 0, uvX, isTopCap ? 0.0 : 1.0);
+            outArr.emplaceBack(p[0], p[1], p[2], 0, 0, uvX, isTopCap ? 0.0 : 1.0);
         }
-
-        return arr;
     }
 
-    _createPoleTriangleIndices(): TriangleIndexArray {
+    _createPoleVerticesForAllZooms(isTopCap: boolean): GlobeVertexArray {
+        const vertices = new GlobeVertexArray();
+
+        for (let zoom = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
+            this._createPoleVertices(zoom, isTopCap, vertices);
+        }
+
+        return vertices;
+    }
+
+    _createPoleTriangleIndices() {
         const arr = new TriangleIndexArray();
         for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
             arr.emplaceBack(0, i + 1, i + 2);
         }
         return arr;
+    }
+
+    _createPoleSegments(): SegmentVector {
+        const segments = [];
+        let offset = 0;
+
+        const polePrimitives = GLOBE_VERTEX_GRID_SIZE;
+        const poleVertices = GLOBE_VERTEX_GRID_SIZE + 2;
+
+        for (let zoom = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
+            segments.push({
+                vertexOffset: offset,
+                primitiveOffset: 0,
+                vertexLength: poleVertices,
+                primitiveLength: polePrimitives,
+                vaos: {},
+                sortKey: 0
+            });
+
+            offset += poleVertices;
+        }
+
+        return new SegmentVector(segments);
     }
 
     static createGridVertices(id: CanonicalTileID): GlobeVertexArray {
@@ -488,5 +522,12 @@ export class GlobeSharedBuffers {
         }
 
         return indexArray;
+    }
+
+    getPoleBuffersForTile(zoom: number, isTopCap: boolean): [VertexBuffer, ?SegmentVector] {
+        return [
+            isTopCap ? this.poleNorthVertexBuffer : this.poleSouthVertexBuffer,
+            zoom >= 0 && zoom < this.poleSegments.get().length ? new SegmentVector([this.poleSegments.get()[zoom]]) : null
+        ];
     }
 }
