@@ -70,6 +70,15 @@ map.on('load', function() {
         ]
     });
 
+    map.addLayer({
+        id: 'radar-layer',
+        'type': 'raster',
+        'source': 'radar',
+        'paint': {
+        'raster-fade-duration': 0
+        }
+    });
+
     map.addSource('citylight-budapest', {
         "type": "geojson",
         "data": {
@@ -321,6 +330,70 @@ map.on('load', function() {
             }
     });
 
+    map.addSource('clouds-budapest', {
+        "type": "geojson",
+        "data": {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.03656005859375,
+          47.52091047852614
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.04582977294922,
+          47.49679221520181
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.072608947753906,
+          47.475911695481756
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.071578979492188,
+          47.511403640384124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.093551635742188,
+          47.499111760583766
+        ]
+      }
+    }
+  ]
+}
+    });
+
     /*
     map.addLayer({
         "id": "particles",
@@ -346,7 +419,16 @@ map.on('load', function() {
         }
     }, 'landcover');
 
-    console.log(map.getStyle().layers);
+    map.addLayer({
+        "id": "particles-clouds",
+        "type": "particle",
+        "source": "clouds-budapest",
+        "paint": {
+            "particle-radius": 1.0,
+            "particle-pitch-scale": "viewport",
+            "particle-pitch-alignment": "viewport"
+        }
+    });
 });
 
 document.getElementById('terrain-checkbox').onclick = function() {

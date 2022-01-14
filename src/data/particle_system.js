@@ -1,7 +1,6 @@
 // @flow
 
 import { CanonicalTileID } from "../source/tile_id";
-
 class ParticleSystem {
     emitters: Array<Emitter>;
     lastUpdate: any;
@@ -27,7 +26,7 @@ class ParticleSystem {
         //setTimeout(() => { this.update() }, 100);
     }
 
-    addEmitter(feature: any, location: Point, tileId: CanonicalTileID, mercatorPoint: Point) {
+    addEmitter(feature: any, location: Point, tileId: CanonicalTileID, mercatorPoint: Point, clouds: Boolean) {
         if (!tileId) {
             return;
         }
@@ -38,7 +37,7 @@ class ParticleSystem {
                 return;
             }
         }
-        this.emitters.push(new Emitter(feature, location, tileId, mercatorPoint));
+        this.emitters.push(new Emitter(feature, location, tileId, mercatorPoint, clouds));
     }
 
 }
@@ -52,22 +51,24 @@ class Emitter {
     featureId: number;
     tileId: CanonicalTileID;
     mercatorPoint: Point;
+    clouds: Boolean;
 
-    constructor(feature: any, location: Point, tileId: CanonicalTileID, mercatorPoint: Point) {
+    constructor(feature: any, location: Point, tileId: CanonicalTileID, mercatorPoint: Point, clouds: Boolean) {
         this.feature = feature;
         this.particles = [];
         this.location = location;
         this.elevation = 1.0;
         this.zoom = tileId.z;
-        this.maxParticleCount = 250;
+        this.maxParticleCount = clouds ? 100 : 250;
         this.featureId = undefined;
         this.tileId = tileId;
         this.mercatorPoint = mercatorPoint;
+        this.clouds = clouds;
     }
     
     update() {
         while (this.particles.length < this.maxParticleCount) {
-            this.particles.push(new Particle());
+            this.particles.push(new Particle(this.clouds));
         }
 
         for (const particle of this.particles) {
@@ -81,6 +82,11 @@ class Particle {
     direction: any;
     velocity: number;
     timeToLive: number;
+    minScale: number;
+    maxScale: number;
+    minTimeToLive: number;
+    maxTimeToLive: number;
+    clouds: Boolean;
 
     isAlive: boolean;
     locationOffset: any;
@@ -90,28 +96,36 @@ class Particle {
     birthTime: number;
     color: any;
 
-    constructor() {
+    constructor(clouds: Boolean) {
         this.isAlive = true;
+        this.clouds = clouds;
         // Distribute position in a circle
-        const r = Math.sqrt(Math.random()) * 300.0;
+        const offsetRange = this.clouds ? 50.0 : 300.0;
+        const r = Math.sqrt(Math.random()) * offsetRange;
         const theta = Math.random() * 2 * Math.PI;
         this.locationOffset = {
             x: r * Math.cos(theta),
-            y: r * Math.sin(theta)
+            y: r * Math.sin(theta),
+            z: clouds ? 2000.0 : 0.0
         };
 
         //var dir = Math.random();
-        var dir = 0.5;
+        var dir = 0.9;
         this.direction = {x: dir, y: 1.0 - dir, z: 0.0 };
 
-        let minVelocity = 1.0;
-        let maxVelocity = 5.0;
+        let minVelocity = this.clouds ? 0.01 : 0.0;
+        let maxVelocity = this.clouds ? 0.05 : 0.0;
         this.velocity = Math.random() * (maxVelocity - minVelocity) + minVelocity;
-        this.velocity = 0;
 
         this.opacity = 1.0;
-        this.scale = Math.random() * 2.0 + 0.5;
-        this.timeToLive = Math.random() * 5000 + 5000;
+        
+        this.maxScale = this.clouds ? 15.0 : 3.0;
+        this.minScale = this.clouds ? 5.0 : 0.5;
+        this.scale = Math.random() * (this.maxScale - this.minScale) + this.minScale;
+        
+        this.minTimeToLive = this.clouds ? 5000 : 5000;
+        this.maxTimeToLive = this.clouds ? 8000 : 10000;
+        this.timeToLive = Math.random() * (this.maxTimeToLive - this.minTimeToLive) + this.minTimeToLive;
         this.birthTime = new Date().getTime();
         
         const colorA = {r: 1.0, g: 1.0, b: 0.0};
