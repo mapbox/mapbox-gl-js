@@ -9,6 +9,7 @@ uniform mat2 u_extrude_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
 uniform vec3 u_pos_offset;
+uniform float u_particle_scale;
 
 attribute vec2 a_pos;
 
@@ -100,7 +101,7 @@ void main(void) {
     // in extrusion data
     vec2 circle_center = floor(a_pos * 0.5);
     circle_center += u_pos_offset.xy;
-
+    radius *= u_particle_scale;
 
 #ifdef PROJECTION_GLOBE_VIEW
     // Compute positions on both globe and mercator plane to support transition between the two modes

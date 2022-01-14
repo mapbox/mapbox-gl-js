@@ -57,8 +57,9 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     // Turn off stencil testing to allow circles to be drawn across boundaries,
     // so that large circles are not clipped to tiles
+    const gradientMode = true;
     const stencilMode = StencilMode.disabled;
-    const colorMode = painter.colorModeForRenderPass();
+    const colorMode = gradientMode ? ColorMode.additiveBlended : painter.colorModeForRenderPass();
 
     //const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
 
@@ -72,6 +73,9 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const definesValues = circleDefinesValues(layer);
+        if (gradientMode) {
+            definesValues.push("PARTICLE_GRADIENT");
+        }
         const program = painter.useProgram('circle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
@@ -100,11 +104,12 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             for (var particle of emitter.particles) {
                 
                 const uniformValues = circleUniformValues(painter, coord, tile, layer, 
-                    emitter.location.x + particle.locationOffset.x, 
-                    emitter.location.y + particle.locationOffset.y, 
-                    3000,
-                    particle.opacity);
-                   
+                    emitter.location.x + emitter.zoom * particle.locationOffset.x, 
+                    emitter.location.y + emitter.zoom * particle.locationOffset.y, 
+                    emitter.elevation,
+                    particle.opacity,
+                    particle.scale,
+                    particle.color);
                 const segments = bucket.segments;
         
                 const isGlobeProjection = painter.transform.projection.name === 'globe';

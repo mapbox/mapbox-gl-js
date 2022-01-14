@@ -1,5 +1,6 @@
 uniform sampler2D u_image0;
 uniform float u_particle_opacity;
+uniform vec3 u_particle_color;
 
 varying vec3 v_data;
 varying float v_visibility;
@@ -42,11 +43,16 @@ void main() {
 #endif
 
 
+#ifdef PARTICLE_GRADIENT
+    float alpha = 1.0 - extrude_length;
+    out_color = vec4(u_particle_color * vec3(alpha), alpha);
+#else
     float brightness = 1.0 - (extrude.y + 1.0) / 8.0;
     float alpha = 1.0 - extrude_length;
 
     vec4 color0 = texture2D(u_image0, extrude * 0.5 + 0.5);
     out_color = vec4(vec3(brightness * color0), color0.a);
+#endif
 
     gl_FragColor = out_color * u_particle_opacity; // * (v_visibility * opacity_t);
 

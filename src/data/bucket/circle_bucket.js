@@ -34,10 +34,14 @@ import type {TileTransform} from '../../geo/projection/tile_transform.js';
 class ParticleSystem {
     emitters: Array<Emitter>;
     lastUpdate: any;
+    zoomLevel: number;
 
     constructor() {
         this.emitters = [];
         this.lastUpdate = new Date().getTime();
+        this.update();
+        this.zoomLevel = 0;
+        console.count("new system");
     }
     
     update() {
@@ -46,20 +50,25 @@ class ParticleSystem {
         if (sinceLastUpdateMillis < 10) {
             return;
         }
+        this.lastUpdate = new Date().getTime();
         for (const emitter of this.emitters) {
             emitter.update();
         }
-        this.lastUpdate = new Date().getTime();
+        //setTimeout(() => { this.update() }, 100);
     }
 
-    addEmitter(location: Point, featureId: number) {
+    addEmitter(feature: any, location: Point, zoom: number) {
+        /*
         for (const emitter of this.emitters) {
-            if (emitter.featureId === featureId) {
+            if (emitter.feature.geometry.x == feature.geometry.x && emitter.feature.geometry.y == feature.geometry.y) {
                 emitter.location = location;
+                emitter.zoom = zoom;
+                console.log(feature.geometry);
                 return;
             }
         }
-        this.emitters.push(new Emitter(location, featureId));
+        */
+        this.emitters.push(new Emitter(feature, location, zoom));
     }
 
 }
@@ -68,13 +77,19 @@ register('ParticleSystem', ParticleSystem);
 class Emitter {
     particles: Array<Particle>;
     location: Point;
+    feature: any;
+    elevation: number;
+    zoom: number;
     maxParticleCount: number;
     featureId: number;
 
-    constructor(location: Point, featureId: number) {
+    constructor(feature: any, location: Point, zoom: number, featureId: number) {
+        this.feature = feature;
         this.particles = [];
         this.location = location;
-        this.maxParticleCount = 10;
+        this.elevation = 1.0;
+        this.zoom = zoom;
+        this.maxParticleCount = 50;
         this.featureId = featureId;
     }
     
@@ -98,15 +113,19 @@ class Particle {
     direction: any;
     velocity: number;
     opacity: number;
-    scale: any;
+    scale: number;
     timeToLive: number;
     birthTime: number;
+    color: any;
 
     constructor() {
         this.isAlive = true;
+        // Distribute position in a circle
+        const r = Math.sqrt(Math.random()) * 100.0;
+        const theta = Math.random() * 2 * Math.PI;
         this.locationOffset = {
-            x: Math.random() * 2000.0 - 1000.0,
-            y: Math.random() * 2000.0 - 1000.0
+            x: r * Math.cos(theta),
+            y: r * Math.sin(theta)
         };
 
         //var dir = Math.random();
@@ -116,19 +135,30 @@ class Particle {
         let minVelocity = 1.0;
         let maxVelocity = 5.0;
         this.velocity = Math.random() * (maxVelocity - minVelocity) + minVelocity;
+        this.velocity = 0;
 
         this.opacity = 1.0;
-        this.scale = {x:1.0, y:1.0};
-        this.timeToLive = Math.random() * 2000 + 5000;
+        this.scale = Math.random() * 1.0 + 0.5;
+        this.timeToLive = -1; //Math.random() * 2000 + 5000;
         this.birthTime = new Date().getTime();
+        
+        const colorA = {r: 1.0, g: 1.0, b: 0.0};
+        const colorB = {r: 0.2, g: 0.2, b: 1.0};
+        const lerp = (a, b, t) => a * (1 - t) + b * t;
+        const randomColorProg = Math.pow(Math.random(), 2.0);
+        this.color = {
+            r: lerp(colorA.r, colorB.r, randomColorProg),
+            g: lerp(colorA.g, colorB.g, randomColorProg),
+            b: lerp(colorA.b, colorB.b, randomColorProg)
+        };
 
-        console.count("New particle");
+        //console.count("New particle");
     }
     
     update() {
         let now = new Date().getTime();
         let timeSinceBith = now - this.birthTime;
-        let lifePosition = timeSinceBith / this.timeToLive;
+        let lifePosition = this.timeToLive > 0 ? timeSinceBith / this.timeToLive : 0.5;
         if (lifePosition >= 1.0) {
             this.isAlive = false;
         }
@@ -242,10 +272,14 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
             });
         }
 
+        if (this.system.zoomLevel != canonical.z) {
+            this.system.emitters = [];
+        }
+
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
             const feature = features[index].feature;
-            this.system.addEmitter(geometry[0][0], bucketFeature.id);
+            this.system.addEmitter(feature._feature, geometry[0][0], canonical.z);
             this.addFeature(bucketFeature, geometry, index, options.availableImages, canonical);
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
