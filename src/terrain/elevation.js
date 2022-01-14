@@ -107,7 +107,7 @@ export class Elevation {
      * If a DEM tile that covers tileID is loaded, true is returned, otherwise false.
      * Nearest filter sampling on dem data is done (no interpolation).
      */
-    getForTilePoints(tileID: OverscaledTileID, points: Array<vec3>, interpolated: ?boolean, useDemTile: ?Tile): boolean {
+    getForTilePoints(tileID: OverscaledTileID, points: Array<Vec3>, interpolated: ?boolean, useDemTile: ?Tile): boolean {
         const helper = DEMSampler.create(this, tileID, useDemTile);
         if (!helper) { return false; }
 

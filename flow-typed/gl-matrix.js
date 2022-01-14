@@ -73,7 +73,8 @@ declare module "gl-matrix" {
         rotateZ<T: Mat4>(T, Mat4, number): T,
         translate<T: Mat4>(T, Mat4, Vec3): T,
         invert<T: Mat4>(T, Mat4): T,
-        copy<T: Mat4>(T, Mat4): T
+        copy<T: Mat4>(T, Mat4): T,
+        clone<T: Mat4>(T): T
     };
 
     declare var quat: {

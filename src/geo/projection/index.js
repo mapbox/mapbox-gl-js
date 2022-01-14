@@ -17,6 +17,8 @@ import LngLat from '../lng_lat.js';
 import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../mercator_coordinate.js';
 
+import type {Mat4, Vec3} from 'gl-matrix';
+
 export type Projection = {
     name: string,
     center: [number, number],
@@ -82,9 +84,9 @@ export function getProjection(config: ProjectionSpecification) {
 }
 
 export type TileTransform = {
-    createTileMatrix: (id: UnwrappedTileID) => mat4,
-    createInversionMatrix: (id: UnwrappedTileID) => mat4,
-    upVector: (id: CanonicalTileID, x: number, y: number) => vec3,
+    createTileMatrix: (id: UnwrappedTileID) => Mat4,
+    createInversionMatrix: (id: UnwrappedTileID) => Mat4,
+    upVector: (id: CanonicalTileID, x: number, y: number) => Vec3,
     upVectorScale: (id: CanonicalTileID) => number,
     pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate
 };
