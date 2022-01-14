@@ -91,12 +91,13 @@ class Emitter {
         this.zoom = zoom;
         this.maxParticleCount = 50;
         this.featureId = featureId;
+
+        while (this.particles.length < this.maxParticleCount) {
+            this.particles.push(new Particle());
+        }
     }
     
     update() {
-        if (this.particles.length < this.maxParticleCount) {
-            this.particles.push(new Particle());
-        }
         for (const particle of this.particles) {
             particle.update();
         }
@@ -107,14 +108,15 @@ class Emitter {
 
 register('Emitter', Emitter);
 class Particle {
+    direction: any;
+    velocity: number;
+    timeToLive: number;
+
     isAlive: boolean;
     locationOffset: any;
     elevation: number;
-    direction: any;
-    velocity: number;
     opacity: number;
     scale: number;
-    timeToLive: number;
     birthTime: number;
     color: any;
 
