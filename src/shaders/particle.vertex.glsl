@@ -8,6 +8,8 @@ uniform mat4 u_matrix;
 uniform mat2 u_extrude_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
+uniform vec3 u_pos_offset;
+uniform float u_particle_scale;
 
 attribute vec2 a_pos;
 
@@ -97,6 +99,8 @@ void main(void) {
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
     vec2 circle_center = floor(a_pos * 0.5);
+    circle_center += u_pos_offset.xy;
+    radius *= u_particle_scale;
 
 #ifdef PROJECTION_GLOBE_VIEW
     // Compute positions on both globe and mercator plane to support transition between the two modes
@@ -115,7 +119,7 @@ void main(void) {
 #else 
     mat3 surface_vectors = mat3(1.0);
     // extract height offset for terrain, this returns 0 if terrain is not active
-    float height = circle_elevation(circle_center);
+    float height = circle_elevation(circle_center) + u_pos_offset.z;
     vec4 world_center = vec4(circle_center, height, 1);
 #endif
 

@@ -7,6 +7,8 @@ import Program from './program.js';
 import {circleUniformValues, circleDefinesValues} from './program/circle_program.js';
 import SegmentVector from '../data/segment.js';
 import {OverscaledTileID} from '../source/tile_id.js';
+import ColorMode from '../gl/color_mode.js';
+import ImageSource, { globalTexture } from '../source/image_source.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -55,10 +57,11 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     // Turn off stencil testing to allow circles to be drawn across boundaries,
     // so that large circles are not clipped to tiles
+    const gradientMode = true;
     const stencilMode = StencilMode.disabled;
-    const colorMode = painter.colorModeForRenderPass();
+    const colorMode = gradientMode ? ColorMode.additiveBlended : painter.colorModeForRenderPass();
 
-    const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
+    //const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
 
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
@@ -66,23 +69,19 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const tile = sourceCache.getTile(coord);
         const bucket: ?CircleBucket<*> = (tile.getBucket(layer): any);
         if (!bucket) continue;
+        bucket.update();
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const definesValues = circleDefinesValues(layer);
+        if (gradientMode) {
+            definesValues.push("PARTICLE_GRADIENT");
+        }
         const program = painter.useProgram('circle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
-        const uniformValues = circleUniformValues(painter, coord, tile, layer);
 
-        const state: TileRenderState = {
-            programConfiguration,
-            program,
-            layoutVertexBuffer,
-            indexBuffer,
-            uniformValues,
-            tile
-        };
 
+        /*
         if (sortFeaturesByKey) {
             const oldSegments = bucket.segments.get();
             for (const segment of oldSegments) {
@@ -99,16 +98,58 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
                 state
             });
         }
+        */
+
+        for (var emitter of bucket.system.emitters) {
+            for (var particle of emitter.particles) {
+                
+                const uniformValues = circleUniformValues(painter, coord, tile, layer, 
+                    emitter.location.x + emitter.zoom * particle.locationOffset.x, 
+                    emitter.location.y + emitter.zoom * particle.locationOffset.y, 
+                    emitter.elevation,
+                    particle.opacity,
+                    particle.scale,
+                    particle.color);
+                const segments = bucket.segments;
+        
+                const isGlobeProjection = painter.transform.projection.name === 'globe';
+                const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
+
+                if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, terrainOptions);
+        
+                painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
+
+                if (globalTexture) {
+                    context.activeTexture.set(gl.TEXTURE0);
+                    globalTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+                }
+        
+                program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                    uniformValues, layer.id,
+                    layoutVertexBuffer, indexBuffer, segments,
+                    layer.paint, painter.transform.zoom, programConfiguration);
+
+            }
+        }
 
     }
 
+    /*
     if (sortFeaturesByKey) {
         segmentsRenderStates.sort((a, b) => a.sortKey - b.sortKey);
     }
+    */
 
-    const isGlobeProjection = painter.transform.projection.name === 'globe';
-    const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
+    //const isGlobeProjection = painter.transform.projection.name === 'globe';
+    //const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
 
+    //console.log(segmentsRenderStates);
+
+    //const isGlobeProjection = painter.transform.projection.name === 'globe';
+    //const terrainOptions = {useDepthForOcclusion: !isGlobeProjection};
+
+
+    /*
     for (const segmentsState of segmentsRenderStates) {
         const {programConfiguration, program, layoutVertexBuffer, indexBuffer, uniformValues, tile} = segmentsState.state;
         const segments = segmentsState.segments;
@@ -117,9 +158,10 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
         painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
 
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
             uniformValues, layer.id,
             layoutVertexBuffer, indexBuffer, segments,
             layer.paint, painter.transform.zoom, programConfiguration);
     }
+    */
 }
