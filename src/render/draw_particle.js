@@ -37,7 +37,8 @@ type TileRenderState = {
 };
 
 const instanceLayout = createLayout([
-    {name: 'a_pos_offset', components: 3, type: 'Float32'}
+    {name: 'a_offset_and_scale', components: 4, type: 'Float32'},
+    {name: 'a_particle_color', components: 4, type: 'Float32'}
 ], 4);
 
 function drawParticles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
@@ -90,7 +91,13 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
                 particlePositions.push([
                     emitter.location.x + emitter.zoom * particle.locationOffset.x, 
                     emitter.location.y + emitter.zoom * particle.locationOffset.y, 
-                    emitter.elevation]);
+                    emitter.elevation,
+                    particle.scale,
+                    particle.color.r,
+                    particle.color.g,
+                    particle.color.b,
+                    particle.opacity
+                ]);
             }
         }
 
@@ -108,7 +115,12 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
             instanceArray.emplaceBack(
                 particlePositions[tileRange.start + i][0],
                 particlePositions[tileRange.start + i][1],
-                particlePositions[tileRange.start + i][2]);
+                particlePositions[tileRange.start + i][2],
+                particlePositions[tileRange.start + i][3],
+                particlePositions[tileRange.start + i][4],
+                particlePositions[tileRange.start + i][5],
+                particlePositions[tileRange.start + i][6],
+                particlePositions[tileRange.start + i][7]);
         }
 
         const positionBuffer = context.createVertexBuffer(instanceArray, instanceLayout.members);
@@ -124,18 +136,12 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const definesValues = particleDefinesValues(layer);
-        if (gradientMode) {
-            definesValues.push("PARTICLE_GRADIENT");
-        }
+        
         const program = painter.useProgram('particle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
 
-        const uniformValues = particleUniformValues(painter, coord, tile, layer, 
-            1, //particle.opacity,
-            1, //particle.scale,
-            [1, 1, 1] //particle.color
-            );
+        const uniformValues = particleUniformValues(painter, coord, tile, layer);
             
         program.drawInstanced(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id,

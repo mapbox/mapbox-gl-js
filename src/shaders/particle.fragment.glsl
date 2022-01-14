@@ -1,8 +1,7 @@
 uniform sampler2D u_image0;
-uniform float u_particle_opacity;
-uniform vec3 u_particle_color;
 
 varying vec3 v_data;
+varying vec4 v_particle_color;
 varying float v_visibility;
 
 #pragma mapbox: define highp vec4 color
@@ -44,16 +43,16 @@ void main() {
 
 #ifdef PARTICLE_GRADIENT
     float alpha = 1.0 - extrude_length;
-    out_color = vec4(u_particle_color * vec3(alpha), alpha);
+    out_color = vec4(v_particle_color.rgb * vec3(alpha), alpha);
 #else
     float brightness = 1.0 - (extrude.y + 1.0) / 8.0;
     float alpha = 1.0 - extrude_length;
 
     vec4 tex_color = texture2D(u_image0, extrude * 0.5 + 0.5);
-    out_color = vec4(vec3(brightness * tex_color) * u_particle_color, tex_color.a);
+    out_color = vec4(vec3(brightness * tex_color) * v_particle_color.rgb, tex_color.a);
 #endif
 
-    gl_FragColor = out_color * u_particle_opacity; // * (v_visibility * opacity_t);
+    gl_FragColor = out_color * v_particle_color.a; // * (v_visibility * opacity_t);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

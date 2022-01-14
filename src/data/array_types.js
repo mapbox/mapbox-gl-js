@@ -918,6 +918,44 @@ class StructArrayLayout4f16 extends StructArray {
 StructArrayLayout4f16.prototype.bytesPerElement = 16;
 register('StructArrayLayout4f16', StructArrayLayout4f16);
 
+/**
+ * Implementation of the StructArray layout:
+ * [0]: Float32[4]
+ *
+ * @private
+ */
+ class StructArrayLayout4f4f32 extends StructArray {
+    uint8: Uint8Array;
+    float32: Float32Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7);
+    }
+
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
+        const o8 = i * 8;
+        this.float32[o8 + 0] = v0;
+        this.float32[o8 + 1] = v1;
+        this.float32[o8 + 2] = v2;
+        this.float32[o8 + 3] = v3;
+        this.float32[o8 + 4] = v4;
+        this.float32[o8 + 5] = v5;
+        this.float32[o8 + 6] = v6;
+        this.float32[o8 + 7] = v7;
+        return i;
+    }
+}
+
+StructArrayLayout4f4f32.prototype.bytesPerElement = 32;
+register('StructArrayLayout4f4f32', StructArrayLayout4f4f32);
+
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
     projectedAnchorX: number;
@@ -1256,5 +1294,5 @@ export {
     StructArrayLayout1ui2 as LineStripIndexArray,
     StructArrayLayout3f12 as SkyboxVertexArray,
     StructArrayLayout4i8 as TileBoundsArray,
-    StructArrayLayout3f12 as ParticleInstanceArray
+    StructArrayLayout4f4f32 as ParticleInstanceArray
 };

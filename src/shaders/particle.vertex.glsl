@@ -8,10 +8,10 @@ uniform mat4 u_matrix;
 uniform mat2 u_extrude_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
-uniform float u_particle_scale;
 
 attribute vec2 a_pos;
-attribute vec3 a_pos_offset;
+attribute vec4 a_offset_and_scale;
+attribute vec4 a_particle_color;
 
 #ifdef PROJECTION_GLOBE_VIEW
 attribute vec3 a_pos_3;         // Projected position on the globe
@@ -27,6 +27,7 @@ uniform vec3 u_up_dir;
 #endif
 
 varying vec3 v_data;
+varying vec4 v_particle_color;
 varying float v_visibility;
 
 #pragma mapbox: define highp vec4 color
@@ -99,8 +100,8 @@ void main(void) {
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
     vec2 circle_center = floor(a_pos * 0.5);
-    circle_center += a_pos_offset.xy;
-    radius *= u_particle_scale;
+    circle_center += a_offset_and_scale.xy;
+    radius *= a_offset_and_scale.w;
 
 #ifdef PROJECTION_GLOBE_VIEW
     // Compute positions on both globe and mercator plane to support transition between the two modes
@@ -119,7 +120,8 @@ void main(void) {
 #else 
     mat3 surface_vectors = mat3(1.0);
     // extract height offset for terrain, this returns 0 if terrain is not active
-    float height = circle_elevation(circle_center) + a_pos_offset.z;
+    float height = circle_elevation(circle_center);
+    //height += a_pos_offset.z * 0.00001;
     vec4 world_center = vec4(circle_center, height, 1);
 #endif
 
@@ -185,6 +187,7 @@ void main(void) {
     lowp float antialiasblur = 1.0 / u_device_pixel_ratio / (radius + stroke_width);
 
     v_data = vec3(extrude.x, extrude.y, antialiasblur);
+    v_particle_color = a_particle_color;
 
 #ifdef FOG
     v_fog_pos = fog_position(world_center.xyz);
