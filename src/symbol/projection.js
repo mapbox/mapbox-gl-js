@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 
-import {mat2, mat4, vec3, vec4} from 'gl-matrix';
+import {mat2, mat4, vec4} from 'gl-matrix';
 import * as symbolSize from './symbol_size.js';
 import {addDynamicAttributes} from '../data/bucket/symbol_bucket.js';
 import type {Projection} from '../geo/projection/index.js';
@@ -14,7 +14,7 @@ import type {
     SymbolLineVertexArray,
     SymbolDynamicLayoutArray
 } from '../data/array_types.js';
-import type {Mat4, Vec3, Vec4} from 'gl-matrix';
+import type {Mat4, Vec4} from 'gl-matrix';
 
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
@@ -143,7 +143,7 @@ function getGlCoordMatrix(posMatrix: Mat4,
     }
 }
 
-function project(point: Point, matrix: Mat4, elevation: ?number = 0) {
+function project(point: Point, matrix: Mat4, elevation: number = 0) {
     const pos = [point.x, point.y, elevation, 1];
     if (elevation) {
         vec4.transformMat4(pos, pos, matrix);
@@ -413,7 +413,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
     return {};
 }
 
-function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Mat4, projection: Projection, getElevation: ?((p: Point) => Array<number>)): Vec3 {
+function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Mat4, projection: Projection, getElevation: ?((p: Point) => Array<number>)) {
     const point = projection.projectTilePoint(p.x, p.y, tileID);
     if (!getElevation) {
         return project(point, posMatrix, point.z);

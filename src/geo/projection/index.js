@@ -10,14 +10,13 @@ import cylindricalEqualArea from './cylindrical_equal_area.js';
 import {extend} from '../../util/util.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import globe from './globe.js';
-import {mat4, vec3} from 'gl-matrix';
 import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import Transform from '../transform.js';
 import LngLat from '../lng_lat.js';
 import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../mercator_coordinate.js';
 
-import type {Mat4, Vec3} from 'gl-matrix';
+import type {Mat4} from 'gl-matrix';
 
 export type Projection = {
     name: string,
@@ -86,7 +85,7 @@ export function getProjection(config: ProjectionSpecification) {
 export type TileTransform = {
     createTileMatrix: (id: UnwrappedTileID) => Mat4,
     createInversionMatrix: (id: UnwrappedTileID) => Mat4,
-    upVector: (id: CanonicalTileID, x: number, y: number) => Vec3,
+    upVector: (id: CanonicalTileID, x: number, y: number) => [number, number, number],
     upVectorScale: (id: CanonicalTileID) => number,
     pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate
 };

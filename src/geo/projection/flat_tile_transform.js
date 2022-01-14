@@ -1,7 +1,7 @@
 // @flow
 import type Transform from '../transform.js';
 import {UnwrappedTileID} from '../../source/tile_id.js';
-import {mat4, vec3} from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 import MercatorCoordinate from '../mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
 import EXTENT from '../../data/extent.js';

@@ -8,7 +8,7 @@ import properties from './fill_extrusion_style_layer_properties.js';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
 import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration.js';
-import {vec2, vec4} from 'gl-matrix';
+import {vec4} from 'gl-matrix';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
 import type {BucketParameters} from '../../data/bucket.js';

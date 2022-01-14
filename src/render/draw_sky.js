@@ -14,10 +14,10 @@ import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox
 import {skyboxCaptureUniformValues} from './program/skybox_capture_program.js';
 import SkyLayer from '../style/style_layer/sky_style_layer.js';
 import type Painter from './painter.js';
-import {vec3, mat3, mat4} from 'gl-matrix';
+import {mat3, mat4} from 'gl-matrix';
 import assert from 'assert';
 
-import type {Mat4, Vec3} from 'gl-matrix';
+import type {Mat4} from 'gl-matrix';
 
 export default drawSky;
 
@@ -111,7 +111,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
 
-function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, faceRotate: Mat4, sunDirection: Vec3, i: number) {
+function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, faceRotate: Mat4, sunDirection: [number, number, number], i: number) {
     const gl = context.gl;
 
     const atmosphereColor = layer.paint.get('sky-atmosphere-color');

@@ -74,7 +74,6 @@ import type IndexBuffer from '../gl/index_buffer.js';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types.js';
 import type ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
-import type {Mat4} from 'gl-matrix';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky';
 export type CanvasCopyInstances = {
@@ -143,7 +142,7 @@ class Painter {
     symbolFadeChange: number;
     gpuTimers: {[_: string]: any };
     emptyTexture: Texture;
-    identityMat: Mat4;
+    identityMat: Float32Array;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;

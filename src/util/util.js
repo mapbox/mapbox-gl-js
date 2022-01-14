@@ -5,7 +5,6 @@ import UnitBezier from '@mapbox/unitbezier';
 import Point from '@mapbox/point-geometry';
 import window from './window.js';
 import assert from 'assert';
-import {vec4, mat4} from 'gl-matrix';
 
 import type {Callback} from '../types/callback.js';
 import type {Mat4, Vec4} from 'gl-matrix';

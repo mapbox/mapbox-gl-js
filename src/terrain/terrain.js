@@ -50,7 +50,7 @@ import type Context from '../gl/context.js';
 import type {UniformLocations, UniformValues} from '../render/uniform_binding.js';
 import type Transform from '../geo/transform.js';
 import type {DEMEncoding} from '../data/dem_data.js';
-import type {Mat4, Vec3, Vec4} from 'gl-matrix';
+import type {Vec3, Vec4} from 'gl-matrix';
 
 const GRID_DIM = 128;
 
@@ -203,7 +203,7 @@ export class Terrain extends Elevation {
     renderingToTexture: boolean;
     _style: Style;
     _mockSourceCache: MockSourceCache;
-    orthoMatrix: Mat4;
+    orthoMatrix: Float32Array;
     enabled: boolean;
     renderMode: number;
 

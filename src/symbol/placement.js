@@ -170,7 +170,7 @@ type TileLayerParameters = {
     layout: any,
     posMatrix: Mat4,
     textLabelPlaneMatrix: Mat4,
-    labelToScreenMatrix: Mat4,
+    labelToScreenMatrix: ?Mat4,
     scale: number,
     textPixelRatio: number,
     holdingForFade: boolean,

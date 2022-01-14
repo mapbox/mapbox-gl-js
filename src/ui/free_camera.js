@@ -2,7 +2,7 @@
 
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import {degToRad, wrap, getColumn, setColumn} from '../util/util.js';
-import {vec3, vec4, quat, mat4} from 'gl-matrix';
+import {vec3, quat, mat4} from 'gl-matrix';
 
 import type {Elevation} from '../terrain/elevation.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
@@ -19,13 +19,6 @@ function updateTransformOrientation(matrix: Mat4, orientation: Quat) {
 
 function updateTransformPosition(matrix: Mat4, position: Vec3) {
     setColumn(matrix, 3, [position[0], position[1], position[2], 1.0]);
-}
-
-function wrapCameraPosition(position: Vec3 | MercatorCoordinate) {
-    if (!position) return;
-    const mercatorCoordinate = Array.isArray(position) ? new MercatorCoordinate(position[0], position[1], position[2]) : position;
-    mercatorCoordinate.x = wrap(mercatorCoordinate.x, 0, 1);
-    return mercatorCoordinate;
 }
 
 function orientationFromPitchBearing(pitch: number, bearing: number): Quat {
@@ -115,8 +108,16 @@ class FreeCameraOptions {
         return this._position;
     }
 
-    set position(position: ?MercatorCoordinate) {
-        this._position = this._renderWorldCopies ? wrapCameraPosition(position) : position;
+    set position(position: ?MercatorCoordinate | Vec3) {
+        if (!position) {
+            this._position = null;
+        } else {
+            const mercatorCoordinate = position instanceof MercatorCoordinate ? position : new MercatorCoordinate(position[0], position[1], position[2]);
+            if (this._renderWorldCopies) {
+                mercatorCoordinate.x = wrap(mercatorCoordinate.x, 0, 1);
+            }
+            this._position = mercatorCoordinate;
+        }
     }
 
     /**
@@ -191,16 +192,8 @@ class FreeCamera {
 
     constructor(position: ?Vec3, orientation: ?Quat) {
         this._transform = mat4.identity([]);
-        this._orientation = quat.identity([]);
-
-        if (orientation) {
-            this._orientation = orientation;
-            updateTransformOrientation(this._transform, this._orientation);
-        }
-
-        if (position) {
-            updateTransformPosition(this._transform, position);
-        }
+        this.orientation = orientation;
+        this.position = position;
     }
 
     get mercatorPosition(): MercatorCoordinate {
@@ -213,17 +206,21 @@ class FreeCamera {
         return [col[0], col[1], col[2]];
     }
 
-    set position(value: Vec3) {
-        updateTransformPosition(this._transform, value);
+    set position(value: ?Vec3) {
+        if (value) {
+            updateTransformPosition(this._transform, value);
+        }
     }
 
     get orientation(): Quat {
         return this._orientation;
     }
 
-    set orientation(value: Quat) {
-        this._orientation = value;
-        updateTransformOrientation(this._transform, this._orientation);
+    set orientation(value: ?Quat) {
+        this._orientation = value || quat.identity([]);
+        if (value) {
+            updateTransformOrientation(this._transform, this._orientation);
+        }
     }
 
     getPitchBearing(): {pitch: number, bearing: number} {
