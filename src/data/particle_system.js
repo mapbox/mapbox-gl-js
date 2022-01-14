@@ -119,8 +119,8 @@ class Particle {
 
         this.opacity = 1.0;
         
-        this.maxScale = this.clouds ? 15.0 : 3.0;
-        this.minScale = this.clouds ? 5.0 : 0.5;
+        this.maxScale = this.clouds ? 30.0 : 3.0;
+        this.minScale = this.clouds ? 10.0 : 0.5;
         this.scale = Math.random() * (this.maxScale - this.minScale) + this.minScale;
         
         this.minTimeToLive = this.clouds ? 5000 : 5000;
@@ -128,8 +128,8 @@ class Particle {
         this.timeToLive = Math.random() * (this.maxTimeToLive - this.minTimeToLive) + this.minTimeToLive;
         this.birthTime = new Date().getTime();
         
-        const colorA = {r: 1.0, g: 1.0, b: 0.0};
-        const colorB = {r: 0.2, g: 0.2, b: 1.0};
+        const colorA = this.clouds ? {r: 1.0, g: 1.0, b: 1.0} : {r: 1.0, g: 1.0, b: 0.0};
+        const colorB = this.clouds ? {r: 0.8, g: 0.8, b: 0.8} : {r: 0.2, g: 0.2, b: 1.0};
         const lerp = (a, b, t) => a * (1 - t) + b * t;
         const randomColorProg = Math.pow(Math.random(), 2.0);
         this.color = {
