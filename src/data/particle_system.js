@@ -1,6 +1,7 @@
 // @flow
 
 import { CanonicalTileID } from "../source/tile_id";
+import { PossiblyEvaluated } from "../style/properties";
 class ParticleSystem {
     emitters: Array<Emitter>;
     lastUpdate: any;
@@ -26,7 +27,7 @@ class ParticleSystem {
         //setTimeout(() => { this.update() }, 100);
     }
 
-    addEmitter(feature: any, location: Point, tileId: CanonicalTileID, mercatorPoint: Point, clouds: Boolean) {
+    addEmitter(feature: any, location: Point, tileId: CanonicalTileID, mercatorPoint: Point, paint: PossiblyEvaluated<PaintProps>) {
         if (!tileId) {
             return;
         }
@@ -37,7 +38,7 @@ class ParticleSystem {
                 return;
             }
         }
-        this.emitters.push(new Emitter(feature, location, tileId, mercatorPoint, clouds));
+        this.emitters.push(new Emitter(feature, location, tileId, mercatorPoint, paint));
     }
 
 }
@@ -51,24 +52,24 @@ class Emitter {
     featureId: number;
     tileId: CanonicalTileID;
     mercatorPoint: Point;
-    clouds: Boolean;
+    paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(feature: any, location: Point, tileId: CanonicalTileID, mercatorPoint: Point, clouds: Boolean) {
+    constructor(feature: any, location: Point, tileId: CanonicalTileID, mercatorPoint: Point, paint: PossiblyEvaluated<PaintProps>) {
         this.feature = feature;
         this.particles = [];
         this.location = location;
         this.elevation = 1.0;
         this.zoom = tileId.z;
-        this.maxParticleCount = clouds ? 100 : 250;
+        this.maxParticleCount = (paint.get('particle-emitter-type') === 'cloud') ? 100 : 250;
         this.featureId = undefined;
         this.tileId = tileId;
         this.mercatorPoint = mercatorPoint;
-        this.clouds = clouds;
+        this.paint = paint;
     }
     
     update() {
         while (this.particles.length < this.maxParticleCount) {
-            this.particles.push(new Particle(this.clouds));
+            this.particles.push(new Particle(this.paint));
         }
 
         for (const particle of this.particles) {
@@ -86,7 +87,7 @@ class Particle {
     maxScale: number;
     minTimeToLive: number;
     maxTimeToLive: number;
-    clouds: Boolean;
+    paint: PossiblyEvaluated<PaintProps>;
 
     isAlive: boolean;
     locationOffset: any;
@@ -96,11 +97,13 @@ class Particle {
     birthTime: number;
     color: any;
 
-    constructor(clouds: Boolean) {
+    constructor(paint: PossiblyEvaluated<PaintProps>) {
         this.isAlive = true;
-        this.clouds = clouds;
+        this.paint = paint;
+        let clouds = (paint.get('particle-emitter-type') === 'cloud');
+        
         // Distribute position in a circle
-        const offsetRange = this.clouds ? 50.0 : 200.0;
+        const offsetRange = clouds ? 50.0 : 200.0;
         const r = Math.sqrt(Math.random()) * offsetRange;
         const theta = Math.random() * 2 * Math.PI;
         this.locationOffset = {
@@ -113,23 +116,23 @@ class Particle {
         var dir = 0.9;
         this.direction = {x: dir, y: 1.0 - dir, z: 0.0 };
 
-        let minVelocity = this.clouds ? 0.01 : 0.0;
-        let maxVelocity = this.clouds ? 0.05 : 0.0;
+        let minVelocity = clouds ? 0.01 : 0.0;
+        let maxVelocity = clouds ? 0.05 : 0.0;
         this.velocity = Math.random() * (maxVelocity - minVelocity) + minVelocity;
 
         this.opacity = 1.0;
         
-        this.maxScale = this.clouds ? 30.0 : 3.0;
-        this.minScale = this.clouds ? 10.0 : 0.5;
+        this.maxScale = clouds ? 30.0 : 3.0;
+        this.minScale = clouds ? 10.0 : 0.5;
         this.scale = Math.random() * (this.maxScale - this.minScale) + this.minScale;
         
-        this.minTimeToLive = this.clouds ? 5000 : 5000;
-        this.maxTimeToLive = this.clouds ? 15000 : 10000;
+        this.minTimeToLive = clouds ? 5000 : 5000;
+        this.maxTimeToLive = clouds ? 15000 : 10000;
         this.timeToLive = Math.random() * (this.maxTimeToLive - this.minTimeToLive) + this.minTimeToLive;
         this.birthTime = new Date().getTime();
         
-        const colorA = this.clouds ? {r: 1.0, g: 1.0, b: 1.0} : {r: 1.0, g: 1.0, b: 0.0};
-        const colorB = this.clouds ? {r: 0.8, g: 0.8, b: 0.8} : {r: 0.2, g: 0.2, b: 1.0};
+        const colorA = clouds ? {r: 1.0, g: 1.0, b: 1.0} : {r: 1.0, g: 1.0, b: 0.0};
+        const colorB = clouds ? {r: 0.8, g: 0.8, b: 0.8} : {r: 0.2, g: 0.2, b: 1.0};
         const lerp = (a, b, t) => a * (1 - t) + b * t;
         const randomColorProg = Math.pow(Math.random(), 2.0);
         this.color = {

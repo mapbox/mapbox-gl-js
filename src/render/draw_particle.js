@@ -43,7 +43,6 @@ type SegmentsTileRenderState = {
 function drawParticles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
 
-    console.log('emitter type',  layer.paint.get('particle-emitter-type'), layer);
     const cloudMode = layer.paint.get('particle-emitter-type') === 'cloud';
     const opacity = layer.paint.get('particle-opacity');
     const sortFeaturesByKey = layer.layout.get('particle-sort-key').constantOr(1) !== undefined;
@@ -71,7 +70,7 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
         if (!bucket) continue;
 
         for (const feature of bucket.features) {
-            globalSystem.addEmitter(undefined, feature.point, feature.tileId, feature.mercatorPoint, cloudMode);
+            globalSystem.addEmitter(undefined, feature.point, feature.tileId, feature.mercatorPoint, layer.paint);
         }
 
         globalSystem.update();
@@ -107,7 +106,7 @@ function drawParticles(painter: Painter, sourceCache: SourceCache, layer: Circle
             if (!emitter.tileId.equals(bucket.tileId)) {
                 continue;
             }
-            if (emitter.clouds != cloudMode) {
+            if (emitter.paint.get('particle-emitter-type') != layer.paint.get('particle-emitter-type')) {
                 continue;
             }
             for (var particle of emitter.particles) {
