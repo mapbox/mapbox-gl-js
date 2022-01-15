@@ -478,6 +478,17 @@ test('Map', (t) => {
             });
         });
 
+        t.test('Map#isStyleLoaded', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+
+            t.equal(map.isStyleLoaded(), false, 'false before style has loaded');
+            map.on('load', () => {
+                t.equal(map.isStyleLoaded(), true, 'true when style is loaded');
+                t.end();
+            });
+        });
+
         t.test('Map#areTilesLoaded', (t) => {
             const style = createStyle();
             const map = createMap(t, {style});
@@ -493,7 +504,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('e.isSourceLoaded should return `false` if source tiles are not loaded', (t) => {
+        t.test('e.isSourceLoaded if source tiles are not loaded', (t) => {
             const style = createStyle();
             const map = createMap(t, {style});
 
@@ -530,7 +541,6 @@ test('Map', (t) => {
         });
         t.end();
     });
-
 
     t.test('#getStyle', (t) => {
         t.test('returns the style', (t) => {
