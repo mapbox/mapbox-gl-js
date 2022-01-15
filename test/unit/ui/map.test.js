@@ -503,7 +503,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('e.isSourceLoaded if source tiles are not loaded', (t) => {
+        t.test('e.isSourceLoaded should return `false` if source tiles are not loaded', (t) => {
             const style = createStyle();
             const map = createMap(t, {style});
 
