@@ -467,7 +467,6 @@ test('Map', (t) => {
 
             map.on('load', () => {
                 map.on('data', (e) => {
-
                     if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                         t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
                         t.end();
