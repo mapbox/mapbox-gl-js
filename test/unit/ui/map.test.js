@@ -467,25 +467,14 @@ test('Map', (t) => {
 
             map.on('load', () => {
                 map.on('data', (e) => {
+
                     if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                        t.equal(e.isSourceLoaded, true, 'true when loaded');
                         t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
                         t.end();
                     }
                 });
                 map.addSource('geojson', createStyleSource());
                 t.equal(map.isSourceLoaded('geojson'), false, 'false before loaded');
-            });
-        });
-
-        t.test('Map#isStyleLoaded', (t) => {
-            const style = createStyle();
-            const map = createMap(t, {style});
-
-            t.equal(map.isStyleLoaded(), false, 'false before style has loaded');
-            map.on('load', () => {
-                t.equal(map.isStyleLoaded(), true, 'true when style is loaded');
-                t.end();
             });
         });
 
@@ -503,8 +492,45 @@ test('Map', (t) => {
                 t.end();
             });
         });
+
+        t.test('e.isSourceLoaded should return `false` if source tiles are not loaded', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+
+            map.on('load', () => {
+                map.on('data', (e) => {
+                    if (e.sourceId === 'geojson' && e.sourceDataType === 'metadata') {
+                        t.equal(e.isSourceLoaded, false, 'false when source is not loaded');
+                        t.end();
+                    }
+                });
+                map.addSource('geojson', createStyleSource());
+                const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
+                map.style._getSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
+
+            });
+        });
+
+        t.test('e.isSourceLoaded should return `true` if source tiles are loaded', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+
+            map.on('load', () => {
+                map.on('data', (e) => {
+                    if (e.sourceId === 'geojson' && e.sourceDataType === 'metadata') {
+                        t.equal(e.isSourceLoaded, true, 'true when source is loaded');
+                        t.end();
+                    }
+                });
+                map.addSource('geojson', createStyleSource());
+                const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
+                map.style._getSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
+                map.style._getSourceCache('geojson')._tiles[fakeTileId.key].state = 'loaded';
+            });
+        });
         t.end();
     });
+
 
     t.test('#getStyle', (t) => {
         t.test('returns the style', (t) => {
