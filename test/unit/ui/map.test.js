@@ -517,7 +517,6 @@ test('Map', (t) => {
                 map.addSource('geojson', createStyleSource());
                 const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
                 map.style._getSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
-
             });
         });
 
@@ -538,6 +537,7 @@ test('Map', (t) => {
                 map.style._getSourceCache('geojson')._tiles[fakeTileId.key].state = 'loaded';
             });
         });
+
         t.end();
     });
 
