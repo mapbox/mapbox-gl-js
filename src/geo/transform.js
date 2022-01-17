@@ -52,7 +52,7 @@ class Transform {
     angle: number;
 
     // 2D rotation matrix in the horizontal plane, as a function of bearing
-    rotationMatrix: Float64Array;
+    rotationMatrix: Float32Array;
 
     // Zoom, modulo 1
     zoomFraction: number;

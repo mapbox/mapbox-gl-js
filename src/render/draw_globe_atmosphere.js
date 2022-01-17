@@ -28,7 +28,7 @@ function drawGlobeAtmosphere(painter: Painter) {
     const centerOnViewSpace = vec3.transformMat4([], [0, 0, 0], globeToView);
     const radiusOnViewSpace = vec3.add([], centerOnViewSpace, [transform.worldSize / Math.PI / 2.0, 0, 0]);
 
-    const centerOnScreen = vec3.transformMat4([], centerOnViewSpace, viewToScreen);
+    const centerOnScreen = vec3.transformMat4([0, 0], centerOnViewSpace, viewToScreen);
     const radiusOnScreen = vec3.transformMat4([], radiusOnViewSpace, viewToScreen);
 
     const pixelRadius = vec3.length(vec3.sub([], radiusOnScreen, centerOnScreen));

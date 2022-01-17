@@ -95,6 +95,7 @@ export class Elevation {
             const elevation = this.getAtTileOffset(tileID, p.x, p.y);
             const upVector = tileTransform.upVector(tileID.canonical, p.x, p.y);
             const upVectorScale = tileTransform.upVectorScale(tileID.canonical);
+            // $FlowFixMe can't yet resolve tuple vs array incompatibilities
             vec3.scale(upVector, upVector, elevation * upVectorScale);
             return upVector;
         });

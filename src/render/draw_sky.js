@@ -119,7 +119,7 @@ function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, 
     const sunIntensity = layer.paint.get('sky-atmosphere-sun-intensity');
 
     const uniformValues = skyboxCaptureUniformValues(
-        mat3.fromMat4([], faceRotate),
+        mat3.fromMat4(mat3.create(), faceRotate),
         sunDirection,
         sunIntensity,
         atmosphereColor,

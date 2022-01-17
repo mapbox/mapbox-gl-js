@@ -77,7 +77,7 @@ const maxTangent = Math.tan(85 * Math.PI / 180);
 /*
  * Returns a matrix for converting from tile units to the correct label coordinate space.
  */
-function getLabelPlaneMatrix(posMatrix: Mat4,
+function getLabelPlaneMatrix(posMatrix: Float32Array,
                              tileID: CanonicalTileID,
                              pitchWithMap: boolean,
                              rotateWithMap: boolean,
@@ -113,7 +113,7 @@ function getLabelPlaneMatrix(posMatrix: Mat4,
 /*
  * Returns a matrix for converting from the correct label coordinate space to gl coords.
  */
-function getGlCoordMatrix(posMatrix: Mat4,
+function getGlCoordMatrix(posMatrix: Float32Array,
                           tileID: CanonicalTileID,
                           pitchWithMap: boolean,
                           rotateWithMap: boolean,
@@ -178,11 +178,11 @@ function isVisible(anchorPos: [number, number, number, number],
  *  This is only run on labels that are aligned with lines. Horizontal labels are handled entirely in the shader.
  */
 function updateLineLabels(bucket: SymbolBucket,
-                          posMatrix: Mat4,
+                          posMatrix: Float32Array,
                           painter: Painter,
                           isText: boolean,
-                          labelPlaneMatrix: Mat4,
-                          glCoordMatrix: Mat4,
+                          labelPlaneMatrix: Float32Array,
+                          glCoordMatrix: Float32Array,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
                           getElevation: ?((p: Point) => Array<number>),
@@ -280,7 +280,7 @@ function updateLineLabels(bucket: SymbolBucket,
     }
 }
 
-function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffsetArray, lineOffsetX: number, lineOffsetY: number, flip: boolean, anchorPoint: Point, tileAnchorPoint: Point, symbol: any, lineVertexArray: SymbolLineVertexArray, labelPlaneMatrix: Mat4, projectionCache: any, getElevation: ?((p: Point) => Array<number>), returnPathInTileCoords: ?boolean, projection: Projection, tileID: OverscaledTileID) {
+function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffsetArray, lineOffsetX: number, lineOffsetY: number, flip: boolean, anchorPoint: Point, tileAnchorPoint: Point, symbol: any, lineVertexArray: SymbolLineVertexArray, labelPlaneMatrix: Float32Array, projectionCache: any, getElevation: ?((p: Point) => Array<number>), returnPathInTileCoords: ?boolean, projection: Projection, tileID: OverscaledTileID) {
     const glyphEndIndex = symbol.glyphStartIndex + symbol.numGlyphs;
     const lineStartIndex = symbol.lineStartIndex;
     const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
@@ -413,7 +413,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
     return {};
 }
 
-function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Mat4, projection: Projection, getElevation: ?((p: Point) => Array<number>)) {
+function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Float32Array, projection: Projection, getElevation: ?((p: Point) => Array<number>)) {
     const point = projection.projectTilePoint(p.x, p.y, tileID);
     if (!getElevation) {
         return project(point, posMatrix, point.z);
@@ -423,7 +423,7 @@ function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Ma
     return project(new Point(point.x + elevation[0], point.y + elevation[1]), posMatrix, point.z + elevation[2]);
 }
 
-function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Point, minimumLength: number, projectionMatrix: Mat4, getElevation: ?((p: Point) => Array<number>), projection: Projection, tileID: CanonicalTileID) {
+function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Point, minimumLength: number, projectionMatrix: Float32Array, getElevation: ?((p: Point) => Array<number>), projection: Projection, tileID: CanonicalTileID) {
     // We are assuming "previousTilePoint" won't project to a point within one unit of the camera plane
     // If it did, that would mean our label extended all the way out from within the viewport to a (very distant)
     // point near the plane of the camera. We wouldn't be able to render the label anyway once it crossed the
@@ -450,7 +450,7 @@ function placeGlyphAlongLine(offsetX: number,
                              lineStartIndex: number,
                              lineEndIndex: number,
                              lineVertexArray: SymbolLineVertexArray,
-                             labelPlaneMatrix: Mat4,
+                             labelPlaneMatrix: Float32Array,
                              projectionCache: {[_: number]: Point},
                              getElevation: ?((p: Point) => Array<number>),
                              returnPathInTileCoords: ?boolean,
