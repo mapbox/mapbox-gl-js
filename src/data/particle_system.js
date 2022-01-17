@@ -103,18 +103,22 @@ class Particle {
         let clouds = (paint.get('particle-emitter-type') === 'cloud');
         
         // Distribute position in a circle
-        const offsetRange = clouds ? 50.0 : 200.0;
-        const r = Math.sqrt(Math.random()) * offsetRange;
+
+        let minOffset = paint.get('particle-emitter-offset-min').constantOr(0);
+        let maxOffset = paint.get('particle-emitter-offset-max').constantOr(0);
+        const r = Math.sqrt(Math.random()) * (maxOffset - minOffset) + minOffset;
         const theta = Math.random() * 2 * Math.PI;
+        let minElevation = paint.get('particle-emitter-elevation-min').constantOr(0);
+        let maxElevation = paint.get('particle-emitter-elevation-min').constantOr(0);
+
         this.locationOffset = {
             x: r * Math.cos(theta),
             y: r * Math.sin(theta),
-            z: clouds ? 2000.0 + Math.random() * 500.0 : 0.0
+            z: Math.random() * (maxElevation - minElevation) + minElevation
         };
 
-        //var dir = Math.random();
-        var dir = 0.9;
-        this.direction = {x: dir, y: 1.0 - dir, z: 0.0 };
+        var dir = paint.get('particle-emitter-direction');
+        this.direction = {x: dir[0], y: dir[1], z: dir[2] };
 
         let minVelocity = paint.get('particle-emitter-velocity-min').constantOr(0);
         let maxVelocity = paint.get('particle-emitter-velocity-min').constantOr(0);
@@ -131,8 +135,8 @@ class Particle {
         this.timeToLive = Math.random() * (this.maxTimeToLive - this.minTimeToLive) + this.minTimeToLive;
         this.birthTime = new Date().getTime();
         
-        const colorA = clouds ? {r: 1.0, g: 1.0, b: 1.0} : {r: 1.0, g: 1.0, b: 0.0};
-        const colorB = clouds ? {r: 0.8, g: 0.8, b: 0.8} : {r: 0.2, g: 0.2, b: 1.0};
+        const colorA = paint.get('particle-color-start').constantOr({r:1,g:1,b:1,a:1});
+        const colorB = paint.get('particle-color-end').constantOr({r:1,g:1,b:1,a:1});
         const lerp = (a, b, t) => a * (1 - t) + b * t;
         const randomColorProg = Math.pow(Math.random(), 2.0);
         this.color = {
@@ -161,6 +165,7 @@ class Particle {
         }
         this.locationOffset.x += this.direction.x * this.velocity;
         this.locationOffset.y += this.direction.y * this.velocity;
+        this.locationOffset.z += this.direction.z * this.velocity;
     }
 
 }

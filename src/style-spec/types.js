@@ -347,7 +347,12 @@ export type ParticleLayerSpecification = {|
     |},
     "paint"?: {|
         "particle-radius"?: DataDrivenPropertyValueSpecification<number>,
-        "particle-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "particle-color-start"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "particle-color-end"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "particle-emitter-elevation-min"?: DataDrivenPropertyValueSpecification<number>,
+        "particle-emitter-elevation-max"?: DataDrivenPropertyValueSpecification<number>,
+        "particle-emitter-offset-min"?: DataDrivenPropertyValueSpecification<number>,
+        "particle-emitter-offset-max"?: DataDrivenPropertyValueSpecification<number>,
         "particle-blur"?: DataDrivenPropertyValueSpecification<number>,
         "particle-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "particle-emitter-velocity-min"?: DataDrivenPropertyValueSpecification<number>,

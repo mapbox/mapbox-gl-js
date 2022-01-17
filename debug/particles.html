@@ -471,20 +471,77 @@ map.on('load', function() {
 }
     });
 
+    map.addSource('snow-budapest', {
+        "type": "geojson",
+        "data": {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.041578979492189,
+          47.511403640384125
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.0955516353,
+          47.4841117608
+        ]
+      }
+    }
+  ]
+}
+    });
+
     map.addLayer({
         "id": "particles-citylight",
         "type": "particle",
         "source": "citylight-budapest",
         "paint": {
-            "particle-radius": 1.0,
+            "particle-radius": 0.5,
             "particle-emitter-type": "gradient",
-            "particle-emitter-direction": [1, 1, 0],
+            "particle-color-start": "#aaaa55",
+            "particle-color-end": "#3333aa",
             "particle-emitter-ttl-min": 5000,
             "particle-emitter-ttl-max": 10000,
             "particle-emitter-velocity-min": 0,
             "particle-emitter-velocity-max": 0,
+            "particle-emitter-offset-min": 0,
+            "particle-emitter-offset-max": 200
         }
     }, 'landcover');
+
+    map.addLayer({
+        "id": "particles-snow",
+        "type": "particle",
+        "source": "snow-budapest",
+        "paint": {
+            "particle-radius": 0.2,
+            "particle-emitter-type": "gradient",
+            "particle-color-start": "#ffffff",
+            "particle-color-end": "#ffffff",
+            "particle-emitter-ttl-min": 1000,
+            "particle-emitter-ttl-max": 5000,
+            "particle-emitter-velocity-min": 0.1,
+            "particle-emitter-velocity-max": 0.3,
+            "particle-emitter-direction": [-0.005, 0, -1],
+            "particle-emitter-velocity-min": 10,
+            "particle-emitter-velocity-max": 20,
+            "particle-emitter-elevation-min": 8000,
+            "particle-emitter-elevation-max": 9000,
+            "particle-emitter-offset-min": 0,
+            "particle-emitter-offset-max": 50
+        }
+    });
 
     map.addLayer({
         "id": "particles-clouds",
@@ -493,10 +550,17 @@ map.on('load', function() {
         "paint": {
             "particle-radius": 1.0,
             "particle-emitter-type": "cloud",
+            "particle-color-start": "#ffffff",
+            "particle-color-end": "#eeeeee",
+            "particle-emitter-elevation-min": 10000,
+            "particle-emitter-elevation-max": 15000,
             "particle-emitter-ttl-min": 5000,
             "particle-emitter-ttl-max": 10000,
+            "particle-emitter-direction": [1, 1, 0],
             "particle-emitter-velocity-min": 0.1,
             "particle-emitter-velocity-max": 0.3,
+            "particle-emitter-offset-min": 0,
+            "particle-emitter-offset-max": 50
         }
     });
 });

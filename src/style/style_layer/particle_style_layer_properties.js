@@ -29,7 +29,12 @@ const layout: Properties<LayoutProps> = new Properties({
 
 export type PaintProps = {|
     "particle-radius": DataDrivenProperty<number>,
-    "particle-color": DataDrivenProperty<Color>,
+    "particle-color-start": DataDrivenProperty<Color>,
+    "particle-color-end": DataDrivenProperty<Color>,
+    "particle-emitter-elevation-min": DataDrivenProperty<number>,
+    "particle-emitter-elevation-max": DataDrivenProperty<number>,
+    "particle-emitter-offset-min": DataDrivenProperty<number>,
+    "particle-emitter-offset-max": DataDrivenProperty<number>,
     "particle-blur": DataDrivenProperty<number>,
     "particle-opacity": DataDrivenProperty<number>,
     "particle-emitter-velocity-min": DataDrivenProperty<number>,
@@ -44,7 +49,12 @@ export type PaintProps = {|
 
 const paint: Properties<PaintProps> = new Properties({
     "particle-radius": new DataDrivenProperty(styleSpec["paint_particle"]["particle-radius"]),
-    "particle-color": new DataDrivenProperty(styleSpec["paint_particle"]["particle-color"]),
+    "particle-color-start": new DataDrivenProperty(styleSpec["paint_particle"]["particle-color-start"]),
+    "particle-color-end": new DataDrivenProperty(styleSpec["paint_particle"]["particle-color-end"]),
+    "particle-emitter-elevation-min": new DataDrivenProperty(styleSpec["paint_particle"]["particle-emitter-elevation-min"]),
+    "particle-emitter-elevation-max": new DataDrivenProperty(styleSpec["paint_particle"]["particle-emitter-elevation-max"]),
+    "particle-emitter-offset-min": new DataDrivenProperty(styleSpec["paint_particle"]["particle-emitter-offset-min"]),
+    "particle-emitter-offset-max": new DataDrivenProperty(styleSpec["paint_particle"]["particle-emitter-offset-max"]),
     "particle-blur": new DataDrivenProperty(styleSpec["paint_particle"]["particle-blur"]),
     "particle-opacity": new DataDrivenProperty(styleSpec["paint_particle"]["particle-opacity"]),
     "particle-emitter-velocity-min": new DataDrivenProperty(styleSpec["paint_particle"]["particle-emitter-velocity-min"]),
