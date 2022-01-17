@@ -44,6 +44,16 @@ map._showQueryGeometry = false;
 map.repaint = true;
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
+map.setMinZoom(10.5);
+map.setMaxZoom(10.5);
+map.setMaxPitch(70);
+map.setMaxBounds([[
+          18.686370849609375,
+          47.202776377962714
+        ],[
+          19.460906982421875,
+          47.75686775372488
+        ]])
 
 map.on('load', function() {
 
@@ -476,14 +486,14 @@ map.on('load', function() {
         "data": {
   "type": "FeatureCollection",
   "features": [
-    {
+  {
       "type": "Feature",
       "properties": {},
       "geometry": {
         "type": "Point",
         "coordinates": [
-          19.041578979492189,
-          47.511403640384125
+          19.04656005859375,
+          47.53091047852614
         ]
       }
     },
@@ -493,8 +503,41 @@ map.on('load', function() {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          19.0955516353,
-          47.4841117608
+          19.04482977294922,
+          47.49679221520181
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.075608947753906,
+          47.475911695481756
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.071578979492188,
+          47.511403640384124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.093451635742188,
+          47.499111760583766
         ]
       }
     }
