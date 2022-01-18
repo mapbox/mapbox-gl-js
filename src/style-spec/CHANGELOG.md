@@ -1,6 +1,6 @@
 # 13.23.1-beta.1
 
-### 🐞 Bug fixes
+### ✨ Features and improvements
 
 * Fix `coalesce` expressions to return a `ResolvedImage` when images are missing. ([#11371](https://github.com/mapbox/mapbox-gl-js/pull/11371))
 
