@@ -15,7 +15,7 @@
 ### 🐞 Bug fixes
 
 * Fix canvas size to evaluate to expected value when applying the CSS transform property. ([#11310](https://github.com/mapbox/mapbox-gl-js/pull/11310))
-* Fix `getBounds` sometimes returning invalid `LngLat` when zooming on a map with terrain. ([#11339](https://github.com/mapbox/mapbox-gl-js/pull/11339))
+* Fix `getBounds` sometimes returning invalid `LngLat` when zooming on a map with terrain. ([#11339](https://github.com/mapbox/mapbox-gl-js/pull/11339)) (h/t [@ted-piotrowski](https://github.com/ted-piotrowski))
 * Fix rendering of denormalized strings with diacritics. ([#11269](https://github.com/mapbox/mapbox-gl-js/pull/11269))
 * Remove redundant title attribute from `Improve this Map` attribution element. ([#11360](https://github.com/mapbox/mapbox-gl-js/pull/11360))
 * Fix a rare terrain flickering issue when using terrain with multiple vector data sources. ([#11346](https://github.com/mapbox/mapbox-gl-js/pull/11346))
