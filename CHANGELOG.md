@@ -17,7 +17,7 @@ Add a default `aria-label` for interactive markers for improved user accessibili
 * Fix rendering of denormalized strings with diacritics. ([#11269](https://github.com/mapbox/mapbox-gl-js/pull/11269))
 * Fix `getBounds` sometimes returning invalid `LngLat` when zooming on a map with terrain. ([#11339](https://github.com/mapbox/mapbox-gl-js/pull/11339))
 * Fix a rare terrain flickering issue when using terrain with multiple vector data sources. ([#11346](https://github.com/mapbox/mapbox-gl-js/pull/11346))
-* Fix returning 404s with sparse terrain DEM tilesets. ([#11276](https://github.com/mapbox/mapbox-gl-js/pull/11276))
+* Add support for sparse tile sets to DEM data sources, when served tiles don't go up to the full `maxzoom`. ([#11276](https://github.com/mapbox/mapbox-gl-js/pull/11276))
 * Fix Safari 15 warning: `TypeError: undefined is not an object (evaluating 't[12]')`. ([#11330](https://github.com/mapbox/mapbox-gl-js/pull/11330))
 * Remove redundant title attribute from `Improve this Map` attribution element. ([#11360](https://github.com/mapbox/mapbox-gl-js/pull/11360))
 
