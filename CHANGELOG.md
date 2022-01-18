@@ -11,7 +11,7 @@ ox-gl-js/pull/11279)) (h/t [lpizzinidev](https://github.com/lpizzinidev))
 * Add a default `aria-label` for interactive markers for improved user accessibility. ([#11349](https://github.com/mapbox/mapbox-gl-js/pull/11349))
 * Add support for sparse tile sets to DEM data sources, when served tiles don't go up to the full `maxzoom`. ([#11276](https://github.com/mapbox/mapbox-gl-js/pull/11276))
 * Allow users to set order of custom attribution. ([#11196](https://github.com/mapbox/mapbox-gl-js/pull/11196))
-* Add function call chaining to function `map.setProjection`. ([#11279](https://github.com/mapbox/mapb
+* Add function call chaining to function `map.setProjection` ([#11279](https://github.com/mapbox/mapbox-gl-js/pull/11279)) (h/t [lpizzinidev](https://github.com/lpizzinidev))
 
 ### 🐞 Bug fixes
 
