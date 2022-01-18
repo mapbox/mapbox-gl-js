@@ -2,7 +2,7 @@
 
 ### 🐞 Bug fixes
 
-* Fix coalesce on missing images to return ResolvedImage. ([#11371](https://github.com/mapbox/mapbox-gl-js/pull/11371))
+* Fix `coalesce` expressions to return a `ResolvedImage` when images are missing. ([#11371](https://github.com/mapbox/mapbox-gl-js/pull/11371))
 
 # 13.23.0
 
