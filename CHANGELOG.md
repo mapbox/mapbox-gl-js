@@ -1,3 +1,25 @@
+## 2.7.0-beta.1
+
+### Features ✨ and improvements 🏁
+
+* Enable preloading tiles for camera animation. ([#11328](https://github.com/mapbox/mapbox-gl-js/pull/11328))
+* Improve quality of transparent line layers by removing overlapping geometry artifacts. ([#11082](https://github.com/mapbox/mapbox-gl-js/pull/11082))
+* Add perspective correction for non-rectangular image, canvas and video sources. ([#11292](https://github.com/mapbox/mapbox-gl-js/pull/11292))
+* Improve performance of default markers. ([#11321](https://github.com/mapbox/mapbox-gl-js/pull/11321))
+* Add marker methods `setSnapToPixel` and `getSnapToPixel` to indicate rounding a marker to pixel. ([#11167](https://github.com/mapbox/mapbox-gl-js/pull/11167)) (h/t [malekeym](https://github.com/malekeym))
+* Add a default `aria-label` for interactive markers for improved user accessibility. ([#11349](https://github.com/mapbox/mapbox-gl-js/pull/11349))
+* Add support for sparse tile sets to DEM data sources, when served tiles don't go up to the full `maxzoom`. ([#11276](https://github.com/mapbox/mapbox-gl-js/pull/11276))
+* Allow users to set order of custom attribution. ([#11196](https://github.com/mapbox/mapbox-gl-js/pull/11196))
+* Add function call chaining to function `map.setProjection` ([#11279](https://github.com/mapbox/mapbox-gl-js/pull/11279)) (h/t [lpizzinidev](https://github.com/lpizzinidev))
+
+### 🐞 Bug fixes
+
+* Fix canvas size to evaluate to expected value when applying the CSS transform property. ([#11310](https://github.com/mapbox/mapbox-gl-js/pull/11310))
+* Fix `getBounds` sometimes returning invalid `LngLat` when zooming on a map with terrain. ([#11339](https://github.com/mapbox/mapbox-gl-js/pull/11339)) (h/t [@ted-piotrowski](https://github.com/ted-piotrowski))
+* Fix rendering of denormalized strings with diacritics. ([#11269](https://github.com/mapbox/mapbox-gl-js/pull/11269))
+* Remove redundant title attribute from `Improve this Map` attribution element. ([#11360](https://github.com/mapbox/mapbox-gl-js/pull/11360))
+* Fix a rare terrain flickering issue when using terrain with multiple vector data sources. ([#11346](https://github.com/mapbox/mapbox-gl-js/pull/11346))
+
 ## 2.6.1
 
 ### 🐞 Bug fixes
