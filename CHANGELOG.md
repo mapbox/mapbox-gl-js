@@ -8,7 +8,7 @@
 * Improve quality of transparent line layers by removing overlapping geometry artifacts. ([#11082](https://github.com/mapbox/mapbox-gl-js/pull/11082))
 * Improve performance of default markers. ([#11321](https://github.com/mapbox/mapbox-gl-js/pull/11321))
 * Add marker methods `setSnapToPixel` and `getSnapToPixel` to indicate rounding a marker to pixel. (h/t [@malekeym](https://github.com/malekeym)) ([#11167](https://github.com/mapbox/mapbox-gl-js/pull/11167)) (h/t [malekeym](https://github.com/malekeym))
-Add a default `aria-label` for interactive markers for improved user accessibility. ([#11349](https://github.com/mapbox/mapbox-gl-js/pull/11349))
+* Add a default `aria-label` for interactive markers for improved user accessibility. ([#11349](https://github.com/mapbox/mapbox-gl-js/pull/11349))
 * Allow users to set order of custom attribution. ([#11196](https://github.com/mapbox/mapbox-gl-js/pull/11196))
 
 ### 🐞 Bug fixes
