@@ -5,7 +5,6 @@
 * Enable preloading tiles for camera animation. ([#11328](https://github.com/mapbox/mapbox-gl-js/pull/11328))
 * Improve quality of transparent line layers by removing overlapping geometry artifacts. ([#11082](https://github.com/mapbox/mapbox-gl-js/pull/11082))
 * Add perspective correction for non-rectangular image, canvas and video sources. ([#11292](https://github.com/mapbox/mapbox-gl-js/pull/11292))
-ox-gl-js/pull/11279)) (h/t [lpizzinidev](https://github.com/lpizzinidev))
 * Improve performance of default markers. ([#11321](https://github.com/mapbox/mapbox-gl-js/pull/11321))
 * Add marker methods `setSnapToPixel` and `getSnapToPixel` to indicate rounding a marker to pixel. (h/t [@malekeym](https://github.com/malekeym)) ([#11167](https://github.com/mapbox/mapbox-gl-js/pull/11167)) (h/t [malekeym](https://github.com/malekeym))
 * Add a default `aria-label` for interactive markers for improved user accessibility. ([#11349](https://github.com/mapbox/mapbox-gl-js/pull/11349))
