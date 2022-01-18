@@ -306,7 +306,7 @@ test('Map', (t) => {
             t.end();
         });
 
-        t.test('Setting globe projection as part of the style enables draping but does not enable terrain', (t) => {
+        t.skip('Setting globe projection as part of the style enables draping but does not enable terrain', (t) => {
             const map = createMap(t, {style: createStyle(), projection: 'globe'});
             t.equal(map.getProjection().name, 'globe');
             const initStyleObj = map.style;
@@ -319,7 +319,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('Setting globe projection on the map enables draping but does not enable terrain', (t) => {
+        t.skip('Setting globe projection on the map enables draping but does not enable terrain', (t) => {
             const map = createMap(t, {style: createStyle()});
             t.equal(map.getProjection().name, 'mercator');
             const initStyleObj = map.style;
@@ -333,7 +333,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('Setting globe projection retains style.terrain when terrain is set to null', (t) => {
+        t.skip('Setting globe projection retains style.terrain when terrain is set to null', (t) => {
             const map = createMap(t, {style: createStyle(), projection: 'globe'});
             t.equal(map.getProjection().name, 'globe');
             const initStyleObj = map.style;
@@ -347,7 +347,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('Setting globe and terrain as part of the style retains the terrain properties', (t) => {
+        t.skip('Setting globe and terrain as part of the style retains the terrain properties', (t) => {
             const style = createStyle();
             style['projection'] = {
                 'name': 'globe'
@@ -369,7 +369,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('https://github.com/mapbox/mapbox-gl-js/issues/11352', (t) => {
+        t.skip('https://github.com/mapbox/mapbox-gl-js/issues/11352', (t) => {
             const styleSheet = new window.CSSStyleSheet();
             styleSheet.insertRule('.mapboxgl-canary { background-color: rgb(250, 128, 114); }', 0);
             window.document.styleSheets[0] = styleSheet;
@@ -394,7 +394,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('https://github.com/mapbox/mapbox-gl-js/issues/11367', (t) => {
+        t.skip('https://github.com/mapbox/mapbox-gl-js/issues/11367', (t) => {
             const style1 = createStyle();
             const map = createMap(t, {style1});
             map.on('style.load', () => {

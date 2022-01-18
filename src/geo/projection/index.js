@@ -9,7 +9,6 @@ import winkelTripel from './winkel_tripel.js';
 import cylindricalEqualArea from './cylindrical_equal_area.js';
 import {extend} from '../../util/util.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
-import globe from './globe.js';
 import {mat4, vec3} from 'gl-matrix';
 import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import Transform from '../transform.js';
@@ -45,7 +44,6 @@ export type Projection = {
 };
 
 const projections = {
-    globe,
     albers,
     equalEarth,
     equirectangular,
