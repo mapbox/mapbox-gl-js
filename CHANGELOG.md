@@ -1,6 +1,6 @@
 ## 2.7.0-beta.1
 
-## Features ✨ and improvements 🏁
+### Features ✨ and improvements 🏁
 
 * Enable preloading tiles for camera animation. ([#11328](https://github.com/mapbox/mapbox-gl-js/pull/11328))
 * Add perspective correction for non-rectangular image, canvas and video sources. ([#11292](https://github.com/mapbox/mapbox-gl-js/pull/11292))
