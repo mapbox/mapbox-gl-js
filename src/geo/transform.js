@@ -1365,7 +1365,7 @@ class Transform {
         this._constrain();
     }
 
-    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float32Array {
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float64Array {
         return this.projection.createTileTransform(this, worldSize).createTileMatrix(unwrappedTileID);
     }
 

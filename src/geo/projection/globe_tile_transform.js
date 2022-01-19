@@ -33,9 +33,9 @@ export default class GlobeTileTransform {
         this._globeMatrix = calculateGlobeMatrix(tr, worldSize);
     }
 
-    createTileMatrix(id: UnwrappedTileID): Float32Array {
+    createTileMatrix(id: UnwrappedTileID): Float64Array {
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
-        return mat4.multiply(mat4.create(), this._globeMatrix, decode);
+        return mat4.multiply(new Float64Array(16), this._globeMatrix, decode);
     }
 
     createInversionMatrix(id: UnwrappedTileID): Float32Array {

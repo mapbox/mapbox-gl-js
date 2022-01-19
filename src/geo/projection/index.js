@@ -91,7 +91,7 @@ export type ElevationScale = {
 }
 
 export type TileTransform = {
-    createTileMatrix: (id: UnwrappedTileID) => Float32Array,
+    createTileMatrix: (id: UnwrappedTileID) => Float64Array,
     createInversionMatrix: (id: UnwrappedTileID) => Float32Array,
     upVector: (id: CanonicalTileID, x: number, y: number) => [number, number, number],
     upVectorScale: (id: CanonicalTileID, latitude: number, worldSize: number) => ElevationScale,
