@@ -343,6 +343,20 @@ export function getAnchorJustification(anchor: TextAnchor): TextJustify  {
 }
 
 /**
+ * for "very" overscaled tiles (overscaleFactor > 2) on high zoom levels (z > 18)
+ * we use the tile pixel ratio from the previous zoom level and clamp it to 1
+ * in order to thin out labels density and save memory and CPU .
+ * @private
+ */
+function tilePixelRatioForSymbolSpacing(overscaleFactor, overscaledZ) {
+    if (overscaledZ > 18 && overscaleFactor > 2) {
+        overscaleFactor >>= 1;
+    }
+    const tilePixelRatio = EXTENT / (512 * overscaleFactor);
+    return Math.max(tilePixelRatio, 1);
+}
+
+/**
  * Given a feature and its shaped text and icon data, add a 'symbol
  * instance' for each _possible_ placement of the symbol feature.
  * (At render timePlaceSymbols#place() selects which of these instances to
@@ -373,11 +387,12 @@ function addFeature(bucket: SymbolBucket,
     const layout = bucket.layers[0].layout;
     const iconOffset = layout.get('icon-offset').evaluate(feature, {}, canonical);
     const defaultShaping = getDefaultHorizontalShaping(shapedTextOrientations.horizontal) || shapedTextOrientations.vertical;
+
     const glyphSize = ONE_EM,
         fontScale = layoutTextSize / glyphSize,
         textMaxBoxScale = bucket.tilePixelRatio * textMaxSize / glyphSize,
         iconBoxScale = bucket.tilePixelRatio * layoutIconSize,
-        symbolMinDistance = bucket.tilePixelRatio * layout.get('symbol-spacing'),
+        symbolMinDistance = tilePixelRatioForSymbolSpacing(bucket.overscaling, bucket.zoom) * layout.get('symbol-spacing'),
         textPadding = layout.get('text-padding') * bucket.tilePixelRatio,
         iconPadding = layout.get('icon-padding') * bucket.tilePixelRatio,
         textMaxAngle = degToRad(layout.get('text-max-angle')),
