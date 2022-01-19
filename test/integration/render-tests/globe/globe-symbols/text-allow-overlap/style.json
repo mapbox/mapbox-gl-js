@@ -34,7 +34,19 @@
           {
             "type": "Point",
             "coordinates": [
+              -150, -25
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
               -120, -20
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              -90, -15
             ]
           },
           {
@@ -46,7 +58,19 @@
           {
             "type": "Point",
             "coordinates": [
-              -0, 0
+              -30, -5
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              0, 0
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              30, 5
             ]
           },
           {
@@ -58,7 +82,19 @@
           {
             "type": "Point",
             "coordinates": [
+              90, 15
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
               120, 20
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              150, 25
             ]
           },
           {
