@@ -288,12 +288,12 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
     return [gridBuffer, poleBuffer];
 }
 
-export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Array) {
+export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Array): Float32Array {
     const decode = globeDenormalizeECEF(globeTileBounds(id));
     return mat4.mul(mat4.create(), globeMatrix, decode);
 }
 
-export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: Transform) {
+export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: Transform): Float32Array {
     const poleMatrix = mat4.identity(new Float64Array(16));
 
     const tileDim = Math.pow(2, id.z);

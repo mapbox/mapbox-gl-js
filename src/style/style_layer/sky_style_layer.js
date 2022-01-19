@@ -14,6 +14,7 @@ import type SkyboxGeometry from '../../render/skybox_geometry.js';
 import type {LightPosition} from '../light.js';
 import {warnOnce, degToRad} from '../../util/util.js';
 import {vec3, quat} from 'gl-matrix';
+import assert from 'assert';
 
 function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean) {
     const up = [0, 0, 1];
@@ -96,7 +97,7 @@ class SkyLayer extends StyleLayer {
                 getCelestialDirection(lightPosition.azimuthal, -lightPosition.polar + 90, leftHanded) :
                 getCelestialDirection(sunPosition[0], -sunPosition[1] + 90, leftHanded);
         }
-        // assume type === 'gradient'
+        assert(type === 'gradient');
         const direction = this.paint.get('sky-gradient-center');
         return getCelestialDirection(direction[0], -direction[1] + 90, leftHanded);
     }
