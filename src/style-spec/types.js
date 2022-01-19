@@ -94,10 +94,18 @@ export type FogSpecification = {|
     "horizon-blend"?: PropertyValueSpecification<number>
 |}
 
+export type GlobeAtmosphereSpecification = {|
+    "type"?: "gradient",
+    "gradient-inner-color"?: ColorSpecification,
+    "gradient-outer-color"?: ColorSpecification,
+    "gradient-outer-radius"?: number
+|}
+
 export type ProjectionSpecification = {|
     "name": "albers" | "equalEarth" | "equirectangular" | "lambertConformalConic" | "mercator" | "naturalEarth" | "winkelTripel" | "globe",
     "center"?: [number, number],
-    "parallels"?: [number, number]
+    "parallels"?: [number, number],
+    "atmosphere"?: GlobeAtmosphereSpecification
 |}
 
 export type VectorSourceSpecification = {

@@ -224,7 +224,7 @@ class Transform {
     }
 
     getProjection() {
-        return pick(this.projection, ['name', 'center', 'parallels']);
+        return pick(this.projection, ['name', 'center', 'parallels', 'atmosphere']);
     }
 
     setProjection(projection?: ?ProjectionSpecification) {

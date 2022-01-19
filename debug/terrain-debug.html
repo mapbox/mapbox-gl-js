@@ -282,7 +282,7 @@ document.getElementById('show-overdraw-checkbox').onclick = function() {
 };
 
 document.getElementById('globe-checkbox').onclick = function() {
-    map.setProjection(this.checked ? {name: "globe"} : null);
+    map.setProjection(this.checked ? {name: "globe", atmosphere: { "gradient-outer-color": "rgba(0, 255, 0, 255)" }} : null);
 };
 
 document.getElementById('freeze-tile-coverage-checkbox').onclick = function() {

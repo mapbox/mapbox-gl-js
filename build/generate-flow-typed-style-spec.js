@@ -42,6 +42,8 @@ function flowType(property) {
                 return 'ProjectionSpecification';
             case 'sources':
                 return '{[_: string]: SourceSpecification}';
+            case 'atmosphere':
+                return 'GlobeAtmosphereSpecification';
             case '*':
                 return 'mixed';
             default:
@@ -186,6 +188,8 @@ ${flowObjectDeclaration('LightSpecification', spec.light)}
 ${flowObjectDeclaration('TerrainSpecification', spec.terrain)}
 
 ${flowObjectDeclaration('FogSpecification', spec.fog)}
+
+${flowObjectDeclaration('GlobeAtmosphereSpecification', spec.atmosphere)}
 
 ${flowObjectDeclaration('ProjectionSpecification', spec.projection)}
 

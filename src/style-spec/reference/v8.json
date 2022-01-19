@@ -3967,6 +3967,37 @@
       }
     }
   },
+  "atmosphere": {
+    "type": {
+      "type": "enum",
+      "values": {
+        "gradient": {
+          "doc": "TODO"
+        }
+      }
+    },
+    "gradient-inner-color": {
+      "type": "color",
+      "default": "#ffffffff",
+      "requires": [
+        { "type": "gradient" }
+      ]
+    },
+    "gradient-outer-color": {
+      "type": "color",
+      "default": "#03befcff",
+      "requires": [
+        { "type": "gradient" }
+      ]
+    },
+    "gradient-outer-radius": {
+      "type": "number",
+      "default": "2",
+      "requires": [
+        { "type": "gradient" }
+      ]
+    }
+  },
   "projection": {
     "name": {
       "type": "enum",
@@ -4054,6 +4085,10 @@
           "js": "2.6.0"
         }
       }
+    },
+    "atmosphere": {
+      "type": "atmosphere",
+      "doc": "TODO"
     }
   },
   "terrain" : {

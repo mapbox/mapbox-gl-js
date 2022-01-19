@@ -72,13 +72,14 @@ function getConicProjection(projection: Projection, config: ProjectionSpecificat
         }
     }
 
-    return extend({}, projection, config);
+    return projection;
+    //return extend({}, projection, config);
 }
 
 export function getProjection(config: ProjectionSpecification) {
     const projection = projections[config.name];
     if (!projection) throw new Error(`Invalid projection name: ${config.name}`);
-    return projection.conic ? getConicProjection(projection, config) : projection;
+    return extend({}, projection.conic ? getConicProjection(projection, config) : projection, config);
 }
 
 export type ElevationScale = {

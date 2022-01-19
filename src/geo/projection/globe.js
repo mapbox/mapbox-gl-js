@@ -51,6 +51,12 @@ export default {
         'custom'
     ],
 
+    atmosphere: {
+        "gradient-inner-color": "rgba(255, 255, 255, 255)",
+        "gradient-outer-color": "rgba(3, 190, 252, 255)",
+        "gradient-outer-radius": 2
+    },
+
     project(lng: number, lat: number) {
         const x = mercatorXfromLng(lng);
         const y = mercatorYfromLat(lat);
