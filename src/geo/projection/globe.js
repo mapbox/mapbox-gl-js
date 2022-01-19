@@ -218,7 +218,7 @@ export function globeECEFUnitsToPixelScale(worldSize: number) {
     return wsRadius / localRadius;
 }
 
-export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): Float32Array {
+export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): Float64Array {
     const wsRadius = worldSize / (2.0 * Math.PI);
     const scale = globeECEFUnitsToPixelScale(worldSize);
 
@@ -239,7 +239,7 @@ export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: 
     mat4.rotateX(posMatrix, posMatrix, degToRad(-tr._center.lat));
     mat4.rotateY(posMatrix, posMatrix, degToRad(-tr._center.lng));
 
-    return Float32Array.from(posMatrix);
+    return posMatrix;
 }
 
 export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
@@ -288,11 +288,9 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
     return [gridBuffer, poleBuffer];
 }
 
-export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float32Array) {
+export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Array) {
     const decode = globeDenormalizeECEF(globeTileBounds(id));
-    const posMatrix = mat4.copy(new Float64Array(16), globeMatrix);
-    mat4.mul(posMatrix, posMatrix, decode);
-    return Float32Array.from(posMatrix);
+    return mat4.mul(mat4.create(), globeMatrix, decode);
 }
 
 export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: Transform) {

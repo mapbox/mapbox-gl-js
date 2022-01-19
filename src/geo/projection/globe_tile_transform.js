@@ -25,7 +25,7 @@ const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS 
 export default class GlobeTileTransform {
     _tr: Transform;
     _worldSize: number;
-    _globeMatrix: Float32Array;
+    _globeMatrix: Float64Array;
 
     constructor(tr: Transform, worldSize: number) {
         this._tr = tr;
