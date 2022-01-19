@@ -605,7 +605,7 @@ export class Terrain extends Elevation {
         uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
         uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
         uniforms['u_tile_bl_up'] = tileTransform.upVector(id, 0, EXTENT);
-        uniforms['u_tile_up_scale'] = tileTransform.upVectorScale(id);
+        uniforms['u_tile_up_scale'] = tileTransform.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile;
 
         let demTile = null;
         let prevDemTile = null;
