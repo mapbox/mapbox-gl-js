@@ -157,7 +157,7 @@ function project(point: Point, matrix: Mat4, elevation: number = 0) {
     };
 }
 
-function projectVector(point: vec3 | [number, number, number], matrix: mat4) {
+function projectVector(point: [number, number, number], matrix: Mat4) {
     const pos = [point[0], point[1], point[2], 1];
     vec4.transformMat4(pos, pos, matrix);
     const w = pos[3];
