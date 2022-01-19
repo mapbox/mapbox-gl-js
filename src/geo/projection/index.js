@@ -10,7 +10,6 @@ import cylindricalEqualArea from './cylindrical_equal_area.js';
 import {extend} from '../../util/util.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import globe from './globe.js';
-import {mat4, vec3} from 'gl-matrix';
 import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import Transform from '../transform.js';
 import LngLat from '../lng_lat.js';
@@ -92,9 +91,9 @@ export type ElevationScale = {
 }
 
 export type TileTransform = {
-    createTileMatrix: (id: UnwrappedTileID) => mat4,
-    createInversionMatrix: (id: UnwrappedTileID) => mat4,
-    upVector: (id: CanonicalTileID, x: number, y: number) => vec3,
+    createTileMatrix: (id: UnwrappedTileID) => Float64Array,
+    createInversionMatrix: (id: UnwrappedTileID) => Float32Array,
+    upVector: (id: CanonicalTileID, x: number, y: number) => [number, number, number],
     upVectorScale: (id: CanonicalTileID, latitude: number, worldSize: number) => ElevationScale,
     pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate
 };

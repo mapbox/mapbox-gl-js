@@ -11,6 +11,7 @@ import {OverscaledTileID} from '../source/tile_id.js';
 import type {TileTransform} from '../geo/projection/index.js';
 
 import type Tile from '../source/tile.js';
+import type {Vec3} from 'gl-matrix';
 
 /**
  * Options common to {@link Map#queryTerrainElevation} and {@link Map#unproject3d}, used to control how elevation
@@ -94,6 +95,7 @@ export class Elevation {
             const elevation = this.getAtTileOffset(tileID, p.x, p.y);
             const upVector = tileTransform.upVector(tileID.canonical, p.x, p.y);
             const upVectorScale = tileTransform.upVectorScale(tileID.canonical, lat, worldSize).metersToTile;
+            // $FlowFixMe can't yet resolve tuple vs array incompatibilities
             vec3.scale(upVector, upVector, elevation * upVectorScale);
             return upVector;
         });
@@ -106,7 +108,7 @@ export class Elevation {
      * If a DEM tile that covers tileID is loaded, true is returned, otherwise false.
      * Nearest filter sampling on dem data is done (no interpolation).
      */
-    getForTilePoints(tileID: OverscaledTileID, points: Array<vec3>, interpolated: ?boolean, useDemTile: ?Tile): boolean {
+    getForTilePoints(tileID: OverscaledTileID, points: Array<Vec3>, interpolated: ?boolean, useDemTile: ?Tile): boolean {
         const helper = DEMSampler.create(this, tileID, useDemTile);
         if (!helper) { return false; }
 
@@ -161,7 +163,7 @@ export class Elevation {
      * @param {vec3} dir The ray direction.
      * @param {number} exaggeration The terrain exaggeration.
     */
-    raycast(position: vec3, dir: vec3, exaggeration: number): ?number {
+    raycast(position: Vec3, dir: Vec3, exaggeration: number): ?number {
         throw new Error('Pure virtual method called.');
     }
 
@@ -173,7 +175,7 @@ export class Elevation {
      * @returns {vec3} If there is intersection with terrain, returns 3D MercatorCoordinate's of
      * intersection, as vec3(x, y, z), otherwise null.
      */ /* eslint no-unused-vars: ["error", { "args": "none" }] */
-    pointCoordinate(screenPoint: Point): ?vec3 {
+    pointCoordinate(screenPoint: Point): ?Vec3 {
         throw new Error('Pure virtual method called.');
     }
 

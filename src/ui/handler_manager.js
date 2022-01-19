@@ -25,6 +25,8 @@ import assert from 'assert';
 import {vec3} from 'gl-matrix';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 
+import type {Vec3} from 'gl-matrix';
+
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
 const isMoving = p => p.zoom || p.drag || p.pitch || p.rotate;
@@ -44,7 +46,7 @@ class TrackingEllipsoid {
         this.radius = 0;
     }
 
-    setup(center: vec3, pointOnSurface: vec3) {
+    setup(center: Vec3, pointOnSurface: Vec3) {
         const centerToSurface = vec3.sub([], pointOnSurface, center);
         if (centerToSurface[2] < 0) {
             this.radius = vec3.length(vec3.div([], centerToSurface, this.constants));
@@ -56,7 +58,7 @@ class TrackingEllipsoid {
     }
 
     // Cast a ray from the center of the ellipsoid and the intersection point.
-    projectRay(dir: vec3): vec3 {
+    projectRay(dir: Vec3): Vec3 {
         // Perform the intersection test against a unit sphere
         vec3.div(dir, dir, this.constants);
         vec3.normalize(dir, dir);
@@ -155,7 +157,7 @@ class HandlerManager {
     _previousActiveHandlers: { [string]: Handler };
     _listeners: Array<[HTMLElement, string, void | EventListenerOptionsOrUseCapture]>;
     _trackingEllipsoid: TrackingEllipsoid;
-    _dragOrigin: ?vec3;
+    _dragOrigin: ?Vec3;
 
     constructor(map: Map, options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number, bearingSnap: number}) {
         this._map = map;
@@ -478,7 +480,7 @@ class HandlerManager {
             return event && !this._handlersById[event.handlerName].isActive();
         };
 
-        const toVec3 = (p: MercatorCoordinate): vec3 => [p.x, p.y, p.z];
+        const toVec3 = (p: MercatorCoordinate): Vec3 => [p.x, p.y, p.z];
 
         if (eventEnded("drag") && !hasChange(combinedResult)) {
             const preZoom = tr.zoom;
@@ -536,7 +538,7 @@ class HandlerManager {
         if (zoomDelta) {
             // Zoom value has to be computed relative to a secondary map plane that is created from the terrain position below the cursor.
             // This way the zoom interpolation can be kept linear and independent of the (possible) terrain elevation
-            const pickedPosition: vec3 = aroundCoord ? toVec3(aroundCoord) : toVec3(tr.pointCoordinate3D(around));
+            const pickedPosition: Vec3 = aroundCoord ? toVec3(aroundCoord) : toVec3(tr.pointCoordinate3D(around));
 
             const aroundRay = {dir: vec3.normalize([], vec3.sub([], pickedPosition, tr._camera.position))};
             if (aroundRay.dir[2] < 0) {

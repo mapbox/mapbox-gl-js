@@ -17,6 +17,8 @@ import {
     globeDenormalizeECEF
 } from './globe.js';
 
+import type {Vec3} from 'gl-matrix';
+
 const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 
@@ -31,12 +33,12 @@ export default class GlobeTileTransform {
         this._globeMatrix = calculateGlobeMatrix(tr, worldSize);
     }
 
-    createTileMatrix(id: UnwrappedTileID): mat4 {
+    createTileMatrix(id: UnwrappedTileID): Float64Array {
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
-        return mat4.multiply([], this._globeMatrix, decode);
+        return mat4.multiply(new Float64Array(16), this._globeMatrix, decode);
     }
 
-    createInversionMatrix(id: UnwrappedTileID): mat4 {
+    createInversionMatrix(id: UnwrappedTileID): Float32Array {
         const identity = mat4.identity(new Float64Array(16));
 
         const center = this._tr.center;
@@ -57,11 +59,12 @@ export default class GlobeTileTransform {
         const ecefUnitsToMercatorPixels = wsRadius / localRadius;
 
         mat4.scale(identity, identity, [ecefUnitsToMercatorPixels, ecefUnitsToMercatorPixels, 1.0]);
+        mat4.multiply(matrix, matrix, identity);
 
-        return mat4.multiply(matrix, matrix, identity);
+        return Float32Array.from(matrix);
     }
 
-    upVector(id: CanonicalTileID, x: number, y: number): vec3 {
+    upVector(id: CanonicalTileID, x: number, y: number): Vec3 {
         const tiles = 1 << id.z;
         const mercX = (x / EXTENT + id.x) / tiles;
         const mercY = (y / EXTENT + id.y) / tiles;

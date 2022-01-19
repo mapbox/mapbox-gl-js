@@ -17,7 +17,8 @@ function getPixelPosMatrix(transform, tileID) {
     const t = mat4.identity([]);
     mat4.scale(t, t, [transform.width * 0.5, -transform.height * 0.5, 1]);
     mat4.translate(t, t, [1, -1, 0]);
-    return mat4.multiply(t, t, transform.calculateProjMatrix(tileID.toUnwrapped()));
+    mat4.multiply(t, t, transform.calculateProjMatrix(tileID.toUnwrapped()));
+    return Float32Array.from(t);
 }
 
 export function queryRenderedFeatures(sourceCache: SourceCache,

@@ -29,6 +29,7 @@ import type {Callback} from '../types/callback.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import {Aabb, Frustum} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets.js';
+import type {Vec3} from 'gl-matrix';
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
@@ -692,7 +693,7 @@ class Camera extends Evented {
         const coord0 = MercatorCoordinate.fromLngLat(p0);
         const coord1 = MercatorCoordinate.fromLngLat(p1);
 
-        const toVec3 = (p: MercatorCoordinate): vec3 => [p.x, p.y, p.z];
+        const toVec3 = (p: MercatorCoordinate): Vec3 => [p.x, p.y, p.z];
 
         const centerIntersectionPoint = tr.pointRayIntersection(tr.centerPoint, focusAltitude);
         const centerIntersectionCoord = toVec3(tr.rayIntersectionCoordinate(centerIntersectionPoint));

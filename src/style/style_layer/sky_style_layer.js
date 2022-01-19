@@ -14,10 +14,11 @@ import type SkyboxGeometry from '../../render/skybox_geometry.js';
 import type {LightPosition} from '../light.js';
 import {warnOnce, degToRad} from '../../util/util.js';
 import {vec3, quat} from 'gl-matrix';
+import assert from 'assert';
 
-function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean): vec3 {
-    const up = vec3.fromValues(0, 0, 1);
-    const rotation = quat.identity(quat.create());
+function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean) {
+    const up = [0, 0, 1];
+    const rotation = quat.identity([]);
 
     quat.rotateY(rotation, rotation, leftHanded ? -degToRad(azimuth) + Math.PI : degToRad(azimuth));
     quat.rotateX(rotation, rotation, -degToRad(altitude));
@@ -80,7 +81,7 @@ class SkyLayer extends StyleLayer {
         }
     }
 
-    getCenter(painter: Painter, leftHanded: boolean) {
+    getCenter(painter: Painter, leftHanded: boolean): [number, number, number] {
         const type = this.paint.get('sky-type');
         if (type === 'atmosphere') {
             const sunPosition = this.paint.get('sky-atmosphere-sun');
@@ -95,10 +96,10 @@ class SkyLayer extends StyleLayer {
             return useLightPosition ?
                 getCelestialDirection(lightPosition.azimuthal, -lightPosition.polar + 90, leftHanded) :
                 getCelestialDirection(sunPosition[0], -sunPosition[1] + 90, leftHanded);
-        } else if (type === 'gradient') {
-            const direction = this.paint.get('sky-gradient-center');
-            return getCelestialDirection(direction[0], -direction[1] + 90, leftHanded);
         }
+        assert(type === 'gradient');
+        const direction = this.paint.get('sky-gradient-center');
+        return getCelestialDirection(direction[0], -direction[1] + 90, leftHanded);
     }
 
     is3D() {

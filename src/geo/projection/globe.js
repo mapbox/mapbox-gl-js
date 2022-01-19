@@ -218,7 +218,7 @@ export function globeECEFUnitsToPixelScale(worldSize: number) {
     return wsRadius / localRadius;
 }
 
-export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): mat4 {
+export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): Float64Array {
     const wsRadius = worldSize / (2.0 * Math.PI);
     const scale = globeECEFUnitsToPixelScale(worldSize);
 
@@ -242,7 +242,7 @@ export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: 
     return posMatrix;
 }
 
-export function calculateGlobeMercatorMatrix(tr: Transform): mat4 {
+export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
     const worldSize = tr.worldSize;
     const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
     const point = new Point(
@@ -258,7 +258,7 @@ export function calculateGlobeMercatorMatrix(tr: Transform): mat4 {
     mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
     mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
 
-    return posMatrix;
+    return Float32Array.from(posMatrix);
 }
 
 export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
@@ -288,14 +288,12 @@ export function globeBuffersForTileMesh(painter: Painter, tile: Tile, coord: Ove
     return [gridBuffer, poleBuffer];
 }
 
-export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4) {
+export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Array): Float32Array {
     const decode = globeDenormalizeECEF(globeTileBounds(id));
-    const posMatrix = mat4.copy(new Float64Array(16), globeMatrix);
-    mat4.mul(posMatrix, posMatrix, decode);
-    return posMatrix;
+    return mat4.mul(mat4.create(), globeMatrix, decode);
 }
 
-export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: Transform) {
+export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: Transform): Float32Array {
     const poleMatrix = mat4.identity(new Float64Array(16));
 
     const tileDim = Math.pow(2, id.z);
@@ -315,7 +313,7 @@ export function globePoleMatrixForTile(id: CanonicalTileID, south: boolean, tr: 
         mat4.scale(poleMatrix, poleMatrix, [1, -1, 1]);
     }
 
-    return poleMatrix;
+    return Float32Array.from(poleMatrix);
 }
 
 export class GlobeSharedBuffers {

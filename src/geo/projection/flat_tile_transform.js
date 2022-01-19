@@ -2,11 +2,13 @@
 import type Transform from '../transform.js';
 import type {ElevationScale} from './index.js';
 import {UnwrappedTileID} from '../../source/tile_id.js';
-import {mat4, vec3} from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 import MercatorCoordinate from '../mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
 import EXTENT from '../../data/extent.js';
 import tileTransform from './tile_transform.js';
+
+import type {Mat4, Vec3} from 'gl-matrix';
 
 const identity = mat4.identity(new Float64Array(16));
 
@@ -20,11 +22,11 @@ export default class FlatTileTransform {
         this._worldSize = worldSize;
     }
 
-    createInversionMatrix(): mat4 {
+    createInversionMatrix(): Mat4 {
         return identity;
     }
 
-    createTileMatrix(id: UnwrappedTileID): mat4 {
+    createTileMatrix(id: UnwrappedTileID): Mat4 {
         let scale, scaledX, scaledY;
         const canonical = id.canonical;
         const posMatrix = mat4.identity(new Float64Array(16));
@@ -55,7 +57,7 @@ export default class FlatTileTransform {
         return this._tr.rayIntersectionCoordinate(this._tr.pointRayIntersection(clamped, z));
     }
 
-    upVector(): vec3 {
+    upVector(): Vec3 {
         return [0, 0, 1];
     }
 
