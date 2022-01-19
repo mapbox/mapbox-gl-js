@@ -1,5 +1,6 @@
 // @flow
 import type Transform from '../transform.js';
+import type {ElevationScale} from './index.js';
 import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import {mat4, vec4, vec3} from 'gl-matrix';
 import MercatorCoordinate, {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
@@ -13,11 +14,13 @@ import {
     globeECEFUnitsToPixelScale,
     calculateGlobeMatrix,
     globeNormalizeECEF,
-    globeDenormalizeECEF,
-    GLOBE_RADIUS,
+    globeDenormalizeECEF
 } from './globe.js';
 
 import type {Vec3} from 'gl-matrix';
+
+const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
+const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 
 export default class GlobeTileTransform {
     _tr: Transform;
@@ -68,9 +71,9 @@ export default class GlobeTileTransform {
         return latLngToECEF(latFromMercatorY(mercY), lngFromMercatorX(mercX), 1.0);
     }
 
-    upVectorScale(id: CanonicalTileID): number {
-        const pixelsPerMeterECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
-        return pixelsPerMeterECEF * globeECEFNormalizationScale(globeTileBounds(id));
+    upVectorScale(id: CanonicalTileID, latitude: number, worldSize: number): ElevationScale {
+        const pixelsPerMeterAtLat = mercatorZfromAltitude(1, latitude) * worldSize;
+        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id)), metersToLabelSpace: pixelsPerMeterAtLat};
     }
 
     pointCoordinate(x: number, y: number): MercatorCoordinate {
