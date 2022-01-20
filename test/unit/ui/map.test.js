@@ -13,6 +13,8 @@ import {fixedLngLat, fixedNum} from '../../util/fixed.js';
 import Fog from '../../../src/style/fog.js';
 import Color from '../../../src/style-spec/util/color.js';
 import {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
+import { convertChangesToXML } from 'diff';
+import GeoJSONSource from '../../../src/source/geojson_source.js';
 
 function createStyleSource() {
     return {
@@ -504,8 +506,7 @@ test('Map', (t) => {
         });
 
         t.test('e.isSourceLoaded should return `false` if source tiles are not loaded', (t) => {
-            const style = createStyle();
-            const map = createMap(t, {style});
+            const map = createMap(t);
 
             map.on('load', () => {
                 map.on('data', (e) => {
@@ -521,8 +522,7 @@ test('Map', (t) => {
         });
 
         t.test('e.isSourceLoaded should return `true` if source tiles are loaded', (t) => {
-            const style = createStyle();
-            const map = createMap(t, {style});
+            const map = createMap(t);
 
             map.on('load', () => {
                 map.on('data', (e) => {
@@ -536,6 +536,32 @@ test('Map', (t) => {
                 map.style._getSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
                 map.style._getSourceCache('geojson')._tiles[fakeTileId.key].state = 'loaded';
             });
+        });
+
+        t.test('e.isSourceLoaded should return `true` after calling `setData` when tiles are loaded', (t) => {
+            const map = createMap(t);
+
+            map.on('load', () => {
+                map.on('data', (e) => {
+                    if (source._data.features.length > 0 && e.sourceDataType === 'metadata') {
+                        t.equal(e.isSourceLoaded, true);
+                        t.end();
+                    }
+                });
+                map.addSource('geojson', createStyleSource());
+                const source = map.getSource('geojson');
+                source.setData({
+                    'type': 'FeatureCollection',
+                    'features': [{
+                        'type': 'Feature',
+                        'properties': {'name': 'Null Island'}
+                    }]
+                });
+                const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
+                map.style._getSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
+                map.style._getSourceCache('geojson')._tiles[fakeTileId.key].state = 'loaded';
+            });
+
         });
 
         t.end();
