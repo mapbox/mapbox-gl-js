@@ -177,7 +177,7 @@ const symbolTextAndIconUniforms = (context: Context, locations: UniformLocations
     'u_is_halo': new Uniform1i(context, locations.u_is_halo)
 });
 
-const identityMatrix = mat4.identity([]);
+const identityMatrix = mat4.create();
 
 const symbolIconUniformValues = (
     functionType: string,
@@ -196,6 +196,7 @@ const symbolIconUniformValues = (
     tileTransform: TileTransform
 ): UniformValues<SymbolIconUniformsType> => {
     const transform = painter.transform;
+    const cameraForward = transform._camera.forward();
 
     const values = {
         'u_is_size_zoom_constant': +(functionType === 'constant' || functionType === 'source'),
@@ -230,9 +231,9 @@ const symbolIconUniformValues = (
         values['u_zoom_transition'] = zoomTransition;
         values['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(id);
         values['u_merc_center'] = mercatorCenter;
-        values['u_camera_forward'] = transform._camera.forward();
+        values['u_camera_forward'] = [cameraForward[0], cameraForward[1], cameraForward[2]];
         values['u_ecef_origin'] = globeECEFOrigin(tileMatrix, id);
-        values['u_tile_matrix'] = tileMatrix;
+        values['u_tile_matrix'] = Float32Array.from(tileMatrix);
     }
 
     return values;
