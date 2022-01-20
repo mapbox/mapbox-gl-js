@@ -13,8 +13,6 @@ import {fixedLngLat, fixedNum} from '../../util/fixed.js';
 import Fog from '../../../src/style/fog.js';
 import Color from '../../../src/style-spec/util/color.js';
 import {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
-import { convertChangesToXML } from 'diff';
-import GeoJSONSource from '../../../src/source/geojson_source.js';
 
 function createStyleSource() {
     return {
