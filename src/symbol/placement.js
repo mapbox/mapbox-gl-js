@@ -329,7 +329,7 @@ export class Placement {
                            textScale: number, rotateWithMap: boolean, pitchWithMap: boolean, textPixelRatio: number,
                            posMatrix: Mat4, collisionGroup: CollisionGroup, textAllowOverlap: boolean,
                            symbolInstance: SymbolInstance, symbolIndex: number, bucket: SymbolBucket,
-                           orientation: number, iconBox: ?SingleCollisionBox, textSize: any, iconSize: any): ?{ shift: Point, placedGlyphBoxes: { box: Array<number>, offscreen: boolean } }  {
+                           orientation: number, iconBox: ?SingleCollisionBox, textSize: any, iconSize: any): ?{ shift: Point, placedGlyphBoxes: { box: Array<number>, offscreen: boolean, occluded: boolean } }  {
 
         const textOffset = [symbolInstance.textOffset0, symbolInstance.textOffset1];
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textScale);
@@ -416,8 +416,8 @@ export class Placement {
         //  This is the reverse of our normal policy of "fade in on pan", but should look like any other
         //  collision and hopefully not be too noticeable.
         // See https://github.com/mapbox/mapbox-gl-js/issues/7172
-        const alwaysShowText = textAllowOverlap && (iconAllowOverlap || !bucket.hasIconData() || iconOptional);
-        const alwaysShowIcon = iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || textOptional);
+        let alwaysShowText = textAllowOverlap && (iconAllowOverlap || !bucket.hasIconData() || iconOptional);
+        let alwaysShowIcon = iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || textOptional);
 
         if (!bucket.collisionArrays && collisionBoxArray) {
             bucket.deserializeCollisionBoxes(collisionBoxArray);
@@ -469,10 +469,12 @@ export class Placement {
             let placeText = false;
             let placeIcon = false;
             let offscreen = true;
+            let textOccluded = false;
+            let iconOccluded = false;
             let shift = null;
 
-            let placed = {box: null, offscreen: null};
-            let placedVerticalText = {box: null, offscreen: null};
+            let placed = {box: null, offscreen: null, occluded: null};
+            let placedVerticalText = {box: null, offscreen: null, occluded: null};
 
             let placedGlyphBoxes = null;
             let placedGlyphCircles = null;
@@ -552,7 +554,7 @@ export class Placement {
                             updateBoxData(verticalTextBox);
                             return placeBox(verticalTextBox, WritingMode.vertical);
                         }
-                        return {box: null, offscreen: null};
+                        return {box: null, offscreen: null, occluded: null};
                     };
 
                     placeTextForPlacementModes(placeHorizontal, placeVertical);
@@ -580,7 +582,7 @@ export class Placement {
                         const variableIconBox = hasIconTextFit && !iconAllowOverlap ? collisionIconBox : null;
                         if (variableIconBox) updateBoxData(variableIconBox);
 
-                        let placedBox: ?{ box: Array<number>, offscreen: boolean }  = {box: [], offscreen: false};
+                        let placedBox: ?{ box: Array<number>, offscreen: boolean, occluded: boolean } = {box: [], offscreen: false, occluded: false};
                         const placementAttempts = textAllowOverlap ? anchors.length * 2 : anchors.length;
                         for (let i = 0; i < placementAttempts; ++i) {
                             const anchor = anchors[i % anchors.length];
@@ -615,7 +617,7 @@ export class Placement {
                         if (bucket.allowVerticalPlacement && !wasPlaced && symbolInstance.numVerticalGlyphVertices > 0 && verticalTextBox) {
                             return placeBoxForVariableAnchors(verticalTextBox, collisionArrays.verticalIconBox, WritingMode.vertical);
                         }
-                        return {box: null, offscreen: null};
+                        return {box: null, offscreen: null, occluded: null};
                     };
 
                     placeTextForPlacementModes(placeHorizontal, placeVertical);
@@ -641,9 +643,10 @@ export class Placement {
             }
 
             placedGlyphBoxes = placed;
-            placeText = placedGlyphBoxes && placedGlyphBoxes.box && placedGlyphBoxes.box.length > 0;
 
+            placeText = placedGlyphBoxes && placedGlyphBoxes.box && placedGlyphBoxes.box.length > 0;
             offscreen = placedGlyphBoxes && placedGlyphBoxes.offscreen;
+            textOccluded = placedGlyphBoxes && placedGlyphBoxes.occluded;
 
             if (symbolInstance.useRuntimeCollisionCircles) {
                 const placedSymbolIndex = symbolInstance.centerJustifiedTextSymbolIndex >= 0 ? symbolInstance.centerJustifiedTextSymbolIndex : symbolInstance.verticalPlacedTextSymbolIndex;
@@ -702,6 +705,7 @@ export class Placement {
                     placeIcon = placedIconBoxes.box.length > 0;
                 }
                 offscreen = offscreen && placedIconBoxes.offscreen;
+                iconOccluded = placedIconBoxes.occluded;
             }
 
             const iconWithoutText = textOptional ||
@@ -757,6 +761,10 @@ export class Placement {
 
             assert(symbolInstance.crossTileID !== 0);
             assert(bucket.bucketInstanceId !== 0);
+
+            const notGlobe = this.transform.projection.name !== 'globe';
+            alwaysShowText = alwaysShowText && (notGlobe || !textOccluded);
+            alwaysShowIcon = alwaysShowIcon && (notGlobe || !iconOccluded);
 
             this.placements[symbolInstance.crossTileID] = new JointPlacement(placeText || alwaysShowText, placeIcon || alwaysShowIcon, offscreen || bucket.justReloaded);
             seenCrossTileIDs[symbolInstance.crossTileID] = true;

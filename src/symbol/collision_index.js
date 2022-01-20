@@ -72,7 +72,7 @@ class CollisionIndex {
         this.fogState = fogState;
     }
 
-    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: Mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
+    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: Mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean, occluded: boolean } {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
 
         let anchorX = collisionBox.projectedAnchorX;
@@ -105,20 +105,22 @@ class CollisionIndex {
         // https://github.com/mapbox/mapbox-gl-native/wiki/Text-Rendering#perspective-scaling
         // 0.55 === projection.getPerspectiveRatio(camera_to_center, camera_to_center * 10)
         const minPerspectiveRatio = 0.55;
-        const isClipped = projectedPoint.perspectiveRatio <= minPerspectiveRatio || projectedPoint.aboveHorizon;
+        const isClipped = projectedPoint.perspectiveRatio <= minPerspectiveRatio || projectedPoint.occluded;
 
         if (!this.isInsideGrid(tlX, tlY, brX, brY) ||
             (!allowOverlap && this.grid.hitTest(tlX, tlY, brX, brY, collisionGroupPredicate)) ||
             isClipped) {
             return {
                 box: [],
-                offscreen: false
+                offscreen: false,
+                occluded: projectedPoint.occluded
             };
         }
 
         return {
             box: [tlX, tlY, brX, brY],
-            offscreen: this.isOffscreen(tlX, tlY, brX, brY)
+            offscreen: this.isOffscreen(tlX, tlY, brX, brY),
+            occluded: false
         };
     }
 
@@ -135,7 +137,7 @@ class CollisionIndex {
                           collisionGroupPredicate?: any,
                           circlePixelDiameter: number,
                           textPixelPadding: number,
-                          tileID: OverscaledTileID): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
+                          tileID: OverscaledTileID): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean, occluded: boolean } {
         const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
         const tileTransform = this.transform.projection.createTileTransform(this.transform, this.transform.worldSize);
@@ -176,7 +178,7 @@ class CollisionIndex {
         let inGrid = false;
         let entirelyOffscreen = true;
 
-        if (firstAndLastGlyph && !screenAnchorPoint.aboveHorizon) {
+        if (firstAndLastGlyph && !screenAnchorPoint.occluded) {
             const radius = circlePixelDiameter * 0.5 * perspectiveRatio + textPixelPadding;
             const screenPlaneMin = new Point(-viewportPadding, -viewportPadding);
             const screenPlaneMax = new Point(this.screenRightBoundary, this.screenBottomBoundary);
@@ -285,7 +287,8 @@ class CollisionIndex {
                                 return {
                                     circles: [],
                                     offscreen: false,
-                                    collisionDetected
+                                    collisionDetected,
+                                    occluded: false
                                 };
                             }
                         }
@@ -297,7 +300,8 @@ class CollisionIndex {
         return {
             circles: ((!showCollisionCircles && collisionDetected) || !inGrid) ? [] : placedCollisionCircles,
             offscreen: entirelyOffscreen,
-            collisionDetected
+            collisionDetected,
+            occluded: screenAnchorPoint.occluded
         };
     }
 
@@ -386,7 +390,7 @@ class CollisionIndex {
 
     projectAndGetPerspectiveRatio(posMatrix: Mat4, x: number, y: number, elevation?: number, tileID: ?OverscaledTileID) {
         const p = [x, y, elevation || 0, 1];
-        let aboveHorizon = false;
+        let occluded = false;
         if (elevation || this.transform.pitch > 0) {
             vec4.transformMat4(p, p, posMatrix);
 
@@ -396,7 +400,7 @@ class CollisionIndex {
                 behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
             }
 
-            aboveHorizon = p[2] > p[3] || behindFog;
+            occluded = p[2] > p[3] || behindFog;
         } else {
             projection.xyTransformMat4(p, p, posMatrix);
         }
@@ -412,7 +416,7 @@ class CollisionIndex {
             // to scale down boxes in the distance
             perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3]), 1.5),
             signedDistanceFromCamera: p[3],
-            aboveHorizon
+            occluded
         };
     }
 
