@@ -20,6 +20,7 @@ import Program from './program.js';
 import {programUniforms} from './program/program_uniforms.js';
 import Context from '../gl/context.js';
 import {fogUniformValues} from '../render/fog.js';
+import {frameStart} from '../render/uniform_binding.js';
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
@@ -464,6 +465,7 @@ class Painter {
     }
 
     render(style: Style, options: PainterOptions) {
+        frameStart();
         this.style = style;
         this.options = options;
 
