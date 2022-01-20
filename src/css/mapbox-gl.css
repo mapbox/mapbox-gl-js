@@ -147,15 +147,15 @@
     box-shadow: none;
 }
 
-.mapboxgl-ctrl-group button:focus:first-child {
+.mapboxgl-ctrl-group button:first-child {
     border-radius: 4px 4px 0 0;
 }
 
-.mapboxgl-ctrl-group button:focus:last-child {
+.mapboxgl-ctrl-group button:last-child {
     border-radius: 0 0 4px 4px;
 }
 
-.mapboxgl-ctrl-group button:focus:only-child {
+.mapboxgl-ctrl-group button:only-child {
     border-radius: inherit;
 }
 
