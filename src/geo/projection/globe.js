@@ -26,7 +26,7 @@ import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/
 import GlobeTileTransform from './globe_tile_transform.js';
 import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from './far_z.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import type {Vec3, Mat4} from 'gl-matrix';
+import type {Mat4} from 'gl-matrix';
 
 const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
