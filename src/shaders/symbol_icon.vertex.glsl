@@ -28,9 +28,9 @@ uniform vec2 u_texsize;
 uniform vec3 u_tile_id;
 uniform mat4 u_inv_rot_matrix;
 uniform vec2 u_merc_center;
-uniform vec3 u_forward;
+uniform vec3 u_camera_forward;
 uniform float u_zoom_transition;
-uniform vec3 u_globe_center;
+uniform vec3 u_ecef_origin;
 uniform mat4 u_tile_matrix;
 #endif
 
@@ -71,12 +71,11 @@ void main() {
     vec3 mercator_pos = mercator_tile_position(u_inv_rot_matrix, tile_anchor, u_tile_id, u_merc_center);
     vec3 world_pos = mix_globe_mercator(vec3(a_pos, anchor_z) + h, mercator_pos, u_zoom_transition);
 
-    vec4 globe_ecef_origin = u_tile_matrix * vec4(u_globe_center, 1.0);
-    vec4 globe_ecef_point = u_tile_matrix * vec4(world_pos, 1.0);
-    vec3 origin_to_point = globe_ecef_point.xyz - globe_ecef_origin.xyz;
+    vec4 ecef_point = u_tile_matrix * vec4(world_pos, 1.0);
+    vec3 origin_to_point = ecef_point.xyz - u_ecef_origin;
 
     // Occlude symbols that are on the non-visible side of the globe sphere
-    float globe_occlusion_fade = dot(origin_to_point, u_forward) >= 0.0 ? 0.0 : 1.0;
+    float globe_occlusion_fade = dot(origin_to_point, u_camera_forward) >= 0.0 ? 0.0 : 1.0;
 #else
     vec3 world_pos = vec3(a_pos, anchor_z) + h;
     float globe_occlusion_fade = 1.0;

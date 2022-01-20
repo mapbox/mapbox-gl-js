@@ -15,7 +15,7 @@ import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
 import type {TileTransform} from '../../geo/projection/index.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
-import {globeEncodePosition, calculateGlobeMatrix} from '../../geo/projection/globe.js';
+import {globeECEFOrigin, calculateGlobeMatrix} from '../../geo/projection/globe.js';
 
 export type SymbolIconUniformsType = {|
     'u_is_size_zoom_constant': Uniform1i,
@@ -37,9 +37,9 @@ export type SymbolIconUniformsType = {|
     'u_zoom_transition': Uniform1f,
     'u_inv_rot_matrix': UniformMatrix4f,
     'u_merc_center': Uniform2f,
-    'u_forward': Uniform3f,
+    'u_camera_forward': Uniform3f,
     'u_tile_matrix': UniformMatrix4f,
-    'u_globe_center': Uniform3f,
+    'u_ecef_origin': Uniform3f,
     'u_texture': Uniform1i
 |};
 
@@ -66,9 +66,9 @@ export type SymbolSDFUniformsType = {|
     'u_zoom_transition': Uniform1f,
     'u_inv_rot_matrix': UniformMatrix4f,
     'u_merc_center': Uniform2f,
-    'u_forward': Uniform3f,
+    'u_camera_forward': Uniform3f,
     'u_tile_matrix': UniformMatrix4f,
-    'u_globe_center': Uniform3f,
+    'u_ecef_origin': Uniform3f,
     'u_is_halo': Uniform1i
 |};
 
@@ -118,9 +118,9 @@ const symbolIconUniforms = (context: Context, locations: UniformLocations): Symb
     'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
     'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
     'u_merc_center': new Uniform2f(context, locations.u_merc_center),
-    'u_forward': new Uniform3f(context, locations.u_forward),
+    'u_camera_forward': new Uniform3f(context, locations.u_camera_forward),
     'u_tile_matrix': new UniformMatrix4f(context, locations.u_tile_matrix),
-    'u_globe_center': new Uniform3f(context, locations.u_globe_center),
+    'u_ecef_origin': new Uniform3f(context, locations.u_ecef_origin),
     'u_texture': new Uniform1i(context, locations.u_texture)
 });
 
@@ -147,9 +147,9 @@ const symbolSDFUniforms = (context: Context, locations: UniformLocations): Symbo
     'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
     'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
     'u_merc_center': new Uniform2f(context, locations.u_merc_center),
-    'u_forward': new Uniform3f(context, locations.u_forward),
+    'u_camera_forward': new Uniform3f(context, locations.u_camera_forward),
     'u_tile_matrix': new UniformMatrix4f(context, locations.u_tile_matrix),
-    'u_globe_center': new Uniform3f(context, locations.u_globe_center),
+    'u_ecef_origin': new Uniform3f(context, locations.u_ecef_origin),
     'u_is_halo': new Uniform1i(context, locations.u_is_halo)
 });
 
@@ -218,20 +218,21 @@ const symbolIconUniformValues = (
         'u_zoom_transition': 0,
         'u_inv_rot_matrix': identityMatrix,
         'u_merc_center': [0, 0],
-        'u_forward': [0, 0, 0],
-        'u_globe_center': [0, 0, 0],
+        'u_camera_forward': [0, 0, 0],
+        'u_ecef_origin': [0, 0, 0],
         'u_tile_matrix': identityMatrix
     };
 
     if (transform.projection.name === 'globe') {
+        const tileMatrix = calculateGlobeMatrix(transform, transform.worldSize);
         const id = coord.toUnwrapped();
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = zoomTransition;
         values['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(id);
         values['u_merc_center'] = mercatorCenter;
-        values['u_forward'] = transform._camera.forward();
-        values['u_globe_center'] = globeEncodePosition([0, 0, 0], id);
-        values['u_tile_matrix'] = calculateGlobeMatrix(transform, transform.worldSize);
+        values['u_camera_forward'] = transform._camera.forward();
+        values['u_ecef_origin'] = globeECEFOrigin(tileMatrix, id);
+        values['u_tile_matrix'] = tileMatrix;
     }
 
     return values;

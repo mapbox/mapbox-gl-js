@@ -191,10 +191,13 @@ export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<n
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
 }
 
-export function globeEncodePosition(position: vec3, id: UnwrappedTileID) {
+export function globeECEFOrigin(tileMatrix: mat4, id: UnwrappedTileID): vec3 {
+    const origin = [0, 0, 0];
     const bounds = globeTileBounds(id.canonical);
     const normalizationMatrix = globeNormalizeECEF(bounds);
-    return vec3.transformMat4([], position, normalizationMatrix);
+    vec3.transformMat4(origin, origin, normalizationMatrix);
+    vec3.transformMat4(origin, origin, tileMatrix);
+    return origin;
 }
 
 export function globeECEFNormalizationScale(bounds: Aabb) {
