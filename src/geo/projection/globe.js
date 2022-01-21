@@ -12,7 +12,7 @@ import {
     mercatorXfromLng,
     mercatorYfromLat
 } from '../mercator_coordinate.js';
-import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
+import {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
 import Tile from '../../source/tile.js';
 import IndexBuffer from '../../gl/index_buffer.js';
@@ -26,6 +26,7 @@ import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/
 import GlobeTileTransform from './globe_tile_transform.js';
 import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from './far_z.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
+import type {Mat4} from 'gl-matrix';
 
 const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
@@ -191,6 +192,15 @@ export function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radi
 
 export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<number> {
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
+}
+
+export function globeECEFOrigin(tileMatrix: Mat4, id: UnwrappedTileID): [number, number, number] {
+    const origin = [0, 0, 0];
+    const bounds = globeTileBounds(id.canonical);
+    const normalizationMatrix = globeNormalizeECEF(bounds);
+    vec3.transformMat4(origin, origin, normalizationMatrix);
+    vec3.transformMat4(origin, origin, tileMatrix);
+    return origin;
 }
 
 export function globeECEFNormalizationScale(bounds: Aabb) {
