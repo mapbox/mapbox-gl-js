@@ -7,6 +7,7 @@ import PathInterpolator from './path_interpolator.js';
 import * as intersectionTests from '../util/intersection_tests.js';
 import Grid from './grid_index.js';
 import {mat4, vec4} from 'gl-matrix';
+import type {Vec3} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em.js';
 import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers.js';
 import assert from 'assert';
@@ -93,7 +94,8 @@ class CollisionIndex {
             anchorZ += up[2] * elevation * upScale;
         }
 
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID);
+        const checkOcclusion = this.transform.projection.name === 'globe' || !!elevation || this.transform.pitch > 0;
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, [anchorX, anchorY, anchorZ], collisionBox.tileID, checkOcclusion);
 
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
@@ -146,7 +148,8 @@ class CollisionIndex {
         const projectedAnchor = this.transform.projection.projectTilePoint(symbol.tileAnchorX, symbol.tileAnchorY, tileID.canonical);
         const anchorElevation = getElevation(tileUnitAnchorPoint);
         const elevatedAnchor = [projectedAnchor.x + anchorElevation[0], projectedAnchor.y + anchorElevation[1], projectedAnchor.z + anchorElevation[2]];
-        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2], tileID);
+        const checkOcclusion = this.transform.projection.name === 'globe' || !!elevation || this.transform.pitch > 0;
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, [elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2]], tileID, checkOcclusion);
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
@@ -388,21 +391,13 @@ class CollisionIndex {
         }
     }
 
-    projectAndGetPerspectiveRatio(posMatrix: Mat4, x: number, y: number, elevation?: number, tileID: ?OverscaledTileID) {
-        const p = [x, y, elevation || 0, 1];
-        let occluded = false;
-        if (elevation || this.transform.pitch > 0) {
-            vec4.transformMat4(p, p, posMatrix);
-
-            let behindFog = false;
-            if (this.fogState && tileID) {
-                const fogOpacity = getFogOpacityAtTileCoord(this.fogState, x, y, elevation || 0, tileID.toUnwrapped(), this.transform);
-                behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
-            }
-
-            occluded = p[2] > p[3] || behindFog;
-        } else {
-            projection.xyTransformMat4(p, p, posMatrix);
+    projectAndGetPerspectiveRatio(posMatrix: Mat4, point: Vec3, tileID: ?OverscaledTileID, checkOcclusion: boolean) {
+        const p = [point[0], point[1], point[2], 1];
+        vec4.transformMat4(p, p, posMatrix);
+        let behindFog = false;
+        if (this.fogState && tileID) {
+            const fogOpacity = getFogOpacityAtTileCoord(this.fogState, point[0], point[1], point[2], tileID.toUnwrapped(), this.transform);
+            behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
         }
         const a = new Point(
             (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
@@ -416,7 +411,7 @@ class CollisionIndex {
             // to scale down boxes in the distance
             perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3]), 1.5),
             signedDistanceFromCamera: p[3],
-            occluded
+            occluded: checkOcclusion && p[2] > p[3] || behindFog // Occluded by the far plane
         };
     }
 
