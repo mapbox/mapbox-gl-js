@@ -38,7 +38,7 @@ class Hash {
     addTo(map: Map) {
         this._map = map;
         window.addEventListener('hashchange', this._onHashChange, false);
-        this._map.on('moveend', this._updateHash);
+        map.on('moveend', this._updateHash);
         return this;
     }
 

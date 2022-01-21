@@ -56,7 +56,7 @@ class WorkerTile {
     collisionBoxArray: CollisionBoxArray;
 
     abort: ?() => void;
-    reloadCallback: WorkerTileCallback;
+    reloadCallback: ?WorkerTileCallback;
     vectorTile: VectorTile;
 
     constructor(params: WorkerTileParameters) {
