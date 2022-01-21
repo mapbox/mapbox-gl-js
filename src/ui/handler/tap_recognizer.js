@@ -44,7 +44,7 @@ export class SingleTapRecognizer {
             return;
         }
 
-        if (this.startTime === undefined) {
+        if (this.startTime === 0) {
             this.startTime = e.timeStamp;
         }
 
