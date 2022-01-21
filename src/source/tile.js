@@ -125,7 +125,6 @@ class Tile {
     fbo: ?Framebuffer;
     demTexture: ?Texture;
     globeGridBuffer: ?VertexBuffer;
-    globePoleBuffer: ?VertexBuffer;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     resourceTiming: ?Array<PerformanceResourceTiming>;
@@ -329,11 +328,6 @@ class Tile {
         if (this.globeGridBuffer) {
             this.globeGridBuffer.destroy();
             this.globeGridBuffer = null;
-        }
-
-        if (this.globePoleBuffer) {
-            this.globePoleBuffer.destroy();
-            this.globePoleBuffer = null;
         }
 
         Debug.run(() => {
