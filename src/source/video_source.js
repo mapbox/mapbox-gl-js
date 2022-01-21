@@ -3,8 +3,6 @@
 import {getVideo, ResourceType} from '../util/ajax.js';
 
 import ImageSource from './image_source.js';
-import boundsAttributes from '../data/bounds_attributes.js';
-import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import {ErrorEvent} from '../util/evented.js';
 import ValidationError from '../style-spec/error/validation_error.js';
@@ -219,25 +217,7 @@ class VideoSource extends ImageSource {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
 
-        if (!this._boundsArray) {
-            this._makeBoundsArray();
-        }
-
-        if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
-        }
-
-        if (!this.boundsSegments) {
-            this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
-        }
-
-        for (const w in this.tiles) {
-            const tile = this.tiles[w];
-            if (tile.state !== 'loaded') {
-                tile.state = 'loaded';
-                tile.texture = this.texture;
-            }
-        }
+        this._prepareData(context);
     }
 
     serialize() {

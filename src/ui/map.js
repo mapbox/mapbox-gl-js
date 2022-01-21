@@ -1173,7 +1173,7 @@ class Map extends Camera {
                 }
             };
 
-            return {layers: new Set(layers), listener, delegates: {[type]: delegate}};
+            return {layers: new Set(layers), listener, delegates: {[(type: string)]: delegate}};
         }
     }
 
