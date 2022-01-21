@@ -60,7 +60,7 @@ export const TERRAIN_OCCLUDED_OPACITY = 0.2;
  * @see [Example: Create a draggable Marker](https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
  */
 export default class Marker extends Evented {
-    _map: Map;
+    _map: ?Map;
     _anchor: Anchor;
     _offset: Point;
     _element: HTMLElement;
@@ -203,7 +203,7 @@ export default class Marker extends Evented {
         // If we attached the `click` listener to the marker element, the popup
         // would close once the event propogated to `map` due to the
         // `Popup#_onClickClose` listener.
-        this._map.on('click', this._onMapClick);
+        map.on('click', this._onMapClick);
 
         return this;
     }
@@ -217,19 +217,20 @@ export default class Marker extends Evented {
      * @returns {Marker} Returns itself to allow for method chaining.
      */
     remove() {
-        if (this._map) {
-            this._map.off('click', this._onMapClick);
-            this._map.off('move', this._updateMoving);
-            this._map.off('moveend', this._update);
-            this._map.off('mousedown', this._addDragHandler);
-            this._map.off('touchstart', this._addDragHandler);
-            this._map.off('mouseup', this._onUp);
-            this._map.off('touchend', this._onUp);
-            this._map.off('mousemove', this._onMove);
-            this._map.off('touchmove', this._onMove);
-            this._map.off('remove', this._clearFadeTimer);
-            this._map._removeMarker(this);
-            delete this._map;
+        const map = this._map;
+        if (map) {
+            map.off('click', this._onMapClick);
+            map.off('move', this._updateMoving);
+            map.off('moveend', this._update);
+            map.off('mousedown', this._addDragHandler);
+            map.off('touchstart', this._addDragHandler);
+            map.off('mouseup', this._onUp);
+            map.off('touchend', this._onUp);
+            map.off('mousemove', this._onMove);
+            map.off('touchmove', this._onMove);
+            map.off('remove', this._clearFadeTimer);
+            map._removeMarker(this);
+            this._map = undefined;
         }
         this._clearFadeTimer();
         this._element.remove();

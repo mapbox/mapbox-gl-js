@@ -21,8 +21,8 @@ class MouseHandler {
 
     _enabled: boolean;
     _active: boolean;
-    _lastPoint: Point;
-    _eventButton: number;
+    _lastPoint: ?Point;
+    _eventButton: ?number;
     _moved: boolean;
     _clickTolerance: number;
 
@@ -38,8 +38,8 @@ class MouseHandler {
     reset() {
         this._active = false;
         this._moved = false;
-        delete this._lastPoint;
-        delete this._eventButton;
+        this._lastPoint = undefined;
+        this._eventButton = undefined;
     }
 
     _correctButton(e: MouseEvent, button: number) {  //eslint-disable-line
@@ -65,7 +65,7 @@ class MouseHandler {
         if (!lastPoint) return;
         e.preventDefault();
 
-        if (buttonStillPressed(e, this._eventButton)) {
+        if (this._eventButton != null && buttonStillPressed(e, this._eventButton)) {
             // Some browsers don't fire a `mouseup` when the mouseup occurs outside
             // the window or iframe:
             // https://github.com/mapbox/mapbox-gl-js/issues/4622
