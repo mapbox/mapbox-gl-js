@@ -503,47 +503,65 @@ test('Map', (t) => {
             });
         });
 
-        t.test('e.isSourceLoaded should return `false` if source tiles are not loaded', (t) => {
-            const map = createMap(t);
+        t.end();
+    });
 
-            map.on('load', () => {
-                map.on('data', (e) => {
-                    if (e.sourceId === 'geojson' && e.sourceDataType === 'metadata') {
-                        t.equal(e.isSourceLoaded, false, 'false when source is not loaded');
-                        t.end();
-                    }
-                });
-                map.addSource('geojson', createStyleSource());
-                const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
-                map.style._getSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
-            });
+    t.test('#isSourceLoaded', (t) => {
+
+        t.afterEach((callback) => {
+            Map.prototype._detectMissingCSS.restore();
+            callback();
         });
 
-        t.test('e.isSourceLoaded should return `true` if source tiles are loaded', (t) => {
+        function setupIsSourceLoaded(tileState, callback) {
             const map = createMap(t);
-
             map.on('load', () => {
-                map.on('data', (e) => {
-                    if (source._data.features.length === 0 && e.sourceId === 'geojson' && e.sourceDataType === 'metadata') {
-                        t.equal(e.isSourceLoaded, true, 'true when source is loaded after calling `addSource`');
-                        source.setData({
-                            'type': 'FeatureCollection',
-                            'features': [{
-                                'type': 'Feature',
-                                'properties': {'name': 'Null Island'}
-                            }]
-                        });
-                    }
-                    if (source._data.features.length > 0 && e.sourceId === 'geojson' && e.sourceDataType === 'metadata') {
-                        t.equal(e.isSourceLoaded, true, 'true when source is loaded after calling `setData`');
-                        t.end();
-                    }
-                });
                 map.addSource('geojson', createStyleSource());
                 const source = map.getSource('geojson');
                 const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
                 map.style._getSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
-                map.style._getSourceCache('geojson')._tiles[fakeTileId.key].state = 'loaded';
+                map.style._getSourceCache('geojson')._tiles[fakeTileId.key].state = tileState;
+                callback(map, source);
+            });
+        }
+
+        t.test('e.isSourceLoaded should return `false` if source tiles are not loaded', (t) => {
+            setupIsSourceLoaded('loading', (map) => {
+                map.on('data', (e) => {
+                    if (e.sourceDataType === 'metadata') {
+                        t.equal(e.isSourceLoaded, false, 'false when source is not loaded');
+                        t.end();
+                    }
+                });
+            });
+        });
+
+        t.test('e.isSourceLoaded should return `true` if source tiles are loaded', (t) => {
+            setupIsSourceLoaded('loaded', (map) => {
+                map.on('data', (e) => {
+                    if (e.sourceDataType === 'metadata') {
+                        t.equal(e.isSourceLoaded, true, 'true when source is loaded');
+                        t.end();
+                    }
+                });
+            });
+        });
+
+        t.test('e.isSourceLoaded should return `true` if source tiles are loaded after calling `setData`', (t) => {
+            setupIsSourceLoaded('loaded', (map, source) => {
+                map.on('data', (e) => {
+                    if (source._data.features[0].properties.name === 'Null Island' && e.sourceDataType === 'metadata') {
+                        t.equal(e.isSourceLoaded, true, 'true when source is loaded');
+                        t.end();
+                    }
+                });
+                source.setData({
+                    'type': 'FeatureCollection',
+                    'features': [{
+                        'type': 'Feature',
+                        'properties': {'name': 'Null Island'}
+                    }]
+                });
             });
         });
 
