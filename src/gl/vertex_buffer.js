@@ -53,6 +53,10 @@ class VertexBuffer {
         this.buffer = gl.createBuffer();
         context.bindVertexBuffer.set(this.buffer);
         gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+
+        if (!this.dynamicDraw) {
+            array.destroy();
+        }
     }
 
     bind() {
