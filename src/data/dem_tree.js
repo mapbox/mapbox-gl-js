@@ -329,7 +329,7 @@ export default class DemMinMaxQuadTree {
         const childMip = mips[childLvl];
 
         let leafMask = 0;
-        let firstNodeIdx;
+        let firstNodeIdx = 0;
 
         for (let i = 0; i < this._siblingOffset.length; i++) {
             const childX = x * 2 + this._siblingOffset[i][0];
@@ -337,12 +337,10 @@ export default class DemMinMaxQuadTree {
 
             const elevation = childMip.getElevation(childX, childY);
             const leaf = childMip.isLeaf(childX, childY);
-            const nodeIdx = this._addNode(elevation.min, elevation.max, leaf);
+            if (i === 0) firstNodeIdx = this._addNode(elevation.min, elevation.max, leaf);
 
             if (leaf)
                 leafMask |= 1 << i;
-            if (!firstNodeIdx)
-                firstNodeIdx = nodeIdx;
         }
 
         // Continue construction of the tree recursively to non-leaf nodes.

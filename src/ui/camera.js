@@ -621,8 +621,8 @@ class Camera extends Evented {
 
         // Calculate zoom: consider the original bbox and padding.
         const size = upperRight.sub(lowerLeft);
-        const scaleX = (tr.width - (edgePadding.left + edgePadding.right + eOptions.padding.left + eOptions.padding.right)) / size.x;
-        const scaleY = (tr.height - (edgePadding.top + edgePadding.bottom + eOptions.padding.top + eOptions.padding.bottom)) / size.y;
+        const scaleX = (tr.width - ((edgePadding.left || 0) + (edgePadding.right || 0) + eOptions.padding.left + eOptions.padding.right)) / size.x;
+        const scaleY = (tr.height - ((edgePadding.top || 0) + (edgePadding.bottom || 0) + eOptions.padding.top + eOptions.padding.bottom)) / size.y;
 
         if (scaleY < 0 || scaleX < 0) {
             warnOnce(
