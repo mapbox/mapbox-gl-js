@@ -214,8 +214,8 @@ export class Terrain extends Elevation {
     _stencilRef: number;
 
     _exaggeration: number;
-    _depthFBO: Framebuffer;
-    _depthTexture: Texture;
+    _depthFBO: ?Framebuffer;
+    _depthTexture: ?Texture;
     _previousZoom: number;
     _updateTimestamp: number;
     _useVertexMorphing: boolean;
@@ -385,8 +385,8 @@ export class Terrain extends Elevation {
         this.pool = [];
         if (this._depthFBO) {
             this._depthFBO.destroy();
-            delete this._depthFBO;
-            delete this._depthTexture;
+            this._depthFBO = undefined;
+            this._depthTexture = undefined;
         }
     }
 
@@ -643,8 +643,8 @@ export class Terrain extends Elevation {
 
         context.activeTexture.set(gl.TEXTURE3);
         if (options && options.useDepthForOcclusion) {
-            this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-            uniforms['u_depth_size_inv'] = [1 / this._depthFBO.width, 1 / this._depthFBO.height];
+            if (this._depthTexture) this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            if (this._depthFBO) uniforms['u_depth_size_inv'] = [1 / this._depthFBO.width, 1 / this._depthFBO.height];
         } else {
             this.emptyDepthBufferTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
             uniforms['u_depth_size_inv'] = [1, 1];
@@ -1213,8 +1213,8 @@ export class Terrain extends Elevation {
         const width = Math.ceil(painter.width), height = Math.ceil(painter.height);
         if (this._depthFBO && (this._depthFBO.width !== width || this._depthFBO.height !== height)) {
             this._depthFBO.destroy();
-            delete this._depthFBO;
-            delete this._depthTexture;
+            this._depthFBO = undefined;
+            this._depthTexture = undefined;
         }
         if (!this._depthFBO) {
             const gl = context.gl;

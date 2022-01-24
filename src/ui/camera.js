@@ -143,8 +143,8 @@ class Camera extends Evented {
     _easeOptions: {duration: number, easing: (_: number) => number};
     _easeId: string | void;
 
-    _onEaseFrame: (_: number) => Transform | void;
-    _onEaseEnd: (easeId?: string) => void;
+    _onEaseFrame: ?(_: number) => Transform | void;
+    _onEaseEnd: ?(easeId?: string) => void;
     _easeFrameId: ?TaskID;
 
     +_requestRenderFrame: (() => void) => TaskID;
@@ -1290,7 +1290,7 @@ class Camera extends Evented {
         if (this._easeId && easeId && this._easeId === easeId) {
             return;
         }
-        delete this._easeId;
+        this._easeId = undefined;
         this.transform.cameraElevationReference = "ground";
 
         const wasZooming = this._zooming;
@@ -1566,8 +1566,8 @@ class Camera extends Evented {
     _stop(allowGestures?: boolean, easeId?: string): this {
         if (this._easeFrameId) {
             this._cancelRenderFrame(this._easeFrameId);
-            delete this._easeFrameId;
-            delete this._onEaseFrame;
+            this._easeFrameId = undefined;
+            this._onEaseFrame = undefined;
         }
 
         if (this._onEaseEnd) {
@@ -1575,7 +1575,7 @@ class Camera extends Evented {
             // animation, which sets a new _onEaseEnd. Ensure we don't delete
             // it unintentionally.
             const onEaseEnd = this._onEaseEnd;
-            delete this._onEaseEnd;
+            this._onEaseEnd = undefined;
             onEaseEnd.call(this, easeId);
         }
         if (!allowGestures) {
@@ -1603,7 +1603,8 @@ class Camera extends Evented {
     // Callback for map._requestRenderFrame
     _renderFrameCallback() {
         const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
-        this._onEaseFrame(this._easeOptions.easing(t));
+        const frame = this._onEaseFrame;
+        if (frame) frame(this._easeOptions.easing(t));
         if (t < 1) {
             this._easeFrameId = this._requestRenderFrame(this._renderFrameCallback);
         } else {

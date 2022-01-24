@@ -306,7 +306,7 @@ const defaultOptions = {
 class Map extends Camera {
     style: Style;
     painter: Painter;
-    handlers: HandlerManager;
+    handlers: ?HandlerManager;
 
     _container: HTMLElement;
     _missingCSSCanary: HTMLElement;
@@ -1098,7 +1098,7 @@ class Map extends Camera {
      * const isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving || this.handlers && this.handlers.isMoving();
+        return this._moving || this.handlers && this.handlers.isMoving() || false;
     }
 
     /**
@@ -1109,7 +1109,7 @@ class Map extends Camera {
      * const isZooming = map.isZooming();
      */
     isZooming(): boolean {
-        return this._zooming || this.handlers && this.handlers.isZooming();
+        return this._zooming || this.handlers && this.handlers.isZooming() || false;
     }
 
     /**
@@ -1120,7 +1120,7 @@ class Map extends Camera {
      * map.isRotating();
      */
     isRotating(): boolean {
-        return this._rotating || this.handlers && this.handlers.isRotating();
+        return this._rotating || this.handlers && this.handlers.isRotating() || false;
     }
 
     _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any) {
@@ -1173,7 +1173,7 @@ class Map extends Camera {
                 }
             };
 
-            return {layers: new Set(layers), listener, delegates: {[type]: delegate}};
+            return {layers: new Set(layers), listener, delegates: {[(type: string)]: delegate}};
         }
     }
 
@@ -1662,7 +1662,7 @@ class Map extends Camera {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
-            delete this.style;
+            this.style = (undefined: any); // we lazy-init it so it's never undefined when accessed
         }
 
         if (style) {
@@ -3222,9 +3222,10 @@ class Map extends Camera {
             this.style.destroy();
         }
         this.painter.destroy();
-        this.handlers.destroy();
-        delete this.handlers;
+        if (this.handlers) this.handlers.destroy();
+        this.handlers = undefined;
         this.setStyle(null);
+
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
             window.removeEventListener('orientationchange', this._onWindowResize, false);

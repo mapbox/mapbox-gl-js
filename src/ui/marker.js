@@ -60,7 +60,7 @@ export const TERRAIN_OCCLUDED_OPACITY = 0.2;
  * @see [Example: Create a draggable Marker](https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
  */
 export default class Marker extends Evented {
-    _map: Map;
+    _map: ?Map;
     _anchor: Anchor;
     _offset: Point;
     _element: HTMLElement;
@@ -203,7 +203,7 @@ export default class Marker extends Evented {
         // If we attached the `click` listener to the marker element, the popup
         // would close once the event propogated to `map` due to the
         // `Popup#_onClickClose` listener.
-        this._map.on('click', this._onMapClick);
+        map.on('click', this._onMapClick);
 
         return this;
     }
@@ -217,19 +217,20 @@ export default class Marker extends Evented {
      * @returns {Marker} Returns itself to allow for method chaining.
      */
     remove() {
-        if (this._map) {
-            this._map.off('click', this._onMapClick);
-            this._map.off('move', this._updateMoving);
-            this._map.off('moveend', this._update);
-            this._map.off('mousedown', this._addDragHandler);
-            this._map.off('touchstart', this._addDragHandler);
-            this._map.off('mouseup', this._onUp);
-            this._map.off('touchend', this._onUp);
-            this._map.off('mousemove', this._onMove);
-            this._map.off('touchmove', this._onMove);
-            this._map.off('remove', this._clearFadeTimer);
-            this._map._removeMarker(this);
-            delete this._map;
+        const map = this._map;
+        if (map) {
+            map.off('click', this._onMapClick);
+            map.off('move', this._updateMoving);
+            map.off('moveend', this._update);
+            map.off('mousedown', this._addDragHandler);
+            map.off('touchstart', this._addDragHandler);
+            map.off('mouseup', this._onUp);
+            map.off('touchend', this._onUp);
+            map.off('mousemove', this._onMove);
+            map.off('touchmove', this._onMove);
+            map.off('remove', this._clearFadeTimer);
+            map._removeMarker(this);
+            this._map = undefined;
         }
         this._clearFadeTimer();
         this._element.remove();
@@ -401,7 +402,7 @@ export default class Marker extends Evented {
         } else if (popup.isOpen()) {
             popup.remove();
             this._element.setAttribute('aria-expanded', 'false');
-        } else {
+        } else if (this._map) {
             popup.addTo(this._map);
             this._element.setAttribute('aria-expanded', 'true');
         }
@@ -409,18 +410,21 @@ export default class Marker extends Evented {
     }
 
     _evaluateOpacity() {
-        const position = this._pos ? this._pos.sub(this._transformedOffset()) : null;
+        const map = this._map;
+        if (!map) return;
 
-        if (!this._withinScreenBounds(position)) {
+        const pos = this._pos ? this._pos.sub(this._transformedOffset()) : null;
+
+        if (!pos || pos.x < 0 || pos.x > map.transform.width || pos.y < 0 || pos.y > map.transform.height) {
             this._clearFadeTimer();
             return;
         }
 
-        const mapLocation = this._map.unproject(position);
+        const mapLocation = map.unproject(pos);
 
         let terrainOccluded = false;
-        if (this._map.transform._terrainEnabled() && this._map.getTerrain()) {
-            const camera = this._map.getFreeCameraOptions();
+        if (map.transform._terrainEnabled() && map.getTerrain()) {
+            const camera = map.getFreeCameraOptions();
             if (camera.position) {
                 const cameraPos = camera.position.toLngLat();
                 // the distance to the marker lat/lng + marker offset location
@@ -430,7 +434,7 @@ export default class Marker extends Evented {
             }
         }
 
-        const fogOpacity = this._map._queryFogOpacity(mapLocation);
+        const fogOpacity = map._queryFogOpacity(mapLocation);
         const opacity = (1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0);
         this._element.style.opacity = `${opacity}`;
         if (this._popup) this._popup._setOpacity(`${opacity}`);
@@ -445,13 +449,6 @@ export default class Marker extends Evented {
         }
     }
 
-    _withinScreenBounds(position: ?Point): boolean {
-        const tr = this._map.transform;
-        return !!position &&
-            position.x >= 0 && position.x < tr.width &&
-            position.y >= 0 && position.y < tr.height;
-    }
-
     _updateDOM() {
         const pos = this._pos || new Point(0, 0);
         const pitch = this._calculatePitch();
@@ -462,7 +459,7 @@ export default class Marker extends Evented {
     _calculatePitch() {
         if (this._pitchAlignment === "viewport" || this._pitchAlignment === "auto") {
             return 0;
-        } if (this._pitchAlignment === "map") {
+        } if (this._map && this._pitchAlignment === "map") {
             return this._map.getPitch();
         }
         return 0;
@@ -471,7 +468,7 @@ export default class Marker extends Evented {
     _calculateRotation() {
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
             return this._rotation;
-        } if (this._rotationAlignment === "map") {
+        } if (this._map && this._rotationAlignment === "map") {
             return this._rotation - this._map.getBearing();
         }
         return 0;
@@ -479,13 +476,14 @@ export default class Marker extends Evented {
 
     _update(delaySnap?: boolean) {
         window.cancelAnimationFrame(this._updateFrameId);
-        if (!this._map) return;
+        const map = this._map;
+        if (!map) return;
 
-        if (this._map.transform.renderWorldCopies) {
-            this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
+        if (map.transform.renderWorldCopies) {
+            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
         }
 
-        this._pos = this._map.project(this._lngLat)._add(this._transformedOffset());
+        this._pos = map.project(this._lngLat)._add(this._transformedOffset());
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
@@ -501,14 +499,14 @@ export default class Marker extends Evented {
             this._pos = this._pos.round();
         }
 
-        this._map._requestDomTask(() => {
+        map._requestDomTask(() => {
             if (!this._map) return;
 
             if (this._element && this._pos && this._anchor) {
                 this._updateDOM();
             }
 
-            if ((this._map.getTerrain() || this._map.getFog()) && !this._fadeTimer) {
+            if ((map.getTerrain() || map.getFog()) && !this._fadeTimer) {
                 this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
             }
         });
@@ -520,7 +518,7 @@ export default class Marker extends Evented {
      * @private
      */
     _transformedOffset() {
-        if (!this._defaultMarker) return this._offset;
+        if (!this._defaultMarker || !this._map) return this._offset;
         const tr = this._map.transform;
         const offset = this._offset.mult(this._scale);
         if (this._rotationAlignment === "map") offset._rotate(tr.angle);
@@ -554,14 +552,17 @@ export default class Marker extends Evented {
     }
 
     _onMove(e: MapMouseEvent | MapTouchEvent) {
+        const map = this._map;
+        if (!map) return;
+
         if (!this._isDragging) {
-            const clickTolerance = this._clickTolerance || this._map._clickTolerance;
+            const clickTolerance = this._clickTolerance || map._clickTolerance;
             this._isDragging = e.point.dist(this._pointerdownPos) >= clickTolerance;
         }
         if (!this._isDragging) return;
 
         this._pos = e.point.sub(this._positionDelta);
-        this._lngLat = this._map.unproject(this._pos);
+        this._lngLat = map.unproject(this._pos);
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
         this._element.style.pointerEvents = 'none';
@@ -602,8 +603,12 @@ export default class Marker extends Evented {
         this._positionDelta = null;
         this._pointerdownPos = null;
         this._isDragging = false;
-        this._map.off('mousemove', this._onMove);
-        this._map.off('touchmove', this._onMove);
+
+        const map = this._map;
+        if (map) {
+            map.off('mousemove', this._onMove);
+            map.off('touchmove', this._onMove);
+        }
 
         // only fire dragend if it was preceded by at least one drag event
         if (this._state === 'active') {
@@ -623,6 +628,9 @@ export default class Marker extends Evented {
     }
 
     _addDragHandler(e: MapMouseEvent | MapTouchEvent) {
+        const map = this._map;
+        if (!map) return;
+
         if (this._element.contains((e.originalEvent.target: any))) {
             e.preventDefault();
 
@@ -637,10 +645,10 @@ export default class Marker extends Evented {
             this._pointerdownPos = e.point;
 
             this._state = 'pending';
-            this._map.on('mousemove', this._onMove);
-            this._map.on('touchmove', this._onMove);
-            this._map.once('mouseup', this._onUp);
-            this._map.once('touchend', this._onUp);
+            map.on('mousemove', this._onMove);
+            map.on('touchmove', this._onMove);
+            map.once('mouseup', this._onUp);
+            map.once('touchend', this._onUp);
         }
     }
 
@@ -657,13 +665,14 @@ export default class Marker extends Evented {
 
         // handle case where map may not exist yet
         // for example, when setDraggable is called before addTo
-        if (this._map) {
+        const map = this._map;
+        if (map) {
             if (shouldBeDraggable) {
-                this._map.on('mousedown', this._addDragHandler);
-                this._map.on('touchstart', this._addDragHandler);
+                map.on('mousedown', this._addDragHandler);
+                map.on('touchstart', this._addDragHandler);
             } else {
-                this._map.off('mousedown', this._addDragHandler);
-                this._map.off('touchstart', this._addDragHandler);
+                map.off('mousedown', this._addDragHandler);
+                map.off('touchstart', this._addDragHandler);
             }
         }
 

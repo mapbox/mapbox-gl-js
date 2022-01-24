@@ -84,7 +84,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
         if (source instanceof ImageSource) {
-            program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
+            if (source.boundsBuffer && source.boundsSegments) program.draw(
+                context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, source.boundsBuffer,
                 painter.quadTriangleIndexBuffer, source.boundsSegments);
         } else {

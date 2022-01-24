@@ -647,7 +647,7 @@ class GeolocateControl extends Evented {
 
         if (typeof window.DeviceMotionEvent !== "undefined" &&
             typeof window.DeviceMotionEvent.requestPermission === 'function') {
-            //$FlowFixMe[incompatible-type]
+            // $FlowFixMe
             DeviceOrientationEvent.requestPermission()
                 .then(response => {
                     if (response === 'granted') {

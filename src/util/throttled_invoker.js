@@ -7,7 +7,7 @@
  * @private
  */
 class ThrottledInvoker {
-    _channel: MessageChannel;
+    _channel: ?MessageChannel;
     _triggered: boolean;
     _callback: Function
 
@@ -38,7 +38,7 @@ class ThrottledInvoker {
     }
 
     remove() {
-        delete this._channel;
+        this._channel = undefined;
         this._callback = () => {};
     }
 }

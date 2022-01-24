@@ -136,8 +136,8 @@ class Tile {
     dependencies: Object;
     projection: Projection;
 
-    queryGeometryDebugViz: TileSpaceDebugBuffer;
-    queryBoundsDebugViz: TileSpaceDebugBuffer;
+    queryGeometryDebugViz: ?TileSpaceDebugBuffer;
+    queryBoundsDebugViz: ?TileSpaceDebugBuffer;
 
     _tileDebugBuffer: ?VertexBuffer;
     _tileBoundsBuffer: ?VertexBuffer;
@@ -391,15 +391,17 @@ class Tile {
                           visualizeQueryGeometry: boolean): {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         Debug.run(() => {
             if (visualizeQueryGeometry) {
-                if (!this.queryGeometryDebugViz) {
-                    this.queryGeometryDebugViz = new TileSpaceDebugBuffer(this.tileSize);
+                let geometryViz = this.queryGeometryDebugViz;
+                let boundsViz = this.queryBoundsDebugViz;
+                if (!geometryViz) {
+                    geometryViz = this.queryGeometryDebugViz = new TileSpaceDebugBuffer(this.tileSize);
                 }
-                if (!this.queryBoundsDebugViz) {
-                    this.queryBoundsDebugViz = new TileSpaceDebugBuffer(this.tileSize, Color.blue);
+                if (!boundsViz) {
+                    boundsViz = this.queryBoundsDebugViz = new TileSpaceDebugBuffer(this.tileSize, Color.blue);
                 }
 
-                this.queryGeometryDebugViz.addPoints(tileResult.tilespaceGeometry);
-                this.queryBoundsDebugViz.addPoints(tileResult.bufferedTilespaceGeometry);
+                geometryViz.addPoints(tileResult.tilespaceGeometry);
+                boundsViz.addPoints(tileResult.bufferedTilespaceGeometry);
             }
         });
 

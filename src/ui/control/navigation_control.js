@@ -40,14 +40,14 @@ const defaultOptions: Options = {
  * @see [Example: Add a third party vector tile source](https://www.mapbox.com/mapbox-gl-js/example/third-party/)
  */
 class NavigationControl {
-    _map: Map;
+    _map: ?Map;
     options: Options;
     _container: HTMLElement;
     _zoomInButton: HTMLButtonElement;
     _zoomOutButton: HTMLButtonElement;
     _compass: HTMLButtonElement;
     _compassIcon: HTMLElement;
-    _handler: MouseRotateWrapper;
+    _handler: ?MouseRotateWrapper;
 
     constructor(options: Options) {
         this.options = extend({}, defaultOptions, options);
@@ -60,9 +60,9 @@ class NavigationControl {
                 '_setButtonTitle',
                 '_updateZoomButtons'
             ], this);
-            this._zoomInButton = this._createButton('mapboxgl-ctrl-zoom-in', (e) => this._map.zoomIn({}, {originalEvent: e}));
+            this._zoomInButton = this._createButton('mapboxgl-ctrl-zoom-in', (e) => { if (this._map) this._map.zoomIn({}, {originalEvent: e}); });
             DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomInButton).setAttribute('aria-hidden', true);
-            this._zoomOutButton = this._createButton('mapboxgl-ctrl-zoom-out', (e) => this._map.zoomOut({}, {originalEvent: e}));
+            this._zoomOutButton = this._createButton('mapboxgl-ctrl-zoom-out', (e) => { if (this._map) this._map.zoomOut({}, {originalEvent: e}); });
             DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomOutButton).setAttribute('aria-hidden', true);
         }
         if (this.options.showCompass) {
@@ -70,10 +70,12 @@ class NavigationControl {
                 '_rotateCompassArrow'
             ], this);
             this._compass = this._createButton('mapboxgl-ctrl-compass', (e) => {
+                const map = this._map;
+                if (!map) return;
                 if (this.options.visualizePitch) {
-                    this._map.resetNorthPitch({}, {originalEvent: e});
+                    map.resetNorthPitch({}, {originalEvent: e});
                 } else {
-                    this._map.resetNorth({}, {originalEvent: e});
+                    map.resetNorth({}, {originalEvent: e});
                 }
             });
             this._compassIcon = DOM.create('span', 'mapboxgl-ctrl-icon', this._compass);
@@ -82,9 +84,12 @@ class NavigationControl {
     }
 
     _updateZoomButtons() {
-        const zoom = this._map.getZoom();
-        const isMax = zoom === this._map.getMaxZoom();
-        const isMin = zoom === this._map.getMinZoom();
+        const map = this._map;
+        if (!map) return;
+
+        const zoom = map.getZoom();
+        const isMax = zoom === map.getMaxZoom();
+        const isMin = zoom === map.getMinZoom();
         this._zoomInButton.disabled = isMax;
         this._zoomOutButton.disabled = isMin;
         this._zoomInButton.setAttribute('aria-disabled', isMax.toString());
@@ -92,11 +97,14 @@ class NavigationControl {
     }
 
     _rotateCompassArrow() {
-        const rotate = this.options.visualizePitch ?
-            `scale(${1 / Math.pow(Math.cos(this._map.transform.pitch * (Math.PI / 180)), 0.5)}) rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)` :
-            `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
+        const map = this._map;
+        if (!map) return;
 
-        this._map._requestDomTask(() => {
+        const rotate = this.options.visualizePitch ?
+            `scale(${1 / Math.pow(Math.cos(map.transform.pitch * (Math.PI / 180)), 0.5)}) rotateX(${map.transform.pitch}deg) rotateZ(${map.transform.angle * (180 / Math.PI)}deg)` :
+            `rotate(${map.transform.angle * (180 / Math.PI)}deg)`;
+
+        map._requestDomTask(() => {
             if (this._compassIcon) {
                 this._compassIcon.style.transform = rotate;
             }
@@ -108,36 +116,37 @@ class NavigationControl {
         if (this.options.showZoom) {
             this._setButtonTitle(this._zoomInButton, 'ZoomIn');
             this._setButtonTitle(this._zoomOutButton, 'ZoomOut');
-            this._map.on('zoom', this._updateZoomButtons);
+            map.on('zoom', this._updateZoomButtons);
             this._updateZoomButtons();
         }
         if (this.options.showCompass) {
             this._setButtonTitle(this._compass, 'ResetBearing');
             if (this.options.visualizePitch) {
-                this._map.on('pitch', this._rotateCompassArrow);
+                map.on('pitch', this._rotateCompassArrow);
             }
-            this._map.on('rotate', this._rotateCompassArrow);
+            map.on('rotate', this._rotateCompassArrow);
             this._rotateCompassArrow();
-            this._handler = new MouseRotateWrapper(this._map, this._compass, this.options.visualizePitch);
+            this._handler = new MouseRotateWrapper(map, this._compass, this.options.visualizePitch);
         }
         return this._container;
     }
 
     onRemove() {
+        const map = this._map;
+        if (!map) return;
         this._container.remove();
         if (this.options.showZoom) {
-            this._map.off('zoom', this._updateZoomButtons);
+            map.off('zoom', this._updateZoomButtons);
         }
         if (this.options.showCompass) {
             if (this.options.visualizePitch) {
-                this._map.off('pitch', this._rotateCompassArrow);
+                map.off('pitch', this._rotateCompassArrow);
             }
-            this._map.off('rotate', this._rotateCompassArrow);
-            this._handler.off();
-            delete this._handler;
+            map.off('rotate', this._rotateCompassArrow);
+            if (this._handler) this._handler.off();
+            this._handler = undefined;
         }
-
-        delete this._map;
+        this._map = undefined;
     }
 
     _createButton(className: string, fn: () => mixed) {
@@ -148,6 +157,7 @@ class NavigationControl {
     }
 
     _setButtonTitle(button: HTMLButtonElement, title: string) {
+        if (!this._map) return;
         const str = this._map._getUIString(`NavigationControl.${title}`);
         button.setAttribute('aria-label', str);
         if (button.firstElementChild) button.firstElementChild.setAttribute('title', str);
