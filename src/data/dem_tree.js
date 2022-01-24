@@ -337,10 +337,12 @@ export default class DemMinMaxQuadTree {
 
             const elevation = childMip.getElevation(childX, childY);
             const leaf = childMip.isLeaf(childX, childY);
-            if (i === 0) firstNodeIdx = this._addNode(elevation.min, elevation.max, leaf);
+            const nodeIdx = this._addNode(elevation.min, elevation.max, leaf);
 
             if (leaf)
                 leafMask |= 1 << i;
+            if (!firstNodeIdx)
+                firstNodeIdx = nodeIdx;
         }
 
         // Continue construction of the tree recursively to non-leaf nodes.
