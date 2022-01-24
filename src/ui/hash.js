@@ -13,7 +13,7 @@ import type Map from './map.js';
  * @returns {Hash} `this`
  */
 class Hash {
-    _map: Map;
+    _map: ?Map;
     _updateHash: () => ?TimeoutID;
     _hashName: ?string;
 
@@ -38,7 +38,7 @@ class Hash {
     addTo(map: Map) {
         this._map = map;
         window.addEventListener('hashchange', this._onHashChange, false);
-        this._map.on('moveend', this._updateHash);
+        map.on('moveend', this._updateHash);
         return this;
     }
 
@@ -48,24 +48,28 @@ class Hash {
      * @returns {Popup} `this`
      */
     remove() {
-        window.removeEventListener('hashchange', this._onHashChange, false);
+        if (!this._map) return this;
+
         this._map.off('moveend', this._updateHash);
+        window.removeEventListener('hashchange', this._onHashChange, false);
         clearTimeout(this._updateHash());
 
-        delete this._map;
+        this._map = undefined;
         return this;
     }
 
     getHashString(mapFeedback?: boolean) {
-        const center = this._map.getCenter(),
-            zoom = Math.round(this._map.getZoom() * 100) / 100,
+        const map = this._map;
+        if (!map) return;
+        const center = map.getCenter(),
+            zoom = Math.round(map.getZoom() * 100) / 100,
             // derived from equation: 512px * 2^z / 360 / 10^d < 0.5px
             precision = Math.ceil((zoom * Math.LN2 + Math.log(512 / 360 / 0.5)) / Math.LN10),
             m = Math.pow(10, precision),
             lng = Math.round(center.lng * m) / m,
             lat = Math.round(center.lat * m) / m,
-            bearing = this._map.getBearing(),
-            pitch = this._map.getPitch();
+            bearing = map.getBearing(),
+            pitch = map.getPitch();
         let hash = '';
         if (mapFeedback) {
             // new map feedback site has some constraints that don't allow
@@ -117,10 +121,12 @@ class Hash {
     }
 
     _onHashChange() {
+        const map = this._map;
+        if (!map) return;
         const loc = this._getCurrentHash();
         if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
-            const bearing = this._map.dragRotate.isEnabled() && this._map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : this._map.getBearing();
-            this._map.jumpTo({
+            const bearing = map.dragRotate.isEnabled() && map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : map.getBearing();
+            map.jumpTo({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
                 bearing,

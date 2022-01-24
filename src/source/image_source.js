@@ -24,6 +24,7 @@ import type {
     ImageSourceSpecification,
     VideoSourceSpecification
 } from '../style-spec/types.js';
+import type Context from '../gl/context.js';
 
 type Coordinates = [[number, number], [number, number], [number, number], [number, number]];
 
@@ -106,9 +107,9 @@ class ImageSource extends Evented implements Source {
     texture: Texture | null;
     image: ImageData;
     tileID: CanonicalTileID;
-    _boundsArray: RasterBoundsArray;
-    boundsBuffer: VertexBuffer;
-    boundsSegments: SegmentVector;
+    _boundsArray: ?RasterBoundsArray;
+    boundsBuffer: ?VertexBuffer;
+    boundsSegments: ?SegmentVector;
     _loaded: boolean;
     perspectiveTransform: [number, number];
 
@@ -247,7 +248,7 @@ class ImageSource extends Evented implements Source {
      */
     setCoordinates(coordinates: Coordinates) {
         this.coordinates = coordinates;
-        delete this._boundsArray;
+        this._boundsArray = undefined;
 
         // Calculate which mercator tile is suitable for rendering the video in
         // and create a buffer with the corner coordinates. These coordinates
@@ -270,10 +271,20 @@ class ImageSource extends Evented implements Source {
     }
 
     _clear() {
-        delete this._boundsArray;
+        this._boundsArray = undefined;
     }
 
-    _makeBoundsArray() {
+    _prepareData(context: Context) {
+        for (const w in this.tiles) {
+            const tile = this.tiles[w];
+            if (tile.state !== 'loaded') {
+                tile.state = 'loaded';
+                tile.texture = this.texture;
+            }
+        }
+
+        if (this._boundsArray) return;
+
         const tileTr = tileTransform(this.tileID, this.map.transform.projection);
 
         // Transform the corner coordinates into the coordinate space of our tile.
@@ -285,52 +296,31 @@ class ImageSource extends Evented implements Source {
         this.perspectiveTransform = getPerspectiveTransform(
             this.width, this.height, tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y);
 
-        this._boundsArray = new RasterBoundsArray();
-        this._boundsArray.emplaceBack(tl.x, tl.y, 0, 0);
-        this._boundsArray.emplaceBack(tr.x, tr.y, EXTENT, 0);
-        this._boundsArray.emplaceBack(bl.x, bl.y, 0, EXTENT);
-        this._boundsArray.emplaceBack(br.x, br.y, EXTENT, EXTENT);
+        const boundsArray = this._boundsArray = new RasterBoundsArray();
+        boundsArray.emplaceBack(tl.x, tl.y, 0, 0);
+        boundsArray.emplaceBack(tr.x, tr.y, EXTENT, 0);
+        boundsArray.emplaceBack(bl.x, bl.y, 0, EXTENT);
+        boundsArray.emplaceBack(br.x, br.y, EXTENT, EXTENT);
 
         if (this.boundsBuffer) {
             this.boundsBuffer.destroy();
-            delete this.boundsBuffer;
         }
-
-        return this;
+        this.boundsBuffer = context.createVertexBuffer(boundsArray, boundsAttributes.members);
+        this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
     }
 
     prepare() {
-        if (Object.keys(this.tiles).length === 0 || !this.image) {
-            return;
-        }
+        if (Object.keys(this.tiles).length === 0 || !this.image) return;
 
         const context = this.map.painter.context;
         const gl = context.gl;
-
-        if (!this._boundsArray) {
-            this._makeBoundsArray();
-        }
-
-        if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
-        }
-
-        if (!this.boundsSegments) {
-            this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
-        }
 
         if (!this.texture) {
             this.texture = new Texture(context, this.image, gl.RGBA);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         }
 
-        for (const w in this.tiles) {
-            const tile = this.tiles[w];
-            if (tile.state !== 'loaded') {
-                tile.state = 'loaded';
-                tile.texture = this.texture;
-            }
-        }
+        this._prepareData(context);
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {

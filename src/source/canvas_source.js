@@ -3,8 +3,6 @@
 import ImageSource from './image_source.js';
 
 import window from '../util/window.js';
-import boundsAttributes from '../data/bounds_attributes.js';
-import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import {ErrorEvent} from '../util/evented.js';
 import ValidationError from '../style-spec/error/validation_error.js';
@@ -207,33 +205,14 @@ class CanvasSource extends ImageSource {
         if (Object.keys(this.tiles).length === 0) return; // not enough data for current position
 
         const context = this.map.painter.context;
-        const gl = context.gl;
-
-        if (!this._boundsArray) {
-            this._makeBoundsArray();
-        }
-
-        if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, boundsAttributes.members);
-        }
-
-        if (!this.boundsSegments) {
-            this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
-        }
 
         if (!this.texture) {
-            this.texture = new Texture(context, this.canvas, gl.RGBA, {premultiply: true});
+            this.texture = new Texture(context, this.canvas, context.gl.RGBA, {premultiply: true});
         } else if (resize || this._playing) {
             this.texture.update(this.canvas, {premultiply: true});
         }
 
-        for (const w in this.tiles) {
-            const tile = this.tiles[w];
-            if (tile.state !== 'loaded') {
-                tile.state = 'loaded';
-                tile.texture = this.texture;
-            }
-        }
+        this._prepareData(context);
     }
 
     serialize(): Object {

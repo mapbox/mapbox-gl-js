@@ -148,7 +148,7 @@ class HandlerManager {
     _el: HTMLElement;
     _handlers: Array<{ handlerName: string, handler: Handler, allowed: any }>;
     _eventsInProgress: Object;
-    _frameId: number;
+    _frameId: ?number;
     _inertia: HandlerInertia;
     _bearingSnap: number;
     _handlersById: { [string]: Handler };
@@ -645,7 +645,7 @@ class HandlerManager {
     _requestFrame() {
         this._map.triggerRepaint();
         return this._map._renderTaskQueue.add(timeStamp => {
-            delete this._frameId;
+            this._frameId = undefined;
             this.handleEvent(new RenderFrameEvent('renderFrame', {timeStamp}));
             this._applyChanges();
         });
