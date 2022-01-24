@@ -15,6 +15,7 @@ import Transform from '../transform.js';
 import LngLat from '../lng_lat.js';
 import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../mercator_coordinate.js';
+import type {Vec3} from 'gl-matrix';
 
 export type Projection = {
     name: string,
@@ -40,6 +41,8 @@ export type Projection = {
     projectTilePoint: (x: number, y: number, id: CanonicalTileID) => {x: number, y: number, z: number},
     pixelsPerMeter: (lat: number, worldSize: number) => number,
     farthestPixelDistance: (tr: Transform) => number,
+    upVector: (id: CanonicalTileID, x: number, y: number) => Vec3,
+    upVectorScale: (id: CanonicalTileID, latitude: number, worldSize: number) => ElevationScale,
     createTileTransform: (tr: Transform, worldSize: number) => TileTransform,
 };
 
@@ -92,8 +95,6 @@ export type ElevationScale = {
 
 export type TileTransform = {
     createTileMatrix: (id: UnwrappedTileID) => Float64Array,
-    createInversionMatrix: (id: UnwrappedTileID) => Float32Array,
-    upVector: (id: CanonicalTileID, x: number, y: number) => [number, number, number],
-    upVectorScale: (id: CanonicalTileID, latitude: number, worldSize: number) => ElevationScale,
+    createInversionMatrix: (id: CanonicalTileID) => Float32Array,
     pointCoordinate: (x: number, y: number, z?: number) => MercatorCoordinate
 };

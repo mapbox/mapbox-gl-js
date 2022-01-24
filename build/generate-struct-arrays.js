@@ -120,7 +120,7 @@ import boundsAttributes from '../src/data/bounds_attributes.js';
 createStructArrayType('pos', posAttributes);
 createStructArrayType('raster_bounds', boundsAttributes);
 
-import circleAttributes from '../src/data/bucket/circle_attributes.js';
+import {circleAttributes, circleGlobeExtAttributes} from '../src/data/bucket/circle_attributes.js';
 import fillAttributes from '../src/data/bucket/fill_attributes.js';
 import lineAttributes from '../src/data/bucket/line_attributes.js';
 import lineAttributesExt from '../src/data/bucket/line_attributes_ext.js';
@@ -237,6 +237,9 @@ createStructArrayLayoutType(createLayout([{
 
 // Fill extrusion specific array
 createStructArrayType(`fill_extrusion_centroid`, centroidAttributes, true);
+
+// Globe extension arrays
+createStructArrayType('circle_globe_ext', circleGlobeExtAttributes, true);
 
 const layouts = Object.keys(layoutCache).map(k => layoutCache[k]);
 

@@ -218,13 +218,12 @@ const symbolIconUniformValues = (
 
     if (transform.projection.name === 'globe') {
         const tileMatrix = calculateGlobeMatrix(transform, transform.worldSize);
-        const id = coord.toUnwrapped();
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = zoomTransition;
-        values['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(id);
+        values['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(coord.canonical);
         values['u_merc_center'] = mercatorCenter;
         values['u_camera_forward'] = ((transform._camera.forward(): any): [number, number, number]);
-        values['u_ecef_origin'] = globeECEFOrigin(tileMatrix, id);
+        values['u_ecef_origin'] = globeECEFOrigin(tileMatrix, coord.toUnwrapped());
         values['u_tile_matrix'] = Float32Array.from(tileMatrix);
     }
 
