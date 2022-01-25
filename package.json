@@ -67,7 +67,7 @@
     "eslint-plugin-html": "^6.1.1",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsdoc": "^32.3.4",
-    "flow-bin": "0.131.0",
+    "flow-bin": "0.132.0",
     "gl": "^4.9.0",
     "glob": "^7.1.6",
     "is-builtin-module": "^3.0.0",

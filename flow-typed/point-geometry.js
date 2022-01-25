@@ -1,5 +1,6 @@
+// @flow strict
 declare module "@mapbox/point-geometry" {
-    declare type PointLike = Point | [number, number];
+    declare export type PointLike = Point | [number, number];
 
     declare class Point {
         x: number;
@@ -40,5 +41,6 @@ declare module "@mapbox/point-geometry" {
         _round(): Point;
         static convert(a: PointLike): Point;
     }
-    declare module.exports: typeof Point;
+
+    declare export default Class<Point>;
 }

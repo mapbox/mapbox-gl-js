@@ -596,7 +596,7 @@ export default class Popup extends Evented {
         container.className = classes.join(' ');
     }
 
-    _update(cursor: ?PointLike) {
+    _update(cursor?: Point) {
         const hasPosition = this._lngLat || this._trackPointer;
         const map = this._map;
 

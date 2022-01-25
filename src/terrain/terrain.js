@@ -39,6 +39,7 @@ import DEMData from '../data/dem_data.js';
 import {DrapeRenderMode} from '../style/terrain.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
+import {RGBAImage} from '../util/image.js';
 
 import type Map from '../ui/map.js';
 import type Painter from '../render/painter.js';
@@ -539,10 +540,7 @@ export class Terrain extends Elevation {
         const context = this.painter.context;
         const gl = context.gl;
         if (!this._emptyDepthBufferTexture) {
-            const image = {
-                width: 1, height: 1,
-                data: new Uint8Array([255, 255, 255, 255])
-            };
+            const image = new RGBAImage({width: 1, height: 1}, Uint8Array.of(255, 255, 255, 255));
             this._emptyDepthBufferTexture = new Texture(context, image, gl.RGBA, {premultiply: false});
         }
         return this._emptyDepthBufferTexture;
@@ -566,10 +564,10 @@ export class Terrain extends Elevation {
         context.activeTexture.set(gl.TEXTURE2);
 
         const min = this._getLoadedAreaMinimum();
-        const image = {
-            width: 1, height: 1,
-            data: new Uint8Array(DEMData.pack(min, ((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding))
-        };
+        const image = new RGBAImage(
+            {width: 1, height: 1},
+            new Uint8Array(DEMData.pack(min, ((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding))
+        );
 
         this._emptyDEMTextureDirty = false;
         let texture = this._emptyDEMTexture;

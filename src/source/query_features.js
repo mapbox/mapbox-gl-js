@@ -10,6 +10,8 @@ import type {QueryGeometry} from '../style/query_geometry.js';
 import assert from 'assert';
 import {mat4} from 'gl-matrix';
 
+import type Point from '@mapbox/point-geometry';
+
 /*
  * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
  */

@@ -5,6 +5,7 @@ import DOM from '../../util/dom.js';
 import {Event} from '../../util/evented.js';
 
 import type Map from '../map.js';
+import type Point from '@mapbox/point-geometry';
 
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.

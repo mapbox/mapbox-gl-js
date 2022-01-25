@@ -4,7 +4,6 @@ import {version} from '../../package.json';
 import {asyncAll, extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
-const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
 import DOM from '../util/dom.js';
 import {getImage, getJSON, ResourceType} from '../util/ajax.js';
 import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
@@ -485,7 +484,7 @@ class Map extends Camera {
             if (!this._container) {
                 throw new Error(`Container '${options.container}' not found.`);
             }
-        } else if (options.container instanceof HTMLElement) {
+        } else if (options.container instanceof window.HTMLElement) {
             this._container = options.container;
         } else {
             throw new Error(`Invalid type: 'container' must be a String or HTMLElement.`);
@@ -1933,7 +1932,7 @@ class Map extends Camera {
         this._lazyInitEmptyStyle();
         const version = 0;
 
-        if (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) {
+        if (image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap)) {
             const {width, height, data} = browser.getImageData(image);
             this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version});
         } else if (image.width === undefined || image.height === undefined) {
@@ -1987,7 +1986,7 @@ class Map extends Camera {
             return this.fire(new ErrorEvent(new Error(
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
         }
-        const imageData = (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) ? browser.getImageData(image) : image;
+        const imageData = (image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap)) ? browser.getImageData(image) : image;
         const {width, height, data} = imageData;
 
         if (width === undefined || height === undefined) {
@@ -2001,7 +2000,7 @@ class Map extends Camera {
                 'The width and height of the updated image must be that same as the previous version of the image')));
         }
 
-        const copy = !(image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap));
+        const copy = !(image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap));
         existingImage.data.replace(data, copy);
 
         this.style.updateImage(id, existingImage);
@@ -2064,7 +2063,7 @@ class Map extends Camera {
      */
     loadImage(url: string, callback: Function) {
         getImage(this._requestManager.transformRequest(url, ResourceType.Image), (err, img) => {
-            callback(err, img instanceof HTMLImageElement ? browser.getImageData(img) : img);
+            callback(err, img instanceof window.HTMLImageElement ? browser.getImageData(img) : img);
         });
     }
 

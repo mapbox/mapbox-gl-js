@@ -1,4 +1,4 @@
-
+// @flow
 type VecType = Array<number> | Float32Array | Float64Array;
 
 declare module "gl-matrix" {
