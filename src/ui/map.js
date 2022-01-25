@@ -1796,13 +1796,7 @@ class Map extends Camera {
      * const sourceLoaded = map.isSourceLoaded('bathymetry-data');
      */
     isSourceLoaded(id: string) {
-        const sourceCaches = this.style && this.style._getSourceCaches(id);
-        if (sourceCaches.length === 0) {
-            this.fire(new ErrorEvent(new Error(`There is no source with ID '${id}'`)));
-            return;
-        }
-
-        return sourceCaches.every(sc => sc.loaded());
+        return this.style && this.style._isSourceCacheLoaded(id);
     }
 
     /**
