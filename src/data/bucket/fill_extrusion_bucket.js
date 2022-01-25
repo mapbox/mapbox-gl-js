@@ -1,8 +1,8 @@
 // @flow
 
-import {FillExtrusionLayoutArray, FillExtrusionCentroidArray} from '../array_types.js';
+import {FillExtrusionLayoutArray, FillExtrusionExtArray, FillExtrusionCentroidArray} from '../array_types.js';
 
-import {members as layoutAttributes, centroidAttributes} from './fill_extrusion_attributes.js';
+import {members as layoutAttributes, centroidAttributes, fillExtrusionAttributesExt} from './fill_extrusion_attributes.js';
 import SegmentVector from '../segment.js';
 import {ProgramConfigurationSet} from '../program_configuration.js';
 import {TriangleIndexArray} from '../index_array_type.js';
@@ -184,6 +184,9 @@ class FillExtrusionBucket implements Bucket {
     centroidVertexArray: FillExtrusionCentroidArray;
     centroidVertexBuffer: VertexBuffer;
 
+    layoutVertexExtArray: ?FillExtrusionExtArray;
+    layoutVertexExtBuffer: ?VertexBuffer;
+
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
@@ -225,6 +228,14 @@ class FillExtrusionBucket implements Bucket {
         this.borderDone = [false, false, false, false];
         this.tileToMeter = tileToMeter(canonical);
 
+        let globeProjection: ?Projection = null;
+
+        if (tileTransform.projection.name === 'globe') {
+            this.layoutVertexExtArray = new FillExtrusionExtArray();
+            
+            globeProjection = tileTransform.projection;
+        }
+
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
@@ -245,7 +256,7 @@ class FillExtrusionBucket implements Bucket {
             if (this.hasPattern) {
                 this.features.push(addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, options));
             } else {
-                this.addFeature(bucketFeature, bucketFeature.geometry, index, canonical, {}, options.availableImages);
+                this.addFeature(bucketFeature, bucketFeature.geometry, index, canonical, {}, options.availableImages, globeProjection);
             }
 
             options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
@@ -253,10 +264,10 @@ class FillExtrusionBucket implements Bucket {
         this.sortBorders();
     }
 
-    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>) {
+    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, projection?: ?Projection) {
         for (const feature of this.features) {
             const {geometry} = feature;
-            this.addFeature(feature, geometry, feature.index, canonical, imagePositions, availableImages);
+            this.addFeature(feature, geometry, feature.index, canonical, imagePositions, availableImages, projection);
         }
         this.sortBorders();
     }
@@ -278,6 +289,10 @@ class FillExtrusionBucket implements Bucket {
         if (!this.uploaded) {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
+
+            if (this.layoutVertexExtArray) {
+                this.layoutVertexExtBuffer = context.createVertexBuffer(this.layoutVertexExtArray, fillExtrusionAttributesExt.members, true);
+            }
         }
         this.programConfigurations.upload(context);
         this.uploaded = true;
@@ -296,13 +311,18 @@ class FillExtrusionBucket implements Bucket {
     destroy() {
         if (!this.layoutVertexBuffer) return;
         this.layoutVertexBuffer.destroy();
-        if (this.centroidVertexBuffer) this.centroidVertexBuffer.destroy();
+        if (this.centroidVertexBuffer) {
+            this.centroidVertexBuffer.destroy();
+        }
+        if (this.layoutVertexExtBuffer) {
+            this.layoutVertexExtBuffer.destroy();
+        }
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();
         this.segments.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, projection?: ?Projection) {
         const metadata = this.enableTerrain ? new PartMetadata() : null;
 
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
@@ -363,6 +383,10 @@ class FillExtrusionBucket implements Bucket {
 
                             segment.vertexLength += 4;
                             segment.primitiveLength += 2;
+
+                            if (projection) {
+                                // TODO
+                            }
                         }
                     }
                 }
