@@ -117,6 +117,7 @@ type MapOptions = {
     pitch?: number,
     optimizeForTerrain?: boolean,
     renderWorldCopies?: boolean,
+    minTileCacheSize?: number,
     maxTileCacheSize?: number,
     transformRequest?: RequestTransformFunction,
     accessToken: string,
@@ -168,6 +169,7 @@ const defaultOptions = {
     optimizeForTerrain: true,
     renderWorldCopies: true,
     refreshExpiredTiles: true,
+    minTileCacheSize: null,
     maxTileCacheSize: null,
     localIdeographFontFamily: 'sans-serif',
     localFontFamily: null,
@@ -254,6 +256,7 @@ const defaultOptions = {
  * container, there will be blank space beyond 180 and -180 degrees longitude.
  * - Features that cross 180 and -180 degrees longitude will be cut in two (with one portion on the right edge of the
  * map and the other on the left edge of the map) at every zoom level.
+ * @param {number} [options.minTileCacheSize=null] The minimum number of tiles stored in the tile cache for a given source. Larger viewports use more tiles and need larger caches. Larger viewports are more likely to be found on devices with more memory and on pages where the map is more important. If omitted, the cache will be dynamically sized based on the current viewport.
  * @param {number} [options.maxTileCacheSize=null] The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
  * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs', 'Hiragana', 'Katakana', 'Hangul Syllables' and 'CJK Symbols and Punctuation' ranges.
  *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).

@@ -405,7 +405,7 @@ class SourceCache extends Evented {
 
     /**
      * Resizes the tile cache based on the current viewport's size
-     * or the maxTileCacheSize option passed during map creation
+     * or the minTileCacheSize and maxTileCacheSize options passed during map creation
      *
      * Larger viewports use more tiles and need larger caches. Larger viewports
      * are more likely to be found on devices with more memory and on pages where
