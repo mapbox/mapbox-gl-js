@@ -47,7 +47,7 @@
 .*/_site/.*
 
 [version]
-0.130.0
+0.131.0
 
 [options]
 server.max_workers=4

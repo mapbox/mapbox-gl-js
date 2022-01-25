@@ -329,7 +329,7 @@ export default class DemMinMaxQuadTree {
         const childMip = mips[childLvl];
 
         let leafMask = 0;
-        let firstNodeIdx;
+        let firstNodeIdx = 0;
 
         for (let i = 0; i < this._siblingOffset.length; i++) {
             const childX = x * 2 + this._siblingOffset[i][0];

@@ -1542,13 +1542,13 @@ function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray, numb
  * @private
  */
 function createWireframeGrid(count: number): LineIndexArray {
-    let i, j, index;
+    let index = 0;
     const indexArray = new LineIndexArray();
     const size = count + 2;
     // Draw two edges of a quad and its diagonal. The very last row and column have
     // an additional line to close off the grid.
-    for (j = 1; j < count; j++) {
-        for (i = 1; i < count; i++) {
+    for (let j = 1; j < count; j++) {
+        for (let i = 1; i < count; i++) {
             index = j * size + i;
             indexArray.emplaceBack(index, index + 1);
             indexArray.emplaceBack(index, index + size);
