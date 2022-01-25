@@ -42,7 +42,7 @@ export default class Globe extends Mercator {
         this.supportsWorldCopies = false;
         this.supportsFog = false;
         this.zAxisUnit = "pixels";
-        this.unsupportedLayers = ['fill-extrusion', 'debug', 'custom'];
+        this.unsupportedLayers = ['debug', 'custom'];
     }
 
     projectTilePoint(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {

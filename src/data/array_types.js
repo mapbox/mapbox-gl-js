@@ -228,6 +228,42 @@ register(StructArrayLayout8ui16);
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Int16[6]
+ *
+ * @private
+ */
+class StructArrayLayout6i12 extends StructArray {
+    uint8: Uint8Array;
+    int16: Int16Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.int16 = new Int16Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number) {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5);
+    }
+
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number) {
+        const o2 = i * 6;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 3] = v3;
+        this.int16[o2 + 4] = v4;
+        this.int16[o2 + 5] = v5;
+        return i;
+    }
+}
+
+StructArrayLayout6i12.prototype.bytesPerElement = 12;
+register('StructArrayLayout6i12', StructArrayLayout6i12);
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Int16[4]
  * [8]: Uint16[4]
  * [16]: Int16[4]
@@ -959,6 +995,43 @@ class StructArrayLayout6i1f16 extends StructArray {
 StructArrayLayout6i1f16.prototype.bytesPerElement = 16;
 register(StructArrayLayout6i1f16);
 
+class FillExtrusionExtStruct extends Struct {
+    _structArray: FillExtrusionExtArray;
+    a_pos_30: number;
+    a_pos_31: number;
+    a_pos_32: number;
+    a_pos_normal_30: number;
+    a_pos_normal_31: number;
+    a_pos_normal_32: number;
+    get a_pos_30() { return this._structArray.int16[this._pos2 + 0]; }
+    get a_pos_31() { return this._structArray.int16[this._pos2 + 1]; }
+    get a_pos_32() { return this._structArray.int16[this._pos2 + 2]; }
+    get a_pos_normal_30() { return this._structArray.int16[this._pos2 + 3]; }
+    get a_pos_normal_31() { return this._structArray.int16[this._pos2 + 4]; }
+    get a_pos_normal_32() { return this._structArray.int16[this._pos2 + 5]; }
+}
+
+FillExtrusionExtStruct.prototype.size = 12;
+
+export type FillExtrusionExt = FillExtrusionExtStruct;
+
+/**
+ * @private
+ */
+export class FillExtrusionExtArray extends StructArrayLayout6i12 {
+    /**
+     * Return the FillExtrusionExtStruct at the given location in the array.
+     * @param {number} index The index of the element.
+     * @private
+     */
+    get(index: number): FillExtrusionExtStruct {
+        assert(!this.isTransferred);
+        return new FillExtrusionExtStruct(this, index);
+    }
+}
+
+register('FillExtrusionExtArray', FillExtrusionExtArray);
+
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
     projectedAnchorX: number;
@@ -1295,6 +1368,7 @@ export {
     StructArrayLayout3f12,
     StructArrayLayout10ui20,
     StructArrayLayout8ui16,
+    StructArrayLayout6i12,
     StructArrayLayout4i4ui4i4i32,
     StructArrayLayout1ul4,
     StructArrayLayout5i4f1i1ul2ui40,
