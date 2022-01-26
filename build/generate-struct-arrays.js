@@ -55,13 +55,11 @@ function createStructArrayType(name: string, layout: StructArrayLayout, includeS
     const arrayClass = `${camelize(name)}Array`;
 
     if (includeStructAccessors) {
-        const usedTypes = new Set(['Uint8']);
-        const members = normalizeMembers(layout.members, usedTypes);
+        const members = normalizeMembers(layout.members);
         arraysWithStructAccessors.push({
             arrayClass,
             members,
             size: layout.size,
-            usedTypes,
             layoutClass,
             includeStructAccessors
         });
@@ -71,8 +69,10 @@ function createStructArrayType(name: string, layout: StructArrayLayout, includeS
 }
 
 function createStructArrayLayoutType({members, size, alignment}) {
-    const usedTypes = new Set(['Uint8']);
-    members = normalizeMembers(members, usedTypes);
+    const usedTypesSet = new Set();
+    members = normalizeMembers(members, usedTypesSet);
+
+    const usedTypes = Array.from(usedTypesSet).sort((a, b) => sizeOf(a) - sizeOf(b));
 
     // combine consecutive 'members' with same underlying type, summing their
     // component counts
