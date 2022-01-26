@@ -76,9 +76,6 @@ for (const size of usedTypeSizes) {
 }
 
 let argIndex = 0;
--%>
-        const {<%=usedTypes.map(t => t.toLowerCase()).join(', ')%>} = this;
-<%
 for (const member of members) {
     for (let c = 0; c < member.components; c++) {
         // The index for `member` component `c` into the appropriate type array is:
@@ -87,7 +84,7 @@ for (const member of members) {
         // offset of this member into the array
         const index = `o${member.size.toFixed(0)} + ${(member.offset / member.size + c).toFixed(0)}`;
 -%>
-        <%=member.view%>[<%=index%>] = v<%=argIndex++%>;
+        this.<%=member.view%>[<%=index%>] = v<%=argIndex++%>;
 <%
     }
 }

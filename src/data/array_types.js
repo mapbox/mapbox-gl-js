@@ -28,9 +28,8 @@ class StructArrayLayout2i4 extends StructArray {
 
     emplace(i: number, v0: number, v1: number) {
         const o2 = i * 2;
-        const {int16} = this;
-        int16[o2 + 0] = v0;
-        int16[o2 + 1] = v1;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
         return i;
     }
 }
@@ -60,11 +59,10 @@ class StructArrayLayout4i8 extends StructArray {
 
     emplace(i: number, v0: number, v1: number, v2: number, v3: number) {
         const o2 = i * 4;
-        const {int16} = this;
-        int16[o2 + 0] = v0;
-        int16[o2 + 1] = v1;
-        int16[o2 + 2] = v2;
-        int16[o2 + 3] = v3;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 3] = v3;
         return i;
     }
 }
@@ -102,14 +100,13 @@ class StructArrayLayout2i4ub1f12 extends StructArray {
         const o2 = i * 6;
         const o1 = i * 12;
         const o4 = i * 3;
-        const {uint8, int16, float32} = this;
-        int16[o2 + 0] = v0;
-        int16[o2 + 1] = v1;
-        uint8[o1 + 4] = v2;
-        uint8[o1 + 5] = v3;
-        uint8[o1 + 6] = v4;
-        uint8[o1 + 7] = v5;
-        float32[o4 + 2] = v6;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.uint8[o1 + 4] = v2;
+        this.uint8[o1 + 5] = v3;
+        this.uint8[o1 + 6] = v4;
+        this.uint8[o1 + 7] = v5;
+        this.float32[o4 + 2] = v6;
         return i;
     }
 }
@@ -139,10 +136,9 @@ class StructArrayLayout3f12 extends StructArray {
 
     emplace(i: number, v0: number, v1: number, v2: number) {
         const o4 = i * 3;
-        const {float32} = this;
-        float32[o4 + 0] = v0;
-        float32[o4 + 1] = v1;
-        float32[o4 + 2] = v2;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
         return i;
     }
 }
@@ -172,17 +168,16 @@ class StructArrayLayout10ui20 extends StructArray {
 
     emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number) {
         const o2 = i * 10;
-        const {uint16} = this;
-        uint16[o2 + 0] = v0;
-        uint16[o2 + 1] = v1;
-        uint16[o2 + 2] = v2;
-        uint16[o2 + 3] = v3;
-        uint16[o2 + 4] = v4;
-        uint16[o2 + 5] = v5;
-        uint16[o2 + 6] = v6;
-        uint16[o2 + 7] = v7;
-        uint16[o2 + 8] = v8;
-        uint16[o2 + 9] = v9;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
+        this.uint16[o2 + 2] = v2;
+        this.uint16[o2 + 3] = v3;
+        this.uint16[o2 + 4] = v4;
+        this.uint16[o2 + 5] = v5;
+        this.uint16[o2 + 6] = v6;
+        this.uint16[o2 + 7] = v7;
+        this.uint16[o2 + 8] = v8;
+        this.uint16[o2 + 9] = v9;
         return i;
     }
 }
@@ -212,15 +207,14 @@ class StructArrayLayout8ui16 extends StructArray {
 
     emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
         const o2 = i * 8;
-        const {uint16} = this;
-        uint16[o2 + 0] = v0;
-        uint16[o2 + 1] = v1;
-        uint16[o2 + 2] = v2;
-        uint16[o2 + 3] = v3;
-        uint16[o2 + 4] = v4;
-        uint16[o2 + 5] = v5;
-        uint16[o2 + 6] = v6;
-        uint16[o2 + 7] = v7;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
+        this.uint16[o2 + 2] = v2;
+        this.uint16[o2 + 3] = v3;
+        this.uint16[o2 + 4] = v4;
+        this.uint16[o2 + 5] = v5;
+        this.uint16[o2 + 6] = v6;
+        this.uint16[o2 + 7] = v7;
         return i;
     }
 }
@@ -255,23 +249,22 @@ class StructArrayLayout4i4ui4i4i32 extends StructArray {
 
     emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number) {
         const o2 = i * 16;
-        const {int16, uint16} = this;
-        int16[o2 + 0] = v0;
-        int16[o2 + 1] = v1;
-        int16[o2 + 2] = v2;
-        int16[o2 + 3] = v3;
-        uint16[o2 + 4] = v4;
-        uint16[o2 + 5] = v5;
-        uint16[o2 + 6] = v6;
-        uint16[o2 + 7] = v7;
-        int16[o2 + 8] = v8;
-        int16[o2 + 9] = v9;
-        int16[o2 + 10] = v10;
-        int16[o2 + 11] = v11;
-        int16[o2 + 12] = v12;
-        int16[o2 + 13] = v13;
-        int16[o2 + 14] = v14;
-        int16[o2 + 15] = v15;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 3] = v3;
+        this.uint16[o2 + 4] = v4;
+        this.uint16[o2 + 5] = v5;
+        this.uint16[o2 + 6] = v6;
+        this.uint16[o2 + 7] = v7;
+        this.int16[o2 + 8] = v8;
+        this.int16[o2 + 9] = v9;
+        this.int16[o2 + 10] = v10;
+        this.int16[o2 + 11] = v11;
+        this.int16[o2 + 12] = v12;
+        this.int16[o2 + 13] = v13;
+        this.int16[o2 + 14] = v14;
+        this.int16[o2 + 15] = v15;
         return i;
     }
 }
@@ -301,8 +294,7 @@ class StructArrayLayout1ul4 extends StructArray {
 
     emplace(i: number, v0: number) {
         const o4 = i * 1;
-        const {uint32} = this;
-        uint32[o4 + 0] = v0;
+        this.uint32[o4 + 0] = v0;
         return i;
     }
 }
@@ -343,20 +335,19 @@ class StructArrayLayout5i4f1i1ul2ui40 extends StructArray {
     emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number) {
         const o2 = i * 20;
         const o4 = i * 10;
-        const {int16, uint16, float32, uint32} = this;
-        int16[o2 + 0] = v0;
-        int16[o2 + 1] = v1;
-        int16[o2 + 2] = v2;
-        int16[o2 + 3] = v3;
-        int16[o2 + 4] = v4;
-        float32[o4 + 3] = v5;
-        float32[o4 + 4] = v6;
-        float32[o4 + 5] = v7;
-        float32[o4 + 6] = v8;
-        int16[o2 + 14] = v9;
-        uint32[o4 + 8] = v10;
-        uint16[o2 + 18] = v11;
-        uint16[o2 + 19] = v12;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 3] = v3;
+        this.int16[o2 + 4] = v4;
+        this.float32[o4 + 3] = v5;
+        this.float32[o4 + 4] = v6;
+        this.float32[o4 + 5] = v7;
+        this.float32[o4 + 6] = v8;
+        this.int16[o2 + 14] = v9;
+        this.uint32[o4 + 8] = v10;
+        this.uint16[o2 + 18] = v11;
+        this.uint16[o2 + 19] = v12;
         return i;
     }
 }
@@ -388,14 +379,13 @@ class StructArrayLayout3i2i2i16 extends StructArray {
 
     emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number) {
         const o2 = i * 8;
-        const {int16} = this;
-        int16[o2 + 0] = v0;
-        int16[o2 + 1] = v1;
-        int16[o2 + 2] = v2;
-        int16[o2 + 4] = v3;
-        int16[o2 + 5] = v4;
-        int16[o2 + 6] = v5;
-        int16[o2 + 7] = v6;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 4] = v3;
+        this.int16[o2 + 5] = v4;
+        this.int16[o2 + 6] = v5;
+        this.int16[o2 + 7] = v6;
         return i;
     }
 }
@@ -430,12 +420,11 @@ class StructArrayLayout2f1f2i16 extends StructArray {
     emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number) {
         const o4 = i * 4;
         const o2 = i * 8;
-        const {int16, float32} = this;
-        float32[o4 + 0] = v0;
-        float32[o4 + 1] = v1;
-        float32[o4 + 2] = v2;
-        int16[o2 + 6] = v3;
-        int16[o2 + 7] = v4;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
+        this.int16[o2 + 6] = v3;
+        this.int16[o2 + 7] = v4;
         return i;
     }
 }
@@ -469,11 +458,10 @@ class StructArrayLayout2ub2f12 extends StructArray {
     emplace(i: number, v0: number, v1: number, v2: number, v3: number) {
         const o1 = i * 12;
         const o4 = i * 3;
-        const {uint8, float32} = this;
-        uint8[o1 + 0] = v0;
-        uint8[o1 + 1] = v1;
-        float32[o4 + 1] = v2;
-        float32[o4 + 2] = v3;
+        this.uint8[o1 + 0] = v0;
+        this.uint8[o1 + 1] = v1;
+        this.float32[o4 + 1] = v2;
+        this.float32[o4 + 2] = v3;
         return i;
     }
 }
@@ -503,10 +491,9 @@ class StructArrayLayout3ui6 extends StructArray {
 
     emplace(i: number, v0: number, v1: number, v2: number) {
         const o2 = i * 3;
-        const {uint16} = this;
-        uint16[o2 + 0] = v0;
-        uint16[o2 + 1] = v1;
-        uint16[o2 + 2] = v2;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
+        this.uint16[o2 + 2] = v2;
         return i;
     }
 }
@@ -555,28 +542,27 @@ class StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1ub60 extends StructArray {
         const o2 = i * 30;
         const o4 = i * 15;
         const o1 = i * 60;
-        const {uint8, int16, uint16, float32, uint32} = this;
-        int16[o2 + 0] = v0;
-        int16[o2 + 1] = v1;
-        int16[o2 + 2] = v2;
-        float32[o4 + 2] = v3;
-        float32[o4 + 3] = v4;
-        uint16[o2 + 8] = v5;
-        uint16[o2 + 9] = v6;
-        uint32[o4 + 5] = v7;
-        uint32[o4 + 6] = v8;
-        uint32[o4 + 7] = v9;
-        uint16[o2 + 16] = v10;
-        uint16[o2 + 17] = v11;
-        uint16[o2 + 18] = v12;
-        float32[o4 + 10] = v13;
-        float32[o4 + 11] = v14;
-        uint8[o1 + 48] = v15;
-        uint8[o1 + 49] = v16;
-        uint8[o1 + 50] = v17;
-        uint32[o4 + 13] = v18;
-        int16[o2 + 28] = v19;
-        uint8[o1 + 58] = v20;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.float32[o4 + 2] = v3;
+        this.float32[o4 + 3] = v4;
+        this.uint16[o2 + 8] = v5;
+        this.uint16[o2 + 9] = v6;
+        this.uint32[o4 + 5] = v7;
+        this.uint32[o4 + 6] = v8;
+        this.uint32[o4 + 7] = v9;
+        this.uint16[o2 + 16] = v10;
+        this.uint16[o2 + 17] = v11;
+        this.uint16[o2 + 18] = v12;
+        this.float32[o4 + 10] = v13;
+        this.float32[o4 + 11] = v14;
+        this.uint8[o1 + 48] = v15;
+        this.uint8[o1 + 49] = v16;
+        this.uint8[o1 + 50] = v17;
+        this.uint32[o4 + 13] = v18;
+        this.int16[o2 + 28] = v19;
+        this.uint8[o1 + 58] = v20;
         return i;
     }
 }
@@ -618,37 +604,36 @@ class StructArrayLayout3i2f6i15ui1ul3f76 extends StructArray {
     emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number, v17: number, v18: number, v19: number, v20: number, v21: number, v22: number, v23: number, v24: number, v25: number, v26: number, v27: number, v28: number, v29: number) {
         const o2 = i * 38;
         const o4 = i * 19;
-        const {int16, uint16, float32, uint32} = this;
-        int16[o2 + 0] = v0;
-        int16[o2 + 1] = v1;
-        int16[o2 + 2] = v2;
-        float32[o4 + 2] = v3;
-        float32[o4 + 3] = v4;
-        int16[o2 + 8] = v5;
-        int16[o2 + 9] = v6;
-        int16[o2 + 10] = v7;
-        int16[o2 + 11] = v8;
-        int16[o2 + 12] = v9;
-        int16[o2 + 13] = v10;
-        uint16[o2 + 14] = v11;
-        uint16[o2 + 15] = v12;
-        uint16[o2 + 16] = v13;
-        uint16[o2 + 17] = v14;
-        uint16[o2 + 18] = v15;
-        uint16[o2 + 19] = v16;
-        uint16[o2 + 20] = v17;
-        uint16[o2 + 21] = v18;
-        uint16[o2 + 22] = v19;
-        uint16[o2 + 23] = v20;
-        uint16[o2 + 24] = v21;
-        uint16[o2 + 25] = v22;
-        uint16[o2 + 26] = v23;
-        uint16[o2 + 27] = v24;
-        uint16[o2 + 28] = v25;
-        uint32[o4 + 15] = v26;
-        float32[o4 + 16] = v27;
-        float32[o4 + 17] = v28;
-        float32[o4 + 18] = v29;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.float32[o4 + 2] = v3;
+        this.float32[o4 + 3] = v4;
+        this.int16[o2 + 8] = v5;
+        this.int16[o2 + 9] = v6;
+        this.int16[o2 + 10] = v7;
+        this.int16[o2 + 11] = v8;
+        this.int16[o2 + 12] = v9;
+        this.int16[o2 + 13] = v10;
+        this.uint16[o2 + 14] = v11;
+        this.uint16[o2 + 15] = v12;
+        this.uint16[o2 + 16] = v13;
+        this.uint16[o2 + 17] = v14;
+        this.uint16[o2 + 18] = v15;
+        this.uint16[o2 + 19] = v16;
+        this.uint16[o2 + 20] = v17;
+        this.uint16[o2 + 21] = v18;
+        this.uint16[o2 + 22] = v19;
+        this.uint16[o2 + 23] = v20;
+        this.uint16[o2 + 24] = v21;
+        this.uint16[o2 + 25] = v22;
+        this.uint16[o2 + 26] = v23;
+        this.uint16[o2 + 27] = v24;
+        this.uint16[o2 + 28] = v25;
+        this.uint32[o4 + 15] = v26;
+        this.float32[o4 + 16] = v27;
+        this.float32[o4 + 17] = v28;
+        this.float32[o4 + 18] = v29;
         return i;
     }
 }
@@ -678,8 +663,7 @@ class StructArrayLayout1f4 extends StructArray {
 
     emplace(i: number, v0: number) {
         const o4 = i * 1;
-        const {float32} = this;
-        float32[o4 + 0] = v0;
+        this.float32[o4 + 0] = v0;
         return i;
     }
 }
@@ -709,10 +693,9 @@ class StructArrayLayout3i6 extends StructArray {
 
     emplace(i: number, v0: number, v1: number, v2: number) {
         const o2 = i * 3;
-        const {int16} = this;
-        int16[o2 + 0] = v0;
-        int16[o2 + 1] = v1;
-        int16[o2 + 2] = v2;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
         return i;
     }
 }
@@ -742,14 +725,13 @@ class StructArrayLayout7f28 extends StructArray {
 
     emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number) {
         const o4 = i * 7;
-        const {float32} = this;
-        float32[o4 + 0] = v0;
-        float32[o4 + 1] = v1;
-        float32[o4 + 2] = v2;
-        float32[o4 + 3] = v3;
-        float32[o4 + 4] = v4;
-        float32[o4 + 5] = v5;
-        float32[o4 + 6] = v6;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
+        this.float32[o4 + 3] = v3;
+        this.float32[o4 + 4] = v4;
+        this.float32[o4 + 5] = v5;
+        this.float32[o4 + 6] = v6;
         return i;
     }
 }
@@ -783,11 +765,10 @@ class StructArrayLayout1ul3ui12 extends StructArray {
     emplace(i: number, v0: number, v1: number, v2: number, v3: number) {
         const o4 = i * 3;
         const o2 = i * 6;
-        const {uint16, uint32} = this;
-        uint32[o4 + 0] = v0;
-        uint16[o2 + 2] = v1;
-        uint16[o2 + 3] = v2;
-        uint16[o2 + 4] = v3;
+        this.uint32[o4 + 0] = v0;
+        this.uint16[o2 + 2] = v1;
+        this.uint16[o2 + 3] = v2;
+        this.uint16[o2 + 4] = v3;
         return i;
     }
 }
@@ -817,9 +798,8 @@ class StructArrayLayout2ui4 extends StructArray {
 
     emplace(i: number, v0: number, v1: number) {
         const o2 = i * 2;
-        const {uint16} = this;
-        uint16[o2 + 0] = v0;
-        uint16[o2 + 1] = v1;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
         return i;
     }
 }
@@ -849,8 +829,7 @@ class StructArrayLayout1ui2 extends StructArray {
 
     emplace(i: number, v0: number) {
         const o2 = i * 1;
-        const {uint16} = this;
-        uint16[o2 + 0] = v0;
+        this.uint16[o2 + 0] = v0;
         return i;
     }
 }
@@ -880,9 +859,8 @@ class StructArrayLayout2f8 extends StructArray {
 
     emplace(i: number, v0: number, v1: number) {
         const o4 = i * 2;
-        const {float32} = this;
-        float32[o4 + 0] = v0;
-        float32[o4 + 1] = v1;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
         return i;
     }
 }
@@ -912,11 +890,10 @@ class StructArrayLayout4f16 extends StructArray {
 
     emplace(i: number, v0: number, v1: number, v2: number, v3: number) {
         const o4 = i * 4;
-        const {float32} = this;
-        float32[o4 + 0] = v0;
-        float32[o4 + 1] = v1;
-        float32[o4 + 2] = v2;
-        float32[o4 + 3] = v3;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
+        this.float32[o4 + 3] = v3;
         return i;
     }
 }
