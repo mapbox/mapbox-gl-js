@@ -34,7 +34,7 @@ for (const type of usedTypes) {
 <%
 for (const [i, type] of Object.entries(usedTypes)) {
 -%>
-        <%if (i === 0) {%>this.view = <%}%>this.<%=type.toLowerCase()%> = new <%=type%>Array(this.arrayBuffer);
+        <%if (i == 0) {%>this.view = <%}%>this.<%=type.toLowerCase()%> = new <%=type%>Array(this.arrayBuffer);
 <%
 }
 -%>

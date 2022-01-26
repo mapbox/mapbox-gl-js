@@ -17,7 +17,7 @@ class StructArrayLayout2i4 extends StructArray {
     int16: Int16Array;
 
     _refreshViews() {
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number) {
@@ -49,7 +49,7 @@ class StructArrayLayout4i8 extends StructArray {
     int16: Int16Array;
 
     _refreshViews() {
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number) {
@@ -87,7 +87,7 @@ class StructArrayLayout2i4ub1f12 extends StructArray {
     float32: Float32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.view = this.uint8 = new Uint8Array(this.arrayBuffer);
         this.int16 = new Int16Array(this.arrayBuffer);
         this.float32 = new Float32Array(this.arrayBuffer);
     }
@@ -128,7 +128,7 @@ class StructArrayLayout3f12 extends StructArray {
     float32: Float32Array;
 
     _refreshViews() {
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number) {
@@ -161,7 +161,7 @@ class StructArrayLayout10ui20 extends StructArray {
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number) {
@@ -201,7 +201,7 @@ class StructArrayLayout8ui16 extends StructArray {
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
@@ -243,7 +243,7 @@ class StructArrayLayout4i4ui4i4i32 extends StructArray {
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
         this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
@@ -290,7 +290,7 @@ class StructArrayLayout1ul4 extends StructArray {
     uint32: Uint32Array;
 
     _refreshViews() {
-        this.uint32 = new Uint32Array(this.arrayBuffer);
+        this.view = this.uint32 = new Uint32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number) {
@@ -328,7 +328,7 @@ class StructArrayLayout5i4f1i1ul2ui40 extends StructArray {
     uint32: Uint32Array;
 
     _refreshViews() {
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
         this.uint16 = new Uint16Array(this.arrayBuffer);
         this.float32 = new Float32Array(this.arrayBuffer);
         this.uint32 = new Uint32Array(this.arrayBuffer);
@@ -377,7 +377,7 @@ class StructArrayLayout3i2i2i16 extends StructArray {
     int16: Int16Array;
 
     _refreshViews() {
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number) {
@@ -417,7 +417,7 @@ class StructArrayLayout2f1f2i16 extends StructArray {
     float32: Float32Array;
 
     _refreshViews() {
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
         this.float32 = new Float32Array(this.arrayBuffer);
     }
 
@@ -456,7 +456,7 @@ class StructArrayLayout2ub2f12 extends StructArray {
     float32: Float32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.view = this.uint8 = new Uint8Array(this.arrayBuffer);
         this.float32 = new Float32Array(this.arrayBuffer);
     }
 
@@ -492,7 +492,7 @@ class StructArrayLayout3ui6 extends StructArray {
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number) {
@@ -538,7 +538,7 @@ class StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1ub60 extends StructArray {
     uint32: Uint32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.view = this.uint8 = new Uint8Array(this.arrayBuffer);
         this.int16 = new Int16Array(this.arrayBuffer);
         this.uint16 = new Uint16Array(this.arrayBuffer);
         this.float32 = new Float32Array(this.arrayBuffer);
@@ -603,7 +603,7 @@ class StructArrayLayout3i2f6i15ui1ul3f76 extends StructArray {
     uint32: Uint32Array;
 
     _refreshViews() {
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
         this.uint16 = new Uint16Array(this.arrayBuffer);
         this.float32 = new Float32Array(this.arrayBuffer);
         this.uint32 = new Uint32Array(this.arrayBuffer);
@@ -667,7 +667,7 @@ class StructArrayLayout1f4 extends StructArray {
     float32: Float32Array;
 
     _refreshViews() {
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number) {
@@ -698,7 +698,7 @@ class StructArrayLayout3i6 extends StructArray {
     int16: Int16Array;
 
     _refreshViews() {
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number) {
@@ -731,7 +731,7 @@ class StructArrayLayout7f28 extends StructArray {
     float32: Float32Array;
 
     _refreshViews() {
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number) {
@@ -770,7 +770,7 @@ class StructArrayLayout1ul3ui12 extends StructArray {
     uint32: Uint32Array;
 
     _refreshViews() {
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
         this.uint32 = new Uint32Array(this.arrayBuffer);
     }
 
@@ -806,7 +806,7 @@ class StructArrayLayout2ui4 extends StructArray {
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number) {
@@ -838,7 +838,7 @@ class StructArrayLayout1ui2 extends StructArray {
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number) {
@@ -869,7 +869,7 @@ class StructArrayLayout2f8 extends StructArray {
     float32: Float32Array;
 
     _refreshViews() {
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number) {
@@ -901,7 +901,7 @@ class StructArrayLayout4f16 extends StructArray {
     float32: Float32Array;
 
     _refreshViews() {
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number) {
