@@ -30,6 +30,7 @@
     <label><input id='show-terrain-wireframe-checkbox' type='checkbox'> terrain wireframe</label><br />
     <label><input id='satellite-checkbox' type='checkbox'> satellite</label><br />
     <label><input id='buildings-checkbox' type='checkbox'> buildings</label><br />
+    <label><input id='buildings-gradient-checkbox' type='checkbox'> fake ambient occlusion</label><br />
     <label><input id='road-label-checkbox' type='checkbox'> road-label-*</label><br />
     <label><input id='circles-checkbox' type='checkbox'> circles</label><br />
     <label><input id='hillshade-checkbox' type='checkbox'> hillshade using terrain</label><br />
@@ -107,6 +108,9 @@ map.on('style.load', function() {
             "visibility": "none"
         }
     });
+    map.setLight({
+        intensity: 0.1
+    });
 
     const buildingExtrusions = map.style._order.find((id) => map.style.getLayer(id).type === 'fill-extrusion');
     if (buildingExtrusions) {
@@ -120,13 +124,13 @@ map.on('style.load', function() {
             'type': 'fill-extrusion',
             'minzoom': 15,
             'paint': {
-                'fill-extrusion-color': ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+                'fill-extrusion-color': 'white',
                 'fill-extrusion-height': ["get", "height"],
-                'fill-extrusion-opacity': 0.7
+                'fill-extrusion-base': ["get", "min_height"],
+                'fill-extrusion-vertical-gradient': false
             }
         }, 'waterway-label');
     }
-
     map.addLayer({
         'id': 'sky',
         'type': 'sky',
@@ -306,6 +310,27 @@ document.getElementById('satellite-checkbox').onclick = function() {
 
 document.getElementById('buildings-checkbox').onclick = function() {
     map.setLayoutProperty(buildingsLayerId, 'visibility', this.checked ? 'visible' : 'none');
+};
+
+document.getElementById('buildings-gradient-checkbox').onclick = function() {
+    map.setPaintProperty(buildingsLayerId, 'fill-extrusion-vertical-gradient', this.checked)
+    const buildingsBlurLayerId = "buildings-blur";
+    if (!map.getLayer(buildingsBlurLayerId)) {
+        map.addLayer({
+            'id': buildingsBlurLayerId,
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'line',
+            'minzoom': 15,
+            'paint': {
+                'line-color': '#a0a0a0',
+                'line-width': 30,
+                'line-blur': 30
+            }
+        }, buildingsLayerId);
+    }
+    map.setLayoutProperty(buildingsBlurLayerId, 'visibility', this.checked ? 'visible' : 'none');
 };
 
 document.getElementById('custom-checkbox').onclick = function() {

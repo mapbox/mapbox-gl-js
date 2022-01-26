@@ -21,6 +21,7 @@ uniform float u_height_lift;
 #endif
 
 varying vec4 v_color;
+varying float v_gradient;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
@@ -38,6 +39,7 @@ void main() {
     // y is 1 if the normal points up, and 0 if it points to side.
     // z is sign of ny: 1 for positive, 0 for values <= 0.
     mediump vec3 top_up_ny = a_pos_normal_ed.xyz - 2.0 * pos_nx;
+    bool concave = a_pos_normal_ed.w < 0.0;
 
     float x_normal = pos_nx.z / 8192.0;
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
@@ -74,6 +76,7 @@ void main() {
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
+    gl_Position.z -= height * 0.0001;
 
     // Relative luminance (how dark/bright is the surface color?)
     float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
@@ -94,18 +97,23 @@ void main() {
     directional = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), directional);
 
     // Add gradient along z axis of side surfaces
+    v_gradient = 1.0;
     if (normal.y != 0.0) {
         // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
         // and otherwise calculates the gradient based on base + height
-        directional *= (
-            (1.0 - u_vertical_gradient) +
-            (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
+        // directional *= (
+        //    (1.0 - u_vertical_gradient) +
+        //    (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
+        v_gradient = (1.0 - u_vertical_gradient) + (u_vertical_gradient * clamp(t + base, mix(0.8, 1.0, 1.0 - u_lightintensity), 1.0));
     }
 
     // Assign final color based on surface + ambient light color, diffuse light directional, and light color
     // with lower bounds adjusted to hue of light
     // so that shading is tinted with the complementary (opposite) color to the light color
     v_color.rgb += clamp(color.rgb * directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+    if (concave) {
+        v_color.rgb *= (t > 0.0 ? 0.92 : 0.84);
+    }
     v_color *= u_opacity;
 
 #ifdef FOG

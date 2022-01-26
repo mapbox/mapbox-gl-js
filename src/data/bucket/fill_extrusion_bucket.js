@@ -320,9 +320,18 @@ class FillExtrusionBucket implements Bucket {
                 }
                 numVertices += ring.length;
 
-                let edgeDistance = 0;
+                let edgeDistance = 1;
                 if (metadata) metadata.startRing(ring[0]);
 
+                let p0Concave = false;
+                if  (ring.length > 6) {
+                    const p3 = ring[1];
+                    const p1 = ring[0];
+                    const p2 = ring[ring.length - 2];
+                    p0Concave = isConcave(p2, p1, p3);
+                }
+                let con1 = p0Concave;
+                let con2 = false;
                 for (let p = 0; p < ring.length; p++) {
                     const p1 = ring[p];
 
@@ -330,6 +339,16 @@ class FillExtrusionBucket implements Bucket {
                         const p2 = ring[p - 1];
 
                         if (!isBoundaryEdge(p1, p2)) {
+                            if  (ring.length > 6) {
+                                con2 = con1;
+                                if (p == ring.length - 1) {
+                                    con1 = p0Concave;
+                                } else {
+                                    const p3 = ring[p + 1];
+                                    con1 = isConcave(p2, p1, p3);
+                                }
+                            }
+
                             if (metadata) metadata.append(p1, p2);
                             if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
@@ -341,15 +360,15 @@ class FillExtrusionBucket implements Bucket {
                             const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
                             const nySign = d.y > 0 ? 1 : 0;
                             const dist = p2.dist(p1);
-                            if (edgeDistance + dist > 32768) edgeDistance = 0;
+                            if (edgeDistance + dist > 32768) edgeDistance = 1;
 
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
+                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance * (con1 ? -1 : 1));
+                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance * (con1 ? -1 : 1));
 
                             edgeDistance += dist;
 
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, edgeDistance);
+                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, edgeDistance * (con2 ? -1 : 1));
+                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, edgeDistance * (con2 ? -1 : 1));
 
                             const bottomRight = segment.vertexLength;
 
@@ -513,4 +532,13 @@ function tileToMeter(canonical: CanonicalTileID) {
     const exp = Math.exp(Math.PI * (1 - 2 * mercatorY));
     // simplify cos(2 * atan(e) - PI/2) from mercator_coordinate.js, remove trigonometrics.
     return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
+}
+
+function isConcave(p2, p1, p3) {
+    const a = p3.sub(p1);
+    const an = a.perp();
+    const b = p1.sub(p2);
+    const square = a => a * a;
+    const cosABSquare = square(a.x * b.x + a.y * b.y) / ((square(a.x) + square(a.y)) * (square(b.x) + square(b.y)));
+    return an.x * b.x + an.y * b.y > 0 && cosABSquare < 0.5;
 }
