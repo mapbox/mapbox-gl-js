@@ -9,7 +9,7 @@ import {
     UniformMatrix4f
 } from '../uniform_binding.js';
 
-import {mat3, vec3} from 'gl-matrix';
+import {mat3, mat4, vec3} from 'gl-matrix';
 import {extend} from '../../util/util.js';
 
 import type Context from '../../gl/context.js';
@@ -25,7 +25,14 @@ export type FillExtrusionUniformsType = {|
     'u_lightintensity': Uniform1f,
     'u_lightcolor': Uniform3f,
     'u_vertical_gradient': Uniform1f,
-    'u_opacity': Uniform1f
+    'u_opacity': Uniform1f,
+    // globe uniforms:
+    'u_tile_id': Uniform3f,
+    'u_zoom_transition': Uniform1f,
+    'u_inv_rot_matrix': UniformMatrix4f,
+    'u_merc_center': Uniform2f,
+    'u_up_dir': Uniform3f,
+    'u_height_lift': Uniform1f
 |};
 
 export type FillExtrusionPatternUniformsType = {|
@@ -35,6 +42,13 @@ export type FillExtrusionPatternUniformsType = {|
     'u_lightcolor': Uniform3f,
     'u_height_factor': Uniform1f,
     'u_vertical_gradient': Uniform1f,
+    // globe uniforms:
+    'u_tile_id': Uniform3f,
+    'u_zoom_transition': Uniform1f,
+    'u_inv_rot_matrix': UniformMatrix4f,
+    'u_merc_center': Uniform2f,
+    'u_up_dir': Uniform3f,
+    'u_height_lift': Uniform1f,
     // pattern uniforms:
     'u_texsize': Uniform2f,
     'u_image': Uniform1i,
@@ -51,7 +65,14 @@ const fillExtrusionUniforms = (context: Context, locations: UniformLocations): F
     'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
     'u_lightcolor': new Uniform3f(context, locations.u_lightcolor),
     'u_vertical_gradient': new Uniform1f(context, locations.u_vertical_gradient),
-    'u_opacity': new Uniform1f(context, locations.u_opacity)
+    'u_opacity': new Uniform1f(context, locations.u_opacity),
+    // globe uniforms:
+    'u_tile_id': new Uniform3f(context, locations.u_tile_id),
+    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
+    'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
+    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
+    'u_up_dir': new Uniform3f(context, locations.u_up_dir),
+    'u_height_lift': new Uniform1f(context, locations.u_height_lift)
 });
 
 const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocations): FillExtrusionPatternUniformsType => ({
@@ -61,6 +82,13 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_lightcolor': new Uniform3f(context, locations.u_lightcolor),
     'u_vertical_gradient': new Uniform1f(context, locations.u_vertical_gradient),
     'u_height_factor': new Uniform1f(context, locations.u_height_factor),
+    // globe uniforms:
+    'u_tile_id': new Uniform3f(context, locations.u_tile_id),
+    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
+    'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
+    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
+    'u_up_dir': new Uniform3f(context, locations.u_up_dir),
+    'u_height_lift': new Uniform1f(context, locations.u_height_lift),
     // pattern uniforms
     'u_image': new Uniform1i(context, locations.u_image),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
@@ -70,6 +98,8 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_fade': new Uniform1f(context, locations.u_fade),
     'u_opacity': new Uniform1f(context, locations.u_opacity)
 });
+
+const identityMatrix = mat4.create();
 
 const fillExtrusionUniformValues = (
     matrix: Float32Array,
@@ -89,14 +119,22 @@ const fillExtrusionUniformValues = (
 
     const lightColor = light.properties.get('color');
 
-    return {
+    const uniformValues = {
         'u_matrix': matrix,
         'u_lightpos': lightPos,
         'u_lightintensity': light.properties.get('intensity'),
         'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b],
         'u_vertical_gradient': +shouldUseVerticalGradient,
-        'u_opacity': opacity
+        'u_opacity': opacity,
+        'u_tile_id': [0, 0, 0],
+        'u_zoom_transition': 0,
+        'u_inv_rot_matrix': identityMatrix,
+        'u_merc_center': [0, 0],
+        'u_up_dir': [0, 0, 0],
+        'u_height_lift': 0
     };
+
+    return uniformValues;
 };
 
 const fillExtrusionPatternUniformValues = (
