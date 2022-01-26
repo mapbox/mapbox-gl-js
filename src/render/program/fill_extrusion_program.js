@@ -8,13 +8,13 @@ import {
     Uniform3f,
     UniformMatrix4f
 } from '../uniform_binding.js';
-
 import {mat3, mat4, vec3} from 'gl-matrix';
 import {extend} from '../../util/util.js';
-
 import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
 import type {OverscaledTileID} from '../../source/tile_id.js';
+import type {TileTransform} from '../../geo/projection/index.js';
+import {globeElevationVector} from '../../geo/projection/globe.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
 import type Tile from '../../source/tile.js';
@@ -105,7 +105,12 @@ const fillExtrusionUniformValues = (
     matrix: Float32Array,
     painter: Painter,
     shouldUseVerticalGradient: boolean,
-    opacity: number
+    opacity: number,
+    coord: OverscaledTileID,
+    heightLift: number,
+    zoomTransition: number,
+    mercatorCenter: [number, number],
+    tileTransform: TileTransform
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
     const _lp = light.properties.get('position');
@@ -118,6 +123,7 @@ const fillExtrusionUniformValues = (
     }
 
     const lightColor = light.properties.get('color');
+    const tr = painter.transform;
 
     const uniformValues = {
         'u_matrix': matrix,
@@ -134,6 +140,16 @@ const fillExtrusionUniformValues = (
         'u_height_lift': 0
     };
 
+    if (tr.projection.name === 'globe') {
+        const id = coord.toUnwrapped();
+        values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
+        values['u_zoom_transition'] = zoomTransition;
+        values['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(id);
+        values['u_merc_center'] = mercatorCenter;
+        values['u_up_dir'] = globeElevationVector(mercatorCenter[0], mercatorCenter[1]);
+        values['u_height_lift'] = heightLift;
+    }
+
     return uniformValues;
 };
 
@@ -144,13 +160,19 @@ const fillExtrusionPatternUniformValues = (
     opacity: number,
     coord: OverscaledTileID,
     crossfade: CrossfadeParameters,
-    tile: Tile
+    tile: Tile,
+    heightLift: number,
+    zoomTransition: number,
+    mercatorCenter: [number, number],
+    tileTransform: TileTransform
 ): UniformValues<FillExtrusionPatternUniformsType> => {
-    return extend(fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity),
-        patternUniformValues(crossfade, painter, tile),
-        {
-            'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
-        });
+    const uniformValues = fillExtrusionUniformValues(
+        matrix, painter, shouldUseVerticalGradient, opacity, coord,
+        heightLift, zoomTransition, mercatorCenter, tileTransform);
+    const heightFactorUniform = {
+        'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
+    };
+    return extend(uniformValues, patternUniformValues(crossfade, painter, tile), heightFactorUniform);
 };
 
 export {

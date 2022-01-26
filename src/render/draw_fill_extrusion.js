@@ -13,6 +13,9 @@ import {
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
+import {GLOBE_ZOOM_THRESHOLD_MAX, globeToMercatorTransition} from '../geo/projection/globe.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -52,13 +55,34 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 }
 
+function fillExtrusionHeightLift(transform: Transform): number {
+    if (transform.projection.name !== 'globe') {
+        return 0;
+    }
+    // NOTE: these values will change
+    // A rectangle which fully covers a tile at the equator on zoom level 4
+    const minZoomLift = 470000.0;
+    // A rectangle which fully covers a tile at the equator on zoom level 5
+    const maxZoomLift = 120000.0;
+    const zoom = transform.zoom / GLOBE_ZOOM_THRESHOLD_MAX;
+    return interpolate(minZoomLift, maxZoomLift, zoom);
+}
+
 function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
+    const tr = painter.transform;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
     const image = patternProperty.constantOr((1: any));
     const crossfade = layer.getCrossfadeParameters();
     const opacity = layer.paint.get('fill-extrusion-opacity');
+    const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
+    const heightLift = fillExtrusionHeightLift(tr);
+    const globeToMercator = tr.projection.name === 'globe' ? globeToMercatorTransition(tr.zoom) : 0.0;
+    const mercatorCenter = [
+        mercatorXfromLng(tr.center.lng),
+        mercatorYfromLat(tr.center.lat)
+    ];
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
@@ -100,8 +124,10 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
 
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord, crossfade, tile) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity);
+            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
+                crossfade, tile, heightLift, globeToMercator, mercatorCenter, tileTransform) :
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
+                heightLift, globeToMercator, mercatorCenter, tileTransform);
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
