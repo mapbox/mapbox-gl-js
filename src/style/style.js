@@ -375,7 +375,7 @@ class Style extends Evented {
 
         if (!projectionChanged) return;
 
-        const globeChanged = projection.name === 'globe' || prevProjection.name === 'globe';
+        const globeChanged = (projection.name === 'globe' || prevProjection.name === 'globe') && !this.map._transitionFromGlobe;
 
         if (projection.isReprojectedInTileSpace || prevProjection.isReprojectedInTileSpace || globeChanged) {
             this.map.painter.clearBackgroundTiles();

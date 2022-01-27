@@ -825,6 +825,10 @@ class SourceCache extends Evented {
         if (this._source._clear) this._source._clear();
 
         this._cache.reset();
+
+        if (this.map && this.usedForTerrain && this.map.painter.terrain) {
+            this.map.painter.terrain.resetTileLookupCache(this.id);
+        }
     }
 
     /**

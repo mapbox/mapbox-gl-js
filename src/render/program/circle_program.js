@@ -14,9 +14,9 @@ import type {OverscaledTileID} from '../../source/tile_id.js';
 import type Tile from '../../source/tile.js';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer.js';
 import type Painter from '../painter.js';
+import type {TileTransform} from '../../geo/projection/index.js';
 import browser from '../../util/browser.js';
 import {mat4} from 'gl-matrix';
-import {lngFromMercatorX, latFromMercatorY} from '../../geo/mercator_coordinate.js';
 import {globeToMercatorTransition, globePixelsToTileUnits} from '../../geo/projection/globe.js';
 
 export type CircleUniformsType = {|
@@ -51,6 +51,8 @@ const circleUniformValues = (
     painter: Painter,
     coord: OverscaledTileID,
     tile: Tile,
+    tileTransform: TileTransform,
+    mercatorCenter: [number, number],
     layer: CircleStyleLayer
 ): UniformValues<CircleUniformsType> => {
     const transform = painter.transform;
@@ -89,8 +91,6 @@ const circleUniformValues = (
     };
 
     if (isGlobe) {
-        const tileTransform = transform.projection.createTileTransform(transform, transform.worldSize);
-        const mercatorCenter = [lngFromMercatorX(transform.center.lng), latFromMercatorY(transform.center.lat)];
         values['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(coord.canonical);
         values['u_merc_center'] = mercatorCenter;
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];

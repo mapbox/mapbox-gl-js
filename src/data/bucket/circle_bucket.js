@@ -2,7 +2,7 @@
 
 import {CircleLayoutArray, CircleGlobeExtArray} from '../array_types.js';
 
-import {circleAttributes, circleGlobeExtAttributes} from './circle_attributes.js';
+import {circleAttributes, circleGlobeAttributesExt} from './circle_attributes.js';
 import SegmentVector from '../segment.js';
 import {ProgramConfigurationSet} from '../program_configuration.js';
 import {TriangleIndexArray} from '../index_array_type.js';
@@ -169,7 +169,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
 
             if (this.globeExtVertexArray) {
-                this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, circleGlobeExtAttributes.members);
+                this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, circleGlobeAttributesExt.members);
             }
         }
         this.programConfigurations.upload(context);

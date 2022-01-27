@@ -5,7 +5,7 @@ export const circleAttributes = createLayout([
     {name: 'a_pos', components: 2, type: 'Int16'}
 ], 4);
 
-export const circleGlobeExtAttributes = createLayout([
+export const circleGlobeAttributesExt = createLayout([
     {name: 'a_pos_3', components: 3, type: 'Int16'},
     {name: 'a_pos_normal_3', components: 3, type: 'Int16'},
     {name: 'a_scale', components: 1, type: 'Float32'},

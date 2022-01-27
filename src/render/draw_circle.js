@@ -7,6 +7,7 @@ import Program from './program.js';
 import {circleUniformValues, circleDefinesValues} from './program/circle_program.js';
 import SegmentVector from '../data/segment.js';
 import {OverscaledTileID} from '../source/tile_id.js';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -52,13 +53,16 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
     const context = painter.context;
     const gl = context.gl;
+    const tr = painter.transform;
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     // Turn off stencil testing to allow circles to be drawn across boundaries,
     // so that large circles are not clipped to tiles
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
-    const isGlobeProjection = painter.transform.projection.name === 'globe';
+    const isGlobeProjection = tr.projection.name === 'globe';
+    const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
+    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
     const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
 
@@ -78,7 +82,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
-        const uniformValues = circleUniformValues(painter, coord, tile, layer);
+        const uniformValues = circleUniformValues(painter, coord, tile, tileTransform, mercatorCenter, layer);
 
         const state: TileRenderState = {
             programConfiguration,
@@ -126,7 +130,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id,
             layoutVertexBuffer, indexBuffer, segments,
-            layer.paint, painter.transform.zoom, programConfiguration,
+            layer.paint, tr.zoom, programConfiguration,
             isGlobeProjection ? globeExtVertexBuffer : null);
     }
 }
