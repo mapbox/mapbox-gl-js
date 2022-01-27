@@ -78,11 +78,13 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     const opacity = layer.paint.get('fill-extrusion-opacity');
     const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
     const heightLift = fillExtrusionHeightLift(tr);
-    const globeToMercator = tr.projection.name === 'globe' ? globeToMercatorTransition(tr.zoom) : 0.0;
-    const mercatorCenter = [
-        mercatorXfromLng(tr.center.lng),
-        mercatorYfromLat(tr.center.lat)
-    ];
+    const isGlobeProjection = tr.projection.name === 'globe';
+    const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
+    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+    const baseDefines = ([]: any);
+    if (isGlobeProjection) {
+        baseDefines.push('PROJECTION_GLOBE_VIEW');
+    }
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
@@ -90,7 +92,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         if (!bucket) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
+        const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration, baseDefines);
 
         if (painter.terrain) {
             const terrain = painter.terrain;
@@ -134,7 +136,9 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             bucket.segments, layer.paint, painter.transform.zoom,
-            programConfiguration, painter.terrain ? bucket.centroidVertexBuffer : null);
+            programConfiguration,
+            painter.terrain ? bucket.centroidVertexBuffer : null,
+            isGlobeProjection ? bucket.layoutVertexExtBuffer : null);
     }
 }
 
