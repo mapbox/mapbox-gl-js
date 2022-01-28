@@ -14,7 +14,7 @@ import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
 import type {OverscaledTileID} from '../../source/tile_id.js';
 import type {TileTransform} from '../../geo/projection/index.js';
-import {globeElevationVector} from '../../geo/projection/globe.js';
+import {globeDirectionVector} from '../../geo/projection/globe.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
 import type Tile from '../../source/tile.js';
@@ -142,12 +142,12 @@ const fillExtrusionUniformValues = (
 
     if (tr.projection.name === 'globe') {
         const id = coord.toUnwrapped();
-        values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
-        values['u_zoom_transition'] = zoomTransition;
-        values['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(id);
-        values['u_merc_center'] = mercatorCenter;
-        values['u_up_dir'] = globeElevationVector(mercatorCenter[0], mercatorCenter[1]);
-        values['u_height_lift'] = heightLift;
+        uniformValues['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
+        uniformValues['u_zoom_transition'] = zoomTransition;
+        uniformValues['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(id);
+        uniformValues['u_merc_center'] = mercatorCenter;
+        uniformValues['u_up_dir'] = globeDirectionVector(mercatorCenter[0], mercatorCenter[1]);
+        uniformValues['u_height_lift'] = heightLift;
     }
 
     return uniformValues;
