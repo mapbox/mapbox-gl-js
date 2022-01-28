@@ -599,14 +599,15 @@ export class Terrain extends Elevation {
         uniforms['u_exaggeration'] = this.exaggeration();
 
         const tr = this.painter.transform;
-        const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
+        const projection = tr.projection;
+        const tileTransform = projection.createTileTransform(tr, tr.worldSize);
 
         const id = tile.tileID.canonical;
-        uniforms['u_tile_tl_up'] = tileTransform.upVector(id, 0, 0);
-        uniforms['u_tile_tr_up'] = tileTransform.upVector(id, EXTENT, 0);
-        uniforms['u_tile_br_up'] = tileTransform.upVector(id, EXTENT, EXTENT);
-        uniforms['u_tile_bl_up'] = tileTransform.upVector(id, 0, EXTENT);
-        uniforms['u_tile_up_scale'] = tileTransform.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile;
+        uniforms['u_tile_tl_up'] = (projection.upVector(id, 0, 0): any);
+        uniforms['u_tile_tr_up'] = (projection.upVector(id, EXTENT, 0): any);
+        uniforms['u_tile_br_up'] = (projection.upVector(id, EXTENT, EXTENT): any);
+        uniforms['u_tile_bl_up'] = (projection.upVector(id, 0, EXTENT): any);
+        uniforms['u_tile_up_scale'] = projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile;
 
         let demTile = null;
         let prevDemTile = null;

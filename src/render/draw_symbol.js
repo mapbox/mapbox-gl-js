@@ -121,7 +121,6 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
     const tr = painter.transform;
     const rotateWithMap = rotationAlignment === 'map';
     const pitchWithMap = pitchAlignment === 'map';
-    const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -140,20 +139,20 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
         if (size) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
             updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                                  tr, labelPlaneMatrix, coord, tileScale, size, updateTextFitIcon, tileTransform);
+                                  tr, labelPlaneMatrix, coord, tileScale, size, updateTextFitIcon, tr.projection);
         }
     }
 }
 
 function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                               transform, labelPlaneMatrix, coord, tileScale, size, updateTextFitIcon, tileTransform) {
+                               transform, labelPlaneMatrix, coord, tileScale, size, updateTextFitIcon, projection) {
     const placedSymbols = bucket.text.placedSymbolArray;
     const dynamicTextLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
     const dynamicIconLayoutVertexArray = bucket.icon.dynamicLayoutVertexArray;
     const placedTextShifts = {};
     const projMatrix = coord.projMatrix;
     const elevation = transform.elevation;
-    const upVectorScale = tileTransform.upVectorScale(coord.canonical, transform.center.lat, transform.worldSize);
+    const upVectorScale = projection.upVectorScale(coord.canonical, transform.center.lat, transform.worldSize);
 
     dynamicTextLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
@@ -167,7 +166,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicTextLayoutVertexArray);
         } else  {
             const tileAnchor = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-            const upDir = tileTransform.upVector(coord.canonical, tileAnchor.x, tileAnchor.y);
+            const upDir = projection.upVector(coord.canonical, tileAnchor.x, tileAnchor.y);
             const anchorElevation = elevation ? elevation.getAtTileOffset(coord, tileAnchor.x, tileAnchor.y) : 0.0;
             const reprojectedAnchor = [
                 symbol.projectedAnchorX + anchorElevation * upDir[0] * upVectorScale.metersToTile,
@@ -332,7 +331,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (alongLine) {
             const elevation = tr.elevation;
-            const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, tileTransform) : (_ => [0, 0, 0]);
+            const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, tr.projection) : (_ => [0, 0, 0]);
             symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
         }
 

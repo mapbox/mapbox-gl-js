@@ -6,6 +6,8 @@ import type Transform from '../../geo/transform.js';
 import Point from '@mapbox/point-geometry';
 import FlatTileTransform from './flat_tile_transform.js';
 import {farthestPixelDistanceOnPlane} from './far_z.js';
+import type {Vec3} from 'gl-matrix';
+import type {ElevationScale} from './index.js';
 
 const maxPhi = degToRad(MAX_MERCATOR_LATITUDE);
 
@@ -80,5 +82,13 @@ export default {
 
     createTileTransform(tr: Transform, worldSize: number): Object {
         return new FlatTileTransform(tr, worldSize);
+    },
+
+    upVector(): Vec3 {
+        return [0, 0, 1];
+    },
+
+    upVectorScale(): ElevationScale {
+        return {metersToTile: 1, metersToLabelSpace: 1};
     }
 };

@@ -1,26 +1,18 @@
 // @flow
 import type Transform from '../transform.js';
-import type {ElevationScale} from './index.js';
-import {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
+import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
 import {mat4, vec4, vec3} from 'gl-matrix';
-import MercatorCoordinate, {lngFromMercatorX, latFromMercatorY, mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
+import MercatorCoordinate, {mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import {degToRad, radToDeg, getColumn} from '../../util/util.js';
 import {Ray} from '../../util/primitives.js';
 import {
-    latLngToECEF,
     globeTileBounds,
-    globeECEFNormalizationScale,
     globeECEFUnitsToPixelScale,
     calculateGlobeMatrix,
     globeNormalizeECEF,
     globeDenormalizeECEF
 } from './globe.js';
-
-import type {Vec3} from 'gl-matrix';
-
-const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
-const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 
 export default class GlobeTileTransform {
     _tr: Transform;
@@ -38,13 +30,13 @@ export default class GlobeTileTransform {
         return mat4.multiply(new Float64Array(16), this._globeMatrix, decode);
     }
 
-    createInversionMatrix(id: UnwrappedTileID): Float32Array {
+    createInversionMatrix(id: CanonicalTileID): Float32Array {
         const identity = mat4.identity(new Float64Array(16));
 
         const center = this._tr.center;
         const ecefUnitsToPixels = globeECEFUnitsToPixelScale(this._worldSize);
         const matrix = mat4.identity(new Float64Array(16));
-        const encode = globeNormalizeECEF(globeTileBounds(id.canonical));
+        const encode = globeNormalizeECEF(globeTileBounds(id));
         mat4.multiply(matrix, matrix, encode);
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
@@ -62,18 +54,6 @@ export default class GlobeTileTransform {
         mat4.multiply(matrix, matrix, identity);
 
         return Float32Array.from(matrix);
-    }
-
-    upVector(id: CanonicalTileID, x: number, y: number): Vec3 {
-        const tiles = 1 << id.z;
-        const mercX = (x / EXTENT + id.x) / tiles;
-        const mercY = (y / EXTENT + id.y) / tiles;
-        return latLngToECEF(latFromMercatorY(mercY), lngFromMercatorX(mercX), 1.0);
-    }
-
-    upVectorScale(id: CanonicalTileID, latitude: number, worldSize: number): ElevationScale {
-        const pixelsPerMeterAtLat = mercatorZfromAltitude(1, latitude) * worldSize;
-        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id)), metersToLabelSpace: pixelsPerMeterAtLat};
     }
 
     pointCoordinate(x: number, y: number): MercatorCoordinate {

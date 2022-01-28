@@ -1,6 +1,5 @@
 // @flow
 import type Transform from '../transform.js';
-import type {ElevationScale} from './index.js';
 import {UnwrappedTileID} from '../../source/tile_id.js';
 import {mat4} from 'gl-matrix';
 import MercatorCoordinate from '../mercator_coordinate.js';
@@ -8,7 +7,7 @@ import Point from '@mapbox/point-geometry';
 import EXTENT from '../../data/extent.js';
 import tileTransform from './tile_transform.js';
 
-import type {Mat4, Vec3} from 'gl-matrix';
+import type {Mat4} from 'gl-matrix';
 
 const identity = mat4.identity(new Float64Array(16));
 
@@ -55,13 +54,5 @@ export default class FlatTileTransform {
         const horizonOffset = this._tr.horizonLineFromTop(false);
         const clamped = new Point(x, Math.max(horizonOffset, y));
         return this._tr.rayIntersectionCoordinate(this._tr.pointRayIntersection(clamped, z));
-    }
-
-    upVector(): Vec3 {
-        return [0, 0, 1];
-    }
-
-    upVectorScale(): ElevationScale {
-        return {metersToTile: 1, metersToLabelSpace: 1};
     }
 }

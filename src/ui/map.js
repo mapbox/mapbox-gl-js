@@ -1050,9 +1050,14 @@ class Map extends Camera {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
         this._runtimeProjection = projection;
-        this.style.updateProjection();
         this._transitionFromGlobe = false;
+        this.style.updateProjection();
         return this;
+    }
+
+    _setImplicitProjection(projection: ProjectionSpecification) {
+        this._runtimeProjection = projection;
+        this.style.updateProjection();
     }
 
     /**
@@ -2449,10 +2454,11 @@ class Map extends Camera {
         const zoom = this.transform.zoom;
 
         if (proj.name === 'globe' && zoom >= GLOBE_ZOOM_THRESHOLD_MAX && !this._transitionFromGlobe) {
-            this.setProjection({name: 'mercator'});
             this._transitionFromGlobe = true;
+            this._setImplicitProjection({name: 'mercator'});
         } else if (this._transitionFromGlobe && zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
-            this.setProjection({name: 'globe'});
+            this._setImplicitProjection({name: 'globe'});
+            this._transitionFromGlobe = false;
         }
     }
 

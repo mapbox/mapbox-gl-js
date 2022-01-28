@@ -26,9 +26,11 @@ import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/
 import GlobeTileTransform from './globe_tile_transform.js';
 import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from './far_z.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import type {Mat4} from 'gl-matrix';
+import type {ElevationScale} from './index.js';
+import type {Mat4, Vec3} from 'gl-matrix';
 
 const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
+const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
 const GLOBE_VERTEX_GRID_SIZE = 64;
@@ -45,7 +47,6 @@ export default {
     zAxisUnit: "pixels",
     center: [0, 0],
     unsupportedLayers: [
-        'circle',
         'heatmap',
         'fill-extrusion',
         'debug',
@@ -114,6 +115,18 @@ export default {
             return interpolate(globePixelDistance, mercatorPixelDistance, t);
         }
         return globePixelDistance;
+    },
+
+    upVector(id: CanonicalTileID, x: number, y: number): Vec3 {
+        const tiles = 1 << id.z;
+        const mercX = (x / EXTENT + id.x) / tiles;
+        const mercY = (y / EXTENT + id.y) / tiles;
+        return latLngToECEF(latFromMercatorY(mercY), lngFromMercatorX(mercX), 1.0);
+    },
+
+    upVectorScale(id: CanonicalTileID, latitude: number, worldSize: number): ElevationScale {
+        const pixelsPerMeterAtLat = mercatorZfromAltitude(1, latitude) * worldSize;
+        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id)), metersToLabelSpace: pixelsPerMeterAtLat};
     }
 };
 
@@ -228,6 +241,13 @@ export function globeECEFUnitsToPixelScale(worldSize: number) {
     const localRadius = EXTENT / (2.0 * Math.PI);
     const wsRadius = worldSize / (2.0 * Math.PI);
     return wsRadius / localRadius;
+}
+
+export function globePixelsToTileUnits(zoom: number, id: CanonicalTileID) {
+    const ecefPerPixel = EXTENT / (TILE_SIZE * Math.pow(2, zoom));
+    const normCoeff = globeECEFNormalizationScale(globeTileBounds(id));
+
+    return ecefPerPixel * normCoeff;
 }
 
 export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): Float64Array {

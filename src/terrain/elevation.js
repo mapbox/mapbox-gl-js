@@ -8,8 +8,8 @@ import EXTENT from '../data/extent.js';
 import {vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
-import type {TileTransform} from '../geo/projection/index.js';
 
+import type {Projection} from '../geo/projection/index.js';
 import type Tile from '../source/tile.js';
 import type {Vec3} from 'gl-matrix';
 
@@ -90,11 +90,11 @@ export class Elevation {
             (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom));
     }
 
-    getAtTileOffsetFunc(tileID: OverscaledTileID, lat: number, worldSize: number, tileTransform: TileTransform): Function {
+    getAtTileOffsetFunc(tileID: OverscaledTileID, lat: number, worldSize: number, projection: Projection): Function {
         return (p => {
             const elevation = this.getAtTileOffset(tileID, p.x, p.y);
-            const upVector = tileTransform.upVector(tileID.canonical, p.x, p.y);
-            const upVectorScale = tileTransform.upVectorScale(tileID.canonical, lat, worldSize).metersToTile;
+            const upVector = projection.upVector(tileID.canonical, p.x, p.y);
+            const upVectorScale = projection.upVectorScale(tileID.canonical, lat, worldSize).metersToTile;
             // $FlowFixMe can't yet resolve tuple vs array incompatibilities
             vec3.scale(upVector, upVector, elevation * upVectorScale);
             return upVector;
