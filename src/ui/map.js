@@ -1106,7 +1106,7 @@ class Map extends Camera {
      * const isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving || this.handlers && this.handlers.isMoving() || false;
+        return this._moving || (this.handlers && this.handlers.isMoving()) || false;
     }
 
     /**
@@ -1117,7 +1117,7 @@ class Map extends Camera {
      * const isZooming = map.isZooming();
      */
     isZooming(): boolean {
-        return this._zooming || this.handlers && this.handlers.isZooming() || false;
+        return this._zooming || (this.handlers && this.handlers.isZooming()) || false;
     }
 
     /**
@@ -1128,7 +1128,7 @@ class Map extends Camera {
      * map.isRotating();
      */
     isRotating(): boolean {
-        return this._rotating || this.handlers && this.handlers.isRotating() || false;
+        return this._rotating || (this.handlers && this.handlers.isRotating()) || false;
     }
 
     _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any) {
@@ -3286,7 +3286,7 @@ class Map extends Camera {
      * @returns {Object} Returns `this` | Promise.
      */
     _preloadTiles(transform: Transform | Array<Transform>) {
-        const sources: Array<SourceCache> = this.style && (Object.values(this.style._sourceCaches): any) || [];
+        const sources: Array<SourceCache> = this.style ? (Object.values(this.style._sourceCaches): any) : [];
         asyncAll(sources, (source, done) => source._preloadTiles(transform, done), () => {
             this.triggerRepaint();
         });

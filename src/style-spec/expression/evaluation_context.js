@@ -51,7 +51,7 @@ class EvaluationContext {
     }
 
     properties() {
-        return this.feature && this.feature.properties || {};
+        return (this.feature && this.feature.properties) || {};
     }
 
     distanceFromCenter() {
