@@ -545,31 +545,6 @@ export function calculateSignedArea(ring: Array<Point>): number {
     return sum;
 }
 
-/**
- * Detects closed polygons, first + last point are equal
- *
- * @private
- * @param points array of points
- * @return true if the points are a closed polygon
- */
-export function isClosedPolygon(points: Array<Point>): boolean {
-    // If it is 2 points that are the same then it is a point
-    // If it is 3 points with start and end the same then it is a line
-    if (points.length < 4)
-        return false;
-
-    const p1 = points[0];
-    const p2 = points[points.length - 1];
-
-    if (Math.abs(p1.x - p2.x) > 0 ||
-        Math.abs(p1.y - p2.y) > 0) {
-        return false;
-    }
-
-    // polygon simplification can produce polygons with zero area and more than 3 points
-    return Math.abs(calculateSignedArea(points)) > 0.01;
-}
-
 /* global self, WorkerGlobalScope */
 /**
  *  Returns true if run in the web-worker context.
