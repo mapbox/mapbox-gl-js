@@ -76,6 +76,8 @@ void main() {
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
+    
+    // Z - fighting with vertical gradient
     gl_Position.z -= height * 0.0001;
 
     // Relative luminance (how dark/bright is the surface color?)

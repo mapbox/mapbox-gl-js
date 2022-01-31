@@ -323,15 +323,16 @@ class FillExtrusionBucket implements Bucket {
                 let edgeDistance = 1;
                 if (metadata) metadata.startRing(ring[0]);
 
-                let p0Concave = false;
-                if  (ring.length > 6) {
+                let p0Angle = 0;
+                if  (ring.length > 3) {
                     const p3 = ring[1];
                     const p1 = ring[0];
                     const p2 = ring[ring.length - 2];
-                    p0Concave = isConcave(p2, p1, p3);
+                    p0Angle = getAngle(p2, p1, p3);
                 }
-                let con1 = p0Concave;
-                let con2 = false;
+                let angle1 = p0Angle;
+                let angle2;
+                let p2Beveled;
                 for (let p = 0; p < ring.length; p++) {
                     const p1 = ring[p];
 
@@ -339,49 +340,81 @@ class FillExtrusionBucket implements Bucket {
                         const p2 = ring[p - 1];
 
                         if (!isBoundaryEdge(p1, p2)) {
-                            if  (ring.length > 6) {
-                                con2 = con1;
+                            if  (ring.length > 3) {
+                                angle2 = angle1;
                                 if (p == ring.length - 1) {
-                                    con1 = p0Concave;
+                                    angle1 = p0Angle;
                                 } else {
                                     const p3 = ring[p + 1];
-                                    con1 = isConcave(p2, p1, p3);
+                                    angle1 = getAngle(p2, p1, p3);
                                 }
                             }
 
-                            if (metadata) metadata.append(p1, p2);
-                            if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
-                                segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+                            const append = (p1, p2, con1, con2) => {
+                                if (metadata) metadata.append(p1, p2);
+                                if (segment.vertexLength + 4> SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
+                                    segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+                                }
+    
+                                const d = p1.sub(p2)._perp();
+                                // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
+                                // This information is sufficient to reconstruct normal vector in vertex shader.
+                                const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
+                                const nySign = d.y > 0 ? 1 : 0;
+                                const dist = p2.dist(p1);
+                                if (edgeDistance + dist > 32768) edgeDistance = 1;
+    
+                                addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance * (con1 ? -1 : 1));
+                                addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance * (con1 ? -1 : 1));
+    
+                                edgeDistance += dist;
+    
+                                addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, edgeDistance * (con2 ? -1 : 1));
+                                addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, edgeDistance * (con2 ? -1 : 1));
+    
+                                const bottomRight = segment.vertexLength;
+    
+                                // ┌──────┐
+                                // │ 0  1 │ Counter-clockwise winding order.
+                                // │      │ Triangle 1: 0 => 2 => 1
+                                // │ 2  3 │ Triangle 2: 1 => 2 => 3
+                                // └──────┘
+                                this.indexArray.emplaceBack(bottomRight, bottomRight + 2, bottomRight + 1);
+                                this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+    
+                                segment.vertexLength += 4;
+                                segment.primitiveLength += 2;    
+                            };
+                            if (angle2 == 1) {
+                                if (angle1 == 1 && p2.dist(p1) * this.tileToMeter > 20) { // heuristic used for PoC. Split long darkened walls
+                                    const p12 = p1.add(p2.sub(p1)._mult(0.5));
+                                    append(p12, p2, false, true);
+                                    append(p1, p12, true, false);
+                                    p2Beveled = null;
+                                    continue;
+                                }
+                            } else {
+                                if (angle1 == 2) {
+                                    // bevelled edge, 0.5 m
+                                    const bevel = 0.05 / this.tileToMeter;
+                                    const minSquare = bevel * bevel * 4;
+                                    const p3 = ring[(p + 1 + ring.length) % ring.length];
+                                    assert(p3.x >= 0 && p1.x >= 0 && p2.x >= 0);
+                                    if (p3.distSqr(p1) > minSquare && p1.distSqr(p2) > minSquare) {
+
+                                        const p12 = p1.add(p2.sub(p1)._unit().mult(bevel / this.tileToMeter));
+                                        append(p12, p2Beveled ? p2Beveled : p2, false, false);
+                                        
+                                        const p13 = p1.add(p3.sub(p1)._unit().mult(bevel / this.tileToMeter));
+                                        append(p13, p12, false, false);
+                                        p2Beveled = p13;
+                                        continue;
+                                    }
+                                }
+
                             }
-
-                            const d = p1.sub(p2)._perp();
-                            // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
-                            // This information is sufficient to reconstruct normal vector in vertex shader.
-                            const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
-                            const nySign = d.y > 0 ? 1 : 0;
-                            const dist = p2.dist(p1);
-                            if (edgeDistance + dist > 32768) edgeDistance = 1;
-
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance * (con1 ? -1 : 1));
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance * (con1 ? -1 : 1));
-
-                            edgeDistance += dist;
-
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, edgeDistance * (con2 ? -1 : 1));
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, edgeDistance * (con2 ? -1 : 1));
-
-                            const bottomRight = segment.vertexLength;
-
-                            // ┌──────┐
-                            // │ 0  1 │ Counter-clockwise winding order.
-                            // │      │ Triangle 1: 0 => 2 => 1
-                            // │ 2  3 │ Triangle 2: 1 => 2 => 3
-                            // └──────┘
-                            this.indexArray.emplaceBack(bottomRight, bottomRight + 2, bottomRight + 1);
-                            this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
-
-                            segment.vertexLength += 4;
-                            segment.primitiveLength += 2;
+                            append(p1, p2, angle1 == 1, angle2 == 1);
+                            p2Beveled = null;
                         }
                     }
                 }
@@ -534,11 +567,16 @@ function tileToMeter(canonical: CanonicalTileID) {
     return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
 }
 
-function isConcave(p2, p1, p3) {
+function getAngle(p2, p1, p3) {
+    if (p2.x < 0 || p2.x >= EXTENT || p1.x < 0 || p1.x >= EXTENT || p3.x < 0 || p3.x >= EXTENT) {
+        return 0; // angles are not processed for edges that extend over tile borders
+    }
     const a = p3.sub(p1);
     const an = a.perp();
     const b = p1.sub(p2);
     const square = a => a * a;
     const cosABSquare = square(a.x * b.x + a.y * b.y) / ((square(a.x) + square(a.y)) * (square(b.x) + square(b.y)));
-    return an.x * b.x + an.y * b.y > 0 && cosABSquare < 0.5;
+    const dotProductWithNormal = an.x * b.x + an.y * b.y;
+
+    return cosABSquare < 0.7 ? (dotProductWithNormal > 0 ? 1 : 2) : 0;
 }
