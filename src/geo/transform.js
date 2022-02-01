@@ -135,7 +135,7 @@ class Transform {
     _nearZ: number;
     _farZ: number;
 
-    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecificatio, bounds: ?LngLatBounds) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
