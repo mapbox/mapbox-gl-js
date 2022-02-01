@@ -1940,8 +1940,9 @@ class Map extends Camera {
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
                 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
         } else {
-            const {width, height, data} = image;
+            const {width, height} = image;
             const userImage = ((image: any): StyleImageInterface);
+            const data = userImage.data;
 
             this.style.addImage(id, {
                 data: new RGBAImage({width, height}, new Uint8Array(data)),
@@ -1987,7 +1988,9 @@ class Map extends Camera {
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
         }
         const imageData = (image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap)) ? browser.getImageData(image) : image;
-        const {width, height, data} = imageData;
+        const {width, height} = imageData;
+        // Flow can't refine the type enough to exclude ImageBitmap
+        const data = ((imageData: any).data: Uint8Array | Uint8ClampedArray);
 
         if (width === undefined || height === undefined) {
             return this.fire(new ErrorEvent(new Error(
