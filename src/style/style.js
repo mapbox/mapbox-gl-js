@@ -371,9 +371,9 @@ class Style extends Evented {
             }
         }
 
-        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
-
         if (!projectionChanged) return;
+
+        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 
         const globeChanged = (projection.name === 'globe' || prevProjection.name === 'globe') && !this.map._transitionFromGlobe;
 
