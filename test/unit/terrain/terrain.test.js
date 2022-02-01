@@ -265,6 +265,46 @@ test('Elevation', (t) => {
         });
     });
 
+    t.test('elevation.isDataAvailableAtPoint', t => {
+        const map = createMap(t);
+        map.on('style.load', () => {
+            map.addSource('mapbox-dem', {
+                "type": "raster-dem",
+                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                TILE_SIZE,
+                "maxzoom": 14
+            });
+            map.setTerrain({"source": "mapbox-dem"});
+            map.once('render', () => {
+                t.test('Sample before loading DEMs', t => {
+                    t.false(map.painter.terrain.isDataAvailableAtPoint({x: 0.5, y: 0.5}));
+                    t.end();
+                });
+                const cache = map.style._getSourceCache('mapbox-dem');
+                cache.used = cache._sourceLoaded = true;
+                cache._loadTile = (tile, callback) => {
+                    tile.dem = zeroDem;
+                    tile.needsHillshadePrepare = true;
+                    tile.needsDEMTextureUpload = true;
+                    tile.state = 'loaded';
+                    callback(null);
+                };
+                map.once('render', () => {
+                    t.test('Sample within after loading', t => {
+                        t.true(map.painter.terrain.isDataAvailableAtPoint({x: 0.5, y: 0.5}));
+                        t.end();
+                    });
+                    t.test('Sample outside after loading', t => {
+                        t.false(map.painter.terrain.getAtPoint({x: 0.5, y: 1.1}));
+                        t.false(map.painter.terrain.getAtPoint({x: 1.15, y: -0.001}));
+                        t.end();
+                    });
+                    t.end();
+                });
+            });
+        });
+    });
+
     t.test('map._updateAverageElevation', t => {
         const map = createMap(t, {
             style: extend(createStyle(), {
