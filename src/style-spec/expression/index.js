@@ -286,11 +286,11 @@ export class StylePropertyFunction<T> {
         extend(this, createFunction(this._parameters, this._specification));
     }
 
-    static deserialize(serialized: {_parameters: PropertyValueSpecification<T>, _specification: StylePropertySpecification}) {
-        return ((new StylePropertyFunction(serialized._parameters, serialized._specification)): StylePropertyFunction<T>);
+    static deserialize(serialized: {_parameters: PropertyValueSpecification<T>, _specification: StylePropertySpecification}): StylePropertyFunction<T> {
+        return new StylePropertyFunction(serialized._parameters, serialized._specification);
     }
 
-    static serialize(input: StylePropertyFunction<T>) {
+    static serialize(input: StylePropertyFunction<T>): {_parameters: PropertyValueSpecification<T>, _specification: StylePropertySpecification} {
         return {
             _parameters: input._parameters,
             _specification: input._specification
