@@ -1556,6 +1556,32 @@ test('Map', (t) => {
             t.deepEqual(map.getProjection(), options);
             t.end();
         });
+
+        t.test('returns Albers projection at high zoom', (t) => {
+            const map = createMap(t, {projection: 'albers'});
+            map.setZoom(12);
+            map.once('render', () => {
+                t.deepEqual(map.getProjection(), {
+                    name: 'albers',
+                    center: [-96, 37.5],
+                    parallels: [29.5, 45.5]
+                });
+                t.end();
+            });
+        });
+
+        t.test('returns globe projection at high zoom', (t) => {
+            const map = createMap(t, {projection: 'globe'});
+            map.setZoom(12);
+            map.once('render', () => {
+                t.deepEqual(map.getProjection(), {
+                    name: 'globe',
+                    center: [0, 0],
+                });
+                t.end();
+            });
+
+        });
         t.end();
     });
 

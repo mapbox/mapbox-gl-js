@@ -1025,7 +1025,11 @@ class Map extends Camera {
      * const projection = map.getProjection();
      */
     getProjection() {
-        return this.transform.getProjection();
+        const proj = this.transform.getProjection();
+        if (this._transitionFromGlobe) {
+            proj.name = "globe";
+        }
+        return proj;
     }
 
     /**
