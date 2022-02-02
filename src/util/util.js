@@ -480,7 +480,7 @@ export {deepEqual};
  */
 export function clone<T>(input: T): T {
     if (Array.isArray(input)) {
-        return input.map(clone);
+        return ((input.map(clone): any): T);
     } else if (typeof input === 'object' && input) {
         return ((mapObject(input, clone): any): T);
     } else {

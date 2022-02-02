@@ -2,11 +2,9 @@
 
 import DEMData from '../data/dem_data.js';
 import {RGBAImage} from '../util/image.js';
-import window from '../util/window.js';
 
 import type Actor from '../util/actor.js';
 import type {WorkerDEMTileParameters, WorkerDEMTileCallback} from './worker_source.js';
-const {ImageBitmap} = window;
 
 class RasterDEMTileWorkerSource {
     actor: Actor;
@@ -16,7 +14,7 @@ class RasterDEMTileWorkerSource {
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         const {uid, encoding, rawImageData, padding, buildQuadTree} = params;
         // Main thread will transfer ImageBitmap if offscreen decode with OffscreenCanvas is supported, else it will transfer an already decoded image.
-        const imagePixels = (ImageBitmap && rawImageData instanceof ImageBitmap) ? this.getImageData(rawImageData, padding) : rawImageData;
+        const imagePixels = rawImageData instanceof RGBAImage ? rawImageData : this.getImageData(rawImageData, padding);
         const dem = new DEMData(uid, imagePixels, encoding, padding < 1, buildQuadTree);
         callback(null, dem);
     }

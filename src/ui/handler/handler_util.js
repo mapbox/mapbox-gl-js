@@ -2,6 +2,8 @@
 
 import assert from 'assert';
 
+import type Point from '@mapbox/point-geometry';
+
 export function indexTouches(touches: Array<Touch>, points: Array<Point>) {
     assert(touches.length === points.length);
     const obj = {};

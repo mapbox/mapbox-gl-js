@@ -45,6 +45,7 @@ import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/g
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
+import {RGBAImage} from '../util/image.js';
 
 const draw = {
     symbol,
@@ -270,11 +271,8 @@ class Painter {
         for (const i of [0, 1, 3, 2, 0]) tileLineStripIndices.emplaceBack(i);
         this.debugIndexBuffer = context.createIndexBuffer(tileLineStripIndices);
 
-        this.emptyTexture = new Texture(context, {
-            width: 1,
-            height: 1,
-            data: new Uint8Array([0, 0, 0, 0])
-        }, context.gl.RGBA);
+        this.emptyTexture = new Texture(context,
+            new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0)), context.gl.RGBA);
 
         this.identityMat = mat4.create();
 

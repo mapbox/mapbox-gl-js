@@ -14,7 +14,7 @@ type Point = {
     y: number
 };
 
-function createImage(image: *, {width, height}: Size, channels: number, data?: Uint8Array | Uint8ClampedArray) {
+function createImage<T: AlphaImage | RGBAImage>(image: T, {width, height}: Size, channels: number, data?: Uint8Array | Uint8ClampedArray): T {
     if (!data) {
         data = new Uint8Array(width * height * channels);
     } else if (data instanceof Uint8ClampedArray) {
@@ -28,12 +28,11 @@ function createImage(image: *, {width, height}: Size, channels: number, data?: U
     return image;
 }
 
-function resizeImage(image: *, {width, height}: Size, channels: number) {
+function resizeImage<T: AlphaImage | RGBAImage>(image: T, newImage: T, channels: number) {
+    const {width, height} = newImage;
     if (width === image.width && height === image.height) {
         return;
     }
-
-    const newImage = createImage({}, {width, height}, channels);
 
     copyImage(image, newImage, {x: 0, y: 0}, {x: 0, y: 0}, {
         width: Math.min(image.width, width),
@@ -45,7 +44,7 @@ function resizeImage(image: *, {width, height}: Size, channels: number) {
     image.data = newImage.data;
 }
 
-function copyImage(srcImg: *, dstImg: *, srcPt: Point, dstPt: Point, size: Size, channels: number) {
+function copyImage<T: RGBAImage | AlphaImage>(srcImg: T | ImageData, dstImg: T, srcPt: Point, dstPt: Point, size: Size, channels: number): T {
     if (size.width === 0 || size.height === 0) {
         return dstImg;
     }
@@ -89,7 +88,7 @@ export class AlphaImage {
     }
 
     resize(size: Size) {
-        resizeImage(this, size, 1);
+        resizeImage(this, new AlphaImage(size), 1);
     }
 
     clone() {
@@ -116,7 +115,7 @@ export class RGBAImage {
     }
 
     resize(size: Size) {
-        resizeImage(this, size, 4);
+        resizeImage(this, new RGBAImage(size), 4);
     }
 
     replace(data: Uint8Array | Uint8ClampedArray, copy?: boolean) {
