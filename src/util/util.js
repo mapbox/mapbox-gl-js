@@ -239,6 +239,19 @@ export function wrap(n: number, min: number, max: number): number {
     return (w === min) ? max : w;
 }
 
+/**
+ * Computes shortest angle in range [-180, 180) between two angles.
+ *
+ * @param {*} a First angle in degrees
+ * @param {*} b Second angle in degrees
+ * @returns Shortest angle
+ * @private
+ */
+export function shortestAngle(a: number, b: number): number {
+    const diff = (b - a + 180) % 360 - 180;
+    return diff < -180 ? diff + 360 : diff;
+}
+
 /*
  * Call an asynchronous function on an array of arguments,
  * calling `callback` with the completed results of all calls.
