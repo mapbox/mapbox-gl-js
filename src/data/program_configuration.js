@@ -701,7 +701,7 @@ const defaultLayouts = {
 
 function layoutType(property, type, binderType) {
     const layoutException = propertyExceptions[property];
-    return  layoutException && layoutException[binderType] || defaultLayouts[type][binderType];
+    return (layoutException && layoutException[binderType]) || defaultLayouts[type][binderType];
 }
 
 register('ConstantBinder', ConstantBinder);

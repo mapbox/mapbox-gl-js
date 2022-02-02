@@ -434,7 +434,7 @@ export class BindVertexArrayOES extends BaseValue<any> {
         return null;
     }
     set(v: any) {
-        if (!this.vao || v === this.current && !this.dirty) return;
+        if (!this.vao || (v === this.current && !this.dirty)) return;
         this.vao.bindVertexArrayOES(v);
         this.current = v;
         this.dirty = false;
