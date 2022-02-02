@@ -374,7 +374,7 @@ export function uniqueId(): number {
  */
 export function uuid(): string {
     function b(a) {
-        return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) :
+        return a ? (a ^ Math.random() * (16 >> a / 4)).toString(16) :
         //$FlowFixMe: Flow doesn't like the implied array literal conversion here
             ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
     }
@@ -493,7 +493,7 @@ export {deepEqual};
  */
 export function clone<T>(input: T): T {
     if (Array.isArray(input)) {
-        return input.map(clone);
+        return ((input.map(clone): any): T);
     } else if (typeof input === 'object' && input) {
         return ((mapObject(input, clone): any): T);
     } else {
@@ -556,31 +556,6 @@ export function calculateSignedArea(ring: Array<Point>): number {
         sum += (p2.x - p1.x) * (p1.y + p2.y);
     }
     return sum;
-}
-
-/**
- * Detects closed polygons, first + last point are equal
- *
- * @private
- * @param points array of points
- * @return true if the points are a closed polygon
- */
-export function isClosedPolygon(points: Array<Point>): boolean {
-    // If it is 2 points that are the same then it is a point
-    // If it is 3 points with start and end the same then it is a line
-    if (points.length < 4)
-        return false;
-
-    const p1 = points[0];
-    const p2 = points[points.length - 1];
-
-    if (Math.abs(p1.x - p2.x) > 0 ||
-        Math.abs(p1.y - p2.y) > 0) {
-        return false;
-    }
-
-    // polygon simplification can produce polygons with zero area and more than 3 points
-    return Math.abs(calculateSignedArea(points)) > 0.01;
 }
 
 /* global self, WorkerGlobalScope */

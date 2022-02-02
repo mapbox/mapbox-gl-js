@@ -2,6 +2,8 @@
 
 import loadGeometry from './load_geometry.js';
 
+import type Point from '@mapbox/point-geometry';
+
 type EvaluationFeature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
     +id?: any,

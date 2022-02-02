@@ -9,7 +9,6 @@ import CompoundExpression from '../style-spec/expression/compound_expression.js'
 import expressions from '../style-spec/expression/definitions/index.js';
 import ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import window from './window.js';
-const {ImageData, ImageBitmap} = window;
 
 import type {Transferable} from '../types/transferable.js';
 
@@ -72,7 +71,7 @@ register('Object', Object);
 
 type SerializedGrid = { buffer: ArrayBuffer };
 
-Grid.serialize = function serialize(grid: Grid, transferables?: Array<Transferable>): SerializedGrid {
+(Grid: any).serialize = function serialize(grid: Grid, transferables?: Array<Transferable>): SerializedGrid {
     const buffer = grid.toArrayBuffer();
     if (transferables) {
         transferables.push(buffer);
@@ -80,7 +79,7 @@ Grid.serialize = function serialize(grid: Grid, transferables?: Array<Transferab
     return {buffer};
 };
 
-Grid.deserialize = function deserialize(serialized: SerializedGrid): Grid {
+(Grid: any).deserialize = function deserialize(serialized: SerializedGrid): Grid {
     return new Grid(serialized.buffer);
 };
 register('Grid', Grid);
@@ -106,8 +105,8 @@ function isArrayBuffer(val: any): boolean {
 }
 
 function isImageBitmap(val: any): boolean {
-    return ImageBitmap &&
-        val instanceof ImageBitmap;
+    return window.ImageBitmap &&
+        val instanceof window.ImageBitmap;
 }
 
 /**
@@ -142,7 +141,7 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
         if (transferables) {
             transferables.push(((input: any): ArrayBuffer));
         }
-        return input;
+        return (input: any);
     }
 
     if (ArrayBuffer.isView(input)) {
@@ -153,7 +152,7 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
         return view;
     }
 
-    if (input instanceof ImageData) {
+    if (input instanceof window.ImageData) {
         if (transferables) {
             transferables.push(input.data.buffer);
         }
@@ -231,7 +230,7 @@ export function deserialize(input: Serialized): mixed {
         isArrayBuffer(input) ||
         isImageBitmap(input) ||
         ArrayBuffer.isView(input) ||
-        input instanceof ImageData) {
+        input instanceof window.ImageData) {
         return input;
     }
 

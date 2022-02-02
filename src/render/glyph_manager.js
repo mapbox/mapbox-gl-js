@@ -188,12 +188,12 @@ class GlyphManager {
         } else {
             /* eslint-disable new-cap */
             return !!this.localFontFamily &&
-            (isChar['CJK Unified Ideographs'](id) ||
+            ((isChar['CJK Unified Ideographs'](id) ||
                 isChar['Hangul Syllables'](id) ||
                 isChar['Hiragana'](id) ||
                 isChar['Katakana'](id)) ||
                 // gl-native parity: Extend Ideographs rasterization range to include CJK symbols and punctuations
-                isChar['CJK Symbols and Punctuation'](id);
+                isChar['CJK Symbols and Punctuation'](id));
             /* eslint-enable new-cap */
         }
     }

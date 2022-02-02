@@ -197,7 +197,7 @@ class ImageSource extends Evented implements Source {
      *     ]
      * });
      */
-    updateImage(options: {url: string, coordinates?: Coordinates}) {
+    updateImage(options: {url: string, coordinates?: Coordinates}): this {
         if (!this.image || !options.url) {
             return this;
         }
@@ -246,7 +246,7 @@ class ImageSource extends Evented implements Source {
      *     [-76.5452, 39.1787]
      * ]);
      */
-    setCoordinates(coordinates: Coordinates) {
+    setCoordinates(coordinates: Coordinates): this {
         this.coordinates = coordinates;
         this._boundsArray = undefined;
 

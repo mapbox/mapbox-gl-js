@@ -6,6 +6,7 @@ import {MouseRotateHandler, MousePitchHandler} from '../handler/mouse.js';
 import window from '../../util/window.js';
 
 import type Map from '../map.js';
+import type Point from '@mapbox/point-geometry';
 
 type Options = {
     showCompass?: boolean,

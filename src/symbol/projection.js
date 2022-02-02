@@ -231,7 +231,7 @@ function updateLineLabels(bucket: SymbolBucket,
         // Don't do calculations for vertical glyphs unless the previous symbol was horizontal
         // and we determined that vertical glyphs were necessary.
         // Also don't do calculations for symbols that are collided and fully faded out
-        if (symbol.hidden || symbol.writingMode === WritingMode.vertical && !useVertical) {
+        if ((symbol.hidden || symbol.writingMode === WritingMode.vertical) && !useVertical) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
