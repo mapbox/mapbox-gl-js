@@ -368,6 +368,8 @@ class Map extends Camera {
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
+    _explicitProjection: ProjectionSpecification;
+    // In high zoom levels on Globe, _runtimeProjection will be "Mercator"
     _runtimeProjection: ProjectionSpecification | void | null;
     _containerWidth: number;
     _containerHeight: number
@@ -475,6 +477,8 @@ class Map extends Camera {
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevation = new EasedVariable(0);
+
+        this._explicitProjection = {name: "mercator", center: [0, 0]};
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
@@ -1025,11 +1029,7 @@ class Map extends Camera {
      * const projection = map.getProjection();
      */
     getProjection() {
-        const proj = this.transform.getProjection();
-        if (this._transitionFromGlobe) {
-            proj.name = "globe";
-        }
-        return proj;
+        return this._explicitProjection;
     }
 
     /**
@@ -1049,12 +1049,13 @@ class Map extends Camera {
      * @see [Example: Use different map projections for web maps](https://docs.mapbox.com/mapbox-gl-js/example/projections/)
      */
     setProjection(projection?: ?ProjectionSpecification | string) {
+    // setProjection(projection: ProjectionSpecification | string = "mercator") {
         this._lazyInitEmptyStyle();
         if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
         this._runtimeProjection = projection;
-        this._transitionFromGlobe = false;
+        // this._explicitProjection = projection;
         this.style.updateProjection();
         return this;
     }

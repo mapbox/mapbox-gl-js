@@ -232,12 +232,13 @@ class Transform {
 
         const oldProjection = this.projection ? this.getProjection() : undefined;
         this.projection = getProjection(projection);
+        const newProjection = this.getProjection();
 
-        if (deepEqual(oldProjection, this.getProjection())) {
+        if (deepEqual(oldProjection, newProjection)) {
             return false;
         }
         this._calcMatrices();
-        return true;
+        return newProjection;
     }
 
     get minZoom(): number { return this._minZoom; }

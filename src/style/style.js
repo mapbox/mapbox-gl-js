@@ -355,9 +355,9 @@ class Style extends Evented {
         this.updateProjection();
     }
 
-    updateProjection() {
+    updateProjection() { // TODO: move to map.js?
         const prevProjection = this.map.transform.projection;
-        const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
+        const newProjection = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
         const projection = this.map.transform.projection;
 
         if (this._loaded) {
@@ -371,7 +371,10 @@ class Style extends Evented {
             }
         }
 
-        if (!projectionChanged) return;
+        if (!newProjection) return;
+        if (!this.map._transitionFromGlobe) {
+            this.map._explicitProjection = newProjection;
+        }
 
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 
