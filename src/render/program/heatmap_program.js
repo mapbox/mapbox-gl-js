@@ -15,6 +15,7 @@ import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type Painter from '../painter.js';
 import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer.js';
 import type {TileTransform} from '../../geo/projection/index.js';
+import type {OverscaledTileID} from '../../source/tile_id.js';
 import {mat4} from 'gl-matrix';
 import {globeToMercatorTransition, globePixelsToTileUnits} from '../../geo/projection/globe.js';
 
@@ -65,7 +66,7 @@ const heatmapUniformValues = (
 ): UniformValues<HeatmapUniformsType> => {
     const transform = painter.transform;
     const isGlobe = transform.projection.name === 'globe';
-    let extrudeScale = isGlobe ? globePixelsToTileUnits(transform.zoom, coord.canonical) : pixelsToTileUnits(tile, 1, zoom);
+    const extrudeScale = isGlobe ? globePixelsToTileUnits(transform.zoom, coord.canonical) : pixelsToTileUnits(tile, 1, zoom);
 
     const values = {
         'u_matrix': coord.projMatrix,
