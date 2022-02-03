@@ -32,6 +32,7 @@ varying vec3 v_normal;
 varying vec3 v_position;
 varying float v_base;
 varying float v_height;
+varying float v_t;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
@@ -84,13 +85,14 @@ void main() {
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     vec4 outPos = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
-    v_position = outPos.xyz / outPos.w;
+    v_position = outPos.xyz;
     gl_Position = outPos;
 
     v_pos_light_view_0 = u_light_matrix_0 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
     v_pos_light_view_1 = u_light_matrix_1 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
     v_pos_light_view_2 = u_light_matrix_2 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
     v_normal = normal;
+    v_t = t;
     v_depth = gl_Position.w;
 
 #ifdef FOG

@@ -20,9 +20,13 @@ varying float v_depth;
 varying highp vec3 v_normal;
 varying highp vec3 v_position;
 
-varying float base;
-varying float height;
-varying float t;
+varying float v_base;
+varying float v_height;
+varying float v_t;
+#pragma mapbox: define highp vec4 color
+
+#define saturate(_x) clamp(_x, 0., 1.)
+
 
 float unpack_depth(vec4 rgba_depth)
 {
@@ -141,12 +145,10 @@ float shadowOcclusionL0(vec4 pos) {
     return clamp(value / 9.0, 0.0, 1.0);
 }
 
-#define saturate(_x) clamp(_x, 0., 1.)
 
-#pragma mapbox: define highp vec4 color
-#pragma mapbox: initialize highp vec4 color
 
 void main() {
+    #pragma mapbox: initialize highp vec4 color
     float occlusionL0 = shadowOcclusionL0(v_pos_light_view_0);
     float occlusionL1 = shadowOcclusionL1(v_pos_light_view_1);
     float occlusionL2 = shadowOcclusionL2(v_pos_light_view_2);
@@ -189,7 +191,7 @@ void main() {
         // and otherwise calculates the gradient based on base + height
         directional *= (
               (1.0 - u_vertical_gradient) +
-             (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
+             (u_vertical_gradient * clamp((v_t + v_base) * pow(v_height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
     }
 
     vec3 diffuseTerm = directional * vec3(color.rgb) * u_lightcolor;
