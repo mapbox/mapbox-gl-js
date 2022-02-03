@@ -59,8 +59,8 @@ const focusQuerySelector = [
  * @param {boolean} [options.focusAfterOpen=true] If `true`, the popup will try to focus the
  *   first focusable element inside the popup.
  * @param {boolean} [options.fixedAnchor] - If 'true', the popup will fix to the value set by
- * {@link Popup#anchor}. If 'false' the anchor will be dynamically set to ensure the popup falls within
- *  the map container with a preference for the value set by {@link Popup#anchor}`.
+ * `options.anchor`. If 'false' the anchor will be dynamically set to ensure the popup falls within
+ *  the map container with a preference for the value set by `options.anchor`.
  * @param {string} [options.anchor] - A string indicating the part of the popup that should
  *   be positioned closest to the coordinate, set via {@link Popup#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
