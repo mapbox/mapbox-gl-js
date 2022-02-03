@@ -1055,13 +1055,41 @@ class Map extends Camera {
         }
         this._runtimeProjection = projection;
         // this._explicitProjection = projection;
-        this.style.updateProjection();
+        this.changeProjection();
         return this;
     }
 
     _setImplicitProjection(projection: ProjectionSpecification) {
         this._runtimeProjection = projection;
-        this.style.updateProjection();
+        this.changeProjection();
+    }
+
+    changeProjection() {
+        const prevProjection = this.transform.projection;
+        const newProjection = this.transform.setProjection(this._runtimeProjection || (this.style.stylesheet ? this.style.stylesheet.projection : undefined));
+        const projection = this.transform.projection;
+
+        this.style.tryDraping();
+
+        if (!newProjection) return;
+        if (!this._transitionFromGlobe) {
+            this._explicitProjection = newProjection;
+        }
+
+        this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
+
+        const globeChanged = (projection.name === 'globe' || prevProjection.name === 'globe') && !this._transitionFromGlobe;
+
+        if (projection.isReprojectedInTileSpace || prevProjection.isReprojectedInTileSpace || globeChanged) {
+            this.painter.clearBackgroundTiles();
+            for (const id in this.style._sourceCaches) {
+                this.style._sourceCaches[id].clearTiles();
+            }
+        } else {
+            this.style._forceSymbolLayerUpdate();
+        }
+
+        this._update(true);
     }
 
     /**

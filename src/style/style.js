@@ -298,7 +298,7 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = json;
 
-        this.updateProjection();
+        this.map.changeProjection();
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -352,16 +352,12 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        this.updateProjection();
+        this.map.changeProjection();
     }
 
-    updateProjection() { // TODO: move to map.js?
-        const prevProjection = this.map.transform.projection;
-        const newProjection = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
-        const projection = this.map.transform.projection;
-
+    tryDraping() {
         if (this._loaded) {
-            if (projection.requiresDraping) {
+            if (this.map.transform.projection.requiresDraping) {
                 const hasTerrain = this.getTerrain() || this.stylesheet.terrain;
                 if (!hasTerrain) {
                     this.setTerrainForDraping();
@@ -370,26 +366,6 @@ class Style extends Evented {
                 this.setTerrain(null);
             }
         }
-
-        if (!newProjection) return;
-        if (!this.map._transitionFromGlobe) {
-            this.map._explicitProjection = newProjection;
-        }
-
-        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
-
-        const globeChanged = (projection.name === 'globe' || prevProjection.name === 'globe') && !this.map._transitionFromGlobe;
-
-        if (projection.isReprojectedInTileSpace || prevProjection.isReprojectedInTileSpace || globeChanged) {
-            this.map.painter.clearBackgroundTiles();
-            for (const id in this._sourceCaches) {
-                this._sourceCaches[id].clearTiles();
-            }
-        } else {
-            this._forceSymbolLayerUpdate();
-        }
-
-        this.map._update(true);
     }
 
     _loadSprite(url: string) {
@@ -671,7 +647,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this.updateProjection();
+        this.map.changeProjection();
 
         return true;
     }
