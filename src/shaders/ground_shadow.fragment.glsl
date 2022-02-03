@@ -5,12 +5,11 @@ uniform float u_shadow_intensity;
 uniform float u_texel_size;
 uniform vec3 u_cascade_distances;
 
-varying vec4 v_color;
+varying vec2 v_uv;
 varying vec4 v_pos_light_view_0;
 varying vec4 v_pos_light_view_1;
 varying vec4 v_pos_light_view_2;
 varying float v_depth;
-varying vec3 v_normal;
 
 float unpack_depth(vec4 rgba_depth)
 {
@@ -133,10 +132,6 @@ void main() {
     float occlusionL0 = shadowOcclusionL0(v_pos_light_view_0);
     float occlusionL1 = shadowOcclusionL1(v_pos_light_view_1);
     float occlusionL2 = shadowOcclusionL2(v_pos_light_view_2);
-
-    // Alleviate projective aliasing by forcing backfacing triangles to be occluded
-    float backfacing = 1.0 - step(0.1, dot(v_normal, normalize(vec3(-1, -1, 1))));
-
     float occlusion = 0.0; 
 
     if (v_depth < u_cascade_distances.x)
@@ -146,10 +141,7 @@ void main() {
     else
         occlusion = occlusionL2;
 
-    occlusion = mix(occlusion, 1.0, backfacing);
-    vec4 color = vec4(v_color.xyz * mix(1.0, 1.0 - u_shadow_intensity, occlusion), v_color.w);
-
-    gl_FragColor = color;
+    float shadow = mix(1.0, 1.0 - u_shadow_intensity, occlusion);
 
     //if (v_depth < u_cascade_distances.x)
     //    gl_FragColor = color * vec4(1.0, 0.5, 0.5, 1.0);
@@ -157,4 +149,6 @@ void main() {
     //    gl_FragColor = color * vec4(0.5, 1.0, 0.5, 1.0);
     //else
     //    gl_FragColor = color * vec4(0.5, 0.5, 1.0, 1.0);
+
+    gl_FragColor = vec4(shadow, shadow, shadow, 1.0);
 }
