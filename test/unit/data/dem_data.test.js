@@ -140,14 +140,14 @@ test('DEMData#backfillBorder', (t) => {
             uid: 0,
             dim: 4,
             stride: 6,
-            data: dem0.data,
+            pixels: dem0.pixels,
             encoding: 'mapbox',
             borderReady: false
         }, 'serializes DEM');
 
         const transferrables = [];
         serialize(dem0, transferrables);
-        t.deepEqual(new Uint32Array(transferrables[0]), dem0.data, 'populates transferrables with correct data');
+        t.deepEqual(new Uint8Array(transferrables[0]), dem0.pixels, 'populates transferrables with correct data');
 
         t.end();
     });
