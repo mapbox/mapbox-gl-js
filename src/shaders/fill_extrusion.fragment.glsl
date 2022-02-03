@@ -4,13 +4,25 @@ uniform sampler2D u_image2;
 uniform float u_shadow_intensity;
 uniform float u_texel_size;
 uniform vec3 u_cascade_distances;
+uniform vec3 u_lightcolor;
+uniform vec3 u_lightpos;
+uniform float u_lightintensity;
+uniform float u_vertical_gradient;
+uniform float u_opacity;
+uniform float u_specular_factor;
+uniform vec3 u_specular_color;
 
 varying vec4 v_color;
 varying vec4 v_pos_light_view_0;
 varying vec4 v_pos_light_view_1;
 varying vec4 v_pos_light_view_2;
 varying float v_depth;
-varying vec3 v_normal;
+varying highp vec3 v_normal;
+varying highp vec3 v_position;
+
+varying float base;
+varying float height;
+varying float t;
 
 float unpack_depth(vec4 rgba_depth)
 {
@@ -129,6 +141,11 @@ float shadowOcclusionL0(vec4 pos) {
     return clamp(value / 9.0, 0.0, 1.0);
 }
 
+#define saturate(_x) clamp(_x, 0., 1.)
+
+#pragma mapbox: define highp vec4 color
+#pragma mapbox: initialize highp vec4 color
+
 void main() {
     float occlusionL0 = shadowOcclusionL0(v_pos_light_view_0);
     float occlusionL1 = shadowOcclusionL1(v_pos_light_view_1);
@@ -140,16 +157,58 @@ void main() {
     float occlusion = 0.0; 
 
     if (v_depth < u_cascade_distances.x)
+    {
         occlusion = occlusionL0;
+    }
     else if (v_depth < u_cascade_distances.y)
+    {
         occlusion = occlusionL1;
-    else
+    }
+    else {
         occlusion = occlusionL2;
+    }
+    highp vec3 v = normalize(-v_position);
+    highp vec3 n = normalize(v_normal);
+    highp vec3 l = normalize(u_lightpos);
+    highp vec3 h = normalize(v + l);
+
+    float NdotL = saturate(dot(n, l));
+    highp float NdotH = saturate(dot(n, h));
+
+    // Add slight ambient lighting so no extrusions are totally black
+    vec3 ambientTerm = 0.03 * vec3(color.rgb);
+
+    // Relative luminance (how dark/bright is the surface color?)
+    float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
+    // Adjust directional to narrow the range of 
+    // values for highlight/shading with lower light
+    // intensity and with lighter/brighter colors
+    float directional = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), NdotL);
+    if (n.y != 0.0) {
+        // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
+        // and otherwise calculates the gradient based on base + height
+        directional *= (
+              (1.0 - u_vertical_gradient) +
+             (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
+    }
+
+    vec3 diffuseTerm = directional * vec3(color.rgb) * u_lightcolor;
+    vec3 specularTerm = pow(NdotH, u_specular_factor) * u_specular_color * u_lightcolor;
+    vec3 outColor = vec3(ambientTerm + diffuseTerm + specularTerm);
+
 
     occlusion = mix(occlusion, 1.0, backfacing);
-    vec4 color = vec4(v_color.xyz * mix(1.0, 1.0 - u_shadow_intensity, occlusion), v_color.w);
+    // adjust color with lower bounds to hue of light so 
+    // shading is tinted with the complementary (opposite) color to the light color
+    outColor = clamp(outColor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+    // outColor = linearTosRGB(outColor);
+    outColor = vec3(outColor * mix(1.0, 1.0 - u_shadow_intensity, occlusion));
+    outColor *= u_opacity;
 
-    gl_FragColor = color;
+#ifdef FOG
+    outColor = fog_dither(fog_apply_premultiplied(outColor, v_fog_pos));
+#endif
+    gl_FragColor = vec4(outColor, u_opacity);
 
     //if (v_depth < u_cascade_distances.x)
     //    gl_FragColor = color * vec4(1.0, 0.5, 0.5, 1.0);

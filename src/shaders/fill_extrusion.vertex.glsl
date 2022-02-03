@@ -29,16 +29,18 @@ varying vec4 v_pos_light_view_1;
 varying vec4 v_pos_light_view_2;
 varying float v_depth;
 varying vec3 v_normal;
+varying vec3 v_position;
+varying float v_base;
+varying float v_height;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 
-#pragma mapbox: define highp vec4 color
 
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
-    #pragma mapbox: initialize highp vec4 color
+
 
     vec3 pos_nx = floor(a_pos_normal_ed.xyz * 0.5);
     // The least significant bits of a_pos_normal_ed.xy hold:
@@ -50,8 +52,8 @@ void main() {
     float x_normal = pos_nx.z / 8192.0;
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
 
-    base = max(0.0, base);
-    height = max(0.0, height);
+    v_base = max(0.0, base);
+    v_height = max(0.0, height);
 
     float t = top_up_ny.x;
 
@@ -65,15 +67,15 @@ void main() {
     float ele = elevation(pos_nx.xy);
     float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
-    float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
+    float h = flat_roof ? max(c_ele + v_height, ele + v_base + 2.0) : ele + (t > 0.0 ? v_height : v_base == 0.0 ? -5.0 : v_base);
     vec3 pos = vec3(pos_nx.xy, h);
 #else
-    vec3 pos = vec3(pos_nx.xy, t > 0.0 ? height : base);
+    vec3 pos = vec3(pos_nx.xy, t > 0.0 ? v_height : v_base);
 #endif
 
 #ifdef PROJECTION_GLOBE_VIEW
     // If t > 0 (top) we always add the lift, otherwise (ground) we only add it if base height is > 0
-    float lift = float((t + base) > 0.0) * u_height_lift;
+    float lift = float((t + v_base) > 0.0) * u_height_lift;
     vec3 globe_normal = normalize(mix(a_pos_normal_3 / 16384.0, u_up_dir, u_zoom_transition));
     vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * (pos.z + lift));
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, pos.xy, u_tile_id, u_merc_center) + u_up_dir * u_tile_up_scale * pos.z;
@@ -81,44 +83,13 @@ void main() {
 #endif
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
-    gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
+    vec4 outPos = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
+    v_position = outPos.xyz / outPos.w;
+    gl_Position = outPos;
 
-    // Relative luminance (how dark/bright is the surface color?)
-    float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
-
-    v_color = vec4(0.0, 0.0, 0.0, 1.0);
-
-    // Add slight ambient lighting so no extrusions are totally black
-    vec4 ambientlight = vec4(0.03, 0.03, 0.03, 1.0);
-    color += ambientlight;
-
-    // Calculate cos(theta), where theta is the angle between surface normal and diffuse light ray
-    float directional = clamp(dot(normal, u_lightpos), 0.0, 1.0);
-
-    // Adjust directional so that
-    // the range of values for highlight/shading is narrower
-    // with lower light intensity
-    // and with lighter/brighter surface colors
-    directional = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), directional);
-
-    // Add gradient along z axis of side surfaces
-    if (normal.y != 0.0) {
-        // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
-        // and otherwise calculates the gradient based on base + height
-        directional *= (
-            (1.0 - u_vertical_gradient) +
-            (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
-    }
-
-    // Assign final color based on surface + ambient light color, diffuse light directional, and light color
-    // with lower bounds adjusted to hue of light
-    // so that shading is tinted with the complementary (opposite) color to the light color
-    v_color.rgb += clamp(color.rgb * directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-    v_color *= u_opacity;
-
-    v_pos_light_view_0 = u_light_matrix_0 * vec4(pos_nx.xy, t > 0.0 ? height : base, 1);
-    v_pos_light_view_1 = u_light_matrix_1 * vec4(pos_nx.xy, t > 0.0 ? height : base, 1);
-    v_pos_light_view_2 = u_light_matrix_2 * vec4(pos_nx.xy, t > 0.0 ? height : base, 1);
+    v_pos_light_view_0 = u_light_matrix_0 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
+    v_pos_light_view_1 = u_light_matrix_1 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
+    v_pos_light_view_2 = u_light_matrix_2 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
     v_normal = normal;
     v_depth = gl_Position.w;
 
