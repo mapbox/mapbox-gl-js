@@ -226,6 +226,7 @@ class Transform {
         return pick(this.projection, ['name', 'center', 'parallels']);
     }
 
+    // Returns the new projection if the projection changes, or null if no change.
     setProjection(projection?: ?ProjectionSpecification) {
         if (projection === undefined || projection === null) projection = {name: 'mercator'};
         this.projectionOptions = projection;
@@ -235,7 +236,7 @@ class Transform {
         const newProjection = this.getProjection();
 
         if (deepEqual(oldProjection, newProjection)) {
-            return false;
+            return null;
         }
         this._calcMatrices();
         return newProjection;

@@ -1065,22 +1065,23 @@ class Map extends Camera {
     }
 
     changeProjection() {
-        const prevProjection = this.transform.projection;
+        const prevProjectionState = this.transform.projection;
+        // newProjection is a user-friendly projection object or null if not changed
         const newProjection = this.transform.setProjection(this._runtimeProjection || (this.style.stylesheet ? this.style.stylesheet.projection : undefined));
-        const projection = this.transform.projection;
+        const projectionState = this.transform.projection;
 
         this.style.tryDraping();
 
-        if (!newProjection) return;
+        if (!newProjection) return; // Continue if projection has changed
         if (!this._transitionFromGlobe) {
             this._explicitProjection = newProjection;
         }
 
         this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
 
-        const globeChanged = (projection.name === 'globe' || prevProjection.name === 'globe') && !this._transitionFromGlobe;
+        const globeChanged = (projectionState.name === 'globe' || prevProjectionState.name === 'globe') && !this._transitionFromGlobe;
 
-        if (projection.isReprojectedInTileSpace || prevProjection.isReprojectedInTileSpace || globeChanged) {
+        if (projectionState.isReprojectedInTileSpace || prevProjectionState.isReprojectedInTileSpace || globeChanged) {
             this.painter.clearBackgroundTiles();
             for (const id in this.style._sourceCaches) {
                 this.style._sourceCaches[id].clearTiles();
