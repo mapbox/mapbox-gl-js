@@ -38,6 +38,7 @@ import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {SpritePositions} from '../../util/image.js';
+import type {Projection} from '../../geo/projection/index.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
 const FACTOR = Math.pow(2, 13);
@@ -316,6 +317,15 @@ class FillExtrusionBucket implements Bucket {
         this.segments.destroy();
     }
 
+    addGlobeVertex(point: Point, canonical: CanonicalTileID, projection: Projection) {
+        const p = projection.projectTilePoint(point.x, point.y, canonical);
+        const normal = projection.upVector(canonical, point.x, point.y);
+        vec3.scale(normal, normal, 1 << 14);
+        if (this.layoutVertexExtArray) {
+            this.layoutVertexExtArray.emplaceBack(p.x, p.y, p.z, normal[0], normal[1], normal[2]);
+        }
+    }
+
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform) {
         const metadata = this.enableTerrain ? new PartMetadata() : null;
 
@@ -324,12 +334,6 @@ class FillExtrusionBucket implements Bucket {
         if (isGlobe && !this.layoutVertexExtArray) {
             this.layoutVertexExtArray = new FillExtrusionExtArray();
         }
-        const addGlobeVertex = (point) => {
-            const p = projection.projectTilePoint(point.x, point.y, canonical);
-            const normal = projection.upVector(canonical, point.x, point.y);
-            vec3.scale(normal, normal, 1 << 14);
-            this.layoutVertexExtArray.emplaceBack(p.x, p.y, p.z, normal[0], normal[1], normal[2]);
-        };
 
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
@@ -390,11 +394,11 @@ class FillExtrusionBucket implements Bucket {
                             segment.vertexLength += 4;
                             segment.primitiveLength += 2;
 
-                            if (isGlobe) {
-                                addGlobeVertex(p1);
-                                addGlobeVertex(p1);
-                                addGlobeVertex(p2);
-                                addGlobeVertex(p2);
+                            if (isGlobe && this.layoutVertexExtArray) {
+                                this.addGlobeVertex(p1, canonical, projection);
+                                this.addGlobeVertex(p1, canonical, projection);
+                                this.addGlobeVertex(p2, canonical, projection);
+                                this.addGlobeVertex(p2, canonical, projection);
                             }
                         }
                     }
@@ -434,7 +438,7 @@ class FillExtrusionBucket implements Bucket {
                     if (metadata) metadata.currentPolyCount.top++;
 
                     if (isGlobe) {
-                        addGlobeVertex(p);
+                        this.addGlobeVertex(p, canonical, projection);
                     }
                 }
             }
@@ -454,7 +458,7 @@ class FillExtrusionBucket implements Bucket {
             segment.vertexLength += numVertices;
         }
 
-        assert(!this.layoutVertexArray.length || this.layoutVertexExtArray.length == this.layoutVertexArray.length);
+        assert(!isGlobe || (this.layoutVertexExtArray && this.layoutVertexExtArray.length == this.layoutVertexArray.length));
 
         if (metadata && metadata.polyCount.length > 0) {
             // When building is split between tiles, don't handle flat roofs here.
