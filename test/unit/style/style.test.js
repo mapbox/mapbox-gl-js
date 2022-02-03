@@ -50,6 +50,7 @@ class StubMap extends Evented {
         this.transform = new Transform();
         this._requestManager = new RequestManager();
         this._markers = [];
+        this.changeProjection = () => {};
     }
 
     _getMapId() {
@@ -2406,6 +2407,11 @@ test('Style#setProjection', (t) => {
             clearBackgroundTiles: () => {}
         };
         style.map._update = () => {};
+        style.map.changeProjection = () => {
+            style.map.transform.setProjection(style.map._runtimeProjection || (style.stylesheet ? style.stylesheet.projection : undefined));
+            style.tryDraping();
+            style.dispatcher.broadcast('setProjection', style.map.transform.projectionOptions);
+        };
 
         style.loadJSON({
             "version": 8,
@@ -2423,7 +2429,7 @@ test('Style#setProjection', (t) => {
             // Runtime api overrides style projection
             // Stylesheet projection not changed by runtime apis
             style.map._runtimeProjection = {name: 'winkelTripel'};
-            style.updateProjection();
+            style.map.changeProjection();
             t.equal(style.serialize().projection.name, 'albers');
             t.equal(style.map.transform.getProjection().name, 'winkelTripel');
 
@@ -2434,7 +2440,7 @@ test('Style#setProjection', (t) => {
 
             // Unsetting runtime projection reveals map projection
             style.map._runtimeProjection = null;
-            style.updateProjection();
+            style.map.changeProjection();
             t.equal(style.serialize().projection.name, 'naturalEarth');
             t.equal(style.map.transform.getProjection().name, 'naturalEarth');
 

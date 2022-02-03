@@ -1593,12 +1593,12 @@ test('transform', (t) => {
         t.equal(transform.getProjection().name, 'mercator');
 
         // correctly returns indication of whether projection changed
-        t.equal(transform.setProjection({name: 'albers'}), true);
-        t.equal(transform.setProjection({name: 'albers'}), false);
-        t.equal(transform.setProjection({name: 'albers', center: [-96, 37.5]}), false);
-        t.equal(transform.setProjection({name: 'albers', center: [-100, 37.5]}), true);
-        t.equal(transform.setProjection({name: 'mercator'}), true);
-        t.equal(transform.setProjection(), false);
+        t.ok(transform.setProjection({name: 'albers'}));
+        t.notOk(transform.setProjection({name: 'albers'}));
+        t.notOk(transform.setProjection({name: 'albers', center: [-96, 37.5]}));
+        t.ok(transform.setProjection({name: 'albers', center: [-100, 37.5]}));
+        t.ok(transform.setProjection({name: 'mercator'}));
+        t.notOk(transform.setProjection());
 
         t.end();
     });
