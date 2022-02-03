@@ -298,7 +298,7 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = json;
 
-        this.map.changeProjection();
+        this.map.updateProjection();
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -352,7 +352,7 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        this.map.changeProjection();
+        this.map.updateProjection();
     }
 
     tryDraping() {
@@ -647,7 +647,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this.map.changeProjection();
+        this.map.updateProjection();
 
         return true;
     }

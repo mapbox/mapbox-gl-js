@@ -1047,24 +1047,17 @@ class Map extends Camera {
      * @see [Example: Display a web map using an alternate projection](https://docs.mapbox.com/mapbox-gl-js/example/map-projection/)
      * @see [Example: Use different map projections for web maps](https://docs.mapbox.com/mapbox-gl-js/example/projections/)
      */
-    setProjection(projection?: ?ProjectionSpecification | string) {
-    // setProjection(projection: ProjectionSpecification | string = "mercator") {
+    setProjection(projection: ProjectionSpecification | string = {name: "mercator"}) {
         this._lazyInitEmptyStyle();
         if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
-        this._runtimeProjection = projection;
-        // this._explicitProjection = projection;
-        this.changeProjection();
+        this.updateProjection(projection);
         return this;
     }
 
-    _setImplicitProjection(projection: ProjectionSpecification) {
-        this._runtimeProjection = projection;
-        this.changeProjection();
-    }
-
-    changeProjection() {
+    updateProjection(projection?: ProjectionSpecification) {
+        if (projection) { this._runtimeProjection = projection; }
         const prevProjectionState = this.transform.projection;
         // newProjection is a user-friendly projection object or null if not changed
         const newProjection = this.transform.setProjection(this._runtimeProjection || (this.style.stylesheet ? this.style.stylesheet.projection : undefined));
@@ -2491,9 +2484,9 @@ class Map extends Camera {
 
         if (proj.name === 'globe' && zoom >= GLOBE_ZOOM_THRESHOLD_MAX && !this._transitionFromGlobe) {
             this._transitionFromGlobe = true;
-            this._setImplicitProjection({name: 'mercator'});
+            this.updateProjection({name: 'mercator'});
         } else if (this._transitionFromGlobe && zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
-            this._setImplicitProjection({name: 'globe'});
+            this.updateProjection({name: 'globe'});
             this._transitionFromGlobe = false;
         }
     }
