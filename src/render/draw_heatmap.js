@@ -10,6 +10,7 @@ import {
     heatmapUniformValues,
     heatmapTextureUniformValues
 } from './program/heatmap_program.js';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -38,6 +39,14 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
         context.clear({color: Color.transparent});
 
+        const tr = painter.transform;
+
+        const isGlobeProjection = tr.projection.name === 'globe';
+        const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : null;
+
+        const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
+        const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+
         for (let i = 0; i < coords.length; i++) {
             const coord = coords[i];
 
@@ -51,18 +60,19 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             if (!bucket) continue;
 
             const programConfiguration = bucket.programConfigurations.get(layer.id);
-            const program = painter.useProgram('heatmap', programConfiguration);
+            const program = painter.useProgram('heatmap', programConfiguration, definesValues);
             const {zoom} = painter.transform;
             if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
             program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
-                heatmapUniformValues(coord.projMatrix,
-                    tile, zoom, layer.paint.get('heatmap-intensity')),
+                heatmapUniformValues(painter, coord,
+                    tile, tileTransform, mercatorCenter, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
                 bucket.segments, layer.paint, painter.transform.zoom,
-                programConfiguration);
+                programConfiguration,
+                isGlobeProjection ? bucket.globeExtVertexBuffer : null);
         }
 
         context.viewport.set([0, 0, painter.width, painter.height]);

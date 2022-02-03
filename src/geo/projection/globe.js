@@ -47,7 +47,6 @@ export default {
     zAxisUnit: "pixels",
     center: [0, 0],
     unsupportedLayers: [
-        'heatmap',
         'fill-extrusion',
         'debug',
         'custom'
