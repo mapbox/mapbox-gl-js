@@ -8,7 +8,7 @@ import window from '../../../src/util/window.js';
 function createSource(options) {
     window.useFakeHTMLCanvasGetContext();
 
-    const c = options && options.canvas || window.document.createElement('canvas');
+    const c = (options && options.canvas) || window.document.createElement('canvas');
     c.width = 20;
     c.height = 20;
 

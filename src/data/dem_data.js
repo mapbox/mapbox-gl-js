@@ -25,7 +25,7 @@ const unpackVectors = {
 
 export default class DEMData {
     uid: number;
-    data: Uint32Array;
+    pixels: Uint8Array;
     stride: number;
     dim: number;
     encoding: DEMEncoding;
@@ -38,7 +38,7 @@ export default class DEMData {
 
     // RGBAImage data has uniform 1px padding on all sides: square tile edge size defines stride
     // and dim is calculated as stride - 2.
-    constructor(uid: number, data: RGBAImage, encoding: DEMEncoding, borderReady: boolean = false, buildQuadTree: boolean = false) {
+    constructor(uid: number, data: ImageData, encoding: DEMEncoding, borderReady: boolean = false, buildQuadTree: boolean = false) {
         this.uid = uid;
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
         if (encoding && encoding !== "mapbox" && encoding !== "terrarium") return warnOnce(
@@ -46,7 +46,8 @@ export default class DEMData {
         );
         this.stride = data.height;
         const dim = this.dim = data.height - 2;
-        this.data = new Uint32Array(data.data.buffer);
+        const values = new Uint32Array(data.data.buffer);
+        this.pixels = new Uint8Array(data.data.buffer);
         this.encoding = encoding || 'mapbox';
         this.borderReady = borderReady;
 
@@ -57,19 +58,19 @@ export default class DEMData {
         // tiles are loaded and the accurate data can be backfilled using DEMData#backfillBorder
         for (let x = 0; x < dim; x++) {
             // left vertical border
-            this.data[this._idx(-1, x)] = this.data[this._idx(0, x)];
+            values[this._idx(-1, x)] = values[this._idx(0, x)];
             // right vertical border
-            this.data[this._idx(dim, x)] = this.data[this._idx(dim - 1, x)];
+            values[this._idx(dim, x)] = values[this._idx(dim - 1, x)];
             // left horizontal border
-            this.data[this._idx(x, -1)] = this.data[this._idx(x, 0)];
+            values[this._idx(x, -1)] = values[this._idx(x, 0)];
             // right horizontal border
-            this.data[this._idx(x, dim)] = this.data[this._idx(x, dim - 1)];
+            values[this._idx(x, dim)] = values[this._idx(x, dim - 1)];
         }
         // corners
-        this.data[this._idx(-1, -1)] = this.data[this._idx(0, 0)];
-        this.data[this._idx(dim, -1)] = this.data[this._idx(dim - 1, 0)];
-        this.data[this._idx(-1, dim)] = this.data[this._idx(0, dim - 1)];
-        this.data[this._idx(dim, dim)] = this.data[this._idx(dim - 1, dim - 1)];
+        values[this._idx(-1, -1)] = values[this._idx(0, 0)];
+        values[this._idx(dim, -1)] = values[this._idx(dim - 1, 0)];
+        values[this._idx(-1, dim)] = values[this._idx(0, dim - 1)];
+        values[this._idx(dim, dim)] = values[this._idx(dim - 1, dim - 1)];
         if (buildQuadTree) this._buildQuadTree();
     }
 
@@ -80,14 +81,13 @@ export default class DEMData {
     }
 
     get(x: number, y: number, clampToEdge: boolean = false) {
-        const pixels = new Uint8Array(this.data.buffer);
         if (clampToEdge) {
             x = clamp(x, -1, this.dim);
             y = clamp(y, -1, this.dim);
         }
         const index = this._idx(x, y) * 4;
         const unpack = this.encoding === "terrarium" ? this._unpackTerrarium : this._unpackMapbox;
-        return unpack(pixels[index], pixels[index + 1], pixels[index + 2]);
+        return unpack(this.pixels[index], this.pixels[index + 1], this.pixels[index + 2]);
     }
 
     static getUnpackVector(encoding: DEMEncoding): [number, number, number, number] {
@@ -128,7 +128,7 @@ export default class DEMData {
     }
 
     getPixels() {
-        return new RGBAImage({width: this.stride, height: this.stride}, new Uint8Array(this.data.buffer));
+        return new RGBAImage({width: this.stride, height: this.stride}, this.pixels);
     }
 
     backfillBorder(borderTile: DEMData, dx: number, dy: number) {
@@ -161,7 +161,12 @@ export default class DEMData {
         const oy = -dy * this.dim;
         for (let y = yMin; y < yMax; y++) {
             for (let x = xMin; x < xMax; x++) {
-                this.data[this._idx(x, y)] = borderTile.data[this._idx(x + ox, y + oy)];
+                const i = 4 * this._idx(x, y);
+                const j = 4 * this._idx(x + ox, y + oy);
+                this.pixels[i + 0] = borderTile.pixels[j + 0];
+                this.pixels[i + 1] = borderTile.pixels[j + 1];
+                this.pixels[i + 2] = borderTile.pixels[j + 2];
+                this.pixels[i + 3] = borderTile.pixels[j + 3];
             }
         }
     }

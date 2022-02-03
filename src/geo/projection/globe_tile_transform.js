@@ -4,7 +4,7 @@ import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
 import {mat4, vec4, vec3} from 'gl-matrix';
 import MercatorCoordinate, {mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
-import {degToRad, radToDeg, getColumn} from '../../util/util.js';
+import {degToRad, radToDeg, getColumn, shortestAngle} from '../../util/util.js';
 import {Ray} from '../../util/primitives.js';
 import {
     globeTileBounds,
@@ -70,7 +70,8 @@ export default class GlobeTileTransform {
         const direction = vec3.normalize([], p0p1);
 
         // Compute globe origo in world space
-        const globeCenter = vec3.transformMat4([], [0, 0, 0], this._globeMatrix);
+        const m = this._globeMatrix;
+        const globeCenter = [m[12], m[13], m[14]];
         const radius = this._worldSize / (2.0 * Math.PI);
 
         const pointOnGlobe = [];
@@ -79,16 +80,19 @@ export default class GlobeTileTransform {
         ray.closestPointOnSphere(globeCenter, radius, pointOnGlobe);
 
         // Transform coordinate axes to find lat & lng of the position
-        const xa = vec3.normalize([], getColumn(this._globeMatrix, 0));
-        const ya = vec3.normalize([], getColumn(this._globeMatrix, 1));
-        const za = vec3.normalize([], getColumn(this._globeMatrix, 2));
+        const xa = vec3.normalize([], getColumn(m, 0));
+        const ya = vec3.normalize([], getColumn(m, 1));
+        const za = vec3.normalize([], getColumn(m, 2));
 
         const xp = vec3.dot(xa, pointOnGlobe);
         const yp = vec3.dot(ya, pointOnGlobe);
         const zp = vec3.dot(za, pointOnGlobe);
 
         const lat = radToDeg(Math.asin(-yp / radius));
-        const lng = radToDeg(Math.atan2(xp, zp));
+        let lng = radToDeg(Math.atan2(xp, zp));
+
+        // Check that the returned longitude angle is not wrapped
+        lng = this._tr.center.lng + shortestAngle(this._tr.center.lng, lng);
 
         const mx = mercatorXfromLng(lng);
         const my = mercatorYfromLat(lat);

@@ -4,7 +4,6 @@ import {version} from '../../package.json';
 import {asyncAll, extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
-const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
 import DOM from '../util/dom.js';
 import {getImage, getJSON, ResourceType} from '../util/ajax.js';
 import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
@@ -489,7 +488,7 @@ class Map extends Camera {
             if (!this._container) {
                 throw new Error(`Container '${options.container}' not found.`);
             }
-        } else if (options.container instanceof HTMLElement) {
+        } else if (options.container instanceof window.HTMLElement) {
             this._container = options.container;
         } else {
             throw new Error(`Invalid type: 'container' must be a String or HTMLElement.`);
@@ -1111,7 +1110,7 @@ class Map extends Camera {
      * const isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving || this.handlers && this.handlers.isMoving() || false;
+        return this._moving || (this.handlers && this.handlers.isMoving()) || false;
     }
 
     /**
@@ -1122,7 +1121,7 @@ class Map extends Camera {
      * const isZooming = map.isZooming();
      */
     isZooming(): boolean {
-        return this._zooming || this.handlers && this.handlers.isZooming() || false;
+        return this._zooming || (this.handlers && this.handlers.isZooming()) || false;
     }
 
     /**
@@ -1133,7 +1132,7 @@ class Map extends Camera {
      * map.isRotating();
      */
     isRotating(): boolean {
-        return this._rotating || this.handlers && this.handlers.isRotating() || false;
+        return this._rotating || (this.handlers && this.handlers.isRotating()) || false;
     }
 
     _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any) {
@@ -1938,7 +1937,7 @@ class Map extends Camera {
         this._lazyInitEmptyStyle();
         const version = 0;
 
-        if (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) {
+        if (image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap)) {
             const {width, height, data} = browser.getImageData(image);
             this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version});
         } else if (image.width === undefined || image.height === undefined) {
@@ -1946,8 +1945,9 @@ class Map extends Camera {
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
                 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
         } else {
-            const {width, height, data} = image;
+            const {width, height} = image;
             const userImage = ((image: any): StyleImageInterface);
+            const data = userImage.data;
 
             this.style.addImage(id, {
                 data: new RGBAImage({width, height}, new Uint8Array(data)),
@@ -1992,8 +1992,10 @@ class Map extends Camera {
             return this.fire(new ErrorEvent(new Error(
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
         }
-        const imageData = (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) ? browser.getImageData(image) : image;
-        const {width, height, data} = imageData;
+        const imageData = (image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap)) ? browser.getImageData(image) : image;
+        const {width, height} = imageData;
+        // Flow can't refine the type enough to exclude ImageBitmap
+        const data = ((imageData: any).data: Uint8Array | Uint8ClampedArray);
 
         if (width === undefined || height === undefined) {
             return this.fire(new ErrorEvent(new Error(
@@ -2006,7 +2008,7 @@ class Map extends Camera {
                 'The width and height of the updated image must be that same as the previous version of the image')));
         }
 
-        const copy = !(image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap));
+        const copy = !(image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap));
         existingImage.data.replace(data, copy);
 
         this.style.updateImage(id, existingImage);
@@ -2069,7 +2071,7 @@ class Map extends Camera {
      */
     loadImage(url: string, callback: Function) {
         getImage(this._requestManager.transformRequest(url, ResourceType.Image), (err, img) => {
-            callback(err, img instanceof HTMLImageElement ? browser.getImageData(img) : img);
+            callback(err, img instanceof window.HTMLImageElement ? browser.getImageData(img) : img);
         });
     }
 
@@ -3291,7 +3293,7 @@ class Map extends Camera {
      * @returns {Object} Returns `this` | Promise.
      */
     _preloadTiles(transform: Transform | Array<Transform>) {
-        const sources: Array<SourceCache> = this.style && (Object.values(this.style._sourceCaches): any) || [];
+        const sources: Array<SourceCache> = this.style ? (Object.values(this.style._sourceCaches): any) : [];
         asyncAll(sources, (source, done) => source._preloadTiles(transform, done), () => {
             this.triggerRepaint();
         });

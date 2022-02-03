@@ -57,6 +57,12 @@ export type StylePropertySpecification = {
     length?: number,
     transition: boolean,
     default?: Array<string>
+} | {
+    type: 'resolvedImage',
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
+    transition: boolean,
+    default?: string
 };
 
 import v8 from './reference/v8.json';

@@ -1819,6 +1819,9 @@ class Transform {
 
         this._camera.position = vec3.scaleAndAdd([], this._camera.position, translation, t);
         this._updateStateFromCamera();
+
+        if (this.projection.wrap)
+            this.center = this.center.wrap();
     }
 
     _updateStateFromCamera() {

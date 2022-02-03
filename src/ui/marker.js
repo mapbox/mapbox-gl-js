@@ -102,15 +102,15 @@ export default class Marker extends Evented {
             '_clearFadeTimer'
         ], this);
 
-        this._anchor = options && options.anchor || 'center';
-        this._color = options && options.color || '#3FB1CE';
-        this._scale = options && options.scale || 1;
-        this._draggable = options && options.draggable || false;
-        this._clickTolerance = options && options.clickTolerance || 0;
+        this._anchor = (options && options.anchor) || 'center';
+        this._color = (options && options.color) || '#3FB1CE';
+        this._scale = (options && options.scale) || 1;
+        this._draggable = (options && options.draggable) || false;
+        this._clickTolerance = (options && options.clickTolerance) || 0;
         this._isDragging = false;
         this._state = 'inactive';
-        this._rotation = options && options.rotation || 0;
-        this._rotationAlignment = options && options.rotationAlignment || 'auto';
+        this._rotation = (options && options.rotation) || 0;
+        this._rotationAlignment = (options && options.rotationAlignment) || 'auto';
         this._pitchAlignment = options && options.pitchAlignment && options.pitchAlignment !== 'auto' ?  options.pitchAlignment : this._rotationAlignment;
         this._updateMoving = () => this._update(true);
 
@@ -152,10 +152,10 @@ export default class Marker extends Evented {
             // the y value of the center of the shadow ellipse relative to the svg top left is 34.8
             // offset to the svg center "height (41 / 2)" gives 34.8 - (41 / 2) and rounded for an integer pixel offset gives 14
             // negative is used to move the marker up from the center so the tip is at the Marker lngLat
-            this._offset = Point.convert(options && options.offset || [0, -14]);
+            this._offset = Point.convert((options && options.offset) || [0, -14]);
         } else {
             this._element = options.element;
-            this._offset = Point.convert(options && options.offset || [0, 0]);
+            this._offset = Point.convert((options && options.offset) || [0, 0]);
         }
 
         if (!this._element.hasAttribute('aria-label')) this._element.setAttribute('aria-label', 'Map marker');

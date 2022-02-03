@@ -21,7 +21,7 @@ export default class FormatSectionOverride<T> implements Expression {
         this.defaultValue = defaultValue;
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): T {
         if (ctx.formattedSection) {
             const overrides = this.defaultValue.property.overrides;
             if (overrides && overrides.hasOverride(ctx.formattedSection)) {
@@ -33,7 +33,8 @@ export default class FormatSectionOverride<T> implements Expression {
             return this.defaultValue.evaluate(ctx.feature, ctx.featureState);
         }
 
-        return this.defaultValue.property.specification.default;
+        // not sure how to make Flow refine the type properly here — will need investigation
+        return ((this.defaultValue.property.specification.default: any): T);
     }
 
     eachChild(fn: (_: Expression) => void) {

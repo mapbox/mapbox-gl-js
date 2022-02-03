@@ -168,7 +168,7 @@ class VectorTileSource extends Evented implements Source {
      * // Set the endpoint associated with a vector tile source.
      * vectorTileSource.setTiles(['https://another_end_point.net/{z}/{x}/{y}.mvt']);
      */
-    setTiles(tiles: Array<string>) {
+    setTiles(tiles: Array<string>): this {
         this.setSourceProperty(() => {
             this._options.tiles = tiles;
         });
@@ -192,7 +192,7 @@ class VectorTileSource extends Evented implements Source {
      * // Update vector tile source to a new URL endpoint
      * vectorTileSource.setUrl("mapbox://mapbox.mapbox-streets-v8");
      */
-    setUrl(url: string) {
+    setUrl(url: string): this {
         this.setSourceProperty(() => {
             this.url = url;
             this._options.url = url;
