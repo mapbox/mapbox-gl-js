@@ -20,7 +20,6 @@ const defaultOptions = {
     focusAfterOpen: true,
     className: '',
     maxWidth: "240px",
-    anchorPreference: 'bottom'
 };
 
 export type Offset = number | PointLike | {[_: Anchor]: PointLike};
@@ -34,7 +33,7 @@ export type PopupOptions = {
     offset?: Offset,
     className?: string,
     maxWidth?: string,
-    anchorPreference: Anchor
+    fixedAnchor: boolean
 };
 
 const focusQuerySelector = [
@@ -59,9 +58,9 @@ const focusQuerySelector = [
  *   map moves.
  * @param {boolean} [options.focusAfterOpen=true] If `true`, the popup will try to focus the
  *   first focusable element inside the popup.
- * @param {string} [options.anchorPreference='bottom'] - A string to set the preference for where the anchor will be
- *   dynamically set. Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`,
- *   `'bottom-left'`, and `'bottom-right'`.
+ * @param {boolean} [options.fixedAnchor] - If 'true', the popup will fix to the value set by
+ * {@link Popup#anchor}. If 'false' the anchor will be dynamically set to ensure the popup falls within
+ *  the map container with a preference for the value set by {@link Popup#anchor}`.
  * @param {string} [options.anchor] - A string indicating the part of the popup that should
  *   be positioned closest to the coordinate, set via {@link Popup#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
@@ -553,7 +552,12 @@ export default class Popup extends Evented {
     }
 
     _getAnchor(offset: any) {
-        if (this.options.anchor) { return this.options.anchor; }
+        if (
+            this.options.fixedAnchor ||
+            (typeof (this.options.fixedAnchor) === 'undefined' && this.options.anchor)
+        ) {
+            return this.options.anchor;
+        }
 
         const map = this._map;
         const container = this._container;
@@ -580,7 +584,7 @@ export default class Popup extends Evented {
         }
 
         if (anchorComponents.length === 0) {
-            return this.options.anchorPreference;
+            return this.options.anchor || 'bottom';
         }
         return ((anchorComponents.join('-'): any): Anchor);
 
