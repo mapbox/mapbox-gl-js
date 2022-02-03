@@ -1,0 +1,82 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 0,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "icon": "fav-bicycle-18"},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [ 
+                [ -16, 16],
+                [16, 16]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "icon": "missing-icon"},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [ 
+                [ -16, -16],
+                [16, -16]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "text",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+      },
+      "paint": {
+        "line-color":
+        [ "case",
+          ["to-boolean", ["coalesce",
+              ["image", ["get", "icon"]],
+              ""
+          ]],
+          "blue",
+          "red" 
+        ],
+        "line-width":
+        [ "case",
+          ["to-boolean", ["coalesce",
+              ["image", ["get", "icon"]],
+              ""
+          ]],
+          20,
+          10 
+        ],
+        "line-opacity":
+        [ "case",
+          ["to-boolean", ["coalesce",
+              ["image", ["get", "icon"]],
+              ""
+          ]],
+          0.2,
+          1
+        ]
+      }
+    }
+  ]
+}

@@ -22,8 +22,8 @@ export default drawCollisionDebug;
 type TileBatch = {
     circleArray: Array<number>,
     circleOffset: number,
-    transform: mat4,
-    invTransform: mat4
+    transform: Float32Array,
+    invTransform: Float32Array
 };
 
 let quadTriangles: ?QuadTriangleArray;

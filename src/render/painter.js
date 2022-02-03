@@ -8,11 +8,11 @@ import SourceCache from '../source/source_cache.js';
 import EXTENT from '../data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import SegmentVector from '../data/segment.js';
-import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
-import {values, MAX_SAFE_INTEGER} from '../util/util.js';
+import {PosArray, TileBoundsArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
+import {values} from '../util/util.js';
 import {isMapAuthenticated} from '../util/mapbox.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
 import posAttributes from '../data/pos_attributes.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import ProgramConfiguration from '../data/program_configuration.js';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
 import shaders from '../shaders/shaders.js';
@@ -40,8 +40,12 @@ import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
+import drawGlobeAtmosphere from './draw_globe_atmosphere.js';
+import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
+import Tile from '../source/tile.js';
+import {RGBAImage} from '../util/image.js';
 
 const draw = {
     symbol,
@@ -59,7 +63,6 @@ const draw = {
 };
 
 import type Transform from '../geo/transform.js';
-import type Tile from '../source/tile.js';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id.js';
 import type Style from '../style/style.js';
 import type StyleLayer from '../style/style_layer.js';
@@ -112,13 +115,13 @@ class Painter {
     tileExtentBuffer: VertexBuffer;
     tileExtentSegments: SegmentVector;
     debugBuffer: VertexBuffer;
+    debugIndexBuffer: IndexBuffer;
     debugSegments: SegmentVector;
-    rasterBoundsBuffer: VertexBuffer;
-    rasterBoundsSegments: SegmentVector;
     viewportBuffer: VertexBuffer;
     viewportSegments: SegmentVector;
     quadTriangleIndexBuffer: IndexBuffer;
-    tileBorderIndexBuffer: IndexBuffer;
+    mercatorBoundsBuffer: VertexBuffer;
+    mercatorBoundsSegments: SegmentVector;
     _tileClippingMaskIDs: {[_: number]: number };
     stencilClearMode: StencilMode;
     style: Style;
@@ -140,13 +143,15 @@ class Painter {
     symbolFadeChange: number;
     gpuTimers: {[_: string]: any };
     emptyTexture: Texture;
-    identityMat: mat4;
+    identityMat: Float32Array;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
+    globeSharedBuffers: ?GlobeSharedBuffers;
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
+    _backgroundTiles: {[_: number | string]: Tile};
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -166,10 +171,11 @@ class Painter {
 
         this.gpuTimers = {};
         this.frameCounter = 0;
+        this._backgroundTiles = {};
     }
 
     updateTerrain(style: Style, cameraChanging: boolean) {
-        const enabled = !!style && !!style.terrain;
+        const enabled = !!style && !!style.terrain && this.transform.projection.supportsTerrain;
         if (!enabled && (!this._terrain || !this._terrain.enabled)) return;
         if (!this._terrain) {
             this._terrain = new Terrain(this, style);
@@ -202,7 +208,7 @@ class Painter {
     }
 
     get terrain(): ?Terrain {
-        return this._terrain && this._terrain.enabled ? this._terrain : null;
+        return this.transform._terrainEnabled() && this._terrain && this._terrain.enabled ? this._terrain : null;
     }
 
     /*
@@ -240,14 +246,6 @@ class Painter {
         this.debugBuffer = context.createVertexBuffer(debugArray, posAttributes.members);
         this.debugSegments = SegmentVector.simpleSegment(0, 0, 4, 5);
 
-        const rasterBoundsArray = new RasterBoundsArray();
-        rasterBoundsArray.emplaceBack(0, 0, 0, 0);
-        rasterBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
-        rasterBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
-        rasterBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
-        this.rasterBoundsBuffer = context.createVertexBuffer(rasterBoundsArray, rasterBoundsAttributes.members);
-        this.rasterBoundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
-
         const viewportArray = new PosArray();
         viewportArray.emplaceBack(-1, -1);
         viewportArray.emplaceBack(1, -1);
@@ -256,30 +254,52 @@ class Painter {
         this.viewportBuffer = context.createVertexBuffer(viewportArray, posAttributes.members);
         this.viewportSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
 
-        const tileLineStripIndices = new LineStripIndexArray();
-        tileLineStripIndices.emplaceBack(0);
-        tileLineStripIndices.emplaceBack(1);
-        tileLineStripIndices.emplaceBack(3);
-        tileLineStripIndices.emplaceBack(2);
-        tileLineStripIndices.emplaceBack(0);
-        this.tileBorderIndexBuffer = context.createIndexBuffer(tileLineStripIndices);
+        const tileBoundsArray = new TileBoundsArray();
+        tileBoundsArray.emplaceBack(0, 0, 0, 0);
+        tileBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
+        tileBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
+        tileBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
+        this.mercatorBoundsBuffer = context.createVertexBuffer(tileBoundsArray, boundsAttributes.members);
+        this.mercatorBoundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
 
         const quadTriangleIndices = new TriangleIndexArray();
         quadTriangleIndices.emplaceBack(0, 1, 2);
         quadTriangleIndices.emplaceBack(2, 1, 3);
         this.quadTriangleIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
 
-        this.emptyTexture = new Texture(context, {
-            width: 1,
-            height: 1,
-            data: new Uint8Array([0, 0, 0, 0])
-        }, context.gl.RGBA);
+        const tileLineStripIndices = new LineStripIndexArray();
+        for (const i of [0, 1, 3, 2, 0]) tileLineStripIndices.emplaceBack(i);
+        this.debugIndexBuffer = context.createIndexBuffer(tileLineStripIndices);
+
+        this.emptyTexture = new Texture(context,
+            new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0)), context.gl.RGBA);
 
         this.identityMat = mat4.create();
 
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
         this.loadTimeStamps.push(window.performance.now());
+    }
+
+    getMercatorTileBoundsBuffers() {
+        return {
+            tileBoundsBuffer: this.mercatorBoundsBuffer,
+            tileBoundsIndexBuffer: this.quadTriangleIndexBuffer,
+            tileBoundsSegments: this.mercatorBoundsSegments
+        };
+    }
+
+    getTileBoundsBuffers(tile: Tile) {
+        tile._makeTileBoundsBuffers(this.context, this.transform.projection);
+        if (tile._tileBoundsBuffer) {
+            const tileBoundsBuffer = tile._tileBoundsBuffer;
+            const tileBoundsIndexBuffer = tile._tileBoundsIndexBuffer;
+            const tileBoundsSegments = tile._tileBoundsSegments;
+            return {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments};
+        } else {
+            return this.getMercatorTileBoundsBuffers();
+        }
+
     }
 
     /*
@@ -292,6 +312,7 @@ class Painter {
 
         this.nextStencilID = 1;
         this.currentStencilSource = undefined;
+        this._tileClippingMaskIDs = {};
 
         // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
@@ -304,8 +325,31 @@ class Painter {
             this.quadTriangleIndexBuffer, this.viewportSegments);
     }
 
+    resetStencilClippingMasks() {
+        if (!this.terrain) {
+            this.currentStencilSource = undefined;
+            this._tileClippingMaskIDs = {};
+        }
+    }
+
     _renderTileClippingMasks(layer: StyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
-        if (!sourceCache || this.currentStencilSource === sourceCache.id || !layer.isTileClipped() || !tileIDs || !tileIDs.length) return;
+        if (!sourceCache || this.currentStencilSource === sourceCache.id || !layer.isTileClipped() || !tileIDs || tileIDs.length === 0) {
+            return;
+        }
+
+        if (this._tileClippingMaskIDs && !this.terrain) {
+            let dirtyStencilClippingMasks = false;
+            // Equivalent tile set is already rendered in stencil
+            for (const coord of tileIDs) {
+                if (this._tileClippingMaskIDs[coord.key] === undefined) {
+                    dirtyStencilClippingMasks = true;
+                    break;
+                }
+            }
+            if (!dirtyStencilClippingMasks) {
+                return;
+            }
+        }
 
         this.currentStencilSource = sourceCache.id;
 
@@ -325,14 +369,16 @@ class Painter {
         this._tileClippingMaskIDs = {};
 
         for (const tileID of tileIDs) {
+            const tile = sourceCache.getTile(tileID);
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
+            const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
 
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
                 ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
-                '$clipping', this.tileExtentBuffer,
-                this.quadTriangleIndexBuffer, this.tileExtentSegments);
+                '$clipping', tileBoundsBuffer,
+                tileBoundsIndexBuffer, tileBoundsSegments);
         }
     }
 
@@ -464,6 +510,10 @@ class Painter {
             this.opaquePassCutoff = 0;
         }
 
+        if (this.transform.projection.name === 'globe' && !this.globeSharedBuffers) {
+            this.globeSharedBuffers = new GlobeSharedBuffers(this.context);
+        }
+
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
 
@@ -500,7 +550,7 @@ class Painter {
         // Clear buffers in preparation for drawing to the main framebuffer
         // If fog is enabled, use the fog color as default clear color.
         let clearColor = Color.transparent;
-        if (this.style.fog) {
+        if (this.style.fog && this.style.fog.getOpacity(this.transform.pitch)) {
             clearColor = this.style.fog.properties.get('color');
         }
         this.context.clear({color: options.showOverdrawInspector ? Color.black : clearColor, depth: 1});
@@ -529,7 +579,8 @@ class Painter {
         // They are drawn at max depth, they are drawn after opaque and before
         // translucent to fail depth testing and mix with translucent objects.
         this.renderPass = 'sky';
-        if (this.transform.isHorizonVisible()) {
+        const isTransitioning = globeToMercatorTransition(this.transform.zoom) > 0.0;
+        if ((isTransitioning || this.transform.projection.name !== 'globe') && this.transform.isHorizonVisible()) {
             for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
                 const layer = this.style._layers[layerIds[this.currentLayer]];
                 const sourceCache = style._getLayerSourceCache(layer);
@@ -538,6 +589,9 @@ class Painter {
 
                 this.renderLayer(this, sourceCache, layer, coords);
             }
+        }
+        if (this.transform.projection.name === 'globe') {
+            drawGlobeAtmosphere(this);
         }
 
         // Translucent pass ===============================================
@@ -620,7 +674,7 @@ class Painter {
         // Set defaults for most GL values so that anyone using the state after the render
         // encounters more expected values.
         this.context.setDefault();
-        this.frameCounter = (this.frameCounter + 1) % MAX_SAFE_INTEGER;
+        this.frameCounter = (this.frameCounter + 1) % Number.MAX_SAFE_INTEGER;
 
         if (this.tileLoaded && this.options.speedIndexTiming) {
             this.loadTimeStamps.push(window.performance.now());
@@ -634,7 +688,9 @@ class Painter {
         this.id = layer.id;
 
         this.gpuTimingStart(layer);
-        draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
+        if (!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type)) {
+            draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
+        }
         this.gpuTimingEnd();
     }
 
@@ -825,6 +881,9 @@ class Painter {
         if (this._terrain) {
             this._terrain.destroy();
         }
+        if (this.globeSharedBuffers) {
+            this.globeSharedBuffers.destroy();
+        }
         this.emptyTexture.destroy();
         if (this.debugOverlayTexture) {
             this.debugOverlayTexture.destroy();
@@ -889,6 +948,22 @@ class Painter {
         if (fogOpacity === 0) return false;
 
         return true;
+    }
+
+    getBackgroundTiles() {
+        const oldTiles = this._backgroundTiles;
+        const newTiles = this._backgroundTiles = {};
+
+        const tileSize = 512;
+        const tileIDs = this.transform.coveringTiles({tileSize});
+        for (const tileID of tileIDs) {
+            newTiles[tileID.key] = oldTiles[tileID.key] || new Tile(tileID, tileSize, this.transform.tileZoom, this);
+        }
+        return newTiles;
+    }
+
+    clearBackgroundTiles() {
+        this._backgroundTiles = {};
     }
 }
 

@@ -1,0 +1,51 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait"],
+        ["setZoom", 4.5],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [
+    -40,
+    -10
+  ],
+  "zoom": 5.5,
+  "pitch": 85.0,
+  "sources": {
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "gradient",
+        "sky-gradient-center": [0, 0],
+        "sky-gradient-radius": 90,
+        "sky-gradient": [
+          "interpolate",
+          ["linear"],
+          ["sky-radial-progress"],
+          0.8,
+          "white",
+          1.0,
+          "red"
+      ]
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "gray"
+      }
+    }
+  ]
+}

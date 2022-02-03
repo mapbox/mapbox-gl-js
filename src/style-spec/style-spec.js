@@ -1,7 +1,7 @@
 // @flow
 
 type ExpressionType = 'data-driven' | 'cross-faded' | 'cross-faded-data-driven' | 'color-ramp' | 'data-constant' | 'constant';
-type ExpressionParameters = Array<'zoom' | 'feature' | 'feature-state' | 'heatmap-density' | 'line-progress' | 'sky-radial-progress'>;
+type ExpressionParameters = Array<'zoom' | 'feature' | 'feature-state' | 'heatmap-density' | 'line-progress' | 'sky-radial-progress' | 'pitch' | 'distance-from-center'>;
 
 type ExpressionSpecification = {
     interpolated: boolean,
@@ -57,6 +57,12 @@ export type StylePropertySpecification = {
     length?: number,
     transition: boolean,
     default?: Array<string>
+} | {
+    type: 'resolvedImage',
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
+    transition: boolean,
+    default?: string
 };
 
 import v8 from './reference/v8.json';

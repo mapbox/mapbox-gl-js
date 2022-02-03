@@ -7,7 +7,7 @@ export default class TapDragZoomHandler {
 
     _enabled: boolean;
     _active: boolean;
-    _swipePoint: Point;
+    _swipePoint: ?Point;
     _swipeTouch: number;
     _tapTime: number;
     _tap: TapRecognizer;
@@ -24,9 +24,9 @@ export default class TapDragZoomHandler {
 
     reset() {
         this._active = false;
-        delete this._swipePoint;
-        delete this._swipeTouch;
-        delete this._tapTime;
+        this._swipePoint = undefined;
+        this._swipeTouch = 0;
+        this._tapTime = 0;
         this._tap.reset();
     }
 

@@ -8,6 +8,18 @@ uniform lowp float u_opacity;
 attribute vec4 a_pos_normal_ed;
 attribute vec2 a_centroid_pos;
 
+#ifdef PROJECTION_GLOBE_VIEW
+attribute vec3 a_pos_3;         // Projected position on the globe
+attribute vec3 a_pos_normal_3;  // Surface normal at the position
+
+uniform mat4 u_inv_rot_matrix;
+uniform vec2 u_merc_center;
+uniform vec3 u_tile_id;
+uniform float u_zoom_transition;
+uniform vec3 u_up_dir;
+uniform float u_height_lift;
+#endif
+
 varying vec4 v_color;
 
 #pragma mapbox: define highp float base
@@ -49,6 +61,15 @@ void main() {
     vec3 pos = vec3(pos_nx.xy, h);
 #else
     vec3 pos = vec3(pos_nx.xy, t > 0.0 ? height : base);
+#endif
+
+#ifdef PROJECTION_GLOBE_VIEW
+    // If t > 0 (top) we always add the lift, otherwise (ground) we only add it if base height is > 0
+    float lift = float((t + base) > 0.0) * u_height_lift;
+    vec3 globe_normal = normalize(mix(a_pos_normal_3 / 16384.0, u_up_dir, u_zoom_transition));
+    vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * (pos.z + lift));
+    vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, pos.xy, u_tile_id, u_merc_center) + u_up_dir * u_tile_up_scale * pos.z;
+    pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
 #endif
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);

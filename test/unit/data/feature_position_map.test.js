@@ -38,5 +38,33 @@ test('FeaturePositionMap', (t) => {
         t.end();
     });
 
+    test('Can be queried with stringified bigint ids', (t) => {
+        const featureMap = new FeatureMap();
+        featureMap.add('-9223372036854775808', 0, 0, 0);
+        featureMap.add('-9223372036854775807', 1, 1, 1);
+        featureMap.add('9223372036854775806', 2, 2, 2);
+        featureMap.add('9223372036854775807', 3, 3, 3);
+
+        const featureMap2 = deserialize(serialize(featureMap, []));
+
+        t.same(featureMap2.getPositions('-9223372036854775808'), [
+            {index: 0, start: 0, end: 0},
+        ]);
+
+        t.same(featureMap2.getPositions('-9223372036854775807'), [
+            {index: 1, start: 1, end: 1},
+        ]);
+
+        t.same(featureMap2.getPositions('9223372036854775806'), [
+            {index: 2, start: 2, end: 2},
+        ]);
+
+        t.same(featureMap2.getPositions('9223372036854775807'), [
+            {index: 3, start: 3, end: 3},
+        ]);
+
+        t.end();
+    });
+
     t.end();
 });

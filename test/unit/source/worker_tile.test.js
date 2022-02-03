@@ -3,6 +3,7 @@ import WorkerTile from '../../../src/source/worker_tile.js';
 import Wrapper from '../../../src/source/geojson_wrapper.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import StyleLayerIndex from '../../../src/style/style_layer_index.js';
+import {getProjection} from '../../../src/geo/projection/index.js';
 
 function createWorkerTile() {
     return new WorkerTile({
@@ -12,7 +13,8 @@ function createWorkerTile() {
         tileSize: 512,
         source: 'source',
         tileID: new OverscaledTileID(1, 0, 1, 1, 1),
-        overscaling: 1
+        overscaling: 1,
+        projection: getProjection({name: 'mercator'})
     });
 }
 

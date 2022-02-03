@@ -15,8 +15,12 @@ DOM.create = function (tagName: string, className: ?string, container?: HTMLElem
     return el;
 };
 
-DOM.createNS = function (namespaceURI: string, tagName: string) {
-    const el = window.document.createElementNS(namespaceURI, tagName);
+DOM.createSVG = function (tagName: string, attributes: {[string]: string | number}, container?: HTMLElement) {
+    const el = window.document.createElementNS('http://www.w3.org/2000/svg', tagName);
+    for (const name of Object.keys(attributes)) {
+        el.setAttributeNS(null, name, attributes[name]);
+    }
+    if (container) container.appendChild(el);
     return el;
 };
 
@@ -34,43 +38,6 @@ DOM.disableDrag = function () {
 DOM.enableDrag = function () {
     if (docStyle && selectProp) {
         docStyle[selectProp] = userSelect;
-    }
-};
-
-DOM.setTransform = function(el: HTMLElement, value: string) {
-    el.style.transform = value;
-};
-
-// Feature detection for {passive: false} support in add/removeEventListener.
-let passiveSupported = false;
-
-try {
-    // https://github.com/facebook/flow/issues/285
-    // $FlowFixMe
-    const options = Object.defineProperty({}, "passive", {
-        get() { // eslint-disable-line
-            passiveSupported = true;
-        }
-    });
-    window.addEventListener("test", options, options);
-    window.removeEventListener("test", options, options);
-} catch (err) {
-    passiveSupported = false;
-}
-
-DOM.addEventListener = function(target: *, type: *, callback: *, options: {passive?: boolean, capture?: boolean} = {}) {
-    if ('passive' in options && passiveSupported) {
-        target.addEventListener(type, callback, options);
-    } else {
-        target.addEventListener(type, callback, options.capture);
-    }
-};
-
-DOM.removeEventListener = function(target: *, type: *, callback: *, options: {passive?: boolean, capture?: boolean} = {}) {
-    if ('passive' in options && passiveSupported) {
-        target.removeEventListener(type, callback, options);
-    } else {
-        target.removeEventListener(type, callback, options.capture);
     }
 };
 
@@ -113,12 +80,6 @@ DOM.mouseButton = function (e: MouseEvent) {
         return 0;
     }
     return e.button;
-};
-
-DOM.remove = function(node: HTMLElement) {
-    if (node.parentNode) {
-        node.parentNode.removeChild(node);
-    }
 };
 
 function getScaledPoint(el: HTMLElement, rect: ClientRect, e: MouseEvent | WheelEvent | Touch) {

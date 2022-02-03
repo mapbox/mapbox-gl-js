@@ -16,7 +16,9 @@ import replace from '@rollup/plugin-replace';
 export const plugins = (minified, production, test, bench) => [
     flow(),
     minifyStyleSpec(),
-    json(),
+    json({
+        exclude: 'src/style-spec/reference/v8.json'
+    }),
     production ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*']

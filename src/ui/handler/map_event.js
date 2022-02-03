@@ -2,11 +2,13 @@
 
 import {extend} from '../../util/util.js';
 import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../events.js';
+
 import type Map from '../map.js';
+import type Point from '@mapbox/point-geometry';
 
 export class MapEventHandler {
 
-    _mousedownPos: Point;
+    _mousedownPos: ?Point;
     _clickTolerance: number;
     _map: Map;
 
@@ -16,7 +18,7 @@ export class MapEventHandler {
     }
 
     reset() {
-        delete this._mousedownPos;
+        this._mousedownPos = undefined;
     }
 
     wheel(e: WheelEvent) {
@@ -110,7 +112,7 @@ export class MapEventHandler {
 export class BlockableMapEventHandler {
     _map: Map;
     _delayContextMenu: boolean;
-    _contextMenuEvent: MouseEvent;
+    _contextMenuEvent: ?MouseEvent;
 
     constructor(map: Map) {
         this._map = map;
@@ -118,7 +120,7 @@ export class BlockableMapEventHandler {
 
     reset() {
         this._delayContextMenu = false;
-        delete this._contextMenuEvent;
+        this._contextMenuEvent = undefined;
     }
 
     mousemove(e: MouseEvent) {

@@ -24,12 +24,12 @@ function createMap(t) {
     });
 }
 
-function createMapWithGestureHandling(t) {
+function createMapWithCooperativeGestures(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
     t.stub(Map.prototype, '_authenticate');
     return new Map({
         container: DOM.create('div', '', window.document.body),
-        gestureHandling: true
+        cooperativeGestures: true
     });
 }
 
@@ -376,15 +376,15 @@ test('ScrollZoomHandler', (t) => {
     t.end();
 });
 
-test('When gestureHandling option is set to true, a .mapboxgl-scroll-zoom-blocker element is added to map', (t) => {
-    const map = createMapWithGestureHandling(t);
+test('When cooperativeGestures option is set to true, a .mapboxgl-scroll-zoom-blocker element is added to map', (t) => {
+    const map = createMapWithCooperativeGestures(t);
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-scroll-zoom-blocker').length, 1);
     t.end();
 });
 
-test('When gestureHandling option is set to true, scroll zoom is prevented when the ctrl key or meta key is not pressed during wheel event', (t) => {
-    const map = createMapWithGestureHandling(t);
+test('When cooperativeGestures option is set to true, scroll zoom is prevented when the ctrl key or meta key is not pressed during wheel event', (t) => {
+    const map = createMapWithCooperativeGestures(t);
 
     const zoomSpy = t.spy();
     map.on('zoom', zoomSpy);
@@ -395,8 +395,8 @@ test('When gestureHandling option is set to true, scroll zoom is prevented when 
     t.end();
 });
 
-test('When gestureHandling option is set to true, scroll zoom is activated when ctrl key is pressed during wheel event', (t) => {
-    const map = createMapWithGestureHandling(t);
+test('When cooperativeGestures option is set to true, scroll zoom is activated when ctrl key is pressed during wheel event', (t) => {
+    const map = createMapWithCooperativeGestures(t);
 
     const zoomSpy = t.spy();
     map.on('zoom', zoomSpy);
@@ -409,8 +409,8 @@ test('When gestureHandling option is set to true, scroll zoom is activated when 
     t.end();
 });
 
-test('When gestureHandling option is set to true, scroll zoom is activated when meta key is pressed during wheel event', (t) => {
-    const map = createMapWithGestureHandling(t);
+test('When cooperativeGestures option is set to true, scroll zoom is activated when meta key is pressed during wheel event', (t) => {
+    const map = createMapWithCooperativeGestures(t);
 
     const zoomSpy = t.spy();
     map.on('zoom', zoomSpy);
@@ -424,7 +424,7 @@ test('When gestureHandling option is set to true, scroll zoom is activated when 
 });
 
 test('Disabling scrollZoom removes scroll zoom blocker container', (t) => {
-    const map = createMapWithGestureHandling(t);
+    const map = createMapWithCooperativeGestures(t);
 
     map.scrollZoom.disable();
 

@@ -18,9 +18,16 @@
         const params = new URLSearchParams(location.search.slice(1));
         Promise.resolve(params.has('compare') ?
             params.getAll('compare').filter(Boolean) :
-            fetch('https://api.github.com/repos/mapbox/mapbox-gl-js/releases/latest')
+            fetch('https://api.github.com/repos/mapbox/mapbox-gl-js/releases')
             .then(response => response.json())
-            .then(pkg => [pkg['tag_name'], 'main']))
+            .then(releases => {
+                for (const release of releases) {
+                    if (!release.prerelease && !release['tag_name'].includes('style-spec')) {
+                        return [release['tag_name'], 'main'];
+                    }
+                }
+                return ['main'];
+            }))
             .then(versions => {
                 return versions
                     .map(v => `https://s3.amazonaws.com/mapbox-gl-js/${v}/benchmarks.js`)

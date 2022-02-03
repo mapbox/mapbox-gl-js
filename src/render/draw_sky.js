@@ -7,19 +7,31 @@ import CullFaceMode from '../gl/cull_face_mode.js';
 import Context from '../gl/context.js';
 import Texture from './texture.js';
 import Program from './program.js';
+import {smoothstep} from '../util/util.js';
 import type SourceCache from '../source/source_cache.js';
 import SkyboxGeometry from './skybox_geometry.js';
 import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program.js';
 import {skyboxCaptureUniformValues} from './program/skybox_capture_program.js';
 import SkyLayer from '../style/style_layer/sky_style_layer.js';
 import type Painter from './painter.js';
-import {vec3, mat3, mat4} from 'gl-matrix';
+import {mat3, mat4} from 'gl-matrix';
 import assert from 'assert';
+
+import type {Mat4} from 'gl-matrix';
 
 export default drawSky;
 
+const TRANSITION_OPACITY_ZOOM_START = 7;
+const TRANSITION_OPACITY_ZOOM_END = 8;
+
 function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
-    const opacity = layer.paint.get('sky-opacity');
+    const tr = painter.transform;
+    const globeOrMercator = (tr.projection.name === 'mercator' || tr.projection.name === 'globe');
+    // For non-mercator projection, use a forced opacity transition. This transition is set to be
+    // 1.0 after the sheer adjustment upper bound which ensures to be in the mercator projection.
+    // Note: we only render sky for globe projection during the transition to mercator.
+    const transitionOpacity = globeOrMercator ? 1.0 : smoothstep(TRANSITION_OPACITY_ZOOM_START, TRANSITION_OPACITY_ZOOM_END, tr.zoom);
+    const opacity = layer.paint.get('sky-opacity') * transitionOpacity;
     if (opacity === 0) {
         return;
     }
@@ -99,7 +111,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
 
-function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, faceRotate: mat4, sunDirection: vec3, i: number) {
+function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, faceRotate: Mat4, sunDirection: [number, number, number], i: number) {
     const gl = context.gl;
 
     const atmosphereColor = layer.paint.get('sky-atmosphere-color');
@@ -107,7 +119,7 @@ function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, 
     const sunIntensity = layer.paint.get('sky-atmosphere-sun-intensity');
 
     const uniformValues = skyboxCaptureUniformValues(
-        mat3.fromMat4([], faceRotate),
+        mat3.fromMat4(mat3.create(), faceRotate),
         sunDirection,
         sunIntensity,
         atmosphereColor,

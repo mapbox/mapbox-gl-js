@@ -17,6 +17,19 @@
 <div class='button pin-topleft z100' onclick='togglePlayback()'>Play/pause</div>
 <div class = 'pin-topright'>
     <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
+    <div>
+        <label>Projection:</label>
+        <select id="projName">
+            <option value="mercator" selected>Mercator</option>
+            <option value="albers">Albers USA</option>
+            <option value="equalEarth">Equal Earth</option>
+            <option value="equirectangular">Equirectangular</option>
+            <option value="lambertConformalConic">Lambert Conformal Conic</option>
+            <option value="naturalEarth">Natural Earth</option>
+            <option value="winkelTripel">Winkel Tripel</option>
+        </select>
+    </div>
+</div>
 </div>
 <div class='pin-bottom pad1 z100 col12 bg-white' style='background:white'>
     <input class="timeslider col12 fr" type="range" value="0" min="0" max="45" step="0.1" id="timeslider">
@@ -98,6 +111,11 @@ function togglePlayback() {
     if (playing) map.getSource("video").play();
     else map.getSource("video").pause();
 }
+
+document.getElementById('projName').addEventListener('change', (e) => {
+    const el = document.getElementById('projName');
+    map.setProjection(el.options[el.selectedIndex].value);
+});
 </script>
 </body>
 </html>

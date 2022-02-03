@@ -26,6 +26,7 @@
     <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
     <label><input id='freeze-tile-coverage-checkbox' type='checkbox'> freeze tile coverage </label><br />
     <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
+    <label><input id='globe-checkbox' type='checkbox' checked> globe</label><br />
     <label><input id='show-terrain-wireframe-checkbox' type='checkbox'> terrain wireframe</label><br />
     <label><input id='satellite-checkbox' type='checkbox'> satellite</label><br />
     <label><input id='buildings-checkbox' type='checkbox'> buildings</label><br />
@@ -46,7 +47,8 @@ var map = window.map = new mapboxgl.Map({
     center: [-122.45814, 37.76159],
     style: 'mapbox://styles/mapbox/streets-v11',
     // style: 'mapbox://styles/claretrainor/ck2pc4ljf1jbe1codiy7oxzjg', // Style with additional traffic vector source.
-    hash: true
+    hash: true,
+    projection: 'globe'
 });
 
 map.addControl(new mapboxgl.NavigationControl());
@@ -257,6 +259,7 @@ map.on('style.load', function() {
     document.getElementById('road-label-checkbox').onclick();
     document.getElementById('satellite-checkbox').onclick();
     document.getElementById('terrain-checkbox').onclick();
+    document.getElementById('globe-checkbox').onclick();
     document.getElementById('buildings-checkbox').onclick();
     document.getElementById('circles-checkbox').onclick();
     document.getElementById('custom-checkbox').onclick();
@@ -276,6 +279,10 @@ document.getElementById('show-symbol-collision-boxes-checkbox').onclick = functi
 
 document.getElementById('show-overdraw-checkbox').onclick = function() {
     map.showOverdrawInspector = !!this.checked;
+};
+
+document.getElementById('globe-checkbox').onclick = function() {
+    map.setProjection(this.checked ? {name: "globe"} : null);
 };
 
 document.getElementById('freeze-tile-coverage-checkbox').onclick = function() {

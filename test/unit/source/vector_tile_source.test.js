@@ -183,6 +183,36 @@ test('VectorTileSource', (t) => {
     testScheme('xyz', 'http://example.com/10/5/5.png');
     testScheme('tms', 'http://example.com/10/5/1018.png');
 
+    function testRemoteScheme(scheme, expectedURL) {
+        t.test(`remote scheme "${scheme}"`, (t) => {
+            window.server.respondWith('/source.json', JSON.stringify({...sourceFixture, scheme}));
+
+            const source = createSource({url: "/source.json"});
+
+            source.dispatcher = wrapDispatcher({
+                send(type, params) {
+                    t.equal(type, 'loadTile');
+                    t.equal(expectedURL, params.request.url);
+                    t.end();
+                }
+            });
+
+            source.on('data', (e) => {
+                if (e.sourceDataType === 'metadata') {
+                    t.deepEqual(source.scheme, scheme);
+                    source.loadTile({
+                        tileID: new OverscaledTileID(10, 0, 10, 5, 5)
+                    }, () => {});
+                }
+            });
+
+            window.server.respond();
+        });
+    }
+
+    testRemoteScheme('xyz', 'http://example.com/10/5/5.png');
+    testRemoteScheme('tms', 'http://example.com/10/5/1018.png');
+
     t.test('transforms tile urls before requesting', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
 

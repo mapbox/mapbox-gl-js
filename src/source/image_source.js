@@ -5,11 +5,13 @@ import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import {getImage, ResourceType} from '../util/ajax.js';
 import EXTENT from '../data/extent.js';
 import {RasterBoundsArray} from '../data/array_types.js';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import boundsAttributes from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import browser from '../util/browser.js';
+import tileTransform, {getTilePoint} from '../geo/projection/tile_transform.js';
+import {mat3, vec3} from 'gl-matrix';
 
 import type {Source} from './source.js';
 import type {CanvasSourceSpecification} from './canvas_source.js';
@@ -22,8 +24,30 @@ import type {
     ImageSourceSpecification,
     VideoSourceSpecification
 } from '../style-spec/types.js';
+import type Context from '../gl/context.js';
 
 type Coordinates = [[number, number], [number, number], [number, number], [number, number]];
+
+// perspective correction for texture mapping, see https://github.com/mapbox/mapbox-gl-js/issues/9158
+// adapted from https://math.stackexchange.com/a/339033/48653
+
+function basisToPoints(x1, y1, x2, y2, x3, y3, x4, y4) {
+    const m = [x1, x2, x3, y1, y2, y3, 1, 1, 1];
+    const s = [x4, y4, 1];
+    const ma = mat3.adjoint([], m);
+    const [sx, sy, sz] = vec3.transformMat3(s, s, mat3.transpose(ma, ma));
+    return mat3.multiply(m, [sx, 0, 0, 0, sy, 0, 0, 0, sz], m);
+}
+
+function getPerspectiveTransform(w, h, x1, y1, x2, y2, x3, y3, x4, y4) {
+    const s = basisToPoints(0, 0, w, 0, 0, h, w, h);
+    const m = basisToPoints(x1, y1, x2, y2, x3, y3, x4, y4);
+    mat3.multiply(m, mat3.adjoint(s, s), m);
+    return [
+        m[6] / m[8] * w / EXTENT,
+        m[7] / m[8] * h / EXTENT
+    ];
+}
 
 /**
  * A data source containing an image.
@@ -72,6 +96,8 @@ class ImageSource extends Evented implements Source {
     maxzoom: number;
     tileSize: number;
     url: string;
+    width: number;
+    height: number;
 
     coordinates: Coordinates;
     tiles: {[_: string]: Tile};
@@ -81,10 +107,11 @@ class ImageSource extends Evented implements Source {
     texture: Texture | null;
     image: ImageData;
     tileID: CanonicalTileID;
-    _boundsArray: RasterBoundsArray;
-    boundsBuffer: VertexBuffer;
-    boundsSegments: SegmentVector;
+    _boundsArray: ?RasterBoundsArray;
+    boundsBuffer: ?VertexBuffer;
+    boundsSegments: ?SegmentVector;
     _loaded: boolean;
+    perspectiveTransform: [number, number];
 
     /**
      * @private
@@ -119,6 +146,8 @@ class ImageSource extends Evented implements Source {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
                 this.image = browser.getImageData(image);
+                this.width = this.image.width;
+                this.height = this.image.height;
                 if (newCoordinates) {
                     this.coordinates = newCoordinates;
                 }
@@ -168,7 +197,7 @@ class ImageSource extends Evented implements Source {
      *     ]
      * });
      */
-    updateImage(options: {url: string, coordinates?: Coordinates}) {
+    updateImage(options: {url: string, coordinates?: Coordinates}): this {
         if (!this.image || !options.url) {
             return this;
         }
@@ -217,8 +246,9 @@ class ImageSource extends Evented implements Source {
      *     [-76.5452, 39.1787]
      * ]);
      */
-    setCoordinates(coordinates: Coordinates) {
+    setCoordinates(coordinates: Coordinates): this {
         this.coordinates = coordinates;
+        this._boundsArray = undefined;
 
         // Calculate which mercator tile is suitable for rendering the video in
         // and create a buffer with the corner coordinates. These coordinates
@@ -236,46 +266,15 @@ class ImageSource extends Evented implements Source {
         // level)
         this.minzoom = this.maxzoom = this.tileID.z;
 
-        // Transform the corner coordinates into the coordinate space of our
-        // tile.
-        const tileCoords = cornerCoords.map((coord) => this.tileID.getTilePoint(coord)._round());
-
-        this._boundsArray = new RasterBoundsArray();
-        this._boundsArray.emplaceBack(tileCoords[0].x, tileCoords[0].y, 0, 0);
-        this._boundsArray.emplaceBack(tileCoords[1].x, tileCoords[1].y, EXTENT, 0);
-        this._boundsArray.emplaceBack(tileCoords[3].x, tileCoords[3].y, 0, EXTENT);
-        this._boundsArray.emplaceBack(tileCoords[2].x, tileCoords[2].y, EXTENT, EXTENT);
-
-        if (this.boundsBuffer) {
-            this.boundsBuffer.destroy();
-            delete this.boundsBuffer;
-        }
-
         this.fire(new Event('data', {dataType:'source', sourceDataType: 'content'}));
         return this;
     }
 
-    prepare() {
-        if (Object.keys(this.tiles).length === 0 || !this.image) {
-            return;
-        }
+    _clear() {
+        this._boundsArray = undefined;
+    }
 
-        const context = this.map.painter.context;
-        const gl = context.gl;
-
-        if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
-        }
-
-        if (!this.boundsSegments) {
-            this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
-        }
-
-        if (!this.texture) {
-            this.texture = new Texture(context, this.image, gl.RGBA);
-            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        }
-
+    _prepareData(context: Context) {
         for (const w in this.tiles) {
             const tile = this.tiles[w];
             if (tile.state !== 'loaded') {
@@ -283,6 +282,45 @@ class ImageSource extends Evented implements Source {
                 tile.texture = this.texture;
             }
         }
+
+        if (this._boundsArray) return;
+
+        const tileTr = tileTransform(this.tileID, this.map.transform.projection);
+
+        // Transform the corner coordinates into the coordinate space of our tile.
+        const [tl, tr, br, bl] = this.coordinates.map((coord) => {
+            const projectedCoord = tileTr.projection.project(coord[0], coord[1]);
+            return getTilePoint(tileTr, projectedCoord)._round();
+        });
+
+        this.perspectiveTransform = getPerspectiveTransform(
+            this.width, this.height, tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y);
+
+        const boundsArray = this._boundsArray = new RasterBoundsArray();
+        boundsArray.emplaceBack(tl.x, tl.y, 0, 0);
+        boundsArray.emplaceBack(tr.x, tr.y, EXTENT, 0);
+        boundsArray.emplaceBack(bl.x, bl.y, 0, EXTENT);
+        boundsArray.emplaceBack(br.x, br.y, EXTENT, EXTENT);
+
+        if (this.boundsBuffer) {
+            this.boundsBuffer.destroy();
+        }
+        this.boundsBuffer = context.createVertexBuffer(boundsArray, boundsAttributes.members);
+        this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
+    }
+
+    prepare() {
+        if (Object.keys(this.tiles).length === 0 || !this.image) return;
+
+        const context = this.map.painter.context;
+        const gl = context.gl;
+
+        if (!this.texture) {
+            this.texture = new Texture(context, this.image, gl.RGBA);
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        }
+
+        this._prepareData(context);
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {

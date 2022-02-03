@@ -1,3 +1,4 @@
+// @flow
 declare module "pbf" {
     declare type ReadFunction<T> = (tag: number, result: T, pbf: Pbf) => void;
 
@@ -21,5 +22,5 @@ declare module "pbf" {
         readBytes(): Uint8Array;
     }
 
-    declare module.exports: typeof Pbf
+    declare export default Class<Pbf>;
 }

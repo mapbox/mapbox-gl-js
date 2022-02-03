@@ -59,6 +59,7 @@
     "no-new": "off",
     "no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
     "no-warning-comments": "error",
+    "no-mixed-operators": ["error", {"groups": [["&", "|", "^", "~", "<<", ">>", ">>>"], ["&&", "||"]]}],
     "object-curly-spacing": ["error", "never"],
     "prefer-arrow-callback": "error",
     "prefer-const": ["error", {"destructuring": "all"}],

@@ -8,7 +8,7 @@ import window from '../../../src/util/window.js';
 function createSource(options) {
     window.useFakeHTMLCanvasGetContext();
 
-    const c = options && options.canvas || window.document.createElement('canvas');
+    const c = (options && options.canvas) || window.document.createElement('canvas');
     c.width = 20;
     c.height = 20;
 
@@ -140,7 +140,7 @@ test('CanvasSource', (t) => {
 
         source.onAdd(map);
 
-        t.equal(source.hasTransition(), true, 'should animate initally');
+        t.equal(source.hasTransition(), true, 'should animate initially');
 
         source.onRemove();
 

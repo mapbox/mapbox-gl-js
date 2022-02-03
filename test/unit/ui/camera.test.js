@@ -29,6 +29,7 @@ test('camera', (t) => {
             .jumpTo(options);
 
         camera._update = () => {};
+        camera._preloadTiles = () => {};
 
         return camera;
     }
@@ -503,7 +504,7 @@ test('camera', (t) => {
             const camera = createCamera();
             camera.zoomTo(3.2, {around: [5, 0], duration: 0});
             t.equal(camera.getZoom(), 3.2);
-            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({lng: 4.455905897939886, lat: 0}));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({lng: 4.455905898, lat: 0}));
             t.end();
         });
 
@@ -566,7 +567,7 @@ test('camera', (t) => {
             const camera = createCamera({zoom: 3});
             camera.rotateTo(90, {around: [5, 0], duration: 0});
             t.equal(camera.getBearing(), 90);
-            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({lng: 4.999999999999972, lat: 4.993665859353271}));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({lng: 5, lat: 4.993665859}));
             t.end();
         });
 
@@ -1015,6 +1016,7 @@ test('camera', (t) => {
             const camera = attachSimulateFrame(new Camera(transform, {}))
                 .jumpTo({zoom: 21, center:[0, 0]});
             camera._update = () => {};
+            camera._preloadTiles = () => {};
             t.doesNotThrow(() => camera.flyTo({zoom:7.5, center:[0, 0], offset:[0, 70]}));
             t.end();
         });
@@ -1583,6 +1585,7 @@ test('camera', (t) => {
 
             const camera = attachSimulateFrame(new Camera(transform, {}));
             camera._update = () => {};
+            camera._preloadTiles = () => {};
 
             camera.on('moveend', () => {
                 equalWithPrecision(t, camera.getZoom(), 10, 1e-10);
@@ -1609,6 +1612,7 @@ test('camera', (t) => {
 
             const camera = attachSimulateFrame(new Camera(transform, {}));
             camera._update = () => {};
+            camera._preloadTiles = () => {};
 
             camera.on('moveend', () => {
                 equalWithPrecision(t, camera.getZoom(), 2, 1e-10);

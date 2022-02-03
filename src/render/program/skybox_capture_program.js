@@ -1,6 +1,5 @@
 // @flow
 
-import {vec3} from 'gl-matrix';
 import type Color from '../../style-spec/util/color.js';
 
 import {
@@ -35,7 +34,7 @@ const skyboxCaptureUniforms = (context: Context, locations: UniformLocations): S
 
 const skyboxCaptureUniformValues = (
     matrix: Float32Array,
-    sunDirection: vec3,
+    sunDirection: [number, number, number],
     sunIntensity: number,
     atmosphereColor: Color,
     atmosphereHaloColor: Color

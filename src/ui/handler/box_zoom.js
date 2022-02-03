@@ -5,6 +5,7 @@ import DOM from '../../util/dom.js';
 import {Event} from '../../util/evented.js';
 
 import type Map from '../map.js';
+import type Point from '@mapbox/point-geometry';
 
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
@@ -114,8 +115,7 @@ class BoxZoomHandler {
 
         this._map._requestDomTask(() => {
             if (this._box) {
-                DOM.setTransform(this._box, `translate(${minX}px,${minY}px)`);
-
+                this._box.style.transform = `translate(${minX}px,${minY}px)`;
                 this._box.style.width = `${maxX - minX}px`;
                 this._box.style.height = `${maxY - minY}px`;
             }
@@ -163,7 +163,7 @@ class BoxZoomHandler {
         this._container.classList.remove('mapboxgl-crosshair');
 
         if (this._box) {
-            DOM.remove(this._box);
+            this._box.remove();
             this._box = (null: any);
         }
 

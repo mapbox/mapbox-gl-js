@@ -1,6 +1,7 @@
 import {test} from '../../util/test.js';
 import {Aabb, Frustum, Ray} from '../../../src/util/primitives.js';
 import {mat4, vec3} from 'gl-matrix';
+import {fixedVec3} from '../../util/fixed.js';
 
 test('primitives', (t) => {
     t.test('aabb', (t) => {
@@ -191,6 +192,103 @@ test('primitives', (t) => {
 
             t.end();
         });
+
+        t.test('closestPointOnSphere', (t) => {
+            t.test('intersection', (t) => {
+                const r = new Ray(vec3.fromValues(0, 0, 5), vec3.fromValues(0, 0, -1));
+
+                const point = vec3.fromValues(0, 0, 0);
+                let intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1.0, point);
+                t.ok(intersection);
+                t.same(vec3.fromValues(0, 0, 1), point);
+
+                r.pos = vec3.fromValues(0.8, 0.0, 100000.0);
+                intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1.0, point);
+                t.ok(intersection);
+                t.same(vec3.fromValues(0.8, 0, 0.60000050), point);
+
+                r.pos = vec3.fromValues(1, 1, 1);
+                r.dir = vec3.normalize([], vec3.fromValues(-1, -1, -1));
+                intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1.0, point);
+                t.ok(intersection);
+                t.same(vec3.fromValues(0.57735026, 0.57735026, 0.57735026), point);
+
+                t.end();
+            });
+
+            t.test('away', (t) => {
+                const r = new Ray(vec3.fromValues(0, 0, 5), vec3.fromValues(0, 0, 1));
+
+                const point = vec3.fromValues(0, 0, 0);
+                const intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 4.99, point);
+                t.notOk(intersection);
+                t.same(fixedVec3(vec3.fromValues(0, 0, 4.99), 2), fixedVec3(point, 2));
+
+                t.end();
+            });
+
+            t.test('no intersection', (t) => {
+                const r = new Ray(vec3.fromValues(0, 0, 5), vec3.fromValues(0, 0, -1));
+
+                const point = vec3.fromValues(0, 0, 0);
+                const intersection = r.closestPointOnSphere(vec3.fromValues(2, 0, 0), 1, point);
+                t.notOk(intersection);
+                t.same(vec3.fromValues(-1, 0, 0), point);
+
+                t.end();
+            });
+
+            t.test('inside', (t) => {
+                const r = new Ray(vec3.fromValues(0.5, 0.1, 0), vec3.fromValues(1, 0, 1));
+
+                const point = vec3.fromValues(0, 0, 0);
+                const intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1, point);
+                t.notOk(intersection);
+                t.same(fixedVec3(vec3.fromValues(0.98058, 0.19612, 0), 5), fixedVec3(point, 5));
+
+                t.end();
+            });
+
+            t.test('zero radius', (t) => {
+                const r = new Ray(vec3.fromValues(1.0, 0.0, 3.0), vec3.fromValues(0, 0, -1));
+
+                const point = vec3.fromValues(0, 0, 0);
+                let intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 0, point);
+                t.notOk(intersection);
+                t.same(vec3.fromValues(0, 0, 0), point);
+
+                intersection = r.closestPointOnSphere(vec3.fromValues(1.0, 0, 0), 0, point);
+                t.notOk(intersection);
+                t.same(vec3.fromValues(0, 0, 0), point);
+
+                t.end();
+            });
+
+            t.test('point at sphere center', (t) => {
+                const r = new Ray(vec3.fromValues(0.5, 2, 0), vec3.fromValues(1, 0, 0));
+
+                const point = vec3.fromValues(0, 0, 0);
+                const intersection = r.closestPointOnSphere(vec3.fromValues(0.5, 2.0, 0), 3.0, point);
+                t.notOk(intersection);
+                t.same(vec3.fromValues(0, 0, 0), point);
+
+                t.end();
+            });
+
+            t.test('point at surface', (t) => {
+                const r = new Ray(vec3.fromValues(1, 0, 0), vec3.fromValues(0, 0, 1));
+
+                const point = vec3.fromValues(0, 0, 0);
+                const intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1, point);
+                t.ok(intersection);
+                t.same(vec3.fromValues(1, 0, 0), point);
+
+                t.end();
+            });
+
+            t.end();
+        });
+
         t.end();
     });
     t.end();

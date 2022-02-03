@@ -56,7 +56,7 @@
     "line": 152
   },
   {
-    "message": "layers[15].filter: \"feature-state\" data expressions are not supported with filters.",
+    "message": "layers[15].filter: [\"feature-state\"] expression is not supported in a filter for a line layer with id: filter expressions with feature-state",
     "line": 159
   }
 ]

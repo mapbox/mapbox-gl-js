@@ -67,7 +67,7 @@ class ScaleControl {
     }
 
     onRemove() {
-        DOM.remove(this._container);
+        this._container.remove();
         this._map.off('move', this._onMove);
         this._map = (undefined: any);
     }
@@ -90,9 +90,9 @@ function updateScale(map, container, options) {
     // container with maximum length (Default) as 100px.
     // Using spherical law of cosines approximation, the real distance is
     // found between the two coordinates.
-    const maxWidth = options && options.maxWidth || 100;
+    const maxWidth = (options && options.maxWidth) || 100;
 
-    const y = map._container.getBoundingClientRect().height / 2;
+    const y = map._containerHeight / 2;
     const left = map.unproject([0, y]);
     const right = map.unproject([maxWidth, y]);
     const maxMeters = left.distanceTo(right);

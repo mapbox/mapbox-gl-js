@@ -43,6 +43,7 @@ const collisionUniformValues = (
     tile: Tile
 ): UniformValues<CollisionUniformsType> => {
     const pixelRatio = EXTENT / tile.tileSize;
+
     return {
         'u_matrix': matrix,
         'u_camera_to_center_distance': transform.cameraToCenterDistance,

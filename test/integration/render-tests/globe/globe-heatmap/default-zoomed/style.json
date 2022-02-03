@@ -1,0 +1,79 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "allowed": 0.002,
+      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform.",
+      "operations": [
+        ["setProjection", "globe"],
+        [ "wait" ]
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "pitch": 70.0,
+  "zoom": 4.5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "Point",
+            "coordinates": [
+              0, 0
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              -0.9, 0
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              -1.5, 0.2
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              3, 1.2
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              0, 0.8
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "heatmap",
+      "type": "heatmap",
+      "source": "geojson",
+      "paint": {
+        "heatmap-intensity": 2.0,
+        "heatmap-radius": 50
+      }
+    }
+  ]
+}

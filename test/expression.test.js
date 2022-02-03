@@ -6,12 +6,16 @@ import {toString} from '../src/style-spec/expression/types.js';
 import ignores from './ignores.json';
 import {CanonicalTileID} from '../src/source/tile_id.js';
 import MercatorCoordinate from '../src/geo/mercator_coordinate.js';
+import tileTransform, {getTilePoint} from '../src/geo/projection/tile_transform.js';
+import {getProjection} from '../src/geo/projection/index.js';
 
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
+const projection = getProjection({name: 'mercator'});
 
 function getPoint(coord, canonical) {
-    const p = canonical.getTilePoint(MercatorCoordinate.fromLngLat({lng: coord[0], lat: coord[1]}, 0));
+    const tileTr = tileTransform(canonical, projection);
+    const p = getTilePoint(tileTr, MercatorCoordinate.fromLngLat({lng: coord[0], lat: coord[1]}, 0));
     p.x = Math.round(p.x);
     p.y = Math.round(p.y);
     return p;

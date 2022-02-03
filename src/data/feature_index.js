@@ -27,11 +27,13 @@ import type Transform from '../geo/transform.js';
 import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
 import type {FeatureIndex as FeatureIndexStruct} from './array_types.js';
+import type {TileTransform} from '../geo/projection/tile_transform.js';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array,
     transform: Transform,
     tileResult: TilespaceQueryGeometry,
+    tileTransform: TileTransform,
     params: {
         filter: FilterSpecification,
         layers: Array<string>,
@@ -59,6 +61,7 @@ class FeatureIndex {
     bucketLayerIDs: Array<Array<string>>;
 
     vtLayers: {[_: string]: VectorTileLayer};
+    vtFeatures: {[_: string]: VectorTileFeature[]};
     sourceLayerCoder: DictionaryCoder;
 
     constructor(tileID: OverscaledTileID, promoteId?: ?PromoteIdSpecification) {
@@ -102,6 +105,10 @@ class FeatureIndex {
         if (!this.vtLayers) {
             this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
             this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
+            this.vtFeatures = {};
+            for (const layer in this.vtLayers) {
+                this.vtFeatures[layer] = [];
+            }
         }
         return this.vtLayers;
     }
@@ -148,7 +155,7 @@ class FeatureIndex {
                 sourceFeatureState,
                 (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, layoutVertexArrayOffset: number = 0) => {
                     if (!featureGeometry) {
-                        featureGeometry = loadGeometry(feature);
+                        featureGeometry = loadGeometry(feature, this.tileID.canonical, args.tileTransform);
                     }
 
                     return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, args.transform, args.pixelPosMatrix, elevationHelper, layoutVertexArrayOffset);
@@ -260,6 +267,23 @@ class FeatureIndex {
 
         }
         return result;
+    }
+
+    loadFeature(featureIndexData: FeatureIndices): VectorTileFeature {
+        const {featureIndex, sourceLayerIndex} = featureIndexData;
+
+        this.loadVTLayers();
+        const sourceLayerName = this.sourceLayerCoder.decode(sourceLayerIndex);
+
+        const featureCache = this.vtFeatures[sourceLayerName];
+        if (featureCache[featureIndex]) {
+            return featureCache[featureIndex];
+        }
+        const sourceLayer = this.vtLayers[sourceLayerName];
+        const feature = sourceLayer.feature(featureIndex);
+        featureCache[featureIndex] = feature;
+
+        return feature;
     }
 
     hasLayer(id: string) {

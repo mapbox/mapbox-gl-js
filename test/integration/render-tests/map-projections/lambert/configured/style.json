@@ -1,0 +1,22 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["setStyle", "local://mapbox-gl-styles/styles/basic-v9.json"],
+        ["wait"],
+        ["setProjection", {
+          "name": "lambertConformalConic",
+          "center": [12.5683, 55.6761],
+          "parallels": [60, 50]
+        }],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [12.5683, 55.6761],
+  "sources": {},
+  "layers": []
+}

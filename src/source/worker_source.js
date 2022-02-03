@@ -1,7 +1,7 @@
 // @flow
 
 import type {RequestParameters} from '../util/ajax.js';
-import type {RGBAImage, AlphaImage} from '../util/image.js';
+import type {AlphaImage} from '../util/image.js';
 import type {GlyphPositions} from '../render/glyph_atlas.js';
 import type ImageAtlas from '../render/image_atlas.js';
 import type LineAtlas from '../render/line_atlas.js';
@@ -13,8 +13,7 @@ import type DEMData from '../data/dem_data.js';
 import type {StyleGlyph} from '../style/style_glyph.js';
 import type {StyleImage} from '../style/style_image.js';
 import type {PromoteIdSpecification} from '../style-spec/types.js';
-import window from '../util/window.js';
-const {ImageBitmap} = window;
+import type {Projection} from '../geo/projection/index.js';
 
 export type TileParameters = {
     source: string,
@@ -38,12 +37,13 @@ export type WorkerTileParameters = RequestedTileParameters & {
     showCollisionBoxes: boolean,
     collectResourceTiming?: boolean,
     returnDependencies?: boolean,
-    enableTerrain?: boolean
+    enableTerrain?: boolean,
+    projection: Projection
 };
 
 export type WorkerDEMTileParameters = TileParameters & {
     coord: { z: number, x: number, y: number, w: number },
-    rawImageData: RGBAImage | ImageBitmap,
+    rawImageData: ImageData | ImageBitmap,
     encoding: "mapbox" | "terrarium",
     padding: number,
     buildQuadTree?: boolean

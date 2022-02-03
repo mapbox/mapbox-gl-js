@@ -1,0 +1,110 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 1.5,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+                "name": "First"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ -10, 10 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "name": "Second Second"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ -1, 12 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "name": "Third Third Third"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 8, 3 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "name": "Fourth"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ -5, -5 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "name": "Fifty fifty"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 10, -10 ]
+            }
+          }]
+        }
+     }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+      {
+        "id": "background",
+        "type": "background",
+        "paint": {
+          "background-color": "white"
+        }
+      },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-max-width": 5,
+        "text-justify": "auto",
+        "text-variable-anchor": [
+          "center",
+          "top",
+          "bottom",
+          "left",
+          "right",
+          "top-left",
+          "top-right",
+          "bottom-left",
+          "bottom-right"
+        ],
+        "text-radial-offset": 0.5,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

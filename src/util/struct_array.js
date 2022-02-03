@@ -129,6 +129,7 @@ class StructArray {
     }
 
     static deserialize(input: SerializedStructArray) {
+        // $FlowFixMe not-an-object - newer Flow doesn't understand this pattern, silence for now
         const structArray = Object.create(this.prototype);
         structArray.arrayBuffer = input.arrayBuffer;
         structArray.length = input.length;
@@ -188,6 +189,12 @@ class StructArray {
      */
     _refreshViews() {
         throw new Error('_refreshViews() must be implemented by each concrete StructArray layout');
+    }
+
+    destroy() {
+        // $FlowFixMe
+        this.int8 = this.uint8 = this.int16 = this.uint16 = this.int32 = this.uint32 = this.float32 = null;
+        this.arrayBuffer = (null: any);
     }
 }
 

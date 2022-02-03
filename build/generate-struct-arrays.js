@@ -50,8 +50,6 @@ function normalizeMembers(members, usedTypes) {
 // - If `includeStructAccessors`, write the fancy subclass
 // - Add an entry for `name` in the array type registry
 function createStructArrayType(name: string, layout: StructArrayLayout, includeStructAccessors: boolean = false) {
-    const hasAnchorPoint = layout.members.some(m => m.name === 'anchorPointX');
-
     // create the underlying StructArrayLayout class exists
     const layoutClass = createStructArrayLayoutType(layout);
     const arrayClass = `${camelize(name)}Array`;
@@ -64,7 +62,6 @@ function createStructArrayType(name: string, layout: StructArrayLayout, includeS
             members,
             size: layout.size,
             usedTypes,
-            hasAnchorPoint,
             layoutClass,
             includeStructAccessors
         });
@@ -118,18 +115,19 @@ function camelize (str) {
 global.camelize = camelize;
 
 import posAttributes from '../src/data/pos_attributes.js';
-import rasterBoundsAttributes from '../src/data/raster_bounds_attributes.js';
+import boundsAttributes from '../src/data/bounds_attributes.js';
 
 createStructArrayType('pos', posAttributes);
-createStructArrayType('raster_bounds', rasterBoundsAttributes);
+createStructArrayType('raster_bounds', boundsAttributes);
 
-import circleAttributes from '../src/data/bucket/circle_attributes.js';
+import {circleAttributes, circleGlobeAttributesExt} from '../src/data/bucket/circle_attributes.js';
 import fillAttributes from '../src/data/bucket/fill_attributes.js';
 import lineAttributes from '../src/data/bucket/line_attributes.js';
 import lineAttributesExt from '../src/data/bucket/line_attributes_ext.js';
 import patternAttributes from '../src/data/bucket/pattern_attributes.js';
 import dashAttributes from '../src/data/bucket/dash_attributes.js';
 import skyboxAttributes from '../src/render/skybox_attributes.js';
+import tileBoundsAttributes from '../src/data/bounds_attributes.js';
 import {fillExtrusionAttributes, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
 
 // layout vertex arrays
@@ -178,6 +176,9 @@ createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
 createStructArrayType('symbol_line_vertex', lineVertex, true);
 
+import globeAttributes from '../src/terrain/globe_attributes.js';
+createStructArrayType('globe_vertex', globeAttributes);
+
 // feature index array
 createStructArrayType('feature_index', createLayout([
     // the index of the feature in the original vectortile
@@ -208,6 +209,9 @@ createStructArrayType('line_strip_index', createLayout([
 // skybox vertex array
 createStructArrayType(`skybox_vertex`, skyboxAttributes);
 
+// tile bounds vertex array
+createStructArrayType(`tile_bounds`, tileBoundsAttributes);
+
 // paint vertex arrays
 
 // used by SourceBinder for float properties
@@ -234,6 +238,9 @@ createStructArrayLayoutType(createLayout([{
 // Fill extrusion specific array
 createStructArrayType(`fill_extrusion_centroid`, centroidAttributes, true);
 
+// Globe extension arrays
+createStructArrayType('circle_globe_ext', circleGlobeAttributesExt, true);
+
 const layouts = Object.keys(layoutCache).map(k => layoutCache[k]);
 
 fs.writeFileSync('src/data/array_types.js',
@@ -244,7 +251,6 @@ fs.writeFileSync('src/data/array_types.js',
 import assert from 'assert';
 import {Struct, StructArray} from '../util/struct_array.js';
 import {register} from '../util/web_worker_transfer.js';
-import Point from '@mapbox/point-geometry';
 
 ${layouts.map(structArrayLayoutJs).join('\n')}
 ${arraysWithStructAccessors.map(structArrayJs).join('\n')}

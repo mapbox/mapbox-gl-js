@@ -9,10 +9,27 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        #controls { position: absolute; top: 0; left: 0; }
     </style>
 </head>
 <body>
 <div id='map'></div>
+<div id='controls'>
+    <button id="animate">Animate</button><br />
+    <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
+    <div>
+        <label>Projection:</label>
+        <select id="projName">
+            <option value="mercator" selected>Mercator</option>
+            <option value="albers">Albers USA</option>
+            <option value="equalEarth">Equal Earth</option>
+            <option value="equirectangular">Equirectangular</option>
+            <option value="lambertConformalConic">Lambert Conformal Conic</option>
+            <option value="naturalEarth">Natural Earth</option>
+            <option value="winkelTripel">Winkel Tripel</option>
+        </select>
+    </div>
+</div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -54,7 +71,6 @@ map.on('style.load', function() {
         "tileSize": 512,
         "maxzoom": 14
     });
-    map.setTerrain({"source": "mapbox-dem"});
 
     let hovered = [];
     window.addEventListener('mousemove', function(e) {
@@ -86,6 +102,14 @@ map.on('style.load', function() {
             i++;
         }
     });
+});
+document.getElementById('terrain-checkbox').onclick = function() {
+    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
+};
+
+document.getElementById('projName').addEventListener('change', (e) => {
+    const el = document.getElementById('projName');
+    map.setProjection(el.options[el.selectedIndex].value);
 });
 
 </script>

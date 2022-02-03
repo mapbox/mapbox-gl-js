@@ -1,0 +1,25 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.005,
+      "operations": [
+        ["setProjection", "albers"],
+        ["setStyle", "local://mapbox-gl-styles/styles/satellite-v9.json"],
+        ["wait"],
+        ["setPaintProperty",
+         "satellite",
+         "raster-fade-duration",
+         0
+        ],
+        ["wait"],
+        ["setProjection", "equalEarth"],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}

@@ -38,6 +38,8 @@ function flowType(property) {
                 return 'TerrainSpecification';
             case 'fog':
                 return 'FogSpecification';
+            case 'projection':
+                return 'ProjectionSpecification';
             case 'sources':
                 return '{[_: string]: SourceSpecification}';
             case '*':
@@ -184,6 +186,8 @@ ${flowObjectDeclaration('LightSpecification', spec.light)}
 ${flowObjectDeclaration('TerrainSpecification', spec.terrain)}
 
 ${flowObjectDeclaration('FogSpecification', spec.fog)}
+
+${flowObjectDeclaration('ProjectionSpecification', spec.projection)}
 
 ${spec.source.map(key => flowObjectDeclaration(flowSourceTypeName(key), spec[key])).join('\n\n')}
 

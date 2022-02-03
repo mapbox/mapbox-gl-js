@@ -14,6 +14,7 @@ export type CrossfadeParameters = {
 
 class EvaluationParameters {
     zoom: number;
+    pitch: number;
     now: number;
     fadeDuration: number;
     zoomHistory: ZoomHistory;
@@ -28,11 +29,13 @@ class EvaluationParameters {
             this.fadeDuration = options.fadeDuration;
             this.zoomHistory = options.zoomHistory;
             this.transition = options.transition;
+            this.pitch = options.pitch;
         } else {
             this.now = 0;
             this.fadeDuration = 0;
             this.zoomHistory = new ZoomHistory();
             this.transition = {};
+            this.pitch = 0;
         }
     }
 

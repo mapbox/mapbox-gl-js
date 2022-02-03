@@ -1,3 +1,16 @@
+# 13.23.1
+
+### ✨ Features and improvements
+
+* Improve `coalesce` expressions to return a `ResolvedImage` when images are missing. ([#11371](https://github.com/mapbox/mapbox-gl-js/pull/11371))
+
+# 13.23.0
+
+### ✨ Features and improvements
+
+* Add a `projection` root property that allows a non-mercator projection to be set as a style's default projection. ([#11124](https://github.com/mapbox/mapbox-gl-js/pull/11124))
+* Add support for using `["pitch"]` and `["distance-from-camera"]` expressions within the `filter` of a symbol layer. ([#10795](https://github.com/mapbox/mapbox-gl-js/pull/10795))
+
 # 13.22.0
 
 ### ✨ Features and improvements

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Scroll Zoom Blocker Control</title>
+    <title>Cooperative Gestures</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
@@ -12,7 +12,7 @@
 </head>
 
 <body>
-<div id='map' style='width: 250px; height: 250px;'></div>
+<div id='map' style='width: 400px; height: 400px;'></div>
 
 <div style='width: 500px; height: 500px;'></div>
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -24,7 +24,7 @@ var map = window.map = new mapboxgl.Map({
     zoom: 12.5,
     center: [-77.01866, 38.888],
     style: 'mapbox://styles/mapbox/streets-v10',
-    gestureHandling: true
+    cooperativeGestures: true
 });
 
 map.addControl(new mapboxgl.FullscreenControl());

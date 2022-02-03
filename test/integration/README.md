@@ -127,7 +127,7 @@ To add a new render test:
 
 3. Generate an `expected.png` image from the given style by running the new test with the `UPDATE` flag enabled:
    ```
-   $ UPDATE=1 yarn run test-render <property-name>/<new-test-name>
+   $ UPDATE=1 yarn run test-render tests=<property-name>/<new-test-name>
    ```
    The test will appear to fail, but you'll now see a new `expected.png` in the test directory.
 

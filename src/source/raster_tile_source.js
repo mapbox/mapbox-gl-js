@@ -131,7 +131,7 @@ class RasterTileSource extends Evented implements Source {
                     tile.texture.update(img, {useMipmap: true});
                 } else {
                     tile.texture = new Texture(context, img, gl.RGBA, {useMipmap: true});
-                    tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+                    tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
                     if (context.extTextureFilterAnisotropic) {
                         gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);

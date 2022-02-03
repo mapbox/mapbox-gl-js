@@ -237,7 +237,7 @@ test('AttributionControl shows all custom attributions if customAttribution arra
 
     t.equal(
         attributionControl._innerContainer.innerHTML,
-        'Custom string | Another custom string | Some very long custom string'
+        'Some very long custom string | Custom string | Another custom string'
     );
     t.end();
 });

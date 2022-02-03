@@ -4,7 +4,6 @@ import StyleLayer from './style_layer.js';
 import createStyleLayer from './create_style_layer.js';
 
 import {values} from '../util/util.js';
-import featureFilter from '../style-spec/feature_filter/index.js';
 import groupByLayout from '../style-spec/group_by_layout.js';
 
 import type {TypedStyleLayer} from './style_layer/typed_style_layer.js';
@@ -38,7 +37,7 @@ class StyleLayerIndex {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
             const layer = this._layers[layerConfig.id] = createStyleLayer(layerConfig);
-            layer._featureFilter = featureFilter(layer.filter);
+            layer.compileFilter();
             if (this.keyCache[layerConfig.id])
                 delete this.keyCache[layerConfig.id];
         }

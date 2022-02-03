@@ -1,7 +1,6 @@
 // @flow
 
 import window from '../util/window.js';
-const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData, ImageBitmap} = window;
 
 import type Context from '../gl/context.js';
 import type {RGBAImage, AlphaImage} from '../util/image.js';
@@ -52,23 +51,23 @@ class Texture {
 
     update(image: TextureImage, options: ?{premultiply?: boolean, useMipmap?: boolean}, position?: { x: number, y: number }) {
         const {width, height} = image;
-        const resize = (!this.size || this.size[0] !== width || this.size[1] !== height) && !position;
         const {context} = this;
         const {gl} = context;
+        const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData, ImageBitmap} = window;
 
-        this.useMipmap = Boolean(options && options.useMipmap);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         context.pixelStoreUnpackFlipY.set(false);
         context.pixelStoreUnpack.set(1);
         context.pixelStoreUnpackPremultiplyAlpha.set(this.format === gl.RGBA && (!options || options.premultiply !== false));
 
-        if (resize) {
+        if (!position && (!this.size || this.size[0] !== width || this.size[1] !== height)) {
             this.size = [width, height];
 
             if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData || (ImageBitmap && image instanceof ImageBitmap)) {
                 gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
             } else {
+                // $FlowFixMe prop-missing - Flow can't refine image type here
                 gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
             }
 
@@ -77,27 +76,27 @@ class Texture {
             if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData || (ImageBitmap && image instanceof ImageBitmap)) {
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, gl.RGBA, gl.UNSIGNED_BYTE, image);
             } else {
+                // $FlowFixMe prop-missing - Flow can't refine image type here
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, width, height, gl.RGBA, gl.UNSIGNED_BYTE, image.data);
             }
         }
 
-        if (this.useMipmap && this.isSizePowerOfTwo()) {
+        this.useMipmap = Boolean(options && options.useMipmap && this.isSizePowerOfTwo());
+        if (this.useMipmap) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }
     }
 
-    bind(filter: TextureFilter, wrap: TextureWrap, minFilter: ?TextureFilter) {
+    bind(filter: TextureFilter, wrap: TextureWrap) {
         const {context} = this;
         const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-        if (minFilter === gl.LINEAR_MIPMAP_NEAREST && !this.isSizePowerOfTwo()) {
-            minFilter = gl.LINEAR;
-        }
-
         if (filter !== this.filter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter || filter);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER,
+                this.useMipmap ? (filter === gl.NEAREST ? gl.NEAREST_MIPMAP_NEAREST : gl.LINEAR_MIPMAP_NEAREST) : filter
+            );
             this.filter = filter;
         }
 

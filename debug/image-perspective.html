@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    maxZoom: 21,
+    minZoom: 1,
+    zoom: 13.3,
+    center: [26.763, 40.677],
+    style: 'mapbox://styles/mapbox/satellite-v9'
+});
+
+const coordinates = [
+    [26.765613555908203, 40.69659132697177],
+    [26.786835193634033, 40.667057219473136],
+    [26.759648323059082, 40.65749447771087],
+    [26.74123764038086, 40.68625994570193]
+];
+
+map.on('load', function() {
+
+    map.addSource("myImageSource", {
+        "type": "image",
+        "url": "https://i.ibb.co/smZmpTy/258.jpg",
+        coordinates
+    });
+
+    map.addLayer({
+        "id": "overlay",
+        "source": "myImageSource",
+        "type": "raster"
+    });
+});
+
+</script>
+</body>
+</html>

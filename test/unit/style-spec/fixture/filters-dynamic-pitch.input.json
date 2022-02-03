@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "sources": {
+    "source": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "symbol-supported",
+      "type": "symbol",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": ["any", ["<", ["get", "filter_rank"], 2 ], [ "<", ["pitch"], 60]]
+    },
+    {
+      "id": "fill-not-supported",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": ["any", ["<", ["get", "filter_rank"], 2 ], [ "<", ["pitch"], 60]]
+    },
+    {
+      "id": "line-not-supported",
+      "type": "line",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": ["any", ["<", ["get", "filter_rank"], 2 ], [ "<", ["pitch"], 60]]
+    },
+    {
+      "id": "circle-not-supported",
+      "type": "circle",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": ["any", ["<", ["get", "filter_rank"], 2 ], [ "<", ["pitch"], 60]]
+    },
+    {
+      "id": "fill-extrusion-not-supported",
+      "type": "fill-extrusion",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": ["any", ["<", ["get", "filter_rank"], 2 ], [ "<", ["pitch"], 60]]
+    },
+    {
+      "id": "heatmap-not-supported",
+      "type": "heatmap",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": ["any", ["<", ["get", "filter_rank"], 2 ], [ "<", ["pitch"], 60]]
+    }
+  ]
+}

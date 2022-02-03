@@ -2,7 +2,8 @@
 
 import {test} from '../../util/test.js';
 
-import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util.js';
+import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle} from '../../../src/util/util.js';
+
 import Point from '@mapbox/point-geometry';
 
 const EPSILON = 1e-8;
@@ -335,31 +336,6 @@ test('util', (t) => {
         t.end();
     });
 
-    t.test('isClosedPolygon', (t) => {
-        t.test('not enough points', (t) => {
-            const polygon = [new Point(0, 0), new Point(1, 0), new Point(0, 1)];
-
-            t.equal(isClosedPolygon(polygon), false);
-            t.end();
-        });
-
-        t.test('not equal first + last point', (t) => {
-            const polygon = [new Point(0, 0), new Point(1, 0), new Point(0, 1), new Point(1, 1)];
-
-            t.equal(isClosedPolygon(polygon), false);
-            t.end();
-        });
-
-        t.test('closed polygon', (t) => {
-            const polygon = [new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, 1), new Point(0, 0)];
-
-            t.equal(isClosedPolygon(polygon), true);
-            t.end();
-        });
-
-        t.end();
-    });
-
     t.test('bufferConvexPolygon', (t) => {
         t.throws(() => {
             bufferConvexPolygon([new Point(0, 0), new Point(1, 1)], 5);
@@ -410,6 +386,22 @@ test('util', (t) => {
         t.false(validateUuid(uuid().substr(0, 10)));
         t.false(validateUuid('foobar'));
         t.false(validateUuid(null));
+        t.end();
+    });
+
+    t.test('shortestAngle', (t) => {
+        t.equal(shortestAngle(0, 90), 90);
+        t.equal(shortestAngle(0, -270), 90);
+        t.equal(shortestAngle(0, 450), 90);
+
+        t.equal(shortestAngle(0, -90), -90);
+        t.equal(shortestAngle(0, 270), -90);
+        t.equal(shortestAngle(0, -450), -90);
+
+        t.equal(shortestAngle(45, 226), -179);
+        t.equal(shortestAngle(100, 123 * 360 + 100), 0);
+        t.equal(shortestAngle(-45, 335), 20);
+        t.equal(shortestAngle(-100, -270), -170);
         t.end();
     });
 

@@ -248,6 +248,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             const workerTile = loaded[uid];
             workerTile.showCollisionBoxes = params.showCollisionBoxes;
             workerTile.enableTerrain = !!params.enableTerrain;
+            workerTile.projection = params.projection;
 
             const done = (err, data) => {
                 const reloadCallback = workerTile.reloadCallback;

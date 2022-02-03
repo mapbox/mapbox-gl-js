@@ -105,12 +105,12 @@ const focusQuerySelector = [
  * @see [Example: Attach a popup to a marker instance](https://www.mapbox.com/mapbox-gl-js/example/set-popup/)
  */
 export default class Popup extends Evented {
-    _map: Map;
+    _map: ?Map;
     options: PopupOptions;
-    _content: HTMLElement;
-    _container: HTMLElement;
-    _closeButton: HTMLElement;
-    _tip: HTMLElement;
+    _content: ?HTMLElement;
+    _container: ?HTMLElement;
+    _closeButton: ?HTMLElement;
+    _tip: ?HTMLElement;
     _lngLat: LngLat;
     _trackPointer: boolean;
     _pos: ?Point;
@@ -145,23 +145,23 @@ export default class Popup extends Evented {
 
         this._map = map;
         if (this.options.closeOnClick) {
-            this._map.on('preclick', this._onClose);
+            map.on('preclick', this._onClose);
         }
 
         if (this.options.closeOnMove) {
-            this._map.on('move', this._onClose);
+            map.on('move', this._onClose);
         }
 
-        this._map.on('remove', this.remove);
+        map.on('remove', this.remove);
         this._update();
         this._focusFirstElement();
 
         if (this._trackPointer) {
-            this._map.on('mousemove', this._onMouseMove);
-            this._map.on('mouseup', this._onMouseUp);
-            this._map._canvasContainer.classList.add('mapboxgl-track-pointer');
+            map.on('mousemove', this._onMouseMove);
+            map.on('mouseup', this._onMouseUp);
+            map._canvasContainer.classList.add('mapboxgl-track-pointer');
         } else {
-            this._map.on('move', this._update);
+            map.on('move', this._update);
         }
 
         /**
@@ -209,23 +209,24 @@ export default class Popup extends Evented {
      */
     remove() {
         if (this._content) {
-            DOM.remove(this._content);
+            this._content.remove();
         }
 
         if (this._container) {
-            DOM.remove(this._container);
-            delete this._container;
+            this._container.remove();
+            this._container = undefined;
         }
 
-        if (this._map) {
-            this._map.off('move', this._update);
-            this._map.off('move', this._onClose);
-            this._map.off('click', this._onClose);
-            this._map.off('remove', this.remove);
-            this._map.off('mousemove', this._onMouseMove);
-            this._map.off('mouseup', this._onMouseUp);
-            this._map.off('drag', this._onDrag);
-            delete this._map;
+        const map = this._map;
+        if (map) {
+            map.off('move', this._update);
+            map.off('move', this._onClose);
+            map.off('click', this._onClose);
+            map.off('remove', this.remove);
+            map.off('mousemove', this._onMouseMove);
+            map.off('mouseup', this._onMouseUp);
+            map.off('drag', this._onDrag);
+            this._map = undefined;
         }
 
         /**
@@ -283,10 +284,11 @@ export default class Popup extends Evented {
 
         this._update();
 
-        if (this._map) {
-            this._map.on('move', this._update);
-            this._map.off('mousemove', this._onMouseMove);
-            this._map._canvasContainer.classList.remove('mapboxgl-track-pointer');
+        const map = this._map;
+        if (map) {
+            map.on('move', this._update);
+            map.off('mousemove', this._onMouseMove);
+            map._canvasContainer.classList.remove('mapboxgl-track-pointer');
         }
 
         return this;
@@ -307,11 +309,12 @@ export default class Popup extends Evented {
         this._trackPointer = true;
         this._pos = null;
         this._update();
-        if (this._map) {
-            this._map.off('move', this._update);
-            this._map.on('mousemove', this._onMouseMove);
-            this._map.on('drag', this._onDrag);
-            this._map._canvasContainer.classList.add('mapboxgl-track-pointer');
+        const map = this._map;
+        if (map) {
+            map.off('move', this._update);
+            map.on('mousemove', this._onMouseMove);
+            map.on('drag', this._onDrag);
+            map._canvasContainer.classList.add('mapboxgl-track-pointer');
         }
 
         return this;
@@ -428,20 +431,29 @@ export default class Popup extends Evented {
      *     .addTo(map);
      */
     setDOMContent(htmlNode: Node) {
-        if (this._content) {
+        let content = this._content;
+        if (content) {
             // Clear out children first.
-            while (this._content.hasChildNodes()) {
-                if (this._content.firstChild) {
-                    this._content.removeChild(this._content.firstChild);
+            while (content.hasChildNodes()) {
+                if (content.firstChild) {
+                    content.removeChild(content.firstChild);
                 }
             }
         } else {
-            this._content = DOM.create('div', 'mapboxgl-popup-content', this._container);
+            content = this._content = DOM.create('div', 'mapboxgl-popup-content', this._container || undefined);
         }
 
         // The close button should be the last tabbable element inside the popup for a good keyboard UX.
-        this._content.appendChild(htmlNode);
-        this._createCloseButton();
+        content.appendChild(htmlNode);
+
+        if (this.options.closeButton) {
+            const button = this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', content);
+            button.type = 'button';
+            button.setAttribute('aria-label', 'Close popup');
+            button.setAttribute('aria-hidden', 'true');
+            button.innerHTML = '&#215;';
+            button.addEventListener('click', this._onClose);
+        }
         this._update();
         this._focusFirstElement();
         return this;
@@ -459,9 +471,7 @@ export default class Popup extends Evented {
      */
     addClassName(className: string) {
         this._classList.add(className);
-        if (this._container) {
-            this._updateClassList();
-        }
+        this._updateClassList();
         return this;
     }
 
@@ -477,9 +487,7 @@ export default class Popup extends Evented {
      */
     removeClassName(className: string) {
         this._classList.delete(className);
-        if (this._container) {
-            this._updateClassList();
-        }
+        this._updateClassList();
         return this;
     }
 
@@ -528,21 +536,8 @@ export default class Popup extends Evented {
             this._classList.add(className);
             finalState = true;
         }
-        if (this._container) {
-            this._updateClassList();
-        }
+        this._updateClassList();
         return finalState;
-    }
-
-    _createCloseButton() {
-        if (this.options.closeButton) {
-            this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', this._content);
-            this._closeButton.type = 'button';
-            this._closeButton.setAttribute('aria-label', 'Close popup');
-            this._closeButton.setAttribute('aria-hidden', 'true');
-            this._closeButton.innerHTML = '&#215;';
-            this._closeButton.addEventListener('click', this._onClose);
-        }
     }
 
     _onMouseUp(event: MapMouseEvent) {
@@ -560,14 +555,19 @@ export default class Popup extends Evented {
     _getAnchor(offset: any) {
         if (this.options.anchor) { return this.options.anchor; }
 
-        const pos: any = this._pos;
-        const width = this._container.offsetWidth;
-        const height = this._container.offsetHeight;
+        const map = this._map;
+        const container = this._container;
+        const pos = this._pos;
+
+        if (!map || !container || !pos) return 'bottom';
+
+        const width = container.offsetWidth;
+        const height = container.offsetHeight;
         let anchorComponents;
 
         if (pos.y + offset.bottom.y < height) {
             anchorComponents = ['top'];
-        } else if (pos.y > this._map.transform.height - height) {
+        } else if (pos.y > map.transform.height - height) {
             anchorComponents = ['bottom'];
         } else {
             anchorComponents = [];
@@ -575,7 +575,7 @@ export default class Popup extends Evented {
 
         if (pos.x < width / 2) {
             anchorComponents.push('left');
-        } else if (pos.x > this._map.transform.width - width / 2) {
+        } else if (pos.x > map.transform.width - width / 2) {
             anchorComponents.push('right');
         }
 
@@ -587,6 +587,9 @@ export default class Popup extends Evented {
     }
 
     _updateClassList() {
+        const container = this._container;
+        if (!container) return;
+
         const classes = [...this._classList];
         classes.push('mapboxgl-popup');
         if (this._anchor) {
@@ -595,38 +598,41 @@ export default class Popup extends Evented {
         if (this._trackPointer) {
             classes.push('mapboxgl-popup-track-pointer');
         }
-        this._container.className = classes.join(' ');
+        container.className = classes.join(' ');
     }
 
-    _update(cursor: ?PointLike) {
+    _update(cursor?: Point) {
         const hasPosition = this._lngLat || this._trackPointer;
+        const map = this._map;
 
-        if (!this._map || !hasPosition || !this._content) { return; }
+        if (!map || !hasPosition || !this._content) { return; }
 
-        if (!this._container) {
-            this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
-            this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
-            this._container.appendChild(this._content);
+        let container = this._container;
+
+        if (!container) {
+            container = this._container = DOM.create('div', 'mapboxgl-popup', map.getContainer());
+            this._tip = DOM.create('div', 'mapboxgl-popup-tip', container);
+            container.appendChild(this._content);
         }
 
-        if (this.options.maxWidth && this._container.style.maxWidth !== this.options.maxWidth) {
-            this._container.style.maxWidth = this.options.maxWidth;
+        if (this.options.maxWidth && container.style.maxWidth !== this.options.maxWidth) {
+            container.style.maxWidth = this.options.maxWidth;
         }
 
-        if (this._map.transform.renderWorldCopies && !this._trackPointer) {
-            this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
+        if (map.transform.renderWorldCopies && !this._trackPointer) {
+            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
         }
 
         if (!this._trackPointer || cursor) {
-            const pos = this._pos = this._trackPointer && cursor ? cursor : this._map.project(this._lngLat);
+            const pos = this._pos = this._trackPointer && cursor ? cursor : map.project(this._lngLat);
 
             const offset = normalizeOffset(this.options.offset);
             const anchor = this._anchor = this._getAnchor(offset);
 
             const offsetedPos = pos.add(offset[anchor]).round();
-            this._map._requestDomTask(() => {
+            map._requestDomTask(() => {
                 if (this._container && anchor) {
-                    DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
+                    this._container.style.transform = `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`;
                 }
             });
         }

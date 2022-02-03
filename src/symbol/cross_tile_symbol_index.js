@@ -3,7 +3,7 @@
 import EXTENT from '../data/extent.js';
 
 import {SymbolInstanceArray} from '../data/array_types.js';
-
+import type {Projection} from '../geo/projection/index.js';
 import type {SymbolInstance} from '../data/array_types.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type SymbolBucket from '../data/bucket/symbol_bucket.js';
@@ -252,7 +252,7 @@ class CrossTileSymbolIndex {
         this.bucketsInCurrentPlacement = {};
     }
 
-    addLayer(styleLayer: StyleLayer, tiles: Array<Tile>, lng: number) {
+    addLayer(styleLayer: StyleLayer, tiles: Array<Tile>, lng: number, projection: Projection) {
         let layerIndex = this.layerIndexes[styleLayer.id];
         if (layerIndex === undefined) {
             layerIndex = this.layerIndexes[styleLayer.id] = new CrossTileSymbolLayerIndex();
@@ -261,7 +261,9 @@ class CrossTileSymbolIndex {
         let symbolBucketsChanged = false;
         const currentBucketIDs = {};
 
-        layerIndex.handleWrapJump(lng);
+        if (projection.name !== 'globe') {
+            layerIndex.handleWrapJump(lng);
+        }
 
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);

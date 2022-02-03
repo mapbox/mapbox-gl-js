@@ -1,0 +1,71 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "operations": [
+        ["setProjection", "albers"],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 3,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -5,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                5,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "graticule": {
+      "type": "geojson",
+      "data": "local://data/graticule.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 20
+      }
+    },
+    {
+      "id": "graticule",
+      "source": "graticule",
+      "type": "line",
+      "paint": {
+          "line-width": 1,
+          "line-color": "#aaa"
+      }
+    }
+  ]
+}

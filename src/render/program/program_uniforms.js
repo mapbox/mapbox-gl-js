@@ -18,8 +18,10 @@ import {backgroundUniforms, backgroundPatternUniforms} from './background_progra
 import {terrainRasterUniforms} from '../../terrain/terrain_raster_program.js';
 import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program.js';
 import {skyboxCaptureUniforms} from './skybox_capture_program.js';
+import {globeRasterUniforms, atmosphereUniforms} from '../../terrain/globe_raster_program.js';
+import type {HeatmapDefinesType} from './heatmap_program.js';
 
-export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType;
+export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,
@@ -49,5 +51,7 @@ export const programUniforms = {
     terrainDepth: terrainRasterUniforms,
     skybox: skyboxUniforms,
     skyboxGradient: skyboxGradientUniforms,
-    skyboxCapture: skyboxCaptureUniforms
+    skyboxCapture: skyboxCaptureUniforms,
+    globeRaster: globeRasterUniforms,
+    globeAtmosphere: atmosphereUniforms,
 };

@@ -12,6 +12,7 @@ import {vec3} from 'gl-matrix';
 import {Ray} from '../util/primitives.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
+import {getTilePoint, getTileVec3} from '../geo/projection/tile_transform.js';
 
 /**
  * A data-class that represents a screenspace query from `Map#queryRenderedFeatures`.
@@ -179,15 +180,16 @@ export class QueryGeometry {
         // outside the query volume even if it looks like it overlaps visually, a 1px bias value overcomes that.
         const bias = 1;
         const padding = tile.queryPadding + bias;
+        const wrap = tile.tileID.wrap;
 
         const geometryForTileCheck = use3D ?
-            this._bufferedCameraMercator(padding, transform).map((p) => tile.tileID.getTilePoint(p)) :
-            this._bufferedScreenMercator(padding, transform).map((p) => tile.tileID.getTilePoint(p));
-        const tilespaceVec3s = this.screenGeometryMercator.map((p) => tile.tileID.getTileVec3(p));
+            this._bufferedCameraMercator(padding, transform).map((p) => getTilePoint(tile.tileTransform, p, wrap)) :
+            this._bufferedScreenMercator(padding, transform).map((p) => getTilePoint(tile.tileTransform, p, wrap));
+        const tilespaceVec3s = this.screenGeometryMercator.map((p) => getTileVec3(tile.tileTransform, p, wrap));
         const tilespaceGeometry = tilespaceVec3s.map((v) => new Point(v[0], v[1]));
 
         const cameraMercator = transform.getFreeCameraOptions().position || new MercatorCoordinate(0, 0, 0);
-        const tilespaceCameraPosition = tile.tileID.getTileVec3(cameraMercator);
+        const tilespaceCameraPosition = getTileVec3(tile.tileTransform, cameraMercator, wrap);
         const tilespaceRays = tilespaceVec3s.map((tileVec) => {
             const dir = vec3.sub(tileVec, tileVec, tilespaceCameraPosition);
             vec3.normalize(dir, dir);

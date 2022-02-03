@@ -13,6 +13,7 @@ import {Evented} from '../util/evented.js';
 import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties.js';
 import {supportsPropertyExpression} from '../style-spec/util/properties.js';
 import ProgramConfiguration from '../data/program_configuration.js';
+import featureFilter from '../style-spec/feature_filter/index.js';
 
 import type {FeatureState} from '../style-spec/expression/index.js';
 import type {Bucket} from '../data/bucket.js';
@@ -53,6 +54,7 @@ class StyleLayer extends Evented {
     +paint: mixed;
 
     _featureFilter: FeatureFilter;
+    _filterCompiled: boolean;
 
     +queryRadius: (bucket: Bucket) => number;
     +queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
@@ -73,7 +75,8 @@ class StyleLayer extends Evented {
 
         this.id = layer.id;
         this.type = layer.type;
-        this._featureFilter = {filter: () => true, needGeometry: false};
+        this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
+        this._filterCompiled = false;
 
         if (layer.type === 'custom') return;
 
@@ -295,6 +298,25 @@ class StyleLayer extends Evented {
             }
         }
         return false;
+    }
+
+    compileFilter() {
+        if (!this._filterCompiled) {
+            this._featureFilter = featureFilter(this.filter);
+            this._filterCompiled = true;
+        }
+    }
+
+    invalidateCompiledFilter() {
+        this._filterCompiled = false;
+    }
+
+    dynamicFilter() {
+        return this._featureFilter.dynamicFilter;
+    }
+
+    dynamicFilterNeedsFeature() {
+        return this._featureFilter.needFeature;
     }
 }
 

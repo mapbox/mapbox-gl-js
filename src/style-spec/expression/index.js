@@ -27,6 +27,7 @@ import type {PropertyValueSpecification} from '../types.js';
 import type {FormattedSection} from './types/formatted.js';
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../source/tile_id.js';
+import type {FeatureDistanceData} from '../feature_filter/index.js';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -40,6 +41,7 @@ export type FeatureState = {[_: string]: any};
 
 export type GlobalProperties = $ReadOnly<{
     zoom: number,
+    pitch?: number,
     heatmapDensity?: number,
     lineProgress?: number,
     skyRadialProgress?: number,
@@ -63,24 +65,28 @@ export class StyleExpression {
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
         this._evaluator.canonical = canonical;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection;
+        this._evaluator.featureTileCoord = featureTileCoord || null;
+        this._evaluator.featureDistanceData = featureDistanceData || null;
 
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;
         this._evaluator.canonical = canonical;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection || null;
+        this._evaluator.featureTileCoord = featureTileCoord || null;
+        this._evaluator.featureDistanceData = featureDistanceData || null;
 
         try {
             const val = this.expression.evaluate(this._evaluator);
@@ -233,7 +239,7 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
         return error([new ParsingError('', 'data expressions not supported')]);
     }
 
-    const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom']);
+    const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'pitch', 'distance-from-center']);
     if (!isZoomConstant && !supportsZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
     }
@@ -280,11 +286,11 @@ export class StylePropertyFunction<T> {
         extend(this, createFunction(this._parameters, this._specification));
     }
 
-    static deserialize(serialized: {_parameters: PropertyValueSpecification<T>, _specification: StylePropertySpecification}) {
-        return ((new StylePropertyFunction(serialized._parameters, serialized._specification)): StylePropertyFunction<T>);
+    static deserialize(serialized: {_parameters: PropertyValueSpecification<T>, _specification: StylePropertySpecification}): StylePropertyFunction<T> {
+        return new StylePropertyFunction(serialized._parameters, serialized._specification);
     }
 
-    static serialize(input: StylePropertyFunction<T>) {
+    static serialize(input: StylePropertyFunction<T>): {_parameters: PropertyValueSpecification<T>, _specification: StylePropertySpecification} {
         return {
             _parameters: input._parameters,
             _specification: input._specification

@@ -23,7 +23,9 @@ import window from '../util/window.js';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 import {vec3} from 'gl-matrix';
-import MercatorCoordinate, {altitudeFromMercatorZ} from '../geo/mercator_coordinate.js';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
+
+import type {Vec3} from 'gl-matrix';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
@@ -44,7 +46,7 @@ class TrackingEllipsoid {
         this.radius = 0;
     }
 
-    setup(center: vec3, pointOnSurface: vec3) {
+    setup(center: Vec3, pointOnSurface: Vec3) {
         const centerToSurface = vec3.sub([], pointOnSurface, center);
         if (centerToSurface[2] < 0) {
             this.radius = vec3.length(vec3.div([], centerToSurface, this.constants));
@@ -56,7 +58,7 @@ class TrackingEllipsoid {
     }
 
     // Cast a ray from the center of the ellipsoid and the intersection point.
-    projectRay(dir: vec3): vec3 {
+    projectRay(dir: Vec3): Vec3 {
         // Perform the intersection test against a unit sphere
         vec3.div(dir, dir, this.constants);
         vec3.normalize(dir, dir);
@@ -146,16 +148,16 @@ class HandlerManager {
     _el: HTMLElement;
     _handlers: Array<{ handlerName: string, handler: Handler, allowed: any }>;
     _eventsInProgress: Object;
-    _frameId: number;
+    _frameId: ?number;
     _inertia: HandlerInertia;
     _bearingSnap: number;
     _handlersById: { [string]: Handler };
     _updatingCamera: boolean;
     _changes: Array<[HandlerResult, Object, any]>;
     _previousActiveHandlers: { [string]: Handler };
-    _listeners: Array<[HTMLElement, string, void | {passive?: boolean, capture?: boolean}]>;
+    _listeners: Array<[HTMLElement, string, void | EventListenerOptionsOrUseCapture]>;
     _trackingEllipsoid: TrackingEllipsoid;
-    _dragOrigin: ?vec3;
+    _dragOrigin: ?Vec3;
 
     constructor(map: Map, options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number, bearingSnap: number}) {
         this._map = map;
@@ -219,13 +221,15 @@ class HandlerManager {
         ];
 
         for (const [target, type, listenerOptions] of this._listeners) {
-            DOM.addEventListener(target, type, target === window.document ? this.handleWindowEvent : this.handleEvent, listenerOptions);
+            const listener = target === window.document ? this.handleWindowEvent : this.handleEvent;
+            target.addEventListener((type: any), (listener: any), listenerOptions);
         }
     }
 
     destroy() {
         for (const [target, type, listenerOptions] of this._listeners) {
-            DOM.removeEventListener(target, type, target === window.document ? this.handleWindowEvent : this.handleEvent, listenerOptions);
+            const listener = target === window.document ? this.handleWindowEvent : this.handleEvent;
+            target.removeEventListener((type: any), (listener: any), listenerOptions);
         }
     }
 
@@ -246,7 +250,7 @@ class HandlerManager {
         const tapDragZoom = new TapDragZoomHandler();
         this._add('tapDragZoom', tapDragZoom);
 
-        const touchPitch = map.touchPitch = new TouchPitchHandler();
+        const touchPitch = map.touchPitch = new TouchPitchHandler(map);
         this._add('touchPitch', touchPitch);
 
         const mouseRotate = new MouseRotateHandler(options);
@@ -256,7 +260,7 @@ class HandlerManager {
         this._add('mousePitch', mousePitch, ['mouseRotate']);
 
         const mousePan = new MousePanHandler(options);
-        const touchPan = new TouchPanHandler(options);
+        const touchPan = new TouchPanHandler(map, options);
         map.dragPan = new DragPanHandler(el, mousePan, touchPan);
         this._add('mousePan', mousePan);
         this._add('touchPan', touchPan, ['touchZoom', 'touchRotate']);
@@ -309,6 +313,7 @@ class HandlerManager {
     isZooming() {
         return !!this._eventsInProgress.zoom || this._map.scrollZoom.isZooming();
     }
+
     isRotating() {
         return !!this._eventsInProgress.rotate;
     }
@@ -475,7 +480,7 @@ class HandlerManager {
             return event && !this._handlersById[event.handlerName].isActive();
         };
 
-        const toVec3 = (p: MercatorCoordinate): vec3 => [p.x, p.y, p.z];
+        const toVec3 = (p: MercatorCoordinate): Vec3 => [p.x, p.y, p.z];
 
         if (eventEnded("drag") && !hasChange(combinedResult)) {
             const preZoom = tr.zoom;
@@ -517,13 +522,14 @@ class HandlerManager {
         const panVec = [0, 0, 0];
         if (panDelta) {
             assert(this._dragOrigin, '_dragOrigin should have been setup with a previous dragstart');
-            const startRay = tr.screenPointToMercatorRay(around);
-            const endRay = tr.screenPointToMercatorRay(around.sub(panDelta));
 
-            const startPoint = this._trackingEllipsoid.projectRay(startRay.dir);
-            const endPoint = this._trackingEllipsoid.projectRay(endRay.dir);
-            panVec[0] = endPoint[0] - startPoint[0];
-            panVec[1] = endPoint[1] - startPoint[1];
+            const startPoint = tr.pointCoordinate(around);
+            const endPoint = tr.pointCoordinate(around.sub(panDelta));
+
+            if (startPoint && endPoint) {
+                panVec[0] = endPoint.x - startPoint.x;
+                panVec[1] = endPoint.y - startPoint.y;
+            }
         }
 
         const originalZoom = tr.zoom;
@@ -532,20 +538,10 @@ class HandlerManager {
         if (zoomDelta) {
             // Zoom value has to be computed relative to a secondary map plane that is created from the terrain position below the cursor.
             // This way the zoom interpolation can be kept linear and independent of the (possible) terrain elevation
-            const pickedPosition: vec3 = aroundCoord ? toVec3(aroundCoord) : toVec3(tr.pointCoordinate3D(around));
+            const pickedPosition: Vec3 = aroundCoord ? toVec3(aroundCoord) : toVec3(tr.pointCoordinate3D(around));
 
             const aroundRay = {dir: vec3.normalize([], vec3.sub([], pickedPosition, tr._camera.position))};
-            const centerRay = tr.screenPointToMercatorRay(tr.centerPoint);
-
             if (aroundRay.dir[2] < 0) {
-                // Compute center point on the elevated map plane by casting a ray from the center of the screen.
-                // ZoomDelta is then subtracted from the relative zoom value and converted to a movement vector
-                const pickedAltitude = altitudeFromMercatorZ(pickedPosition[2], pickedPosition[1]);
-                const centerOnTargetPlane = tr.rayIntersectionCoordinate(tr.pointRayIntersection(tr.centerPoint, pickedAltitude));
-                const movement = tr.zoomDeltaToMovement(toVec3(centerOnTargetPlane), zoomDelta) * (centerRay.dir[2] / aroundRay.dir[2]);
-
-                vec3.scale(zoomVec, aroundRay.dir, movement);
-            } else if (tr._terrainEnabled()) {
                 // Special handling is required if the ray created from the cursor is heading up.
                 // This scenario is possible if user is trying to zoom towards a feature like a hill or a mountain.
                 // Convert zoomDelta to a movement vector as if the camera would be orbiting around the picked point
@@ -649,7 +645,7 @@ class HandlerManager {
     _requestFrame() {
         this._map.triggerRepaint();
         return this._map._renderTaskQueue.add(timeStamp => {
-            delete this._frameId;
+            this._frameId = undefined;
             this.handleEvent(new RenderFrameEvent('renderFrame', {timeStamp}));
             this._applyChanges();
         });

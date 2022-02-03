@@ -7,9 +7,7 @@ import window from './window.js';
 import assert from 'assert';
 
 import type {Callback} from '../types/callback.js';
-
-// Number.MAX_SAFE_INTEGER not available in IE
-export const MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+import type {Mat4, Vec4} from 'gl-matrix';
 
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
@@ -241,6 +239,19 @@ export function wrap(n: number, min: number, max: number): number {
     return (w === min) ? max : w;
 }
 
+/**
+ * Computes shortest angle in range [-180, 180) between two angles.
+ *
+ * @param {*} a First angle in degrees
+ * @param {*} b Second angle in degrees
+ * @returns Shortest angle
+ * @private
+ */
+export function shortestAngle(a: number, b: number): number {
+    const diff = (b - a + 180) % 360 - 180;
+    return diff < -180 ? diff + 360 : diff;
+}
+
 /*
  * Call an asynchronous function on an array of arguments,
  * calling `callback` with the completed results of all calls.
@@ -363,7 +374,7 @@ export function uniqueId(): number {
  */
 export function uuid(): string {
     function b(a) {
-        return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) :
+        return a ? (a ^ Math.random() * (16 >> a / 4)).toString(16) :
         //$FlowFixMe: Flow doesn't like the implied array literal conversion here
             ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
     }
@@ -482,7 +493,7 @@ export {deepEqual};
  */
 export function clone<T>(input: T): T {
     if (Array.isArray(input)) {
-        return input.map(clone);
+        return ((input.map(clone): any): T);
     } else if (typeof input === 'object' && input) {
         return ((mapObject(input, clone): any): T);
     } else {
@@ -545,31 +556,6 @@ export function calculateSignedArea(ring: Array<Point>): number {
         sum += (p2.x - p1.x) * (p1.y + p2.y);
     }
     return sum;
-}
-
-/**
- * Detects closed polygons, first + last point are equal
- *
- * @private
- * @param points array of points
- * @return true if the points are a closed polygon
- */
-export function isClosedPolygon(points: Array<Point>): boolean {
-    // If it is 2 points that are the same then it is a point
-    // If it is 3 points with start and end the same then it is a line
-    if (points.length < 4)
-        return false;
-
-    const p1 = points[0];
-    const p2 = points[points.length - 1];
-
-    if (Math.abs(p1.x - p2.x) > 0 ||
-        Math.abs(p1.y - p2.y) > 0) {
-        return false;
-    }
-
-    // polygon simplification can produce polygons with zero area and more than 3 points
-    return Math.abs(calculateSignedArea(points)) > 0.01;
 }
 
 /* global self, WorkerGlobalScope */
@@ -664,4 +650,15 @@ export function b64DecodeUnicode(str: string) {
     return decodeURIComponent(window.atob(str).split('').map((c) => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); //eslint-disable-line
     }).join(''));
+}
+
+export function getColumn(matrix: Mat4, col: number): Vec4 {
+    return [matrix[col * 4], matrix[col * 4 + 1], matrix[col * 4 + 2], matrix[col * 4 + 3]];
+}
+
+export function setColumn(matrix: Mat4, col: number, values: Vec4) {
+    matrix[col * 4 + 0] = values[0];
+    matrix[col * 4 + 1] = values[1];
+    matrix[col * 4 + 2] = values[2];
+    matrix[col * 4 + 3] = values[3];
 }

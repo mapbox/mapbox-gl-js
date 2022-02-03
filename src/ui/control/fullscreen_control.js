@@ -66,7 +66,7 @@ class FullscreenControl {
     }
 
     onRemove() {
-        DOM.remove(this._controlContainer);
+        this._controlContainer.remove();
         this._map = (null: any);
         window.document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
@@ -90,7 +90,7 @@ class FullscreenControl {
     _updateTitle() {
         const title = this._getTitle();
         this._fullscreenButton.setAttribute("aria-label", title);
-        this._fullscreenButton.title = title;
+        if (this._fullscreenButton.firstElementChild) this._fullscreenButton.firstElementChild.setAttribute('title', title);
     }
 
     _getTitle() {

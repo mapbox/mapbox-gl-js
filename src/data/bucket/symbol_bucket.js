@@ -61,6 +61,7 @@ import type {SymbolQuad} from '../../symbol/quads.js';
 import type {SizeData} from '../../symbol/symbol_size.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {ImagePosition} from '../../render/image_atlas.js';
+import type {TileTransform} from '../../geo/projection/tile_transform.js';
 export type SingleCollisionBox = {
     x1: number;
     y1: number;
@@ -75,6 +76,7 @@ export type SingleCollisionBox = {
     elevation?: number;
     tileID?: OverscaledTileID;
 };
+import type {Mat4} from 'gl-matrix';
 
 export type CollisionArrays = {
     textBox?: SingleCollisionBox;
@@ -326,6 +328,7 @@ class SymbolBucket implements Bucket {
     bucketInstanceId: number;
     justReloaded: boolean;
     hasPattern: boolean;
+    fullyClipped: boolean;
 
     textSizeData: SizeData;
     iconSizeData: SizeData;
@@ -347,8 +350,8 @@ class SymbolBucket implements Bucket {
     featureSortOrder: Array<number>;
 
     collisionCircleArray: Array<number>;
-    placementInvProjMatrix: mat4;
-    placementViewportMatrix: mat4;
+    placementInvProjMatrix: Mat4;
+    placementViewportMatrix: Mat4;
 
     text: SymbolBuffers;
     icon: SymbolBuffers;
@@ -361,6 +364,7 @@ class SymbolBucket implements Bucket {
     writingModes: Array<number>;
     allowVerticalPlacement: boolean;
     hasRTLText: boolean;
+    projection: ?string;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -373,6 +377,7 @@ class SymbolBucket implements Bucket {
         this.sourceLayerIndex = options.sourceLayerIndex;
         this.hasPattern = false;
         this.hasRTLText = false;
+        this.fullyClipped = false;
         this.sortKeyRanges = [];
 
         this.collisionCircleArray = [];
@@ -425,7 +430,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID) {
+    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         const layer = this.layers[0];
         const layout = layer.layout;
 
@@ -463,7 +468,7 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
-            if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature);
+            if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, canonical, tileTransform);
 
             let text: Formatted | void;
             if (hasText) {
@@ -478,7 +483,7 @@ class SymbolBucket implements Bucket {
                 if (
                     !this.hasRTLText || // non-rtl text so can proceed safely
                     getRTLTextPluginStatus() === 'unavailable' || // We don't intend to lazy-load the rtl text plugin, so proceed with incorrect shaping
-                    this.hasRTLText && globalRTLTextPlugin.isParsed() // Use the rtlText plugin to shape text
+                    (this.hasRTLText && globalRTLTextPlugin.isParsed()) // Use the rtlText plugin to shape text
                 ) {
                     text = transformText(formattedText, layer, evaluationFeature);
                 }
@@ -553,10 +558,10 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
         if (!this.stateDependentLayers.length) return;
-        this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, imagePositions);
-        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, imagePositions);
+        this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);
+        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);
     }
 
     isEmpty() {
@@ -595,17 +600,18 @@ class SymbolBucket implements Bucket {
 
     addToLineVertexArray(anchor: Anchor, line: any) {
         const lineStartIndex = this.lineVertexArray.length;
-        if (anchor.segment !== undefined) {
-            let sumForwardLength = anchor.dist(line[anchor.segment + 1]);
-            let sumBackwardLength = anchor.dist(line[anchor.segment]);
+        const segment = anchor.segment;
+        if (segment !== undefined) {
+            let sumForwardLength = anchor.dist(line[segment + 1]);
+            let sumBackwardLength = anchor.dist(line[segment]);
             const vertices = {};
-            for (let i = anchor.segment + 1; i < line.length; i++) {
+            for (let i = segment + 1; i < line.length; i++) {
                 vertices[i] = {x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumForwardLength};
                 if (i < line.length - 1) {
                     sumForwardLength += line[i + 1].dist(line[i]);
                 }
             }
-            for (let i = anchor.segment || 0; i >= 0; i--) {
+            for (let i = segment || 0; i >= 0; i--) {
                 vertices[i] = {x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumBackwardLength};
                 if (i > 0) {
                     sumBackwardLength += line[i - 1].dist(line[i]);
@@ -634,6 +640,7 @@ class SymbolBucket implements Bucket {
                lineStartIndex: number,
                lineLength: number,
                associatedIconIndex: number,
+               availableImages: Array<string>,
                canonical: CanonicalTileID) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
@@ -667,7 +674,7 @@ class SymbolBucket implements Bucket {
             this.glyphOffsetArray.emplaceBack(glyphOffset[0]);
 
             if (i === quads.length - 1 || sectionIndex !== quads[i + 1].sectionIndex) {
-                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, canonical, sections && sections[sectionIndex]);
+                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, sections && sections[sectionIndex]);
             }
         }
 

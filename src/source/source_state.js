@@ -3,6 +3,7 @@
 import {extend} from '../util/util.js';
 import Tile from './tile.js';
 import type {FeatureState} from '../style-spec/expression/index.js';
+import type Painter from '../render/painter.js';
 
 export type FeatureStates = {[feature_id: string]: FeatureState};
 export type LayerFeatureStates = {[layer: string]: FeatureStates};
@@ -79,7 +80,6 @@ class SourceFeatureState {
         } else {
             this.deletedStates[sourceLayer] = null;
         }
-
     }
 
     getState(sourceLayer: string, featureId: number | string) {
@@ -99,7 +99,7 @@ class SourceFeatureState {
         return reconciledState;
     }
 
-    initializeTileState(tile: Tile, painter: any) {
+    initializeTileState(tile: Tile, painter: ?Painter) {
         tile.setFeatureState(this.state, painter);
     }
 
