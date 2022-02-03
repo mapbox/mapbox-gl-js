@@ -36,11 +36,13 @@ varying float v_t;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
+#pragma mapbox: define highp vec4 color
 
 
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
+    #pragma mapbox: initialize highp vec4 color
 
 
     vec3 pos_nx = floor(a_pos_normal_ed.xyz * 0.5);
