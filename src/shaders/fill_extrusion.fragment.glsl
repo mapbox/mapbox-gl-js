@@ -12,7 +12,6 @@ uniform float u_opacity;
 uniform float u_specular_factor;
 uniform vec3 u_specular_color;
 
-varying vec4 v_color;
 varying vec4 v_pos_light_view_0;
 varying vec4 v_pos_light_view_1;
 varying vec4 v_pos_light_view_2;
@@ -202,7 +201,7 @@ void main() {
     occlusion = mix(occlusion, 1.0, backfacing);
     // adjust color with lower bounds to hue of light so 
     // shading is tinted with the complementary (opposite) color to the light color
-    outColor = clamp(outColor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+    // outColor = clamp(outColor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     // outColor = linearTosRGB(outColor);
     outColor = vec3(outColor * mix(1.0, 1.0 - u_shadow_intensity, occlusion));
     outColor *= u_opacity;
@@ -210,7 +209,7 @@ void main() {
 #ifdef FOG
     outColor = fog_dither(fog_apply_premultiplied(outColor, v_fog_pos));
 #endif
-    gl_FragColor = vec4(outColor, u_opacity);
+    gl_FragColor = vec4(specularTerm, u_opacity);
 
     //if (v_depth < u_cascade_distances.x)
     //    gl_FragColor = color * vec4(1.0, 0.5, 0.5, 1.0);

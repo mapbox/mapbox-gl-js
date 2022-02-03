@@ -1,4 +1,5 @@
 uniform mat4 u_matrix;
+uniform mat4 u_specular_light_matrix;
 uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
 uniform mat4 u_light_matrix_2;
@@ -23,7 +24,6 @@ uniform vec3 u_up_dir;
 uniform float u_height_lift;
 #endif
 
-varying vec4 v_color;
 varying vec4 v_pos_light_view_0;
 varying vec4 v_pos_light_view_1;
 varying vec4 v_pos_light_view_2;
@@ -87,9 +87,9 @@ void main() {
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     vec4 outPos = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
-    v_position = outPos.xyz;
     gl_Position = outPos;
 
+    v_position = vec3(u_specular_light_matrix * vec4(pos, 1));
     v_pos_light_view_0 = u_light_matrix_0 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
     v_pos_light_view_1 = u_light_matrix_1 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
     v_pos_light_view_2 = u_light_matrix_2 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
