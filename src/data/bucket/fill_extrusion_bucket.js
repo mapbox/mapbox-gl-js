@@ -21,7 +21,6 @@ import toEvaluationFeature from '../evaluation_feature.js';
 import EvaluationParameters from '../../style/evaluation_parameters.js';
 import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import type {Vec3} from 'gl-matrix';
 
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {

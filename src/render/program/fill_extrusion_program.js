@@ -14,7 +14,6 @@ import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
 import type {OverscaledTileID} from '../../source/tile_id.js';
 import type {TileTransform} from '../../geo/projection/index.js';
-import type Transform from '../../geo/transform.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
 import type Tile from '../../source/tile.js';
