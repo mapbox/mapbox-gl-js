@@ -319,17 +319,43 @@ test('Map', (t) => {
             });
         });
 
-        t.test('Setting globe projection on the map enables draping but does not enable terrain', (t) => {
+        t.test('Setting globe projection at low zoom enables draping but does not enable terrain', (t) => {
             const map = createMap(t, {style: createStyle()});
             t.equal(map.getProjection().name, 'mercator');
             const initStyleObj = map.style;
             t.spy(initStyleObj, 'setTerrain');
             map.on('style.load', () => {
+                map.setZoom(3); // Below threshold for Mercator transition
                 map.setProjection('globe');
                 t.equal(initStyleObj.setTerrain.callCount, 1);
                 t.ok(map.style.terrain);
                 t.equal(map.getTerrain(), null);
-                t.end();
+                map.setZoom(12); // Above threshold for Mercator transition
+                map.once('render', () => {
+                    t.notOk(map.style.terrain);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('Setting globe projection at high zoom does not enable draping', (t) => {
+            const map = createMap(t, {style: createStyle()});
+            t.equal(map.getProjection().name, 'mercator');
+            const initStyleObj = map.style;
+            t.spy(initStyleObj, 'setTerrain');
+            map.on('style.load', () => {
+                map.setZoom(12); // Above threshold for Mercator transition
+                map.setProjection('globe');
+                t.equal(initStyleObj.setTerrain.callCount, 0);
+                t.notOk(map.style.terrain);
+                t.equal(map.getTerrain(), null);
+                map.setZoom(3); // Below threshold for Mercator transition
+                map.once('render', () => {
+                    t.equal(initStyleObj.setTerrain.callCount, 1);
+                    t.ok(map.style.terrain);
+                    t.equal(map.getTerrain(), null);
+                    t.end();
+                });
             });
         });
 
@@ -377,6 +403,7 @@ test('Map', (t) => {
             const style = createStyle();
             const div = window.document.createElement('div');
             let map = new Map({style, container: div, testMode: true});
+            map.setZoom(3);
             map.on('load', () => {
                 map.setProjection('globe');
                 t.equal(map.getProjection().name, 'globe');
@@ -1634,6 +1661,15 @@ test('Map', (t) => {
             map.setProjection({name: 'albers'});
             t.equal(map.getProjection().name, 'albers');
             map.setProjection();
+            t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
+            t.end();
+        });
+
+        t.test('setProjection(null) defaults to Mercator', (t) => {
+            const map = createMap(t);
+            map.setProjection({name: 'albers'});
+            t.equal(map.getProjection().name, 'albers');
+            map.setProjection(null);
             t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
             t.end();
         });

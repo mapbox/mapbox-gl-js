@@ -1,7 +1,7 @@
 // @flow
 
 import {version} from '../../package.json';
-import {asyncAll, extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
+import {asyncAll, extend, bindAll, warnOnce, uniqueId, deepEqual} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 import DOM from '../util/dom.js';
@@ -349,7 +349,6 @@ class Map extends Camera {
     _crossFadingFactor: number;
     _collectResourceTiming: boolean;
     _optimizeForTerrain: boolean;
-    _transitionFromGlobe: boolean;
     _renderTaskQueue: TaskQueue;
     _domRenderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
@@ -367,9 +366,9 @@ class Map extends Camera {
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
-    _explicitProjection: ProjectionSpecification;
-    // In high zoom levels on Globe, _runtimeProjection will be "Mercator"
+    // In high zoom levels on Globe, _runtimeProjection will be "Mercator" while _explicitProjection will stay "Mercator"
     _runtimeProjection: ProjectionSpecification | void | null;
+    _explicitProjection: ProjectionSpecification;
     _containerWidth: number;
     _containerHeight: number
 
@@ -1047,9 +1046,9 @@ class Map extends Camera {
      * @see [Example: Display a web map using an alternate projection](https://docs.mapbox.com/mapbox-gl-js/example/map-projection/)
      * @see [Example: Use different map projections for web maps](https://docs.mapbox.com/mapbox-gl-js/example/projections/)
      */
-    setProjection(projection: ProjectionSpecification | string = {name: "mercator"}) {
+    setProjection(projection?: ?ProjectionSpecification | string) {
         this._lazyInitEmptyStyle();
-        if (typeof projection === 'string') {
+        if (!projection) { projection = {name: "mercator"}; } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
         this.updateProjection(projection);
@@ -1057,29 +1056,35 @@ class Map extends Camera {
     }
 
     updateProjection(projection?: ProjectionSpecification) {
-        if (projection) { this._runtimeProjection = projection; }
-        const prevProjectionState = this.transform.projection;
+        const oldExplicitProjection = this._explicitProjection;
+        let isGlobe: ?boolean;
+        const name = projection ? projection.name : this._explicitProjection.name;
+        if (name === "globe") {
+            this._explicitProjection = {name: 'globe', center: [0, 0]};
+            this._runtimeProjection = {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')};
+            isGlobe = true;
+        } else if (projection) { this._runtimeProjection = projection; }
+
         // newProjection is a user-friendly projection object or null if not changed
         const newProjection = this.transform.setProjection(this._runtimeProjection || (this.style.stylesheet ? this.style.stylesheet.projection : undefined));
-        const projectionState = this.transform.projection;
 
         this.style.tryDraping();
 
         if (!newProjection) return; // Continue if projection has changed
-        if (!this._transitionFromGlobe) {
+
+        if (!isGlobe) {
             this._explicitProjection = newProjection;
         }
 
         this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
 
-        const globeChanged = (projectionState.name === 'globe' || prevProjectionState.name === 'globe') && !this._transitionFromGlobe;
-
-        if (projectionState.isReprojectedInTileSpace || prevProjectionState.isReprojectedInTileSpace || globeChanged) {
+        // If transitioning between different expressions
+        if (!deepEqual(this._explicitProjection, oldExplicitProjection)) {
             this.painter.clearBackgroundTiles();
             for (const id in this.style._sourceCaches) {
                 this.style._sourceCaches[id].clearTiles();
             }
-        } else {
+        } else { // If not, this is a zoom transition on Globe.
             this.style._forceSymbolLayerUpdate();
         }
 
@@ -2478,19 +2483,6 @@ class Map extends Camera {
         return this._update(true);
     }
 
-    _updateProjection() {
-        const proj = this.transform.projection;
-        const zoom = this.transform.zoom;
-
-        if (proj.name === 'globe' && zoom >= GLOBE_ZOOM_THRESHOLD_MAX && !this._transitionFromGlobe) {
-            this._transitionFromGlobe = true;
-            this.updateProjection({name: 'mercator'});
-        } else if (this._transitionFromGlobe && zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
-            this.updateProjection({name: 'globe'});
-            this._transitionFromGlobe = false;
-        }
-    }
-
     /**
      * Returns the terrain specification or `null` if terrain isn't set on the map.
      *
@@ -2919,7 +2911,15 @@ class Map extends Camera {
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
 
-        this._updateProjection();
+        if (this._explicitProjection.name === 'globe') {
+            if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
+                if (this._runtimeProjection && this._runtimeProjection.name === 'globe') {
+                    this.updateProjection();
+                }
+            } else if (!this._runtimeProjection || this._runtimeProjection.name === 'mercator') {
+                this.updateProjection();
+            }
+        }
 
         let crossFading = false;
         const fadeDuration = this._isInitialLoad ? 0 : this._fadeDuration;
