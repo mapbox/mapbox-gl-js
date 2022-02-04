@@ -118,8 +118,7 @@ class ProxySourceCache extends SourceCache {
     }
 
     // Override for transient nature of cover here: don't cache and retain.
-    /* eslint-disable no-unused-vars */
-    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) {
+    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) { // eslint-disable-line no-unused-vars
         if (transform.freezeTileCoverage) { return; }
         this.transform = transform;
         const idealTileIDs = transform.coveringTiles({
@@ -598,7 +597,6 @@ export class Terrain extends Elevation {
 
         const tr = this.painter.transform;
         const projection = tr.projection;
-        const tileTransform = projection.createTileTransform(tr, tr.worldSize);
 
         const id = tile.tileID.canonical;
         uniforms['u_tile_tl_up'] = (projection.upVector(id, 0, 0): any);
@@ -1104,7 +1102,6 @@ export class Terrain extends Elevation {
         // more need: in such case, if there is no overlap, stencilling is disabled.
         if (proxiedCoords.length <= 1) { this._overlapStencilType = false; return; }
 
-        const fb = fbo.fb;
         let stencilRange;
         if (layer.isTileClipped()) {
             stencilRange = proxiedCoords.length;
@@ -1422,7 +1419,7 @@ export class Terrain extends Elevation {
     /*
      * Bookkeeping if something gets rendered to the tile.
      */
-    prepareDrawTile(coord: OverscaledTileID) {
+    prepareDrawTile() {
         this.renderedToTile = true;
     }
 

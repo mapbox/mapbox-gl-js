@@ -890,9 +890,9 @@ class Painter {
         }
     }
 
-    prepareDrawTile(tileID: OverscaledTileID) {
+    prepareDrawTile() {
         if (this.terrain) {
-            this.terrain.prepareDrawTile(tileID);
+            this.terrain.prepareDrawTile();
         }
     }
 
