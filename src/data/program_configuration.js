@@ -628,7 +628,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         }
     }
 
-    get(layerId: string) {
+    get(layerId: string): ProgramConfiguration {
         return this.programConfigurations[layerId];
     }
 

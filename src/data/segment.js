@@ -40,7 +40,7 @@ class SegmentVector {
         return segment;
     }
 
-    get() {
+    get(): Array<Segment> {
         return this.segments;
     }
 

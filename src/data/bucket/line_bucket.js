@@ -196,7 +196,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    addConstantDashes(lineAtlas: LineAtlas) {
+    addConstantDashes(lineAtlas: LineAtlas): boolean {
         let hasFeatureDashes = false;
 
         for (const layer of this.layers) {
@@ -278,11 +278,11 @@ class LineBucket implements Bucket {
         }
     }
 
-    isEmpty() {
+    isEmpty(): boolean {
         return this.layoutVertexArray.length === 0;
     }
 
-    uploadPending() {
+    uploadPending(): boolean {
         return !this.uploaded || this.programConfigurations.needsUpload;
     }
 
