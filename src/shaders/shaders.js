@@ -71,6 +71,10 @@ import fillExtrusionShadowsFrag from './fill_extrusion_shadow.fragment.glsl';
 import fillExtrusionShadowsVert from './fill_extrusion_shadow.vertex.glsl';
 import groundShadowsFrag from './ground_shadow.fragment.glsl';
 import groundShadowsVert from './ground_shadow.vertex.glsl';
+import bloomBlurFrag from './bloom_blur.fragment.glsl';
+import bloomApplyFrag from './bloom_apply.fragment.glsl';
+import bloomVert from './bloom.vertex.glsl';
+
 
 export let preludeTerrain = {};
 export let preludeFog = {};
@@ -150,7 +154,9 @@ export default {
     globeRaster: compile(globeFrag, globeVert),
     globeAtmosphere: compile(atmosphereFrag, atmosphereVert),
     fillExtrusionShadow: compile(fillExtrusionShadowsFrag, fillExtrusionShadowsVert),
-    groundShadow: compile(groundShadowsFrag, groundShadowsVert)
+    groundShadow: compile(groundShadowsFrag, groundShadowsVert),
+    bloomBlur: compile(bloomBlurFrag, bloomVert),
+    bloomApply: compile(bloomApplyFrag, bloomVert)
 };
 
 // Expand #pragmas to #ifdefs.
