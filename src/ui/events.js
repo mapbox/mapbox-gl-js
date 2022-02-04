@@ -2,7 +2,7 @@
 
 import {Event} from '../util/evented.js';
 
-import DOM from '../util/dom.js';
+import * as DOM from '../util/dom.js';
 import Point from '@mapbox/point-geometry';
 import {extend} from '../util/util.js';
 

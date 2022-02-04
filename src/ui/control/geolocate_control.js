@@ -1,7 +1,7 @@
 // @flow
 
 import {Event, Evented} from '../../util/evented.js';
-import DOM from '../../util/dom.js';
+import * as DOM from '../../util/dom.js';
 import window from '../../util/window.js';
 import {extend, bindAll, warnOnce} from '../../util/util.js';
 import assert from 'assert';
