@@ -44,7 +44,7 @@ for (const {name, member, component} of components) {
     const index = `${elementOffset} + ${componentOffset}`;
     const componentAccess = `this._structArray.${member.view}[${index}]`;
 -%>
-    get <%=name%>() { return <%=componentAccess%>; }
+    get <%=name%>(): number { return <%=componentAccess%>; }
 <%
 // generate setters for properties that are updated during runtime symbol placement; others are read-only
 if (name === 'crossTileID' || name === 'placedOrientation' || name === 'hidden' || name === 'flipState') {
@@ -79,7 +79,7 @@ if (useComponentGetters) {
             const componentOffset = (member.offset / member.size + c).toFixed(0);
             const componentStride = size / member.size;
 -%>
-    <%=name%>(index: number) { return this.<%=member.view%>[index * <%=componentStride%> + <%=componentOffset%>]; }
+    <%=name%>(index: number): number { return this.<%=member.view%>[index * <%=componentStride%> + <%=componentOffset%>]; }
 <%
         }
     }

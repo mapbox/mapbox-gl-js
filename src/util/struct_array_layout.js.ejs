@@ -59,13 +59,13 @@ for (const member of members) {
     }
 }
 -%>
-    emplaceBack(<%=argNamesTyped.join(', ')%>) {
+    emplaceBack(<%=argNamesTyped.join(', ')%>): number {
         const i = this.length;
         this.resize(i + 1);
         return this.emplace(i, <%=argNames.join(', ')%>);
     }
 
-    emplace(i: number, <%=argNamesTyped.join(', ')%>) {
+    emplace(i: number, <%=argNamesTyped.join(', ')%>): number {
 <%
 {
 for (const size of usedTypeSizes) {
