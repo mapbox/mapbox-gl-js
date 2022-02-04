@@ -22,10 +22,11 @@ varying highp vec3 v_position;
 varying float v_base;
 varying float v_height;
 varying float v_t;
+varying vec3 v_color;
+
 #pragma mapbox: define highp vec4 color
 
 #define saturate(_x) clamp(_x, 0., 1.)
-
 
 float unpack_depth(vec4 rgba_depth)
 {
@@ -170,7 +171,10 @@ void main() {
     }
     highp vec3 v = normalize(-v_position);
     highp vec3 n = normalize(v_normal);
-    highp vec3 l = normalize(u_lightpos);
+    // Adjust the light to match the shadows direction. Use a lower angle
+    // to increase the specular effect when tilted
+    // TODO: make this light configurable
+    highp vec3 l = normalize(vec3(1., 1., 0.2));
     highp vec3 h = normalize(v + l);
 
     float NdotL = saturate(dot(n, l));
@@ -197,19 +201,15 @@ void main() {
     vec3 specularTerm = pow(NdotH, u_specular_factor) * u_specular_color * u_lightcolor;
     vec3 outColor = vec3(ambientTerm + diffuseTerm + specularTerm);
 
-
     occlusion = mix(occlusion, 1.0, backfacing);
-    // adjust color with lower bounds to hue of light so 
-    // shading is tinted with the complementary (opposite) color to the light color
-    // outColor = clamp(outColor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-    // outColor = linearTosRGB(outColor);
+    outColor*= v_color;
     outColor = vec3(outColor * mix(1.0, 1.0 - u_shadow_intensity, occlusion));
     outColor *= u_opacity;
 
 #ifdef FOG
     outColor = fog_dither(fog_apply_premultiplied(outColor, v_fog_pos));
 #endif
-    gl_FragColor = vec4(specularTerm, u_opacity);
+    gl_FragColor = vec4(outColor, u_opacity);
 
     //if (v_depth < u_cascade_distances.x)
     //    gl_FragColor = color * vec4(1.0, 0.5, 0.5, 1.0);
