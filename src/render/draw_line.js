@@ -56,7 +56,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const bucket: ?LineBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        painter.prepareDrawTile(coord);
+        painter.prepareDrawTile();
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram(programId, programConfiguration, ((definesValues: any): DynamicDefinesType[]));

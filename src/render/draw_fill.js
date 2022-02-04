@@ -80,7 +80,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
 
         const bucket: ?FillBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        painter.prepareDrawTile(coord);
+        painter.prepareDrawTile();
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram(programName, programConfiguration);

@@ -1419,7 +1419,7 @@ export class Terrain extends Elevation {
     /*
      * Bookkeeping if something gets rendered to the tile.
      */
-    prepareDrawTile(coord: OverscaledTileID) { // eslint-disable-line no-unused-vars
+    prepareDrawTile() {
         this.renderedToTile = true;
     }
 
