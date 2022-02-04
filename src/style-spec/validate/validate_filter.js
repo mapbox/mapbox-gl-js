@@ -13,7 +13,7 @@ export default function validateFilter(options) {
         return validateExpression(extend({}, options, {
             expressionContext: 'filter',
             // We default to a layerType of `fill` because that points to a non-dynamic filter definition within the style-spec.
-            valueSpec: options.styleSpec[`filter_${layerType || 'fill'}`]
+            valueSpec: options.styleSpec[`filter_${layerType}`] || options.styleSpec[`filter_fill`]
         }));
     } else {
         return validateNonExpressionFilter(options);
