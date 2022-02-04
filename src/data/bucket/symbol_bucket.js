@@ -107,6 +107,11 @@ export type SortKeyRange = {
     symbolInstanceEnd: number
 };
 
+type LineVertexRange = {|
+    lineLength: number,
+    lineStartIndex: number
+|};
+
 // Opacity arrays are frequently updated but don't contain a lot of information, so we pack them
 // tight. Each Uint32 is actually four duplicate Uint8s for the four corners of a glyph
 // 7 bits are for the current opacity, and the lowest bit is the target opacity
@@ -598,7 +603,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    addToLineVertexArray(anchor: Anchor, line: any): {| lineLength: number, lineStartIndex: number |} {
+    addToLineVertexArray(anchor: Anchor, line: any): LineVertexRange {
         const lineStartIndex = this.lineVertexArray.length;
         const segment = anchor.segment;
         if (segment !== undefined) {
