@@ -140,7 +140,7 @@ class FillBucket implements Bucket {
         }
     }
 
-    isEmpty() {
+    isEmpty(): boolean {
         return this.layoutVertexArray.length === 0;
     }
 
