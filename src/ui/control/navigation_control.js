@@ -1,6 +1,6 @@
 // @flow
 
-import DOM from '../../util/dom.js';
+import * as DOM from '../../util/dom.js';
 import {extend, bindAll} from '../../util/util.js';
 import {MouseRotateHandler, MousePitchHandler} from '../handler/mouse.js';
 import window from '../../util/window.js';

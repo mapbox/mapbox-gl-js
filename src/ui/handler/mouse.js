@@ -1,6 +1,6 @@
 // @flow
 
-import DOM from '../../util/dom.js';
+import * as DOM from '../../util/dom.js';
 import type Point from '@mapbox/point-geometry';
 
 const LEFT_BUTTON = 0;

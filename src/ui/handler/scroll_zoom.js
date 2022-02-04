@@ -1,7 +1,7 @@
 // @flow
 
 import assert from 'assert';
-import DOM from '../../util/dom.js';
+import * as DOM from '../../util/dom.js';
 
 import {ease as _ease, bindAll, bezier} from '../../util/util.js';
 import browser from '../../util/browser.js';

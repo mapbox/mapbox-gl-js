@@ -2,7 +2,7 @@ import {test} from '../../../util/test.js';
 import window from '../../../../src/util/window.js';
 import Map from '../../../../src/ui/map.js';
 import Marker from '../../../../src/ui/marker.js';
-import DOM from '../../../../src/util/dom.js';
+import * as DOM from '../../../../src/util/dom.js';
 import simulate from '../../../util/simulate_interaction.js';
 
 function createMap(t) {

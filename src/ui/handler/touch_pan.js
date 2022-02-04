@@ -4,7 +4,7 @@ import Point from '@mapbox/point-geometry';
 import type Map from '../map.js';
 import {indexTouches} from './handler_util.js';
 import {bindAll} from '../../util/util.js';
-import DOM from '../../util/dom.js';
+import * as DOM from '../../util/dom.js';
 
 export default class TouchPanHandler {
 

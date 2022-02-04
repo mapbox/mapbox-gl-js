@@ -3,7 +3,7 @@
 import {extend, bindAll} from '../util/util.js';
 import {Event, Evented} from '../util/evented.js';
 import {MapMouseEvent} from '../ui/events.js';
-import DOM from '../util/dom.js';
+import * as DOM from '../util/dom.js';
 import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
 import window from '../util/window.js';
