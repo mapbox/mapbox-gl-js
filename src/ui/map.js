@@ -1068,7 +1068,7 @@ class Map extends Camera {
         // newProjection is a user-friendly projection object or null if not changed
         const newProjection = this.transform.setProjection(this._runtimeProjection || (this.style.stylesheet ? this.style.stylesheet.projection : undefined));
 
-        this.style.tryDraping();
+        this.style.enableDraping();
 
         if (!newProjection) return; // Continue if projection has changed
 

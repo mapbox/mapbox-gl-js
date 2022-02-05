@@ -355,7 +355,7 @@ class Style extends Evented {
         this.map.updateProjection();
     }
 
-    tryDraping() {
+    enableDraping() {
         if (this._loaded) {
             if (this.map.transform.projection.requiresDraping) {
                 const hasTerrain = this.getTerrain() || this.stylesheet.terrain;
