@@ -1055,7 +1055,7 @@ class Map extends Camera {
         return this;
     }
 
-    updateProjection(projection?: ProjectionSpecification) {
+    updateProjection(projection: ProjectionSpecification) {
         const oldExplicitProjection = this._explicitProjection;
         let isGlobe: ?boolean;
         const name = projection ? projection.name : this._explicitProjection.name;
@@ -1066,18 +1066,13 @@ class Map extends Camera {
         } else if (projection) { this._runtimeProjection = projection; }
 
         // newProjection is a user-friendly projection object or null if not changed
-        const newProjection = this.transform.setProjection(this._runtimeProjection || (this.style.stylesheet ? this.style.stylesheet.projection : undefined));
-
-        this.style.enableDraping();
-
+        const newProjection = this.transform.setProjection(this._runtimeProjection);
         if (!newProjection) return; // Continue if projection has changed
 
         if (!isGlobe) {
             this._explicitProjection = newProjection;
         }
-
         this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
-
         // If transitioning between different expressions
         if (!deepEqual(this._explicitProjection, oldExplicitProjection)) {
             this.painter.clearBackgroundTiles();
@@ -1087,8 +1082,9 @@ class Map extends Camera {
         } else { // If not, this is a zoom transition on Globe.
             this.style._forceSymbolLayerUpdate();
         }
-
+        this.style.enableDraping();
         this._update(true);
+        return this;
     }
 
     /**
@@ -2914,10 +2910,10 @@ class Map extends Camera {
         if (this._explicitProjection.name === 'globe') {
             if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
                 if (this._runtimeProjection && this._runtimeProjection.name === 'globe') {
-                    this.updateProjection();
+                    this.updateProjection(this._explicitProjection);
                 }
             } else if (!this._runtimeProjection || this._runtimeProjection.name === 'mercator') {
-                this.updateProjection();
+                this.updateProjection(this._explicitProjection);
             }
         }
 

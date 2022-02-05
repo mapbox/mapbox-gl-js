@@ -297,8 +297,7 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = json;
-
-        this.map.updateProjection();
+        this.updateProjection();
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -352,7 +351,18 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        this.map.updateProjection();
+        if (!this.map._runtimeProjection) {
+            this.map.updateProjection(projection ? projection : {name: 'mercator'});
+        }
+    }
+
+    updateProjection() {
+        if (!this.map._runtimeProjection) {
+            const projection = this.stylesheet.projection;
+            this.map.updateProjection(projection ? projection : {name: 'mercator'});
+        } else {
+            this.enableDraping();
+        }
     }
 
     enableDraping() {
@@ -647,7 +657,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this.map.updateProjection();
+        this.updateProjection();
 
         return true;
     }
