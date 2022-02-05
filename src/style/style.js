@@ -352,14 +352,14 @@ class Style extends Evented {
             delete this.stylesheet.projection;
         }
         if (!this.map._runtimeProjection) {
-            this.map.updateProjection(projection ? projection : {name: 'mercator'});
+            this.map.setProjection(projection);
         }
     }
 
     updateProjection() {
         if (!this.map._runtimeProjection) {
             const projection = this.stylesheet.projection;
-            this.map.updateProjection(projection ? projection : {name: 'mercator'});
+            this.map.setProjection(projection);
         } else {
             this.enableDraping();
         }

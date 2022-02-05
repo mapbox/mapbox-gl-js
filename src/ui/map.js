@@ -1051,19 +1051,13 @@ class Map extends Camera {
         if (!projection) { projection = {name: "mercator"}; } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
-        this.updateProjection(projection);
-        return this;
-    }
-
-    updateProjection(projection: ProjectionSpecification) {
         const oldExplicitProjection = this._explicitProjection;
         let isGlobe: ?boolean;
-        const name = projection ? projection.name : this._explicitProjection.name;
-        if (name === "globe") {
+        if (projection.name === "globe") {
             this._explicitProjection = {name: 'globe', center: [0, 0]};
             this._runtimeProjection = {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')};
             isGlobe = true;
-        } else if (projection) { this._runtimeProjection = projection; }
+        } else { this._runtimeProjection = projection; }
 
         // newProjection is a user-friendly projection object or null if not changed
         const newProjection = this.transform.setProjection(this._runtimeProjection);
@@ -1072,7 +1066,6 @@ class Map extends Camera {
         if (!isGlobe) {
             this._explicitProjection = newProjection;
         }
-        this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
         // If transitioning between different expressions
         if (!deepEqual(this._explicitProjection, oldExplicitProjection)) {
             this.painter.clearBackgroundTiles();
@@ -1082,7 +1075,9 @@ class Map extends Camera {
         } else { // If not, this is a zoom transition on Globe.
             this.style._forceSymbolLayerUpdate();
         }
+        this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
         this.style.enableDraping();
+
         this._update(true);
         return this;
     }
@@ -2910,10 +2905,10 @@ class Map extends Camera {
         if (this._explicitProjection.name === 'globe') {
             if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
                 if (this._runtimeProjection && this._runtimeProjection.name === 'globe') {
-                    this.updateProjection(this._explicitProjection);
+                    this.setProjection(this._explicitProjection);
                 }
             } else if (!this._runtimeProjection || this._runtimeProjection.name === 'mercator') {
-                this.updateProjection(this._explicitProjection);
+                this.setProjection(this._explicitProjection);
             }
         }
 
