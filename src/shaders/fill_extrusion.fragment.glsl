@@ -22,7 +22,6 @@ varying highp vec3 v_position;
 varying float v_base;
 varying float v_height;
 varying float v_t;
-varying vec3 v_color;
 
 #pragma mapbox: define highp vec4 color
 
@@ -154,7 +153,7 @@ void main() {
     float occlusionL2 = shadowOcclusionL2(v_pos_light_view_2);
 
     // Alleviate projective aliasing by forcing backfacing triangles to be occluded
-    float backfacing = 1.0 - step(0.1, dot(v_normal, normalize(vec3(-1, -1, 1))));
+    float backfacing = 1.0 - step(0.1, dot(v_normal, normalize(u_lightpos)));
 
     float occlusion = 0.0; 
 
@@ -173,8 +172,7 @@ void main() {
     highp vec3 n = normalize(v_normal);
     // Adjust the light to match the shadows direction. Use a lower angle
     // to increase the specular effect when tilted
-    // TODO: make this light configurable
-    highp vec3 l = normalize(vec3(1., 1., 0.2));
+    highp vec3 l = normalize(vec3(-u_lightpos.x, -u_lightpos.y, 0.2));
     highp vec3 h = normalize(v + l);
 
     float NdotL = saturate(dot(n, l));
@@ -198,11 +196,9 @@ void main() {
     }
 
     vec3 diffuseTerm = directional * vec3(color.rgb) * u_lightcolor;
-    vec3 specularTerm = pow(NdotH, u_specular_factor) * u_specular_color * u_lightcolor;
+    vec3 specularTerm = pow(NdotH, u_specular_factor) * u_specular_color * u_lightcolor * (1.0 - u_lightintensity);
     vec3 outColor = vec3(ambientTerm + diffuseTerm + specularTerm);
-
     occlusion = mix(occlusion, 1.0, backfacing);
-    outColor*= v_color;
     outColor = vec3(outColor * mix(1.0, 1.0 - u_shadow_intensity, occlusion));
     outColor *= u_opacity;
 

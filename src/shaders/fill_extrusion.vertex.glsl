@@ -99,37 +99,6 @@ void main() {
     v_t = t;
     v_depth = gl_Position.w;
 
-
-    // Default lighting
-    v_color = vec3(0.0);
-    // Add slight ambient lighting so no extrusions are totally black
-    vec4 ambientlight = vec4(0.03, 0.03, 0.03, 1.0);
-    color += ambientlight;
-    // Relative luminance (how dark/bright is the surface color?)
-    float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
-    // Calculate cos(theta), where theta is the angle between surface normal and diffuse light ray
-    float directional = clamp(dot(normal, u_lightpos), 0.0, 1.0);
-
-    // Adjust directional so that
-    // the range of values for highlight/shading is narrower
-    // with lower light intensity
-    // and with lighter/brighter surface colors
-    directional = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), directional);
-
-    // Add gradient along z axis of side surfaces
-    if (normal.y != 0.0) {
-        // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
-        // and otherwise calculates the gradient based on base + height
-        directional *= (
-            (1.0 - u_vertical_gradient) +
-            (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
-    }
-
-    // Assign final color based on surface + ambient light color, diffuse light directional, and light color
-    // with lower bounds adjusted to hue of light
-    // so that shading is tinted with the complementary (opposite) color to the light color
-    v_color += clamp(color.rgb * directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-
 #ifdef FOG
     v_fog_pos = fog_position(pos);
 #endif
