@@ -16,12 +16,12 @@ class DictionaryCoder {
         }
     }
 
-    encode(string: string) {
+    encode(string: string): number {
         assert(string in this._stringToNumber);
         return this._stringToNumber[string];
     }
 
-    decode(n: number) {
+    decode(n: number): string {
         assert(n < this._numberToString.length);
         return this._numberToString[n];
     }

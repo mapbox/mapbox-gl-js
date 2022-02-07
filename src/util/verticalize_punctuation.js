@@ -88,7 +88,7 @@ export const verticalizedCharacterMap = {
     '｣': '﹂'
 };
 
-export default function verticalizePunctuation(input: string, skipContextChecking: boolean) {
+export default function verticalizePunctuation(input: string, skipContextChecking: boolean): string {
     let output = '';
 
     for (let i = 0; i < input.length; i++) {
@@ -110,13 +110,13 @@ export default function verticalizePunctuation(input: string, skipContextCheckin
     return output;
 }
 
-export function isVerticalClosePunctuation(chr: string) {
+export function isVerticalClosePunctuation(chr: string): boolean {
     return chr === '︶' || chr === '﹈' || chr === '︸' || chr === '﹄' || chr === '﹂' || chr === '︾' ||
            chr === '︼' || chr === '︺' || chr === '︘' || chr === '﹀' || chr === '︐' || chr === '︓' ||
            chr === '︔' || chr === '｀' || chr === '￣' || chr === '︑' || chr === '︒';
 }
 
-export function isVerticalOpenPunctuation(chr: string) {
+export function isVerticalOpenPunctuation(chr: string): boolean {
     return chr === '︵' || chr === '﹇' || chr === '︷' || chr === '﹃' || chr === '﹁' || chr === '︽' ||
            chr === '︻' || chr === '︹' || chr === '︗' || chr === '︿';
 }

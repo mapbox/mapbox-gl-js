@@ -93,7 +93,7 @@ function stripQueryParameters(url: string) {
     return start < 0 ? url : url.slice(0, start);
 }
 
-export function cacheGet(request: Request, callback: (error: ?any, response: ?Response, fresh: ?boolean) => void) {
+export function cacheGet(request: Request, callback: (error: ?any, response: ?Response, fresh: ?boolean) => void): void {
     cacheOpen();
     if (!sharedCache) return callback(null);
 
