@@ -49,7 +49,7 @@ export class DedupedRequest {
         this.scheduler = scheduler;
     }
 
-    request(key: string, metadata: Object, request: any, callback: LoadVectorDataCallback) {
+    request(key: string, metadata: Object, request: any, callback: LoadVectorDataCallback): (() => void) {
         const entry = this.entries[key] = this.entries[key] || {callbacks: []};
 
         if (entry.result) {
@@ -96,7 +96,7 @@ export class DedupedRequest {
 /**
  * @private
  */
-export function loadVectorTile(params: RequestedTileParameters, callback: LoadVectorDataCallback, skipParse?: boolean) {
+export function loadVectorTile(params: RequestedTileParameters, callback: LoadVectorDataCallback, skipParse?: boolean): (() => void) {
     const key = JSON.stringify(params.request);
 
     const makeRequest = (callback) => {
@@ -120,11 +120,11 @@ export function loadVectorTile(params: RequestedTileParameters, callback: LoadVe
 
     if (params.data) {
         // if we already got the result earlier (on the main thread), return it directly
-        this.deduped.entries[key] = {result: [null, params.data]};
+        (this.deduped: DedupedRequest).entries[key] = {result: [null, params.data]};
     }
 
     const callbackMetadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
-    return this.deduped.request(key, callbackMetadata, makeRequest, callback);
+    return (this.deduped: DedupedRequest).request(key, callbackMetadata, makeRequest, callback);
 }
 
 /**

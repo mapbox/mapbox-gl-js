@@ -20,12 +20,12 @@ export class CanonicalTileID {
         this.key = calculateKey(0, z, z, x, y);
     }
 
-    equals(id: CanonicalTileID) {
+    equals(id: CanonicalTileID): boolean {
         return this.z === id.z && this.x === id.x && this.y === id.y;
     }
 
     // given a list of urls, choose a url template and return a tile URL
-    url(urls: Array<string>, scheme: ?string) {
+    url(urls: Array<string>, scheme: ?string): string {
         const bbox = getTileBBox(this.x, this.y, this.z);
         const quadkey = getQuadkey(this.z, this.x, this.y);
 
@@ -38,7 +38,7 @@ export class CanonicalTileID {
             .replace('{bbox-epsg-3857}', bbox);
     }
 
-    toString() {
+    toString(): string {
         return `${this.z}/${this.x}/${this.y}`;
     }
 }
@@ -70,11 +70,11 @@ export class OverscaledTileID {
         this.key = wrap === 0 && overscaledZ === z ? this.canonical.key : calculateKey(wrap, overscaledZ, z, x, y);
     }
 
-    equals(id: OverscaledTileID) {
+    equals(id: OverscaledTileID): boolean {
         return this.overscaledZ === id.overscaledZ && this.wrap === id.wrap && this.canonical.equals(id.canonical);
     }
 
-    scaledTo(targetZ: number) {
+    scaledTo(targetZ: number): OverscaledTileID {
         assert(targetZ <= this.overscaledZ);
         const zDifference = this.canonical.z - targetZ;
         if (targetZ > this.canonical.z) {
@@ -99,7 +99,7 @@ export class OverscaledTileID {
         }
     }
 
-    isChildOf(parent: OverscaledTileID) {
+    isChildOf(parent: OverscaledTileID): boolean {
         if (parent.wrap !== this.wrap) {
             // We can't be a child if we're in a different world copy
             return false;
@@ -112,7 +112,7 @@ export class OverscaledTileID {
                 parent.canonical.y === (this.canonical.y >> zDifference));
     }
 
-    children(sourceMaxZoom: number) {
+    children(sourceMaxZoom: number): Array<OverscaledTileID> {
         if (this.overscaledZ >= sourceMaxZoom) {
             // return a single tile coord representing a an overscaled tile
             return [new OverscaledTileID(this.overscaledZ + 1, this.wrap, this.canonical.z, this.canonical.x, this.canonical.y)];
@@ -129,7 +129,7 @@ export class OverscaledTileID {
         ];
     }
 
-    isLessThan(rhs: OverscaledTileID) {
+    isLessThan(rhs: OverscaledTileID): boolean {
         if (this.wrap < rhs.wrap) return true;
         if (this.wrap > rhs.wrap) return false;
 
@@ -143,23 +143,23 @@ export class OverscaledTileID {
         return false;
     }
 
-    wrapped() {
+    wrapped(): OverscaledTileID {
         return new OverscaledTileID(this.overscaledZ, 0, this.canonical.z, this.canonical.x, this.canonical.y);
     }
 
-    unwrapTo(wrap: number) {
+    unwrapTo(wrap: number): OverscaledTileID {
         return new OverscaledTileID(this.overscaledZ, wrap, this.canonical.z, this.canonical.x, this.canonical.y);
     }
 
-    overscaleFactor() {
+    overscaleFactor(): number {
         return Math.pow(2, this.overscaledZ - this.canonical.z);
     }
 
-    toUnwrapped() {
+    toUnwrapped(): UnwrappedTileID {
         return new UnwrappedTileID(this.wrap, this.canonical);
     }
 
-    toString() {
+    toString(): string {
         return `${this.overscaledZ}/${this.canonical.x}/${this.canonical.y}`;
     }
 }
