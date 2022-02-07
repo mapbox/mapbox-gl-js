@@ -49,7 +49,7 @@ class LngLatBounds {
      * const llb = new mapboxgl.LngLatBounds(sw, ne);
      * llb.setNorthEast([-73.9397, 42.8002]);
      */
-    setNorthEast(ne: LngLatLike) {
+    setNorthEast(ne: LngLatLike): this {
         this._ne = ne instanceof LngLat ? new LngLat(ne.lng, ne.lat) : LngLat.convert(ne);
         return this;
     }
@@ -65,7 +65,7 @@ class LngLatBounds {
      * const llb = new mapboxgl.LngLatBounds(sw, ne);
      * llb.setSouthWest([-73.9876, 40.2661]);
      */
-    setSouthWest(sw: LngLatLike) {
+    setSouthWest(sw: LngLatLike): this {
         this._sw = sw instanceof LngLat ? new LngLat(sw.lng, sw.lat) : LngLat.convert(sw);
         return this;
     }
@@ -81,7 +81,7 @@ class LngLatBounds {
      * const llb = new mapboxgl.LngLatBounds(sw, ne);
      * llb.extend([-72.9876, 42.2661]);
      */
-    extend(obj: LngLatLike | LngLatBoundsLike) {
+    extend(obj: LngLatLike | LngLatBoundsLike): this {
         const sw = this._sw,
             ne = this._ne;
         let sw2, ne2;
@@ -224,7 +224,7 @@ class LngLatBounds {
      * const llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toArray(); // = [[-73.9876, 40.7661], [-73.9397, 40.8002]]
      */
-    toArray() {
+    toArray(): [[number, number], [number, number]] {
         return [this._sw.toArray(), this._ne.toArray()];
     }
 
@@ -237,7 +237,7 @@ class LngLatBounds {
      * const llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toString(); // = "LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))"
      */
-    toString() {
+    toString(): string {
         return `LngLatBounds(${this._sw.toString()}, ${this._ne.toString()})`;
     }
 
@@ -252,7 +252,7 @@ class LngLatBounds {
      * llb.setSouthWest([-73.9397, 40.8002]);
      * llb.isEmpty(); // false
      */
-    isEmpty() {
+    isEmpty(): boolean {
         return !(this._sw && this._ne);
     }
 
@@ -271,7 +271,7 @@ class LngLatBounds {
     *
     * console.log(llb.contains(ll)); // = true
     */
-    contains(lnglat: LngLatLike) {
+    contains(lnglat: LngLatLike): boolean {
         const {lng, lat} = LngLat.convert(lnglat);
 
         const containsLatitude = this._sw.lat <= lat && lat <= this._ne.lat;
