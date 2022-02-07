@@ -4,7 +4,7 @@ import * as DOM from '../../util/dom.js';
 import {bindAll} from '../../util/util.js';
 import config from '../../util/config.js';
 
-import type Map from '../map.js';
+import type Map, {ControlPosition} from '../map.js';
 
 type Options = {
     compact?: boolean,
@@ -47,11 +47,11 @@ class AttributionControl {
         ], this);
     }
 
-    getDefaultPosition() {
+    getDefaultPosition(): ControlPosition {
         return 'bottom-right';
     }
 
-    onAdd(map: Map) {
+    onAdd(map: Map): HTMLElement {
         const compact = this.options && this.options.compact;
 
         this._map = map;

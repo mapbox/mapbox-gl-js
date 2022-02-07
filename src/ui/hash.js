@@ -35,7 +35,7 @@ class Hash {
      * @param {Object} map
      * @returns {Hash} `this`
      */
-    addTo(map: Map) {
+    addTo(map: Map): this {
         this._map = map;
         window.addEventListener('hashchange', this._onHashChange, false);
         map.on('moveend', this._updateHash);
@@ -47,7 +47,7 @@ class Hash {
      *
      * @returns {Popup} `this`
      */
-    remove() {
+    remove(): this {
         if (!this._map) return this;
 
         this._map.off('moveend', this._updateHash);
@@ -58,9 +58,9 @@ class Hash {
         return this;
     }
 
-    getHashString(mapFeedback?: boolean) {
+    getHashString(mapFeedback?: boolean): string {
         const map = this._map;
-        if (!map) return;
+        if (!map) return '';
         const center = map.getCenter(),
             zoom = Math.round(map.getZoom() * 100) / 100,
             // derived from equation: 512px * 2^z / 360 / 10^d < 0.5px
@@ -102,7 +102,7 @@ class Hash {
         return `#${hash}`;
     }
 
-    _getCurrentHash() {
+    _getCurrentHash(): Array<string> {
         // Get the current hash from location, stripped from its number sign
         const hash = window.location.hash.replace('#', '');
         if (this._hashName) {
@@ -120,9 +120,9 @@ class Hash {
         return hash.split('/');
     }
 
-    _onHashChange() {
+    _onHashChange(): boolean {
         const map = this._map;
-        if (!map) return;
+        if (!map) return false;
         const loc = this._getCurrentHash();
         if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
             const bearing = map.dragRotate.isEnabled() && map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : map.getBearing();
