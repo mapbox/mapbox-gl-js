@@ -94,7 +94,7 @@ class AJAXError extends Error {
 // to the string(!) "null" (Firefox), or "file://" (Chrome, Safari, Edge, IE),
 // and we will set an empty referrer. Otherwise, we're using the document's URL.
 /* global self */
-export const getReferrer = isWorker() ?
+export const getReferrer: (() => string) = isWorker() ?
     () => self.worker && self.worker.referrer :
     () => (window.location.protocol === 'blob:' ? window.parent : window).location.href;
 

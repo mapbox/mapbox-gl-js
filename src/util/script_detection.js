@@ -4,28 +4,28 @@
 
 import isChar from './is_char_in_unicode_block.js';
 
-export function allowsIdeographicBreaking(chars: string) {
+export function allowsIdeographicBreaking(chars: string): boolean {
     for (const char of chars) {
         if (!charAllowsIdeographicBreaking(char.charCodeAt(0))) return false;
     }
     return true;
 }
 
-export function allowsVerticalWritingMode(chars: string) {
+export function allowsVerticalWritingMode(chars: string): boolean {
     for (const char of chars) {
         if (charHasUprightVerticalOrientation(char.charCodeAt(0))) return true;
     }
     return false;
 }
 
-export function allowsLetterSpacing(chars: string) {
+export function allowsLetterSpacing(chars: string): boolean {
     for (const char of chars) {
         if (!charAllowsLetterSpacing(char.charCodeAt(0))) return false;
     }
     return true;
 }
 
-export function charAllowsLetterSpacing(char: number) {
+export function charAllowsLetterSpacing(char: number): boolean {
     if (isChar['Arabic'](char)) return false;
     if (isChar['Arabic Supplement'](char)) return false;
     if (isChar['Arabic Extended-A'](char)) return false;
@@ -35,7 +35,7 @@ export function charAllowsLetterSpacing(char: number) {
     return true;
 }
 
-export function charAllowsIdeographicBreaking(char: number) {
+export function charAllowsIdeographicBreaking(char: number): boolean {
     // Return early for characters outside all ideographic ranges.
     if (char < 0x2E80) return false;
 
@@ -85,7 +85,7 @@ export function charAllowsIdeographicBreaking(char: number) {
  * “neutral” character to be drawn upright as well.
  * @private
  */
-export function charHasUprightVerticalOrientation(char: number) {
+export function charHasUprightVerticalOrientation(char: number): boolean {
     if (char === 0x02EA /* modifier letter yin departing tone mark */ ||
         char === 0x02EB /* modifier letter yang departing tone mark */) {
         return true;
@@ -173,7 +173,7 @@ export function charHasUprightVerticalOrientation(char: number) {
  * adjacent character is drawn upright or rotated.
  * @private
  */
-export function charHasNeutralVerticalOrientation(char: number) {
+export function charHasNeutralVerticalOrientation(char: number): boolean {
     if (isChar['Latin-1 Supplement'](char)) {
         if (char === 0x00A7 /* section sign */ ||
             char === 0x00A9 /* copyright sign */ ||
@@ -264,12 +264,12 @@ export function charHasNeutralVerticalOrientation(char: number) {
  * character causes an adjacent “neutral” character to be drawn rotated as well.
  * @private
  */
-export function charHasRotatedVerticalOrientation(char: number) {
+export function charHasRotatedVerticalOrientation(char: number): boolean {
     return !(charHasUprightVerticalOrientation(char) ||
              charHasNeutralVerticalOrientation(char));
 }
 
-export function charInComplexShapingScript(char: number) {
+export function charInComplexShapingScript(char: number): boolean {
     return isChar['Arabic'](char) ||
            isChar['Arabic Supplement'](char) ||
            isChar['Arabic Extended-A'](char) ||
@@ -277,14 +277,14 @@ export function charInComplexShapingScript(char: number) {
            isChar['Arabic Presentation Forms-B'](char);
 }
 
-export function charInRTLScript(char: number) {
+export function charInRTLScript(char: number): boolean {
     // Main blocks for Hebrew, Arabic, Thaana and other RTL scripts
     return (char >= 0x0590 && char <= 0x08FF) ||
         isChar['Arabic Presentation Forms-A'](char) ||
         isChar['Arabic Presentation Forms-B'](char);
 }
 
-export function charInSupportedScript(char: number, canRenderRTL: boolean) {
+export function charInSupportedScript(char: number, canRenderRTL: boolean): boolean {
     // This is a rough heuristic: whether we "can render" a script
     // actually depends on the properties of the font being used
     // and whether differences from the ideal rendering are considered
@@ -318,7 +318,7 @@ export function stringContainsRTLText(chars: string): boolean {
     return false;
 }
 
-export function isStringInSupportedScript(chars: string, canRenderRTL: boolean) {
+export function isStringInSupportedScript(chars: string, canRenderRTL: boolean): boolean {
     for (const char of chars) {
         if (!charInSupportedScript(char.charCodeAt(0), canRenderRTL)) {
             return false;
