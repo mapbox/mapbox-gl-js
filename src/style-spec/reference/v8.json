@@ -4879,6 +4879,24 @@
         ]
       },
       "property-type": "color-ramp"
+    },
+    "line-gradient-trim-offset": {
+      "type": "number",
+      "doc": "The line gradient trim off percentage based on the whole line gradinet range [0, 1]. The line part between [0, trim-offset] will be marked as transparent to make a routing vanishing effect.",
+      "default": "0.0",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "transition": false,
+      "requires": [
+          "line-gradient",
+          {
+              "source": "geojson",
+              "has": {
+                  "lineMetrics": true
+              }
+          }
+      ],
+      "property-type": "constant"
     }
   },
   "paint_circle": {
