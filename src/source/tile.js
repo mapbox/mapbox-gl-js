@@ -442,7 +442,7 @@ class Tile {
             }
             const id = featureIndex.getId(feature, sourceLayer);
             const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
-            (geojsonFeature: any).tile = coord;
+            geojsonFeature.tile = coord;
             result.push(geojsonFeature);
         }
     }

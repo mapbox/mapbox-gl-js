@@ -1,11 +1,22 @@
 // @flow
-import type {GeoJSONGeometry} from '@mapbox/geojson-types';
+import type {GeoJSONGeometry, GeoJSONFeature} from '@mapbox/geojson-types';
+
+// we augment GeoJSON with custom properties in query*Features results
+type QueryFeature = GeoJSONFeature & {
+    tile?: mixed,
+    layer?: mixed
+};
 
 class Feature {
     type: 'Feature';
     _geometry: ?GeoJSONGeometry;
     properties: {};
     id: number | string | void;
+    layer: ?mixed;
+    tile: ?mixed;
+    _x: number;
+    _y: number;
+    _z: number;
 
     _vectorTileFeature: VectorTileFeature;
 
@@ -13,9 +24,9 @@ class Feature {
         this.type = 'Feature';
 
         this._vectorTileFeature = vectorTileFeature;
-        (vectorTileFeature: any)._z = z;
-        (vectorTileFeature: any)._x = x;
-        (vectorTileFeature: any)._y = y;
+        this._z = z;
+        this._x = x;
+        this._y = y;
 
         this.properties = vectorTileFeature.properties;
         this.id = id;
@@ -23,10 +34,7 @@ class Feature {
 
     get geometry(): ?GeoJSONGeometry {
         if (this._geometry === undefined) {
-            this._geometry = this._vectorTileFeature.toGeoJSON(
-                (this._vectorTileFeature: any)._x,
-                (this._vectorTileFeature: any)._y,
-                (this._vectorTileFeature: any)._z).geometry;
+            this._geometry = this._vectorTileFeature.toGeoJSON(this._x, this._y, this._z).geometry;
         }
         return this._geometry;
     }
@@ -35,14 +43,15 @@ class Feature {
         this._geometry = g;
     }
 
-    toJSON() {
-        const json = {
-            geometry: this.geometry
+    toJSON(): QueryFeature {
+        const json: QueryFeature = {
+            type: 'Feature',
+            geometry: this.geometry,
+            properties: this.properties
         };
-        for (const i in this) {
-            if (i === '_geometry' || i === '_vectorTileFeature') continue;
-            json[i] = (this: any)[i];
-        }
+        if (this.id !== undefined) json.id = this.id;
+        if (this.tile !== undefined) json.tile = this.tile;
+        if (this.layer !== undefined) json.layer = this.layer;
         return json;
     }
 }
