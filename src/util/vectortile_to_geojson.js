@@ -2,23 +2,25 @@
 import type {GeoJSONGeometry, GeoJSONFeature} from '@mapbox/geojson-types';
 
 // we augment GeoJSON with custom properties in query*Features results
-type QueryFeature = GeoJSONFeature & {
-    tile?: mixed,
-    layer?: mixed
-};
+type QueryFeature = GeoJSONFeature & {[key: string]: mixed};
+
+const customProps = ['tile', 'layer', 'source', 'sourceLayer', 'state'];
 
 class Feature {
     type: 'Feature';
     _geometry: ?GeoJSONGeometry;
     properties: {};
     id: number | string | void;
-    layer: ?mixed;
-    tile: ?mixed;
+    _vectorTileFeature: VectorTileFeature;
     _x: number;
     _y: number;
     _z: number;
 
-    _vectorTileFeature: VectorTileFeature;
+    tile: ?mixed;
+    layer: ?mixed;
+    source: ?mixed;
+    sourceLayer: ?mixed;
+    state: ?mixed;
 
     constructor(vectorTileFeature: VectorTileFeature, z: number, x: number, y: number, id: string | number | void) {
         this.type = 'Feature';
@@ -50,8 +52,10 @@ class Feature {
             properties: this.properties
         };
         if (this.id !== undefined) json.id = this.id;
-        if (this.tile !== undefined) json.tile = this.tile;
-        if (this.layer !== undefined) json.layer = this.layer;
+        for (const key of customProps) {
+            // Flow doesn't support indexed access for classes https://github.com/facebook/flow/issues/1323
+            if ((this: any)[key] !== undefined) json[key] = (this: any)[key];
+        }
         return json;
     }
 }
