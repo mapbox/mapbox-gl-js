@@ -552,18 +552,19 @@ export default class Popup extends Evented {
     }
 
     _getAnchor(offset: any) {
+        const fallbackPosition = 'bottom';
         if (
             this.options.fixedAnchor ||
             (typeof (this.options.fixedAnchor) === 'undefined' && this.options.anchor)
         ) {
-            return this.options.anchor;
+            return this.options.anchor || fallbackPosition;
         }
 
         const map = this._map;
         const container = this._container;
         const pos = this._pos;
 
-        if (!map || !container || !pos) return 'bottom';
+        if (!map || !container || !pos) return fallbackPosition;
 
         const width = container.offsetWidth;
         const height = container.offsetHeight;
@@ -584,7 +585,7 @@ export default class Popup extends Evented {
         }
 
         if (anchorComponents.length === 0) {
-            return this.options.anchor || 'bottom';
+            return this.options.anchor || fallbackPosition;
         }
         return ((anchorComponents.join('-'): any): Anchor);
 
