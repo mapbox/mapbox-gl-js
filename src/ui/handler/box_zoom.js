@@ -1,6 +1,6 @@
 // @flow
 
-import DOM from '../../util/dom.js';
+import * as DOM from '../../util/dom.js';
 
 import {Event} from '../../util/evented.js';
 

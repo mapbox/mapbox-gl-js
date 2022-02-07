@@ -38,7 +38,7 @@ export default class DEMData {
 
     // RGBAImage data has uniform 1px padding on all sides: square tile edge size defines stride
     // and dim is calculated as stride - 2.
-    constructor(uid: number, data: ImageData, encoding: DEMEncoding, borderReady: boolean = false, buildQuadTree: boolean = false) {
+    constructor(uid: number, data: ImageData, encoding: DEMEncoding, borderReady: boolean = false, buildQuadTree: boolean = false): void {
         this.uid = uid;
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
         if (encoding && encoding !== "mapbox" && encoding !== "terrarium") return warnOnce(
@@ -80,7 +80,7 @@ export default class DEMData {
         this._tree = new DemMinMaxQuadTree(this);
     }
 
-    get(x: number, y: number, clampToEdge: boolean = false) {
+    get(x: number, y: number, clampToEdge: boolean = false): number {
         if (clampToEdge) {
             x = clamp(x, -1, this.dim);
             y = clamp(y, -1, this.dim);
@@ -98,18 +98,18 @@ export default class DEMData {
         return unpackVectors[this.encoding];
     }
 
-    _idx(x: number, y: number) {
+    _idx(x: number, y: number): number {
         if (x < -1 || x >= this.dim + 1 ||  y < -1 || y >= this.dim + 1) throw new RangeError('out of range source coordinates for DEM data');
         return (y + 1) * this.stride + (x + 1);
     }
 
-    _unpackMapbox(r: number, g: number, b: number) {
+    _unpackMapbox(r: number, g: number, b: number): number {
         // unpacking formula for mapbox.terrain-rgb:
         // https://www.mapbox.com/help/access-elevation-data/#mapbox-terrain-rgb
         return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
     }
 
-    _unpackTerrarium(r: number, g: number, b: number) {
+    _unpackTerrarium(r: number, g: number, b: number): number {
         // unpacking formula for mapzen terrarium:
         // https://aws.amazon.com/public-datasets/terrain/
         return ((r * 256 + g + b / 256) - 32768.0);
@@ -127,7 +127,7 @@ export default class DEMData {
         return color;
     }
 
-    getPixels() {
+    getPixels(): RGBAImage {
         return new RGBAImage({width: this.stride, height: this.stride}, this.pixels);
     }
 

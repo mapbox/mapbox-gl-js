@@ -307,7 +307,7 @@ export default class DemMinMaxQuadTree {
         return null;
     }
 
-    _addNode(min: number, max: number, leaf: number) {
+    _addNode(min: number, max: number, leaf: number): number {
         this.minimums.push(min);
         this.maximums.push(max);
         this.leaves.push(leaf);

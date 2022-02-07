@@ -1,7 +1,7 @@
 // @flow
 
 import Point from '@mapbox/point-geometry';
-import DOM from '../../util/dom.js';
+import * as DOM from '../../util/dom.js';
 import type Map from '../map.js';
 
 class TwoTouchHandler {

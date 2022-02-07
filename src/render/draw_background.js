@@ -54,7 +54,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     for (const tileID of tileIDs) {
         const unwrappedTileID = tileID.toUnwrapped();
         const matrix = coords ? tileID.projMatrix : painter.transform.calculateProjMatrix(unwrappedTileID);
-        painter.prepareDrawTile(tileID);
+        painter.prepareDrawTile();
 
         const tile = sourceCache ? sourceCache.getTile(tileID) :
             backgroundTiles ? backgroundTiles[tileID.key] : new Tile(tileID, tileSize, transform.zoom, painter);

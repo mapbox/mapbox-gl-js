@@ -1,6 +1,6 @@
 // @flow
 
-import DOM from '../util/dom.js';
+import * as DOM from '../util/dom.js';
 import window from '../util/window.js';
 import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';

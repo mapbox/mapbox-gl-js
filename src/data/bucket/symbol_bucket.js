@@ -107,6 +107,11 @@ export type SortKeyRange = {
     symbolInstanceEnd: number
 };
 
+type LineVertexRange = {|
+    lineLength: number,
+    lineStartIndex: number
+|};
+
 // Opacity arrays are frequently updated but don't contain a lot of information, so we pack them
 // tight. Each Uint32 is actually four duplicate Uint8s for the four corners of a glyph
 // 7 bits are for the current opacity, and the lowest bit is the target opacity
@@ -192,7 +197,7 @@ export class SymbolBuffers {
         this.placedSymbolArray = new PlacedSymbolArray();
     }
 
-    isEmpty() {
+    isEmpty(): boolean {
         return this.layoutVertexArray.length === 0 &&
             this.indexArray.length === 0 &&
             this.dynamicLayoutVertexArray.length === 0 &&
@@ -564,13 +569,13 @@ class SymbolBucket implements Bucket {
         this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);
     }
 
-    isEmpty() {
+    isEmpty(): boolean {
         // When the bucket encounters only rtl-text but the plugin isn't loaded, no symbol instances will be created.
         // In order for the bucket to be serialized, and not discarded as an empty bucket both checks are necessary.
         return this.symbolInstances.length === 0 && !this.hasRTLText;
     }
 
-    uploadPending() {
+    uploadPending(): boolean {
         return !this.uploaded || this.text.programConfigurations.needsUpload || this.icon.programConfigurations.needsUpload;
     }
 
@@ -598,7 +603,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    addToLineVertexArray(anchor: Anchor, line: any) {
+    addToLineVertexArray(anchor: Anchor, line: any): LineVertexRange {
         const lineStartIndex = this.lineVertexArray.length;
         const segment = anchor.segment;
         if (segment !== undefined) {
@@ -778,7 +783,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    getSymbolInstanceTextSize(textSize: any, instance: SymbolInstance, zoom: number, boxIndex: number) {
+    getSymbolInstanceTextSize(textSize: any, instance: SymbolInstance, zoom: number, boxIndex: number): number {
         const symbolIndex = instance.rightJustifiedTextSymbolIndex >= 0 ?
             instance.rightJustifiedTextSymbolIndex : instance.centerJustifiedTextSymbolIndex >= 0 ?
                 instance.centerJustifiedTextSymbolIndex : instance.leftJustifiedTextSymbolIndex >= 0 ?
@@ -791,7 +796,7 @@ class SymbolBucket implements Bucket {
         return this.tilePixelRatio * featureSize;
     }
 
-    getSymbolInstanceIconSize(iconSize: any, zoom: number, index: number) {
+    getSymbolInstanceIconSize(iconSize: any, zoom: number, index: number): number {
         const symbol: any = this.icon.placedSymbolArray.get(index);
         const featureSize = symbolSize.evaluateSizeForFeature(this.iconSizeData, iconSize, symbol);
 
@@ -906,23 +911,23 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    hasTextData() {
+    hasTextData(): boolean {
         return this.text.segments.get().length > 0;
     }
 
-    hasIconData() {
+    hasIconData(): boolean {
         return this.icon.segments.get().length > 0;
     }
 
-    hasDebugData() {
+    hasDebugData(): CollisionBuffers {
         return this.textCollisionBox && this.iconCollisionBox;
     }
 
-    hasTextCollisionBoxData() {
+    hasTextCollisionBoxData(): boolean {
         return this.hasDebugData() && this.textCollisionBox.segments.get().length > 0;
     }
 
-    hasIconCollisionBoxData() {
+    hasIconCollisionBoxData(): boolean {
         return this.hasDebugData() && this.iconCollisionBox.segments.get().length > 0;
     }
 
@@ -936,7 +941,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    getSortedSymbolIndexes(angle: number) {
+    getSortedSymbolIndexes(angle: number): Array<number> {
         if (this.sortedAngle === angle && this.symbolInstanceIndexes !== undefined) {
             return this.symbolInstanceIndexes;
         }

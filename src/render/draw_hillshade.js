@@ -54,7 +54,7 @@ function renderHillshade(painter, coord, tile, layer, depthMode, stencilMode, co
     const gl = context.gl;
     const fbo = tile.fbo;
     if (!fbo) return;
-    painter.prepareDrawTile(coord);
+    painter.prepareDrawTile();
 
     const program = painter.useProgram('hillshade');
 
