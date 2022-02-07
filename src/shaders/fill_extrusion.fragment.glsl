@@ -1,6 +1,5 @@
 uniform sampler2D u_image0;
 uniform sampler2D u_image1;
-uniform sampler2D u_image2;
 uniform float u_shadow_intensity;
 uniform float u_texel_size;
 uniform vec3 u_cascade_distances;
@@ -14,7 +13,6 @@ uniform vec3 u_specular_color;
 
 varying vec4 v_pos_light_view_0;
 varying vec4 v_pos_light_view_1;
-varying vec4 v_pos_light_view_2;
 varying float v_depth;
 varying highp vec3 v_normal;
 varying highp vec3 v_position;
@@ -36,9 +34,11 @@ float unpack_depth(vec4 rgba_depth)
 float shadowOcclusionL1(vec4 pos) {
     pos.xyz /= pos.w;
     pos.xyz = pos.xyz * 0.5 + 0.5;
-    float fragDepth = pos.z;
+    float fragDepth = min(pos.z, 0.999);
     vec2 uv = pos.xy;
-
+#if 1
+    return step(unpack_depth(texture2D(u_image1, uv)) + 0.005, fragDepth);
+#else
     vec2 texel = uv / u_texel_size - vec2(0.5);
     vec2 f = fract(texel);
 
@@ -53,34 +53,13 @@ float shadowOcclusionL1(vec4 pos) {
     float occlusion11 = step(unpack_depth(texture2D(u_image1, uv11)) + 0.005, fragDepth);
 
     return mix(mix(occlusion00, occlusion10, f.x), mix(occlusion01, occlusion11, f.x), f.y);
-}
-
-float shadowOcclusionL2(vec4 pos) {
-    pos.xyz /= pos.w;
-    pos.xyz = pos.xyz * 0.5 + 0.5;
-    float fragDepth = pos.z;
-    vec2 uv = pos.xy;
-
-    vec2 texel = uv / u_texel_size - vec2(0.5);
-    vec2 f = fract(texel);
-
-    vec2 uv00 = (texel - f + 0.5) * u_texel_size;
-    vec2 uv10 = uv00 + vec2(u_texel_size, 0);
-    vec2 uv01 = uv00 + vec2(0, u_texel_size);
-    vec2 uv11 = uv00 + vec2(u_texel_size, u_texel_size);
-
-    float occlusion00 = step(unpack_depth(texture2D(u_image2, uv00)) + 0.005, fragDepth);
-    float occlusion10 = step(unpack_depth(texture2D(u_image2, uv10)) + 0.005, fragDepth);
-    float occlusion01 = step(unpack_depth(texture2D(u_image2, uv01)) + 0.005, fragDepth);
-    float occlusion11 = step(unpack_depth(texture2D(u_image2, uv11)) + 0.005, fragDepth);
-
-    return mix(mix(occlusion00, occlusion10, f.x), mix(occlusion01, occlusion11, f.x), f.y);
+#endif
 }
 
 float shadowOcclusionL0(vec4 pos) {
     pos.xyz /= pos.w;
     pos.xyz = pos.xyz * 0.5 + 0.5;
-    float fragDepth = pos.z;
+    float fragDepth = min(pos.z, 0.999);
     vec2 uv = pos.xy;
 
     vec2 texel = uv / u_texel_size - vec2(1.5);
@@ -150,24 +129,18 @@ void main() {
     #pragma mapbox: initialize highp vec4 color
     float occlusionL0 = shadowOcclusionL0(v_pos_light_view_0);
     float occlusionL1 = shadowOcclusionL1(v_pos_light_view_1);
-    float occlusionL2 = shadowOcclusionL2(v_pos_light_view_2);
+    float occlusion = 0.0; 
 
     // Alleviate projective aliasing by forcing backfacing triangles to be occluded
     float backfacing = 1.0 - step(0.1, dot(v_normal, normalize(u_lightpos)));
 
-    float occlusion = 0.0; 
-
     if (v_depth < u_cascade_distances.x)
-    {
         occlusion = occlusionL0;
-    }
     else if (v_depth < u_cascade_distances.y)
-    {
         occlusion = occlusionL1;
-    }
-    else {
-        occlusion = occlusionL2;
-    }
+    else
+        occlusion = 0.0;
+
     highp vec3 v = normalize(-v_position);
     highp vec3 n = normalize(v_normal);
     // Adjust the light to match the shadows direction. Use a lower angle
