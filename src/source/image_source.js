@@ -348,7 +348,7 @@ class ImageSource extends Evented implements Source {
         };
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return false;
     }
 }
@@ -359,7 +359,7 @@ class ImageSource extends Evented implements Source {
  * @returns centerpoint
  * @private
  */
-export function getCoordinatesCenterTileID(coords: Array<MercatorCoordinate>) {
+export function getCoordinatesCenterTileID(coords: Array<MercatorCoordinate>): CanonicalTileID {
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;

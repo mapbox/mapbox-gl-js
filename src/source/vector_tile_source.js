@@ -127,7 +127,7 @@ class VectorTileSource extends Evented implements Source {
         return this._loaded;
     }
 
-    hasTile(tileID: OverscaledTileID) {
+    hasTile(tileID: OverscaledTileID): boolean {
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
@@ -208,7 +208,7 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    serialize() {
+    serialize(): VectorSourceSpecification {
         return extend({}, this._options);
     }
 
@@ -310,7 +310,7 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return false;
     }
 

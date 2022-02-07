@@ -150,7 +150,7 @@ class VideoSource extends ImageSource {
      *
      * videoSource.getVideo(); // <video crossorigin="Anonymous" loop="">...</video>
      */
-    getVideo() {
+    getVideo(): HTMLVideoElement {
         return this.video;
     }
 
@@ -220,7 +220,7 @@ class VideoSource extends ImageSource {
         this._prepareData(context);
     }
 
-    serialize() {
+    serialize(): VideoSourceSpecification {
         return {
             type: 'video',
             urls: this.urls,
@@ -228,7 +228,7 @@ class VideoSource extends ImageSource {
         };
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return this.video && !this.video.paused;
     }
 }

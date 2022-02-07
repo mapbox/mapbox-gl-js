@@ -26,15 +26,18 @@ import type {RequestParameters, ResponseCallback} from '../util/ajax.js';
 import type {Callback} from '../types/callback.js';
 import type {GeoJSONFeature} from '@mapbox/geojson-types';
 
-export type LoadGeoJSONParameters = {
-    request?: RequestParameters,
-    data?: string,
+export type GeoJSONWorkerOptions = {
     source: string,
     cluster: boolean,
     superclusterOptions?: Object,
     geojsonVtOptions?: Object,
     clusterProperties?: Object,
     filter?: Array<mixed>
+};
+
+export type LoadGeoJSONParameters = GeoJSONWorkerOptions & {
+    request?: RequestParameters,
+    data?: string
 };
 
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<Object>) => void;
@@ -177,7 +180,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     * @param params.uid The UID for this tile.
     * @private
     */
-    reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
+    reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void {
         const loaded = this.loaded,
             uid = params.uid;
 
@@ -200,7 +203,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
      * @private
      */
-    loadGeoJSON(params: LoadGeoJSONParameters, callback: ResponseCallback<Object>) {
+    loadGeoJSON(params: LoadGeoJSONParameters, callback: ResponseCallback<Object>): void {
         // Because of same origin issues, urls must either include an explicit
         // origin or absolute path.
         // ie: /foo/bar.json or http://example.com/bar.json
