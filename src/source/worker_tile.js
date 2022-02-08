@@ -25,6 +25,7 @@ import type StyleLayer from '../style/style_layer.js';
 import type StyleLayerIndex from '../style/style_layer_index.js';
 import type {StyleImage} from '../style/style_image.js';
 import type {StyleGlyph} from '../style/style_glyph.js';
+import type {SpritePositions} from '../util/image.js';
 import type {
     WorkerTileParameters,
     WorkerTileCallback,
@@ -249,7 +250,9 @@ class WorkerTile {
                          bucket instanceof FillBucket ||
                          bucket instanceof FillExtrusionBucket)) {
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
-                        bucket.addFeatures(options, this.tileID.canonical, imageAtlas.patternPositions, availableImages);
+                        // $FlowFixMe[incompatible-type] Flow can't interpret ImagePosition as SpritePosition for some reason here
+                        const imagePositions: SpritePositions = imageAtlas.patternPositions;
+                        bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages);
                     }
                 }
 

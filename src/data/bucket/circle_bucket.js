@@ -27,7 +27,7 @@ import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state.js';
-import type {ImagePosition} from '../../render/image_atlas.js';
+import type {SpritePositions} from '../../util/image.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {Projection} from '../../geo/projection/index.js';
 import type {Vec3} from 'gl-matrix';
@@ -150,7 +150,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
         if (!this.stateDependentLayers.length) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions);
     }

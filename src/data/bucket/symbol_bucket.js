@@ -60,7 +60,6 @@ import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {SymbolQuad} from '../../symbol/quads.js';
 import type {SizeData} from '../../symbol/symbol_size.js';
 import type {FeatureStates} from '../../source/source_state.js';
-import type {ImagePosition} from '../../render/image_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 export type SingleCollisionBox = {
     x1: number;
@@ -77,6 +76,7 @@ export type SingleCollisionBox = {
     tileID?: OverscaledTileID;
 };
 import type {Mat4} from 'gl-matrix';
+import type {SpritePositions} from '../../util/image.js';
 
 export type CollisionArrays = {
     textBox?: SingleCollisionBox;
@@ -563,7 +563,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
         if (!this.stateDependentLayers.length) return;
         this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);
         this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);

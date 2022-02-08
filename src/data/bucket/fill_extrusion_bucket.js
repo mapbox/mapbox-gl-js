@@ -35,7 +35,7 @@ import type Context from '../../gl/context.js';
 import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
-import type {ImagePosition} from '../../render/image_atlas.js';
+import type {SpritePositions} from '../../util/image.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
 const FACTOR = Math.pow(2, 13);
@@ -253,7 +253,7 @@ class FillExtrusionBucket implements Bucket {
         this.sortBorders();
     }
 
-    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>) {
+    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>) {
         for (const feature of this.features) {
             const {geometry} = feature;
             this.addFeature(feature, geometry, feature.index, canonical, imagePositions, availableImages);
@@ -261,7 +261,7 @@ class FillExtrusionBucket implements Bucket {
         this.sortBorders();
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
         if (!this.stateDependentLayers.length) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions);
     }
@@ -302,7 +302,7 @@ class FillExtrusionBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>) {
         const metadata = this.enableTerrain ? new PartMetadata() : null;
 
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {

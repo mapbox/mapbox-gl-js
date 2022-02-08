@@ -35,7 +35,7 @@ import type StyleLayer from '../style/style_layer.js';
 import type {WorkerTileResult} from './worker_source.js';
 import type Actor from '../util/actor.js';
 import type DEMData from '../data/dem_data.js';
-import type {AlphaImage} from '../util/image.js';
+import type {AlphaImage, SpritePositions} from '../util/image.js';
 import type ImageAtlas from '../render/image_atlas.js';
 import type LineAtlas from '../render/line_atlas.js';
 import type ImageManager from '../render/image_manager.js';
@@ -536,7 +536,9 @@ class Tile {
             const sourceLayerStates = states[sourceLayerId];
             if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
 
-            bucket.update(sourceLayerStates, sourceLayer, availableImages, (this.imageAtlas && this.imageAtlas.patternPositions) || {});
+            // $FlowFixMe[incompatible-type] Flow can't interpret ImagePosition as SpritePosition for some reason here
+            const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
+            bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions);
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {

@@ -4,6 +4,15 @@ import {warnOnce, nextPowerOfTwo} from '../util/util.js';
 import {AlphaImage} from '../util/image.js';
 import {register} from '../util/web_worker_transfer.js';
 
+import type {SpritePosition, SpritePositions} from '../util/image.js';
+
+type DashRange = {|
+    isDash: boolean,
+    left: number,
+    right: number,
+    zeroLength: boolean
+|};
+
 /**
  * A LineAtlas lets us reuse rendered dashed lines
  * by writing many of them to a texture and then fetching their positions
@@ -18,7 +27,7 @@ class LineAtlas {
     height: number;
     nextRow: number;
     image: AlphaImage;
-    positions: {[_: string]: any};
+    positions: SpritePositions;
     uploaded: boolean;
 
     constructor(width: number, height: number) {
@@ -38,7 +47,7 @@ class LineAtlas {
      * @returns {Object} position of dash texture in { y, height, width }
      * @private
      */
-    getDash(dasharray: Array<number>, lineCap: string) {
+    getDash(dasharray: Array<number>, lineCap: string): SpritePosition {
         const key = this.getKey(dasharray, lineCap);
         return this.positions[key];
     }
@@ -53,7 +62,7 @@ class LineAtlas {
         return dasharray.join(',') + lineCap;
     }
 
-    getDashRanges(dasharray: Array<number>, lineAtlasWidth: number, stretch: number) {
+    getDashRanges(dasharray: Array<number>, lineAtlasWidth: number, stretch: number): Array<DashRange> {
         // If dasharray has an odd length, both the first and last parts
         // are dashes and should be joined seamlessly.
         const oddDashArray = dasharray.length % 2 === 1;
@@ -81,7 +90,7 @@ class LineAtlas {
         return ranges;
     }
 
-    addRoundDash(ranges: Object, stretch: number, n: number) {
+    addRoundDash(ranges: Array<DashRange>, stretch: number, n: number) {
         const halfStretch = stretch / 2;
 
         for (let y = -n; y <= n; y++) {
@@ -111,7 +120,7 @@ class LineAtlas {
         }
     }
 
-    addRegularDash(ranges: Object, capLength: number) {
+    addRegularDash(ranges: Array<DashRange>, capLength: number) {
 
         // Collapse any zero-length range
         // Collapse neighbouring same-type parts into a single part
@@ -153,7 +162,7 @@ class LineAtlas {
         }
     }
 
-    addDash(dasharray: Array<number>, lineCap: string) {
+    addDash(dasharray: Array<number>, lineCap: string): null | SpritePosition {
         const key = this.getKey(dasharray, lineCap);
         if (this.positions[key]) return this.positions[key];
 
