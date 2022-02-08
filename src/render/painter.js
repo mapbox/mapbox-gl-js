@@ -97,6 +97,14 @@ type PainterOptions = {
     speedIndexTiming: boolean
 }
 
+type TileBoundsBuffers = {|
+  tileBoundsBuffer: VertexBuffer,
+  tileBoundsIndexBuffer: IndexBuffer,
+  tileBoundsSegments: SegmentVector,
+|};
+
+type GPUTimers = {[layerId: string]: any};
+
 /**
  * Initialize a new painter object.
  *
@@ -141,7 +149,7 @@ class Painter {
     cache: {[_: string]: Program<*> };
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
-    gpuTimers: {[_: string]: any };
+    gpuTimers: GPUTimers;
     emptyTexture: Texture;
     identityMat: Float32Array;
     debugOverlayTexture: Texture;
@@ -151,7 +159,7 @@ class Painter {
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
-    _backgroundTiles: {[_: number | string]: Tile};
+    _backgroundTiles: {[key: number]: Tile};
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -281,7 +289,7 @@ class Painter {
         this.loadTimeStamps.push(window.performance.now());
     }
 
-    getMercatorTileBoundsBuffers() {
+    getMercatorTileBoundsBuffers(): TileBoundsBuffers {
         return {
             tileBoundsBuffer: this.mercatorBoundsBuffer,
             tileBoundsIndexBuffer: this.quadTriangleIndexBuffer,
@@ -289,7 +297,7 @@ class Painter {
         };
     }
 
-    getTileBoundsBuffers(tile: Tile) {
+    getTileBoundsBuffers(tile: Tile): TileBoundsBuffers {
         tile._makeTileBoundsBuffers(this.context, this.transform.projection);
         if (tile._tileBoundsBuffer) {
             const tileBoundsBuffer = tile._tileBoundsBuffer;
@@ -299,7 +307,6 @@ class Painter {
         } else {
             return this.getMercatorTileBoundsBuffers();
         }
-
     }
 
     /*
@@ -457,7 +464,7 @@ class Painter {
      * This returns true for layers that can be drawn using the
      * opaque pass.
      */
-    opaquePassEnabledForLayer() {
+    opaquePassEnabledForLayer(): boolean {
         return this.currentLayer < this.opaquePassCutoff;
     }
 
@@ -719,20 +726,20 @@ class Painter {
         ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
     }
 
-    collectGpuTimers() {
+    collectGpuTimers(): GPUTimers {
         const currentLayerTimers = this.gpuTimers;
         this.gpuTimers = {};
         return currentLayerTimers;
     }
 
-    queryGpuTimers(gpuTimers: {[_: string]: any}) {
+    queryGpuTimers(gpuTimers: GPUTimers): {[layerId: string]: number} {
         const layers = {};
         for (const layerId in gpuTimers) {
             const gpuTimer = gpuTimers[layerId];
             const ext = this.context.extTimerQuery;
             const gpuTime = ext.getQueryObjectEXT(gpuTimer.query, ext.QUERY_RESULT_EXT) / (1000 * 1000);
             ext.deleteQueryEXT(gpuTimer.query);
-            layers[layerId] = gpuTime;
+            layers[layerId] = (gpuTime: number);
         }
         return layers;
     }
@@ -743,7 +750,7 @@ class Painter {
      * @returns {Float32Array} matrix
      * @private
      */
-    translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean) {
+    translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean): Float32Array {
         if (!translate[0] && !translate[1]) return matrix;
 
         const angle = inViewportPixelUnitsUnits ?
@@ -779,7 +786,7 @@ class Painter {
         }
     }
 
-    getTileTexture(size: number) {
+    getTileTexture(size: number): null | Texture {
         const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
     }
@@ -923,7 +930,7 @@ class Painter {
         this.tileLoaded = false;
     }
 
-    canvasCopy() {
+    canvasCopy(): ?WebGLTexture {
         const gl = this.context.gl;
         const texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -938,7 +945,7 @@ class Painter {
         };
     }
 
-    averageElevationNeedsEasing() {
+    averageElevationNeedsEasing(): boolean {
         if (!this.transform._elevation) return false;
 
         const fog = this.style && this.style.fog;
@@ -950,7 +957,7 @@ class Painter {
         return true;
     }
 
-    getBackgroundTiles() {
+    getBackgroundTiles(): {[key: number]: Tile} {
         const oldTiles = this._backgroundTiles;
         const newTiles = this._backgroundTiles = {};
 
