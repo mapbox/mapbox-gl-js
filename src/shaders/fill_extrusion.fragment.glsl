@@ -31,13 +31,13 @@ float unpack_depth(vec4 rgba_depth)
     return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
 }
 
-float shadowOcclusionL1(vec4 pos) {
+float shadowOcclusionL1(vec4 pos, float bias) {
     pos.xyz /= pos.w;
     pos.xyz = pos.xyz * 0.5 + 0.5;
     float fragDepth = min(pos.z, 0.999);
     vec2 uv = pos.xy;
 #if 1
-    return step(unpack_depth(texture2D(u_image1, uv)) + 0.005, fragDepth);
+    return step(unpack_depth(texture2D(u_image1, uv)) + bias, fragDepth);
 #else
     vec2 texel = uv / u_texel_size - vec2(0.5);
     vec2 f = fract(texel);
@@ -56,7 +56,7 @@ float shadowOcclusionL1(vec4 pos) {
 #endif
 }
 
-float shadowOcclusionL0(vec4 pos) {
+float shadowOcclusionL0(vec4 pos, float bias) {
     pos.xyz /= pos.w;
     pos.xyz = pos.xyz * 0.5 + 0.5;
     float fragDepth = min(pos.z, 0.999);
@@ -88,25 +88,25 @@ float shadowOcclusionL0(vec4 pos) {
     vec2 uv23 = uv03 + vec2(2.0 * s, 0);
     vec2 uv33 = uv03 + vec2(3.0 * s, 0);
 
-    float o00 = step(unpack_depth(texture2D(u_image0, uv00)) + 0.005, fragDepth);
-    float o10 = step(unpack_depth(texture2D(u_image0, uv10)) + 0.005, fragDepth);
-    float o20 = step(unpack_depth(texture2D(u_image0, uv20)) + 0.005, fragDepth);
-    float o30 = step(unpack_depth(texture2D(u_image0, uv30)) + 0.005, fragDepth);
+    float o00 = step(unpack_depth(texture2D(u_image0, uv00)) + bias, fragDepth);
+    float o10 = step(unpack_depth(texture2D(u_image0, uv10)) + bias, fragDepth);
+    float o20 = step(unpack_depth(texture2D(u_image0, uv20)) + bias, fragDepth);
+    float o30 = step(unpack_depth(texture2D(u_image0, uv30)) + bias, fragDepth);
 
-    float o01 = step(unpack_depth(texture2D(u_image0, uv01)) + 0.005, fragDepth);
-    float o11 = step(unpack_depth(texture2D(u_image0, uv11)) + 0.005, fragDepth);
-    float o21 = step(unpack_depth(texture2D(u_image0, uv21)) + 0.005, fragDepth);
-    float o31 = step(unpack_depth(texture2D(u_image0, uv31)) + 0.005, fragDepth);
+    float o01 = step(unpack_depth(texture2D(u_image0, uv01)) + bias, fragDepth);
+    float o11 = step(unpack_depth(texture2D(u_image0, uv11)) + bias, fragDepth);
+    float o21 = step(unpack_depth(texture2D(u_image0, uv21)) + bias, fragDepth);
+    float o31 = step(unpack_depth(texture2D(u_image0, uv31)) + bias, fragDepth);
 
-    float o02 = step(unpack_depth(texture2D(u_image0, uv02)) + 0.005, fragDepth);
-    float o12 = step(unpack_depth(texture2D(u_image0, uv12)) + 0.005, fragDepth);
-    float o22 = step(unpack_depth(texture2D(u_image0, uv22)) + 0.005, fragDepth);
-    float o32 = step(unpack_depth(texture2D(u_image0, uv32)) + 0.005, fragDepth);
+    float o02 = step(unpack_depth(texture2D(u_image0, uv02)) + bias, fragDepth);
+    float o12 = step(unpack_depth(texture2D(u_image0, uv12)) + bias, fragDepth);
+    float o22 = step(unpack_depth(texture2D(u_image0, uv22)) + bias, fragDepth);
+    float o32 = step(unpack_depth(texture2D(u_image0, uv32)) + bias, fragDepth);
 
-    float o03 = step(unpack_depth(texture2D(u_image0, uv03)) + 0.005, fragDepth);
-    float o13 = step(unpack_depth(texture2D(u_image0, uv13)) + 0.005, fragDepth);
-    float o23 = step(unpack_depth(texture2D(u_image0, uv23)) + 0.005, fragDepth);
-    float o33 = step(unpack_depth(texture2D(u_image0, uv33)) + 0.005, fragDepth);
+    float o03 = step(unpack_depth(texture2D(u_image0, uv03)) + bias, fragDepth);
+    float o13 = step(unpack_depth(texture2D(u_image0, uv13)) + bias, fragDepth);
+    float o23 = step(unpack_depth(texture2D(u_image0, uv23)) + bias, fragDepth);
+    float o33 = step(unpack_depth(texture2D(u_image0, uv33)) + bias, fragDepth);
 
     // Edge tap smoothing
     float value = 
@@ -127,8 +127,15 @@ float shadowOcclusionL0(vec4 pos) {
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
-    float occlusionL0 = shadowOcclusionL0(v_pos_light_view_0);
-    float occlusionL1 = shadowOcclusionL1(v_pos_light_view_1);
+
+    highp vec3 n = normalize(v_normal);
+    float NdotSL = saturate(dot(n, normalize(u_lightpos)));
+
+    float biasT = pow(NdotSL, 1.0);
+    float biasL0 = mix(0.01, 0.004, biasT);
+    float biasL1 = mix(0.012, 0.004, biasT);
+    float occlusionL0 = shadowOcclusionL0(v_pos_light_view_0, biasL0);
+    float occlusionL1 = shadowOcclusionL1(v_pos_light_view_1, biasL1);
     float occlusion = 0.0; 
 
     // Alleviate projective aliasing by forcing backfacing triangles to be occluded
@@ -142,10 +149,9 @@ void main() {
         occlusion = 0.0;
 
     highp vec3 v = normalize(-v_position);
-    highp vec3 n = normalize(v_normal);
+    highp vec3 l = normalize(vec3(u_lightpos.x, u_lightpos.y, 0.2));
     // Adjust the light to match the shadows direction. Use a lower angle
     // to increase the specular effect when tilted
-    highp vec3 l = normalize(vec3(u_lightpos.x, u_lightpos.y, 0.2));
     highp vec3 h = normalize(v + l);
 
     float NdotL = saturate(dot(n, l));
@@ -184,9 +190,9 @@ void main() {
     gl_FragColor = vec4(outColor, u_opacity);
 
     //if (v_depth < u_cascade_distances.x)
-    //    gl_FragColor = color * vec4(1.0, 0.5, 0.5, 1.0);
+    //    gl_FragColor = gl_FragColor * vec4(1.0, 0.5, 0.5, 1.0);
     //else if (v_depth < u_cascade_distances.y)
-    //    gl_FragColor = color * vec4(0.5, 1.0, 0.5, 1.0);
+    //    gl_FragColor = gl_FragColor * vec4(0.5, 1.0, 0.5, 1.0);
     //else
-    //    gl_FragColor = color * vec4(0.5, 0.5, 1.0, 1.0);
+    //    gl_FragColor = gl_FragColor * vec4(0.5, 0.5, 1.0, 1.0);
 }
