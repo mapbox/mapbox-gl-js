@@ -17,6 +17,7 @@ import type Style from '../style/style.js';
 import type Transform from '../geo/transform.js';
 import type {TileState} from './tile.js';
 import type {Callback} from '../types/callback.js';
+import type {FeatureStates} from './source_state.js';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry.js';
 
 /**
@@ -202,7 +203,7 @@ class SourceCache extends Evented {
         return false;
     }
 
-    _isIdRenderable(id: number, symbolLayer?: boolean) {
+    _isIdRenderable(id: number, symbolLayer?: boolean): boolean {
         return this._tiles[id] && this._tiles[id].hasData() &&
             !this._coveredTiles[id] && (symbolLayer || !this._tiles[id].holdingForFade());
     }
