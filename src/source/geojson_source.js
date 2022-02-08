@@ -13,6 +13,7 @@ import type Dispatcher from '../util/dispatcher.js';
 import type Tile from './tile.js';
 import type Actor from '../util/actor.js';
 import type {Callback} from '../types/callback.js';
+import type {GeoJSONWorkerOptions} from './geojson_worker_source.js';
 import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
 import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
 import type {Cancelable} from '../types/cancelable.js';
@@ -75,8 +76,8 @@ class GeoJSONSource extends Evented implements Source {
     isTileClipped: boolean;
     reparseOverscaled: boolean;
     _data: GeoJSON | string;
-    _options: any;
-    workerOptions: any;
+    _options: GeoJSONSourceSpecification;
+    workerOptions: GeoJSONWorkerOptions;
     map: Map;
     actor: Actor;
     _loaded: boolean;
@@ -88,7 +89,7 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * @private
      */
-    constructor(id: string, options: GeoJSONSourceSpecification & {workerOptions?: any, collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: GeoJSONSourceSpecification & {workerOptions?: GeoJSONWorkerOptions, collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
 
         this.id = id;
@@ -393,14 +394,14 @@ class GeoJSONSource extends Evented implements Source {
         }
     }
 
-    serialize() {
+    serialize(): GeoJSONSourceSpecification {
         return extend({}, this._options, {
             type: this.type,
             data: this._data
         });
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return false;
     }
 }

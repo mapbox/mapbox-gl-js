@@ -41,6 +41,8 @@ type QueryParameters = {
     }
 }
 
+type QueryResult = {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>};
+
 type FeatureIndices = {
     bucketIndex: number,
     sourceLayerIndex: number,
@@ -114,7 +116,7 @@ class FeatureIndex {
     }
 
     // Finds non-symbol features in this tile at a particular position.
-    query(args: QueryParameters, styleLayers: {[_: string]: StyleLayer}, serializedLayers: {[_: string]: Object}, sourceFeatureState: SourceFeatureState): {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+    query(args: QueryParameters, styleLayers: {[_: string]: StyleLayer}, serializedLayers: {[_: string]: Object}, sourceFeatureState: SourceFeatureState): QueryResult {
         this.loadVTLayers();
         const params = args.params || {},
             filter = featureFilter(params.filter);
@@ -167,7 +169,7 @@ class FeatureIndex {
     }
 
     loadMatchingFeature(
-        result: {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>},
+        result: QueryResult,
         featureIndexData: FeatureIndices,
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
@@ -226,7 +228,7 @@ class FeatureIndex {
             }
 
             const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y, id);
-            (geojsonFeature: any).layer = serializedLayer;
+            geojsonFeature.layer = serializedLayer;
             let layerResult = result[layerID];
             if (layerResult === undefined) {
                 layerResult = result[layerID] = [];
@@ -244,7 +246,7 @@ class FeatureIndex {
                          filterSpec: FilterSpecification,
                          filterLayerIDs: Array<string>,
                          availableImages: Array<string>,
-                         styleLayers: {[_: string]: StyleLayer}) {
+                         styleLayers: {[_: string]: StyleLayer}): QueryResult {
         const result = {};
         this.loadVTLayers();
 
@@ -286,7 +288,7 @@ class FeatureIndex {
         return feature;
     }
 
-    hasLayer(id: string) {
+    hasLayer(id: string): boolean {
         for (const layerIDs of this.bucketLayerIDs) {
             for (const layerID of layerIDs) {
                 if (id === layerID) return true;

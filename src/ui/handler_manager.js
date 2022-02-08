@@ -1,7 +1,7 @@
 // @flow
 
 import {Event} from '../util/evented.js';
-import DOM from '../util/dom.js';
+import * as DOM from '../util/dom.js';
 import type Map from './map.js';
 import HandlerInertia from './handler_inertia.js';
 import {MapEventHandler, BlockableMapEventHandler} from './handler/map_event.js';

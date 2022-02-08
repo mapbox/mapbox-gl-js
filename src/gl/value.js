@@ -489,7 +489,7 @@ class FramebufferAttachment<T> extends BaseValue<?T> {
         this.context = context;
         this.parent = parent;
     }
-    getDefault() {
+    getDefault(): null {
         return null;
     }
 }

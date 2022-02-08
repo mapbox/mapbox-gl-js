@@ -12,10 +12,11 @@ import gl from 'gl';
 import sinon from 'sinon';
 
 import type {Window} from '../types/window.js';
+import type {JSDOM} from 'jsdom';
 
-const {window: _window} = new jsdom.JSDOM('', {
+const {window: _window} = (new jsdom.JSDOM('', {
     virtualConsole: new jsdom.VirtualConsole().sendTo(console)
-});
+}): JSDOM);
 
 restore();
 

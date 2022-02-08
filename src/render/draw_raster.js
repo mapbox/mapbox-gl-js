@@ -58,7 +58,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         const parentTile = sourceCache.findLoadedParent(coord, 0);
         const fade = rasterFade(tile, parentTile, sourceCache, painter.transform, rasterFadeDuration);
-        if (painter.terrain) painter.terrain.prepareDrawTile(coord);
+        if (painter.terrain) painter.terrain.prepareDrawTile();
 
         let parentScaleBy, parentTL;
 

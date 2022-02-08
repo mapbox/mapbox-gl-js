@@ -172,6 +172,8 @@ export function bufferConvexPolygon(ring: Point[], buffer: number): Point[] {
     return output;
 }
 
+type EaseFunction = (t: number) => number;
+
 /**
  * Given given (x, y), (x1, y1) control points for a bezier curve,
  * return a function that interpolates along that curve.
@@ -182,7 +184,7 @@ export function bufferConvexPolygon(ring: Point[], buffer: number): Point[] {
  * @param p2y control point 2 y coordinate
  * @private
  */
-export function bezier(p1x: number, p1y: number, p2x: number, p2y: number): (t: number) => number {
+export function bezier(p1x: number, p1y: number, p2x: number, p2y: number): EaseFunction {
     const bezier = new UnitBezier(p1x, p1y, p2x, p2y);
     return function(t: number) {
         return bezier.solve(t);
@@ -195,7 +197,7 @@ export function bezier(p1x: number, p1y: number, p2x: number, p2y: number): (t: 
  *
  * @private
  */
-export const ease = bezier(0.25, 0.1, 0.25, 1);
+export const ease: EaseFunction = bezier(0.25, 0.1, 0.25, 1);
 
 /**
  * constrain n to the given range via min + max
@@ -266,7 +268,7 @@ export function asyncAll<Item, Result>(
     array: Array<Item>,
     fn: (item: Item, fnCallback: Callback<Result>) => void,
     callback: Callback<Array<Result>>
-) {
+): void {
     if (!array.length) { return callback(null, []); }
     let remaining = array.length;
     const results = new Array(array.length);
@@ -635,7 +637,7 @@ export function storageAvailable(type: string): boolean {
 
 // The following methods are from https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
 //Unicode compliant base64 encoder for strings
-export function b64EncodeUnicode(str: string) {
+export function b64EncodeUnicode(str: string): string {
     return window.btoa(
         encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
             (match, p1) => {
@@ -646,7 +648,7 @@ export function b64EncodeUnicode(str: string) {
 }
 
 // Unicode compliant decoder for base64-encoded strings
-export function b64DecodeUnicode(str: string) {
+export function b64DecodeUnicode(str: string): string {
     return decodeURIComponent(window.atob(str).split('').map((c) => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); //eslint-disable-line
     }).join(''));

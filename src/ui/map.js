@@ -4,7 +4,7 @@ import {version} from '../../package.json';
 import {asyncAll, extend, bindAll, warnOnce, uniqueId, deepEqual} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
-import DOM from '../util/dom.js';
+import * as DOM from '../util/dom.js';
 import {getImage, getJSON, ResourceType} from '../util/ajax.js';
 import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
 import Style from '../style/style.js';

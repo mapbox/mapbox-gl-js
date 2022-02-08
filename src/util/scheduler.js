@@ -4,9 +4,26 @@ import ThrottledInvoker from './throttled_invoker.js';
 import {bindAll, isWorker} from './util.js';
 import {PerformanceUtils} from './performance.js';
 
+import type {Cancelable} from '../types/cancelable.js';
+
+type TaskMetadata = {
+    type: 'message' | 'maybePrepare' | 'parseTile',
+    isSymbolTile: ?boolean,
+    zoom?: number
+};
+
+type TaskFunction = () => void;
+
+type Task = {
+    fn: TaskFunction,
+    metadata: TaskMetadata,
+    priority: number,
+    id: number
+};
+
 class Scheduler {
 
-    tasks: { [number]: any };
+    tasks: { [number]: Task };
     taskQueue: Array<number>;
     invoker: ThrottledInvoker;
     nextId: number;
@@ -20,7 +37,7 @@ class Scheduler {
         this.nextId = 0;
     }
 
-    add(fn: () => void, metadata: Object) {
+    add(fn: TaskFunction, metadata: TaskMetadata): Cancelable {
         const id = this.nextId++;
         const priority = getPriority(metadata);
 
@@ -77,7 +94,7 @@ class Scheduler {
         }
     }
 
-    pick() {
+    pick(): null | number {
         let minIndex = null;
         let minPriority = Infinity;
         for (let i = 0; i < this.taskQueue.length; i++) {
@@ -99,7 +116,7 @@ class Scheduler {
     }
 }
 
-function getPriority({type, isSymbolTile, zoom}: Object) {
+function getPriority({type, isSymbolTile, zoom}: TaskMetadata): number {
     zoom = zoom || 0;
     if (type === 'message') return 0;
     if (type === 'maybePrepare' && !isSymbolTile) return 100 - zoom;

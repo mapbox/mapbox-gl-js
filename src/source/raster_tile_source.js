@@ -101,11 +101,11 @@ class RasterTileSource extends Evented implements Source {
         }
     }
 
-    serialize() {
+    serialize(): RasterSourceSpecification | RasterDEMSourceSpecification {
         return extend({}, this._options);
     }
 
-    hasTile(tileID: OverscaledTileID) {
+    hasTile(tileID: OverscaledTileID): boolean {
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
@@ -160,7 +160,7 @@ class RasterTileSource extends Evented implements Source {
         callback();
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return false;
     }
 }

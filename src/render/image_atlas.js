@@ -7,6 +7,7 @@ import potpack from 'potpack';
 import type {StyleImage} from '../style/style_image.js';
 import type ImageManager from './image_manager.js';
 import type Texture from './texture.js';
+import type {SpritePosition} from '../util/image.js';
 
 const IMAGE_PADDING: number = 1;
 export {IMAGE_PADDING};
@@ -18,7 +19,7 @@ type Rect = {
     h: number
 };
 
-export class ImagePosition {
+export class ImagePosition implements SpritePosition {
     paddedRect: Rect;
     pixelRatio: number;
     version: number;

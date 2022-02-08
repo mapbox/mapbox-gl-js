@@ -107,7 +107,7 @@ class Texture {
         }
     }
 
-    isSizePowerOfTwo() {
+    isSizePowerOfTwo(): boolean {
         return this.size[0] === this.size[1] && (Math.log(this.size[0]) / Math.LN2) % 1 === 0;
     }
 

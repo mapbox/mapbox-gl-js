@@ -55,6 +55,7 @@ export interface Source {
 
     fire(event: Event): mixed;
     on(type: *, listener: (Object) => any): Evented;
+    setEventedParent(parent: ?Evented, data?: Object | () => Object): Evented;
 
     +onAdd?: (map: Map) => void;
     +onRemove?: (map: Map) => void;
@@ -118,7 +119,7 @@ const sourceTypes = {
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
-export const create = function(id: string, specification: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+export const create = function(id: string, specification: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented): Source {
     const source = new sourceTypes[specification.type](id, (specification: any), dispatcher, eventedParent);
 
     if (source.id !== id) {
@@ -129,7 +130,7 @@ export const create = function(id: string, specification: SourceSpecification, d
     return source;
 };
 
-export const getType = function (name: string) {
+export const getType = function (name: string): Class<Source> {
     return sourceTypes[name];
 };
 

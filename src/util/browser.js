@@ -48,13 +48,13 @@ const exported = {
         return context.getImageData(-padding, -padding, img.width + 2 * padding, img.height + 2 * padding);
     },
 
-    resolveURL(path: string) {
+    resolveURL(path: string): string {
         if (!linkEl) linkEl = window.document.createElement('a');
         linkEl.href = path;
         return linkEl.href;
     },
 
-    get devicePixelRatio() { return window.devicePixelRatio; },
+    get devicePixelRatio(): number { return window.devicePixelRatio; },
     get prefersReducedMotion(): boolean {
         if (!window.matchMedia) return false;
         // Lazily initialize media query.

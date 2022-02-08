@@ -228,7 +228,7 @@ export default class Worker {
         }
     }
 
-    getAvailableImages(mapId: string) {
+    getAvailableImages(mapId: string): Array<string> {
         let availableImages = this.availableImages[mapId];
 
         if (!availableImages) {
@@ -238,7 +238,7 @@ export default class Worker {
         return availableImages;
     }
 
-    getLayerIndex(mapId: string) {
+    getLayerIndex(mapId: string): StyleLayerIndex {
         let layerIndexes = this.layerIndexes[mapId];
         if (!layerIndexes) {
             layerIndexes = this.layerIndexes[mapId] = new StyleLayerIndex();
@@ -246,7 +246,7 @@ export default class Worker {
         return layerIndexes;
     }
 
-    getWorkerSource(mapId: string, type: string, source: string) {
+    getWorkerSource(mapId: string, type: string, source: string): WorkerSource {
         if (!this.workerSources[mapId])
             this.workerSources[mapId] = {};
         if (!this.workerSources[mapId][type])
@@ -267,7 +267,7 @@ export default class Worker {
         return this.workerSources[mapId][type][source];
     }
 
-    getDEMWorkerSource(mapId: string, source: string) {
+    getDEMWorkerSource(mapId: string, source: string): RasterDEMTileWorkerSource {
         if (!this.demWorkerSources[mapId])
             this.demWorkerSources[mapId] = {};
 

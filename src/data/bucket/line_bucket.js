@@ -27,13 +27,12 @@ import type {
 import type LineStyleLayer from '../../style/style_layer/line_style_layer.js';
 import type Point from '@mapbox/point-geometry';
 import type {Segment} from '../segment.js';
-import {RGBAImage} from '../../util/image.js';
+import type {RGBAImage, SpritePositions} from '../../util/image.js';
 import type Context from '../../gl/context.js';
 import type Texture from '../../render/texture.js';
 import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
-import type {ImagePosition} from '../../render/image_atlas.js';
 import type LineAtlas from '../../render/line_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
@@ -196,7 +195,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    addConstantDashes(lineAtlas: LineAtlas) {
+    addConstantDashes(lineAtlas: LineAtlas): boolean {
         let hasFeatureDashes = false;
 
         for (const layer of this.layers) {
@@ -267,22 +266,22 @@ class LineBucket implements Bucket {
 
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: {[_: string]: ImagePosition}) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
         if (!this.stateDependentLayers.length) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions);
     }
 
-    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>) {
+    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>) {
         for (const feature of this.patternFeatures) {
             this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions, availableImages);
         }
     }
 
-    isEmpty() {
+    isEmpty(): boolean {
         return this.layoutVertexArray.length === 0;
     }
 
-    uploadPending() {
+    uploadPending(): boolean {
         return !this.uploaded || this.programConfigurations.needsUpload;
     }
 
@@ -314,7 +313,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}, availableImages: Array<string>) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>) {
         const layout = this.layers[0].layout;
         const join = layout.get('line-join').evaluate(feature, {});
         const cap = layout.get('line-cap').evaluate(feature, {});
