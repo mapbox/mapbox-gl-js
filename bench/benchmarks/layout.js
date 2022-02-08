@@ -40,7 +40,7 @@ export default class Layout extends Benchmark {
             .then(() => {});
     }
 
-    bench() {
+    bench(): Promise<void> {
         let promise = Promise.resolve();
         for (const tile of this.tiles) {
             promise = promise.then(() => {

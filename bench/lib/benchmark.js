@@ -57,7 +57,7 @@ class Benchmark {
             });
     }
 
-    _done() {
+    _done(): boolean {
         // 210 samples => 20 observations for regression
         return this._elapsed >= 500 && this._measurements.length > 210;
     }
@@ -76,7 +76,7 @@ class Benchmark {
         }
     }
 
-    _measureSync() {
+    _measureSync(): Promise<Array<Measurement>> {
         // Avoid Promise overhead for sync benchmarks.
         while (true) {
             const time = performance.now() - this._start;
@@ -87,13 +87,14 @@ class Benchmark {
                 this._measurements.push({time, iterations: this._iterationsPerMeasurement});
             }
             if (this._done()) {
-                return this._end();
+                break;
             }
             this._start = performance.now();
             for (let i = this._iterationsPerMeasurement; i > 0; --i) {
                 this.bench();
             }
         }
+        return this._end();
     }
 
     _measureAsync(): Promise<Array<Measurement>> {
