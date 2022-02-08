@@ -168,7 +168,10 @@ void main() {
              (u_vertical_gradient * clamp((v_t + v_base) * pow(v_height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
     }
 
-    vec3 diffuseTerm = directional * vec3(color.rgb) * u_lightcolor;
+    // Assign directional color based on surface + ambient light color, 
+    // diffuse light directional, and light color with lower bounds adjusted to hue of light
+    // so that shading is tinted with the complementary (opposite) color to the light color
+    vec3 diffuseTerm = clamp(directional * color.rgb * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     vec3 specularTerm = pow(NdotH, u_specular_factor) * u_specular_color * u_lightcolor * (1.0 - u_lightintensity);
     vec3 outColor = vec3(ambientTerm + diffuseTerm + specularTerm);
     occlusion = mix(occlusion, 1.0, backfacing);
