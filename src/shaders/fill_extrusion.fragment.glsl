@@ -145,7 +145,7 @@ void main() {
     highp vec3 n = normalize(v_normal);
     // Adjust the light to match the shadows direction. Use a lower angle
     // to increase the specular effect when tilted
-    highp vec3 l = normalize(vec3(-u_lightpos.x, -u_lightpos.y, 0.2));
+    highp vec3 l = normalize(vec3(u_lightpos.x, u_lightpos.y, 0.2));
     highp vec3 h = normalize(v + l);
 
     float NdotL = saturate(dot(n, l));

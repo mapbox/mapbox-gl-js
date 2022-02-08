@@ -92,6 +92,7 @@ void main() {
     gl_Position = outPos;
 
     v_position = vec3(u_specular_light_matrix * vec4(pos, 1));
+    v_position.xy = -v_position.xy;
     v_pos_light_view_0 = u_light_matrix_0 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
     v_pos_light_view_1 = u_light_matrix_1 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
     v_pos_light_view_2 = u_light_matrix_2 * vec4(pos_nx.xy, t > 0.0 ? v_height : v_base, 1);
