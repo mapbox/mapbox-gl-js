@@ -1065,7 +1065,13 @@ class Map extends Camera {
     _updateProjection(projection?: ProjectionSpecification | null) {
         const prevProjection = this.getProjection();
         let changeExplicit = (projection !== undefined);
-        if (!changeExplicit) { projection = prevProjection; }
+        if (!changeExplicit) {
+            projection = prevProjection;
+        } else if (projection === null) {
+            this._explicitProjection = null;
+            changeExplicit = false;
+        }
+
         // At high zoom when set to Globe, _runtimeProjection is Mercator while explicitProjection is globe.
         if (projection && projection.name === "globe") {
             projection = {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')};

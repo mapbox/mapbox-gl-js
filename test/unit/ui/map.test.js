@@ -1593,8 +1593,22 @@ test('Map', (t) => {
                     center: [-96, 37.5],
                     parallels: [29.5, 45.5]
                 });
+                t.deepEqual(map.getProjection(), map.transform.getProjection());
                 t.end();
             });
+        });
+
+        t.test('returns globe projection at low zoom', (t) => {
+            const map = createMap(t, {projection: 'globe'});
+            map.once('render', () => {
+                t.deepEqual(map.getProjection(), {
+                    name: 'globe',
+                    center: [0, 0],
+                });
+                t.deepEqual(map.getProjection(), map.transform.getProjection());
+                t.end();
+            });
+
         });
 
         t.test('returns globe projection at high zoom', (t) => {
@@ -1605,10 +1619,69 @@ test('Map', (t) => {
                     name: 'globe',
                     center: [0, 0],
                 });
+                t.deepEqual(map.transform.getProjection(), {
+                    name: 'mercator',
+                    center: [0, 0],
+                });
                 t.end();
             });
 
         });
+
+        t.test('defaults to style sheet projection',  (t) => {
+            const map = createMap(t, {projection: 'globe'});
+            map.setZoom(12);
+            map.once('render', () => {
+                t.end();
+            });
+        });
+
+        // Behavior described at https://github.com/mapbox/mapbox-gl-js/pull/11204
+        t.test('runtime projection overrides style projection', (t) => {
+            const map = createMap(t, {style: {
+                "version": 8,
+                "projection": {
+                    "name": "albers"
+                },
+                "sources": {},
+                "layers": []
+            }});
+            const style = map.style;
+
+            map.on('load', () =>  {
+                // Defaults to style projection
+                t.equal(style.serialize().projection.name, 'albers');
+                t.equal(map.transform.getProjection().name, 'albers');
+
+                // Runtime api overrides style projection
+                // Stylesheet projection not changed by runtime apis
+                map.setProjection({name: 'winkelTripel'});
+                t.equal(style.serialize().projection.name, 'albers');
+                t.equal(map.transform.getProjection().name, 'winkelTripel');
+
+                // Runtime api overrides stylesheet projection
+                map.style.setState(Object.assign({}, style.serialize(), {projection: {name: 'naturalEarth'}}));
+                t.equal(style.serialize().projection.name, 'naturalEarth');
+                t.equal(map.transform.getProjection().name, 'winkelTripel');
+
+                // Unsetting runtime projection reveals stylesheet projection
+                map.setProjection(null);
+                style._updateProjection();
+                t.equal(style.serialize().projection.name, 'naturalEarth');
+                t.equal(map.transform.getProjection().name, 'naturalEarth');
+                t.equal(map.getProjection().name, 'naturalEarth');
+
+                // Unsetting stylesheet projection reveals mercator
+                const stylesheet = style.serialize();
+                delete stylesheet.projection;
+                style.setState(stylesheet);
+                t.equal(style.serialize().projection, undefined);
+                t.equal(map.transform.getProjection().name, 'mercator');
+
+                t.end();
+            });
+        });
+
         t.end();
     });
 
@@ -1685,12 +1758,17 @@ test('Map', (t) => {
                 t.equal(map.getProjection().name, 'albers');
                 t.equal(map.style.stylesheet.projection.name, 'winkelTripel');
 
+                map.setProjection({name: 'globe'});
+                t.equal(map.getProjection().name, 'globe');
+                t.equal(map.style.stylesheet.projection.name, 'winkelTripel');
+                map.setProjection({name: 'lambertConformalConic'});
+
                 // setStyle without diffing
                 const s = map.getStyle();
                 delete s.projection;
                 map.setStyle(s, {diff: false});
                 map.once('style.load', () => {
-                    t.equal(map.getProjection().name, 'albers');
+                    t.equal(map.getProjection().name, 'lambertConformalConic');
                     t.equal(map.style.stylesheet.projection, undefined);
                     t.end();
                 });
