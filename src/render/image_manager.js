@@ -14,6 +14,7 @@ import type {StyleImage} from '../style/style_image.js';
 import type Context from '../gl/context.js';
 import type {Bin} from 'potpack';
 import type {Callback} from '../types/callback.js';
+import type {Size} from '../util/image.js';
 
 type Pattern = {
     bin: Bin,
@@ -62,7 +63,7 @@ class ImageManager extends Evented {
         this.dirty = true;
     }
 
-    isLoaded() {
+    isLoaded(): boolean {
         return this.loaded;
     }
 
@@ -92,7 +93,7 @@ class ImageManager extends Evented {
         }
     }
 
-    _validate(id: string, image: StyleImage) {
+    _validate(id: string, image: StyleImage): boolean {
         let valid = true;
         if (!this._validateStretch(image.stretchX, image.data && image.data.width)) {
             this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchX" value`)));
@@ -109,7 +110,7 @@ class ImageManager extends Evented {
         return valid;
     }
 
-    _validateStretch(stretch: ?Array<[number, number]> | void, size: number) {
+    _validateStretch(stretch: ?Array<[number, number]> | void, size: number): boolean {
         if (!stretch) return true;
         let last = 0;
         for (const part of stretch) {
@@ -119,7 +120,7 @@ class ImageManager extends Evented {
         return true;
     }
 
-    _validateContent(content: ?[number, number, number, number] | void, image: StyleImage) {
+    _validateContent(content: ?[number, number, number, number] | void, image: StyleImage): boolean {
         if (!content) return true;
         if (content.length !== 4) return false;
         if (content[0] < 0 || image.data.width < content[0]) return false;
@@ -206,7 +207,7 @@ class ImageManager extends Evented {
 
     // Pattern stuff
 
-    getPixelSize() {
+    getPixelSize(): Size {
         const {width, height} = this.atlasImage;
         return {width, height};
     }

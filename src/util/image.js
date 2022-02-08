@@ -9,6 +9,13 @@ export type Size = {
     height: number
 };
 
+export interface SpritePosition {
+    +tl: [number, number],
+    +br: [number, number],
+    +pixelRatio?: number
+}
+export type SpritePositions = {[_: string]: SpritePosition};
+
 type Point = {
     x: number,
     y: number
