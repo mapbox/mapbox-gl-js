@@ -297,7 +297,7 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = json;
-        this.updateProjection();
+        this._updateProjection();
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -351,16 +351,15 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        if (!this.map._runtimeProjection) {
-            this.map.setProjection(projection);
+        if (!this.map._explicitProjection) {
+            this.map._updateProjection(projection);
         }
     }
 
-    updateProjection() {
-        if (!this.map._runtimeProjection) {
-            const projection = this.stylesheet.projection;
-            this.map.setProjection(projection);
-        } else {
+    _updateProjection() {
+        if (!this.map._explicitProjection) {
+            this.map._updateProjection();
+        } else { // Ensure that style is consistent with current projection on style load
             this.enableDraping();
         }
     }
@@ -657,7 +656,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this.updateProjection();
+        this._updateProjection();
 
         return true;
     }

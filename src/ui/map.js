@@ -366,9 +366,11 @@ class Map extends Camera {
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
     _averageElevation: EasedVariable;
-    // In high zoom levels on Globe, _runtimeProjection will be "Mercator" while _explicitProjection will stay "Mercator"
+    // In high zoom levels on Globe, _runtimeProjection will be "mercator" while _explicitProjection will stay "globe"
+    // a null _runtimeProjection indicates means the stylesheet projection will be used
+    // If the stylesheet projection is also null, the map defaults to Mercator.
     _runtimeProjection: ProjectionSpecification | void | null;
-    _explicitProjection: ProjectionSpecification;
+    _explicitProjection: ProjectionSpecification | null;
     _containerWidth: number;
     _containerHeight: number
 
@@ -476,7 +478,7 @@ class Map extends Camera {
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevation = new EasedVariable(0);
 
-        this._explicitProjection = {name: "mercator", center: [0, 0]};
+        this._explicitProjection = null; // Fallback to stylesheet by default
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
@@ -1026,8 +1028,15 @@ class Map extends Camera {
      * @example
      * const projection = map.getProjection();
      */
-    getProjection() {
-        return this._explicitProjection;
+    getProjection(): ProjectionSpecification {
+        // this._runtimeProjection || (this.style.stylesheet ? this.style.stylesheet.projection : undefined)
+        if (this._explicitProjection) {
+            return this._explicitProjection;
+        }
+        if (this.style && this.style.stylesheet && this.style.stylesheet.projection) {
+            return this.style.stylesheet.projection;
+        }
+        return {name: "mercator", center:[0, 0]};
     }
 
     /**
@@ -1048,32 +1057,43 @@ class Map extends Camera {
      */
     setProjection(projection?: ?ProjectionSpecification | string) {
         this._lazyInitEmptyStyle();
-        if (!projection) { projection = {name: "mercator"}; } else if (typeof projection === 'string') {
+        if (projection === undefined) { projection = null; } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
-        const oldExplicitProjection = this._explicitProjection;
-        let isGlobe: ?boolean;
-        if (projection.name === "globe") {
-            this._explicitProjection = {name: 'globe', center: [0, 0]};
-            this._runtimeProjection = {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')};
-            isGlobe = true;
-        } else { this._runtimeProjection = projection; }
+        this._updateProjection(projection, true);
+    }
 
-        // newProjection is a user-friendly projection object or null if not changed
+    _updateProjection(projection?: ProjectionSpecification | null, updateExplicit: ?boolean) {
+        const prevProjection = this.getProjection();
+        if (projection === undefined) { projection = prevProjection; }
+
+        // At high zoom when set to Globe, _runtimeProjection is Mercator while explicitProjection is globe.
+        if (projection && projection.name === "globe") {
+            this._runtimeProjection = {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')};
+            if (updateExplicit) {
+                this._explicitProjection = {name: 'globe', center: [0, 0]};
+                updateExplicit = false;
+            }
+        } else {
+            this._runtimeProjection = projection;
+        }
+
+        // newProjection is the onscreen projection or null if not changed
         const newProjection = this.transform.setProjection(this._runtimeProjection);
         if (!newProjection) return; // Continue if projection has changed
 
-        if (!isGlobe) {
+        if (updateExplicit) {
             this._explicitProjection = newProjection;
         }
-        // If transitioning between different expressions
-        if (!deepEqual(this._explicitProjection, oldExplicitProjection)) {
+
+        // If a zoom transition on globe
+        if (deepEqual(prevProjection, this.getProjection())) {
+            this.style._forceSymbolLayerUpdate();
+        } else { // If a perceived transition between different expressions
             this.painter.clearBackgroundTiles();
             for (const id in this.style._sourceCaches) {
                 this.style._sourceCaches[id].clearTiles();
             }
-        } else { // If not, this is a zoom transition on Globe.
-            this.style._forceSymbolLayerUpdate();
         }
         this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
         this.style.enableDraping();
@@ -2902,13 +2922,13 @@ class Map extends Camera {
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
 
-        if (this._explicitProjection.name === 'globe') {
+        if (this.getProjection().name === 'globe') {
             if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
                 if (this._runtimeProjection && this._runtimeProjection.name === 'globe') {
-                    this.setProjection(this._explicitProjection);
+                    this._updateProjection();
                 }
             } else if (!this._runtimeProjection || this._runtimeProjection.name === 'mercator') {
-                this.setProjection(this._explicitProjection);
+                this._updateProjection();
             }
         }
 
