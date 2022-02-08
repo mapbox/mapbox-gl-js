@@ -69,13 +69,9 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                 layer: LayerSpecification;
             } = (featureWrapper.feature: any);
 
-            // background and sky layers don't have a source
-            if (!feature.id || feature.layer.type === 'background' || feature.layer.type === 'sky') {
-                return;
-            }
-
+            // $FlowFixMe prop-missing
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
-            // $FlowFixMe prop-missing - Flow can't infer the absense of source and source-layer after the getFeatureState call
+            // $FlowFixMe prop-missing
             feature.source = feature.layer.source;
             // $FlowFixMe prop-missing
             if (feature.layer['source-layer']) {
