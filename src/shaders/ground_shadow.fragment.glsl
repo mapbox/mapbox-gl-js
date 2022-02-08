@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision highp float;
+#endif
+
 uniform sampler2D u_image0;
 uniform sampler2D u_image1;
 uniform float u_shadow_intensity;
@@ -20,8 +24,9 @@ float shadowOcclusionL1(vec4 pos) {
     pos.xyz = pos.xyz * 0.5 + 0.5;
     float fragDepth = min(pos.z, 0.999);
     vec2 uv = pos.xy;
+    float bias = 0.001;
 #if 1
-    return step(unpack_depth(texture2D(u_image1, uv)) + 0.005, fragDepth);
+    return step(unpack_depth(texture2D(u_image1, uv)) + bias, fragDepth);
 #else
     vec2 texel = uv / u_texel_size - vec2(0.5);
     vec2 f = fract(texel);
@@ -31,10 +36,10 @@ float shadowOcclusionL1(vec4 pos) {
     vec2 uv01 = uv00 + vec2(0, u_texel_size);
     vec2 uv11 = uv00 + vec2(u_texel_size, u_texel_size);
 
-    float occlusion00 = step(unpack_depth(texture2D(u_image1, uv00)) + 0.005, fragDepth);
-    float occlusion10 = step(unpack_depth(texture2D(u_image1, uv10)) + 0.005, fragDepth);
-    float occlusion01 = step(unpack_depth(texture2D(u_image1, uv01)) + 0.005, fragDepth);
-    float occlusion11 = step(unpack_depth(texture2D(u_image1, uv11)) + 0.005, fragDepth);
+    float occlusion00 = step(unpack_depth(texture2D(u_image1, uv00)) + bias, fragDepth);
+    float occlusion10 = step(unpack_depth(texture2D(u_image1, uv10)) + bias, fragDepth);
+    float occlusion01 = step(unpack_depth(texture2D(u_image1, uv01)) + bias, fragDepth);
+    float occlusion11 = step(unpack_depth(texture2D(u_image1, uv11)) + bias, fragDepth);
 
     return mix(mix(occlusion00, occlusion10, f.x), mix(occlusion01, occlusion11, f.x), f.y);
 #endif
@@ -72,25 +77,26 @@ float shadowOcclusionL0(vec4 pos) {
     vec2 uv23 = uv03 + vec2(2.0 * s, 0);
     vec2 uv33 = uv03 + vec2(3.0 * s, 0);
 
-    float o00 = step(unpack_depth(texture2D(u_image0, uv00)) + 0.005, fragDepth);
-    float o10 = step(unpack_depth(texture2D(u_image0, uv10)) + 0.005, fragDepth);
-    float o20 = step(unpack_depth(texture2D(u_image0, uv20)) + 0.005, fragDepth);
-    float o30 = step(unpack_depth(texture2D(u_image0, uv30)) + 0.005, fragDepth);
+    float bias = 0.001;
+    float o00 = step(unpack_depth(texture2D(u_image0, uv00)) + bias, fragDepth);
+    float o10 = step(unpack_depth(texture2D(u_image0, uv10)) + bias, fragDepth);
+    float o20 = step(unpack_depth(texture2D(u_image0, uv20)) + bias, fragDepth);
+    float o30 = step(unpack_depth(texture2D(u_image0, uv30)) + bias, fragDepth);
 
-    float o01 = step(unpack_depth(texture2D(u_image0, uv01)) + 0.005, fragDepth);
-    float o11 = step(unpack_depth(texture2D(u_image0, uv11)) + 0.005, fragDepth);
-    float o21 = step(unpack_depth(texture2D(u_image0, uv21)) + 0.005, fragDepth);
-    float o31 = step(unpack_depth(texture2D(u_image0, uv31)) + 0.005, fragDepth);
+    float o01 = step(unpack_depth(texture2D(u_image0, uv01)) + bias, fragDepth);
+    float o11 = step(unpack_depth(texture2D(u_image0, uv11)) + bias, fragDepth);
+    float o21 = step(unpack_depth(texture2D(u_image0, uv21)) + bias, fragDepth);
+    float o31 = step(unpack_depth(texture2D(u_image0, uv31)) + bias, fragDepth);
 
-    float o02 = step(unpack_depth(texture2D(u_image0, uv02)) + 0.005, fragDepth);
-    float o12 = step(unpack_depth(texture2D(u_image0, uv12)) + 0.005, fragDepth);
-    float o22 = step(unpack_depth(texture2D(u_image0, uv22)) + 0.005, fragDepth);
-    float o32 = step(unpack_depth(texture2D(u_image0, uv32)) + 0.005, fragDepth);
+    float o02 = step(unpack_depth(texture2D(u_image0, uv02)) + bias, fragDepth);
+    float o12 = step(unpack_depth(texture2D(u_image0, uv12)) + bias, fragDepth);
+    float o22 = step(unpack_depth(texture2D(u_image0, uv22)) + bias, fragDepth);
+    float o32 = step(unpack_depth(texture2D(u_image0, uv32)) + bias, fragDepth);
 
-    float o03 = step(unpack_depth(texture2D(u_image0, uv03)) + 0.005, fragDepth);
-    float o13 = step(unpack_depth(texture2D(u_image0, uv13)) + 0.005, fragDepth);
-    float o23 = step(unpack_depth(texture2D(u_image0, uv23)) + 0.005, fragDepth);
-    float o33 = step(unpack_depth(texture2D(u_image0, uv33)) + 0.005, fragDepth);
+    float o03 = step(unpack_depth(texture2D(u_image0, uv03)) + bias, fragDepth);
+    float o13 = step(unpack_depth(texture2D(u_image0, uv13)) + bias, fragDepth);
+    float o23 = step(unpack_depth(texture2D(u_image0, uv23)) + bias, fragDepth);
+    float o33 = step(unpack_depth(texture2D(u_image0, uv33)) + bias, fragDepth);
 
     // Edge tap smoothing
     float value = 

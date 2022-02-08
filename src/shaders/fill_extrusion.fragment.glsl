@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision highp float;
+#endif
+
 uniform sampler2D u_image0;
 uniform sampler2D u_image1;
 uniform float u_shadow_intensity;
