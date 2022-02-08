@@ -1,21 +1,34 @@
 // @flow
-import type {GeoJSONGeometry} from '@mapbox/geojson-types';
+import type {GeoJSONGeometry, GeoJSONFeature} from '@mapbox/geojson-types';
+
+// we augment GeoJSON with custom properties in query*Features results
+type QueryFeature = GeoJSONFeature & {[key: string]: mixed};
+
+const customProps = ['tile', 'layer', 'source', 'sourceLayer', 'state'];
 
 class Feature {
     type: 'Feature';
     _geometry: ?GeoJSONGeometry;
     properties: {};
     id: number | string | void;
-
     _vectorTileFeature: VectorTileFeature;
+    _x: number;
+    _y: number;
+    _z: number;
+
+    tile: ?mixed;
+    layer: ?mixed;
+    source: ?mixed;
+    sourceLayer: ?mixed;
+    state: ?mixed;
 
     constructor(vectorTileFeature: VectorTileFeature, z: number, x: number, y: number, id: string | number | void) {
         this.type = 'Feature';
 
         this._vectorTileFeature = vectorTileFeature;
-        (vectorTileFeature: any)._z = z;
-        (vectorTileFeature: any)._x = x;
-        (vectorTileFeature: any)._y = y;
+        this._z = z;
+        this._x = x;
+        this._y = y;
 
         this.properties = vectorTileFeature.properties;
         this.id = id;
@@ -23,10 +36,7 @@ class Feature {
 
     get geometry(): ?GeoJSONGeometry {
         if (this._geometry === undefined) {
-            this._geometry = this._vectorTileFeature.toGeoJSON(
-                (this._vectorTileFeature: any)._x,
-                (this._vectorTileFeature: any)._y,
-                (this._vectorTileFeature: any)._z).geometry;
+            this._geometry = this._vectorTileFeature.toGeoJSON(this._x, this._y, this._z).geometry;
         }
         return this._geometry;
     }
@@ -35,13 +45,16 @@ class Feature {
         this._geometry = g;
     }
 
-    toJSON() {
-        const json = {
-            geometry: this.geometry
+    toJSON(): QueryFeature {
+        const json: QueryFeature = {
+            type: 'Feature',
+            geometry: this.geometry,
+            properties: this.properties
         };
-        for (const i in this) {
-            if (i === '_geometry' || i === '_vectorTileFeature') continue;
-            json[i] = (this: any)[i];
+        if (this.id !== undefined) json.id = this.id;
+        for (const key of customProps) {
+            // Flow doesn't support indexed access for classes https://github.com/facebook/flow/issues/1323
+            if ((this: any)[key] !== undefined) json[key] = (this: any)[key];
         }
         return json;
     }

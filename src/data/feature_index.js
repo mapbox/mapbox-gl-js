@@ -228,7 +228,7 @@ class FeatureIndex {
             }
 
             const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y, id);
-            (geojsonFeature: any).layer = serializedLayer;
+            geojsonFeature.layer = serializedLayer;
             let layerResult = result[layerID];
             if (layerResult === undefined) {
                 layerResult = result[layerID] = [];
