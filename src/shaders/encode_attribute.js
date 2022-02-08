@@ -9,7 +9,7 @@ import {clamp} from '../util/util.js';
  *
  * @private
  */
-export function packUint8ToFloat(a: number, b: number) {
+export function packUint8ToFloat(a: number, b: number): number {
     // coerce a and b to 8-bit ints
     a = clamp(Math.floor(a), 0, 255);
     b = clamp(Math.floor(b), 0, 255);

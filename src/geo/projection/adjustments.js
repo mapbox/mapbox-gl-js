@@ -7,7 +7,7 @@ import {clamp, smoothstep} from '../../util/util.js';
 import type {Projection} from './index.js';
 import type Transform from '../transform.js';
 
-export default function getProjectionAdjustments(transform: Transform, withoutRotation?: boolean) {
+export default function getProjectionAdjustments(transform: Transform, withoutRotation?: boolean): Array<number> {
     const interpT = getInterpolationT(transform);
     const matrix = getShearAdjustment(transform.projection, transform.zoom, transform.center, interpT, withoutRotation);
 
@@ -17,7 +17,7 @@ export default function getProjectionAdjustments(transform: Transform, withoutRo
     return matrix;
 }
 
-export function getScaleAdjustment(transform: Transform) {
+export function getScaleAdjustment(transform: Transform): number {
     const projection = transform.projection;
     const interpT = getInterpolationT(transform);
     const zoomAdjustment = getZoomAdjustment(projection, transform.center);
@@ -26,7 +26,7 @@ export function getScaleAdjustment(transform: Transform) {
     return scaleAdjustment;
 }
 
-export function getProjectionAdjustmentInverted(transform: Transform) {
+export function getProjectionAdjustmentInverted(transform: Transform): Array<number> {
     const m = getProjectionAdjustments(transform, true);
     return mat2.invert([], [
         m[0], m[1],
