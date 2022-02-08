@@ -51,6 +51,7 @@ import type VertexBuffer from '../gl/vertex_buffer.js';
 import type IndexBuffer from '../gl/index_buffer.js';
 import type {Projection} from '../geo/projection/index.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
+import type {QueryResult} from '../data/feature_index.js';
 import type Painter from '../render/painter.js';
 
 export type TileState =
@@ -388,7 +389,7 @@ class Tile {
                           params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                           transform: Transform,
                           pixelPosMatrix: Float32Array,
-                          visualizeQueryGeometry: boolean): {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+                          visualizeQueryGeometry: boolean): QueryResult {
         Debug.run(() => {
             if (visualizeQueryGeometry) {
                 let geometryViz = this.queryGeometryDebugViz;

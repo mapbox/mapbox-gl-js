@@ -41,7 +41,7 @@ type QueryParameters = {
     }
 }
 
-type QueryResult = {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>};
+export type QueryResult = {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>};
 
 type FeatureIndices = {
     bucketIndex: number,

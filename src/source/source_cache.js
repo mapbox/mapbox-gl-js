@@ -12,6 +12,7 @@ import assert from 'assert';
 import SourceFeatureState from './source_state.js';
 
 import type {Source} from './source.js';
+import type {SourceSpecification} from '../style-spec/types.js';
 import type {default as MapboxMap} from '../ui/map.js';
 import type Style from '../style/style.js';
 import type Transform from '../geo/transform.js';
@@ -153,7 +154,7 @@ class SourceCache extends Evented {
             return this._source.abortTile(tile, () => {});
     }
 
-    serialize() {
+    serialize(): SourceSpecification {
         return this._source.serialize();
     }
 
@@ -195,7 +196,7 @@ class SourceCache extends Evented {
         return renderables.map(tile => tile.tileID).sort(compareTileId).map(id => id.key);
     }
 
-    hasRenderableParent(tileID: OverscaledTileID) {
+    hasRenderableParent(tileID: OverscaledTileID): boolean {
         const parentTile = this.findLoadedParent(tileID, 0);
         if (parentTile) {
             return this._isIdRenderable(parentTile.tileID.key);
@@ -331,10 +332,10 @@ class SourceCache extends Evented {
      * @private
      */
     _retainLoadedChildren(
-        idealTiles: {[_: any]: OverscaledTileID},
+        idealTiles: {[number | string]: OverscaledTileID},
         zoom: number,
         maxCoveringZoom: number,
-        retain: {[_: any]: OverscaledTileID}
+        retain: {[number | string]: OverscaledTileID}
     ) {
         for (const id in this._tiles) {
             let tile = this._tiles[id];
@@ -873,7 +874,7 @@ class SourceCache extends Evented {
         return coords;
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         if (this._source.hasTransition()) {
             return true;
         }
@@ -912,7 +913,7 @@ class SourceCache extends Evented {
      * Get the entire state object for a feature
      * @private
      */
-    getFeatureState(sourceLayer?: string, featureId: number | string) {
+    getFeatureState(sourceLayer?: string, featureId: number | string): FeatureStates {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         return this._state.getState(sourceLayer, featureId);
     }
@@ -1000,7 +1001,7 @@ function compareTileId(a: OverscaledTileID, b: OverscaledTileID): number {
     return a.overscaledZ - b.overscaledZ || bWrap - aWrap || b.canonical.y - a.canonical.y || b.canonical.x - a.canonical.x;
 }
 
-function isRasterType(type) {
+function isRasterType(type): boolean {
     return type === 'raster' || type === 'image' || type === 'video';
 }
 
