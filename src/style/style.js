@@ -352,7 +352,7 @@ class Style extends Evented {
             delete this.stylesheet.projection;
         }
         if (!this.map._explicitProjection) {
-            this.map._updateProjection(projection);
+            this.map._updateProjection();
         }
     }
 

@@ -1059,9 +1059,10 @@ class Map extends Camera {
         if (projection === undefined) { projection = null; } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
-        this._updateProjection(projection);
+        return this._updateProjection(projection);
     }
 
+    // Passing a value or null updates _runtimeExpression
     _updateProjection(projection?: ProjectionSpecification | null) {
         const prevProjection = this.getProjection();
         let changeExplicit = (projection !== undefined);
@@ -1082,24 +1083,25 @@ class Map extends Camera {
         }
 
         const newProjection = this.transform.setProjection(projection);
-        if (!newProjection) return; // Continue if projection has changed
-
-        if (changeExplicit) {
-            this._explicitProjection = newProjection;
-        }
-        // If a zoom transition on globe
-        if (deepEqual(prevProjection, this.getProjection())) {
-            this.style._forceSymbolLayerUpdate();
-        } else { // If a perceived transition between different expressions
-            this.painter.clearBackgroundTiles();
-            for (const id in this.style._sourceCaches) {
-                this.style._sourceCaches[id].clearTiles();
+        if (newProjection) {
+            if (changeExplicit) {
+                this._explicitProjection = newProjection;
             }
+            // If a zoom transition on globe
+            if (deepEqual(prevProjection, this.getProjection())) {
+                this.style._forceSymbolLayerUpdate();
+            } else { // If a perceived transition between different expressions
+                this.painter.clearBackgroundTiles();
+                for (const id in this.style._sourceCaches) {
+                    this.style._sourceCaches[id].clearTiles();
+                }
+            }
+            this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
+            this.style.enableDraping();
+            this._update(true);
         }
-        this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
-        this.style.enableDraping();
 
-        return this._update(true);
+        return this;
     }
 
     /**
