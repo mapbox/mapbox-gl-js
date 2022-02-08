@@ -371,7 +371,7 @@ class Map extends Camera {
     // `_explicitProjection represents projection as set with a call to map.setProjection()
     // For the actual projection displayed, use `transform.projection`.
     // (The two diverge above the transition zoom threshold in Globe view or when _explicitProjection === null
-    // a null _explicitProjection indicates means the map defaults to first the stylesheet projection if present, then Mercator)
+    // a null _explicitProjection indicates the map defaults to first the stylesheet projection if present, then Mercator)
     _explicitProjection: ProjectionSpecification | null;
 
     /** @section {Interaction handlers} */
@@ -1099,8 +1099,7 @@ class Map extends Camera {
         this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
         this.style.enableDraping();
 
-        this._update(true);
-        return this;
+        return this._update(true);
     }
 
     /**
