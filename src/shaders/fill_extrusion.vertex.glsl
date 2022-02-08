@@ -67,15 +67,18 @@ void main() {
     centroid_pos = a_centroid_pos;
 #endif
 
+// For round roof, ny is up and edge distance is used for vertical offset
+float dh = top_up_ny.y * a_pos_normal_ed.w * 0.1;
+
 #ifdef TERRAIN
     bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
     float ele = elevation(pos_nx.xy);
     float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
-    float h = flat_roof ? max(c_ele + v_height, ele + v_base + 2.0) : ele + (t > 0.0 ? v_height : v_base == 0.0 ? -5.0 : v_base);
+    float h = flat_roof ? max(c_ele + v_height + dh, ele + v_base + 2.0) : ele + (t > 0.0 ? v_height = dh : v_base == 0.0 ? -5.0 : v_base);
     vec3 pos = vec3(pos_nx.xy, h);
 #else
-    vec3 pos = vec3(pos_nx.xy, t > 0.0 ? v_height : v_base);
+    vec3 pos = vec3(pos_nx.xy, t > 0.0 ? v_height + dh : v_base);
 #endif
 
 #ifdef PROJECTION_GLOBE_VIEW
