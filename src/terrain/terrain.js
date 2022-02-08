@@ -1126,11 +1126,11 @@ export class Terrain extends Elevation {
         }
     }
 
-    clipOrMaskOverlapStencilType() {
+    clipOrMaskOverlapStencilType(): boolean {
         return this._overlapStencilType === 'Clip' || this._overlapStencilType === 'Mask';
     }
 
-    stencilModeForRTTOverlap(id: OverscaledTileID) {
+    stencilModeForRTTOverlap(id: OverscaledTileID): $ReadOnly<StencilMode> {
         if (!this.renderingToTexture || !this._overlapStencilType) {
             return StencilMode.disabled;
         }
@@ -1230,7 +1230,7 @@ export class Terrain extends Elevation {
         drawTerrainDepth(painter, this, psc, this.proxyCoords);
     }
 
-    _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
+    _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}): void {
         if (sourceCache.getSource() instanceof ImageSource) {
             return this._setupProxiedCoordsForImageSource(sourceCache, sourceCoords, previousProxyToSource);
         }
