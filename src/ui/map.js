@@ -2661,10 +2661,11 @@ class Map extends Camera {
 
         let transformValues;
         let el = this._container;
-        while (el && !transformValues) {
-            const transformMatrix = window.getComputedStyle(el).transform;
+        let transformMatrix = window.getComputedStyle(el).transform;
+        while (el && transformMatrix) {
             if (transformMatrix && transformMatrix !== 'none') transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
             el = el.parentElement;
+            transformMatrix = window.getComputedStyle(el).transform;
         }
 
         if (transformValues) {
