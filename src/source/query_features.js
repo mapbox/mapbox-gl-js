@@ -11,6 +11,13 @@ import assert from 'assert';
 import {mat4} from 'gl-matrix';
 
 import type Point from '@mapbox/point-geometry';
+import type {QueryResult} from '../data/feature_index.js';
+import type {QueryFeature} from '../util/vectortile_to_geojson.js';
+
+export type RenderedFeatureLayers = Array<{
+    wrappedTileID: number;
+    queryResults: QueryResult
+}>;
 
 /*
  * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
@@ -30,7 +37,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                             params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                             transform: Transform,
                             use3DQuery: boolean,
-                            visualizeQueryGeometry: boolean = false) {
+                            visualizeQueryGeometry: boolean = false): QueryResult {
     const tileResults = sourceCache.tilesIn(queryGeometry, use3DQuery, visualizeQueryGeometry);
     tileResults.sort(sortTilesIn);
     const renderedFeatureLayers = [];
@@ -55,12 +62,15 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
     for (const layerID in result) {
         result[layerID].forEach((featureWrapper) => {
             const feature = featureWrapper.feature;
-            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
-            feature.source = feature.layer.source;
-            if (feature.layer['source-layer']) {
-                feature.sourceLayer = feature.layer['source-layer'];
+            const layer = feature.layer;
+
+            if (!layer || layer.type === 'background' || layer.type === 'sky') return;
+
+            feature.source = layer.source;
+            if (layer['source-layer']) {
+                feature.sourceLayer = layer['source-layer'];
             }
-            feature.state = state;
+            feature.state = feature.id !== undefined ? sourceCache.getFeatureState(layer['source-layer'], feature.id) : {};
         });
     }
     return result;
@@ -72,7 +82,7 @@ export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
                             queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                             collisionIndex: CollisionIndex,
-                            retainedQueryData: {[_: number]: RetainedQueryData}) {
+                            retainedQueryData: {[_: number]: RetainedQueryData}): QueryResult {
     const result = {};
     const renderedSymbols = collisionIndex.queryRenderedSymbols(queryGeometry);
     const bucketQueryData = [];
@@ -138,7 +148,7 @@ export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
     return result;
 }
 
-export function querySourceFeatures(sourceCache: SourceCache, params: any) {
+export function querySourceFeatures(sourceCache: SourceCache, params: any): Array<QueryFeature> {
     const tiles = sourceCache.getRenderableIds().map((id) => {
         return sourceCache.getTileByID(id);
     });
@@ -164,7 +174,7 @@ function sortTilesIn(a, b) {
     return (idA.overscaledZ - idB.overscaledZ) || (idA.canonical.y - idB.canonical.y) || (idA.wrap - idB.wrap) || (idA.canonical.x - idB.canonical.x);
 }
 
-function mergeRenderedFeatureLayers(tiles) {
+function mergeRenderedFeatureLayers(tiles: RenderedFeatureLayers): QueryResult {
     // Merge results from all tiles, but if two tiles share the same
     // wrapped ID, don't duplicate features between the two tiles
     const result = {};

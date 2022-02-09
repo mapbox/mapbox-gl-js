@@ -51,7 +51,9 @@ import type VertexBuffer from '../gl/vertex_buffer.js';
 import type IndexBuffer from '../gl/index_buffer.js';
 import type {Projection} from '../geo/projection/index.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
+import type {QueryResult} from '../data/feature_index.js';
 import type Painter from '../render/painter.js';
+import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -388,7 +390,7 @@ class Tile {
                           params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                           transform: Transform,
                           pixelPosMatrix: Float32Array,
-                          visualizeQueryGeometry: boolean): {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+                          visualizeQueryGeometry: boolean): QueryResult {
         Debug.run(() => {
             if (visualizeQueryGeometry) {
                 let geometryViz = this.queryGeometryDebugViz;
@@ -417,7 +419,7 @@ class Tile {
         }, layers, serializedLayers, sourceFeatureState);
     }
 
-    querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
+    querySourceFeatures(result: Array<QueryFeature>, params: any) {
         const featureIndex = this.latestFeatureIndex;
         if (!featureIndex || !featureIndex.rawTileData) return;
 
@@ -443,6 +445,7 @@ class Tile {
             const id = featureIndex.getId(feature, sourceLayer);
             const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
             geojsonFeature.tile = coord;
+
             result.push(geojsonFeature);
         }
     }

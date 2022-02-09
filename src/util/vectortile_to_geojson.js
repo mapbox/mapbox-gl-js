@@ -1,8 +1,12 @@
 // @flow
+import type {LayerSpecification} from '../style-spec/types.js';
 import type {GeoJSONGeometry, GeoJSONFeature} from '@mapbox/geojson-types';
 
 // we augment GeoJSON with custom properties in query*Features results
-type QueryFeature = GeoJSONFeature & {[key: string]: mixed};
+export type QueryFeature = $ReadOnly<GeoJSONFeature> & {
+    layer?: ?LayerSpecification;
+    [key: string]: mixed;
+};
 
 const customProps = ['tile', 'layer', 'source', 'sourceLayer', 'state'];
 
@@ -17,7 +21,7 @@ class Feature {
     _z: number;
 
     tile: ?mixed;
-    layer: ?mixed;
+    layer: ?LayerSpecification;
     source: ?mixed;
     sourceLayer: ?mixed;
     state: ?mixed;

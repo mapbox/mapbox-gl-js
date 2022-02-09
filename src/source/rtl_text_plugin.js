@@ -42,9 +42,9 @@ function sendPluginStateToWorker() {
     evented.fire(new Event('pluginStateChange', {pluginStatus, pluginURL}));
 }
 
-export const evented = new Evented();
+export const evented: Evented = new Evented();
 
-export const getRTLTextPluginStatus = function () {
+export const getRTLTextPluginStatus = function (): string {
     return pluginStatus;
 };
 
