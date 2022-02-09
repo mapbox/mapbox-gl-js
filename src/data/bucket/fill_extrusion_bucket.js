@@ -21,6 +21,7 @@ import toEvaluationFeature from '../evaluation_feature.js';
 import EvaluationParameters from '../../style/evaluation_parameters.js';
 import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
+import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat} from '../../geo/mercator_coordinate.js';
 
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {
@@ -328,19 +329,65 @@ class FillExtrusionBucket implements Bucket {
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform) {
         const metadata = this.enableTerrain ? new PartMetadata() : null;
 
+        const tileBounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
         const projection = tileTransform.projection;
         const isGlobe = projection.name === 'globe';
+
         if (isGlobe && !this.layoutVertexExtArray) {
             this.layoutVertexExtArray = new FillExtrusionExtArray();
         }
 
-        for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
+        const polygons = classifyRings(geometry, EARCUT_MAX_RINGS);
+
+        for (let i = polygons.length - 1; i >= 0; i--) {
+            if (polygons[i].length == 0 || isEntirelyOutside(polygons[i])) {
+                polygons.splice(i, 1);
+            }
+        }
+
+        let clippedPolygons;
+        if (isGlobe) {
+            // Perform tesselation for polygons of tiles in order to support long planar
+            // triangles on the curved surface of the globe. This is done for all polygons
+            // regardless of their size in order guarantee identical results on all sides of
+            // tile boundaries.
+            //
+            // The globe is subdivided into a 32x16 grid. The number of subdivisions done
+            // for a tile depends on the zoom level. For example tile with z=0 requires 2⁴
+            // subdivisions, tile with z=1 2³ etc. The subdivision is done in polar coordinates
+            // instead of tile coordinates.
+            const cellCount = 360.0 / 32.0;
+            const tiles = 1 << canonical.z;
+            const leftLng = lngFromMercatorX(canonical.x / tiles);
+            const rightLng = lngFromMercatorX((canonical.x + 1) / tiles);
+            const topLat = latFromMercatorY(canonical.y / tiles);
+            const bottomLat = latFromMercatorY((canonical.y + 1) / tiles);
+            const cellCountOnXAxis = Math.ceil((rightLng - leftLng) / cellCount);
+            const cellCountOnYAxis = Math.ceil((topLat - bottomLat) / cellCount);
+
+            const splitFn = (axis, min, max) => {
+                if (axis === 0) {
+                    return 0.5 * (min + max);
+                } else {
+                    const maxLat = latFromMercatorY((canonical.y + min / EXTENT) / tiles);
+                    const minLat = latFromMercatorY((canonical.y + max / EXTENT) / tiles);
+                    const midLat = 0.5 * (minLat + maxLat);
+                    return (mercatorYfromLat(midLat) * tiles - canonical.y) * EXTENT;
+                }
+            };
+
+            clippedPolygons = subdividePolygons(polygons, splitFn, tileBounds, cellCountOnXAxis, cellCountOnYAxis, 1.0);
+        } else {
+            clippedPolygons = [];
+            for (const polygon of polygons) {
+                clippedPolygons.push({polygon, bounds: tileBounds});
+            }
+        }
+
+        for (const clippedPolygon of clippedPolygons) {
+            const polygon = clippedPolygon.polygon;
             let numVertices = 0;
             let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
-
-            if (polygon.length === 0 || isEntirelyOutside(polygon[0])) {
-                continue;
-            }
 
             for (let i = 0; i < polygon.length; i++) {
                 const ring = polygon[i];
@@ -358,7 +405,7 @@ class FillExtrusionBucket implements Bucket {
                     if (p >= 1) {
                         const p2 = ring[p - 1];
 
-                        if (!isBoundaryEdge(p1, p2)) {
+                        if (!isBoundaryEdge(p1, p2, clippedPolygon.bounds)) {
                             if (metadata) metadata.append(p1, p2);
                             if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
@@ -393,7 +440,7 @@ class FillExtrusionBucket implements Bucket {
                             segment.vertexLength += 4;
                             segment.primitiveLength += 2;
 
-                            if (isGlobe && this.layoutVertexExtArray) {
+                            if (isGlobe) {
                                 this.addGlobeVertex(p1, canonical, projection);
                                 this.addGlobeVertex(p1, canonical, projection);
                                 this.addGlobeVertex(p2, canonical, projection);
@@ -534,9 +581,9 @@ register(PartMetadata);
 
 export default FillExtrusionBucket;
 
-function isBoundaryEdge(p1, p2) {
-    return (p1.x === p2.x && (p1.x < 0 || p1.x > EXTENT)) ||
-        (p1.y === p2.y && (p1.y < 0 || p1.y > EXTENT));
+function isBoundaryEdge(p1, p2, bounds) {
+    return (p1.x === p2.x && (p1.x < bounds[0].x || p1.x > bounds[1].y)) ||
+           (p1.y === p2.y && (p1.y < bounds[0].y || p1.y > bounds[1].y));
 }
 
 function isEntirelyOutside(ring) {
@@ -555,4 +602,103 @@ function tileToMeter(canonical: CanonicalTileID) {
     const exp = Math.exp(Math.PI * (1 - 2 * mercatorY));
     // simplify cos(2 * atan(e) - PI/2) from mercator_coordinate.js, remove trigonometrics.
     return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
+}
+
+function clipPolygon(polygons, clipAxis1, clipAxis2, axis) {
+    return [];
+}
+
+function subdividePolygons(polygons, splitFn, bounds, gridSizeX, gridSizeY, padding) {
+    const outPolygons = [];
+
+    if (!polygons.length) {
+        return outPolygons;
+    }
+
+    const addResult = (polygons, outPolygons, bounds) => {
+        for (const polygon of polygons) {
+            outPolygons.push({polygon, bounds});
+        }
+    };
+
+    const hSplits = Math.ceil(Math.log2(gridSizeX));
+    const vSplits = Math.ceil(Math.log2(gridSizeY));
+
+    const initialSplits = hSplits * vSplits;
+
+    const splits = [];
+    for (let i = 0; i < Math.abs(initialSplits); i++) {
+        splits.push(initialSplits > 0 ? 0 : 1);
+    }
+
+    for (let i = 0; i < Math.min(hSplits, vSplits); i++) {
+        splits.push(0);
+        splits.push(1);
+    }
+
+    let firstSplit = polygons;
+
+    firstSplit = clipPolygon(firstSplit, bounds[0].y - padding, bounds[1].y + padding, 1);
+    firstSplit = clipPolygon(firstSplit, bounds[0].x - padding, bounds[1].x + padding, 0);
+
+    if (!firstSplit.length) {
+        return outPolygons;
+    }
+
+    const stack = [];
+    if (splits.length) {
+        stack.push({polygons: firstSplit, bounds, depth: 0});
+    } else {
+        addResult(firstSplit, outPolygons, bounds);
+    }
+
+    while (stack.length) {
+        const frame = stack.pop();
+
+        const depth = frame.depth;
+        const axis = splits[depth];
+
+        const bboxMin = frame.bounds[0];
+        const bboxMax = frame.bounds[1];
+
+        const splitMin = axis === 0 ? bboxMin.x : bboxMin.y;
+        const splitMax = axis === 0 ? bboxMax.x : bboxMax.y;
+
+        const splitMid = splitFn(axis, splitMin, splitMax);
+
+        const lclip = clipPolygon(frame.polygons, splitMin - padding, splitMid + padding, axis);
+        const rclip = clipPolygon(frame.polygons, splitMid - padding, splitMax + padding, axis);
+
+        if (lclip.length) {
+            const bbMaxX = axis === 0 ? splitMid : bboxMax.x;
+            const bbMaxY = axis === 1 ? splitMid : bboxMax.y;
+
+            const bbMax = new Point(bbMaxX, bbMaxY);
+
+            const lclipBounds = [bboxMin, bbMax];
+
+            if (depth + 1 < splits.length) {
+                stack.push({polygons: lclip, bounds: lclipBounds, depth: depth + 1});
+            } else {
+                addResult(lclip, outPolygons, lclipBounds);
+            }
+        }
+
+        if (rclip.length) {
+            const bbMinX = axis === 0 ? splitMid : bboxMin.x;
+            const bbMinY = axis === 1 ? splitMid : bboxMin.y;
+
+            const bbMin = new Point(bbMinX, bbMinY);
+
+            const rclipBounds = [bbMin, bboxMax];
+
+            if (depth + 1 < splits.length) {
+                stack.push({polygons: rclip, bounds: rclipBounds, depth: depth + 1});
+            } else {
+                addResult(rclip, outPolygons, rclipBounds);
+            }
+        }
+    }
+
+    return outPolygons;
 }

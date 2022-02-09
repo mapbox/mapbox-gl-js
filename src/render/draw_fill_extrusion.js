@@ -17,6 +17,7 @@ import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js'
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX, globeToMercatorTransition} from '../geo/projection/globe.js';
 import type Transform from '../geo/transform.js';
+import {earthRadius} from '../geo/lng_lat.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -60,13 +61,13 @@ function fillExtrusionHeightLift(transform: Transform): number {
     if (transform.projection.name !== 'globe') {
         return 0;
     }
-    // NOTE: these values will change
-    // A rectangle which fully covers a tile at the equator on zoom level 4
-    const minZoomLift = 470000.0;
-    // A rectangle which fully covers a tile at the equator on zoom level 5
-    const maxZoomLift = 120000.0;
-    const zoom = transform.zoom / GLOBE_ZOOM_THRESHOLD_MAX;
-    return interpolate(minZoomLift, maxZoomLift, zoom);
+    // A rectangle covering globe is subdivided into a grid of 32 cells
+    // This information can be used to deduce a minimum lift value so that
+    // fill extrusions with 0 height will never go below the ground.
+    const angle = Math.PI / 32.0;
+    const tanAngle = Math.tan(angle);
+    const r = earthRadius;
+    return r * Math.sqrt(1.0 + 2.0 * tanAngle * tanAngle) - r;
 }
 
 function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode) {
