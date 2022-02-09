@@ -101,7 +101,7 @@ export default class LayoutDDS extends Benchmark {
             .then(() => {});
     }
 
-    bench() {
+    bench(): Promise<void> {
         let promise = Promise.resolve();
         for (const tile of this.tiles) {
             promise = promise.then(() => {

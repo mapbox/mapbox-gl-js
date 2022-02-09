@@ -27,7 +27,7 @@ class ExpressionBenchmark extends Benchmark {
         this.style = style;
     }
 
-    setup() {
+    setup(): Promise<void> {
         return fetchStyle(this.style)
             .then(json => {
                 this.data = [];

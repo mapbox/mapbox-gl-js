@@ -108,7 +108,7 @@ export default class TileParser {
         });
     }
 
-    fetchTile(tileID: OverscaledTileID) {
+    fetchTile(tileID: OverscaledTileID): Promise<{| buffer: ArrayBuffer, tileID: OverscaledTileID |}> {
         return fetch(this.style.map._requestManager.normalizeTileURL(tileID.canonical.url(this.tileJSON.tiles)))
             .then(response => response.arrayBuffer())
             .then(buffer => ({tileID, buffer}));
