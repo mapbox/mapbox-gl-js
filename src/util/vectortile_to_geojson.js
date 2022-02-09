@@ -4,7 +4,7 @@ import type {GeoJSONGeometry, GeoJSONFeature} from '@mapbox/geojson-types';
 
 // we augment GeoJSON with custom properties in query*Features results
 export type QueryFeature = $ReadOnly<GeoJSONFeature> & {
-    layer: ?LayerSpecification;
+    layer?: ?LayerSpecification;
     [key: string]: mixed;
 };
 
@@ -52,7 +52,6 @@ class Feature {
     toJSON(): QueryFeature {
         const json: QueryFeature = {
             type: 'Feature',
-            layer: this.layer,
             geometry: this.geometry,
             properties: this.properties
         };
