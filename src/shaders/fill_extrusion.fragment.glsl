@@ -128,12 +128,33 @@ float shadowOcclusionL0(vec4 pos, float bias) {
 }
 
 
+vec3 computeDiffuseLightContribution(vec3 lightpos, vec3 diffuseColor, vec3 normal, vec3 lightColor, float lightIntensity)
+{
+    highp vec3 l = normalize(lightpos);
+    float NdotL = saturate(dot(normal, l));
+    // Relative luminance (how dark/bright is the surface color?)
+    float colorvalue = diffuseColor.r * 0.2126 + diffuseColor.g * 0.7152 + diffuseColor.b * 0.0722;
+    // Adjust directional to narrow the range of 
+    // values for highlight/shading with lower light
+    // intensity and with lighter/brighter colors
+    float directional = mix((1.0 - lightIntensity), max((1.0 - colorvalue + lightIntensity), 1.0), NdotL);
+    if (normal.y != 0.0) {
+        // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
+        // and otherwise calculates the gradient based on base + height
+        directional *= (
+              (1.0 - u_vertical_gradient) +
+             (u_vertical_gradient * clamp((v_t + v_base) * pow(v_height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - lightIntensity), 1.0)));
+    }
+    vec3 diffuseTerm = clamp(directional * diffuseColor * lightColor, mix(vec3(0.0), vec3(0.3), 1.0 - lightColor), vec3(1.0));
+    return diffuseTerm;
+}
+
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
 
     highp vec3 n = normalize(v_normal);
-    float NdotSL = saturate(dot(n, normalize(u_lightpos)));
+    float NdotSL = saturate(dot(n, normalize(vec3(-1., -1., 1.))));
 
     float biasT = pow(NdotSL, 1.0);
     float biasL0 = mix(0.01, 0.004, biasT);
@@ -143,7 +164,7 @@ void main() {
     float occlusion = 0.0; 
 
     // Alleviate projective aliasing by forcing backfacing triangles to be occluded
-    float backfacing = 1.0 - step(0.1, dot(v_normal, normalize(u_lightpos)));
+    float backfacing = 1.0 - step(0.1, dot(v_normal, normalize(vec3(-1., -1., 1.))));
 
     if (v_depth < u_cascade_distances.x)
         occlusion = occlusionL0;
@@ -153,7 +174,7 @@ void main() {
         occlusion = 0.0;
 
     highp vec3 v = normalize(-v_position);
-    highp vec3 l = normalize(vec3(u_lightpos.x, u_lightpos.y, 0.2));
+    highp vec3 l = normalize(vec3(-1., -1., 0.2));
     // Adjust the light to match the shadows direction. Use a lower angle
     // to increase the specular effect when tilted
     highp vec3 h = normalize(v + l);
@@ -162,28 +183,13 @@ void main() {
     highp float NdotH = saturate(dot(n, h));
 
     // Add slight ambient lighting so no extrusions are totally black
-    vec3 ambientTerm = 0.03 * vec3(color.rgb);
+    vec3 ambientTerm = 0.11 * vec3(color.rgb);
+    // compute two diffuse ligths, one for the viewport aligned light and one for the specular light matching the shadows.
+    vec3 diffuseTermViewport = computeDiffuseLightContribution(u_lightpos, color.rgb, n, u_lightcolor * 0.5, u_lightintensity) * 0.8;
+    vec3 diffuseTerm = computeDiffuseLightContribution(vec3(-1., -1., 0.2), color.rgb, n, u_lightcolor * 0.5, u_lightintensity);
 
-    // Relative luminance (how dark/bright is the surface color?)
-    float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
-    // Adjust directional to narrow the range of 
-    // values for highlight/shading with lower light
-    // intensity and with lighter/brighter colors
-    float directional = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), NdotL);
-    if (n.y != 0.0) {
-        // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
-        // and otherwise calculates the gradient based on base + height
-        directional *= (
-              (1.0 - u_vertical_gradient) +
-             (u_vertical_gradient * clamp((v_t + v_base) * pow(v_height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
-    }
-
-    // Assign directional color based on surface + ambient light color, 
-    // diffuse light directional, and light color with lower bounds adjusted to hue of light
-    // so that shading is tinted with the complementary (opposite) color to the light color
-    vec3 diffuseTerm = clamp(directional * color.rgb * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-    vec3 specularTerm = pow(NdotH, u_specular_factor) * u_specular_color * u_lightcolor * (1.0 - u_lightintensity);
-    vec3 outColor = vec3(ambientTerm + diffuseTerm + specularTerm);
+    vec3 specularTerm = pow(NdotH, u_specular_factor) * u_specular_color * (1.0 - u_lightintensity);
+    vec3 outColor = vec3(ambientTerm + diffuseTerm + specularTerm + diffuseTermViewport);
     occlusion = mix(occlusion, 1.0, backfacing);
     outColor = vec3(outColor * mix(1.0, 1.0 - u_shadow_intensity, occlusion));
     outColor *= u_opacity;

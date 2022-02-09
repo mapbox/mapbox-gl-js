@@ -34,8 +34,6 @@ varying float v_base;
 varying float v_height;
 varying float v_t;
 
-varying vec3 v_color;
-
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 #pragma mapbox: define highp vec4 color
