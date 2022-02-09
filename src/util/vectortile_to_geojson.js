@@ -3,7 +3,7 @@ import type {LayerSpecification} from '../style-spec/types.js';
 import type {GeoJSONGeometry, GeoJSONFeature} from '@mapbox/geojson-types';
 
 // we augment GeoJSON with custom properties in query*Features results
-export type QueryFeature = GeoJSONFeature & {
+export type QueryFeature = $ReadOnly<GeoJSONFeature> & {
     layer: ?LayerSpecification;
     [key: string]: mixed;
 };

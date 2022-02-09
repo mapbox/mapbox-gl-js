@@ -64,15 +64,13 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
             const feature = featureWrapper.feature;
             const layer = feature.layer;
 
-            if (layer && layer.type !== 'background' && layer.type !== 'sky') {
-                // $FlowFixMe[incompatible-call] - integration tests are failing when skipping calls with the undefined feature.id
-                const state = sourceCache.getFeatureState(layer['source-layer'], feature.id);
-                feature.source = layer.source;
-                if (layer['source-layer']) {
-                    feature.sourceLayer = layer['source-layer'];
-                }
-                feature.state = state;
+            if (!layer || layer.type === 'background' || layer.type === 'sky') return;
+
+            feature.source = layer.source;
+            if (layer['source-layer']) {
+                feature.sourceLayer = layer['source-layer'];
             }
+            feature.state = feature.id !== undefined ? sourceCache.getFeatureState(layer['source-layer'], feature.id) : {};
         });
     }
     return result;

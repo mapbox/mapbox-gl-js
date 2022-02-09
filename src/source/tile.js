@@ -446,7 +446,6 @@ class Tile {
             const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
             geojsonFeature.tile = coord;
 
-            // $FlowFixMe[incompatible-call] - Flow can't assing non-nullable type to nullable
             result.push(geojsonFeature);
         }
     }

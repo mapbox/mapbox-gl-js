@@ -235,7 +235,6 @@ class FeatureIndex {
                 layerResult = result[layerID] = [];
             }
 
-            // $FlowFixMe[incompatible-call] - Flow can't assing non-nullable type to nullable
             layerResult.push({featureIndex, feature: geojsonFeature, intersectionZ});
         }
     }
