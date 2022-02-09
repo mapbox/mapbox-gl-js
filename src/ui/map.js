@@ -1062,35 +1062,27 @@ class Map extends Camera {
         return this._updateProjection(projection);
     }
 
-    // Passing a value or null updates _runtimeExpression
     _updateProjection(projection?: ProjectionSpecification | null) {
         const prevProjection = this.getProjection();
-        let changeExplicit = (projection !== undefined);
-        if (!changeExplicit) {
-            projection = prevProjection;
-        } else if (projection === null) {
-            this._explicitProjection = null;
-            changeExplicit = false;
+        if (projection === undefined) { projection = prevProjection; }
+
+        // At high zoom on globe, transform projection is mercator.
+        const newProjection = this.transform.setProjection(projection && projection.name === 'globe' ?
+            {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')} :
+            projection);
+
+        // When a not-undefined value is passed, update _explicitProjection
+        if (projection !== prevProjection) {
+            this._explicitProjection = projection ?
+                (projection.name === "globe" ? {name:'globe', center:[0, 0]} : this.transform.getProjection()) :
+                null;
         }
 
-        // At high zoom when set to Globe, _runtimeProjection is Mercator while explicitProjection is globe.
-        if (projection && projection.name === "globe") {
-            projection = {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')};
-            if (changeExplicit) {
-                this._explicitProjection = {name: 'globe', center: [0, 0]};
-                changeExplicit = false;
-            }
-        }
-
-        const newProjection = this.transform.setProjection(projection);
         if (newProjection) {
-            if (changeExplicit) {
-                this._explicitProjection = newProjection;
-            }
             // If a zoom transition on globe
             if (deepEqual(prevProjection, this.getProjection())) {
                 this.style._forceSymbolLayerUpdate();
-            } else { // If a perceived transition between different expressions
+            } else { // If a switch between different expressions
                 this.painter.clearBackgroundTiles();
                 for (const id in this.style._sourceCaches) {
                     this.style._sourceCaches[id].clearTiles();
