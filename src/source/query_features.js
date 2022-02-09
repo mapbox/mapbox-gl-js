@@ -5,15 +5,14 @@ import type StyleLayer from '../style/style_layer.js';
 import type CollisionIndex from '../symbol/collision_index.js';
 import type Transform from '../geo/transform.js';
 import type {RetainedQueryData} from '../symbol/placement.js';
-import type {LayerSpecification, FilterSpecification} from '../style-spec/types.js';
+import type {FilterSpecification} from '../style-spec/types.js';
 import type {QueryGeometry} from '../style/query_geometry.js';
 import assert from 'assert';
 import {mat4} from 'gl-matrix';
 
 import type Point from '@mapbox/point-geometry';
-import type {FeatureStates} from './source_state.js';
 import type {QueryResult} from '../data/feature_index.js';
-import GeoJSONFeature from '../util/vectortile_to_geojson.js';
+import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 
 export type RenderedFeatureLayers = Array<{
     wrappedTileID: number;
@@ -62,22 +61,18 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
     // Merge state from SourceCache into the results
     for (const layerID in result) {
         result[layerID].forEach((featureWrapper) => {
-            const feature: GeoJSONFeature & {
-                state: FeatureStates;
-                source: string;
-                sourceLayer: string;
-                layer: LayerSpecification;
-            } = (featureWrapper.feature: any);
+            const feature = featureWrapper.feature;
+            const layer = feature.layer;
 
-            // $FlowFixMe prop-missing
-            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
-            // $FlowFixMe prop-missing
-            feature.source = feature.layer.source;
-            // $FlowFixMe prop-missing
-            if (feature.layer['source-layer']) {
-                feature.sourceLayer = feature.layer['source-layer'];
+            if (layer && layer.type !== 'background' && layer.type !== 'sky') {
+                // $FlowFixMe[incompatible-call] - integration tests are failing when skipping calls with the undefined feature.id
+                const state = sourceCache.getFeatureState(layer['source-layer'], feature.id);
+                feature.source = layer.source;
+                if (layer['source-layer']) {
+                    feature.sourceLayer = layer['source-layer'];
+                }
+                feature.state = state;
             }
-            feature.state = state;
         });
     }
     return result;
@@ -155,7 +150,7 @@ export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
     return result;
 }
 
-export function querySourceFeatures(sourceCache: SourceCache, params: any): Array<GeoJSONFeature> {
+export function querySourceFeatures(sourceCache: SourceCache, params: any): Array<QueryFeature> {
     const tiles = sourceCache.getRenderableIds().map((id) => {
         return sourceCache.getTileByID(id);
     });

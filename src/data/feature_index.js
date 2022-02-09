@@ -22,6 +22,7 @@ import {FeatureIndexArray} from './array_types.js';
 import {DEMSampler} from '../terrain/elevation.js';
 
 import type StyleLayer from '../style/style_layer.js';
+import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {FeatureFilter} from '../style-spec/feature_filter/index.js';
 import type Transform from '../geo/transform.js';
 import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types.js';
@@ -41,7 +42,7 @@ type QueryParameters = {
     }
 }
 
-export type QueryResult = {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>};
+export type QueryResult = {[_: string]: Array<{ featureIndex: number, feature: QueryFeature }>};
 
 type FeatureIndices = {
     bucketIndex: number,
@@ -233,6 +234,8 @@ class FeatureIndex {
             if (layerResult === undefined) {
                 layerResult = result[layerID] = [];
             }
+
+            // $FlowFixMe[incompatible-call] - Flow can't assing non-nullable type to nullable
             layerResult.push({featureIndex, feature: geojsonFeature, intersectionZ});
         }
     }
