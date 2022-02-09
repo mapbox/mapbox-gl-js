@@ -112,7 +112,7 @@ class NavigationControl {
         });
     }
 
-    onAdd(map: Map) {
+    onAdd(map: Map): HTMLElement {
         this._map = map;
         if (this.options.showZoom) {
             this._setButtonTitle(this._zoomInButton, 'ZoomIn');
@@ -150,7 +150,7 @@ class NavigationControl {
         this._map = undefined;
     }
 
-    _createButton(className: string, fn: () => mixed) {
+    _createButton(className: string, fn: () => mixed): HTMLButtonElement {
         const a = DOM.create('button', className, this._container);
         a.type = 'button';
         a.addEventListener('click', fn);

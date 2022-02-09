@@ -3,7 +3,7 @@
 import * as DOM from '../../util/dom.js';
 import {extend, bindAll} from '../../util/util.js';
 
-import type Map from '../map.js';
+import type Map, {ControlPosition} from '../map.js';
 
 type Unit = 'imperial' | 'metric' | 'nautical';
 
@@ -48,7 +48,7 @@ class ScaleControl {
         ], this);
     }
 
-    getDefaultPosition() {
+    getDefaultPosition(): ControlPosition {
         return 'bottom-left';
     }
 
@@ -56,7 +56,7 @@ class ScaleControl {
         updateScale(this._map, this._container, this.options);
     }
 
-    onAdd(map: Map) {
+    onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-scale', map.getContainer());
 

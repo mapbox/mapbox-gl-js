@@ -126,7 +126,6 @@ class GeolocateControl extends Evented {
     _setup: boolean; // set to true once the control has been setup
     _heading: ?number;
     _updateMarkerRotationThrottled: Function;
-    _onDeviceOrientationListener: Function;
 
     constructor(options: Options) {
         super();
@@ -140,15 +139,14 @@ class GeolocateControl extends Evented {
             '_setupUI',
             '_updateCamera',
             '_updateMarker',
-            '_updateMarkerRotation'
+            '_updateMarkerRotation',
+            '_onDeviceOrientation'
         ], this);
 
-        // by referencing the function with .bind(), we can correctly remove from window's event listeners
-        this._onDeviceOrientationListener = this._onDeviceOrientation.bind(this);
         this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20);
     }
 
-    onAdd(map: Map) {
+    onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', `mapboxgl-ctrl mapboxgl-ctrl-group`);
         checkGeolocationSupport(this._setupUI);
@@ -184,11 +182,11 @@ class GeolocateControl extends Evented {
      * @returns {boolean} Returns `true` if position is outside the map's maxbounds, otherwise returns `false`.
      * @private
      */
-    _isOutOfMapMaxBounds(position: Position) {
+    _isOutOfMapMaxBounds(position: Position): boolean {
         const bounds = this._map.getMaxBounds();
         const coordinates = position.coords;
 
-        return bounds && (
+        return !!bounds && (
             coordinates.longitude < bounds.getWest() ||
             coordinates.longitude > bounds.getEast() ||
             coordinates.latitude < bounds.getSouth() ||
@@ -529,7 +527,7 @@ class GeolocateControl extends Evented {
      * });
      * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
      */
-    trigger() {
+    trigger(): boolean {
         if (!this._setup) {
             warnOnce('Geolocate control triggered before added to a map');
             return false;
@@ -639,9 +637,9 @@ class GeolocateControl extends Evented {
     _addDeviceOrientationListener() {
         const addListener = () => {
             if ('ondeviceorientationabsolute' in window) {
-                window.addEventListener('deviceorientationabsolute', this._onDeviceOrientationListener);
+                window.addEventListener('deviceorientationabsolute', this._onDeviceOrientation);
             } else {
-                window.addEventListener('deviceorientation', this._onDeviceOrientationListener);
+                window.addEventListener('deviceorientation', this._onDeviceOrientation);
             }
         };
 
@@ -663,8 +661,8 @@ class GeolocateControl extends Evented {
     _clearWatch() {
         window.navigator.geolocation.clearWatch(this._geolocationWatchID);
 
-        window.removeEventListener('deviceorientation', this._onDeviceOrientationListener);
-        window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientationListener);
+        window.removeEventListener('deviceorientation', this._onDeviceOrientation);
+        window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientation);
 
         this._geolocationWatchID = (undefined: any);
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');

@@ -52,7 +52,7 @@ class FullscreenControl {
         }
     }
 
-    onAdd(map: Map) {
+    onAdd(map: Map): HTMLElement {
         this._map = map;
         if (!this._container) this._container = this._map.getContainer();
         this._controlContainer = DOM.create('div', `mapboxgl-ctrl mapboxgl-ctrl-group`);
@@ -71,7 +71,7 @@ class FullscreenControl {
         window.document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
 
-    _checkFullscreenSupport() {
+    _checkFullscreenSupport(): boolean {
         return !!(
             window.document.fullscreenEnabled ||
             (window.document: any).webkitFullscreenEnabled
@@ -93,11 +93,11 @@ class FullscreenControl {
         if (this._fullscreenButton.firstElementChild) this._fullscreenButton.firstElementChild.setAttribute('title', title);
     }
 
-    _getTitle() {
+    _getTitle(): string {
         return this._map._getUIString(this._isFullscreen() ? 'FullscreenControl.Exit' : 'FullscreenControl.Enter');
     }
 
-    _isFullscreen() {
+    _isFullscreen(): boolean {
         return this._fullscreen;
     }
 
