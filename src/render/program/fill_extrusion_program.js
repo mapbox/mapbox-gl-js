@@ -12,7 +12,6 @@ import {mat3, mat4, vec3} from 'gl-matrix';
 import {extend} from '../../util/util.js';
 import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
-import {UnwrappedTileID} from '../../source/tile_id.js';
 import type {TileTransform} from '../../geo/projection/index.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';

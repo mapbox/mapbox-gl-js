@@ -340,7 +340,7 @@ class FillExtrusionBucket implements Bucket {
         const polygons = classifyRings(geometry, EARCUT_MAX_RINGS);
 
         for (let i = polygons.length - 1; i >= 0; i--) {
-            if (polygons[i].length == 0 || isEntirelyOutside(polygons[i])) {
+            if (polygons[i].length === 0 || isEntirelyOutside(polygons[i])) {
                 polygons.splice(i, 1);
             }
         }
@@ -504,7 +504,7 @@ class FillExtrusionBucket implements Bucket {
             segment.vertexLength += numVertices;
         }
 
-        assert(!isGlobe || (this.layoutVertexExtArray && this.layoutVertexExtArray.length == this.layoutVertexArray.length));
+        assert(!isGlobe || (this.layoutVertexExtArray && this.layoutVertexExtArray.length === this.layoutVertexArray.length));
 
         if (metadata && metadata.polyCount.length > 0) {
             // When building is split between tiles, don't handle flat roofs here.
@@ -582,7 +582,7 @@ register(PartMetadata);
 export default FillExtrusionBucket;
 
 function isBoundaryEdge(p1, p2, bounds) {
-    return (p1.x === p2.x && (p1.x < bounds[0].x || p1.x > bounds[1].y)) ||
+    return (p1.x === p2.x && (p1.x < bounds[0].x || p1.x > bounds[1].x)) ||
            (p1.y === p2.y && (p1.y < bounds[0].y || p1.y > bounds[1].y));
 }
 
@@ -605,7 +605,66 @@ function tileToMeter(canonical: CanonicalTileID) {
 }
 
 function clipPolygon(polygons, clipAxis1, clipAxis2, axis) {
-    return [];
+    const intersectX = (ring, ax, ay, bx, by, x) => {
+        ring.push(new Point(x, ay + (by - ay) * ((x - ax) / (bx - ax))));
+    };
+    const intersectY = (ring, ax, ay, bx, by, y) => {
+        ring.push(new Point(ax + (bx - ax) * ((y - ay) / (by - ay)), y));
+    };
+
+    const polygonsClipped = [];
+    const intersect = axis === 0 ? intersectX : intersectY;
+    for (const polygon of polygons) {
+        const polygonClipped = [];
+        for (const ring of polygon) {
+            if (ring.length <= 2) {
+                continue;
+            }
+
+            const clipped = [];
+            for (let i = 0; i < ring.length - 1; i++) {
+                const ax = ring[i].x;
+                const ay = ring[i].y;
+                const bx = ring[i + 1].x;
+                const by = ring[i + 1].y;
+                const a = axis === 0 ? ax : ay;
+                const b = axis === 0 ? bx : by;
+                if (a < clipAxis1) {
+                    if (b > clipAxis1) {
+                        intersect(clipped, ax, ay, bx, by, clipAxis1);
+                    }
+                } else if (a > clipAxis2) {
+                    if (b < clipAxis2) {
+                        intersect(clipped, ax, ay, bx, by, clipAxis2);
+                    }
+                } else {
+                    clipped.push(ring[i]);
+                }
+                if (b < clipAxis1 && a >= clipAxis1) {
+                    intersect(clipped, ax, ay, bx, by, clipAxis1);
+                }
+                if (b > clipAxis2 && a <= clipAxis2) {
+                    intersect(clipped, ax, ay, bx, by, clipAxis2);
+                }
+            }
+
+            let last = ring[ring.length - 1];
+            const a = axis === 0 ? last.x : last.y;
+            if (a >= clipAxis1 && a <= clipAxis2) {
+                clipped.push(last);
+            }
+            if (clipped.length) {
+                last = clipped[clipped.length - 1];
+                if (clipped[0].x !== last.x || clipped[0].y !== last.y) {
+                    clipped.push(clipped[0]);
+                }
+                polygonClipped.push(clipped);
+            }
+        }
+        polygonsClipped.push(polygonClipped);
+    }
+
+    return polygonsClipped;
 }
 
 function subdividePolygons(polygons, splitFn, bounds, gridSizeX, gridSizeY, padding) {
@@ -615,8 +674,8 @@ function subdividePolygons(polygons, splitFn, bounds, gridSizeX, gridSizeY, padd
         return outPolygons;
     }
 
-    const addResult = (polygons, outPolygons, bounds) => {
-        for (const polygon of polygons) {
+    const addResult = (clipped, bounds) => {
+        for (const polygon of clipped) {
             outPolygons.push({polygon, bounds});
         }
     };
@@ -624,7 +683,7 @@ function subdividePolygons(polygons, splitFn, bounds, gridSizeX, gridSizeY, padd
     const hSplits = Math.ceil(Math.log2(gridSizeX));
     const vSplits = Math.ceil(Math.log2(gridSizeY));
 
-    const initialSplits = hSplits * vSplits;
+    const initialSplits = hSplits - vSplits;
 
     const splits = [];
     for (let i = 0; i < Math.abs(initialSplits); i++) {
@@ -636,24 +695,26 @@ function subdividePolygons(polygons, splitFn, bounds, gridSizeX, gridSizeY, padd
         splits.push(1);
     }
 
-    let firstSplit = polygons;
+    let split = polygons;
 
-    firstSplit = clipPolygon(firstSplit, bounds[0].y - padding, bounds[1].y + padding, 1);
-    firstSplit = clipPolygon(firstSplit, bounds[0].x - padding, bounds[1].x + padding, 0);
+    split = clipPolygon(split, bounds[0].y - padding, bounds[1].y + padding, 1);
+    split = clipPolygon(split, bounds[0].x - padding, bounds[1].x + padding, 0);
 
-    if (!firstSplit.length) {
+    if (!split.length) {
         return outPolygons;
     }
 
     const stack = [];
     if (splits.length) {
-        stack.push({polygons: firstSplit, bounds, depth: 0});
+        stack.push({polygons: split, bounds, depth: 0});
     } else {
-        addResult(firstSplit, outPolygons, bounds);
+        addResult(split, outPolygons, bounds);
     }
 
     while (stack.length) {
         const frame = stack.pop();
+
+        assert(frame.polygons.length > 0);
 
         const depth = frame.depth;
         const axis = splits[depth];
@@ -677,10 +738,10 @@ function subdividePolygons(polygons, splitFn, bounds, gridSizeX, gridSizeY, padd
 
             const lclipBounds = [bboxMin, bbMax];
 
-            if (depth + 1 < splits.length) {
+            if (splits.length > depth + 1) {
                 stack.push({polygons: lclip, bounds: lclipBounds, depth: depth + 1});
             } else {
-                addResult(lclip, outPolygons, lclipBounds);
+                addResult(lclip, lclipBounds);
             }
         }
 
@@ -692,10 +753,10 @@ function subdividePolygons(polygons, splitFn, bounds, gridSizeX, gridSizeY, padd
 
             const rclipBounds = [bbMin, bboxMax];
 
-            if (depth + 1 < splits.length) {
+            if (splits.length > depth + 1) {
                 stack.push({polygons: rclip, bounds: rclipBounds, depth: depth + 1});
             } else {
-                addResult(rclip, outPolygons, rclipBounds);
+                addResult(rclip, rclipBounds);
             }
         }
     }

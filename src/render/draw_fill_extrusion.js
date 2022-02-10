@@ -14,8 +14,7 @@ import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
-import {number as interpolate} from '../style-spec/util/interpolate.js';
-import {GLOBE_ZOOM_THRESHOLD_MAX, globeToMercatorTransition} from '../geo/projection/globe.js';
+import {globeToMercatorTransition} from '../geo/projection/globe.js';
 import type Transform from '../geo/transform.js';
 import {earthRadius} from '../geo/lng_lat.js';
 
