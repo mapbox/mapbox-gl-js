@@ -13,6 +13,7 @@ export default class CylindricalEqualArea extends Projection {
 
     constructor(options: ProjectionSpecification) {
         super(options);
+        this.center = options.center || [0, 0];
         this.parallels = options.parallels || [0, 0];
         this.cosPhi = Math.max(0.01, Math.cos(degToRad(this.parallels[0])));
         // scale coordinates between 0 and 1 to avoid constraint issues

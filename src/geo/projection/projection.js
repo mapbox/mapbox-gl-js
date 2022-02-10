@@ -58,7 +58,7 @@ export default class Projection {
         this.zAxisUnit = 'meters';
         this.isReprojectedInTileSpace = true;
         this.unsupportedLayers = ['custom'];
-        this.center = options.center || [0, 0];
+        this.center = [0, 0];
     }
 
     project(lng: number, lat: number): ProjectedPoint { // eslint-disable-line
