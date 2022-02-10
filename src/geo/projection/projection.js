@@ -61,11 +61,11 @@ export default class Projection {
         this.center = options.center || [0, 0];
     }
 
-    project(lng: number, lat: number): ProjectedPoint {
+    project(lng: number, lat: number): ProjectedPoint { // eslint-disable-line
         return {x: 0, y: 0, z: 0}; // overriden in subclasses
     }
 
-    unproject(x: number, y: number): LngLat {
+    unproject(x: number, y: number): LngLat { // eslint-disable-line
         return new LngLat(0, 0); // overriden in subclasses
     }
 

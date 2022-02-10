@@ -82,6 +82,10 @@ export default class Globe extends Mercator {
         return new Point(pos[0], pos[1]);
     }
 
+    pixelsPerMeter(lat: number, worldSize: number): number {
+        return mercatorZfromAltitude(1, 0) * worldSize;
+    }
+
     createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
         const globeMatrix = calculateGlobeMatrix(tr, worldSize);
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
