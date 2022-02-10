@@ -21,7 +21,7 @@ export type TileTransform = {
     projection: Projection
 };
 
-export default function tileTransform(id: Object, projection: Projection) {
+export default function tileTransform(id: Object, projection: Projection): TileTransform {
     if (!projection.isReprojectedInTileSpace) {
         return {scale: 1 << id.z, x: id.x, y: id.y, x2: id.x + 1, y2: id.y + 1, projection};
     }
@@ -93,7 +93,7 @@ export default function tileTransform(id: Object, projection: Projection) {
     };
 }
 
-export function tileAABB(tr: Transform, numTiles: number, z: number, x: number, y: number, wrap: number, min: number, max: number, projection: Projection) {
+export function tileAABB(tr: Transform, numTiles: number, z: number, x: number, y: number, wrap: number, min: number, max: number, projection: Projection): Aabb {
     if (projection.name === 'globe') {
         const tileId = new UnwrappedTileID(wrap, new CanonicalTileID(z, x, y));
         const aabb = globeTileBounds(tileId.canonical);
@@ -130,7 +130,7 @@ export function tileAABB(tr: Transform, numTiles: number, z: number, x: number, 
         [(wrap  + tx2) * numTiles, numTiles * ty2, max]);
 }
 
-export function getTilePoint(tileTransform: TileTransform, {x, y}: {x: number, y: number}, wrap: number = 0) {
+export function getTilePoint(tileTransform: TileTransform, {x, y}: {x: number, y: number}, wrap: number = 0): Point {
     return new Point(
         ((x - wrap) * tileTransform.scale - tileTransform.x) * EXTENT,
         (y * tileTransform.scale - tileTransform.y) * EXTENT);

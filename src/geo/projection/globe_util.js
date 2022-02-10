@@ -117,7 +117,7 @@ export function globeECEFOrigin(tileMatrix: Mat4, id: UnwrappedTileID): [number,
     return origin;
 }
 
-export function globeECEFNormalizationScale(bounds: Aabb) {
+export function globeECEFNormalizationScale(bounds: Aabb): number {
     const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
     return GLOBE_NORMALIZATION_MASK / maxExt;
 }
@@ -138,13 +138,13 @@ export function globeDenormalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export function globeECEFUnitsToPixelScale(worldSize: number) {
+export function globeECEFUnitsToPixelScale(worldSize: number): number {
     const localRadius = EXTENT / (2.0 * Math.PI);
     const wsRadius = worldSize / (2.0 * Math.PI);
     return wsRadius / localRadius;
 }
 
-export function globePixelsToTileUnits(zoom: number, id: CanonicalTileID) {
+export function globePixelsToTileUnits(zoom: number, id: CanonicalTileID): number {
     const ecefPerPixel = EXTENT / (TILE_SIZE * Math.pow(2, zoom));
     const normCoeff = globeECEFNormalizationScale(globeTileBounds(id));
 
@@ -341,7 +341,7 @@ export class GlobeSharedBuffers {
         return vertices;
     }
 
-    _createPoleTriangleIndices() {
+    _createPoleTriangleIndices(): TriangleIndexArray {
         const arr = new TriangleIndexArray();
         for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
             arr.emplaceBack(0, i + 1, i + 2);

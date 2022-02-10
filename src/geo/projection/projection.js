@@ -77,7 +77,7 @@ export default class Projection {
         return tr._coordinatePoint(tr.locationCoordinate(lngLat), false);
     }
 
-    pixelsPerMeter(lat: number, worldSize: number) {
+    pixelsPerMeter(lat: number, worldSize: number): number {
         return mercatorZfromAltitude(1, lat) * worldSize;
     }
 
