@@ -70,8 +70,9 @@ class FillExtrusionStyleLayer extends StyleLayer {
         const centroid = [0, 0];
         const terrainVisible = elevationHelper && transform.elevation;
         const exaggeration = transform.elevation ? transform.elevation.exaggeration() : 1;
-        if (terrainVisible) {
-            const centroidVertexArray = queryGeometry.tile.getBucket(this).centroidVertexArray;
+        const bucket = queryGeometry.tile.getBucket(this);
+        if (terrainVisible && bucket instanceof FillExtrusionBucket) {
+            const centroidVertexArray = bucket.centroidVertexArray;
 
             // See FillExtrusionBucket#encodeCentroid(), centroid is inserted at vertexOffset + 1
             const centroidOffset = layoutVertexArrayOffset + 1;

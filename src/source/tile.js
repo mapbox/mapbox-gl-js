@@ -188,11 +188,11 @@ class Tile {
         this.fadeEndTime = fadeEndTime;
     }
 
-    wasRequested() {
+    wasRequested(): boolean {
         return this.state === 'errored' || this.state === 'loaded' || this.state === 'reloading';
     }
 
-    get tileTransform() {
+    get tileTransform(): TileTransform {
         if (!this._tileTransform) {
             this._tileTransform = tileTransform(this.tileID.canonical, this.projection);
         }
@@ -346,7 +346,7 @@ class Tile {
         this.state = 'unloaded';
     }
 
-    getBucket(layer: StyleLayer) {
+    getBucket(layer: StyleLayer): Bucket {
         return this.buckets[layer.id];
     }
 
@@ -450,12 +450,12 @@ class Tile {
         }
     }
 
-    hasData() {
+    hasData(): boolean {
         return this.state === 'loaded' || this.state === 'reloading' || this.state === 'expired';
     }
 
-    patternsLoaded() {
-        return this.imageAtlas && !!Object.keys(this.imageAtlas.patternPositions).length;
+    patternsLoaded(): boolean {
+        return !!this.imageAtlas && !!Object.keys(this.imageAtlas.patternPositions).length;
     }
 
     setExpiryData(data: any) {
@@ -507,7 +507,7 @@ class Tile {
         }
     }
 
-    getExpiryTimeout() {
+    getExpiryTimeout(): void | number {
         if (this.expirationTime) {
             if (this.expiredRequestCount) {
                 return 1000 * (1 << Math.min(this.expiredRequestCount - 1, 31));
@@ -579,7 +579,7 @@ class Tile {
         this.dependencies[namespace] = index;
     }
 
-    hasDependency(namespaces: Array<string>, keys: Array<string>) {
+    hasDependency(namespaces: Array<string>, keys: Array<string>): boolean {
         for (const namespace of namespaces) {
             const dependencies = this.dependencies[namespace];
             if (dependencies) {
