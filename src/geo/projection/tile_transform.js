@@ -3,7 +3,7 @@ import Point from '@mapbox/point-geometry';
 import MercatorCoordinate, {altitudeFromMercatorZ, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import {vec3} from 'gl-matrix';
-import type {Projection} from './index.js';
+import type Projection from './projection.js';
 import {Aabb} from '../../util/primitives.js';
 import {globeTileBounds, calculateGlobeMatrix} from './globe.js';
 import type Transform from '../transform.js';

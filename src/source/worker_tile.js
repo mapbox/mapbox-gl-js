@@ -18,7 +18,7 @@ import EvaluationParameters from '../style/evaluation_parameters.js';
 import {CanonicalTileID, OverscaledTileID} from './tile_id.js';
 import {PerformanceUtils} from '../util/performance.js';
 import tileTransform from '../geo/projection/tile_transform.js';
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 import type {Bucket} from '../data/bucket.js';
 import type Actor from '../util/actor.js';
 import type StyleLayer from '../style/style_layer.js';

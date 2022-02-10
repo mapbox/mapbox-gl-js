@@ -4,7 +4,8 @@ import LngLat from '../lng_lat.js';
 import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 import {mat4, mat2} from 'gl-matrix';
 import {clamp, smoothstep} from '../../util/util.js';
-import type {Projection} from './index.js';
+
+import type Projection from './projection.js';
 import type Transform from '../transform.js';
 
 export default function getProjectionAdjustments(transform: Transform, withoutRotation?: boolean): Array<number> {

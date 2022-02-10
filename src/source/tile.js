@@ -49,7 +49,7 @@ import type {FilterSpecification} from '../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type IndexBuffer from '../gl/index_buffer.js';
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
 import type {QueryResult} from '../data/feature_index.js';
 import type Painter from '../render/painter.js';

@@ -5,7 +5,7 @@ import Point from '@mapbox/point-geometry';
 import {mat2, mat4, vec4} from 'gl-matrix';
 import * as symbolSize from './symbol_size.js';
 import {addDynamicAttributes} from '../data/bucket/symbol_bucket.js';
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 import type Painter from '../render/painter.js';
 import type Transform from '../geo/transform.js';
 import type SymbolBucket from '../data/bucket/symbol_bucket.js';

@@ -1,10 +1,10 @@
 // @flow
-import {mat4, vec3} from 'gl-matrix';
-import {Aabb} from '../../util/primitives.js';
+import {mat4, vec3, vec4} from 'gl-matrix';
+import {Aabb, Ray} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
 import LngLat from '../lng_lat.js';
-import {degToRad, smoothstep, clamp} from '../../util/util.js';
-import {
+import {degToRad, radToDeg, smoothstep, clamp, getColumn, shortestAngle} from '../../util/util.js';
+import MercatorCoordinate, {
     MAX_MERCATOR_LATITUDE,
     lngFromMercatorX,
     latFromMercatorY,
@@ -12,22 +12,24 @@ import {
     mercatorXfromLng,
     mercatorYfromLat
 } from '../mercator_coordinate.js';
+import Mercator from './mercator.js';
 import {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import Context from '../../gl/context.js';
 import Tile from '../../source/tile.js';
 import IndexBuffer from '../../gl/index_buffer.js';
-import type Painter from '../../render/painter.js';
 import SegmentVector from '../../data/segment.js';
 import Point from '@mapbox/point-geometry';
-import type VertexBuffer from '../../gl/vertex_buffer.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray} from '../../data/array_types.js';
-import type Transform from '../transform.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
-import GlobeTileTransform from './globe_tile_transform.js';
 import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from './far_z.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import type {ElevationScale} from './index.js';
+
+import type VertexBuffer from '../../gl/vertex_buffer.js';
+import type Painter from '../../render/painter.js';
+import type Transform from '../transform.js';
+import type {ElevationScale} from './projection.js';
 import type {Mat4, Vec3} from 'gl-matrix';
+import type {ProjectionSpecification} from '../../style-spec/types.js';
 
 const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
@@ -37,32 +39,16 @@ const GLOBE_VERTEX_GRID_SIZE = 64;
 
 const TILE_SIZE = 512;
 
-export default {
-    name: 'globe',
-    requiresDraping: true,
-    wrap: true,
-    supportsWorldCopies: false,
-    supportsTerrain: true,
-    supportsFreeCamera: true,
-    zAxisUnit: "pixels",
-    center: [0, 0],
-    unsupportedLayers: [
-        'fill-extrusion',
-        'debug',
-        'custom'
-    ],
+export default class Globe extends Mercator {
 
-    project(lng: number, lat: number) {
-        const x = mercatorXfromLng(lng);
-        const y = mercatorYfromLat(lat);
-        return {x, y, z: 0};
-    },
-
-    unproject(x: number, y: number) {
-        const lng = lngFromMercatorX(x);
-        const lat = latFromMercatorY(y);
-        return new LngLat(lng, lat);
-    },
+    constructor(options: ProjectionSpecification) {
+        super(options);
+        this.requiresDraping = true;
+        this.supportsWorldCopies = false;
+        this.supportsFog = false;
+        this.zAxisUnit = "pixels";
+        this.unsupportedLayers = ['fill-extrusion', 'debug', 'custom'];
+    }
 
     projectTilePoint(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {
         const tiles = Math.pow(2.0, id.z);
@@ -77,7 +63,7 @@ export default {
         vec3.transformMat4(pos, pos, normalizationMatrix);
 
         return {x: pos[0], y: pos[1], z: pos[2]};
-    },
+    }
 
     locationPoint(tr: Transform, lngLat: LngLat): Point {
         const pos = latLngToECEF(lngLat.lat, lngLat.lng);
@@ -94,15 +80,83 @@ export default {
         vec3.transformMat4(pos, pos, matrix);
 
         return new Point(pos[0], pos[1]);
-    },
+    }
 
-    pixelsPerMeter(lat: number, worldSize: number) {
-        return mercatorZfromAltitude(1, 0) * worldSize;
-    },
+    createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
+        const globeMatrix = calculateGlobeMatrix(tr, worldSize);
+        const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
+        return mat4.multiply(new Float64Array(16), globeMatrix, decode);
+    }
 
-    createTileTransform(tr: Transform, worldSize: number): Object {
-        return new GlobeTileTransform(tr, worldSize);
-    },
+    createInversionMatrix(tr: Transform, worldSize: number, id: CanonicalTileID): Float32Array {
+        const identity = mat4.identity(new Float64Array(16));
+
+        const center = tr.center;
+        const ecefUnitsToPixels = globeECEFUnitsToPixelScale(worldSize);
+        const matrix = mat4.identity(new Float64Array(16));
+        const encode = globeNormalizeECEF(globeTileBounds(id));
+        mat4.multiply(matrix, matrix, encode);
+        mat4.rotateY(matrix, matrix, degToRad(center.lng));
+        mat4.rotateX(matrix, matrix, degToRad(center.lat));
+
+        mat4.scale(matrix, matrix, [1.0 / ecefUnitsToPixels, 1.0 / ecefUnitsToPixels, 1.0]);
+
+        const PPMMercator = mercatorZfromAltitude(1.0, center.lat) * worldSize;
+        const globeToMercatorPPMRatio = PPMMercator / tr.pixelsPerMeter;
+        const worldSizeMercator = worldSize / globeToMercatorPPMRatio;
+        const wsRadius = worldSizeMercator / (2.0 * Math.PI);
+        const localRadius = EXTENT / (2.0 * Math.PI);
+        const ecefUnitsToMercatorPixels = wsRadius / localRadius;
+
+        mat4.scale(identity, identity, [ecefUnitsToMercatorPixels, ecefUnitsToMercatorPixels, 1.0]);
+        mat4.multiply(matrix, matrix, identity);
+
+        return Float32Array.from(matrix);
+    }
+
+    pointCoordinate(tr: Transform, x: number, y: number, _: number): MercatorCoordinate {
+        const point0 = [x, y, 0, 1];
+        const point1 = [x, y, 1, 1];
+
+        vec4.transformMat4(point0, point0, tr.pixelMatrixInverse);
+        vec4.transformMat4(point1, point1, tr.pixelMatrixInverse);
+
+        vec4.scale(point0, point0, 1 / point0[3]);
+        vec4.scale(point1, point1, 1 / point1[3]);
+
+        const p0p1 = vec3.sub([], point1, point0);
+        const direction = vec3.normalize([], p0p1);
+
+        // Compute globe origo in world space
+        const m = calculateGlobeMatrix(tr, tr.worldSize);
+        const globeCenter = [m[12], m[13], m[14]];
+        const radius = tr.worldSize / (2.0 * Math.PI);
+
+        const pointOnGlobe = [];
+        const ray = new Ray(point0, direction);
+
+        ray.closestPointOnSphere(globeCenter, radius, pointOnGlobe);
+
+        // Transform coordinate axes to find lat & lng of the position
+        const xa = vec3.normalize([], getColumn(m, 0));
+        const ya = vec3.normalize([], getColumn(m, 1));
+        const za = vec3.normalize([], getColumn(m, 2));
+
+        const xp = vec3.dot(xa, pointOnGlobe);
+        const yp = vec3.dot(ya, pointOnGlobe);
+        const zp = vec3.dot(za, pointOnGlobe);
+
+        const lat = radToDeg(Math.asin(-yp / radius));
+        let lng = radToDeg(Math.atan2(xp, zp));
+
+        // Check that the returned longitude angle is not wrapped
+        lng = tr.center.lng + shortestAngle(tr.center.lng, lng);
+
+        const mx = mercatorXfromLng(lng);
+        const my = mercatorYfromLat(lat);
+
+        return new MercatorCoordinate(mx, my);
+    }
 
     farthestPixelDistance(tr: Transform): number {
         const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
@@ -114,20 +168,20 @@ export default {
             return interpolate(globePixelDistance, mercatorPixelDistance, t);
         }
         return globePixelDistance;
-    },
+    }
 
     upVector(id: CanonicalTileID, x: number, y: number): Vec3 {
         const tiles = 1 << id.z;
         const mercX = (x / EXTENT + id.x) / tiles;
         const mercY = (y / EXTENT + id.y) / tiles;
         return latLngToECEF(latFromMercatorY(mercY), lngFromMercatorX(mercX), 1.0);
-    },
+    }
 
     upVectorScale(id: CanonicalTileID, latitude: number, worldSize: number): ElevationScale {
         const pixelsPerMeterAtLat = mercatorZfromAltitude(1, latitude) * worldSize;
         return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id)), metersToLabelSpace: pixelsPerMeterAtLat};
     }
-};
+}
 
 const GLOBE_MIN = -GLOBE_RADIUS;
 const GLOBE_MAX = GLOBE_RADIUS;
@@ -174,7 +228,7 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     return new Aabb(bMin, bMax);
 }
 
-export function globeTileLatLngCorners(id: CanonicalTileID) {
+function globeTileLatLngCorners(id: CanonicalTileID) {
     const tileScale = Math.pow(2, id.z);
     const left = id.x / tileScale;
     const right = (id.x + 1) / tileScale;
@@ -187,7 +241,7 @@ export function globeTileLatLngCorners(id: CanonicalTileID) {
     return [latLngTL, latLngBR];
 }
 
-export function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: ?number): Array<number> {
+function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: ?number): Array<number> {
     lng = degToRad(lng);
 
     if (!radius) {
@@ -202,7 +256,7 @@ export function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radi
     return [sx, sy, sz];
 }
 
-export function latLngToECEF(lat: number, lng: number, radius: ?number): Array<number> {
+function latLngToECEF(lat: number, lng: number, radius: ?number): Array<number> {
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
 }
 
@@ -215,12 +269,12 @@ export function globeECEFOrigin(tileMatrix: Mat4, id: UnwrappedTileID): [number,
     return origin;
 }
 
-export function globeECEFNormalizationScale(bounds: Aabb) {
+function globeECEFNormalizationScale(bounds: Aabb) {
     const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
     return GLOBE_NORMALIZATION_MASK / maxExt;
 }
 
-export function globeNormalizeECEF(bounds: Aabb): Float64Array {
+function globeNormalizeECEF(bounds: Aabb): Float64Array {
     const m = mat4.identity(new Float64Array(16));
     const scale = globeECEFNormalizationScale(bounds);
     mat4.scale(m, m, [scale, scale, scale]);
@@ -236,7 +290,7 @@ export function globeDenormalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export function globeECEFUnitsToPixelScale(worldSize: number) {
+function globeECEFUnitsToPixelScale(worldSize: number) {
     const localRadius = EXTENT / (2.0 * Math.PI);
     const wsRadius = worldSize / (2.0 * Math.PI);
     return wsRadius / localRadius;

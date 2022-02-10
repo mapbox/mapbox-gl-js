@@ -61,7 +61,6 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
     const isGlobeProjection = tr.projection.name === 'globe';
-    const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
     const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
@@ -82,7 +81,8 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
-        const uniformValues = circleUniformValues(painter, coord, tile, tileTransform, mercatorCenter, layer);
+        const invMatrix = tr.projection.createInversionMatrix(tr, tr.worldSize, coord.canonical);
+        const uniformValues = circleUniformValues(painter, coord, tile, invMatrix, mercatorCenter, layer);
 
         const state: TileRenderState = {
             programConfiguration,
