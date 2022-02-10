@@ -32,7 +32,7 @@ class TileCache {
      * @returns {TileCache} Returns itself to allow for method chaining.
      * @private
      */
-    reset() {
+    reset(): this {
         for (const key in this.data) {
             for (const removedData of this.data[key]) {
                 if (removedData.timeout) clearTimeout(removedData.timeout);
@@ -56,7 +56,7 @@ class TileCache {
      * @returns {TileCache} Returns itself to allow for method chaining.
      * @private
      */
-    add(tileID: OverscaledTileID, data: Tile, expiryTimeout: number | void) {
+    add(tileID: OverscaledTileID, data: Tile, expiryTimeout: number | void): this {
         const key = tileID.wrapped().key;
         if (this.data[key] === undefined) {
             this.data[key] = [];
@@ -154,7 +154,7 @@ class TileCache {
      * @returns {TileCache} this cache
      * @private
      */
-    remove(tileID: OverscaledTileID, value: ?{ value: Tile, timeout: ?TimeoutID}) {
+    remove(tileID: OverscaledTileID, value: ?{ value: Tile, timeout: ?TimeoutID}): this {
         if (!this.has(tileID)) { return this; }
         const key = tileID.wrapped().key;
 

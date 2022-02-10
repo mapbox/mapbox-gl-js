@@ -5,6 +5,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import EXTENT from '../data/extent.js';
+import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
 import {
     fillExtrusionUniformValues,
     fillExtrusionPatternUniformValues,
@@ -16,7 +17,6 @@ import assert from 'assert';
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer.js';
-import type FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
 
 export default draw;
 
@@ -208,8 +208,8 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
         if (a.length === 0) { bucket.borderDone[i] = true; }
         if (bucket.borderDone[i]) continue;
         const nid = neighborTileID = neighborCoord[i](coord);
-        const nBucket: ?FillExtrusionBucket = getLoadedBucket(nid);
-        if (!nBucket || !nBucket.enableTerrain) continue;
+        const nBucket = getLoadedBucket(nid);
+        if (!nBucket || !(nBucket instanceof FillExtrusionBucket) || !nBucket.enableTerrain) continue;
 
         neighborDEMTile = terrain.findDEMTileFor(nid);
         if (!neighborDEMTile || !neighborDEMTile.dem) continue;

@@ -48,7 +48,7 @@ export const getRTLTextPluginStatus = function (): string {
     return pluginStatus;
 };
 
-export const registerForPluginStateChange = function(callback: PluginStateSyncCallback) {
+export const registerForPluginStateChange = function(callback: PluginStateSyncCallback): PluginStateSyncCallback {
     // Do an initial sync of the state
     callback({pluginStatus, pluginURL});
     // Listen for all future state changes
