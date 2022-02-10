@@ -26,6 +26,7 @@ varying float v_height;
 varying float v_t;
 
 #pragma mapbox: define highp vec4 color
+varying vec3 v_gradient;
 
 #define saturate(_x) clamp(_x, 0., 1.)
 
@@ -138,12 +139,17 @@ vec3 computeDiffuseLightContribution(vec3 lightpos, vec3 diffuseColor, vec3 norm
     // values for highlight/shading with lower light
     // intensity and with lighter/brighter colors
     float directional = mix((1.0 - lightIntensity), max((1.0 - colorvalue + lightIntensity), 1.0), NdotL);
-    if (normal.y != 0.0) {
+    if (normal.y != 0.0 && u_vertical_gradient == 1.0) {
         // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
         // and otherwise calculates the gradient based on base + height
-        directional *= (
-              (1.0 - u_vertical_gradient) +
-             (u_vertical_gradient * clamp((v_t + v_base) * pow(v_height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - lightIntensity), 1.0)));
+        // directional *= (
+        //      (1.0 - u_vertical_gradient) +
+        //     (u_vertical_gradient * clamp((v_t + v_base) * pow(v_height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - lightIntensity), 1.0)));
+
+        float verticalAOContribution = v_height > 3.0 ? 0.2 : 0.06;
+        directional *= (1.0 - verticalAOContribution + verticalAOContribution * (1.0 - pow(1.0 - min(v_gradient.z * 0.01, 1.0), 20.0)));
+        // concave angle
+        directional *= (0.5 + 0.5 * v_gradient.x * v_gradient.x * v_gradient.x);
     }
     vec3 diffuseTerm = clamp(directional * diffuseColor * lightColor, mix(vec3(0.0), vec3(0.3), 1.0 - lightColor), vec3(1.0));
     return diffuseTerm;
