@@ -402,7 +402,6 @@ class FillExtrusionBucket implements Bucket {
 
                     if (p >= 1) {
                         const p2 = ring[p - 1];
-
                         if (!isBoundaryEdge(p1, p2, clippedPolygon.bounds)) {
                             if (metadata) metadata.append(p1, p2);
                             if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
@@ -714,7 +713,7 @@ function subdividePolygons(polygons, splitFn, bounds, gridSizeX, gridSizeY, padd
     if (splits.length) {
         stack.push({polygons: split, bounds, depth: 0});
     } else {
-        addResult(split, outPolygons, bounds);
+        addResult(split, bounds);
     }
 
     while (stack.length) {
