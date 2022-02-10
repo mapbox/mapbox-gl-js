@@ -338,7 +338,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),
             uLabelPlaneMatrix = projectedPosOnViewport ? identityMat4 : labelPlaneMatrix,
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
-        const invMatrix = tr.projection.createInversionMatrix(tr, tr.worldSize, coord.canonical);
+        const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
 
         const defines = projectedPosOnViewport ? baseDefines.concat(['PROJECTED_POS_ON_VIEWPORT']) : baseDefines;
         const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;

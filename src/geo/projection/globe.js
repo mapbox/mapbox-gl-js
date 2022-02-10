@@ -88,28 +88,20 @@ export default class Globe extends Mercator {
         return mat4.multiply(new Float64Array(16), globeMatrix, decode);
     }
 
-    createInversionMatrix(tr: Transform, worldSize: number, id: CanonicalTileID): Float32Array {
-        const identity = mat4.identity(new Float64Array(16));
-
-        const center = tr.center;
+    createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
+        const {center, worldSize} = tr;
         const ecefUnitsToPixels = globeECEFUnitsToPixelScale(worldSize);
         const matrix = mat4.identity(new Float64Array(16));
         const encode = globeNormalizeECEF(globeTileBounds(id));
         mat4.multiply(matrix, matrix, encode);
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
-
         mat4.scale(matrix, matrix, [1.0 / ecefUnitsToPixels, 1.0 / ecefUnitsToPixels, 1.0]);
 
-        const PPMMercator = mercatorZfromAltitude(1.0, center.lat) * worldSize;
-        const globeToMercatorPPMRatio = PPMMercator / tr.pixelsPerMeter;
-        const worldSizeMercator = worldSize / globeToMercatorPPMRatio;
-        const wsRadius = worldSizeMercator / (2.0 * Math.PI);
-        const localRadius = EXTENT / (2.0 * Math.PI);
-        const ecefUnitsToMercatorPixels = wsRadius / localRadius;
+        const worldSizeMercator = worldSize * tr.pixelsPerMeter / mercatorZfromAltitude(1.0, center.lat);
+        const ecefUnitsToMercatorPixels = worldSizeMercator / EXTENT;
 
-        mat4.scale(identity, identity, [ecefUnitsToMercatorPixels, ecefUnitsToMercatorPixels, 1.0]);
-        mat4.multiply(matrix, matrix, identity);
+        mat4.scale(matrix, matrix, [ecefUnitsToMercatorPixels, ecefUnitsToMercatorPixels, 1.0]);
 
         return Float32Array.from(matrix);
     }

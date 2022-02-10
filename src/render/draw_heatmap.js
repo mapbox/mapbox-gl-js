@@ -65,7 +65,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
-            const invMatrix = tr.projection.createInversionMatrix(tr, tr.worldSize, coord.canonical);
+            const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
 
             program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
                 heatmapUniformValues(painter, coord,

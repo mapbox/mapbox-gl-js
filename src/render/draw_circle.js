@@ -81,7 +81,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
-        const invMatrix = tr.projection.createInversionMatrix(tr, tr.worldSize, coord.canonical);
+        const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
         const uniformValues = circleUniformValues(painter, coord, tile, invMatrix, mercatorCenter, layer);
 
         const state: TileRenderState = {

@@ -91,7 +91,7 @@ export default class Projection {
         return tr.rayIntersectionCoordinate(tr.pointRayIntersection(clamped, z));
     }
 
-    createInversionMatrix(tr: Transform, worldSize: number, id: CanonicalTileID): Float32Array { // eslint-disable-line
+    createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array { // eslint-disable-line
         return identity;
     }
 
