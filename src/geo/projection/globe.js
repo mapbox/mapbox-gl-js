@@ -98,8 +98,7 @@ export default class Globe extends Mercator {
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
         mat4.scale(matrix, matrix, [1.0 / ecefUnitsToPixels, 1.0 / ecefUnitsToPixels, 1.0]);
 
-        const worldSizeMercator = worldSize * tr.pixelsPerMeter / mercatorZfromAltitude(1.0, center.lat);
-        const ecefUnitsToMercatorPixels = worldSizeMercator / EXTENT;
+        const ecefUnitsToMercatorPixels = tr.pixelsPerMeter / mercatorZfromAltitude(1.0, center.lat) / EXTENT;
 
         mat4.scale(matrix, matrix, [ecefUnitsToMercatorPixels, ecefUnitsToMercatorPixels, 1.0]);
 
