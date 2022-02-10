@@ -669,7 +669,9 @@ function clipPolygon(polygons, clipAxis1, clipAxis2, axis) {
                 polygonClipped.push(clipped);
             }
         }
-        polygonsClipped.push(polygonClipped);
+        if (polygonClipped.length) {
+            polygonsClipped.push(polygonClipped);
+        }
     }
 
     return polygonsClipped;
@@ -699,8 +701,8 @@ function subdividePolygons(polygons, splitFn, bounds, gridSizeX, gridSizeY, padd
     }
 
     for (let i = 0; i < Math.min(hSplits, vSplits); i++) {
-        splits.push(0);
-        splits.push(1);
+        splits.push(0); // x
+        splits.push(1); // y
     }
 
     let split = polygons;
