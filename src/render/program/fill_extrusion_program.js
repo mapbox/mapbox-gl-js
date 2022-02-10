@@ -16,6 +16,8 @@ import type {TileTransform} from '../../geo/projection/index.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
 import type Tile from '../../source/tile.js';
+import {CanonicalTileID} from '../../source/tile_id.js';
+import EXTENT from '../../data/extent.js';
 
 export type FillExtrusionUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -143,7 +145,7 @@ const fillExtrusionUniformValues = (
         uniformValues['u_zoom_transition'] = zoomTransition;
         uniformValues['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(coord.canonical);
         uniformValues['u_merc_center'] = mercatorCenter;
-        uniformValues['u_up_dir'] = (tr.projection.upVector(coord.canonical, mercatorCenter[0], mercatorCenter[1]): any);
+        uniformValues['u_up_dir'] = (tr.projection.upVector(new CanonicalTileID(0, 0, 0), mercatorCenter[0] * EXTENT, mercatorCenter[1] * EXTENT): any);
         uniformValues['u_height_lift'] = heightLift;
     }
 
