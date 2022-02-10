@@ -4,7 +4,6 @@ import {clamp} from '../../util/util.js';
 import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 import Projection from './projection.js';
 
-import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {ProjectedPoint} from './projection.js';
 
 const a1 = 1.340264;
@@ -14,11 +13,6 @@ const a4 = 0.003796;
 const M = Math.sqrt(3) / 2;
 
 export default class EqualEarth extends Projection {
-
-    constructor(options: ProjectionSpecification) {
-        super(options);
-        this.range = [3.5, 7];
-    }
 
     project(lng: number, lat: number): ProjectedPoint {
         // based on https://github.com/d3/d3-geo, MIT-licensed

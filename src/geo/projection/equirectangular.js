@@ -13,7 +13,6 @@ export default class Equirectangular extends Projection {
         super(options);
         this.wrap = true;
         this.supportsWorldCopies = true;
-        this.range = [3.5, 7];
     }
 
     project(lng: number, lat: number): ProjectedPoint {

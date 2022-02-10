@@ -59,6 +59,7 @@ export default class Projection {
         this.isReprojectedInTileSpace = true;
         this.unsupportedLayers = ['custom'];
         this.center = [0, 0];
+        this.range = [3.5, 7];
     }
 
     project(lng: number, lat: number): ProjectedPoint { // eslint-disable-line

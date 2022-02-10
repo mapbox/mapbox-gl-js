@@ -4,17 +4,11 @@ import {clamp, degToRad, radToDeg} from '../../util/util.js';
 import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
 import Projection from './projection.js';
 
-import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {ProjectedPoint} from './projection.js';
 
 const maxPhi = degToRad(MAX_MERCATOR_LATITUDE);
 
 export default class WinkelTripel extends Projection {
-
-    constructor(options: ProjectionSpecification) {
-        super(options);
-        this.range = [3.5, 7];
-    }
 
     project(lng: number, lat: number): ProjectedPoint {
         lat = degToRad(lat);

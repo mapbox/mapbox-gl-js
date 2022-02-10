@@ -20,7 +20,6 @@ export default class LambertConformalConic extends Projection {
 
     constructor(options: ProjectionSpecification) {
         super(options);
-        this.range = [3.5, 7];
         this.center = options.center || [0, 30];
         const [lat0, lat1] = this.parallels = options.parallels || [30, 30];
 

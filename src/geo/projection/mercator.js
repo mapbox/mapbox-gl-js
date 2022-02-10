@@ -17,6 +17,7 @@ export default class Mercator extends Projection {
         this.supportsFreeCamera = true;
         this.isReprojectedInTileSpace = false;
         this.unsupportedLayers = [];
+        this.range = null;
     }
 
     project(lng: number, lat: number): ProjectedPoint {
