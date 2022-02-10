@@ -1068,12 +1068,12 @@ class Map extends Camera {
         const prevProjection = this.getProjection();
         if (projection === undefined) { projection = prevProjection; }
 
-        // At high zoom on globe, transform projection is mercator.
+        // At high zoom on globe, set transform projection to mercator.
         const newProjection = this.transform.setProjection(projection && projection.name === 'globe' ?
             {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')} :
             projection);
 
-        // When a not-undefined value is passed, update _explicitProjection
+        // When triggered by a call to setProjection, update _explicitProjection
         if (projection !== prevProjection) {
             this._explicitProjection = projection ?
                 (projection.name === "globe" ? {name:'globe', center:[0, 0]} : this.transform.getProjection()) :
@@ -2918,6 +2918,7 @@ class Map extends Camera {
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
 
+        // In globe view, change to/from Mercator when zoom threshold is crossed.
         if (this.getProjection().name === 'globe') {
             if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
                 if (this.transform.projection.name === 'globe') {
