@@ -37,6 +37,9 @@ varying vec2 v_tex_b;
 uniform float u_image_height;
 varying highp vec2 v_uv;
 #endif
+uniform mat4 u_lighting_matrix;
+varying vec3 v_position;
+
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
@@ -130,6 +133,8 @@ void main() {
     v_tex_b = vec2(a_linesofar * scaleB / floorwidth, (-normal.y * heightB + dash_to.x + 0.5) / u_texsize.y);
 #endif
 
+    v_position = vec3(u_lighting_matrix * vec4(pos, 0.0, 1.0));
+    v_position.xy = -v_position.xy;
     v_width2 = vec2(outset, inset);
 
 #ifdef FOG

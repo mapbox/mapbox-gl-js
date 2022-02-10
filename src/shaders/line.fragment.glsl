@@ -1,9 +1,11 @@
 uniform lowp float u_device_pixel_ratio;
 uniform float u_alpha_discard_threshold;
 
+
 varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
+varying vec3 v_position;
 
 #ifdef RENDER_LINE_DASH
 uniform sampler2D u_dash_image;
@@ -24,6 +26,10 @@ varying highp vec2 v_uv;
 #pragma mapbox: define lowp vec4 dash_to
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
+
+
+#define saturate(_x) clamp(_x, 0., 1.)
+
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -56,7 +62,21 @@ void main() {
     // entire line, the gradient ramp is stored in a texture.
     vec4 out_color = texture2D(u_gradient_image, v_uv);
 #else
+
     vec4 out_color = color;
+    if (blur == 0.0)
+    {
+        highp vec3 n = normalize(vec3(0.0, 0.0, 1.0));
+        highp vec3 v = normalize(-v_position);
+        // Adjust the light to match the shadows direction. Use a lower angle
+        // to increase the specular effect when tilted
+        highp vec3 l = normalize(vec3(-1., -1., 0.2));
+        highp vec3 h = normalize(v + l);
+        highp float NdotH = saturate(dot(n, h));
+        vec3 specularTerm = pow(NdotH, 32) * vec3(1.);
+        // Just adding specular to the base color is enough to get the expected effect.
+        out_color = vec4(specularTerm * 0.4 + color.rgb, 1.0);
+    }
 #endif
 
 #ifdef FOG
