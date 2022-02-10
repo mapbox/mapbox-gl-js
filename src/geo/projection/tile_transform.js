@@ -3,14 +3,14 @@ import Point from '@mapbox/point-geometry';
 import MercatorCoordinate, {altitudeFromMercatorZ, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import {vec3} from 'gl-matrix';
-import type Projection from './projection.js';
 import {Aabb} from '../../util/primitives.js';
-import {globeTileBounds, calculateGlobeMatrix} from './globe.js';
-import type Transform from '../transform.js';
+import {globeTileBounds, calculateGlobeMatrix} from './globe_util.js';
 import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
 import assert from 'assert';
 
 import type {Vec3} from 'gl-matrix';
+import type Projection from './projection.js';
+import type Transform from '../transform.js';
 
 export type TileTransform = {
     scale: number,

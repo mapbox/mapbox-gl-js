@@ -4,7 +4,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
-import {calculateGlobeMatrix, globeToMercatorTransition} from './../geo/projection/globe.js';
+import {calculateGlobeMatrix, globeToMercatorTransition} from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
 import {vec3, mat4} from 'gl-matrix';

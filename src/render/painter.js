@@ -41,7 +41,7 @@ import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
 import drawGlobeAtmosphere from './draw_globe_atmosphere.js';
-import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe.js';
+import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';

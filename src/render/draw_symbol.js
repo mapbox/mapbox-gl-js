@@ -20,7 +20,7 @@ import {
     mercatorXfromLng,
     mercatorYfromLat
 } from '../geo/mercator_coordinate.js';
-import {globeToMercatorTransition} from '../geo/projection/globe.js';
+import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 
 import {
     symbolIconUniformValues,

@@ -22,7 +22,7 @@ import {
     globeMatrixForTile,
     globePoleMatrixForTile,
     globeVertexBufferForTileMesh
-} from '../geo/projection/globe.js';
+} from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
 
 export {

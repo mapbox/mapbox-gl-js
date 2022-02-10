@@ -18,7 +18,7 @@ import type {Mat4, Vec4} from 'gl-matrix';
 
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix, globeDenormalizeECEF, globeTileBounds} from '../geo/projection/globe.js';
+import {calculateGlobeMatrix, globeDenormalizeECEF, globeTileBounds} from '../geo/projection/globe_util.js';
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, projectVector, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 const FlipState = {

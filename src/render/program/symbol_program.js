@@ -14,7 +14,7 @@ import {OverscaledTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
-import {globeECEFOrigin, calculateGlobeMatrix} from '../../geo/projection/globe.js';
+import {globeECEFOrigin, calculateGlobeMatrix} from '../../geo/projection/globe_util.js';
 
 export type SymbolIconUniformsType = {|
     'u_is_size_zoom_constant': Uniform1i,
