@@ -96,10 +96,10 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration, baseDefines);
 
         if (painter.terrain) {
+            const terrain = painter.terrain;
             if (painter.style.terrainSetForDrapingOnly()) {
-                painter.terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
+                terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
             } else {
-                const terrain = painter.terrain;
                 if (!bucket.enableTerrain) continue;
                 terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
                 flatRoofsUpdate(context, source, coord, bucket, layer, terrain);

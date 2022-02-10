@@ -10,7 +10,6 @@ import EXTENT from '../extent.js';
 import earcut from 'earcut';
 import mvt from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
-import {vec3} from 'gl-matrix';
 import classifyRings from '../../util/classify_rings.js';
 import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
@@ -22,6 +21,7 @@ import EvaluationParameters from '../../style/evaluation_parameters.js';
 import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat} from '../../geo/mercator_coordinate.js';
+import type {Vec3} from 'gl-matrix';
 
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {
@@ -38,7 +38,6 @@ import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {SpritePositions} from '../../util/image.js';
-import type {Projection} from '../../geo/projection/index.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
 const FACTOR = Math.pow(2, 13);
@@ -338,7 +337,8 @@ class FillExtrusionBucket implements Bucket {
         const polygons = classifyRings(geometry, EARCUT_MAX_RINGS);
 
         for (let i = polygons.length - 1; i >= 0; i--) {
-            if (polygons[i].length === 0 || isEntirelyOutside(polygons[i])) {
+            const polygon = polygons[i];
+            if (polygon.length === 0 || isEntirelyOutside(polygon[0])) {
                 polygons.splice(i, 1);
             }
         }
@@ -438,16 +438,18 @@ class FillExtrusionBucket implements Bucket {
                             segment.primitiveLength += 2;
 
                             if (isGlobe) {
+                                const array: any = this.layoutVertexExtArray;
+
                                 const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
                                 const projectedP2 = projection.projectTilePoint(p2.x, p2.y, canonical);
 
                                 const n1 = projection.upVector(canonical, p1.x, p1.y);
                                 const n2 = projection.upVector(canonical, p2.x, p2.y);
-     
-                                addGlobeExtVertex(this.layoutVertexExtArray, projectedP1, n1);
-                                addGlobeExtVertex(this.layoutVertexExtArray, projectedP1, n1);
-                                addGlobeExtVertex(this.layoutVertexExtArray, projectedP2, n2);
-                                addGlobeExtVertex(this.layoutVertexExtArray, projectedP2, n2);
+
+                                addGlobeExtVertex(array, projectedP1, n1);
+                                addGlobeExtVertex(array, projectedP1, n1);
+                                addGlobeExtVertex(array, projectedP2, n2);
+                                addGlobeExtVertex(array, projectedP2, n2);
                             }
                         }
                     }
@@ -487,9 +489,10 @@ class FillExtrusionBucket implements Bucket {
                     if (metadata) metadata.currentPolyCount.top++;
 
                     if (isGlobe) {
+                        const array: any = this.layoutVertexExtArray;
                         const projectedP = projection.projectTilePoint(p.x, p.y, canonical);
                         const n = projection.upVector(canonical, p.x, p.y);
-                        addGlobeExtVertex(this.layoutVertexExtArray, projectedP, n);
+                        addGlobeExtVertex(array, projectedP, n);
                     }
                 }
             }
