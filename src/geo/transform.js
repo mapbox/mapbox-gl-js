@@ -135,7 +135,7 @@ class Transform {
     _nearZ: number;
     _farZ: number;
 
-    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
@@ -145,8 +145,8 @@ class Transform {
         this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
         this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
 
-        this.setProjection();
-        this.setMaxBounds();
+        this.setProjection(projection);
+        this.setMaxBounds(bounds);
 
         this.width = 0;
         this.height = 0;
@@ -174,12 +174,10 @@ class Transform {
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies);
-        clone.setProjection(this.getProjection());
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.getProjection());
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone.tileSize = this.tileSize;
-        clone.setMaxBounds(this.getMaxBounds());
         clone.width = this.width;
         clone.height = this.height;
         clone.cameraElevationReference = this.cameraElevationReference;
@@ -228,18 +226,20 @@ class Transform {
         return (pick(this.projection, ['name', 'center', 'parallels']): ProjectionSpecification);
     }
 
-    setProjection(projection?: ?ProjectionSpecification): boolean {
+    // Returns the new projection if the projection changes, or null if no change.
+    setProjection(projection?: ?ProjectionSpecification): ProjectionSpecification | null {
         if (projection === undefined || projection === null) projection = {name: 'mercator'};
         this.projectionOptions = projection;
 
         const oldProjection = this.projection ? this.getProjection() : undefined;
         this.projection = getProjection(projection);
+        const newProjection = this.getProjection();
 
-        if (deepEqual(oldProjection, this.getProjection())) {
-            return false;
+        if (deepEqual(oldProjection, newProjection)) {
+            return null;
         }
         this._calcMatrices();
-        return true;
+        return newProjection;
     }
 
     get minZoom(): number { return this._minZoom; }

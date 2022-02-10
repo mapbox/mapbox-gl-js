@@ -319,17 +319,43 @@ test('Map', (t) => {
             });
         });
 
-        t.test('Setting globe projection on the map enables draping but does not enable terrain', (t) => {
+        t.test('Setting globe projection at low zoom enables draping but does not enable terrain', (t) => {
             const map = createMap(t, {style: createStyle()});
             t.equal(map.getProjection().name, 'mercator');
             const initStyleObj = map.style;
             t.spy(initStyleObj, 'setTerrain');
             map.on('style.load', () => {
+                map.setZoom(3); // Below threshold for Mercator transition
                 map.setProjection('globe');
                 t.equal(initStyleObj.setTerrain.callCount, 1);
                 t.ok(map.style.terrain);
                 t.equal(map.getTerrain(), null);
-                t.end();
+                map.setZoom(12); // Above threshold for Mercator transition
+                map.once('render', () => {
+                    t.notOk(map.style.terrain);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('Setting globe projection at high zoom does not enable draping', (t) => {
+            const map = createMap(t, {style: createStyle()});
+            t.equal(map.getProjection().name, 'mercator');
+            const initStyleObj = map.style;
+            t.spy(initStyleObj, 'setTerrain');
+            map.on('style.load', () => {
+                map.setZoom(12); // Above threshold for Mercator transition
+                map.setProjection('globe');
+                t.equal(initStyleObj.setTerrain.callCount, 0);
+                t.notOk(map.style.terrain);
+                t.equal(map.getTerrain(), null);
+                map.setZoom(3); // Below threshold for Mercator transition
+                map.once('render', () => {
+                    t.equal(initStyleObj.setTerrain.callCount, 1);
+                    t.ok(map.style.terrain);
+                    t.equal(map.getTerrain(), null);
+                    t.end();
+                });
             });
         });
 
@@ -377,6 +403,7 @@ test('Map', (t) => {
             const style = createStyle();
             const div = window.document.createElement('div');
             let map = new Map({style, container: div, testMode: true});
+            map.setZoom(3);
             map.on('load', () => {
                 map.setProjection('globe');
                 t.equal(map.getProjection().name, 'globe');
@@ -1556,6 +1583,105 @@ test('Map', (t) => {
             t.deepEqual(map.getProjection(), options);
             t.end();
         });
+
+        t.test('returns Albers projection at high zoom', (t) => {
+            const map = createMap(t, {projection: 'albers'});
+            map.setZoom(12);
+            map.once('render', () => {
+                t.deepEqual(map.getProjection(), {
+                    name: 'albers',
+                    center: [-96, 37.5],
+                    parallels: [29.5, 45.5]
+                });
+                t.deepEqual(map.getProjection(), map.transform.getProjection());
+                t.end();
+            });
+        });
+
+        t.test('returns globe projection at low zoom', (t) => {
+            const map = createMap(t, {projection: 'globe'});
+            map.once('render', () => {
+                t.deepEqual(map.getProjection(), {
+                    name: 'globe',
+                    center: [0, 0],
+                });
+                t.deepEqual(map.getProjection(), map.transform.getProjection());
+                t.end();
+            });
+
+        });
+
+        t.test('returns globe projection at high zoom', (t) => {
+            const map = createMap(t, {projection: 'globe'});
+            map.setZoom(12);
+            map.once('render', () => {
+                t.deepEqual(map.getProjection(), {
+                    name: 'globe',
+                    center: [0, 0],
+                });
+                t.deepEqual(map.transform.getProjection(), {
+                    name: 'mercator',
+                    center: [0, 0],
+                });
+                t.end();
+            });
+
+        });
+
+        t.test('defaults to style sheet projection',  (t) => {
+            const map = createMap(t, {projection: 'globe'});
+            map.setZoom(12);
+            map.once('render', () => {
+                t.end();
+            });
+        });
+
+        // Behavior described at https://github.com/mapbox/mapbox-gl-js/pull/11204
+        t.test('runtime projection overrides style projection', (t) => {
+            const map = createMap(t, {style: {
+                "version": 8,
+                "projection": {
+                    "name": "albers"
+                },
+                "sources": {},
+                "layers": []
+            }});
+            const style = map.style;
+
+            map.on('load', () =>  {
+                // Defaults to style projection
+                t.equal(style.serialize().projection.name, 'albers');
+                t.equal(map.transform.getProjection().name, 'albers');
+
+                // Runtime api overrides style projection
+                // Stylesheet projection not changed by runtime apis
+                map.setProjection({name: 'winkelTripel'});
+                t.equal(style.serialize().projection.name, 'albers');
+                t.equal(map.transform.getProjection().name, 'winkelTripel');
+
+                // Runtime api overrides stylesheet projection
+                map.style.setState(Object.assign({}, style.serialize(), {projection: {name: 'naturalEarth'}}));
+                t.equal(style.serialize().projection.name, 'naturalEarth');
+                t.equal(map.transform.getProjection().name, 'winkelTripel');
+
+                // Unsetting runtime projection reveals stylesheet projection
+                map.setProjection(null);
+                style._updateProjection();
+                t.equal(style.serialize().projection.name, 'naturalEarth');
+                t.equal(map.transform.getProjection().name, 'naturalEarth');
+                t.equal(map.getProjection().name, 'naturalEarth');
+
+                // Unsetting stylesheet projection reveals mercator
+                const stylesheet = style.serialize();
+                delete stylesheet.projection;
+                style.setState(stylesheet);
+                t.equal(style.serialize().projection, undefined);
+                t.equal(map.transform.getProjection().name, 'mercator');
+
+                t.end();
+            });
+        });
+
         t.end();
     });
 
@@ -1612,6 +1738,15 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('setProjection(null) defaults to Mercator', (t) => {
+            const map = createMap(t);
+            map.setProjection({name: 'albers'});
+            t.equal(map.getProjection().name, 'albers');
+            map.setProjection(null);
+            t.deepEqual(map.getProjection(), {name: 'mercator', center: [0, 0]});
+            t.end();
+        });
+
         t.test('setProjection persists after new style', (t) => {
             const map = createMap(t);
             map.once('style.load', () => {
@@ -1623,12 +1758,17 @@ test('Map', (t) => {
                 t.equal(map.getProjection().name, 'albers');
                 t.equal(map.style.stylesheet.projection.name, 'winkelTripel');
 
+                map.setProjection({name: 'globe'});
+                t.equal(map.getProjection().name, 'globe');
+                t.equal(map.style.stylesheet.projection.name, 'winkelTripel');
+                map.setProjection({name: 'lambertConformalConic'});
+
                 // setStyle without diffing
                 const s = map.getStyle();
                 delete s.projection;
                 map.setStyle(s, {diff: false});
                 map.once('style.load', () => {
-                    t.equal(map.getProjection().name, 'albers');
+                    t.equal(map.getProjection().name, 'lambertConformalConic');
                     t.equal(map.style.stylesheet.projection, undefined);
                     t.end();
                 });

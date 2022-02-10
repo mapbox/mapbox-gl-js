@@ -50,6 +50,7 @@ class StubMap extends Evented {
         this.transform = new Transform();
         this._requestManager = new RequestManager();
         this._markers = [];
+        this._updateProjection = () => {};
     }
 
     _getMapId() {
@@ -2406,6 +2407,13 @@ test('Style#setProjection', (t) => {
             clearBackgroundTiles: () => {}
         };
         style.map._update = () => {};
+        style.map.setProjection = (projection) => {
+            style.map._explicitProjection = projection;
+            style.map.transform.setProjection(projection);
+        };
+        style.map._updateProjection = () => {
+            style.map.transform.setProjection(style.map._explicitProjection || style.stylesheet.projection || {name: "mercator"});
+        };
 
         style.loadJSON({
             "version": 8,
@@ -2422,8 +2430,8 @@ test('Style#setProjection', (t) => {
 
             // Runtime api overrides style projection
             // Stylesheet projection not changed by runtime apis
-            style.map._runtimeProjection = {name: 'winkelTripel'};
-            style.updateProjection();
+            style.map.setProjection({name: 'winkelTripel'});
+            style._updateProjection();
             t.equal(style.serialize().projection.name, 'albers');
             t.equal(style.map.transform.getProjection().name, 'winkelTripel');
 
@@ -2433,8 +2441,8 @@ test('Style#setProjection', (t) => {
             t.equal(style.map.transform.getProjection().name, 'winkelTripel');
 
             // Unsetting runtime projection reveals map projection
-            style.map._runtimeProjection = null;
-            style.updateProjection();
+            style.map.setProjection(null);
+            style._updateProjection();
             t.equal(style.serialize().projection.name, 'naturalEarth');
             t.equal(style.map.transform.getProjection().name, 'naturalEarth');
 

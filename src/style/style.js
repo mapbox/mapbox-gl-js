@@ -297,8 +297,7 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = json;
-
-        this.updateProjection();
+        this._updateProjection();
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -352,16 +351,22 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        this.updateProjection();
+        if (!this.map._explicitProjection) {
+            this.map._updateProjection();
+        }
     }
 
-    updateProjection() {
-        const prevProjection = this.map.transform.projection;
-        const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
-        const projection = this.map.transform.projection;
+    _updateProjection() {
+        if (!this.map._explicitProjection) {
+            this.map._updateProjection();
+        } else { // Ensure that style is consistent with current projection on style load
+            this.enableDraping();
+        }
+    }
 
+    enableDraping() {
         if (this._loaded) {
-            if (projection.requiresDraping) {
+            if (this.map.transform.projection.requiresDraping) {
                 const hasTerrain = this.getTerrain() || this.stylesheet.terrain;
                 if (!hasTerrain) {
                     this.setTerrainForDraping();
@@ -370,23 +375,6 @@ class Style extends Evented {
                 this.setTerrain(null);
             }
         }
-
-        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
-
-        if (!projectionChanged) return;
-
-        const globeChanged = (projection.name === 'globe' || prevProjection.name === 'globe') && !this.map._transitionFromGlobe;
-
-        if (projection.isReprojectedInTileSpace || prevProjection.isReprojectedInTileSpace || globeChanged) {
-            this.map.painter.clearBackgroundTiles();
-            for (const id in this._sourceCaches) {
-                this._sourceCaches[id].clearTiles();
-            }
-        } else {
-            this._forceSymbolLayerUpdate();
-        }
-
-        this.map._update(true);
     }
 
     _loadSprite(url: string) {
@@ -668,7 +656,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this.updateProjection();
+        this._updateProjection();
 
         return true;
     }
