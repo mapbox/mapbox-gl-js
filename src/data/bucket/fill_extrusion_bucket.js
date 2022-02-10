@@ -63,6 +63,13 @@ function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
     );
 }
 
+function addGlobeExtVertex(vertexArray: FillExtrusionExtArray, pos: {x: number, y: number, z: number}, normal: Vec3) {
+    const encode = 1 << 14;
+    vertexArray.emplaceBack(
+        pos.x, pos.y, pos.z,
+        normal[0] * encode, normal[1] * encode, normal[2] * encode);
+}
+
 class PartMetadata {
     acc: Point;
     min: Point;
@@ -317,15 +324,6 @@ class FillExtrusionBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addGlobeVertex(point: Point, canonical: CanonicalTileID, projection: Projection) {
-        const p = projection.projectTilePoint(point.x, point.y, canonical);
-        const normal = projection.upVector(canonical, point.x, point.y);
-        vec3.scale(normal, normal, 1 << 14);
-        if (this.layoutVertexExtArray) {
-            this.layoutVertexExtArray.emplaceBack(p.x, p.y, p.z, normal[0], normal[1], normal[2]);
-        }
-    }
-
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform) {
         const metadata = this.enableTerrain ? new PartMetadata() : null;
 
@@ -441,10 +439,16 @@ class FillExtrusionBucket implements Bucket {
                             segment.primitiveLength += 2;
 
                             if (isGlobe) {
-                                this.addGlobeVertex(p1, canonical, projection);
-                                this.addGlobeVertex(p1, canonical, projection);
-                                this.addGlobeVertex(p2, canonical, projection);
-                                this.addGlobeVertex(p2, canonical, projection);
+                                const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
+                                const projectedP2 = projection.projectTilePoint(p2.x, p2.y, canonical);
+
+                                const n1 = projection.upVector(canonical, p1.x, p1.y);
+                                const n2 = projection.upVector(canonical, p2.x, p2.y);
+     
+                                addGlobeExtVertex(this.layoutVertexExtArray, projectedP1, n1);
+                                addGlobeExtVertex(this.layoutVertexExtArray, projectedP1, n1);
+                                addGlobeExtVertex(this.layoutVertexExtArray, projectedP2, n2);
+                                addGlobeExtVertex(this.layoutVertexExtArray, projectedP2, n2);
                             }
                         }
                     }
@@ -484,7 +488,9 @@ class FillExtrusionBucket implements Bucket {
                     if (metadata) metadata.currentPolyCount.top++;
 
                     if (isGlobe) {
-                        this.addGlobeVertex(p, canonical, projection);
+                        const projectedP = projection.projectTilePoint(p.x, p.y, canonical);
+                        const n = projection.upVector(canonical, p.x, p.y);
+                        addGlobeExtVertex(this.layoutVertexExtArray, projectedP, n);
                     }
                 }
             }
