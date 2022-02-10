@@ -18,7 +18,7 @@ import type {Mat4, Vec4} from 'gl-matrix';
 
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix, globeDenormalizeECEF, globeTileBounds} from '../geo/projection/globe_util.js';
+import {calculateGlobeLabelMatrix} from '../geo/projection/globe_util.js';
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, projectVector, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 const FlipState = {
@@ -86,13 +86,7 @@ function getLabelPlaneMatrix(posMatrix: Float32Array,
     const m = mat4.create();
     if (pitchWithMap) {
         if (transform.projection.name === 'globe') {
-            // Camera is moved closer towards the ground near poles as part of
-            // compesanting the reprojection. This has to be compensated for the
-            // map aligned label space. Whithout this logic map aligned symbols
-            // would appear larger than intended.
-            const labelWorldSize = transform.worldSize / transform._projectionScaler;
-            const globeMatrix = calculateGlobeMatrix(transform, labelWorldSize, [0, 0]);
-            mat4.multiply(m, globeMatrix, globeDenormalizeECEF(globeTileBounds(tileID)));
+            mat4.multiply(m, m, calculateGlobeLabelMatrix(transform, tileID));
 
         } else {
             const s = mat2.invert([], pixelsToTileUnits);
