@@ -21,7 +21,6 @@ import {
     globeTileBounds,
     globeNormalizeECEF,
     globeDenormalizeECEF,
-    calculateGlobeMatrix,
     globeECEFUnitsToPixelScale,
     globeECEFNormalizationScale,
     globeToMercatorTransition
@@ -71,8 +70,8 @@ export default class Globe extends Mercator {
 
         const upScale = mercatorZfromAltitude(1, 0) * EXTENT * elevation;
         vec3.scaleAndAdd(pos, pos, up, upScale);
-        const matrix = calculateGlobeMatrix(tr, tr.worldSize);
-        mat4.multiply(matrix, tr.pixelMatrix, matrix);
+        const matrix = mat4.identity(new Float64Array(16));
+        mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
         vec3.transformMat4(pos, pos, matrix);
 
         return new Point(pos[0], pos[1]);
@@ -83,9 +82,8 @@ export default class Globe extends Mercator {
     }
 
     createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
-        const globeMatrix = calculateGlobeMatrix(tr, worldSize);
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
-        return mat4.multiply(new Float64Array(16), globeMatrix, decode);
+        return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
     }
 
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
@@ -119,7 +117,7 @@ export default class Globe extends Mercator {
         const direction = vec3.normalize([], p0p1);
 
         // Compute globe origo in world space
-        const m = calculateGlobeMatrix(tr, tr.worldSize);
+        const m = tr.globeMatrix;
         const globeCenter = [m[12], m[13], m[14]];
         const radius = tr.worldSize / (2.0 * Math.PI);
 

@@ -4,7 +4,7 @@ import MercatorCoordinate, {altitudeFromMercatorZ, lngFromMercatorX, latFromMerc
 import EXTENT from '../../data/extent.js';
 import {vec3} from 'gl-matrix';
 import {Aabb} from '../../util/primitives.js';
-import {globeTileBounds, calculateGlobeMatrix} from './globe_util.js';
+import {globeTileBounds} from './globe_util.js';
 import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
 import assert from 'assert';
 
@@ -104,14 +104,14 @@ export function tileAABB(tr: Transform, numTiles: number, z: number, x: number, 
         const mx = Number.MAX_VALUE;
         const cornerMax = [-mx, -mx, -mx];
         const cornerMin = [mx, mx, mx];
-        const globeMatrix = calculateGlobeMatrix(tr, numTiles);
-
         for (let i = 0; i < corners.length; i++) {
-            vec3.transformMat4(corners[i], corners[i], globeMatrix);
+            vec3.transformMat4(corners[i], corners[i], tr.globeMatrix);
             vec3.min(cornerMin, cornerMin, corners[i]);
             vec3.max(cornerMax, cornerMax, corners[i]);
         }
-
+        const scale = numTiles / tr.worldSize;
+        vec3.scale(cornerMin, cornerMin, scale);
+        vec3.scale(cornerMax, cornerMax, scale);
         return new Aabb(cornerMin, cornerMax);
     }
 
