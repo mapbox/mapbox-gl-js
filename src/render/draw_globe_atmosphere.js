@@ -13,6 +13,11 @@ import browser from '../util/browser.js';
 export default drawGlobeAtmosphere;
 
 function drawGlobeAtmosphere(painter: Painter) {
+    const globe = painter.style.globe;
+    if (!globe) {
+        return;
+    }
+
     const context = painter.context;
     const gl = context.gl;
     const transform = painter.transform;
@@ -34,15 +39,27 @@ function drawGlobeAtmosphere(painter: Painter) {
     const pixelRadius = vec3.length(vec3.sub([], radiusOnScreen, centerOnScreen));
     const fadeOutTransition = 1.0 - globeToMercatorTransition(transform.zoom);
 
+    const props = globe.properties;
+
+    const color = props.get("gradient-color"); //DataConstantProperty<Color>,
+    const bgColor = props.get("gradient-background-color"); //: DataConstantProperty<Color>,
+    const spaceColor = props.get("gradient-space-color"); //: DataConstantProperty<Color>,
+    const innerRadius = props.get("gradient-outer-radius"); //: DataConstantProperty<number>,
+    const outerRadius = props.get("gradient-inner-radius"); //: DataConstantProperty<number>
+
+    const toArray = c => {
+        return [c.r, c.g, c.b, c.a];
+    };
+
     const uniforms = atmosphereUniformValues(
         centerOnScreen,
         pixelRadius,
         [transform.width, transform.height],
         browser.devicePixelRatio,
         fadeOutTransition,          // opacity
-        2.0,                        // fadeout range
-        [1.0, 1.0, 1.0],            // start color
-        [0.0118, 0.7451, 0.9882]);  // end color
+        innerRadius, //2.0,                        // fadeout range
+        toArray(color), //[1.0, 1.0, 1.0],            // start color
+        toArray(spaceColor)); //[0.0118, 0.7451, 0.9882]);  // end color
 
     painter.prepareDrawProgram(context, program);
 

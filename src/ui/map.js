@@ -2490,6 +2490,12 @@ class Map extends Camera {
         return this._update(true);
     }
 
+    setGlobe(globe: GlobeSpecification) {
+        this._lazyInitEmptyStyle();
+        this.style.setGlobe(globe);
+        return this._update(true);
+    }
+
     /**
      * Returns the terrain specification or `null` if terrain isn't set on the map.
      *

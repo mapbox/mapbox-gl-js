@@ -65,6 +65,10 @@
       "type": "fog",
       "doc": "A global effect that fades layers and markers based on their distance to the camera. The fog can be used to approximate the effect of atmosphere on distant objects and enhance the depth perception of the map when used with terrain or 3D features."
     },
+    "globe": {
+      "type": "globe",
+      "doc": "TODO"
+    },
     "sources": {
       "required": true,
       "type": "sources",
@@ -4055,6 +4059,93 @@
         }
       }
     }
+  },
+  "globe": {
+    "type": {
+      "type": "enum",
+      "values": {
+        "gradient": {
+          "doc": "TODO"
+        }
+      }
+    },
+    "gradient-color": {
+      "type": "color",
+      "default": "#ffffff",
+      "property-type": "color-ramp",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "requires": [
+        { "type": "gradient" }
+      ]
+    },
+    "gradient-background-color": {
+      "type": "color",
+      "default": "#000000",
+      "property-type": "color-ramp",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "requires": [
+        { "type": "gradient" }
+      ]
+    },
+    "gradient-space-color": {
+      "type": "color",
+      "default": "#03befc",
+      "property-type": "color-ramp",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "requires": [
+        { "type": "gradient" }
+      ]
+    },
+    "gradient-outer-radius": {
+      "type": "number",
+      "minimum": 0,
+      "default": 2,
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "requires": [
+        { "type": "gradient" }
+      ]
+    },
+    "gradient-inner-radius": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0,
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "requires": [
+        { "type": "gradient" }
+      ]
+    }    
   },
   "terrain" : {
     "source": {

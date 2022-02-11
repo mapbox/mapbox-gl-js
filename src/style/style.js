@@ -11,6 +11,7 @@ import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
 import Light from './light.js';
 import Terrain, {DrapeRenderMode} from './terrain.js';
 import Fog from './fog.js';
+import Globe from './globe.js';
 import LineAtlas from '../render/line_atlas.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
@@ -335,6 +336,9 @@ class Style extends Evented {
         if (this.stylesheet.fog) {
             this._createFog(this.stylesheet.fog);
         }
+        if (this.stylesheet.globe) {
+            this._createGlobe(this.stylesheet.globe);
+        }
         this._updateDrapeFirstLayers();
 
         this.fire(new Event('data', {dataType: 'style'}));
@@ -450,6 +454,10 @@ class Style extends Evented {
         }
 
         if (this.fog && this.fog.hasTransition()) {
+            return true;
+        }
+
+        if (this.globe && this.globe.hasTransition()) {
             return true;
         }
 
@@ -571,6 +579,9 @@ class Style extends Evented {
         }
         if (this.fog) {
             this.fog.recalculate(parameters);
+        }
+        if (this.globe) {
+            this.globe.recalculate(parameters);
         }
         this.z = parameters.zoom;
 
@@ -1440,6 +1451,55 @@ class Style extends Evented {
     setTerrainForDraping() {
         const mockTerrainOptions = {source: '', exaggeration: 0};
         this.setTerrain(mockTerrainOptions, DrapeRenderMode.deferred);
+    }
+
+    setGlobe(globeOptions: ?GlobeSpecification) {
+        this._checkLoaded();
+
+        // Disabling
+        if (!globeOptions) {
+            delete this.globe;
+            delete this.stylesheet.globe;
+            this._markersNeedUpdate = true;
+            return;
+        }
+
+        if (!this.globe) {
+            this._createGlobe(globeOptions);
+        } else {
+            const globe = this.globe;
+            const currSpec = globe.get();
+            for (const key in globeOptions) {
+                if (!deepEqual(globeOptions[key], currSpec[key])) {
+                    globe.set(globeOptions);
+                    this.stylesheet.globe = globeOptions;
+                    const parameters = {
+                        now: browser.now(),
+                        transition: extend({
+                            duration: 0
+                        }, this.stylesheet.transition)
+                    };
+
+                    globe.updateTransitions(parameters);
+                    break;
+                }
+            }
+        }
+
+        this._markersNeedUpdate = true;
+    }
+
+    _createGlobe(globeOptions) {
+        const globe = this.globe = new Globe(globeOptions, this.map.transform);
+        this.stylesheet.globe = globeOptions;
+        const parameters = {
+            now: browser.now(),
+            transition: extend({
+                duration: 0
+            }, this.stylesheet.transition)
+        };
+
+        globe.updateTransitions(parameters);
     }
 
     // eslint-disable-next-line no-warning-comments

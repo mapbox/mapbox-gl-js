@@ -189,6 +189,8 @@ ${flowObjectDeclaration('FogSpecification', spec.fog)}
 
 ${flowObjectDeclaration('ProjectionSpecification', spec.projection)}
 
+${flowObjectDeclaration('GlobeSpecification', spec.globe)}
+
 ${spec.source.map(key => flowObjectDeclaration(flowSourceTypeName(key), spec[key])).join('\n\n')}
 
 export type SourceSpecification =

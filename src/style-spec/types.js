@@ -68,6 +68,7 @@ export type StyleSpecification = {|
     "light"?: LightSpecification,
     "terrain"?: TerrainSpecification,
     "fog"?: FogSpecification,
+    "globe"?: GlobeSpecification,
     "sources": {[_: string]: SourceSpecification},
     "sprite"?: string,
     "glyphs"?: string,
@@ -98,6 +99,15 @@ export type ProjectionSpecification = {|
     "name": "albers" | "equalEarth" | "equirectangular" | "lambertConformalConic" | "mercator" | "naturalEarth" | "winkelTripel" | "globe",
     "center"?: [number, number],
     "parallels"?: [number, number]
+|}
+
+export type GlobeSpecification = {|
+    "type"?: "gradient",
+    "gradient-color"?: PropertyValueSpecification<ColorSpecification>,
+    "gradient-background-color"?: PropertyValueSpecification<ColorSpecification>,
+    "gradient-space-color"?: PropertyValueSpecification<ColorSpecification>,
+    "gradient-outer-radius"?: PropertyValueSpecification<number>,
+    "gradient-inner-radius"?: PropertyValueSpecification<number>
 |}
 
 export type VectorSourceSpecification = {
