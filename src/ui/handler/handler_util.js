@@ -4,7 +4,7 @@ import assert from 'assert';
 
 import type Point from '@mapbox/point-geometry';
 
-export function indexTouches(touches: Array<Touch>, points: Array<Point>) {
+export function indexTouches(touches: Array<Touch>, points: Array<Point>): {[number]: Point} {
     assert(touches.length === points.length);
     const obj = {};
     for (let i = 0; i < touches.length; i++) {

@@ -6,6 +6,7 @@ import {Event} from '../../util/evented.js';
 
 import type Map from '../map.js';
 import type Point from '@mapbox/point-geometry';
+import type {HandlerResult} from '../handler_manager.js';
 
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
@@ -44,7 +45,7 @@ class BoxZoomHandler {
      * @example
      * const isBoxZoomEnabled = map.boxZoom.isEnabled();
      */
-    isEnabled() {
+    isEnabled(): boolean {
         return !!this._enabled;
     }
 
@@ -55,7 +56,7 @@ class BoxZoomHandler {
      * @example
      * const isBoxZoomActive = map.boxZoom.isActive();
      */
-    isActive() {
+    isActive(): boolean {
         return !!this._active;
     }
 
@@ -122,7 +123,7 @@ class BoxZoomHandler {
         });
     }
 
-    mouseupWindow(e: MouseEvent, point: Point) {
+    mouseupWindow(e: MouseEvent, point: Point): void | HandlerResult {
         if (!this._active) return;
 
         if (e.button !== 0) return;
@@ -139,7 +140,7 @@ class BoxZoomHandler {
         } else {
             this._map.fire(new Event('boxzoomend', {originalEvent: e}));
             return {
-                cameraAnimation: map => map.fitScreenCoordinates(p0, p1, this._map.getBearing(), {linear: false})
+                cameraAnimation: (map: Map) => map.fitScreenCoordinates(p0, p1, this._map.getBearing(), {linear: false})
             };
         }
     }
@@ -173,7 +174,7 @@ class BoxZoomHandler {
         delete this._lastPos;
     }
 
-    _fireEvent(type: string, e: *) {
+    _fireEvent(type: string, e: *): Map {
         return this._map.fire(new Event(type, {originalEvent: e}));
     }
 }

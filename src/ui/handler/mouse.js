@@ -2,6 +2,7 @@
 
 import * as DOM from '../../util/dom.js';
 import type Point from '@mapbox/point-geometry';
+import type {HandlerResult} from '../handler_manager.js';
 
 const LEFT_BUTTON = 0;
 const RIGHT_BUTTON = 2;
@@ -42,7 +43,7 @@ class MouseHandler {
         this._eventButton = undefined;
     }
 
-    _correctButton(e: MouseEvent, button: number) {  //eslint-disable-line
+    _correctButton(e: MouseEvent, button: number): boolean {  //eslint-disable-line
         return false; // implemented by child
     }
 
@@ -101,11 +102,11 @@ class MouseHandler {
         this.reset();
     }
 
-    isEnabled() {
+    isEnabled(): boolean {
         return this._enabled;
     }
 
-    isActive() {
+    isActive(): boolean {
         return this._active;
     }
 }
@@ -116,7 +117,7 @@ export class MousePanHandler extends MouseHandler {
         super.mousedown(e, point);
         if (this._lastPoint) this._active = true;
     }
-    _correctButton(e: MouseEvent, button: number) {
+    _correctButton(e: MouseEvent, button: number): boolean {
         return button === LEFT_BUTTON && !e.ctrlKey;
     }
 
@@ -129,11 +130,11 @@ export class MousePanHandler extends MouseHandler {
 }
 
 export class MouseRotateHandler extends MouseHandler {
-    _correctButton(e: MouseEvent, button: number) {
+    _correctButton(e: MouseEvent, button: number): boolean {
         return (button === LEFT_BUTTON && e.ctrlKey) || (button === RIGHT_BUTTON);
     }
 
-    _move(lastPoint: Point, point: Point) {
+    _move(lastPoint: Point, point: Point): void | HandlerResult {
         const degreesPerPixelMoved = 0.8;
         const bearingDelta = (point.x - lastPoint.x) * degreesPerPixelMoved;
         if (bearingDelta) {
@@ -150,11 +151,11 @@ export class MouseRotateHandler extends MouseHandler {
 }
 
 export class MousePitchHandler extends MouseHandler {
-    _correctButton(e: MouseEvent, button: number) {
+    _correctButton(e: MouseEvent, button: number): boolean {
         return (button === LEFT_BUTTON && e.ctrlKey) || (button === RIGHT_BUTTON);
     }
 
-    _move(lastPoint: Point, point: Point) {
+    _move(lastPoint: Point, point: Point): void | HandlerResult {
         const degreesPerPixelMoved = -0.5;
         const pitchDelta = (point.y - lastPoint.y) * degreesPerPixelMoved;
         if (pitchDelta) {
