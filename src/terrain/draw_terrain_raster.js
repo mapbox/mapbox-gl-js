@@ -223,19 +223,18 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 const segment = sharedBuffers.poleSegments[z];
 
                 if (segment && (topCap || bottomCap)) {
-                    const poleMatrix = globePoleMatrixForTile(z, x, tr);
-                    const poleUniforms = globeRasterUniformValues(
-                        tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter);
+                    let poleMatrix = globePoleMatrixForTile(z, x, tr);
 
                     const drawPole = (program, vertexBuffer) => program.draw(
                         context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                        poleUniforms, "globe_pole_raster", vertexBuffer, sharedBuffers.poleIndexBuffer, segment);
+                        globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
+                        "globe_pole_raster", vertexBuffer, sharedBuffers.poleIndexBuffer, segment);
 
                     if (topCap) {
                         drawPole(program, sharedBuffers.poleNorthVertexBuffer);
                     }
                     if (bottomCap) {
-                        mat4.scale(poleMatrix, poleMatrix, [1, -1, 1]);
+                        poleMatrix = mat4.scale(mat4.create(), poleMatrix, [1, -1, 1]);
                         drawPole(program, sharedBuffers.poleSouthVertexBuffer);
                     }
                 }
