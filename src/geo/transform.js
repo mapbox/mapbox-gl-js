@@ -16,7 +16,7 @@ import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_ca
 import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
@@ -1191,7 +1191,7 @@ class Transform {
      * @private
      */
     pointCoordinate(p: Point, z?: number = this._centerAltitude): MercatorCoordinate {
-        return this.projection.createTileTransform(this, this.worldSize).pointCoordinate(p.x, p.y, z);
+        return this.projection.pointCoordinate(this, p.x, p.y, z);
     }
 
     /**
@@ -1366,7 +1366,7 @@ class Transform {
     }
 
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): Float64Array {
-        return this.projection.createTileTransform(this, worldSize).createTileMatrix(unwrappedTileID);
+        return this.projection.createTileMatrix(this, worldSize, unwrappedTileID);
     }
 
     calculateDistanceTileData(unwrappedTileID: UnwrappedTileID): FeatureDistanceData {

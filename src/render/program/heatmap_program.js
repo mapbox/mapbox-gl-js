@@ -14,10 +14,9 @@ import type Tile from '../../source/tile.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type Painter from '../painter.js';
 import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer.js';
-import type {TileTransform} from '../../geo/projection/index.js';
 import type {OverscaledTileID} from '../../source/tile_id.js';
 import {mat4} from 'gl-matrix';
-import {globeToMercatorTransition, globePixelsToTileUnits} from '../../geo/projection/globe.js';
+import {globeToMercatorTransition, globePixelsToTileUnits} from '../../geo/projection/globe_util.js';
 
 export type HeatmapUniformsType = {|
     'u_extrude_scale': Uniform1f,
@@ -59,7 +58,7 @@ const heatmapUniformValues = (
     painter: Painter,
     coord: OverscaledTileID,
     tile: Tile,
-    tileTransform: TileTransform,
+    invMatrix: Float32Array,
     mercatorCenter: [number, number],
     zoom: number,
     intensity: number
@@ -80,7 +79,7 @@ const heatmapUniformValues = (
     };
 
     if (isGlobe) {
-        values['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(coord.canonical);
+        values['u_inv_rot_matrix'] = invMatrix;
         values['u_merc_center'] = mercatorCenter;
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = globeToMercatorTransition(transform.zoom);

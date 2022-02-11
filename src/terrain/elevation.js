@@ -9,7 +9,7 @@ import {vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
 
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 import type Tile from '../source/tile.js';
 import type {Vec3} from 'gl-matrix';
 

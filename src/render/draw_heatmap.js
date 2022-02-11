@@ -44,7 +44,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const isGlobeProjection = tr.projection.name === 'globe';
         const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : null;
 
-        const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
         const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
         for (let i = 0; i < coords.length; i++) {
@@ -66,9 +65,11 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
+            const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
+
             program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
                 heatmapUniformValues(painter, coord,
-                    tile, tileTransform, mercatorCenter, zoom, layer.paint.get('heatmap-intensity')),
+                    tile, invMatrix, mercatorCenter, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
                 bucket.segments, layer.paint, painter.transform.zoom,
                 programConfiguration,

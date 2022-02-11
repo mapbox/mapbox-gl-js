@@ -28,7 +28,7 @@ import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type {ImagePosition} from '../render/image_atlas.js';
 import type {GlyphPositions} from '../render/glyph_atlas.js';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';

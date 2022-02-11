@@ -13,7 +13,7 @@ import type DEMData from '../data/dem_data.js';
 import type {StyleGlyph} from '../style/style_glyph.js';
 import type {StyleImage} from '../style/style_image.js';
 import type {PromoteIdSpecification} from '../style-spec/types.js';
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 
 export type TileParameters = {
     source: string,

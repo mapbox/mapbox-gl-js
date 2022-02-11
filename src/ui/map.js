@@ -30,7 +30,7 @@ import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
-import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe.js';
+import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 

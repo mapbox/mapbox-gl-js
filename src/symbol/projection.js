@@ -5,7 +5,7 @@ import Point from '@mapbox/point-geometry';
 import {mat2, mat4, vec4} from 'gl-matrix';
 import * as symbolSize from './symbol_size.js';
 import {addDynamicAttributes} from '../data/bucket/symbol_bucket.js';
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 import type Painter from '../render/painter.js';
 import type Transform from '../geo/transform.js';
 import type SymbolBucket from '../data/bucket/symbol_bucket.js';
@@ -18,7 +18,7 @@ import type {Mat4, Vec4} from 'gl-matrix';
 
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix, globeDenormalizeECEF, globeTileBounds} from '../geo/projection/globe.js';
+import {calculateGlobeMatrix, globeDenormalizeECEF, globeTileBounds} from '../geo/projection/globe_util.js';
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, projectVector, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 const FlipState = {
