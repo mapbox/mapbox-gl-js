@@ -1,6 +1,7 @@
 // @flow
 
 import type Map from '../map.js';
+import type {HandlerResult} from '../handler_manager.js';
 
 const defaultOptions = {
     panStep: 100,
@@ -53,7 +54,7 @@ class KeyboardHandler {
         this._active = false;
     }
 
-    keydown(e: KeyboardEvent) {
+    keydown(e: KeyboardEvent): ?HandlerResult {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
 
         let zoomDir = 0;
@@ -169,7 +170,7 @@ class KeyboardHandler {
      * @example
      * const isKeyboardEnabled = map.keyboard.isEnabled();
      */
-    isEnabled() {
+    isEnabled(): boolean {
         return this._enabled;
     }
 
@@ -182,7 +183,7 @@ class KeyboardHandler {
      * @example
      * const isKeyboardActive = map.keyboard.isActive();
      */
-    isActive() {
+    isActive(): boolean {
         return this._active;
     }
 

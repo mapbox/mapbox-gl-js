@@ -51,7 +51,7 @@ export default class DoubleClickZoomHandler {
      * @example
      * const isDoubleClickZoomEnabled = map.doubleClickZoom.isEnabled();
      */
-    isEnabled() {
+    isEnabled(): boolean {
         return this._clickZoom.isEnabled() && this._tapZoom.isEnabled();
     }
 
@@ -62,7 +62,7 @@ export default class DoubleClickZoomHandler {
      * @example
      * const isDoubleClickZoomActive = map.doubleClickZoom.isActive();
      */
-    isActive() {
+    isActive(): boolean {
         return this._clickZoom.isActive() || this._tapZoom.isActive();
     }
 }

@@ -98,25 +98,25 @@ export interface Handler {
 
     // Handlers can optionally implement these methods.
     // They are called with dom events whenever those dom evens are received.
-    +touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-    +touchmove?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-    +touchend?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-    +touchcancel?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-    +mousedown?: (e: MouseEvent, point: Point) => HandlerResult | void;
-    +mousemove?: (e: MouseEvent, point: Point) => HandlerResult | void;
-    +mouseup?: (e: MouseEvent, point: Point) => HandlerResult | void;
-    +dblclick?: (e: MouseEvent, point: Point) => HandlerResult | void;
-    +wheel?: (e: WheelEvent, point: Point) => HandlerResult | void;
-    +keydown?: (e: KeyboardEvent) => HandlerResult | void;
-    +keyup?: (e: KeyboardEvent) => HandlerResult | void;
+    +touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
+    +touchmove?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
+    +touchend?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
+    +touchcancel?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
+    +mousedown?: (e: MouseEvent, point: Point) => ?HandlerResult;
+    +mousemove?: (e: MouseEvent, point: Point) => ?HandlerResult;
+    +mouseup?: (e: MouseEvent, point: Point) => ?HandlerResult;
+    +dblclick?: (e: MouseEvent, point: Point) => ?HandlerResult;
+    +wheel?: (e: WheelEvent, point: Point) => ?HandlerResult;
+    +keydown?: (e: KeyboardEvent) => ?HandlerResult;
+    +keyup?: (e: KeyboardEvent) => ?HandlerResult;
 
     // `renderFrame` is the only non-dom event. It is called during render
     // frames and can be used to smooth camera changes (see scroll handler).
-    +renderFrame?: () => HandlerResult | void;
+    +renderFrame?: () => ?HandlerResult;
 }
 
 // All handler methods that are called with events can optionally return a `HandlerResult`.
-export type HandlerResult = {|
+export type HandlerResult = {
     panDelta?: Point,
     zoomDelta?: number,
     bearingDelta?: number,
@@ -137,7 +137,7 @@ export type HandlerResult = {|
     needsRenderFrame?: boolean,
     // The camera changes won't get recorded for inertial zooming.
     noInertia?: boolean
-|};
+};
 
 function hasChange(result: HandlerResult) {
     return (result.panDelta && result.panDelta.mag()) || result.zoomDelta || result.bearingDelta || result.pitchDelta;
@@ -372,7 +372,7 @@ class HandlerManager {
         for (const {handlerName, handler, allowed} of this._handlers) {
             if (!handler.isEnabled()) continue;
 
-            let data: HandlerResult | void;
+            let data: ?HandlerResult;
             if (this._blockedByActive(activeHandlers, allowed, handlerName)) {
                 handler.reset();
 

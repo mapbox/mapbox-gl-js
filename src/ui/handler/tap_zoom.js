@@ -3,6 +3,7 @@
 import {TapRecognizer} from './tap_recognizer.js';
 import type Point from '@mapbox/point-geometry';
 import type Map from '../map.js';
+import type {HandlerResult} from '../handler_manager.js';
 
 export default class TapZoomHandler {
 
@@ -41,7 +42,7 @@ export default class TapZoomHandler {
         this._zoomOut.touchmove(e, points, mapTouches);
     }
 
-    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         const zoomInPoint = this._zoomIn.touchend(e, points, mapTouches);
         const zoomOutPoint = this._zoomOut.touchend(e, points, mapTouches);
 
@@ -83,11 +84,11 @@ export default class TapZoomHandler {
         this.reset();
     }
 
-    isEnabled() {
+    isEnabled(): boolean {
         return this._enabled;
     }
 
-    isActive() {
+    isActive(): boolean {
         return this._active;
     }
 }

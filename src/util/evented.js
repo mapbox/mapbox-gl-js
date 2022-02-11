@@ -81,7 +81,7 @@ export class Evented {
      * @param {Function} listener The listener function to remove.
      * @returns {Object} Returns itself to allow for method chaining.
      */
-    off(type: *, listener: Listener) {
+    off(type: *, listener: Listener): this {
         _removeEventListener(type, listener, this._listeners);
         _removeEventListener(type, listener, this._oneTimeListeners);
 
@@ -109,7 +109,7 @@ export class Evented {
         return this;
     }
 
-    fire(event: Event, properties?: Object) {
+    fire(event: Event, properties?: Object): this {
         // Compatibility with (type: string, properties: Object) signature from previous versions.
         // See https://github.com/mapbox/mapbox-gl-js/issues/6522,
         //     https://github.com/mapbox/mapbox-gl-draw/issues/766
@@ -160,7 +160,7 @@ export class Evented {
      * @returns {boolean} Returns `true` if there is at least one registered listener for specified event type, `false` otherwise.
      * @private
      */
-    listens(type: string) {
+    listens(type: string): boolean {
         return !!(
             (this._listeners && this._listeners[type] && this._listeners[type].length > 0) ||
             (this._oneTimeListeners && this._oneTimeListeners[type] && this._oneTimeListeners[type].length > 0) ||
@@ -174,7 +174,7 @@ export class Evented {
      * @returns {Object} `this`
      * @private
      */
-    setEventedParent(parent: ?Evented, data?: Object | () => Object) {
+    setEventedParent(parent: ?Evented, data?: Object | () => Object): this {
         this._eventedParent = parent;
         this._eventedParentData = data;
 
