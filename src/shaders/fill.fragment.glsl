@@ -2,7 +2,7 @@
 #pragma mapbox: define lowp float opacity
 
 varying vec3 v_position;
-
+#define saturate(_x) clamp(_x, 0., 1.)
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float opacity
@@ -16,7 +16,7 @@ void main() {
     highp vec3 l = normalize(vec3(-1., -1., 0.2));
     highp vec3 h = normalize(v + l);
     highp float NdotH = saturate(dot(n, h));
-    vec3 specularTerm = pow(NdotH, 32) * vec3(1.);
+    vec3 specularTerm = pow(NdotH, 32.) * vec3(1.);
     // Just adding a bit of specular to the base color is enough to get the expected effect.
     vec4 out_color = vec4(specularTerm * 0.1 + color.rgb, 1.0);
 
