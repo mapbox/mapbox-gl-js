@@ -231,7 +231,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
 
     }
 
-    _move(points: [Point, Point], center: Point, e: TouchEvent): void | HandlerResult {
+    _move(points: [Point, Point], center: Point, e: TouchEvent): ?HandlerResult {
         const lastPoints = this._lastPoints;
         if (!lastPoints) return;
         const vectorA = points[0].sub(lastPoints[0]);

@@ -22,13 +22,13 @@ export class MapEventHandler {
         this._mousedownPos = undefined;
     }
 
-    wheel(e: WheelEvent): void | HandlerResult {
+    wheel(e: WheelEvent): ?HandlerResult {
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - ScrollZoom
         return this._firePreventable(new MapWheelEvent(e.type, this._map, e));
     }
 
-    mousedown(e: MouseEvent, point: Point): void | HandlerResult {
+    mousedown(e: MouseEvent, point: Point): ?HandlerResult {
         this._mousedownPos = point;
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - MousePan
@@ -54,7 +54,7 @@ export class MapEventHandler {
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
     }
 
-    dblclick(e: MouseEvent): void | HandlerResult {
+    dblclick(e: MouseEvent): ?HandlerResult {
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - DblClickZoom
         return this._firePreventable(new MapMouseEvent(e.type, this._map, e));
@@ -68,7 +68,7 @@ export class MapEventHandler {
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
     }
 
-    touchstart(e: TouchEvent): void | HandlerResult {
+    touchstart(e: TouchEvent): ?HandlerResult {
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - TouchPan
         // - TouchZoom
@@ -91,11 +91,11 @@ export class MapEventHandler {
         this._map.fire(new MapTouchEvent(e.type, this._map, e));
     }
 
-    _firePreventable(mapEvent: MapMouseEvent | MapTouchEvent | MapWheelEvent): void | HandlerResult {
+    _firePreventable(mapEvent: MapMouseEvent | MapTouchEvent | MapWheelEvent): ?HandlerResult {
         this._map.fire(mapEvent);
         if (mapEvent.defaultPrevented) {
             // returning an object marks the handler as active and resets other handlers
-            return (({}: any): HandlerResult);
+            return {};
         }
     }
 

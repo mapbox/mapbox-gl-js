@@ -123,7 +123,7 @@ class BoxZoomHandler {
         });
     }
 
-    mouseupWindow(e: MouseEvent, point: Point): void | HandlerResult {
+    mouseupWindow(e: MouseEvent, point: Point): ?HandlerResult {
         if (!this._active) return;
 
         if (e.button !== 0) return;

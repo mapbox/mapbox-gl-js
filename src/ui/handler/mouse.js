@@ -134,7 +134,7 @@ export class MouseRotateHandler extends MouseHandler {
         return (button === LEFT_BUTTON && e.ctrlKey) || (button === RIGHT_BUTTON);
     }
 
-    _move(lastPoint: Point, point: Point): void | HandlerResult {
+    _move(lastPoint: Point, point: Point): ?HandlerResult {
         const degreesPerPixelMoved = 0.8;
         const bearingDelta = (point.x - lastPoint.x) * degreesPerPixelMoved;
         if (bearingDelta) {
@@ -155,7 +155,7 @@ export class MousePitchHandler extends MouseHandler {
         return (button === LEFT_BUTTON && e.ctrlKey) || (button === RIGHT_BUTTON);
     }
 
-    _move(lastPoint: Point, point: Point): void | HandlerResult {
+    _move(lastPoint: Point, point: Point): ?HandlerResult {
         const degreesPerPixelMoved = -0.5;
         const pitchDelta = (point.y - lastPoint.y) * degreesPerPixelMoved;
         if (pitchDelta) {
