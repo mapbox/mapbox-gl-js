@@ -14,7 +14,7 @@ varying vec3 v_position;
 #ifdef RENDER_LINE_DASH
 uniform sampler2D u_dash_image;
 uniform float u_mix;
-uniform vec3 u_scale;
+uniform mediump vec3 u_scale;
 varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 #endif
