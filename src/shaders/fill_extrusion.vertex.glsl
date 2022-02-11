@@ -4,8 +4,8 @@ uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
 uniform mat4 u_light_matrix_2;
 uniform vec3 u_lightcolor;
-uniform lowp vec3 u_lightpos;
-uniform lowp float u_lightintensity;
+uniform vec3 u_lightpos;
+uniform float u_lightintensity;
 uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
 

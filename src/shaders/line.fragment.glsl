@@ -77,7 +77,7 @@ void main() {
         highp vec3 l = normalize(vec3(-1., -1., 0.2));
         highp vec3 h = normalize(v + l);
         highp float NdotH = saturate(dot(n, h));
-        vec3 specularTerm = pow(NdotH, 32.) * vec3(1.);
+        highp vec3 specularTerm = pow(NdotH, 32.) * vec3(1.);
         // Just adding specular to the base color is enough to get the expected effect.
         out_color = vec4(specularTerm * 0.4 + color.rgb, 1.0);
     }
