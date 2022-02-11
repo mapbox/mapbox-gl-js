@@ -49,6 +49,11 @@ const FACTOR = Math.pow(2, 13);
 export const ELEVATION_SCALE = 7.0;
 export const ELEVATION_OFFSET = 450;
 
+type ClippedPolygon = {
+    polygon: Array<Array<Point>>,
+    bounds: Array<Point>
+};
+
 function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
     vertexArray.emplaceBack(
         // a_pos_normal_ed:
@@ -612,7 +617,7 @@ function tileToMeter(canonical: CanonicalTileID) {
     return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
 }
 
-function clipPolygon(polygons, clipAxis1, clipAxis2, axis) {
+function clipPolygon(polygons: Array<Array<Point>>, clipAxis1: number, clipAxis2: number, axis: number): Array<Array<Point>> {
     const intersectX = (ring, ax, ay, bx, by, x) => {
         ring.push(new Point(x, ay + (by - ay) * ((x - ax) / (bx - ax))));
     };
@@ -677,7 +682,7 @@ function clipPolygon(polygons, clipAxis1, clipAxis2, axis) {
     return polygonsClipped;
 }
 
-function subdividePolygons(polygons, splitFn, bounds, gridSizeX, gridSizeY, padding) {
+function subdividePolygons(polygons: Array<Array<Point>>, splitFn: Function, bounds: Array<Point>, gridSizeX: number, gridSizeY: number, padding: number): Array<ClippedPolygon> {
     const outPolygons = [];
 
     if (!polygons.length) {
