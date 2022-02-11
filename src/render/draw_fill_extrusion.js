@@ -14,7 +14,7 @@ import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
-import {globeToMercatorTransition} from '../geo/projection/globe.js';
+import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 import type Transform from '../geo/transform.js';
 import {earthRadius} from '../geo/lng_lat.js';
 
@@ -77,7 +77,6 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     const image = patternProperty.constantOr((1: any));
     const crossfade = layer.getCrossfadeParameters();
     const opacity = layer.paint.get('fill-extrusion-opacity');
-    const tileTransform = tr.projection.createTileTransform(tr, tr.worldSize);
     const heightLift = fillExtrusionHeightLift(tr);
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
@@ -129,12 +128,14 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             layer.paint.get('fill-extrusion-translate'),
             layer.paint.get('fill-extrusion-translate-anchor'));
 
+        const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
+
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
             fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
-                crossfade, tile, heightLift, globeToMercator, mercatorCenter, tileTransform) :
+                crossfade, tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
             fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
-                heightLift, globeToMercator, mercatorCenter, tileTransform);
+                heightLift, globeToMercator, mercatorCenter, invMatrix);
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 

@@ -12,7 +12,6 @@ import {mat3, mat4, vec3} from 'gl-matrix';
 import {extend} from '../../util/util.js';
 import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
-import type {TileTransform} from '../../geo/projection/index.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
 import type Tile from '../../source/tile.js';
@@ -110,7 +109,7 @@ const fillExtrusionUniformValues = (
     heightLift: number,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    tileTransform: TileTransform
+    invMatrix: Float32Array
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
     const _lp = light.properties.get('position');
@@ -143,7 +142,7 @@ const fillExtrusionUniformValues = (
     if (tr.projection.name === 'globe') {
         uniformValues['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         uniformValues['u_zoom_transition'] = zoomTransition;
-        uniformValues['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(coord.canonical);
+        uniformValues['u_inv_rot_matrix'] = invMatrix;
         uniformValues['u_merc_center'] = mercatorCenter;
         uniformValues['u_up_dir'] = (tr.projection.upVector(new CanonicalTileID(0, 0, 0), mercatorCenter[0] * EXTENT, mercatorCenter[1] * EXTENT): any);
         uniformValues['u_height_lift'] = heightLift;
@@ -163,11 +162,11 @@ const fillExtrusionPatternUniformValues = (
     heightLift: number,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    tileTransform: TileTransform
+    invMatrix: Float32Array
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
         matrix, painter, shouldUseVerticalGradient, opacity, coord,
-        heightLift, zoomTransition, mercatorCenter, tileTransform);
+        heightLift, zoomTransition, mercatorCenter, invMatrix);
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
     };
