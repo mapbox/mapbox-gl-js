@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision highp float;
+#endif
+
 uniform lowp float u_device_pixel_ratio;
 uniform float u_alpha_discard_threshold;
 
