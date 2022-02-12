@@ -17,7 +17,7 @@ class RasterStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    getProgramIds() {
+    getProgramIds(): Array<string> {
         return ['raster'];
     }
 }

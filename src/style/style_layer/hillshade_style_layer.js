@@ -18,11 +18,11 @@ class HillshadeStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    hasOffscreenPass() {
+    hasOffscreenPass(): boolean {
         return this.paint.get('hillshade-exaggeration') !== 0 && this.visibility !== 'none';
     }
 
-    getProgramIds() {
+    getProgramIds(): Array<string> {
         return ['hillshade', 'hillshadePrepare'];
     }
 

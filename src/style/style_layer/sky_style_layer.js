@@ -70,7 +70,7 @@ class SkyLayer extends StyleLayer {
         }
     }
 
-    needsSkyboxCapture(painter: Painter) {
+    needsSkyboxCapture(painter: Painter): boolean {
         if (!!this._skyboxInvalidated || !this.skyboxTexture || !this.skyboxGeometry) {
             return true;
         }
@@ -79,6 +79,7 @@ class SkyLayer extends StyleLayer {
             return this._lightPosition.azimuthal !== lightPosition.azimuthal ||
                    this._lightPosition.polar !== lightPosition.polar;
         }
+        return false;
     }
 
     getCenter(painter: Painter, leftHanded: boolean): [number, number, number] {
@@ -102,11 +103,11 @@ class SkyLayer extends StyleLayer {
         return getCelestialDirection(direction[0], -direction[1] + 90, leftHanded);
     }
 
-    is3D() {
+    is3D(): boolean {
         return false;
     }
 
-    isSky() {
+    isSky(): boolean {
         return true;
     }
 
@@ -115,7 +116,7 @@ class SkyLayer extends StyleLayer {
         this._lightPosition = painter.style.light.properties.get('position');
     }
 
-    hasOffscreenPass() {
+    hasOffscreenPass(): boolean {
         return true;
     }
 

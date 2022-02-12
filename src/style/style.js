@@ -46,7 +46,7 @@ import {validateCustomStyleLayer} from './style_layer/custom_style_layer.js';
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
 // smart setStyle (see https://github.com/mapbox/mapbox-gl-js/pull/6424):
-const emitValidationErrors = (evented: Evented, errors: ?$ReadOnlyArray<{message: string, identifier?: string}>) =>
+const emitValidationErrors = (evented: Evented, errors: ?ValidationErrors) =>
     _emitValidationErrors(evented, errors && errors.filter(error => error.identifier !== 'source.canvas'));
 
 import type Map from '../ui/map.js';
@@ -70,7 +70,7 @@ import type {
     ProjectionSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
-import type {Validator} from './validate_style.js';
+import type {Validator, ValidationErrors} from './validate_style.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type {PointLike} from '@mapbox/point-geometry';
 
