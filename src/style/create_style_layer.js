@@ -1,6 +1,6 @@
 // @flow
 
-import StyleLayer from './style_layer.js';
+import type StyleLayer from './style_layer.js';
 import circle from './style_layer/circle_style_layer.js';
 import heatmap from './style_layer/heatmap_style_layer.js';
 import hillshade from './style_layer/hillshade_style_layer.js';
