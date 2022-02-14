@@ -6,9 +6,11 @@ import type {Evented} from '../util/evented.js';
 
 type ValidationError = {
     message: string,
-    line: number,
+    line?: number,
     identifier?: string
 };
+
+export type ValidationErrors = $ReadOnlyArray<ValidationError>;
 
 export type Validator = (Object) => $ReadOnlyArray<ValidationError>;
 
@@ -34,7 +36,7 @@ export const validateFilter = validateStyle.filter;
 export const validatePaintProperty = validateStyle.paintProperty;
 export const validateLayoutProperty = validateStyle.layoutProperty;
 
-export function emitValidationErrors(emitter: Evented, errors: ?$ReadOnlyArray<{message: string, identifier?: string}>): boolean {
+export function emitValidationErrors(emitter: Evented, errors: ?ValidationErrors): boolean {
     let hasErrors = false;
     if (errors && errors.length) {
         for (const error of errors) {

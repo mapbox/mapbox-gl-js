@@ -3,6 +3,7 @@
 import Point from '@mapbox/point-geometry';
 import * as DOM from '../../util/dom.js';
 import type Map from '../map.js';
+import type {HandlerResult} from '../handler_manager.js';
 
 class TwoTouchHandler {
 
@@ -83,11 +84,11 @@ class TwoTouchHandler {
         this.reset();
     }
 
-    isEnabled() {
+    isEnabled(): boolean {
         return this._enabled;
     }
 
-    isActive() {
+    isActive(): boolean {
         return this._active;
     }
 }
@@ -169,7 +170,7 @@ export class TouchRotateHandler extends TwoTouchHandler {
         };
     }
 
-    _isBelowThreshold(vector: Point) {
+    _isBelowThreshold(vector: Point): boolean {
         /*
          * The threshold before a rotation actually happens is configured in
          * pixels alongth circumference of the circle formed by the two fingers.
@@ -230,7 +231,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
 
     }
 
-    _move(points: [Point, Point], center: Point, e: TouchEvent) {
+    _move(points: [Point, Point], center: Point, e: TouchEvent): ?HandlerResult {
         const lastPoints = this._lastPoints;
         if (!lastPoints) return;
         const vectorA = points[0].sub(lastPoints[0]);
@@ -251,7 +252,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
         };
     }
 
-    gestureBeginsVertically(vectorA: Point, vectorB: Point, timeStamp: number) {
+    gestureBeginsVertically(vectorA: Point, vectorB: Point, timeStamp: number): void | boolean {
         if (this._valid !== undefined) return this._valid;
 
         const threshold = 2;

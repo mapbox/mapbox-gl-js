@@ -13,7 +13,7 @@ import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProp
 import ProgramConfiguration from '../../data/program_configuration.js';
 
 import Step from '../../style-spec/expression/definitions/step.js';
-import type {FeatureState, ZoomConstantExpression} from '../../style-spec/expression/index.js';
+import type {FeatureState, ZoomConstantExpression, StylePropertyExpression} from '../../style-spec/expression/index.js';
 import type {Bucket, BucketParameters} from '../../data/bucket.js';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties.js';
 import type Transform from '../../geo/transform.js';
@@ -66,7 +66,7 @@ class LineStyleLayer extends StyleLayer {
         }
     }
 
-    gradientExpression() {
+    gradientExpression(): StylePropertyExpression {
         return this._transitionablePaint._values['line-gradient'].value.expression;
     }
 
@@ -77,7 +77,7 @@ class LineStyleLayer extends StyleLayer {
             lineFloorwidthProperty.possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
     }
 
-    createBucket(parameters: BucketParameters<*>) {
+    createBucket(parameters: BucketParameters<*>): LineBucket {
         return new LineBucket(parameters);
     }
 
@@ -124,7 +124,7 @@ class LineStyleLayer extends StyleLayer {
         return polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth);
     }
 
-    isTileClipped() {
+    isTileClipped(): boolean {
         return true;
     }
 }

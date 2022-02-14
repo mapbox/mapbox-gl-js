@@ -57,7 +57,7 @@ export default class DragRotateHandler {
      * @example
      * const isDragRotateEnabled = map.dragRotate.isEnabled();
      */
-    isEnabled() {
+    isEnabled(): boolean {
         return this._mouseRotate.isEnabled() && (!this._pitchWithRotate || this._mousePitch.isEnabled());
     }
 
@@ -68,7 +68,7 @@ export default class DragRotateHandler {
      * @example
      * const isDragRotateActive = map.dragRotate.isActive();
      */
-    isActive() {
+    isActive(): boolean {
         return this._mouseRotate.isActive() || this._mousePitch.isActive();
     }
 }

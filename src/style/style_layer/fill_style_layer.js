@@ -56,7 +56,7 @@ class FillStyleLayer extends StyleLayer {
         }
     }
 
-    createBucket(parameters: BucketParameters<*>) {
+    createBucket(parameters: BucketParameters<*>): FillBucket {
         return new FillBucket(parameters);
     }
 
@@ -79,7 +79,7 @@ class FillStyleLayer extends StyleLayer {
         return polygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
 
-    isTileClipped() {
+    isTileClipped(): boolean {
         return true;
     }
 }

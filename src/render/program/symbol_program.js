@@ -14,7 +14,7 @@ import {OverscaledTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
-import {globeECEFOrigin, calculateGlobeMatrix} from '../../geo/projection/globe_util.js';
+import {globeECEFOrigin} from '../../geo/projection/globe_util.js';
 
 export type SymbolIconUniformsType = {|
     'u_is_size_zoom_constant': Uniform1i,
@@ -216,14 +216,13 @@ const symbolIconUniformValues = (
     };
 
     if (transform.projection.name === 'globe') {
-        const tileMatrix = calculateGlobeMatrix(transform, transform.worldSize);
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = zoomTransition;
         values['u_inv_rot_matrix'] = invMatrix;
         values['u_merc_center'] = mercatorCenter;
         values['u_camera_forward'] = ((transform._camera.forward(): any): [number, number, number]);
-        values['u_ecef_origin'] = globeECEFOrigin(tileMatrix, coord.toUnwrapped());
-        values['u_tile_matrix'] = Float32Array.from(tileMatrix);
+        values['u_ecef_origin'] = globeECEFOrigin(transform.globeMatrix, coord.toUnwrapped());
+        values['u_tile_matrix'] = Float32Array.from(transform.globeMatrix);
     }
 
     return values;

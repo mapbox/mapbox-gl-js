@@ -15,7 +15,6 @@ import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import {mat4} from 'gl-matrix';
 import {
-    calculateGlobeMatrix,
     calculateGlobeMercatorMatrix,
     globeToMercatorTransition,
     globeMatrixForTile,
@@ -156,7 +155,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     vertexMorphing.update(now);
     const tr = painter.transform;
-    const globeMatrix = calculateGlobeMatrix(tr, tr.worldSize);
     const globeMercatorMatrix = calculateGlobeMercatorMatrix(tr);
     const {x, y} = tr.point;
     const mercatorCenter = [x, y];
@@ -195,7 +193,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 extend(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
             }
 
-            const posMatrix = globeMatrixForTile(coord.canonical, globeMatrix);
+            const posMatrix = globeMatrixForTile(coord.canonical, tr.globeMatrix);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, posMatrix, globeMercatorMatrix,
                 globeToMercatorTransition(tr.zoom), mercatorCenter);

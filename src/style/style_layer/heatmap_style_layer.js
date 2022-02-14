@@ -33,7 +33,7 @@ class HeatmapStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    createBucket(parameters: BucketParameters<*>) {
+    createBucket(parameters: BucketParameters<*>): HeatmapBucket {
         return new HeatmapBucket(parameters);
     }
 
@@ -86,11 +86,11 @@ class HeatmapStyleLayer extends StyleLayer {
             true, true, new Point(0, 0), size);
     }
 
-    hasOffscreenPass() {
+    hasOffscreenPass(): boolean {
         return this.paint.get('heatmap-opacity') !== 0 && this.visibility !== 'none';
     }
 
-    getProgramIds() {
+    getProgramIds(): Array<string> {
         return ['heatmap', 'heatmapTexture'];
     }
 

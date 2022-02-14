@@ -102,7 +102,7 @@ function dot(a, b) {
     return a.x * b.x + a.y * b.y;
 }
 
-export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, projectedFace: Array<Point>) {
+export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, projectedFace: Array<Point>): number {
 
     if (projectedQueryGeometry.length === 1) {
         // For point queries calculate the z at which the point intersects the face

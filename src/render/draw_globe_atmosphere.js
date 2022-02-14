@@ -4,7 +4,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
-import {calculateGlobeMatrix, globeToMercatorTransition} from './../geo/projection/globe_util.js';
+import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
 import {vec3, mat4} from 'gl-matrix';
@@ -22,7 +22,7 @@ function drawGlobeAtmosphere(painter: Painter) {
     // Compute center and approximate radius of the globe on screen coordinates
     const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1.0);
     const viewToProj = transform._camera.getCameraToClipPerspective(transform._fov, transform.width / transform.height, transform._nearZ, transform._farZ);
-    const globeToView = mat4.mul([], viewMatrix, calculateGlobeMatrix(transform, transform.worldSize));
+    const globeToView = mat4.mul([], viewMatrix, transform.globeMatrix);
     const viewToScreen = mat4.mul([], transform.labelPlaneMatrix, viewToProj);
 
     const centerOnViewSpace = vec3.transformMat4([], [0, 0, 0], globeToView);

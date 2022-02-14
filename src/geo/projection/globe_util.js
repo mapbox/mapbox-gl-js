@@ -1,6 +1,5 @@
 // @flow
 import {
-    MAX_MERCATOR_LATITUDE,
     lngFromMercatorX,
     latFromMercatorY,
     mercatorZfromAltitude,
@@ -8,10 +7,9 @@ import {
     mercatorYfromLat
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
-import {degToRad, smoothstep, clamp} from '../../util/util.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
+import {degToRad, smoothstep} from '../../util/util.js';
 import {mat4, vec3} from 'gl-matrix';
-import Point from '@mapbox/point-geometry';
 import SegmentVector from '../../data/segment.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray} from '../../data/array_types.js';
@@ -148,36 +146,37 @@ export function globePixelsToTileUnits(zoom: number, id: CanonicalTileID): numbe
     return ecefPerPixel * normCoeff;
 }
 
-export function calculateGlobeMatrix(tr: Transform, worldSize: number, offset?: [number, number]): Float64Array {
-    const wsRadius = worldSize / (2.0 * Math.PI);
-    const scale = globeECEFUnitsToPixelScale(worldSize);
-
-    if (!offset) {
-        const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
-        const lng = tr.center.lng;
-
-        offset = [
-            mercatorXfromLng(lng) * worldSize,
-            mercatorYfromLat(lat) * worldSize
-        ];
-    }
-
+function calculateGlobePosMatrix(x, y, worldSize, lng, lat): Float64Array {
     // transform the globe from reference coordinate space to world space
-    const posMatrix = mat4.identity(new Float64Array(16));
-    mat4.translate(posMatrix, posMatrix, [offset[0], offset[1], -wsRadius]);
-    mat4.scale(posMatrix, posMatrix, [scale, scale, scale]);
-    mat4.rotateX(posMatrix, posMatrix, degToRad(-tr._center.lat));
-    mat4.rotateY(posMatrix, posMatrix, degToRad(-tr._center.lng));
+    const scale = globeECEFUnitsToPixelScale(worldSize);
+    const offset = [x, y, -worldSize / (2.0 * Math.PI)];
+    const m = mat4.identity(new Float64Array(16));
+    mat4.translate(m, m, offset);
+    mat4.scale(m, m, [scale, scale, scale]);
+    mat4.rotateX(m, m, degToRad(-lat));
+    mat4.rotateY(m, m, degToRad(-lng));
+    return m;
+}
 
-    return posMatrix;
+export function calculateGlobeMatrix(tr: Transform): Float64Array {
+    const {x, y} = tr.point;
+    const {lng, lat} = tr._center;
+    return calculateGlobePosMatrix(x, y, tr.worldSize, lng, lat);
+}
+
+export function calculateGlobeLabelMatrix(tr: Transform, id: CanonicalTileID): Float64Array {
+    const {lng, lat} = tr._center;
+    // Camera is moved closer towards the ground near poles as part of
+    // compesanting the reprojection. This has to be compensated for the
+    // map aligned label space. Whithout this logic map aligned symbols
+    // would appear larger than intended.
+    const m = calculateGlobePosMatrix(0, 0, tr.worldSize / tr._projectionScaler, lng, lat);
+    return mat4.multiply(m, m, globeDenormalizeECEF(globeTileBounds(id)));
 }
 
 export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
     const worldSize = tr.worldSize;
-    const lat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
-    const point = new Point(
-        mercatorXfromLng(tr.center.lng) * worldSize,
-        mercatorYfromLat(lat) * worldSize);
+    const point = tr.point;
 
     const mercatorZ = mercatorZfromAltitude(1, tr.center.lat) * worldSize;
     const projectionScaler = mercatorZ / tr.pixelsPerMeter;

@@ -79,7 +79,7 @@ export default class DragPanHandler {
      * @example
      * const isDragPanEnabled = map.dragPan.isEnabled();
      */
-    isEnabled() {
+    isEnabled(): boolean {
         return this._mousePan.isEnabled() && this._touchPan.isEnabled();
     }
 
@@ -90,7 +90,7 @@ export default class DragPanHandler {
      * @example
      * const isDragPanActive = map.dragPan.isActive();
      */
-    isActive() {
+    isActive(): boolean {
         return this._mousePan.isActive() || this._touchPan.isActive();
     }
 }

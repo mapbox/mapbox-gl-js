@@ -16,8 +16,10 @@ import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_ca
 import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
-import type Projection from '../geo/projection/projection.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
+import {calculateGlobeMatrix} from '../geo/projection/globe_util.js';
+
+import type Projection from '../geo/projection/projection.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
 import type Tile from '../source/tile.js';
@@ -91,6 +93,9 @@ class Transform {
 
     // Inverse of glCoordMatrix, from NDC to screen coordinates, [-1, 1] x [-1, 1] --> [0, w] x [h, 0]
     labelPlaneMatrix: Float32Array;
+
+    // globe coordinate transformation matrix
+    globeMatrix: Float64Array;
 
     inverseAdjustmentMatrix: Array<number>;
 
@@ -1736,6 +1741,9 @@ class Transform {
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
+
+        // globe matrix
+        this.globeMatrix = this.projection.name === 'globe' ? calculateGlobeMatrix(this) : m;
 
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};

@@ -186,7 +186,7 @@ export default class Marker extends Evented {
      *     .setLngLat([30.5, 50.5])
      *     .addTo(map); // add the marker to the map
      */
-    addTo(map: Map) {
+    addTo(map: Map): this {
         if (map === this._map) {
             return this;
         }
@@ -216,7 +216,7 @@ export default class Marker extends Evented {
      * marker.remove();
      * @returns {Marker} Returns itself to allow for method chaining.
      */
-    remove() {
+    remove(): this {
         const map = this._map;
         if (map) {
             map.off('click', this._onMapClick);
@@ -253,7 +253,7 @@ export default class Marker extends Evented {
     * console.log(`Longitude: ${lngLat.lng}, Latitude: ${lngLat.lat}`);
     * @see [Example: Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
     */
-    getLngLat() {
+    getLngLat(): LngLat {
         return this._lngLat;
     }
 
@@ -271,7 +271,7 @@ export default class Marker extends Evented {
     * @see [Example: Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
     * @see [Example: Add a marker using a place name](https://docs.mapbox.com/mapbox-gl-js/example/marker-from-geocode/)
     */
-    setLngLat(lnglat: LngLatLike) {
+    setLngLat(lnglat: LngLatLike): this {
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;
         if (this._popup) this._popup.setLngLat(this._lngLat);
@@ -286,7 +286,7 @@ export default class Marker extends Evented {
      * @example
      * const element = marker.getElement();
      */
-    getElement() {
+    getElement(): HTMLElement {
         return this._element;
     }
 
@@ -303,7 +303,7 @@ export default class Marker extends Evented {
      *     .addTo(map);
      * @see [Example: Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
-    setPopup(popup: ?Popup) {
+    setPopup(popup: ?Popup): this {
         if (this._popup) {
             this._popup.remove();
             this._popup = null;
@@ -379,7 +379,7 @@ export default class Marker extends Evented {
      *
      * console.log(marker.getPopup()); // return the popup instance
      */
-    getPopup() {
+    getPopup(): ?Popup {
         return this._popup;
     }
 
@@ -395,7 +395,7 @@ export default class Marker extends Evented {
      *
      * marker.togglePopup(); // toggle popup open or closed
      */
-    togglePopup() {
+    togglePopup(): this {
         const popup = this._popup;
         if (!popup) {
             return this;
@@ -456,7 +456,7 @@ export default class Marker extends Evented {
         this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${pos.x}px, ${pos.y}px) rotateX(${pitch}deg) rotateZ(${rotation}deg)`;
     }
 
-    _calculatePitch() {
+    _calculatePitch(): number {
         if (this._pitchAlignment === "viewport" || this._pitchAlignment === "auto") {
             return 0;
         } if (this._map && this._pitchAlignment === "map") {
@@ -465,7 +465,7 @@ export default class Marker extends Evented {
         return 0;
     }
 
-    _calculateRotation() {
+    _calculateRotation(): number {
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
             return this._rotation;
         } if (this._map && this._rotationAlignment === "map") {
@@ -545,7 +545,7 @@ export default class Marker extends Evented {
      * @example
      * marker.setOffset([0, 1]);
      */
-    setOffset(offset: PointLike) {
+    setOffset(offset: PointLike): this {
         this._offset = Point.convert(offset);
         this._update();
         return this;
@@ -660,7 +660,7 @@ export default class Marker extends Evented {
      * @example
      * marker.setDraggable(true);
      */
-    setDraggable(shouldBeDraggable: boolean) {
+    setDraggable(shouldBeDraggable: boolean): this {
         this._draggable = !!shouldBeDraggable; // convert possible undefined value to false
 
         // handle case where map may not exist yet
@@ -686,7 +686,7 @@ export default class Marker extends Evented {
      * @example
      * const isMarkerDraggable = marker.isDraggable();
      */
-    isDraggable() {
+    isDraggable(): boolean {
         return this._draggable;
     }
 
@@ -698,7 +698,7 @@ export default class Marker extends Evented {
      * @example
      * marker.setRotation(45);
      */
-    setRotation(rotation: number) {
+    setRotation(rotation: number): this {
         this._rotation = rotation || 0;
         this._update();
         return this;
@@ -711,7 +711,7 @@ export default class Marker extends Evented {
      * @example
      * const rotation = marker.getRotation();
      */
-    getRotation() {
+    getRotation(): number {
         return this._rotation;
     }
 
@@ -723,7 +723,7 @@ export default class Marker extends Evented {
      * @example
      * marker.setRotationAlignment('viewport');
      */
-    setRotationAlignment(alignment: string) {
+    setRotationAlignment(alignment: string): this {
         this._rotationAlignment = alignment || 'auto';
         this._update();
         return this;
@@ -736,7 +736,7 @@ export default class Marker extends Evented {
      * @example
      * const alignment = marker.getRotationAlignment();
      */
-    getRotationAlignment() {
+    getRotationAlignment(): string {
         return this._rotationAlignment;
     }
 
@@ -748,7 +748,7 @@ export default class Marker extends Evented {
      * @example
      * marker.setPitchAlignment('map');
      */
-    setPitchAlignment(alignment: string) {
+    setPitchAlignment(alignment: string): this {
         this._pitchAlignment = alignment && alignment !== 'auto' ? alignment : this._rotationAlignment;
         this._update();
         return this;
@@ -761,7 +761,7 @@ export default class Marker extends Evented {
      * @example
      * const alignment = marker.getPitchAlignment();
      */
-    getPitchAlignment() {
+    getPitchAlignment(): string {
         return this._pitchAlignment;
     }
 }
