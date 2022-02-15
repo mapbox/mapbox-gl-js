@@ -172,7 +172,7 @@ export const PerformanceUtils = {
         return metrics;
     },
 
-    getWorkerPerformanceMetrics(): { timeOrigin: string, measures:  Array<{name: string, startMark?: string, endMark?: string}> } {
+    getWorkerPerformanceMetrics(): { timeOrigin: string, measures: Array<{name: string, startMark?: string, endMark?: string}> } {
         return JSON.parse(JSON.stringify({
             timeOrigin: performance.timeOrigin,
             measures: performance.getEntriesByType("measure")
