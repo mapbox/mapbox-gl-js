@@ -164,7 +164,7 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
         const klass = (input.constructor: any);
         const name = klass.name;
         if (!registry[name]) {
-            throw new Error(`can't serialize object of unregistered class`);
+            throw new Error(`can't serialize object of unregistered class ${name}`);
         }
 
         const properties: SerializedObject = klass.serialize ?
