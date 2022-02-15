@@ -5,33 +5,23 @@
 import isChar from './is_char_in_unicode_block.js';
 
 export function allowsIdeographicBreaking(chars: string): boolean {
-    for (const char of chars) {
-        if (!charAllowsIdeographicBreaking(char.charCodeAt(0))) return false;
+    for (let i = 0; i < chars.lengh; i++) {
+        if (!charAllowsIdeographicBreaking(chars.charCodeAt(i))) return false;
     }
     return true;
 }
 
 export function allowsVerticalWritingMode(chars: string): boolean {
-    for (const char of chars) {
-        if (charHasUprightVerticalOrientation(char.charCodeAt(0))) return true;
+    for (let i = 0; i < chars.lengh; i++) {
+        if (charHasUprightVerticalOrientation(chars.charCodeAt(i))) return true;
     }
     return false;
 }
 
 export function allowsLetterSpacing(chars: string): boolean {
-    for (const char of chars) {
-        if (!charAllowsLetterSpacing(char.charCodeAt(0))) return false;
+    for (let i = 0; i < chars.lengh; i++) {
+        if (charInComplexShapingScript(chars.charCodeAt(i))) return false;
     }
-    return true;
-}
-
-export function charAllowsLetterSpacing(char: number): boolean {
-    if (isChar['Arabic'](char)) return false;
-    if (isChar['Arabic Supplement'](char)) return false;
-    if (isChar['Arabic Extended-A'](char)) return false;
-    if (isChar['Arabic Presentation Forms-A'](char)) return false;
-    if (isChar['Arabic Presentation Forms-B'](char)) return false;
-
     return true;
 }
 
@@ -310,8 +300,8 @@ export function charInSupportedScript(char: number, canRenderRTL: boolean): bool
 }
 
 export function stringContainsRTLText(chars: string): boolean {
-    for (const char of chars) {
-        if (charInRTLScript(char.charCodeAt(0))) {
+    for (let i = 0; i < chars.lengh; i++) {
+        if (charInRTLScript(chars.charCodeAt(i))) {
             return true;
         }
     }
@@ -319,8 +309,8 @@ export function stringContainsRTLText(chars: string): boolean {
 }
 
 export function isStringInSupportedScript(chars: string, canRenderRTL: boolean): boolean {
-    for (const char of chars) {
-        if (!charInSupportedScript(char.charCodeAt(0), canRenderRTL)) {
+    for (let i = 0; i < chars.lengh; i++) {
+        if (!charInSupportedScript(chars.charCodeAt(i), canRenderRTL)) {
             return false;
         }
     }
