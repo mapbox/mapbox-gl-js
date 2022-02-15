@@ -180,7 +180,7 @@ export const PerformanceUtils = {
     }
 };
 
-export function getPerformanceMeasurement(request: ?RequestParameters): Array<{ name?: ?string, entryType?: ?string, startTime?: ?string, duration?: ?string }> {
+export function getPerformanceMeasurement(request: ?RequestParameters): Array<PerformanceEntry> {
     const url = request ? request.url.toString() : undefined;
     return performance.getEntriesByName(url);
 }
