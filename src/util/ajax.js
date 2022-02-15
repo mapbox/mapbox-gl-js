@@ -7,7 +7,6 @@ import config from './config.js';
 import assert from 'assert';
 import {cacheGet, cachePut} from './tile_request_cache.js';
 import webpSupported from './webp_supported.js';
-import {register} from './web_worker_transfer.js';
 
 import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
@@ -73,7 +72,7 @@ export type RequestParameters = {
 
 export type ResponseCallback<T> = (error: ?Error, data: ?T, cacheControl: ?string, expires: ?string) => void;
 
-class AJAXError extends Error {
+export class AJAXError extends Error {
     status: number;
     url: string;
     constructor(message: string, status: number, url: string) {
@@ -89,7 +88,6 @@ class AJAXError extends Error {
         return `${this.name}: ${this.message} (${this.status}): ${this.url}`;
     }
 }
-register(AJAXError);
 
 // Ensure that we're sending the correct referrer from blob URL worker bundles.
 // For files loaded from the local file system, `location.origin` will be set

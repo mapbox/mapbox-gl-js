@@ -9,6 +9,7 @@ import CompoundExpression from '../style-spec/expression/compound_expression.js'
 import expressions from '../style-spec/expression/definitions/index.js';
 import ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import window from './window.js';
+import {AJAXError} from './ajax.js';
 
 import type {Transferable} from '../types/transferable.js';
 
@@ -80,6 +81,7 @@ register(Grid);
 
 register(Color);
 register(Error);
+register(AJAXError);
 register(ResolvedImage);
 
 register(StylePropertyFunction);
