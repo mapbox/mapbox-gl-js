@@ -172,7 +172,7 @@ export const PerformanceUtils = {
         return metrics;
     },
 
-    getWorkerPerformanceMetrics(): {timeOrigin: string, measures:  Array<{[string] : string }} {
+    getWorkerPerformanceMetrics(): { timeOrigin: string, measures:  Array<{name: string, startMark?: string, endMark?: string}> } {
         return JSON.parse(JSON.stringify({
             timeOrigin: performance.timeOrigin,
             measures: performance.getEntriesByType("measure")
@@ -180,7 +180,7 @@ export const PerformanceUtils = {
     }
 };
 
-export function getPerformanceMeasurement(request: ?RequestParameters): {any} {
+export function getPerformanceMeasurement(request: ?RequestParameters): Array<{ name?: ?string, entryType?: ?string, startTime?: ?string, duration?: ?string }> {
     const url = request ? request.url.toString() : undefined;
     return performance.getEntriesByName(url);
 }
