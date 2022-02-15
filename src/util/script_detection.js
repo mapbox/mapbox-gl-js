@@ -2,7 +2,7 @@
 
 /* eslint-disable new-cap */
 
-import isChar from './is_char_in_unicode_block.js';
+import * as Char from './is_char_in_unicode_block.js';
 
 export function allowsIdeographicBreaking(chars: string): boolean {
     for (let i = 0; i < chars.length; i++) {
@@ -29,26 +29,26 @@ export function charAllowsIdeographicBreaking(char: number): boolean {
     // Return early for characters outside all ideographic ranges.
     if (char < 0x2E80) return false;
 
-    if (isChar['Bopomofo Extended'](char)) return true;
-    if (isChar['Bopomofo'](char)) return true;
-    if (isChar['CJK Compatibility Forms'](char)) return true;
-    if (isChar['CJK Compatibility Ideographs'](char)) return true;
-    if (isChar['CJK Compatibility'](char)) return true;
-    if (isChar['CJK Radicals Supplement'](char)) return true;
-    if (isChar['CJK Strokes'](char)) return true;
-    if (isChar['CJK Symbols and Punctuation'](char)) return true;
-    if (isChar['CJK Unified Ideographs Extension A'](char)) return true;
-    if (isChar['CJK Unified Ideographs'](char)) return true;
-    if (isChar['Enclosed CJK Letters and Months'](char)) return true;
-    if (isChar['Halfwidth and Fullwidth Forms'](char)) return true;
-    if (isChar['Hiragana'](char)) return true;
-    if (isChar['Ideographic Description Characters'](char)) return true;
-    if (isChar['Kangxi Radicals'](char)) return true;
-    if (isChar['Katakana Phonetic Extensions'](char)) return true;
-    if (isChar['Katakana'](char)) return true;
-    if (isChar['Vertical Forms'](char)) return true;
-    if (isChar['Yi Radicals'](char)) return true;
-    if (isChar['Yi Syllables'](char)) return true;
+    if (Char.isBopomofoExtended(char) ||
+        Char.isBopomofo(char) ||
+        Char.isCJKCompatibilityForms(char) ||
+        Char.isCJKCompatibilityIdeographs(char) ||
+        Char.isCJKCompatibility(char) ||
+        Char.isCJKRadicalsSupplement(char) ||
+        Char.isCJKStrokes(char) ||
+        Char.isCJKSymbolsAndPunctuation(char) ||
+        Char.isCJKUnifiedIdeographsExtensionA(char) ||
+        Char.isCJKUnifiedIdeographs(char) ||
+        Char.isEnclosedCJKLettersAndMonths(char) ||
+        Char.isHalfwidthAndFullwidthForms(char) ||
+        Char.isHiragana(char) ||
+        Char.isIdeographicDescriptionCharacters(char) ||
+        Char.isKangxiRadicals(char) ||
+        Char.isKatakanaPhoneticExtensions(char) ||
+        Char.isKatakana(char) ||
+        Char.isVerticalForms(char) ||
+        Char.isYiRadicals(char) ||
+        Char.isYiSyllables(char)) return true;
 
     return false;
 }
@@ -85,43 +85,43 @@ export function charHasUprightVerticalOrientation(char: number): boolean {
     // upright in vertical writing mode.
     if (char < 0x1100) return false;
 
-    if (isChar['Bopomofo Extended'](char)) return true;
-    if (isChar['Bopomofo'](char)) return true;
-    if (isChar['CJK Compatibility Forms'](char)) {
+    if (Char.isBopomofoExtended(char) ||
+        Char.isBopomofo(char)) return true;
+    if (Char.isCJKCompatibilityForms(char)) {
         if (!((char >= 0xFE49 /* dashed overline */ && char <= 0xFE4F) /* wavy low line */)) {
             return true;
         }
     }
-    if (isChar['CJK Compatibility Ideographs'](char)) return true;
-    if (isChar['CJK Compatibility'](char)) return true;
-    if (isChar['CJK Radicals Supplement'](char)) return true;
-    if (isChar['CJK Strokes'](char)) return true;
-    if (isChar['CJK Symbols and Punctuation'](char)) {
+    if (Char.isCJKCompatibilityIdeographs(char) ||
+        Char.isCJKCompatibility(char) ||
+        Char.isCJKRadicalsSupplement(char)) return true;
+    if (Char.isCJKStrokes(char)) return true;
+    if (Char.isCJKSymbolsAndPunctuation(char)) {
         if (!((char >= 0x3008 /* left angle bracket */ && char <= 0x3011) /* right black lenticular bracket */) &&
             !((char >= 0x3014 /* left tortoise shell bracket */ && char <= 0x301F) /* low double prime quotation mark */) &&
             char !== 0x3030 /* wavy dash */) {
             return true;
         }
     }
-    if (isChar['CJK Unified Ideographs Extension A'](char)) return true;
-    if (isChar['CJK Unified Ideographs'](char)) return true;
-    if (isChar['Enclosed CJK Letters and Months'](char)) return true;
-    if (isChar['Hangul Compatibility Jamo'](char)) return true;
-    if (isChar['Hangul Jamo Extended-A'](char)) return true;
-    if (isChar['Hangul Jamo Extended-B'](char)) return true;
-    if (isChar['Hangul Jamo'](char)) return true;
-    if (isChar['Hangul Syllables'](char)) return true;
-    if (isChar['Hiragana'](char)) return true;
-    if (isChar['Ideographic Description Characters'](char)) return true;
-    if (isChar['Kanbun'](char)) return true;
-    if (isChar['Kangxi Radicals'](char)) return true;
-    if (isChar['Katakana Phonetic Extensions'](char)) return true;
-    if (isChar['Katakana'](char)) {
+    if (Char.isCJKUnifiedIdeographsExtensionA(char) ||
+        Char.isCJKUnifiedIdeographs(char) ||
+        Char.isEnclosedCJKLettersAndMonths(char) ||
+        Char.isHangulCompatibilityJamo(char) ||
+        Char.isHangulJamoExtendedA(char) ||
+        Char.isHangulJamoExtendedB(char) ||
+        Char.isHangulJamo(char) ||
+        Char.isHangulSyllables(char) ||
+        Char.isHiragana(char) ||
+        Char.isIdeographicDescriptionCharacters(char) ||
+        Char.isKanbun(char) ||
+        Char.isKangxiRadicals(char) ||
+        Char.isKatakanaPhoneticExtensions(char)) return true;
+    if (Char.isKatakana(char)) {
         if (char !== 0x30FC /* katakana-hiragana prolonged sound mark */) {
             return true;
         }
     }
-    if (isChar['Halfwidth and Fullwidth Forms'](char)) {
+    if (Char.isHalfwidthAndFullwidthForms(char)) {
         if (char !== 0xFF08 /* fullwidth left parenthesis */ &&
             char !== 0xFF09 /* fullwidth right parenthesis */ &&
             char !== 0xFF0D /* fullwidth hyphen-minus */ &&
@@ -135,18 +135,18 @@ export function charHasUprightVerticalOrientation(char: number): boolean {
             return true;
         }
     }
-    if (isChar['Small Form Variants'](char)) {
+    if (Char.isSmallFormVariants(char)) {
         if (!((char >= 0xFE58 /* small em dash */ && char <= 0xFE5E) /* small right tortoise shell bracket */) &&
             !((char >= 0xFE63 /* small hyphen-minus */ && char <= 0xFE66) /* small equals sign */)) {
             return true;
         }
     }
-    if (isChar['Unified Canadian Aboriginal Syllabics'](char)) return true;
-    if (isChar['Unified Canadian Aboriginal Syllabics Extended'](char)) return true;
-    if (isChar['Vertical Forms'](char)) return true;
-    if (isChar['Yijing Hexagram Symbols'](char)) return true;
-    if (isChar['Yi Syllables'](char)) return true;
-    if (isChar['Yi Radicals'](char)) return true;
+    if (Char.isUnifiedCanadianAboriginalSyllabics(char) ||
+        Char.isUnifiedCanadianAboriginalSyllabicsExtended(char) ||
+        Char.isVerticalForms(char) ||
+        Char.isYijingHexagramSymbols(char) ||
+        Char.isYiSyllables(char) ||
+        Char.isYiRadicals(char)) return true;
 
     return false;
 }
@@ -164,7 +164,7 @@ export function charHasUprightVerticalOrientation(char: number): boolean {
  * @private
  */
 export function charHasNeutralVerticalOrientation(char: number): boolean {
-    if (isChar['Latin-1 Supplement'](char)) {
+    if (Char.isLatin1Supplement(char)) {
         if (char === 0x00A7 /* section sign */ ||
             char === 0x00A9 /* copyright sign */ ||
             char === 0x00AE /* registered sign */ ||
@@ -177,7 +177,7 @@ export function charHasNeutralVerticalOrientation(char: number): boolean {
             return true;
         }
     }
-    if (isChar['General Punctuation'](char)) {
+    if (Char.isGeneralPunctuation(char)) {
         if (char === 0x2016 /* double vertical line */ ||
             char === 0x2020 /* dagger */ ||
             char === 0x2021 /* double dagger */ ||
@@ -193,9 +193,10 @@ export function charHasNeutralVerticalOrientation(char: number): boolean {
             return true;
         }
     }
-    if (isChar['Letterlike Symbols'](char)) return true;
-    if (isChar['Number Forms'](char)) return true;
-    if (isChar['Miscellaneous Technical'](char)) {
+    if (Char.isLetterlikeSymbols(char) ||
+        Char.isNumberForms(char)) return true;
+
+    if (Char.isMiscellaneousTechnical(char)) {
         if ((char >= 0x2300 /* diameter sign */ && char <= 0x2307 /* wavy line */) ||
             (char >= 0x230C /* bottom right crop */ && char <= 0x231F /* bottom right corner */) ||
             (char >= 0x2324 /* up arrowhead between two horizontal bars */ && char <= 0x2328 /* keyboard */) ||
@@ -208,28 +209,29 @@ export function charHasNeutralVerticalOrientation(char: number): boolean {
             return true;
         }
     }
-    if (isChar['Control Pictures'](char) && char !== 0x2423 /* open box */) return true;
-    if (isChar['Optical Character Recognition'](char)) return true;
-    if (isChar['Enclosed Alphanumerics'](char)) return true;
-    if (isChar['Geometric Shapes'](char)) return true;
-    if (isChar['Miscellaneous Symbols'](char)) {
+    if (Char.isControlPictures(char) && char !== 0x2423 /* open box */) return true;
+    if (Char.isOpticalCharacterRecognition(char) ||
+        Char.isEnclosedAlphanumerics(char) ||
+        Char.isGeometricShapes(char)) return true;
+
+    if (Char.isMiscellaneousSymbols(char)) {
         if (!((char >= 0x261A /* black left pointing index */ && char <= 0x261F) /* white down pointing index */)) {
             return true;
         }
     }
-    if (isChar['Miscellaneous Symbols and Arrows'](char)) {
+    if (Char.isMiscellaneousSymbolsAndArrows(char)) {
         if ((char >= 0x2B12 /* square with top half black */ && char <= 0x2B2F /* white vertical ellipse */) ||
             (char >= 0x2B50 /* white medium star */ && char <= 0x2B59 /* heavy circled saltire */) ||
             (char >= 0x2BB8 /* upwards white arrow from bar with horizontal bar */ && char <= 0x2BEB)) {
             return true;
         }
     }
-    if (isChar['CJK Symbols and Punctuation'](char)) return true;
-    if (isChar['Katakana'](char)) return true;
-    if (isChar['Private Use Area'](char)) return true;
-    if (isChar['CJK Compatibility Forms'](char)) return true;
-    if (isChar['Small Form Variants'](char)) return true;
-    if (isChar['Halfwidth and Fullwidth Forms'](char)) return true;
+    if (Char.isCJKSymbolsAndPunctuation(char) ||
+        Char.isKatakana(char) ||
+        Char.isPrivateUseArea(char) ||
+        Char.isCJKCompatibilityForms(char) ||
+        Char.isSmallFormVariants(char) ||
+        Char.isHalfwidthAndFullwidthForms(char)) return true;
 
     if (char === 0x221E /* infinity */ ||
         char === 0x2234 /* therefore */ ||
@@ -260,18 +262,18 @@ export function charHasRotatedVerticalOrientation(char: number): boolean {
 }
 
 export function charInComplexShapingScript(char: number): boolean {
-    return isChar['Arabic'](char) ||
-           isChar['Arabic Supplement'](char) ||
-           isChar['Arabic Extended-A'](char) ||
-           isChar['Arabic Presentation Forms-A'](char) ||
-           isChar['Arabic Presentation Forms-B'](char);
+    return Char.isArabic(char) ||
+           Char.isArabicSupplement(char) ||
+           Char.isArabicExtendedA(char) ||
+           Char.isArabicPresentationFormsA(char) ||
+           Char.isArabicPresentationFormsB(char);
 }
 
 export function charInRTLScript(char: number): boolean {
     // Main blocks for Hebrew, Arabic, Thaana and other RTL scripts
     return (char >= 0x0590 && char <= 0x08FF) ||
-        isChar['Arabic Presentation Forms-A'](char) ||
-        isChar['Arabic Presentation Forms-B'](char);
+        Char.isArabicPresentationFormsA(char) ||
+        Char.isArabicPresentationFormsB(char);
 }
 
 export function charInSupportedScript(char: number, canRenderRTL: boolean): boolean {
@@ -289,7 +291,7 @@ export function charInSupportedScript(char: number, canRenderRTL: boolean): bool
         // Main blocks for Indic scripts and Sinhala
         (char >= 0x0F00 && char <= 0x109F) ||
         // Main blocks for Tibetan and Myanmar
-        isChar['Khmer'](char)) {
+        Char.isKhmer(char)) {
         // These blocks cover common scripts that require
         // complex text shaping, based on unicode script metadata:
         // http://www.unicode.org/repos/cldr/trunk/common/properties/scriptMetadata.txt

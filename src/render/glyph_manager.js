@@ -3,7 +3,7 @@
 import loadGlyphRange from '../style/load_glyph_range.js';
 
 import TinySDF from '@mapbox/tiny-sdf';
-import isChar from '../util/is_char_in_unicode_block.js';
+import * as Char from '../util/is_char_in_unicode_block.js';
 import {asyncAll} from '../util/util.js';
 import {AlphaImage} from '../util/image.js';
 
@@ -188,12 +188,12 @@ class GlyphManager {
         } else {
             /* eslint-disable new-cap */
             return !!this.localFontFamily &&
-            ((isChar['CJK Unified Ideographs'](id) ||
-                isChar['Hangul Syllables'](id) ||
-                isChar['Hiragana'](id) ||
-                isChar['Katakana'](id)) ||
+            ((Char.isCJKUnifiedIdeographs(id) ||
+                Char.isHangulSyllables(id) ||
+                Char.isHiragana(id) ||
+                Char.isKatakana(id)) ||
                 // gl-native parity: Extend Ideographs rasterization range to include CJK symbols and punctuations
-                isChar['CJK Symbols and Punctuation'](id));
+                Char.isCJKSymbolsAndPunctuation(id));
             /* eslint-enable new-cap */
         }
     }

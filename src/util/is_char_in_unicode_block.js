@@ -1,311 +1,327 @@
 // @flow
 
-// The following table comes from <http://www.unicode.org/Public/12.0.0/ucd/Blocks.txt>.
+// The following table comes from <http://www.unicode.org/Public/14.0.0/ucd/Blocks.txt>.
 // Keep it synchronized with <http://www.unicode.org/Public/UCD/latest/ucd/Blocks.txt>.
 
-type UnicodeBlockLookup = {[key: string]: (char: number) => boolean};
+type Block = (number) => boolean;
 
-const unicodeBlockLookup: UnicodeBlockLookup = {
-    // 'Basic Latin': (char) => char >= 0x0000 && char <= 0x007F,
-    'Latin-1 Supplement': (char) => char >= 0x0080 && char <= 0x00FF,
-    // 'Latin Extended-A': (char) => char >= 0x0100 && char <= 0x017F,
-    // 'Latin Extended-B': (char) => char >= 0x0180 && char <= 0x024F,
-    // 'IPA Extensions': (char) => char >= 0x0250 && char <= 0x02AF,
-    // 'Spacing Modifier Letters': (char) => char >= 0x02B0 && char <= 0x02FF,
-    // 'Combining Diacritical Marks': (char) => char >= 0x0300 && char <= 0x036F,
-    // 'Greek and Coptic': (char) => char >= 0x0370 && char <= 0x03FF,
-    // 'Cyrillic': (char) => char >= 0x0400 && char <= 0x04FF,
-    // 'Cyrillic Supplement': (char) => char >= 0x0500 && char <= 0x052F,
-    // 'Armenian': (char) => char >= 0x0530 && char <= 0x058F,
-    //'Hebrew': (char) => char >= 0x0590 && char <= 0x05FF,
-    'Arabic': (char) => char >= 0x0600 && char <= 0x06FF,
-    //'Syriac': (char) => char >= 0x0700 && char <= 0x074F,
-    'Arabic Supplement': (char) => char >= 0x0750 && char <= 0x077F,
-    // 'Thaana': (char) => char >= 0x0780 && char <= 0x07BF,
-    // 'NKo': (char) => char >= 0x07C0 && char <= 0x07FF,
-    // 'Samaritan': (char) => char >= 0x0800 && char <= 0x083F,
-    // 'Mandaic': (char) => char >= 0x0840 && char <= 0x085F,
-    // 'Syriac Supplement': (char) => char >= 0x0860 && char <= 0x086F,
-    'Arabic Extended-A': (char) => char >= 0x08A0 && char <= 0x08FF,
-    // 'Devanagari': (char) => char >= 0x0900 && char <= 0x097F,
-    // 'Bengali': (char) => char >= 0x0980 && char <= 0x09FF,
-    // 'Gurmukhi': (char) => char >= 0x0A00 && char <= 0x0A7F,
-    // 'Gujarati': (char) => char >= 0x0A80 && char <= 0x0AFF,
-    // 'Oriya': (char) => char >= 0x0B00 && char <= 0x0B7F,
-    // 'Tamil': (char) => char >= 0x0B80 && char <= 0x0BFF,
-    // 'Telugu': (char) => char >= 0x0C00 && char <= 0x0C7F,
-    // 'Kannada': (char) => char >= 0x0C80 && char <= 0x0CFF,
-    // 'Malayalam': (char) => char >= 0x0D00 && char <= 0x0D7F,
-    // 'Sinhala': (char) => char >= 0x0D80 && char <= 0x0DFF,
-    // 'Thai': (char) => char >= 0x0E00 && char <= 0x0E7F,
-    // 'Lao': (char) => char >= 0x0E80 && char <= 0x0EFF,
-    // 'Tibetan': (char) => char >= 0x0F00 && char <= 0x0FFF,
-    // 'Myanmar': (char) => char >= 0x1000 && char <= 0x109F,
-    // 'Georgian': (char) => char >= 0x10A0 && char <= 0x10FF,
-    'Hangul Jamo': (char) => char >= 0x1100 && char <= 0x11FF,
-    // 'Ethiopic': (char) => char >= 0x1200 && char <= 0x137F,
-    // 'Ethiopic Supplement': (char) => char >= 0x1380 && char <= 0x139F,
-    // 'Cherokee': (char) => char >= 0x13A0 && char <= 0x13FF,
-    'Unified Canadian Aboriginal Syllabics': (char) => char >= 0x1400 && char <= 0x167F,
-    // 'Ogham': (char) => char >= 0x1680 && char <= 0x169F,
-    // 'Runic': (char) => char >= 0x16A0 && char <= 0x16FF,
-    // 'Tagalog': (char) => char >= 0x1700 && char <= 0x171F,
-    // 'Hanunoo': (char) => char >= 0x1720 && char <= 0x173F,
-    // 'Buhid': (char) => char >= 0x1740 && char <= 0x175F,
-    // 'Tagbanwa': (char) => char >= 0x1760 && char <= 0x177F,
-    'Khmer': (char) => char >= 0x1780 && char <= 0x17FF,
-    // 'Mongolian': (char) => char >= 0x1800 && char <= 0x18AF,
-    'Unified Canadian Aboriginal Syllabics Extended': (char) => char >= 0x18B0 && char <= 0x18FF,
-    // 'Limbu': (char) => char >= 0x1900 && char <= 0x194F,
-    // 'Tai Le': (char) => char >= 0x1950 && char <= 0x197F,
-    // 'New Tai Lue': (char) => char >= 0x1980 && char <= 0x19DF,
-    // 'Khmer Symbols': (char) => char >= 0x19E0 && char <= 0x19FF,
-    // 'Buginese': (char) => char >= 0x1A00 && char <= 0x1A1F,
-    // 'Tai Tham': (char) => char >= 0x1A20 && char <= 0x1AAF,
-    // 'Combining Diacritical Marks Extended': (char) => char >= 0x1AB0 && char <= 0x1AFF,
-    // 'Balinese': (char) => char >= 0x1B00 && char <= 0x1B7F,
-    // 'Sundanese': (char) => char >= 0x1B80 && char <= 0x1BBF,
-    // 'Batak': (char) => char >= 0x1BC0 && char <= 0x1BFF,
-    // 'Lepcha': (char) => char >= 0x1C00 && char <= 0x1C4F,
-    // 'Ol Chiki': (char) => char >= 0x1C50 && char <= 0x1C7F,
-    // 'Cyrillic Extended-C': (char) => char >= 0x1C80 && char <= 0x1C8F,
-    // 'Georgian Extended': (char) => char >= 0x1C90 && char <= 0x1CBF,
-    // 'Sundanese Supplement': (char) => char >= 0x1CC0 && char <= 0x1CCF,
-    // 'Vedic Extensions': (char) => char >= 0x1CD0 && char <= 0x1CFF,
-    // 'Phonetic Extensions': (char) => char >= 0x1D00 && char <= 0x1D7F,
-    // 'Phonetic Extensions Supplement': (char) => char >= 0x1D80 && char <= 0x1DBF,
-    // 'Combining Diacritical Marks Supplement': (char) => char >= 0x1DC0 && char <= 0x1DFF,
-    // 'Latin Extended Additional': (char) => char >= 0x1E00 && char <= 0x1EFF,
-    // 'Greek Extended': (char) => char >= 0x1F00 && char <= 0x1FFF,
-    'General Punctuation': (char) => char >= 0x2000 && char <= 0x206F,
-    // 'Superscripts and Subscripts': (char) => char >= 0x2070 && char <= 0x209F,
-    // 'Currency Symbols': (char) => char >= 0x20A0 && char <= 0x20CF,
-    // 'Combining Diacritical Marks for Symbols': (char) => char >= 0x20D0 && char <= 0x20FF,
-    'Letterlike Symbols': (char) => char >= 0x2100 && char <= 0x214F,
-    'Number Forms': (char) => char >= 0x2150 && char <= 0x218F,
-    // 'Arrows': (char) => char >= 0x2190 && char <= 0x21FF,
-    // 'Mathematical Operators': (char) => char >= 0x2200 && char <= 0x22FF,
-    'Miscellaneous Technical': (char) => char >= 0x2300 && char <= 0x23FF,
-    'Control Pictures': (char) => char >= 0x2400 && char <= 0x243F,
-    'Optical Character Recognition': (char) => char >= 0x2440 && char <= 0x245F,
-    'Enclosed Alphanumerics': (char) => char >= 0x2460 && char <= 0x24FF,
-    // 'Box Drawing': (char) => char >= 0x2500 && char <= 0x257F,
-    // 'Block Elements': (char) => char >= 0x2580 && char <= 0x259F,
-    'Geometric Shapes': (char) => char >= 0x25A0 && char <= 0x25FF,
-    'Miscellaneous Symbols': (char) => char >= 0x2600 && char <= 0x26FF,
-    // 'Dingbats': (char) => char >= 0x2700 && char <= 0x27BF,
-    // 'Miscellaneous Mathematical Symbols-A': (char) => char >= 0x27C0 && char <= 0x27EF,
-    // 'Supplemental Arrows-A': (char) => char >= 0x27F0 && char <= 0x27FF,
-    // 'Braille Patterns': (char) => char >= 0x2800 && char <= 0x28FF,
-    // 'Supplemental Arrows-B': (char) => char >= 0x2900 && char <= 0x297F,
-    // 'Miscellaneous Mathematical Symbols-B': (char) => char >= 0x2980 && char <= 0x29FF,
-    // 'Supplemental Mathematical Operators': (char) => char >= 0x2A00 && char <= 0x2AFF,
-    'Miscellaneous Symbols and Arrows': (char) => char >= 0x2B00 && char <= 0x2BFF,
-    // 'Glagolitic': (char) => char >= 0x2C00 && char <= 0x2C5F,
-    // 'Latin Extended-C': (char) => char >= 0x2C60 && char <= 0x2C7F,
-    // 'Coptic': (char) => char >= 0x2C80 && char <= 0x2CFF,
-    // 'Georgian Supplement': (char) => char >= 0x2D00 && char <= 0x2D2F,
-    // 'Tifinagh': (char) => char >= 0x2D30 && char <= 0x2D7F,
-    // 'Ethiopic Extended': (char) => char >= 0x2D80 && char <= 0x2DDF,
-    // 'Cyrillic Extended-A': (char) => char >= 0x2DE0 && char <= 0x2DFF,
-    // 'Supplemental Punctuation': (char) => char >= 0x2E00 && char <= 0x2E7F,
-    'CJK Radicals Supplement': (char) => char >= 0x2E80 && char <= 0x2EFF,
-    'Kangxi Radicals': (char) => char >= 0x2F00 && char <= 0x2FDF,
-    'Ideographic Description Characters': (char) => char >= 0x2FF0 && char <= 0x2FFF,
-    'CJK Symbols and Punctuation': (char) => char >= 0x3000 && char <= 0x303F,
-    'Hiragana': (char) => char >= 0x3040 && char <= 0x309F,
-    'Katakana': (char) => char >= 0x30A0 && char <= 0x30FF,
-    'Bopomofo': (char) => char >= 0x3100 && char <= 0x312F,
-    'Hangul Compatibility Jamo': (char) => char >= 0x3130 && char <= 0x318F,
-    'Kanbun': (char) => char >= 0x3190 && char <= 0x319F,
-    'Bopomofo Extended': (char) => char >= 0x31A0 && char <= 0x31BF,
-    'CJK Strokes': (char) => char >= 0x31C0 && char <= 0x31EF,
-    'Katakana Phonetic Extensions': (char) => char >= 0x31F0 && char <= 0x31FF,
-    'Enclosed CJK Letters and Months': (char) => char >= 0x3200 && char <= 0x32FF,
-    'CJK Compatibility': (char) => char >= 0x3300 && char <= 0x33FF,
-    'CJK Unified Ideographs Extension A': (char) => char >= 0x3400 && char <= 0x4DBF,
-    'Yijing Hexagram Symbols': (char) => char >= 0x4DC0 && char <= 0x4DFF,
-    'CJK Unified Ideographs': (char) => char >= 0x4E00 && char <= 0x9FFF,
-    'Yi Syllables': (char) => char >= 0xA000 && char <= 0xA48F,
-    'Yi Radicals': (char) => char >= 0xA490 && char <= 0xA4CF,
-    // 'Lisu': (char) => char >= 0xA4D0 && char <= 0xA4FF,
-    // 'Vai': (char) => char >= 0xA500 && char <= 0xA63F,
-    // 'Cyrillic Extended-B': (char) => char >= 0xA640 && char <= 0xA69F,
-    // 'Bamum': (char) => char >= 0xA6A0 && char <= 0xA6FF,
-    // 'Modifier Tone Letters': (char) => char >= 0xA700 && char <= 0xA71F,
-    // 'Latin Extended-D': (char) => char >= 0xA720 && char <= 0xA7FF,
-    // 'Syloti Nagri': (char) => char >= 0xA800 && char <= 0xA82F,
-    // 'Common Indic Number Forms': (char) => char >= 0xA830 && char <= 0xA83F,
-    // 'Phags-pa': (char) => char >= 0xA840 && char <= 0xA87F,
-    // 'Saurashtra': (char) => char >= 0xA880 && char <= 0xA8DF,
-    // 'Devanagari Extended': (char) => char >= 0xA8E0 && char <= 0xA8FF,
-    // 'Kayah Li': (char) => char >= 0xA900 && char <= 0xA92F,
-    // 'Rejang': (char) => char >= 0xA930 && char <= 0xA95F,
-    'Hangul Jamo Extended-A': (char) => char >= 0xA960 && char <= 0xA97F,
-    // 'Javanese': (char) => char >= 0xA980 && char <= 0xA9DF,
-    // 'Myanmar Extended-B': (char) => char >= 0xA9E0 && char <= 0xA9FF,
-    // 'Cham': (char) => char >= 0xAA00 && char <= 0xAA5F,
-    // 'Myanmar Extended-A': (char) => char >= 0xAA60 && char <= 0xAA7F,
-    // 'Tai Viet': (char) => char >= 0xAA80 && char <= 0xAADF,
-    // 'Meetei Mayek Extensions': (char) => char >= 0xAAE0 && char <= 0xAAFF,
-    // 'Ethiopic Extended-A': (char) => char >= 0xAB00 && char <= 0xAB2F,
-    // 'Latin Extended-E': (char) => char >= 0xAB30 && char <= 0xAB6F,
-    // 'Cherokee Supplement': (char) => char >= 0xAB70 && char <= 0xABBF,
-    // 'Meetei Mayek': (char) => char >= 0xABC0 && char <= 0xABFF,
-    'Hangul Syllables': (char) => char >= 0xAC00 && char <= 0xD7AF,
-    'Hangul Jamo Extended-B': (char) => char >= 0xD7B0 && char <= 0xD7FF,
-    // 'High Surrogates': (char) => char >= 0xD800 && char <= 0xDB7F,
-    // 'High Private Use Surrogates': (char) => char >= 0xDB80 && char <= 0xDBFF,
-    // 'Low Surrogates': (char) => char >= 0xDC00 && char <= 0xDFFF,
-    'Private Use Area': (char) => char >= 0xE000 && char <= 0xF8FF,
-    'CJK Compatibility Ideographs': (char) => char >= 0xF900 && char <= 0xFAFF,
-    // 'Alphabetic Presentation Forms': (char) => char >= 0xFB00 && char <= 0xFB4F,
-    'Arabic Presentation Forms-A': (char) => char >= 0xFB50 && char <= 0xFDFF,
-    // 'Variation Selectors': (char) => char >= 0xFE00 && char <= 0xFE0F,
-    'Vertical Forms': (char) => char >= 0xFE10 && char <= 0xFE1F,
-    // 'Combining Half Marks': (char) => char >= 0xFE20 && char <= 0xFE2F,
-    'CJK Compatibility Forms': (char) => char >= 0xFE30 && char <= 0xFE4F,
-    'Small Form Variants': (char) => char >= 0xFE50 && char <= 0xFE6F,
-    'Arabic Presentation Forms-B': (char) => char >= 0xFE70 && char <= 0xFEFF,
-    'Halfwidth and Fullwidth Forms': (char) => char >= 0xFF00 && char <= 0xFFEF
-    // 'Specials': (char) => char >= 0xFFF0 && char <= 0xFFFF,
-    // 'Linear B Syllabary': (char) => char >= 0x10000 && char <= 0x1007F,
-    // 'Linear B Ideograms': (char) => char >= 0x10080 && char <= 0x100FF,
-    // 'Aegean Numbers': (char) => char >= 0x10100 && char <= 0x1013F,
-    // 'Ancient Greek Numbers': (char) => char >= 0x10140 && char <= 0x1018F,
-    // 'Ancient Symbols': (char) => char >= 0x10190 && char <= 0x101CF,
-    // 'Phaistos Disc': (char) => char >= 0x101D0 && char <= 0x101FF,
-    // 'Lycian': (char) => char >= 0x10280 && char <= 0x1029F,
-    // 'Carian': (char) => char >= 0x102A0 && char <= 0x102DF,
-    // 'Coptic Epact Numbers': (char) => char >= 0x102E0 && char <= 0x102FF,
-    // 'Old Italic': (char) => char >= 0x10300 && char <= 0x1032F,
-    // 'Gothic': (char) => char >= 0x10330 && char <= 0x1034F,
-    // 'Old Permic': (char) => char >= 0x10350 && char <= 0x1037F,
-    // 'Ugaritic': (char) => char >= 0x10380 && char <= 0x1039F,
-    // 'Old Persian': (char) => char >= 0x103A0 && char <= 0x103DF,
-    // 'Deseret': (char) => char >= 0x10400 && char <= 0x1044F,
-    // 'Shavian': (char) => char >= 0x10450 && char <= 0x1047F,
-    // 'Osmanya': (char) => char >= 0x10480 && char <= 0x104AF,
-    // 'Osage': (char) => char >= 0x104B0 && char <= 0x104FF,
-    // 'Elbasan': (char) => char >= 0x10500 && char <= 0x1052F,
-    // 'Caucasian Albanian': (char) => char >= 0x10530 && char <= 0x1056F,
-    // 'Linear A': (char) => char >= 0x10600 && char <= 0x1077F,
-    // 'Cypriot Syllabary': (char) => char >= 0x10800 && char <= 0x1083F,
-    // 'Imperial Aramaic': (char) => char >= 0x10840 && char <= 0x1085F,
-    // 'Palmyrene': (char) => char >= 0x10860 && char <= 0x1087F,
-    // 'Nabataean': (char) => char >= 0x10880 && char <= 0x108AF,
-    // 'Hatran': (char) => char >= 0x108E0 && char <= 0x108FF,
-    // 'Phoenician': (char) => char >= 0x10900 && char <= 0x1091F,
-    // 'Lydian': (char) => char >= 0x10920 && char <= 0x1093F,
-    // 'Meroitic Hieroglyphs': (char) => char >= 0x10980 && char <= 0x1099F,
-    // 'Meroitic Cursive': (char) => char >= 0x109A0 && char <= 0x109FF,
-    // 'Kharoshthi': (char) => char >= 0x10A00 && char <= 0x10A5F,
-    // 'Old South Arabian': (char) => char >= 0x10A60 && char <= 0x10A7F,
-    // 'Old North Arabian': (char) => char >= 0x10A80 && char <= 0x10A9F,
-    // 'Manichaean': (char) => char >= 0x10AC0 && char <= 0x10AFF,
-    // 'Avestan': (char) => char >= 0x10B00 && char <= 0x10B3F,
-    // 'Inscriptional Parthian': (char) => char >= 0x10B40 && char <= 0x10B5F,
-    // 'Inscriptional Pahlavi': (char) => char >= 0x10B60 && char <= 0x10B7F,
-    // 'Psalter Pahlavi': (char) => char >= 0x10B80 && char <= 0x10BAF,
-    // 'Old Turkic': (char) => char >= 0x10C00 && char <= 0x10C4F,
-    // 'Old Hungarian': (char) => char >= 0x10C80 && char <= 0x10CFF,
-    // 'Hanifi Rohingya': (char) => char >= 0x10D00 && char <= 0x10D3F,
-    // 'Rumi Numeral Symbols': (char) => char >= 0x10E60 && char <= 0x10E7F,
-    // 'Old Sogdian': (char) => char >= 0x10F00 && char <= 0x10F2F,
-    // 'Sogdian': (char) => char >= 0x10F30 && char <= 0x10F6F,
-    // 'Elymaic': (char) => char >= 0x10FE0 && char <= 0x10FFF,
-    // 'Brahmi': (char) => char >= 0x11000 && char <= 0x1107F,
-    // 'Kaithi': (char) => char >= 0x11080 && char <= 0x110CF,
-    // 'Sora Sompeng': (char) => char >= 0x110D0 && char <= 0x110FF,
-    // 'Chakma': (char) => char >= 0x11100 && char <= 0x1114F,
-    // 'Mahajani': (char) => char >= 0x11150 && char <= 0x1117F,
-    // 'Sharada': (char) => char >= 0x11180 && char <= 0x111DF,
-    // 'Sinhala Archaic Numbers': (char) => char >= 0x111E0 && char <= 0x111FF,
-    // 'Khojki': (char) => char >= 0x11200 && char <= 0x1124F,
-    // 'Multani': (char) => char >= 0x11280 && char <= 0x112AF,
-    // 'Khudawadi': (char) => char >= 0x112B0 && char <= 0x112FF,
-    // 'Grantha': (char) => char >= 0x11300 && char <= 0x1137F,
-    // 'Newa': (char) => char >= 0x11400 && char <= 0x1147F,
-    // 'Tirhuta': (char) => char >= 0x11480 && char <= 0x114DF,
-    // 'Siddham': (char) => char >= 0x11580 && char <= 0x115FF,
-    // 'Modi': (char) => char >= 0x11600 && char <= 0x1165F,
-    // 'Mongolian Supplement': (char) => char >= 0x11660 && char <= 0x1167F,
-    // 'Takri': (char) => char >= 0x11680 && char <= 0x116CF,
-    // 'Ahom': (char) => char >= 0x11700 && char <= 0x1173F,
-    // 'Dogra': (char) => char >= 0x11800 && char <= 0x1184F,
-    // 'Warang Citi': (char) => char >= 0x118A0 && char <= 0x118FF,
-    // 'Nandinagari': (char) => char >= 0x119A0 && char <= 0x119FF,
-    // 'Zanabazar Square': (char) => char >= 0x11A00 && char <= 0x11A4F,
-    // 'Soyombo': (char) => char >= 0x11A50 && char <= 0x11AAF,
-    // 'Pau Cin Hau': (char) => char >= 0x11AC0 && char <= 0x11AFF,
-    // 'Bhaiksuki': (char) => char >= 0x11C00 && char <= 0x11C6F,
-    // 'Marchen': (char) => char >= 0x11C70 && char <= 0x11CBF,
-    // 'Masaram Gondi': (char) => char >= 0x11D00 && char <= 0x11D5F,
-    // 'Gunjala Gondi': (char) => char >= 0x11D60 && char <= 0x11DAF,
-    // 'Makasar': (char) => char >= 0x11EE0 && char <= 0x11EFF,
-    // 'Tamil Supplement': (char) => char >= 0x11FC0 && char <= 0x11FFF,
-    // 'Cuneiform': (char) => char >= 0x12000 && char <= 0x123FF,
-    // 'Cuneiform Numbers and Punctuation': (char) => char >= 0x12400 && char <= 0x1247F,
-    // 'Early Dynastic Cuneiform': (char) => char >= 0x12480 && char <= 0x1254F,
-    // 'Egyptian Hieroglyphs': (char) => char >= 0x13000 && char <= 0x1342F,
-    // 'Egyptian Hieroglyph Format Controls': (char) => char >= 0x13430 && char <= 0x1343F,
-    // 'Anatolian Hieroglyphs': (char) => char >= 0x14400 && char <= 0x1467F,
-    // 'Bamum Supplement': (char) => char >= 0x16800 && char <= 0x16A3F,
-    // 'Mro': (char) => char >= 0x16A40 && char <= 0x16A6F,
-    // 'Bassa Vah': (char) => char >= 0x16AD0 && char <= 0x16AFF,
-    // 'Pahawh Hmong': (char) => char >= 0x16B00 && char <= 0x16B8F,
-    // 'Medefaidrin': (char) => char >= 0x16E40 && char <= 0x16E9F,
-    // 'Miao': (char) => char >= 0x16F00 && char <= 0x16F9F,
-    // 'Ideographic Symbols and Punctuation': (char) => char >= 0x16FE0 && char <= 0x16FFF,
-    // 'Tangut': (char) => char >= 0x17000 && char <= 0x187FF,
-    // 'Tangut Components': (char) => char >= 0x18800 && char <= 0x18AFF,
-    // 'Kana Supplement': (char) => char >= 0x1B000 && char <= 0x1B0FF,
-    // 'Kana Extended-A': (char) => char >= 0x1B100 && char <= 0x1B12F,
-    // 'Small Kana Extension': (char) => char >= 0x1B130 && char <= 0x1B16F,
-    // 'Nushu': (char) => char >= 0x1B170 && char <= 0x1B2FF,
-    // 'Duployan': (char) => char >= 0x1BC00 && char <= 0x1BC9F,
-    // 'Shorthand Format Controls': (char) => char >= 0x1BCA0 && char <= 0x1BCAF,
-    // 'Byzantine Musical Symbols': (char) => char >= 0x1D000 && char <= 0x1D0FF,
-    // 'Musical Symbols': (char) => char >= 0x1D100 && char <= 0x1D1FF,
-    // 'Ancient Greek Musical Notation': (char) => char >= 0x1D200 && char <= 0x1D24F,
-    // 'Mayan Numerals': (char) => char >= 0x1D2E0 && char <= 0x1D2FF,
-    // 'Tai Xuan Jing Symbols': (char) => char >= 0x1D300 && char <= 0x1D35F,
-    // 'Counting Rod Numerals': (char) => char >= 0x1D360 && char <= 0x1D37F,
-    // 'Mathematical Alphanumeric Symbols': (char) => char >= 0x1D400 && char <= 0x1D7FF,
-    // 'Sutton SignWriting': (char) => char >= 0x1D800 && char <= 0x1DAAF,
-    // 'Glagolitic Supplement': (char) => char >= 0x1E000 && char <= 0x1E02F,
-    // 'Nyiakeng Puachue Hmong': (char) => char >= 0x1E100 && char <= 0x1E14F,
-    // 'Wancho': (char) => char >= 0x1E2C0 && char <= 0x1E2FF,
-    // 'Mende Kikakui': (char) => char >= 0x1E800 && char <= 0x1E8DF,
-    // 'Adlam': (char) => char >= 0x1E900 && char <= 0x1E95F,
-    // 'Indic Siyaq Numbers': (char) => char >= 0x1EC70 && char <= 0x1ECBF,
-    // 'Ottoman Siyaq Numbers': (char) => char >= 0x1ED00 && char <= 0x1ED4F,
-    // 'Arabic Mathematical Alphabetic Symbols': (char) => char >= 0x1EE00 && char <= 0x1EEFF,
-    // 'Mahjong Tiles': (char) => char >= 0x1F000 && char <= 0x1F02F,
-    // 'Domino Tiles': (char) => char >= 0x1F030 && char <= 0x1F09F,
-    // 'Playing Cards': (char) => char >= 0x1F0A0 && char <= 0x1F0FF,
-    // 'Enclosed Alphanumeric Supplement': (char) => char >= 0x1F100 && char <= 0x1F1FF,
-    // 'Enclosed Ideographic Supplement': (char) => char >= 0x1F200 && char <= 0x1F2FF,
-    // 'Miscellaneous Symbols and Pictographs': (char) => char >= 0x1F300 && char <= 0x1F5FF,
-    // 'Emoticons': (char) => char >= 0x1F600 && char <= 0x1F64F,
-    // 'Ornamental Dingbats': (char) => char >= 0x1F650 && char <= 0x1F67F,
-    // 'Transport and Map Symbols': (char) => char >= 0x1F680 && char <= 0x1F6FF,
-    // 'Alchemical Symbols': (char) => char >= 0x1F700 && char <= 0x1F77F,
-    // 'Geometric Shapes Extended': (char) => char >= 0x1F780 && char <= 0x1F7FF,
-    // 'Supplemental Arrows-C': (char) => char >= 0x1F800 && char <= 0x1F8FF,
-    // 'Supplemental Symbols and Pictographs': (char) => char >= 0x1F900 && char <= 0x1F9FF,
-    // 'Chess Symbols': (char) => char >= 0x1FA00 && char <= 0x1FA6F,
-    // 'Symbols and Pictographs Extended-A': (char) => char >= 0x1FA70 && char <= 0x1FAFF,
-    // 'CJK Unified Ideographs Extension B': (char) => char >= 0x20000 && char <= 0x2A6DF,
-    // 'CJK Unified Ideographs Extension C': (char) => char >= 0x2A700 && char <= 0x2B73F,
-    // 'CJK Unified Ideographs Extension D': (char) => char >= 0x2B740 && char <= 0x2B81F,
-    // 'CJK Unified Ideographs Extension E': (char) => char >= 0x2B820 && char <= 0x2CEAF,
-    // 'CJK Unified Ideographs Extension F': (char) => char >= 0x2CEB0 && char <= 0x2EBEF,
-    // 'CJK Compatibility Ideographs Supplement': (char) => char >= 0x2F800 && char <= 0x2FA1F,
-    // 'Tags': (char) => char >= 0xE0000 && char <= 0xE007F,
-    // 'Variation Selectors Supplement': (char) => char >= 0xE0100 && char <= 0xE01EF,
-    // 'Supplementary Private Use Area-A': (char) => char >= 0xF0000 && char <= 0xFFFFF,
-    // 'Supplementary Private Use Area-B': (char) => char >= 0x100000 && char <= 0x10FFFF,
-};
-
-export default unicodeBlockLookup;
+// export const isBasicLatin: Block = c => c >= 0x0000 && c <= 0x007F;
+export const isLatin1Supplement: Block = c => c >= 0x0080 && c <= 0x00FF;
+// export const isLatinExtendedA: Block = c => c >= 0x0100 && c <= 0x017F;
+// export const isLatinExtendedB: Block = c => c >= 0x0180 && c <= 0x024F;
+// export const isIPAExtensions: Block = c => c >= 0x0250 && c <= 0x02AF;
+// export const isSpacingModifierLetters: Block = c => c >= 0x02B0 && c <= 0x02FF;
+// export const isCombiningDiacriticalMarks: Block = c => c >= 0x0300 && c <= 0x036F;
+// export const isGreekAndCoptic: Block = c => c >= 0x0370 && c <= 0x03FF;
+// export const isCyrillic: Block = c => c >= 0x0400 && c <= 0x04FF;
+// export const isCyrillicSupplement: Block = c => c >= 0x0500 && c <= 0x052F;
+// export const isArmenian: Block = c => c >= 0x0530 && c <= 0x058F;
+// export const isHebrew: Block = c => c >= 0x0590 && c <= 0x05FF;
+export const isArabic: Block = c => c >= 0x0600 && c <= 0x06FF;
+// export const isSyriac: Block = c => c >= 0x0700 && c <= 0x074F;
+export const isArabicSupplement: Block = c => c >= 0x0750 && c <= 0x077F;
+// export const isThaana: Block = c => c >= 0x0780 && c <= 0x07BF;
+// export const isNKo: Block = c => c >= 0x07C0 && c <= 0x07FF;
+// export const isSamaritan: Block = c => c >= 0x0800 && c <= 0x083F;
+// export const isMandaic: Block = c => c >= 0x0840 && c <= 0x085F;
+// export const isSyriacSupplement: Block = c => c >= 0x0860 && c <= 0x086F;
+// export const isArabicExtendedB: Block = c => c >= 0x0870 && c <= 0x089F;
+export const isArabicExtendedA: Block = c => c >= 0x08A0 && c <= 0x08FF;
+// export const isDevanagari: Block = c => c >= 0x0900 && c <= 0x097F;
+// export const isBengali: Block = c => c >= 0x0980 && c <= 0x09FF;
+// export const isGurmukhi: Block = c => c >= 0x0A00 && c <= 0x0A7F;
+// export const isGujarati: Block = c => c >= 0x0A80 && c <= 0x0AFF;
+// export const isOriya: Block = c => c >= 0x0B00 && c <= 0x0B7F;
+// export const isTamil: Block = c => c >= 0x0B80 && c <= 0x0BFF;
+// export const isTelugu: Block = c => c >= 0x0C00 && c <= 0x0C7F;
+// export const isKannada: Block = c => c >= 0x0C80 && c <= 0x0CFF;
+// export const isMalayalam: Block = c => c >= 0x0D00 && c <= 0x0D7F;
+// export const isSinhala: Block = c => c >= 0x0D80 && c <= 0x0DFF;
+// export const isThai: Block = c => c >= 0x0E00 && c <= 0x0E7F;
+// export const isLao: Block = c => c >= 0x0E80 && c <= 0x0EFF;
+// export const isTibetan: Block = c => c >= 0x0F00 && c <= 0x0FFF;
+// export const isMyanmar: Block = c => c >= 0x1000 && c <= 0x109F;
+// export const isGeorgian: Block = c => c >= 0x10A0 && c <= 0x10FF;
+export const isHangulJamo: Block = c => c >= 0x1100 && c <= 0x11FF;
+// export const isEthiopic: Block = c => c >= 0x1200 && c <= 0x137F;
+// export const isEthiopicSupplement: Block = c => c >= 0x1380 && c <= 0x139F;
+// export const isCherokee: Block = c => c >= 0x13A0 && c <= 0x13FF;
+export const isUnifiedCanadianAboriginalSyllabics: Block = c => c >= 0x1400 && c <= 0x167F;
+// export const isOgham: Block = c => c >= 0x1680 && c <= 0x169F;
+// export const isRunic: Block = c => c >= 0x16A0 && c <= 0x16FF;
+// export const isTagalog: Block = c => c >= 0x1700 && c <= 0x171F;
+// export const isHanunoo: Block = c => c >= 0x1720 && c <= 0x173F;
+// export const isBuhid: Block = c => c >= 0x1740 && c <= 0x175F;
+// export const isTagbanwa: Block = c => c >= 0x1760 && c <= 0x177F;
+export const isKhmer: Block = c => c >= 0x1780 && c <= 0x17FF;
+// export const isMongolian: Block = c => c >= 0x1800 && c <= 0x18AF;
+export const isUnifiedCanadianAboriginalSyllabicsExtended: Block = c => c >= 0x18B0 && c <= 0x18FF;
+// export const isLimbu: Block = c => c >= 0x1900 && c <= 0x194F;
+// export const isTaiLe: Block = c => c >= 0x1950 && c <= 0x197F;
+// export const isNewTaiLue: Block = c => c >= 0x1980 && c <= 0x19DF;
+// export const isKhmerSymbols: Block = c => c >= 0x19E0 && c <= 0x19FF;
+// export const isBuginese: Block = c => c >= 0x1A00 && c <= 0x1A1F;
+// export const isTaiTham: Block = c => c >= 0x1A20 && c <= 0x1AAF;
+// export const isCombiningDiacriticalMarksExtended: Block = c => c >= 0x1AB0 && c <= 0x1AFF;
+// export const isBalinese: Block = c => c >= 0x1B00 && c <= 0x1B7F;
+// export const isSundanese: Block = c => c >= 0x1B80 && c <= 0x1BBF;
+// export const isBatak: Block = c => c >= 0x1BC0 && c <= 0x1BFF;
+// export const isLepcha: Block = c => c >= 0x1C00 && c <= 0x1C4F;
+// export const isOlChiki: Block = c => c >= 0x1C50 && c <= 0x1C7F;
+// export const isCyrillicExtendedC: Block = c => c >= 0x1C80 && c <= 0x1C8F;
+// export const isGeorgianExtended: Block = c => c >= 0x1C90 && c <= 0x1CBF;
+// export const isSundaneseSupplement: Block = c => c >= 0x1CC0 && c <= 0x1CCF;
+// export const isVedicExtensions: Block = c => c >= 0x1CD0 && c <= 0x1CFF;
+// export const isPhoneticExtensions: Block = c => c >= 0x1D00 && c <= 0x1D7F;
+// export const isPhoneticExtensionsSupplement: Block = c => c >= 0x1D80 && c <= 0x1DBF;
+// export const isCombiningDiacriticalMarksSupplement: Block = c => c >= 0x1DC0 && c <= 0x1DFF;
+// export const isLatinExtendedAdditional: Block = c => c >= 0x1E00 && c <= 0x1EFF;
+// export const isGreekExtended: Block = c => c >= 0x1F00 && c <= 0x1FFF;
+export const isGeneralPunctuation: Block = c => c >= 0x2000 && c <= 0x206F;
+// export const isSuperscriptsAndSubscripts: Block = c => c >= 0x2070 && c <= 0x209F;
+// export const isCurrencySymbols: Block = c => c >= 0x20A0 && c <= 0x20CF;
+// export const isCombiningDiacriticalMarksForSymbols: Block = c => c >= 0x20D0 && c <= 0x20FF;
+export const isLetterlikeSymbols: Block = c => c >= 0x2100 && c <= 0x214F;
+export const isNumberForms: Block = c => c >= 0x2150 && c <= 0x218F;
+// export const isArrows: Block = c => c >= 0x2190 && c <= 0x21FF;
+// export const isMathematicalOperators: Block = c => c >= 0x2200 && c <= 0x22FF;
+export const isMiscellaneousTechnical: Block = c => c >= 0x2300 && c <= 0x23FF;
+export const isControlPictures: Block = c => c >= 0x2400 && c <= 0x243F;
+export const isOpticalCharacterRecognition: Block = c => c >= 0x2440 && c <= 0x245F;
+export const isEnclosedAlphanumerics: Block = c => c >= 0x2460 && c <= 0x24FF;
+// export const isBoxDrawing: Block = c => c >= 0x2500 && c <= 0x257F;
+// export const isBlockElements: Block = c => c >= 0x2580 && c <= 0x259F;
+export const isGeometricShapes: Block = c => c >= 0x25A0 && c <= 0x25FF;
+export const isMiscellaneousSymbols: Block = c => c >= 0x2600 && c <= 0x26FF;
+// export const isDingbats: Block = c => c >= 0x2700 && c <= 0x27BF;
+// export const isMiscellaneousMathematicalSymbolsA: Block = c => c >= 0x27C0 && c <= 0x27EF;
+// export const isSupplementalArrowsA: Block = c => c >= 0x27F0 && c <= 0x27FF;
+// export const isBraillePatterns: Block = c => c >= 0x2800 && c <= 0x28FF;
+// export const isSupplementalArrowsB: Block = c => c >= 0x2900 && c <= 0x297F;
+// export const isMiscellaneousMathematicalSymbolsB: Block = c => c >= 0x2980 && c <= 0x29FF;
+// export const isSupplementalMathematicalOperators: Block = c => c >= 0x2A00 && c <= 0x2AFF;
+export const isMiscellaneousSymbolsAndArrows: Block = c => c >= 0x2B00 && c <= 0x2BFF;
+// export const isGlagolitic: Block = c => c >= 0x2C00 && c <= 0x2C5F;
+// export const isLatinExtendedC: Block = c => c >= 0x2C60 && c <= 0x2C7F;
+// export const isCoptic: Block = c => c >= 0x2C80 && c <= 0x2CFF;
+// export const isGeorgianSupplement: Block = c => c >= 0x2D00 && c <= 0x2D2F;
+// export const isTifinagh: Block = c => c >= 0x2D30 && c <= 0x2D7F;
+// export const isEthiopicExtended: Block = c => c >= 0x2D80 && c <= 0x2DDF;
+// export const isCyrillicExtendedA: Block = c => c >= 0x2DE0 && c <= 0x2DFF;
+// export const isSupplementalPunctuation: Block = c => c >= 0x2E00 && c <= 0x2E7F;
+export const isCJKRadicalsSupplement: Block = c => c >= 0x2E80 && c <= 0x2EFF;
+export const isKangxiRadicals: Block = c => c >= 0x2F00 && c <= 0x2FDF;
+export const isIdeographicDescriptionCharacters: Block = c => c >= 0x2FF0 && c <= 0x2FFF;
+export const isCJKSymbolsAndPunctuation: Block = c => c >= 0x3000 && c <= 0x303F;
+export const isHiragana: Block = c => c >= 0x3040 && c <= 0x309F;
+export const isKatakana: Block = c => c >= 0x30A0 && c <= 0x30FF;
+export const isBopomofo: Block = c => c >= 0x3100 && c <= 0x312F;
+export const isHangulCompatibilityJamo: Block = c => c >= 0x3130 && c <= 0x318F;
+export const isKanbun: Block = c => c >= 0x3190 && c <= 0x319F;
+export const isBopomofoExtended: Block = c => c >= 0x31A0 && c <= 0x31BF;
+export const isCJKStrokes: Block = c => c >= 0x31C0 && c <= 0x31EF;
+export const isKatakanaPhoneticExtensions: Block = c => c >= 0x31F0 && c <= 0x31FF;
+export const isEnclosedCJKLettersAndMonths: Block = c => c >= 0x3200 && c <= 0x32FF;
+export const isCJKCompatibility: Block = c => c >= 0x3300 && c <= 0x33FF;
+export const isCJKUnifiedIdeographsExtensionA: Block = c => c >= 0x3400 && c <= 0x4DBF;
+export const isYijingHexagramSymbols: Block = c => c >= 0x4DC0 && c <= 0x4DFF;
+export const isCJKUnifiedIdeographs: Block = c => c >= 0x4E00 && c <= 0x9FFF;
+export const isYiSyllables: Block = c => c >= 0xA000 && c <= 0xA48F;
+export const isYiRadicals: Block = c => c >= 0xA490 && c <= 0xA4CF;
+// export const isLisu: Block = c => c >= 0xA4D0 && c <= 0xA4FF;
+// export const isVai: Block = c => c >= 0xA500 && c <= 0xA63F;
+// export const isCyrillicExtendedB: Block = c => c >= 0xA640 && c <= 0xA69F;
+// export const isBamum: Block = c => c >= 0xA6A0 && c <= 0xA6FF;
+// export const isModifierToneLetters: Block = c => c >= 0xA700 && c <= 0xA71F;
+// export const isLatinExtendedD: Block = c => c >= 0xA720 && c <= 0xA7FF;
+// export const isSylotiNagri: Block = c => c >= 0xA800 && c <= 0xA82F;
+// export const isCommonIndicNumberForms: Block = c => c >= 0xA830 && c <= 0xA83F;
+// export const isPhagsPa: Block = c => c >= 0xA840 && c <= 0xA87F;
+// export const isSaurashtra: Block = c => c >= 0xA880 && c <= 0xA8DF;
+// export const isDevanagariExtended: Block = c => c >= 0xA8E0 && c <= 0xA8FF;
+// export const isKayahLi: Block = c => c >= 0xA900 && c <= 0xA92F;
+// export const isRejang: Block = c => c >= 0xA930 && c <= 0xA95F;
+export const isHangulJamoExtendedA: Block = c => c >= 0xA960 && c <= 0xA97F;
+// export const isJavanese: Block = c => c >= 0xA980 && c <= 0xA9DF;
+// export const isMyanmarExtendedB: Block = c => c >= 0xA9E0 && c <= 0xA9FF;
+// export const isCham: Block = c => c >= 0xAA00 && c <= 0xAA5F;
+// export const isMyanmarExtendedA: Block = c => c >= 0xAA60 && c <= 0xAA7F;
+// export const isTaiViet: Block = c => c >= 0xAA80 && c <= 0xAADF;
+// export const isMeeteiMayekExtensions: Block = c => c >= 0xAAE0 && c <= 0xAAFF;
+// export const isEthiopicExtendedA: Block = c => c >= 0xAB00 && c <= 0xAB2F;
+// export const isLatinExtendedE: Block = c => c >= 0xAB30 && c <= 0xAB6F;
+// export const isCherokeeSupplement: Block = c => c >= 0xAB70 && c <= 0xABBF;
+// export const isMeeteiMayek: Block = c => c >= 0xABC0 && c <= 0xABFF;
+export const isHangulSyllables: Block = c => c >= 0xAC00 && c <= 0xD7AF;
+export const isHangulJamoExtendedB: Block = c => c >= 0xD7B0 && c <= 0xD7FF;
+// export const isHighSurrogates: Block = c => c >= 0xD800 && c <= 0xDB7F;
+// export const isHighPrivateUseSurrogates: Block = c => c >= 0xDB80 && c <= 0xDBFF;
+// export const isLowSurrogates: Block = c => c >= 0xDC00 && c <= 0xDFFF;
+export const isPrivateUseArea: Block = c => c >= 0xE000 && c <= 0xF8FF;
+export const isCJKCompatibilityIdeographs: Block = c => c >= 0xF900 && c <= 0xFAFF;
+// export const isAlphabeticPresentationForms: Block = c => c >= 0xFB00 && c <= 0xFB4F;
+export const isArabicPresentationFormsA: Block = c => c >= 0xFB50 && c <= 0xFDFF;
+// export const isVariationSelectors: Block = c => c >= 0xFE00 && c <= 0xFE0F;
+export const isVerticalForms: Block = c => c >= 0xFE10 && c <= 0xFE1F;
+// export const isCombiningHalfMarks: Block = c => c >= 0xFE20 && c <= 0xFE2F;
+export const isCJKCompatibilityForms: Block = c => c >= 0xFE30 && c <= 0xFE4F;
+export const isSmallFormVariants: Block = c => c >= 0xFE50 && c <= 0xFE6F;
+export const isArabicPresentationFormsB: Block = c => c >= 0xFE70 && c <= 0xFEFF;
+export const isHalfwidthAndFullwidthForms: Block = c => c >= 0xFF00 && c <= 0xFFEF;
+// export const isSpecials: Block = c => c >= 0xFFF0 && c <= 0xFFFF;
+// export const isLinearBSyllabary: Block = c => c >= 0x10000 && c <= 0x1007F;
+// export const isLinearBIdeograms: Block = c => c >= 0x10080 && c <= 0x100FF;
+// export const isAegeanNumbers: Block = c => c >= 0x10100 && c <= 0x1013F;
+// export const isAncientGreekNumbers: Block = c => c >= 0x10140 && c <= 0x1018F;
+// export const isAncientSymbols: Block = c => c >= 0x10190 && c <= 0x101CF;
+// export const isPhaistosDisc: Block = c => c >= 0x101D0 && c <= 0x101FF;
+// export const isLycian: Block = c => c >= 0x10280 && c <= 0x1029F;
+// export const isCarian: Block = c => c >= 0x102A0 && c <= 0x102DF;
+// export const isCopticEpactNumbers: Block = c => c >= 0x102E0 && c <= 0x102FF;
+// export const isOldItalic: Block = c => c >= 0x10300 && c <= 0x1032F;
+// export const isGothic: Block = c => c >= 0x10330 && c <= 0x1034F;
+// export const isOldPermic: Block = c => c >= 0x10350 && c <= 0x1037F;
+// export const isUgaritic: Block = c => c >= 0x10380 && c <= 0x1039F;
+// export const isOldPersian: Block = c => c >= 0x103A0 && c <= 0x103DF;
+// export const isDeseret: Block = c => c >= 0x10400 && c <= 0x1044F;
+// export const isShavian: Block = c => c >= 0x10450 && c <= 0x1047F;
+// export const isOsmanya: Block = c => c >= 0x10480 && c <= 0x104AF;
+// export const isOsage: Block = c => c >= 0x104B0 && c <= 0x104FF;
+// export const isElbasan: Block = c => c >= 0x10500 && c <= 0x1052F;
+// export const isCaucasianAlbanian: Block = c => c >= 0x10530 && c <= 0x1056F;
+// export const isVithkuqi: Block = c => c >= 0x10570 && c <= 0x105BF;
+// export const isLinearA: Block = c => c >= 0x10600 && c <= 0x1077F;
+// export const isLatinExtendedF: Block = c => c >= 0x10780 && c <= 0x107BF;
+// export const isCypriotSyllabary: Block = c => c >= 0x10800 && c <= 0x1083F;
+// export const isImperialAramaic: Block = c => c >= 0x10840 && c <= 0x1085F;
+// export const isPalmyrene: Block = c => c >= 0x10860 && c <= 0x1087F;
+// export const isNabataean: Block = c => c >= 0x10880 && c <= 0x108AF;
+// export const isHatran: Block = c => c >= 0x108E0 && c <= 0x108FF;
+// export const isPhoenician: Block = c => c >= 0x10900 && c <= 0x1091F;
+// export const isLydian: Block = c => c >= 0x10920 && c <= 0x1093F;
+// export const isMeroiticHieroglyphs: Block = c => c >= 0x10980 && c <= 0x1099F;
+// export const isMeroiticCursive: Block = c => c >= 0x109A0 && c <= 0x109FF;
+// export const isKharoshthi: Block = c => c >= 0x10A00 && c <= 0x10A5F;
+// export const isOldSouthArabian: Block = c => c >= 0x10A60 && c <= 0x10A7F;
+// export const isOldNorthArabian: Block = c => c >= 0x10A80 && c <= 0x10A9F;
+// export const isManichaean: Block = c => c >= 0x10AC0 && c <= 0x10AFF;
+// export const isAvestan: Block = c => c >= 0x10B00 && c <= 0x10B3F;
+// export const isInscriptionalParthian: Block = c => c >= 0x10B40 && c <= 0x10B5F;
+// export const isInscriptionalPahlavi: Block = c => c >= 0x10B60 && c <= 0x10B7F;
+// export const isPsalterPahlavi: Block = c => c >= 0x10B80 && c <= 0x10BAF;
+// export const isOldTurkic: Block = c => c >= 0x10C00 && c <= 0x10C4F;
+// export const isOldHungarian: Block = c => c >= 0x10C80 && c <= 0x10CFF;
+// export const isHanifiRohingya: Block = c => c >= 0x10D00 && c <= 0x10D3F;
+// export const isRumiNumeralSymbols: Block = c => c >= 0x10E60 && c <= 0x10E7F;
+// export const isYezidi: Block = c => c >= 0x10E80 && c <= 0x10EBF;
+// export const isOldSogdian: Block = c => c >= 0x10F00 && c <= 0x10F2F;
+// export const isSogdian: Block = c => c >= 0x10F30 && c <= 0x10F6F;
+// export const isOldUyghur: Block = c => c >= 0x10F70 && c <= 0x10FAF;
+// export const isChorasmian: Block = c => c >= 0x10FB0 && c <= 0x10FDF;
+// export const isElymaic: Block = c => c >= 0x10FE0 && c <= 0x10FFF;
+// export const isBrahmi: Block = c => c >= 0x11000 && c <= 0x1107F;
+// export const isKaithi: Block = c => c >= 0x11080 && c <= 0x110CF;
+// export const isSoraSompeng: Block = c => c >= 0x110D0 && c <= 0x110FF;
+// export const isChakma: Block = c => c >= 0x11100 && c <= 0x1114F;
+// export const isMahajani: Block = c => c >= 0x11150 && c <= 0x1117F;
+// export const isSharada: Block = c => c >= 0x11180 && c <= 0x111DF;
+// export const isSinhalaArchaicNumbers: Block = c => c >= 0x111E0 && c <= 0x111FF;
+// export const isKhojki: Block = c => c >= 0x11200 && c <= 0x1124F;
+// export const isMultani: Block = c => c >= 0x11280 && c <= 0x112AF;
+// export const isKhudawadi: Block = c => c >= 0x112B0 && c <= 0x112FF;
+// export const isGrantha: Block = c => c >= 0x11300 && c <= 0x1137F;
+// export const isNewa: Block = c => c >= 0x11400 && c <= 0x1147F;
+// export const isTirhuta: Block = c => c >= 0x11480 && c <= 0x114DF;
+// export const isSiddham: Block = c => c >= 0x11580 && c <= 0x115FF;
+// export const isModi: Block = c => c >= 0x11600 && c <= 0x1165F;
+// export const isMongolianSupplement: Block = c => c >= 0x11660 && c <= 0x1167F;
+// export const isTakri: Block = c => c >= 0x11680 && c <= 0x116CF;
+// export const isAhom: Block = c => c >= 0x11700 && c <= 0x1174F;
+// export const isDogra: Block = c => c >= 0x11800 && c <= 0x1184F;
+// export const isWarangCiti: Block = c => c >= 0x118A0 && c <= 0x118FF;
+// export const isDivesAkuru: Block = c => c >= 0x11900 && c <= 0x1195F;
+// export const isNandinagari: Block = c => c >= 0x119A0 && c <= 0x119FF;
+// export const isZanabazarSquare: Block = c => c >= 0x11A00 && c <= 0x11A4F;
+// export const isSoyombo: Block = c => c >= 0x11A50 && c <= 0x11AAF;
+// export const isUnifiedCanadianAboriginalSyllabicsExtendedA: Block = c => c >= 0x11AB0 && c <= 0x11ABF;
+// export const isPauCinHau: Block = c => c >= 0x11AC0 && c <= 0x11AFF;
+// export const isBhaiksuki: Block = c => c >= 0x11C00 && c <= 0x11C6F;
+// export const isMarchen: Block = c => c >= 0x11C70 && c <= 0x11CBF;
+// export const isMasaramGondi: Block = c => c >= 0x11D00 && c <= 0x11D5F;
+// export const isGunjalaGondi: Block = c => c >= 0x11D60 && c <= 0x11DAF;
+// export const isMakasar: Block = c => c >= 0x11EE0 && c <= 0x11EFF;
+// export const isLisuSupplement: Block = c => c >= 0x11FB0 && c <= 0x11FBF;
+// export const isTamilSupplement: Block = c => c >= 0x11FC0 && c <= 0x11FFF;
+// export const isCuneiform: Block = c => c >= 0x12000 && c <= 0x123FF;
+// export const isCuneiformNumbersAndPunctuation: Block = c => c >= 0x12400 && c <= 0x1247F;
+// export const isEarlyDynasticCuneiform: Block = c => c >= 0x12480 && c <= 0x1254F;
+// export const isCyproMinoan: Block = c => c >= 0x12F90 && c <= 0x12FFF;
+// export const isEgyptianHieroglyphs: Block = c => c >= 0x13000 && c <= 0x1342F;
+// export const isEgyptianHieroglyphFormatControls: Block = c => c >= 0x13430 && c <= 0x1343F;
+// export const isAnatolianHieroglyphs: Block = c => c >= 0x14400 && c <= 0x1467F;
+// export const isBamumSupplement: Block = c => c >= 0x16800 && c <= 0x16A3F;
+// export const isMro: Block = c => c >= 0x16A40 && c <= 0x16A6F;
+// export const isTangsa: Block = c => c >= 0x16A70 && c <= 0x16ACF;
+// export const isBassaVah: Block = c => c >= 0x16AD0 && c <= 0x16AFF;
+// export const isPahawhHmong: Block = c => c >= 0x16B00 && c <= 0x16B8F;
+// export const isMedefaidrin: Block = c => c >= 0x16E40 && c <= 0x16E9F;
+// export const isMiao: Block = c => c >= 0x16F00 && c <= 0x16F9F;
+// export const isIdeographicSymbolsAndPunctuation: Block = c => c >= 0x16FE0 && c <= 0x16FFF;
+// export const isTangut: Block = c => c >= 0x17000 && c <= 0x187FF;
+// export const isTangutComponents: Block = c => c >= 0x18800 && c <= 0x18AFF;
+// export const isKhitanSmallScript: Block = c => c >= 0x18B00 && c <= 0x18CFF;
+// export const isTangutSupplement: Block = c => c >= 0x18D00 && c <= 0x18D7F;
+// export const isKanaExtendedB: Block = c => c >= 0x1AFF0 && c <= 0x1AFFF;
+// export const isKanaSupplement: Block = c => c >= 0x1B000 && c <= 0x1B0FF;
+// export const isKanaExtendedA: Block = c => c >= 0x1B100 && c <= 0x1B12F;
+// export const isSmallKanaExtension: Block = c => c >= 0x1B130 && c <= 0x1B16F;
+// export const isNushu: Block = c => c >= 0x1B170 && c <= 0x1B2FF;
+// export const isDuployan: Block = c => c >= 0x1BC00 && c <= 0x1BC9F;
+// export const isShorthandFormatControls: Block = c => c >= 0x1BCA0 && c <= 0x1BCAF;
+// export const isZnamennyMusicalNotation: Block = c => c >= 0x1CF00 && c <= 0x1CFCF;
+// export const isByzantineMusicalSymbols: Block = c => c >= 0x1D000 && c <= 0x1D0FF;
+// export const isMusicalSymbols: Block = c => c >= 0x1D100 && c <= 0x1D1FF;
+// export const isAncientGreekMusicalNotation: Block = c => c >= 0x1D200 && c <= 0x1D24F;
+// export const isMayanNumerals: Block = c => c >= 0x1D2E0 && c <= 0x1D2FF;
+// export const isTaiXuanJingSymbols: Block = c => c >= 0x1D300 && c <= 0x1D35F;
+// export const isCountingRodNumerals: Block = c => c >= 0x1D360 && c <= 0x1D37F;
+// export const isMathematicalAlphanumericSymbols: Block = c => c >= 0x1D400 && c <= 0x1D7FF;
+// export const isSuttonSignWriting: Block = c => c >= 0x1D800 && c <= 0x1DAAF;
+// export const isLatinExtendedG: Block = c => c >= 0x1DF00 && c <= 0x1DFFF;
+// export const isGlagoliticSupplement: Block = c => c >= 0x1E000 && c <= 0x1E02F;
+// export const isNyiakengPuachueHmong: Block = c => c >= 0x1E100 && c <= 0x1E14F;
+// export const isToto: Block = c => c >= 0x1E290 && c <= 0x1E2BF;
+// export const isWancho: Block = c => c >= 0x1E2C0 && c <= 0x1E2FF;
+// export const isEthiopicExtendedB: Block = c => c >= 0x1E7E0 && c <= 0x1E7FF;
+// export const isMendeKikakui: Block = c => c >= 0x1E800 && c <= 0x1E8DF;
+// export const isAdlam: Block = c => c >= 0x1E900 && c <= 0x1E95F;
+// export const isIndicSiyaqNumbers: Block = c => c >= 0x1EC70 && c <= 0x1ECBF;
+// export const isOttomanSiyaqNumbers: Block = c => c >= 0x1ED00 && c <= 0x1ED4F;
+// export const isArabicMathematicalAlphabeticSymbols: Block = c => c >= 0x1EE00 && c <= 0x1EEFF;
+// export const isMahjongTiles: Block = c => c >= 0x1F000 && c <= 0x1F02F;
+// export const isDominoTiles: Block = c => c >= 0x1F030 && c <= 0x1F09F;
+// export const isPlayingCards: Block = c => c >= 0x1F0A0 && c <= 0x1F0FF;
+// export const isEnclosedAlphanumericSupplement: Block = c => c >= 0x1F100 && c <= 0x1F1FF;
+// export const isEnclosedIdeographicSupplement: Block = c => c >= 0x1F200 && c <= 0x1F2FF;
+// export const isMiscellaneousSymbolsAndPictographs: Block = c => c >= 0x1F300 && c <= 0x1F5FF;
+// export const isEmoticons: Block = c => c >= 0x1F600 && c <= 0x1F64F;
+// export const isOrnamentalDingbats: Block = c => c >= 0x1F650 && c <= 0x1F67F;
+// export const isTransportAndMapSymbols: Block = c => c >= 0x1F680 && c <= 0x1F6FF;
+// export const isAlchemicalSymbols: Block = c => c >= 0x1F700 && c <= 0x1F77F;
+// export const isGeometricShapesExtended: Block = c => c >= 0x1F780 && c <= 0x1F7FF;
+// export const isSupplementalArrowsC: Block = c => c >= 0x1F800 && c <= 0x1F8FF;
+// export const isSupplementalSymbolsAndPictographs: Block = c => c >= 0x1F900 && c <= 0x1F9FF;
+// export const isChessSymbols: Block = c => c >= 0x1FA00 && c <= 0x1FA6F;
+// export const isSymbolsAndPictographsExtendedA: Block = c => c >= 0x1FA70 && c <= 0x1FAFF;
+// export const isSymbolsForLegacyComputing: Block = c => c >= 0x1FB00 && c <= 0x1FBFF;
+// export const isCJKUnifiedIdeographsExtensionB: Block = c => c >= 0x20000 && c <= 0x2A6DF;
+// export const isCJKUnifiedIdeographsExtensionC: Block = c => c >= 0x2A700 && c <= 0x2B73F;
+// export const isCJKUnifiedIdeographsExtensionD: Block = c => c >= 0x2B740 && c <= 0x2B81F;
+// export const isCJKUnifiedIdeographsExtensionE: Block = c => c >= 0x2B820 && c <= 0x2CEAF;
+// export const isCJKUnifiedIdeographsExtensionF: Block = c => c >= 0x2CEB0 && c <= 0x2EBEF;
+// export const isCJKCompatibilityIdeographsSupplement: Block = c => c >= 0x2F800 && c <= 0x2FA1F;
+// export const isCJKUnifiedIdeographsExtensionG: Block = c => c >= 0x30000 && c <= 0x3134F;
+// export const isTags: Block = c => c >= 0xE0000 && c <= 0xE007F;
+// export const isVariationSelectorsSupplement: Block = c => c >= 0xE0100 && c <= 0xE01EF;
+// export const isSupplementaryPrivateUseAreaA: Block = c => c >= 0xF0000 && c <= 0xFFFFF;
+// export const isSupplementaryPrivateUseAreaB: Block = c => c >= 0x100000 && c <= 0x10FFFF;
