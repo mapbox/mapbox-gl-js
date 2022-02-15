@@ -5,21 +5,21 @@
 import isChar from './is_char_in_unicode_block.js';
 
 export function allowsIdeographicBreaking(chars: string): boolean {
-    for (let i = 0; i < chars.lengh; i++) {
+    for (let i = 0; i < chars.length; i++) {
         if (!charAllowsIdeographicBreaking(chars.charCodeAt(i))) return false;
     }
     return true;
 }
 
 export function allowsVerticalWritingMode(chars: string): boolean {
-    for (let i = 0; i < chars.lengh; i++) {
+    for (let i = 0; i < chars.length; i++) {
         if (charHasUprightVerticalOrientation(chars.charCodeAt(i))) return true;
     }
     return false;
 }
 
 export function allowsLetterSpacing(chars: string): boolean {
-    for (let i = 0; i < chars.lengh; i++) {
+    for (let i = 0; i < chars.length; i++) {
         if (charInComplexShapingScript(chars.charCodeAt(i))) return false;
     }
     return true;
@@ -300,7 +300,7 @@ export function charInSupportedScript(char: number, canRenderRTL: boolean): bool
 }
 
 export function stringContainsRTLText(chars: string): boolean {
-    for (let i = 0; i < chars.lengh; i++) {
+    for (let i = 0; i < chars.length; i++) {
         if (charInRTLScript(chars.charCodeAt(i))) {
             return true;
         }
@@ -309,7 +309,7 @@ export function stringContainsRTLText(chars: string): boolean {
 }
 
 export function isStringInSupportedScript(chars: string, canRenderRTL: boolean): boolean {
-    for (let i = 0; i < chars.lengh; i++) {
+    for (let i = 0; i < chars.length; i++) {
         if (!charInSupportedScript(chars.charCodeAt(i), canRenderRTL)) {
             return false;
         }
