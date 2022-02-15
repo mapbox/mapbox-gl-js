@@ -7,6 +7,7 @@ import config from './config.js';
 import assert from 'assert';
 import {cacheGet, cachePut} from './tile_request_cache.js';
 import webpSupported from './webp_supported.js';
+import offscreenCanvasSupported from './offscreen_canvas_supported.js';
 
 import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
@@ -354,7 +355,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         if (err) {
             callback(err);
         } else if (data) {
-            if (window.createImageBitmap) {
+            if (offscreenCanvasSupported()) {
                 arrayBufferToImageBitmap(data, (err, imgBitmap) => callback(err, imgBitmap, cacheControl, expires));
             } else {
                 arrayBufferToImage(data, (err, img) => callback(err, img, cacheControl, expires));
