@@ -167,6 +167,7 @@ class WorkerTile {
                     availableImages
                 });
 
+                assert(this.tileTransform.projection.name === this.projection.name);
                 bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
                 featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
             }

@@ -139,6 +139,8 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
+        assert(!isGlobeProjection || bucket.layoutVertexExtBuffer);
+
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             bucket.segments, layer.paint, painter.transform.zoom,
