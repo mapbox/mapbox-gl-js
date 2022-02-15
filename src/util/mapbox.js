@@ -61,7 +61,7 @@ export class RequestManager {
         return Date.now() > this._skuTokenExpiresAt;
     }
 
-    transformRequest(url: string, type: ResourceTypeEnum) {
+    transformRequest(url: string, type: ResourceTypeEnum): RequestParameters | { string } {
         if (this._transformRequestFn) {
             return this._transformRequestFn(url, type) || {url};
         }
@@ -136,7 +136,7 @@ export class RequestManager {
         return this._makeAPIURL(urlObject, accessToken);
     }
 
-    canonicalizeTileURL(url: string, removeAccessToken: boolean) {
+    canonicalizeTileURL(url: string, removeAccessToken: boolean): string {
         // matches any file extension specified by a dot and one or more alphanumeric characters
         const extensionRe = /\.[\w]+$/;
 
@@ -167,7 +167,7 @@ export class RequestManager {
         return result;
     }
 
-    canonicalizeTileset(tileJSON: TileJSON, sourceURL?: string) {
+    canonicalizeTileset(tileJSON: TileJSON, sourceURL?: string): Array<string> {
         const removeAccessToken = sourceURL ? isMapboxURL(sourceURL) : false;
         const canonical = [];
         for (const url of tileJSON.tiles || []) {
@@ -211,7 +211,7 @@ export class RequestManager {
     }
 }
 
-function isMapboxURL(url: string) {
+function isMapboxURL(url: string): boolean {
     return url.indexOf('mapbox:') === 0;
 }
 
@@ -219,7 +219,7 @@ function isMapboxHTTPURL(url: string): boolean {
     return config.API_URL_REGEX.test(url);
 }
 
-function hasCacheDefeatingSku(url: string) {
+function hasCacheDefeatingSku(url: string): boolean {
     return url.indexOf('sku=') > 0 && isMapboxHTTPURL(url);
 }
 
@@ -280,7 +280,7 @@ type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth';
 class TelemetryEvent {
     eventData: any;
     anonId: ?string;
-    queue: Array<any>;
+    queue: Array<number>;
     type: TelemetryEventType;
     pendingRequest: ?Cancelable;
     _customAccessToken: ?string;
@@ -293,7 +293,7 @@ class TelemetryEvent {
         this.pendingRequest = null;
     }
 
-    getStorageKey(domain: ?string) {
+    getStorageKey(domain: ?string): string {
         const tokenData = parseAccessToken(config.ACCESS_TOKEN);
         let u = '';
         if (tokenData && tokenData['u']) {
@@ -517,7 +517,7 @@ export class TurnstileEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: ?string) {
+    processRequests(customAccessToken?: ?string): void {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
@@ -562,13 +562,13 @@ export class TurnstileEvent extends TelemetryEvent {
 }
 
 const turnstileEvent_ = new TurnstileEvent();
-export const postTurnstileEvent = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
+export const postTurnstileEvent: any = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
 
 const mapLoadEvent_ = new MapLoadEvent();
-export const postMapLoadEvent = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
+export const postMapLoadEvent: any = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
 
 const mapSessionAPI_ = new MapSessionAPI();
-export const getMapSessionAPI = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);
+export const getMapSessionAPI: any = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);
 
 const authenticatedMaps = new Set();
 export function storeAuthState(gl: WebGLRenderingContext, state: boolean) {
