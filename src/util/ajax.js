@@ -1,13 +1,12 @@
 // @flow
 
 import window from './window.js';
-import {extend, warnOnce, isWorker} from './util.js';
+import {extend, warnOnce, isWorker, isSafari} from './util.js';
 import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox.js';
 import config from './config.js';
 import assert from 'assert';
 import {cacheGet, cachePut} from './tile_request_cache.js';
 import webpSupported from './webp_supported.js';
-import offscreenCanvasSupported from './offscreen_canvas_supported.js';
 
 import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
@@ -355,7 +354,9 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         if (err) {
             callback(err);
         } else if (data) {
-            if (offscreenCanvasSupported()) {
+            // force Safari to use the Image API to avoid a potential crash
+            // See https://github.com/mapbox/mapbox-gl-js/issues/11494
+            if (!isSafari(window) && window.createImageBitmap) {
                 arrayBufferToImageBitmap(data, (err, imgBitmap) => callback(err, imgBitmap, cacheControl, expires));
             } else {
                 arrayBufferToImage(data, (err, img) => callback(err, img, cacheControl, expires));
