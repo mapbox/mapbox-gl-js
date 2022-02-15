@@ -326,11 +326,10 @@ class FillExtrusionBucket implements Bucket {
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform) {
-        const metadata = this.enableTerrain ? new PartMetadata() : null;
-
         const tileBounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
         const projection = tileTransform.projection;
         const isGlobe = projection.name === 'globe';
+        const metadata = this.enableTerrain && !isGlobe ? new PartMetadata() : null;
 
         if (isGlobe && !this.layoutVertexExtArray) {
             this.layoutVertexExtArray = new FillExtrusionExtArray();
