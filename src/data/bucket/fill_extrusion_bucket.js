@@ -487,8 +487,8 @@ class FillExtrusionBucket implements Bucket {
     }
 }
 
-register('FillExtrusionBucket', FillExtrusionBucket, {omit: ['layers', 'features']});
-register('PartMetadata', PartMetadata);
+register(FillExtrusionBucket, {omit: ['layers', 'features']});
+register(PartMetadata);
 
 export default FillExtrusionBucket;
 

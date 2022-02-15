@@ -176,5 +176,5 @@ export default class DEMData {
     }
 }
 
-register('DEMData', DEMData);
-register('DemMinMaxQuadTree', DemMinMaxQuadTree, {omit: ['dem']});
+register(DEMData);
+register(DemMinMaxQuadTree, {omit: ['dem']});

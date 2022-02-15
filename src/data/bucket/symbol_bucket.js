@@ -234,7 +234,7 @@ export class SymbolBuffers {
     }
 }
 
-register('SymbolBuffers', SymbolBuffers);
+register(SymbolBuffers);
 
 class CollisionBuffers {
     layoutVertexArray: StructArray;
@@ -280,7 +280,7 @@ class CollisionBuffers {
     }
 }
 
-register('CollisionBuffers', CollisionBuffers);
+register(CollisionBuffers);
 
 /**
  * Unlike other buckets, which simply implement #addFeature with type-specific
@@ -1035,7 +1035,7 @@ class SymbolBucket implements Bucket {
     }
 }
 
-register('SymbolBucket', SymbolBucket, {
+register(SymbolBucket, {
     omit: ['layers', 'collisionBoxArray', 'features', 'compareText']
 });
 

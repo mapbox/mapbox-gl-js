@@ -126,4 +126,4 @@ function swap(arr, i, j) {
     arr[j] = tmp;
 }
 
-register('FeaturePositionMap', FeaturePositionMap);
+register(FeaturePositionMap);

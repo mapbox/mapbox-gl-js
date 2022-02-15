@@ -12,6 +12,6 @@ class HeatmapBucket extends CircleBucket<HeatmapStyleLayer> {
     layers: Array<HeatmapStyleLayer>;
 }
 
-register('HeatmapBucket', HeatmapBucket, {omit: ['layers']});
+register(HeatmapBucket, {omit: ['layers']});
 
 export default HeatmapBucket;
