@@ -369,7 +369,7 @@ class SymbolBucket implements Bucket {
     writingModes: Array<number>;
     allowVerticalPlacement: boolean;
     hasRTLText: boolean;
-    projection: ?string;
+    projection: string;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -412,6 +412,7 @@ class SymbolBucket implements Bucket {
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
 
         this.sourceID = options.sourceID;
+        this.projection = options.projection;
     }
 
     createArrays() {

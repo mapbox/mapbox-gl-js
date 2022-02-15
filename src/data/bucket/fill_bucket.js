@@ -57,6 +57,7 @@ class FillBucket implements Bucket {
     segments: SegmentVector;
     segments2: SegmentVector;
     uploaded: boolean;
+    projection: string;
 
     constructor(options: BucketParameters<FillStyleLayer>) {
         this.zoom = options.zoom;
@@ -74,6 +75,7 @@ class FillBucket implements Bucket {
         this.segments = new SegmentVector();
         this.segments2 = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
+        this.projection = options.projection;
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {

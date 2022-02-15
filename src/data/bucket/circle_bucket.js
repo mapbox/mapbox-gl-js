@@ -75,6 +75,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     programConfigurations: ProgramConfigurationSet<Layer>;
     segments: SegmentVector;
     uploaded: boolean;
+    projection: string;
 
     constructor(options: BucketParameters<Layer>) {
         this.zoom = options.zoom;
@@ -83,6 +84,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
         this.hasPattern = false;
+        this.projection = options.projection;
 
         this.layoutVertexArray = new CircleLayoutArray();
         this.indexArray = new TriangleIndexArray();

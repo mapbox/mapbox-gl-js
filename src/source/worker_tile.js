@@ -163,6 +163,7 @@ class WorkerTile {
                     sourceLayerIndex,
                     sourceID: this.source,
                     enableTerrain: this.enableTerrain,
+                    projection: this.projection.name,
                     availableImages
                 });
 
@@ -244,7 +245,6 @@ class WorkerTile {
                             this.tileID.canonical,
                             this.tileZoom,
                             this.projection);
-                        bucket.projection = this.projection.name;
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||

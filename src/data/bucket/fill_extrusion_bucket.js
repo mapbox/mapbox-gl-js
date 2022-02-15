@@ -211,6 +211,7 @@ class FillExtrusionBucket implements Bucket {
     borderDone: Array<boolean>;
     needsCentroidUpdate: boolean;
     tileToMeter: number; // cache conversion.
+    projection: string;
 
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
@@ -219,6 +220,7 @@ class FillExtrusionBucket implements Bucket {
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
         this.hasPattern = false;
+        this.projection = options.projection;
 
         this.layoutVertexArray = new FillExtrusionLayoutArray();
         this.centroidVertexArray = new FillExtrusionCentroidArray();

@@ -109,6 +109,7 @@ class LineBucket implements Bucket {
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
+    projection: string;
 
     constructor(options: BucketParameters<LineStyleLayer>) {
         this.zoom = options.zoom;
@@ -116,6 +117,7 @@ class LineBucket implements Bucket {
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
+        this.projection = options.projection;
         this.hasPattern = false;
         this.patternFeatures = [];
         this.lineClipsArray = [];
