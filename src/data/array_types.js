@@ -241,13 +241,13 @@ class StructArrayLayout6i12 extends StructArray {
         this.int16 = new Int16Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number) {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number): number {
         const i = this.length;
         this.resize(i + 1);
         return this.emplace(i, v0, v1, v2, v3, v4, v5);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number) {
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number): number {
         const o2 = i * 6;
         this.int16[o2 + 0] = v0;
         this.int16[o2 + 1] = v1;
@@ -260,7 +260,7 @@ class StructArrayLayout6i12 extends StructArray {
 }
 
 StructArrayLayout6i12.prototype.bytesPerElement = 12;
-register('StructArrayLayout6i12', StructArrayLayout6i12);
+register(StructArrayLayout6i12);
 
 /**
  * Implementation of the StructArray layout:
@@ -1003,12 +1003,12 @@ class FillExtrusionExtStruct extends Struct {
     a_pos_normal_30: number;
     a_pos_normal_31: number;
     a_pos_normal_32: number;
-    get a_pos_30() { return this._structArray.int16[this._pos2 + 0]; }
-    get a_pos_31() { return this._structArray.int16[this._pos2 + 1]; }
-    get a_pos_32() { return this._structArray.int16[this._pos2 + 2]; }
-    get a_pos_normal_30() { return this._structArray.int16[this._pos2 + 3]; }
-    get a_pos_normal_31() { return this._structArray.int16[this._pos2 + 4]; }
-    get a_pos_normal_32() { return this._structArray.int16[this._pos2 + 5]; }
+    get a_pos_30(): number { return this._structArray.int16[this._pos2 + 0]; }
+    get a_pos_31(): number { return this._structArray.int16[this._pos2 + 1]; }
+    get a_pos_32(): number { return this._structArray.int16[this._pos2 + 2]; }
+    get a_pos_normal_30(): number { return this._structArray.int16[this._pos2 + 3]; }
+    get a_pos_normal_31(): number { return this._structArray.int16[this._pos2 + 4]; }
+    get a_pos_normal_32(): number { return this._structArray.int16[this._pos2 + 5]; }
 }
 
 FillExtrusionExtStruct.prototype.size = 12;
@@ -1030,7 +1030,7 @@ export class FillExtrusionExtArray extends StructArrayLayout6i12 {
     }
 }
 
-register('FillExtrusionExtArray', FillExtrusionExtArray);
+register(FillExtrusionExtArray);
 
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
