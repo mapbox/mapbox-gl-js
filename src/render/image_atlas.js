@@ -142,5 +142,5 @@ export default class ImageAtlas {
 
 }
 
-register('ImagePosition', ImagePosition);
-register('ImageAtlas', ImageAtlas);
+register(ImagePosition);
+register(ImageAtlas);

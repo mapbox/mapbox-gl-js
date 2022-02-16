@@ -225,6 +225,6 @@ class FillBucket implements Bucket {
     }
 }
 
-register('FillBucket', FillBucket, {omit: ['layers', 'patternFeatures']});
+register(FillBucket, {omit: ['layers', 'patternFeatures']});
 
 export default FillBucket;

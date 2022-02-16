@@ -22,6 +22,6 @@ class OpacityState {
     }
 }
 
-register('OpacityState', OpacityState);
+register(OpacityState);
 
 export default OpacityState;
