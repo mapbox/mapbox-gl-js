@@ -90,7 +90,7 @@ test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) =
     };
 
     const callback = t.spy();
-    source.reloadTile({uid: 0}, callback);
+    source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback);
     t.equal(parse.callCount, 1);
 
     parse.firstCall.args[4]();
@@ -113,11 +113,11 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
 
     const callback1 = t.spy();
     const callback2 = t.spy();
-    source.reloadTile({uid: 0}, callback1);
+    source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback1);
     t.equal(parse.callCount, 1);
 
     source.loaded[0].status = 'parsing';
-    source.reloadTile({uid: 0}, callback2);
+    source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback2);
     t.equal(parse.callCount, 1);
 
     parse.firstCall.args[4]();
@@ -148,11 +148,11 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
     const callback1 = t.spy();
     const callback2 = t.spy();
     const callback3 = t.spy();
-    source.reloadTile({uid: 0}, callback1);
+    source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback1);
     t.equal(parse.callCount, 1);
 
     source.loaded[0].status = 'parsing';
-    source.reloadTile({uid: 0}, callback2);
+    source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback2);
     t.equal(parse.callCount, 1);
 
     parse.firstCall.args[4]();
@@ -161,7 +161,7 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
     t.equal(callback2.callCount, 0);
     t.equal(callback3.callCount, 0);
 
-    source.reloadTile({uid: 0}, callback3);
+    source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback3);
     t.equal(parse.callCount, 2);
     t.equal(callback1.callCount, 1);
     t.equal(callback2.callCount, 0);
@@ -194,7 +194,7 @@ test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTil
 
     const callback = t.spy();
 
-    source.reloadTile({uid: 0}, callback);
+    source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback);
     t.ok(parse.notCalled);
     t.ok(callback.calledOnce);
 

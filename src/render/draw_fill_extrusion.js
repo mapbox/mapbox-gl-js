@@ -13,6 +13,10 @@ import {
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
+import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import type Transform from '../geo/transform.js';
+import {earthRadius} from '../geo/lng_lat.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -52,30 +56,56 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 }
 
+function fillExtrusionHeightLift(transform: Transform): number {
+    if (transform.projection.name !== 'globe') {
+        return 0;
+    }
+    // A rectangle covering globe is subdivided into a grid of 32 cells
+    // This information can be used to deduce a minimum lift value so that
+    // fill extrusions with 0 height will never go below the ground.
+    const angle = Math.PI / 32.0;
+    const tanAngle = Math.tan(angle);
+    const r = earthRadius;
+    return r * Math.sqrt(1.0 + 2.0 * tanAngle * tanAngle) - r;
+}
+
 function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
+    const tr = painter.transform;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
     const image = patternProperty.constantOr((1: any));
     const crossfade = layer.getCrossfadeParameters();
     const opacity = layer.paint.get('fill-extrusion-opacity');
+    const heightLift = fillExtrusionHeightLift(tr);
+    const isGlobeProjection = tr.projection.name === 'globe';
+    const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
+    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+    const baseDefines = ([]: any);
+    if (isGlobeProjection) {
+        baseDefines.push('PROJECTION_GLOBE_VIEW');
+    }
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
-        if (!bucket) continue;
+        if (!bucket || bucket.projection !== tr.projection.name) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
+        const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration, baseDefines);
 
         if (painter.terrain) {
             const terrain = painter.terrain;
-            if (!bucket.enableTerrain) continue;
-            terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
-            flatRoofsUpdate(context, source, coord, bucket, layer, terrain);
-            if (!bucket.centroidVertexBuffer) {
-                const attrIndex: number | void = program.attributes['a_centroid_pos'];
-                if (attrIndex !== undefined) gl.vertexAttrib2f(attrIndex, 0, 0);
+            if (painter.style.terrainSetForDrapingOnly()) {
+                terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
+            } else {
+                if (!bucket.enableTerrain) continue;
+                terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
+                flatRoofsUpdate(context, source, coord, bucket, layer, terrain);
+                if (!bucket.centroidVertexBuffer) {
+                    const attrIndex: number | void = program.attributes['a_centroid_pos'];
+                    if (attrIndex !== undefined) gl.vertexAttrib2f(attrIndex, 0, 0);
+                }
             }
         }
 
@@ -98,17 +128,25 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             layer.paint.get('fill-extrusion-translate'),
             layer.paint.get('fill-extrusion-translate-anchor'));
 
+        const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
+
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord, crossfade, tile) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity);
+            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
+                crossfade, tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
+                heightLift, globeToMercator, mercatorCenter, invMatrix);
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+
+        assert(!isGlobeProjection || bucket.layoutVertexExtBuffer);
 
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             bucket.segments, layer.paint, painter.transform.zoom,
-            programConfiguration, painter.terrain ? bucket.centroidVertexBuffer : null);
+            programConfiguration,
+            painter.terrain ? bucket.centroidVertexBuffer : null,
+            isGlobeProjection ? bucket.layoutVertexExtBuffer : null);
     }
 }
 

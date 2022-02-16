@@ -1585,7 +1585,7 @@ class Style extends Evented {
     _createTerrain(terrainOptions: TerrainSpecification, drapeRenderMode: number) {
         const terrain = this.terrain = new Terrain(terrainOptions, drapeRenderMode);
         this.stylesheet.terrain = terrainOptions;
-        this.dispatcher.broadcast('enableTerrain', true);
+        this.dispatcher.broadcast('enableTerrain', !this.terrainSetForDrapingOnly());
         this._force3DLayerUpdate();
         const parameters = {
             now: browser.now(),

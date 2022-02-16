@@ -128,7 +128,7 @@ import patternAttributes from '../src/data/bucket/pattern_attributes.js';
 import dashAttributes from '../src/data/bucket/dash_attributes.js';
 import skyboxAttributes from '../src/render/skybox_attributes.js';
 import tileBoundsAttributes from '../src/data/bounds_attributes.js';
-import {fillExtrusionAttributes, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
+import {fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
 
 // layout vertex arrays
 const layoutAttributes = {
@@ -144,6 +144,9 @@ const layoutAttributes = {
 for (const name in layoutAttributes) {
     createStructArrayType(`${name.replace(/-/g, '_')}_layout`, layoutAttributes[name]);
 }
+
+// Globe extension arrays
+createStructArrayType('fill_extrusion_ext', fillExtrusionAttributesExt, true);
 
 // symbol layer specific arrays
 import {

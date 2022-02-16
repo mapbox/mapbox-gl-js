@@ -163,9 +163,11 @@ class WorkerTile {
                     sourceLayerIndex,
                     sourceID: this.source,
                     enableTerrain: this.enableTerrain,
+                    projection: this.projection.name,
                     availableImages
                 });
 
+                assert(this.tileTransform.projection.name === this.projection.name);
                 bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
                 featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
             }
@@ -244,7 +246,6 @@ class WorkerTile {
                             this.tileID.canonical,
                             this.tileZoom,
                             this.projection);
-                        bucket.projection = this.projection.name;
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||
@@ -252,7 +253,7 @@ class WorkerTile {
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
                         // $FlowFixMe[incompatible-type] Flow can't interpret ImagePosition as SpritePosition for some reason here
                         const imagePositions: SpritePositions = imageAtlas.patternPositions;
-                        bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages);
+                        bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform);
                     }
                 }
 
