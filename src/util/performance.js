@@ -21,6 +21,8 @@ export type PerformanceMetrics = {
     placementTime: number
 };
 
+export type PerformanceMark = {mark: string, name: string};
+
 export const PerformanceMarkers = {
     create: 'create',
     load: 'load',
@@ -56,7 +58,7 @@ export const PerformanceUtils = {
     measure(name: string, begin?: string, end?: string) {
         performance.measure(name, begin, end);
     },
-    beginMeasure(name: string): { mark: string, name: string } {
+    beginMeasure(name: string): PerformanceMark {
         const mark = name + i++;
         performance.mark(mark);
         return {
@@ -64,7 +66,7 @@ export const PerformanceUtils = {
             name
         };
     },
-    endMeasure(m: { name: string, mark: string }) {
+    endMeasure(m: PerformanceMark) {
         performance.measure(m.name, m.mark);
     },
     recordPlacementTime(time: number) {
