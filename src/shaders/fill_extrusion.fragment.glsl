@@ -201,7 +201,7 @@ void main() {
     outColor *= u_opacity;
 
 #ifdef FOG
-    outColor = fog_dither(fog_apply_premultiplied(outColor, v_fog_pos));
+    outColor = fog_dither(fog_apply_premultiplied(vec4(outColor, u_opacity), v_fog_pos)).rgb;
 #endif
     gl_FragColor = vec4(outColor, u_opacity);
 

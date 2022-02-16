@@ -8,9 +8,9 @@
 
 #ifdef FOG
 
-uniform mediump vec4 u_fog_color;
-uniform mediump vec2 u_fog_range;
-uniform mediump float u_fog_horizon_blend;
+uniform vec4 u_fog_color;
+uniform vec2 u_fog_range;
+uniform float u_fog_horizon_blend;
 
 varying vec3 v_fog_pos;
 
