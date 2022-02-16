@@ -57,7 +57,7 @@ class AttributionControl {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
         this._compactButton = DOM.create('button', 'mapboxgl-ctrl-attrib-button', this._container);
-        DOM.create('span', `mapboxgl-ctrl-icon`, this._compactButton).setAttribute('aria-hidden', true);
+        DOM.create('span', `mapboxgl-ctrl-icon`, this._compactButton).setAttribute('aria-hidden', 'true');
         this._compactButton.type = 'button';
         this._compactButton.addEventListener('click', this._toggleAttribution);
         this._setElementTitle(this._compactButton, 'ToggleAttribution');

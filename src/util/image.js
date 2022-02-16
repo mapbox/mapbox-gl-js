@@ -98,7 +98,7 @@ export class AlphaImage {
         resizeImage(this, new AlphaImage(size), 1);
     }
 
-    clone() {
+    clone(): AlphaImage {
         return new AlphaImage({width: this.width, height: this.height}, new Uint8Array(this.data));
     }
 
@@ -135,7 +135,7 @@ export class RGBAImage {
         }
     }
 
-    clone() {
+    clone(): RGBAImage {
         return new RGBAImage({width: this.width, height: this.height}, new Uint8Array(this.data));
     }
 
