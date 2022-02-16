@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<div id='checkboxes'>
+    <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
+    <label><input id='globe-checkbox' type='checkbox' checked> globe</label><br />
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiY2xlbWVudG1hcyIsImEiOiJjam0wMWFlY2UyM3VuM3ZxeHBiNGJiZG1pIn0.Q_4i-Gt6ZPdiKif8OHic9g'
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true,
+    projection: 'globe'
+});
+
+map.on('style.load', function() {
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
+
+    document.getElementById('terrain-checkbox').onclick();
+    document.getElementById('globe-checkbox').onclick();
+});
+
+document.getElementById('terrain-checkbox').onclick = function() {
+    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
+};
+
+document.getElementById('globe-checkbox').onclick = function() {
+    map.setProjection(this.checked ? "globe" : null);
+};
+
+</script>
+</body>
+</html>

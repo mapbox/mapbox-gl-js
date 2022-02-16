@@ -8,6 +8,7 @@ import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
 import {easeCubicInOut} from '../util/util.js';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import type Painter from '../render/painter.js';
 import type SourceCache from '../source/source_cache.js';
 import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
@@ -156,8 +157,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     vertexMorphing.update(now);
     const tr = painter.transform;
     const globeMercatorMatrix = calculateGlobeMercatorMatrix(tr);
-    const {x, y} = tr.point;
-    const mercatorCenter = [x, y];
+    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
 
