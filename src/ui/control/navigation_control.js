@@ -54,7 +54,7 @@ class NavigationControl {
         this.options = extend({}, defaultOptions, options);
 
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
-        this._container.addEventListener('contextmenu', (e) => e.preventDefault());
+        this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
 
         if (this.options.showZoom) {
             bindAll([
@@ -62,9 +62,9 @@ class NavigationControl {
                 '_updateZoomButtons'
             ], this);
             this._zoomInButton = this._createButton('mapboxgl-ctrl-zoom-in', (e) => { if (this._map) this._map.zoomIn({}, {originalEvent: e}); });
-            DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomInButton).setAttribute('aria-hidden', true);
+            DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomInButton).setAttribute('aria-hidden', 'true');
             this._zoomOutButton = this._createButton('mapboxgl-ctrl-zoom-out', (e) => { if (this._map) this._map.zoomOut({}, {originalEvent: e}); });
-            DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomOutButton).setAttribute('aria-hidden', true);
+            DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomOutButton).setAttribute('aria-hidden', 'true');
         }
         if (this.options.showCompass) {
             bindAll([
@@ -80,7 +80,7 @@ class NavigationControl {
                 }
             });
             this._compassIcon = DOM.create('span', 'mapboxgl-ctrl-icon', this._compass);
-            this._compassIcon.setAttribute('aria-hidden', true);
+            this._compassIcon.setAttribute('aria-hidden', 'true');
         }
     }
 
