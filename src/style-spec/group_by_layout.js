@@ -1,3 +1,6 @@
+// @flow
+
+import type {LayerSpecification} from './types.js';
 
 import refProperties from './util/ref_properties.js';
 
@@ -31,8 +34,6 @@ function getKey(layer) {
     return key;
 }
 
-export default groupByLayout;
-
 /**
  * Given an array of layers, return an array of arrays of layers where all
  * layers in each group have identical layout-affecting properties. These
@@ -48,7 +49,7 @@ export default groupByLayout;
  * @param {Object} [cachedKeys] - an object to keep already calculated keys.
  * @returns {Array<Array<Layer>>}
  */
-function groupByLayout(layers, cachedKeys) {
+export default function groupByLayout(layers: Array<LayerSpecification>, cachedKeys: {[id: string]: string}): Array<Array<LayerSpecification>> {
     const groups = {};
 
     for (let i = 0; i < layers.length; i++) {

@@ -1,7 +1,12 @@
+// @flow
 
 import validateStyleMin from './validate_style.min.js';
 import {v8} from './style-spec.js';
 import readStyle from './read_style.js';
+
+import type {StyleSpecification} from './types.js';
+import type ValidationError from './error/validation_error.js';
+import type ParsingError from './error/parsing_error.js';
 
 /**
  * Validate a Mapbox GL style against the style specification.
@@ -19,7 +24,7 @@ import readStyle from './read_style.js';
  *   var errors = validate(style);
  */
 
-export default function validateStyle(style, styleSpec = v8) {
+export default function validateStyle(style: StyleSpecification | string | Buffer, styleSpec: Object = v8): Array<ValidationError | ParsingError> {
     let s = style;
 
     try {
