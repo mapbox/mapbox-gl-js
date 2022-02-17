@@ -17,7 +17,14 @@ import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
 import browser from '../util/browser.js';
 import Dispatcher from '../util/dispatcher.js';
-import {validateStyle, emitValidationErrors as _emitValidationErrors} from './validate_style.js';
+import {
+    validateStyle,
+    validateSource,
+    validateLayer,
+    validateFilter,
+    validateTerrain,
+    emitValidationErrors as _emitValidationErrors
+} from './validate_style.js';
 import {QueryGeometry} from '../style/query_geometry.js';
 import {
     create as createSource,
@@ -711,7 +718,7 @@ class Style extends Evented {
 
         const builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
         const shouldValidate = builtIns.indexOf(source.type) >= 0;
-        if (shouldValidate && this._validate(validateStyle.source, `sources.${id}`, source, null, options)) return;
+        if (shouldValidate && this._validate(validateSource, `sources.${id}`, source, null, options)) return;
 
         if (this.map && this.map._collectResourceTiming) (source: any).collectResourceTiming = true;
 
@@ -841,7 +848,7 @@ class Style extends Evented {
             }
 
             // this layer is not in the style.layers array, so we pass an impossible array index
-            if (this._validate(validateStyle.layer,
+            if (this._validate(validateLayer,
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
             layer = createStyleLayer(layerObject);
@@ -1039,7 +1046,7 @@ class Style extends Evented {
             return;
         }
 
-        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, {layerType: layer.type}, options)) {
+        if (this._validate(validateFilter, `layers.${layer.id}.filter`, filter, {layerType: layer.type}, options)) {
             return;
         }
 
@@ -1309,7 +1316,7 @@ class Style extends Evented {
 
     queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: any, transform: Transform) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, null, params);
+            this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
 
         const includedSources = {};
@@ -1377,7 +1384,7 @@ class Style extends Evented {
 
     querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter, null, params);
+            this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);
         }
         const sourceCaches = this._getSourceCaches(sourceID);
         let results = [];
@@ -1467,7 +1474,7 @@ class Style extends Evented {
                 terrainOptions = (extend(terrainOptions, {source: id}): any);
             }
 
-            if (this._validate(validateStyle.terrain, 'terrain', terrainOptions)) {
+            if (this._validate(validateTerrain, 'terrain', terrainOptions)) {
                 return;
             }
         }

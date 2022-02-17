@@ -2,7 +2,7 @@
 
 import type {StyleSpecification} from '../../src/style-spec/types.js';
 import Benchmark from '../lib/benchmark.js';
-import validateStyle from '../../src/style-spec/validate_style.min.js';
+import {validateStyle} from '../../src/style-spec/validate_style.min.js';
 import fetchStyle from '../lib/fetch_style.js';
 
 export default class StyleValidate extends Benchmark {

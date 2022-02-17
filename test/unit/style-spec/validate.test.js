@@ -25,24 +25,8 @@ const fixtures = glob.sync(`${__dirname}/fixture/*.input.json`);
 const style = JSON.parse(fs.readFileSync(fixtures[0]));
 import reference from '../../../src/style-spec/reference/latest.js';
 
-test('validate.parsed exists', (t) => {
-    t.equal(typeof validate.parsed, 'function');
-    t.end();
-});
-
-test('errors from validate.parsed do not contain line numbers', (t) => {
-    const result = validate.parsed(style, reference);
-    t.equal(result[0].line, undefined);
-    t.end();
-});
-
-test('validate.latest exists', (t) => {
-    t.equal(typeof validate.latest, 'function');
-    t.end();
-});
-
-test('errors from validate.latest do not contain line numbers', (t) => {
-    const result = validate.latest(style);
+test('errors from validate do not contain line numbers', (t) => {
+    const result = validate(style, reference);
     t.equal(result[0].line, undefined);
     t.end();
 });

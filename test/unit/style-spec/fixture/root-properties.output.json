@@ -4,19 +4,15 @@
     "line": 2
   },
   {
-    "message": "constants: constants have been deprecated as of v8",
+    "message": "sources: object expected, array found",
     "line": 3
   },
   {
-    "message": "sources: object expected, array found",
+    "message": "layers: array expected, object found",
     "line": 4
   },
   {
-    "message": "layers: array expected, object found",
-    "line": 5
-  },
-  {
     "message": "light: object expected, boolean found",
-    "line": 11
+    "line": 10
   }
 ]

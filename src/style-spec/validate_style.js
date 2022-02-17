@@ -1,7 +1,10 @@
-
-import validateStyleMin from './validate_style.min.js';
+// @flow
+import {validateStyle as validateStyleMin} from './validate_style.min.js';
 import {v8} from './style-spec.js';
 import readStyle from './read_style.js';
+
+import type {ValidationErrors} from './validate_style.min.js';
+import type {StyleSpecification} from './types.js';
 
 /**
  * Validate a Mapbox GL style against the style specification.
@@ -19,7 +22,7 @@ import readStyle from './read_style.js';
  *   var errors = validate(style);
  */
 
-export default function validateStyle(style, styleSpec = v8) {
+export default function validateStyle(style: StyleSpecification | string | Buffer, styleSpec: Object = v8): ValidationErrors {
     let s = style;
 
     try {
@@ -31,9 +34,11 @@ export default function validateStyle(style, styleSpec = v8) {
     return validateStyleMin(s, styleSpec);
 }
 
-export const source = validateStyleMin.source;
-export const light = validateStyleMin.light;
-export const layer = validateStyleMin.layer;
-export const filter = validateStyleMin.filter;
-export const paintProperty = validateStyleMin.paintProperty;
-export const layoutProperty = validateStyleMin.layoutProperty;
+export {
+    validateSource as source,
+    validateLight as light,
+    validateLayer as layer,
+    validateFilter as filter,
+    validatePaintProperty as paintProperty,
+    validateLayoutProperty as layoutProperty
+} from './validate_style.min.js';

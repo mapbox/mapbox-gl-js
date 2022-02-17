@@ -122,7 +122,7 @@ test('converts categorical function on resolvedImage type to valid expression', 
         "some-icon",
         ""
     ]);
-    t.deepEqual(validate.parsed(migrated, v8), []);
+    t.deepEqual(validate(migrated, v8), []);
     t.end();
 });
 
@@ -131,7 +131,7 @@ glob.sync(`${__dirname}/fixture/v7-migrate/*.input.json`).forEach((file) => {
         const outputfile = file.replace('.input', '.output');
         const style = JSON.parse(fs.readFileSync(file));
         const result = migrate(style);
-        t.deepEqual(validate.parsed(result, v8), []);
+        t.deepEqual(validate(result, v8), []);
         if (UPDATE) fs.writeFileSync(outputfile, JSON.stringify(result, null, 2));
         const expect = JSON.parse(fs.readFileSync(outputfile));
         t.deepEqual(result, expect);
