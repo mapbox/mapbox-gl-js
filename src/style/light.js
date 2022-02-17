@@ -106,7 +106,7 @@ class Light extends Evented {
     }
 
     getLight() {
-        return this._transitionable.serialize();
+        return ((this._transitionable.serialize(): any): LightSpecification);
     }
 
     setLight(light?: LightSpecification, options: StyleSetterOptions = {}) {

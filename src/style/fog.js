@@ -55,7 +55,7 @@ class Fog extends Evented {
     }
 
     get() {
-        return this._transitionable.serialize();
+        return ((this._transitionable.serialize(): any): FogSpecification);
     }
 
     set(fog?: FogSpecification, options: StyleSetterOptions = {}) {
