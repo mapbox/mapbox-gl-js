@@ -12,9 +12,12 @@ import type EvaluationParameters from './evaluation_parameters.js';
 import type {TransitionParameters} from './properties.js';
 import type LngLat from '../geo/lng_lat.js';
 import type Transform from '../geo/transform.js';
+import type Map from '../ui/map.js';
 import type {StyleSetterOptions} from '../style/style.js';
 import type {FogState} from './fog_helpers.js';
+import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
 
+export const GLOBE_FOG_TRANSITION_LENGTH = 1;
 type Props = {|
     "range": DataConstantProperty<[number, number]>,
     "color": DataConstantProperty<Color>,
@@ -35,15 +38,15 @@ class Fog extends Evented {
     properties: PossiblyEvaluated<Props>;
 
     // Alternate projections do not yet support fog.
-    // Hold on to transform so that we know whether a projection is set.
-    _transform: Transform;
+    // Hold on to map so that we know whether a projection is set.
+    _map: Map;
 
-    constructor(fogOptions?: FogSpecification, transform: Transform) {
+    constructor(fogOptions?: FogSpecification, map: Map) {
         super();
         this._transitionable = new Transitionable(fogProperties);
         this.set(fogOptions);
         this._transitioning = this._transitionable.untransitioned();
-        this._transform = transform;
+        this._map = map;
     }
 
     get state(): FogState {
@@ -74,22 +77,25 @@ class Fog extends Evented {
     }
 
     getOpacity(pitch: number): number {
-        if (!this._transform.projection.supportsFog) return 0;
+        if (!this._map.transform.projection.supportsFog) return 0;
+
+        // In globe view, fade in opacity after transitioning to Mercator.
+        const globeFadeIn = this._map.getProjection().name === "globe" ? smoothstep(GLOBE_ZOOM_THRESHOLD_MAX, GLOBE_ZOOM_THRESHOLD_MAX + GLOBE_FOG_TRANSITION_LENGTH, this._map.getZoom()) : 1;
 
         const fogColor = (this.properties && this.properties.get('color')) || 1.0;
         const pitchFactor = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-        return pitchFactor * fogColor.a;
+        return pitchFactor * fogColor.a * globeFadeIn;
     }
 
     getOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
-        if (!this._transform.projection.supportsFog) return 0;
+        if (!this._map.transform.projection.supportsFog) return 0;
 
         return getFogOpacityAtLngLat(this.state, lngLat, transform);
     }
 
     getFovAdjustedRange(fov: number): [number, number] {
         // We can return any arbitrary range because we expect opacity=0 to clean it up
-        if (!this._transform.projection.supportsFog) return [0, 1];
+        if (!this._map.transform.projection.supportsFog) return [0, 1];
 
         return getFovAdjustedFogRange(this.state, fov);
     }

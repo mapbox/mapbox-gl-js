@@ -1507,7 +1507,7 @@ class Style extends Evented {
     }
 
     _createFog(fogOptions: FogSpecification) {
-        const fog = this.fog = new Fog(fogOptions, this.map.transform);
+        const fog = this.fog = new Fog(fogOptions, this.map);
         this.stylesheet.fog = fogOptions;
         const parameters = {
             now: browser.now(),
