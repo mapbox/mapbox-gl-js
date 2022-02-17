@@ -15,7 +15,7 @@ function deref(layer: LayerSpecification, parent: LayerSpecification): LayerSpec
 
     refProperties.forEach((k) => {
         if (k in parent) {
-            result[k] = parent[k];
+            result[k] = (parent: any)[k];
         }
     });
 

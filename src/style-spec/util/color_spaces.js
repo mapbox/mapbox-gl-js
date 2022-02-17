@@ -79,7 +79,7 @@ function labToRgb(labColor: LABColor): Color {
     );
 }
 
-function interpolateLab(from: LABColor, to: LABColor, t: number) {
+function interpolateLab(from: LABColor, to: LABColor, t: number): LABColor {
     return {
         l: interpolateNumber(from.l, to.l, t),
         a: interpolateNumber(from.a, to.a, t),
@@ -117,7 +117,7 @@ function interpolateHue(a: number, b: number, t: number) {
     return a + t * (d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d);
 }
 
-function interpolateHcl(from: HCLColor, to: HCLColor, t: number) {
+function interpolateHcl(from: HCLColor, to: HCLColor, t: number): HCLColor {
     return {
         h: interpolateHue(from.h, to.h, t),
         c: interpolateNumber(from.c, to.c, t),

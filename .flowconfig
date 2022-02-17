@@ -52,6 +52,7 @@
 [options]
 server.max_workers=4
 types_first=false
+merge_timeout=180
 
 [strict]
 nonstrict-import

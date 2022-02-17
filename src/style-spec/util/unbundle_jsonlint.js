@@ -1,7 +1,7 @@
 // @flow
 
 // Turn jsonlint-lines-primitives objects into primitive objects
-export function unbundle(value: mixed) {
+export function unbundle(value: mixed): mixed {
     if (value instanceof Number || value instanceof String || value instanceof Boolean) {
         return value.valueOf();
     } else {

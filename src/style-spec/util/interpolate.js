@@ -2,11 +2,11 @@
 
 import Color from './color.js';
 
-export function number(a: number, b: number, t: number) {
+export function number(a: number, b: number, t: number): number {
     return (a * (1 - t)) + (b * t);
 }
 
-export function color(from: Color, to: Color, t: number) {
+export function color(from: Color, to: Color, t: number): Color {
     return new Color(
         number(from.r, to.r, t),
         number(from.g, to.g, t),
