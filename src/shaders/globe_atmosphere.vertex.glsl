@@ -6,6 +6,8 @@ uniform vec3 u_frustum_tl;
 uniform vec3 u_frustum_tr;
 uniform vec3 u_frustum_br;
 uniform vec3 u_frustum_bl;
+uniform highp vec3 u_globe_pos;
+uniform highp float u_globe_radius;
 
 varying vec3 v_ray_dir;
 

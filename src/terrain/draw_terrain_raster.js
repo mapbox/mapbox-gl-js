@@ -13,8 +13,10 @@ import type Painter from '../render/painter.js';
 import type SourceCache from '../source/source_cache.js';
 import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import StencilMode from '../gl/stencil_mode.js';
+import {getColumn} from '../util/util.js';
 import ColorMode from '../gl/color_mode.js';
-import {mat4} from 'gl-matrix';
+import {vec3, mat4} from 'gl-matrix';
+import type {Vec3, Mat4} from 'gl-matrix';
 import {
     calculateGlobeMercatorMatrix,
     globeToMercatorTransition,
@@ -161,6 +163,29 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
 
+    // Render the gradient atmosphere by casting rays from screen pixels and determining their
+    // closest distance to the globe. This is done in view space where camera is located in the origo
+    // facing -z direction.
+    const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
+    const viewToProj = tr._camera.getCameraToClipPerspective(tr._fov, tr.width / tr.height, tr._nearZ, tr._farZ);
+    const projToView = mat4.invert([], viewToProj);
+
+    const project = (point: Vec3, m: Mat4): [number, number, number] => {
+        vec3.transformMat4(point, point, m);
+        return [point[0], point[1], point[2]];
+    };
+
+    // Compute direction vectors to each corner point of the view frustum
+    const frustumTl = project([-1, 1, 1], projToView);
+    const frustumTr = project([1, 1, 1], projToView);
+    const frustumBr = project([1, -1, 1], projToView);
+    const frustumBl = project([-1, -1, 1], projToView);
+
+    const center = getColumn(tr.globeMatrix, 3);
+    const globeCenterInViewSpace = project([center[0], center[1], center[2]], viewMatrix);
+    const globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
+    const viewport = [tr.width, tr.height];
+
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
         // terrain (if applicable) so that this is enough to ensure the correct program is
@@ -196,7 +221,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const posMatrix = globeMatrixForTile(coord.canonical, tr.globeMatrix);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, posMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter);
+                globeToMercatorTransition(tr.zoom), mercatorCenter, 
+                frustumTl, frustumTr, frustumBr, frustumBl, globeCenterInViewSpace, globeRadius, viewport);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -225,7 +251,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                     const drawPole = (program, vertexBuffer) => program.draw(
                         context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                        globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
+                        globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter, 
+                        frustumTl, frustumTr, frustumBr, frustumBl, globeCenterInViewSpace, globeRadius, viewport),
                         "globe_pole_raster", vertexBuffer, sharedBuffers.poleIndexBuffer, segment);
 
                     if (topCap) {
