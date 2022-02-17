@@ -22,6 +22,24 @@ import type {
 import type {FogState} from '../style/fog_helpers.js';
 import type {Vec3, Mat4} from 'gl-matrix';
 
+type PlacedCollisionBox = {|
+    box: Array<number>,
+    offscreen: boolean,
+    occluded: boolean
+|};
+type PlacedCollisionCircles = {|
+    circles: Array<number>,
+    offscreen: boolean,
+    collisionDetected: boolean,
+    occluded: boolean
+|};
+type ScreenAnchorPoint = {|
+  occluded: boolean,
+  perspectiveRatio: number,
+  point: Point,
+  signedDistanceFromCamera: number,
+|};
+
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around
 // it. This constant specifies how many pixels to pad the edge of
@@ -72,7 +90,7 @@ class CollisionIndex {
         this.fogState = fogState;
     }
 
-    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: Mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean, occluded: boolean } {
+    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: Mat4, collisionGroupPredicate?: any): PlacedCollisionBox {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
 
         let anchorX = collisionBox.projectedAnchorX;
@@ -136,7 +154,7 @@ class CollisionIndex {
                           collisionGroupPredicate?: any,
                           circlePixelDiameter: number,
                           textPixelPadding: number,
-                          tileID: OverscaledTileID): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean, occluded: boolean } {
+                          tileID: OverscaledTileID): PlacedCollisionCircles {
         const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
         const getElevation = elevation ? elevation.getAtTileOffsetFunc(tileID, this.transform.center.lat, this.transform.worldSize, this.transform.projection) : (_ => [0, 0, 0]);
@@ -311,7 +329,7 @@ class CollisionIndex {
      *
      * @private
      */
-    queryRenderedSymbols(viewportQueryGeometry: Array<Point>) {
+    queryRenderedSymbols(viewportQueryGeometry: Array<Point>): {[id: number]: Array<number>} {
         if (viewportQueryGeometry.length === 0 || (this.grid.keysLength() === 0 && this.ignoredGrid.keysLength() === 0)) {
             return {};
         }
@@ -387,7 +405,7 @@ class CollisionIndex {
         }
     }
 
-    projectAndGetPerspectiveRatio(posMatrix: Mat4, point: Vec3, tileID: ?OverscaledTileID, checkOcclusion: boolean) {
+    projectAndGetPerspectiveRatio(posMatrix: Mat4, point: Vec3, tileID: ?OverscaledTileID, checkOcclusion: boolean): ScreenAnchorPoint {
         const p = [point[0], point[1], point[2], 1];
         let behindFog = false;
         if (point[2] || this.transform.pitch > 0) {
@@ -415,11 +433,11 @@ class CollisionIndex {
         };
     }
 
-    isOffscreen(x1: number, y1: number, x2: number, y2: number) {
+    isOffscreen(x1: number, y1: number, x2: number, y2: number): boolean {
         return x2 < viewportPadding || x1 >= this.screenRightBoundary || y2 < viewportPadding || y1 > this.screenBottomBoundary;
     }
 
-    isInsideGrid(x1: number, y1: number, x2: number, y2: number) {
+    isInsideGrid(x1: number, y1: number, x2: number, y2: number): boolean {
         return x2 >= 0 && x1 < this.gridRightBoundary && y2 >= 0 && y1 < this.gridBottomBoundary;
     }
 

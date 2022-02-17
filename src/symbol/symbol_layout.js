@@ -66,7 +66,7 @@ const baselineOffset = 7;
 const INVALID_TEXT_OFFSET = Number.POSITIVE_INFINITY;
 const sqrt2 = Math.sqrt(2);
 
-export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, number]) {
+export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, number]): [number, number] {
 
     function fromRadialOffset(anchor: TextAnchor, radialOffset: number) {
         let x = 0, y = 0;

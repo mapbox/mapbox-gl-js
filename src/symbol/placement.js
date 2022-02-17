@@ -32,7 +32,7 @@ class OpacityState {
         }
         this.placed = placed;
     }
-    isHidden() {
+    isHidden(): boolean {
         return this.opacity === 0 && !this.placed;
     }
 }
@@ -47,7 +47,7 @@ class JointOpacityState {
 
         this.clipped = clipped;
     }
-    isHidden() {
+    isHidden(): boolean {
         return this.text.isHidden() && this.icon.isHidden();
     }
 }
@@ -103,7 +103,7 @@ export class RetainedQueryData {
     }
 }
 
-type CollisionGroup = { ID: number, predicate?: any };
+type CollisionGroup = {|ID: number, predicate?: any|};
 
 class CollisionGroups {
     collisionGroups: {[groupName: string]: CollisionGroup};
@@ -116,7 +116,7 @@ class CollisionGroups {
         this.collisionGroups = {};
     }
 
-    get(sourceID: string) {
+    get(sourceID: string): CollisionGroup {
         // The predicate/groupID mechanism allows for arbitrary grouping,
         // but the current interface defines one source == one group when
         // crossSourceCollisions == true.
@@ -1136,13 +1136,13 @@ export class Placement {
         }
     }
 
-    symbolFadeChange(now: number) {
+    symbolFadeChange(now: number): number {
         return this.fadeDuration === 0 ?
             1 :
             ((now - this.commitTime) / this.fadeDuration + this.prevZoomAdjustment);
     }
 
-    zoomAdjustment(zoom: number) {
+    zoomAdjustment(zoom: number): number {
         // When zooming out quickly, labels can overlap each other. This
         // adjustment is used to reduce the interval between placement calculations
         // and to reduce the fade duration when zooming out quickly. Discovering the
@@ -1150,12 +1150,12 @@ export class Placement {
         return Math.max(0, (this.transform.zoom - zoom) / 1.5);
     }
 
-    hasTransitions(now: number) {
+    hasTransitions(now: number): boolean {
         return this.stale ||
             now - this.lastPlacementChangeTime < this.fadeDuration;
     }
 
-    stillRecent(now: number, zoom: number) {
+    stillRecent(now: number, zoom: number): boolean {
         // The adjustment makes placement more frequent when zooming.
         // This condition applies the adjustment only after the map has
         // stopped zooming. This avoids adding extra jank while zooming.

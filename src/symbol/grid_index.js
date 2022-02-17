@@ -1,5 +1,13 @@
 // @flow
 
+type GridItem = {
+    key: any,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number
+};
+
 /**
  * GridIndex is a data structure for testing the intersection of
  * circles and rectangles in a 2d plane.
@@ -56,7 +64,7 @@ class GridIndex {
         this.circleUid = 0;
     }
 
-    keysLength() {
+    keysLength(): number {
         return this.boxKeys.length + this.circleKeys.length;
     }
 
@@ -87,7 +95,7 @@ class GridIndex {
         this.circleCells[cellIndex].push(uid);
     }
 
-    _query(x1: number, y1: number, x2: number, y2: number, hitTest: boolean, predicate?: any) {
+    _query(x1: number, y1: number, x2: number, y2: number, hitTest: boolean, predicate?: any): boolean | Array<GridItem> {
         if (x2 < 0 || x1 > this.width || y2 < 0 || y1 > this.height) {
             return hitTest ? false : [];
         }
@@ -128,7 +136,7 @@ class GridIndex {
         }
     }
 
-    _queryCircle(x: number, y: number, radius: number, hitTest: boolean, predicate?: any) {
+    _queryCircle(x: number, y: number, radius: number, hitTest: boolean, predicate?: any): boolean | Array<GridItem> {
         // Insert circle into grid for all cells in the circumscribing square
         // It's more than necessary (by a factor of 4/PI), but fast to insert
         const x1 = x - radius;
@@ -152,7 +160,7 @@ class GridIndex {
         return hitTest ? result.length > 0 : result;
     }
 
-    query(x1: number, y1: number, x2: number, y2: number, predicate?: any): Array<any> {
+    query(x1: number, y1: number, x2: number, y2: number, predicate?: any): Array<GridItem> {
         return (this._query(x1, y1, x2, y2, false, predicate): any);
     }
 
@@ -164,7 +172,7 @@ class GridIndex {
         return (this._queryCircle(x, y, radius, true, predicate): any);
     }
 
-    _queryCell(x1: number, y1: number, x2: number, y2: number, cellIndex: number, result: any, queryArgs: any, predicate?: any) {
+    _queryCell(x1: number, y1: number, x2: number, y2: number, cellIndex: number, result: any, queryArgs: any, predicate?: any): void | boolean {
         const seenUids = queryArgs.seenUids;
         const boxCell = this.boxCells[cellIndex];
         if (boxCell !== null) {
@@ -231,7 +239,7 @@ class GridIndex {
         }
     }
 
-    _queryCellCircle(x1: number, y1: number, x2: number, y2: number, cellIndex: number, result: any, queryArgs: any, predicate?: any) {
+    _queryCellCircle(x1: number, y1: number, x2: number, y2: number, cellIndex: number, result: any, queryArgs: any, predicate?: any): void | boolean {
         const circle = queryArgs.circle;
         const seenUids = queryArgs.seenUids;
         const boxCell = this.boxCells[cellIndex];
@@ -294,11 +302,11 @@ class GridIndex {
         }
     }
 
-    _convertToXCellCoord(x: number) {
+    _convertToXCellCoord(x: number): number {
         return Math.max(0, Math.min(this.xCellCount - 1, Math.floor(x * this.xScale)));
     }
 
-    _convertToYCellCoord(y: number) {
+    _convertToYCellCoord(y: number): number {
         return Math.max(0, Math.min(this.yCellCount - 1, Math.floor(y * this.yScale)));
     }
 
