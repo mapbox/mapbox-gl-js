@@ -29,7 +29,7 @@ class LayerPlacement {
         this._bucketParts = [];
     }
 
-    continuePlacement(tiles: Array<Tile>, placement: Placement, showCollisionBoxes: boolean, styleLayer: StyleLayer, shouldPausePlacement: () => boolean) {
+    continuePlacement(tiles: Array<Tile>, placement: Placement, showCollisionBoxes: boolean, styleLayer: StyleLayer, shouldPausePlacement: () => boolean): boolean {
         const bucketParts = this._bucketParts;
 
         while (this._currentTileIndex < tiles.length) {
@@ -125,7 +125,7 @@ class PauseablePlacement {
         this._done = true;
     }
 
-    commit(now: number) {
+    commit(now: number): Placement {
         this.placement.commit(now);
         return this.placement;
     }
