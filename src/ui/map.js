@@ -2659,13 +2659,14 @@ class Map extends Camera {
         const width = this._container.getBoundingClientRect().width || 400;
         const height = this._container.getBoundingClientRect().height || 300;
 
+        let transformValues;
         let transformScaleWidth;
         let transformScaleHeight;
         let el = this._container;
         while (el && (!transformScaleWidth || !transformScaleHeight)) {
             const transformMatrix = window.getComputedStyle(el).transform;
             if (transformMatrix && transformMatrix !== 'none') {
-                let transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+                transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
                 if (transformValues[0] && transformValues[0] !== '0' && transformValues[0] !== '1') transformScaleWidth = transformValues[0];
                 if (transformValues[3] && transformValues[3] !== '0' && transformValues[3] !== '1') transformScaleHeight = transformValues[3];
             }
