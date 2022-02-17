@@ -1,10 +1,12 @@
 // @flow
 
-import validateStyle from './validate_style.min.js';
+import {validateStyle} from './validate_style.min.js';
 import {v8} from './style-spec.js';
 import readStyle from './read_style.js';
 import ValidationError from './error/validation_error.js';
 import getType from './util/get_type.js';
+
+import type {ValidationErrors} from './validate_style.min.js';
 
 const SUPPORTED_SPEC_VERSION = 8;
 const MAX_SOURCES_IN_STYLE = 15;
@@ -22,7 +24,7 @@ function getSourceCount(source: Object): number {
     }
 }
 
-function getAllowedKeyErrors(obj: Object, keys: Array<*>, path: ?string): Array<?ValidationError> {
+function getAllowedKeyErrors(obj: Object, keys: Array<*>, path: ?string): Array<ValidationError> {
     const allowed = new Set(keys);
     const errors = [];
     Object.keys(obj).forEach(k => {
@@ -35,7 +37,7 @@ function getAllowedKeyErrors(obj: Object, keys: Array<*>, path: ?string): Array<
 }
 
 const acceptedSourceTypes = new Set(["vector", "raster", "raster-dem"]);
-function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
+function getSourceErrors(source: Object, i: number): Array<ValidationError> {
     const errors = [];
 
     /*
@@ -66,7 +68,7 @@ function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     return errors;
 }
 
-function getSourcesErrors(sources: Object): Array<?ValidationError> {
+function getSourcesErrors(sources: Object): Array<ValidationError> {
     const errors = [];
     let count = 0;
 
@@ -88,7 +90,7 @@ function getSourcesErrors(sources: Object): Array<?ValidationError> {
     return errors;
 }
 
-function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationError> {
+function getRootErrors(style: Object, specKeys: Array<any>): Array<ValidationError> {
     const errors = [];
 
     /*
@@ -165,7 +167,7 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationEr
  *   var validateMapboxApiSupported = require('mapbox-gl-style-spec/lib/validate_style_mapbox_api_supported.js');
  *   var errors = validateMapboxApiSupported(style);
  */
-export default function validateMapboxApiSupported(style: Object): Array<?ValidationError> {
+export default function validateMapboxApiSupported(style: Object): ValidationErrors {
     let s = style;
     try {
         s = readStyle(s);
