@@ -32,6 +32,11 @@ import type {PaddingOptions} from '../geo/edge_insets.js';
 import type {Vec3} from 'gl-matrix';
 
 /**
+ * A helper type: converts all Object type values to non-maybe types.
+ */
+type Required<T> = $ObjMap<T, <V>(v: V) => $NonMaybeType<V>>;
+
+/**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
  * zoom, bearing, and pitch of the camera. All properties are optional, and when a property is omitted, the current
  * camera value for that property will remain unchanged.
@@ -68,7 +73,8 @@ export type CameraOptions = {
     bearing?: number,
     pitch?: number,
     around?: LngLatLike,
-    padding?: PaddingOptions
+    padding?: PaddingOptions,
+    offset?: PointLike
 };
 
 /**
@@ -195,7 +201,7 @@ class Camera extends Evented {
      * @example
      * map.setCenter([-74, 38]);
      */
-    setCenter(center: LngLatLike, eventData?: Object) {
+    setCenter(center: LngLatLike, eventData?: Object): this {
         return this.jumpTo({center}, eventData);
     }
 
@@ -216,7 +222,7 @@ class Camera extends Evented {
      * map.panBy([-74, 38], {duration: 5000});
      * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    panBy(offset: PointLike, options?: AnimationOptions, eventData?: Object) {
+    panBy(offset: PointLike, options?: AnimationOptions, eventData?: Object): this {
         offset = Point.convert(offset).mult(-1);
         return this.panTo(this.transform.center, extend({offset}, options), eventData);
     }
@@ -238,7 +244,7 @@ class Camera extends Evented {
      * map.panTo([-74, 38], {duration: 5000});
      * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
-    panTo(lnglat: LngLatLike, options?: AnimationOptions, eventData?: Object) {
+    panTo(lnglat: LngLatLike, options?: AnimationOptions, eventData?: Object): this {
         return this.easeTo(extend({
             center: lnglat
         }, options), eventData);
@@ -271,7 +277,7 @@ class Camera extends Evented {
      * // Zoom to the zoom level 5 without an animated transition
      * map.setZoom(5);
      */
-    setZoom(zoom: number, eventData?: Object) {
+    setZoom(zoom: number, eventData?: Object): this {
         this.jumpTo({zoom}, eventData);
         return this;
     }
@@ -299,7 +305,7 @@ class Camera extends Evented {
      *     offset: [100, 50]
      * });
      */
-    zoomTo(zoom: number, options: ? AnimationOptions, eventData?: Object) {
+    zoomTo(zoom: number, options: ? AnimationOptions, eventData?: Object): this {
         return this.easeTo(extend({
             zoom
         }, options), eventData);
@@ -322,7 +328,7 @@ class Camera extends Evented {
      * // zoom the map in one level with a custom animation duration
      * map.zoomIn({duration: 1000});
      */
-    zoomIn(options?: AnimationOptions, eventData?: Object) {
+    zoomIn(options?: AnimationOptions, eventData?: Object): this {
         this.zoomTo(this.getZoom() + 1, options, eventData);
         return this;
     }
@@ -344,7 +350,7 @@ class Camera extends Evented {
      * // zoom the map out one level with a custom animation offset
      * map.zoomOut({offset: [80, 60]});
      */
-    zoomOut(options?: AnimationOptions, eventData?: Object) {
+    zoomOut(options?: AnimationOptions, eventData?: Object): this {
         this.zoomTo(this.getZoom() - 1, options, eventData);
         return this;
     }
@@ -379,7 +385,7 @@ class Camera extends Evented {
      * // Rotate the map to 90 degrees.
      * map.setBearing(90);
      */
-    setBearing(bearing: number, eventData?: Object) {
+    setBearing(bearing: number, eventData?: Object): this {
         this.jumpTo({bearing}, eventData);
         return this;
     }
@@ -409,7 +415,7 @@ class Camera extends Evented {
      * // Sets a left padding of 300px, and a top padding of 50px
      * map.setPadding({left: 300, top: 50});
      */
-    setPadding(padding: PaddingOptions, eventData?: Object) {
+    setPadding(padding: PaddingOptions, eventData?: Object): this {
         this.jumpTo({padding}, eventData);
         return this;
     }
@@ -431,7 +437,7 @@ class Camera extends Evented {
      * // rotateTo with an animation of 2 seconds.
      * map.rotateTo(30, {duration: 2000});
      */
-    rotateTo(bearing: number, options?: AnimationOptions, eventData?: Object) {
+    rotateTo(bearing: number, options?: AnimationOptions, eventData?: Object): this {
         return this.easeTo(extend({
             bearing
         }, options), eventData);
@@ -450,7 +456,7 @@ class Camera extends Evented {
      * // resetNorth with an animation of 2 seconds.
      * map.resetNorth({duration: 2000});
      */
-    resetNorth(options?: AnimationOptions, eventData?: Object) {
+    resetNorth(options?: AnimationOptions, eventData?: Object): this {
         this.rotateTo(0, extend({duration: 1000}, options), eventData);
         return this;
     }
@@ -468,7 +474,7 @@ class Camera extends Evented {
      * // resetNorthPitch with an animation of 2 seconds.
      * map.resetNorthPitch({duration: 2000});
      */
-    resetNorthPitch(options?: AnimationOptions, eventData?: Object) {
+    resetNorthPitch(options?: AnimationOptions, eventData?: Object): this {
         this.easeTo(extend({
             bearing: 0,
             pitch: 0,
@@ -491,7 +497,7 @@ class Camera extends Evented {
      * // snapToNorth with an animation of 2 seconds.
      * map.snapToNorth({duration: 2000});
      */
-    snapToNorth(options?: AnimationOptions, eventData?: Object) {
+    snapToNorth(options?: AnimationOptions, eventData?: Object): this {
         if (Math.abs(this.getBearing()) < this._bearingSnap) {
             return this.resetNorth(options, eventData);
         }
@@ -522,7 +528,7 @@ class Camera extends Evented {
      * // setPitch with an animation of 2 seconds.
      * map.setPitch(80, {duration: 2000});
      */
-    setPitch(pitch: number, eventData?: Object) {
+    setPitch(pitch: number, eventData?: Object): this {
         this.jumpTo({pitch}, eventData);
         return this;
     }
@@ -555,7 +561,11 @@ class Camera extends Evented {
         return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), bearing, options);
     }
 
-    _extendCameraOptions(options?: CameraOptions) {
+    _extendCameraOptions(options?: CameraOptions): {
+        maxZoom: number,
+        offset: PointLike,
+        padding: Required<PaddingOptions>
+    } & CameraOptions {
         const defaultPadding = {
             top: 0,
             bottom: 0,
@@ -633,7 +643,11 @@ class Camera extends Evented {
         const zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), eOptions.maxZoom);
 
         // Calculate center: apply the zoom, the configured offset, as well as offset that exists as a result of padding.
-        const offset = (typeof eOptions.offset.x === 'number') ? new Point(eOptions.offset.x, eOptions.offset.y) : Point.convert(eOptions.offset);
+        const offset = (typeof eOptions.offset.x === 'number') ?
+            // $FlowFixMe[prop-missing]
+            new Point(eOptions.offset.x, eOptions.offset.y) :
+            Point.convert(eOptions.offset);
+
         const paddingOffsetX = (eOptions.padding.left - eOptions.padding.right) / 2;
         const paddingOffsetY = (eOptions.padding.top - eOptions.padding.bottom) / 2;
         const paddingOffset = new Point(paddingOffsetX, paddingOffsetY);
@@ -776,7 +790,7 @@ class Camera extends Evented {
      * });
      * @see [Example: Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
-    fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object) {
+    fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object): this {
         return this._fitInternal(
             this.cameraForBounds(bounds, options),
             options,
@@ -849,7 +863,7 @@ class Camera extends Evented {
      * });
      * @see Used by {@link BoxZoomHandler}
      */
-    fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: AnimationOptions & CameraOptions, eventData?: Object) {
+    fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: AnimationOptions & CameraOptions, eventData?: Object): this {
         let lngLat0, lngLat1, minAltitude, maxAltitude;
         const point0 = Point.convert(p0);
         const point1 = Point.convert(p1);
@@ -891,7 +905,7 @@ class Camera extends Evented {
             options, eventData);
     }
 
-    _fitInternal(calculatedOptions?: CameraOptions & AnimationOptions, options?: AnimationOptions & CameraOptions, eventData?: Object) {
+    _fitInternal(calculatedOptions?: CameraOptions & AnimationOptions, options?: AnimationOptions & CameraOptions, eventData?: Object): this {
         // cameraForBounds warns + returns undefined if unable to fit:
         if (!calculatedOptions) return this;
 
@@ -936,7 +950,7 @@ class Camera extends Evented {
      * @see [Example: Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
      * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
-    jumpTo(options: CameraOptions & {preloadOnly?: boolean}, eventData?: Object) {
+    jumpTo(options: CameraOptions & {preloadOnly?: boolean}, eventData?: Object): this {
         this.stop();
 
         const tr = options.preloadOnly ? this.transform.clone() : this.transform;
@@ -1056,12 +1070,12 @@ class Camera extends Evented {
      *
      * map.setFreeCameraOptions(camera);
      */
-    setFreeCameraOptions(options: FreeCameraOptions, eventData?: Object) {
+    setFreeCameraOptions(options: FreeCameraOptions, eventData?: Object): this {
         const tr = this.transform;
 
         if (!tr.projection.supportsFreeCamera) {
             warnOnce(freeCameraNotSupportedWarning);
-            return;
+            return this;
         }
 
         this.stop();
@@ -1142,7 +1156,7 @@ class Camera extends Evented {
      * });
      * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    easeTo(options: CameraOptions & AnimationOptions & {easeId?: string, preloadOnly?: boolean}, eventData?: Object) {
+    easeTo(options: CameraOptions & AnimationOptions & {easeId?: string, preloadOnly?: boolean}, eventData?: Object): this {
         this._stop(false, options.easeId);
 
         options = extend({
@@ -1373,7 +1387,7 @@ class Camera extends Evented {
      * @see [Example: Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
      * @see [Example: Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
-    flyTo(options: CameraOptions & AnimationOptions & {preloadOnly?: boolean}, eventData?: Object) {
+    flyTo(options: CameraOptions & AnimationOptions & {preloadOnly?: boolean}, eventData?: Object): this {
         // Fall through to jumpTo if user has set prefers-reduced-motion
         if (!options.essential && browser.prefersReducedMotion) {
             const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']);
@@ -1547,7 +1561,7 @@ class Camera extends Evented {
         return this;
     }
 
-    isEasing() {
+    isEasing(): boolean {
         return !!this._easeFrameId;
     }
 
@@ -1613,7 +1627,7 @@ class Camera extends Evented {
     }
 
     // convert bearing so that it's numerically close to the current one so that it interpolates properly
-    _normalizeBearing(bearing: number, currentBearing: number) {
+    _normalizeBearing(bearing: number, currentBearing: number): number {
         bearing = wrap(bearing, -180, 180);
         const diff = Math.abs(bearing - currentBearing);
         if (Math.abs(bearing - 360 - currentBearing) < diff) bearing -= 360;
@@ -1634,7 +1648,7 @@ class Camera extends Evented {
     }
 
     // emulates frame function for some transform
-    _emulate(frame: Function, duration: number, initialTransform: Transform) {
+    _emulate(frame: Function, duration: number, initialTransform: Transform): Array<Transform> {
         const frameRate = 15;
         const numFrames = Math.ceil(duration * frameRate / 1000);
 
