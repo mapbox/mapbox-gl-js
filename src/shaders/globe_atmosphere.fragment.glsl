@@ -1,19 +1,16 @@
-uniform vec2 u_center;
-uniform float u_radius;
-uniform vec2 u_screen_size;
-
 uniform float u_opacity;
 uniform highp float u_fadeout_range;
 uniform vec3 u_start_color;
 uniform vec3 u_end_color;
-uniform float u_pixel_ratio;
+uniform highp vec3 u_globe_pos;
+uniform highp float u_globe_radius;
+
+varying vec3 v_ray_dir;
 
 void main() {
-    highp vec2 fragCoord = gl_FragCoord.xy / u_pixel_ratio;
-    fragCoord.y = u_screen_size.y - fragCoord.y;
-    float distFromCenter = length(fragCoord - u_center);
-
-    float normDistFromCenter = length(fragCoord - u_center) / u_radius;
+    vec3 dir = normalize(v_ray_dir);
+    vec3 closestPoint = dot(u_globe_pos, dir) * dir;
+    float normDistFromCenter = length(closestPoint - u_globe_pos) / u_globe_radius;
 
     if (normDistFromCenter < 1.0)
         discard;

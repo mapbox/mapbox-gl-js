@@ -21,10 +21,12 @@ export type GlobeRasterUniformsType = {|
 |};
 
 export type AtmosphereUniformsType = {|
-    'u_center': Uniform2f,
-    'u_radius': Uniform1f,
-    'u_screen_size': Uniform2f,
-    'u_pixel_ratio': Uniform1f,
+    'u_frustum_tl': Uniform3f,
+    'u_frustum_tr': Uniform3f,
+    'u_frustum_br': Uniform3f,
+    'u_frustum_bl': Uniform3f,
+    'u_globe_pos': Uniform3f,
+    'u_globe_radius': Uniform1f,
     'u_opacity': Uniform1f,
     'u_fadeout_range': Uniform1f,
     'u_start_color': Uniform3f,
@@ -41,10 +43,12 @@ const globeRasterUniforms = (context: Context, locations: UniformLocations): Glo
 });
 
 const atmosphereUniforms = (context: Context, locations: UniformLocations): AtmosphereUniformsType => ({
-    'u_center': new Uniform2f(context, locations.u_center),
-    'u_radius': new Uniform1f(context, locations.u_radius),
-    'u_screen_size': new Uniform2f(context, locations.u_screen_size),
-    'u_pixel_ratio': new Uniform1f(context, locations.u_pixel_ratio),
+    'u_frustum_tl': new Uniform3f(context, locations.u_frustum_tl),
+    'u_frustum_tr': new Uniform3f(context, locations.u_frustum_tr),
+    'u_frustum_br': new Uniform3f(context, locations.u_frustum_br),
+    'u_frustum_bl': new Uniform3f(context, locations.u_frustum_bl),
+    'u_globe_pos': new Uniform3f(context, locations.u_globe_pos),
+    'u_globe_radius': new Uniform1f(context, locations.u_globe_radius),
     'u_opacity': new Uniform1f(context, locations.u_opacity),
     'u_fadeout_range': new Uniform1f(context, locations.u_fadeout_range),
     'u_start_color': new Uniform3f(context, locations.u_start_color),
@@ -67,23 +71,27 @@ const globeRasterUniformValues = (
 });
 
 const atmosphereUniformValues = (
-    center: [number, number],
-    radius: number,
-    screenSize: [number, number],
-    pixelRatio: number,
+    frustumDirTl: [number, number, number],
+    frustumDirTr: [number, number, number],
+    frustumDirBr: [number, number, number],
+    frustumDirBl: [number, number, number],
+    globePosition: [number, number, number],
+    globeRadius: number,
     opacity: number,
     fadeoutRange: number,
     startColor: [number, number, number],
     endColor: [number, number, number]
 ): UniformValues<AtmosphereUniformsType> => ({
-    'u_center': center,
-    'u_radius': radius,
-    'u_screen_size': screenSize,
-    'u_pixel_ratio': pixelRatio,
+    'u_frustum_tl': frustumDirTl,
+    'u_frustum_tr': frustumDirTr,
+    'u_frustum_br': frustumDirBr,
+    'u_frustum_bl': frustumDirBl,
+    'u_globe_pos': globePosition,
+    'u_globe_radius': globeRadius,
     'u_opacity': opacity,
     'u_fadeout_range': fadeoutRange,
     'u_start_color': startColor,
-    'u_end_color': endColor,
+    'u_end_color': endColor
 });
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};

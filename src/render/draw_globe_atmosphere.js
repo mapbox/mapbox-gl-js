@@ -8,9 +8,12 @@ import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
 import {vec3, mat4} from 'gl-matrix';
-import browser from '../util/browser.js';
 
 export default drawGlobeAtmosphere;
+
+function project(point, m) {
+    return vec3.transformMat4(point, point, m);
+}
 
 function drawGlobeAtmosphere(painter: Painter) {
     const context = painter.context;
@@ -19,26 +22,32 @@ function drawGlobeAtmosphere(painter: Painter) {
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
     const program = painter.useProgram('globeAtmosphere');
 
-    // Compute center and approximate radius of the globe on screen coordinates
+    // Render the gradient atmosphere by casting rays from screen pixels and determining their
+    // closest distance to the globe. This is done in view space where camera is located in the origo
+    // facing -z direction.
     const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1.0);
     const viewToProj = transform._camera.getCameraToClipPerspective(transform._fov, transform.width / transform.height, transform._nearZ, transform._farZ);
-    const globeToView = mat4.mul([], viewMatrix, transform.globeMatrix);
-    const viewToScreen = mat4.mul([], transform.labelPlaneMatrix, viewToProj);
+    const projToView = mat4.invert([], viewToProj);
 
-    const centerOnViewSpace = vec3.transformMat4([], [0, 0, 0], globeToView);
-    const radiusOnViewSpace = vec3.add([], centerOnViewSpace, [transform.worldSize / Math.PI / 2.0, 0, 0]);
+    // Compute direction vectors to each corner point of the view frustum
+    const frustumTl = project([-1, 1, 1], projToView);
+    const frustumTr = project([1, 1, 1], projToView);
+    const frustumBr = project([1, -1, 1], projToView);
+    const frustumBl = project([-1, -1, 1], projToView);
 
-    const centerOnScreen = vec3.transformMat4([0, 0], centerOnViewSpace, viewToScreen);
-    const radiusOnScreen = vec3.transformMat4([], radiusOnViewSpace, viewToScreen);
+    const center = [transform.globeMatrix[12], transform.globeMatrix[13], transform.globeMatrix[14]];
+    const globeCenterInViewSpace = project(center, viewMatrix);
+    const globeRadius = transform.worldSize / 2.0 / Math.PI - 1.0;
 
-    const pixelRadius = vec3.length(vec3.sub([], radiusOnScreen, centerOnScreen));
     const fadeOutTransition = 1.0 - globeToMercatorTransition(transform.zoom);
 
     const uniforms = atmosphereUniformValues(
-        centerOnScreen,
-        pixelRadius,
-        [transform.width, transform.height],
-        browser.devicePixelRatio,
+        frustumTl,
+        frustumTr,
+        frustumBr,
+        frustumBl,
+        globeCenterInViewSpace,
+        globeRadius,
         fadeOutTransition,          // opacity
         2.0,                        // fadeout range
         [1.0, 1.0, 1.0],            // start color
