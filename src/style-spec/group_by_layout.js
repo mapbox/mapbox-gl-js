@@ -5,8 +5,7 @@ import type {LayerSpecification} from './types.js';
 import refProperties from './util/ref_properties.js';
 
 function stringify(obj) {
-    const type = typeof obj;
-    if (type === 'number' || type === 'boolean' || type === 'string' || obj === undefined || obj === null)
+    if (typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'string' || obj === undefined || obj === null)
         return JSON.stringify(obj);
 
     if (Array.isArray(obj)) {
@@ -17,11 +16,9 @@ function stringify(obj) {
         return `${str}]`;
     }
 
-    const keys = Object.keys(obj).sort();
-
     let str = '{';
-    for (let i = 0; i < keys.length; i++) {
-        str += `${JSON.stringify(keys[i])}:${stringify(obj[keys[i]])},`;
+    for (const key of Object.keys(obj).sort()) {
+        str += `${key}:${stringify((obj: any)[key])},`;
     }
     return `${str}}`;
 }
@@ -29,7 +26,7 @@ function stringify(obj) {
 function getKey(layer) {
     let key = '';
     for (const k of refProperties) {
-        key += `/${stringify(layer[k])}`;
+        key += `/${stringify((layer: any)[k])}`;
     }
     return key;
 }
