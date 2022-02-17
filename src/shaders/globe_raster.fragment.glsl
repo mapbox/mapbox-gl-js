@@ -10,6 +10,24 @@ uniform highp float u_globe_radius;
 
 uniform vec2 u_viewport;
 
+float glow_opacity(float t) {
+    const float decay = 6.0;
+    float falloff = 1.0 - min(1.0, exp(-decay * t));
+    falloff *= falloff * falloff;
+    float glow_alpha = 1.0;
+    return glow_alpha * min(1.0, 1.00747 * falloff);
+}
+float range(float depth, float near, float far) {
+    return (depth - near) / (far - near);
+}
+vec4 apply_glow(vec4 color, float t) {
+    float alpha = EPSILON + color.a;
+    float opacity = glow_opacity(range(t, 0.9, 1.3));
+    vec3 glow_color = vec3(1.0);
+    color.rgb = mix(color.rgb / alpha, glow_color, opacity) * alpha;
+    return color;
+}
+
 void main() {
     vec2 uv = gl_FragCoord.xy / u_viewport;
 
@@ -21,14 +39,12 @@ void main() {
     vec3 dir = normalize(ray_dir);
 
     vec3 closest_point = dot(u_globe_pos, dir) * dir;
-    float norm_dist_from_center = 1.0 - length(closest_point - u_globe_pos) / u_globe_radius;
-
-    const float antialias_distance_px = 4.0;
-    float antialias = smoothstep(0.0, antialias_distance_px / max(u_viewport.x, u_viewport.y), norm_dist_from_center);
+    float norm_dist_from_center = length(closest_point - u_globe_pos) / u_globe_radius;
 
     vec4 raster = texture2D(u_image0, v_pos0);
+    raster = apply_glow(raster, norm_dist_from_center);
 
-    gl_FragColor = vec4(raster.rgb * antialias, raster.a * antialias);
+    gl_FragColor = raster;;
 #ifdef TERRAIN_WIREFRAME
     gl_FragColor = vec4(1.0, 0.0, 0.0, 0.8);
 #endif
