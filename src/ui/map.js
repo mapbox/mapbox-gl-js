@@ -2659,21 +2659,21 @@ class Map extends Camera {
         const width = this._container.getBoundingClientRect().width || 400;
         const height = this._container.getBoundingClientRect().height || 300;
 
-        let transformValues;
+        let transformScaleWidth;
+        let transformScaleHeight;
         let el = this._container;
-        while (el) {
+        while (el && (!transformScaleWidth || !transformScaleHeight)) {
             const transformMatrix = window.getComputedStyle(el).transform;
-            if (transformMatrix && transformMatrix !== 'none') transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+            if (transformMatrix && transformMatrix !== 'none') {
+                let transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+                if (transformValues[0] && transformValues[0] !== '0' && transformValues[0] !== '1') transformScaleWidth = transformValues[0];
+                if (transformValues[3] && transformValues[3] !== '0' && transformValues[3] !== '1') transformScaleHeight = transformValues[3];
+            }
             el = el.parentElement;
         }
 
-        if (transformValues) {
-            this._containerWidth = transformValues[0] && transformValues[0] !== '0' ? Math.abs(width / transformValues[0]) : width;
-            this._containerHeight = transformValues[3] && transformValues[3] !== '0' ? Math.abs(height / transformValues[3]) : height;
-        } else {
-            this._containerWidth = width;
-            this._containerHeight = height;
-        }
+        this._containerWidth = transformScaleWidth ? Math.abs(width / transformScaleWidth) : width;
+        this._containerHeight = transformScaleHeight ? Math.abs(height / transformScaleHeight) : height;
     }
 
     _detectMissingCSS(): void {
