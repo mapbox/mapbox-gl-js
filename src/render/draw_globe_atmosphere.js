@@ -8,10 +8,12 @@ import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
 import {vec3, mat4} from 'gl-matrix';
-import type {Vec3, Mat4} from 'gl-matrix';
-import {getColumn} from '../util/util.js';
 
 export default drawGlobeAtmosphere;
+
+function project(point, m) {
+    return vec3.transformMat4(point, point, m);
+}
 
 function drawGlobeAtmosphere(painter: Painter) {
     const context = painter.context;
@@ -27,19 +29,14 @@ function drawGlobeAtmosphere(painter: Painter) {
     const viewToProj = transform._camera.getCameraToClipPerspective(transform._fov, transform.width / transform.height, transform._nearZ, transform._farZ);
     const projToView = mat4.invert([], viewToProj);
 
-    const project = (point: Vec3, m: Mat4): [number, number, number] => {
-        vec3.transformMat4(point, point, m);
-        return [point[0], point[1], point[2]];
-    };
-
     // Compute direction vectors to each corner point of the view frustum
     const frustumTl = project([-1, 1, 1], projToView);
     const frustumTr = project([1, 1, 1], projToView);
     const frustumBr = project([1, -1, 1], projToView);
     const frustumBl = project([-1, -1, 1], projToView);
 
-    const center = getColumn(transform.globeMatrix, 3);
-    const globeCenterInViewSpace = project([center[0], center[1], center[2]], viewMatrix);
+    const center = [transform.globeMatrix[12], transform.globeMatrix[13], transform.globeMatrix[14]];
+    const globeCenterInViewSpace = project(center, viewMatrix);
     const globeRadius = transform.worldSize / 2.0 / Math.PI - 1.0;
 
     const fadeOutTransition = 1.0 - globeToMercatorTransition(transform.zoom);
