@@ -125,6 +125,3 @@ export {
     validateMapboxApiSupported,
     visit
 };
-
-validate.parsed = validate;
-validate.latest = validate;
