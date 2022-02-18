@@ -11,7 +11,7 @@ class ZoomHistory {
         this.first = true;
     }
 
-    update(z: number, now: number) {
+    update(z: number, now: number): boolean {
         const floorZ = Math.floor(z);
 
         if (this.first) {

@@ -30,7 +30,7 @@ export type StyleImageInterface = {
     onRemove?: () => void
 };
 
-export function renderStyleImage(image: StyleImage) {
+export function renderStyleImage(image: StyleImage): boolean {
     const {userImage} = image;
     if (userImage && userImage.render) {
         const updated = userImage.render();
