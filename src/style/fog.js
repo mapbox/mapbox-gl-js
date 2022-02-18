@@ -17,7 +17,7 @@ import type {StyleSetterOptions} from '../style/style.js';
 import type {FogState} from './fog_helpers.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
 
-export const GLOBE_FOG_TRANSITION_LENGTH = 1;
+export const GLOBE_FOG_TRANSITION_LENGTH = 2;
 type Props = {|
     "range": DataConstantProperty<[number, number]>,
     "color": DataConstantProperty<Color>,
