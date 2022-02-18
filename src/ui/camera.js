@@ -77,6 +77,12 @@ export type CameraOptions = {
     offset?: PointLike
 };
 
+export type FullCameraOptions = {
+    maxZoom: number,
+    offset: PointLike,
+    padding: Required<PaddingOptions>
+} & CameraOptions
+
 /**
  * Options common to map movement methods that involve animation, such as {@link Map#panBy} and
  * {@link Map#easeTo}, controlling the duration and easing function of the animation. All properties
@@ -561,11 +567,7 @@ class Camera extends Evented {
         return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), bearing, options);
     }
 
-    _extendCameraOptions(options?: CameraOptions): {
-        maxZoom: number,
-        offset: PointLike,
-        padding: Required<PaddingOptions>
-    } & CameraOptions {
+    _extendCameraOptions(options?: CameraOptions): FullCameraOptions {
         const defaultPadding = {
             top: 0,
             bottom: 0,
@@ -643,8 +645,7 @@ class Camera extends Evented {
         const zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), eOptions.maxZoom);
 
         // Calculate center: apply the zoom, the configured offset, as well as offset that exists as a result of padding.
-        const offset = (typeof eOptions.offset.x === 'number') ?
-            // $FlowFixMe[prop-missing]
+        const offset = (typeof eOptions.offset.x === 'number' && typeof eOptions.offset.y === 'number') ?
             new Point(eOptions.offset.x, eOptions.offset.y) :
             Point.convert(eOptions.offset);
 
