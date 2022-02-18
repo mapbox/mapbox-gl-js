@@ -9,6 +9,7 @@ import {
     linePatternUniformValues,
     lineDefinesValues
 } from './program/line_program.js';
+import browser from '../util/browser.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -29,6 +30,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const colorMode = painter.colorModeForRenderPass();
+    const pixelRatio = (painter.terrain && painter.terrain.renderingToTexture) ? 1.0 : browser.devicePixelRatio;
 
     const dasharrayProperty = layer.paint.get('line-dasharray');
     const dasharray = dasharrayProperty.constantOr((1: any));
@@ -81,8 +83,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const matrix = painter.terrain ? coord.projMatrix : null;
         const uniformValues = image ?
-            linePatternUniformValues(painter, tile, layer, crossfade, matrix) :
-            lineUniformValues(painter, tile, layer, crossfade, matrix, bucket.lineClipsArray.length);
+            linePatternUniformValues(painter, tile, layer, crossfade, matrix, pixelRatio) :
+            lineUniformValues(painter, tile, layer, crossfade, matrix, bucket.lineClipsArray.length, pixelRatio);
 
         if (gradient) {
             const layerGradient = bucket.gradients[layer.id];
