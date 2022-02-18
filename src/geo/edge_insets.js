@@ -102,6 +102,6 @@ class EdgeInsets {
     }
 }
 
-export type PaddingOptions = {top: ?number, bottom: ?number, right: ?number, left: ?number};
+export type PaddingOptions = {+top: ?number, +bottom: ?number, +right: ?number, +left: ?number};
 
 export default EdgeInsets;
