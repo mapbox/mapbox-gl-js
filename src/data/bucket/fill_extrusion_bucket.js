@@ -95,32 +95,23 @@ class PartMetadata {
         this.currentPolyCount.edges++;
 
         this.acc._add(p);
-        let checkBorders = !!this.borders;
-
         const min = this.min, max = this.max;
         if (p.x < min.x) {
             min.x = p.x;
-            checkBorders = true;
         } else if (p.x > max.x) {
             max.x = p.x;
-            checkBorders = true;
         }
         if (p.y < min.y) {
             min.y = p.y;
-            checkBorders = true;
         } else if (p.y > max.y) {
             max.y = p.y;
-            checkBorders = true;
         }
         if (((p.x === 0 || p.x === EXTENT) && p.x === prev.x) !== ((p.y === 0 || p.y === EXTENT) && p.y === prev.y)) {
             // Custom defined geojson buildings are cut on borders. Points are
             // repeated when edge cuts tile corner (reason for using xor).
             this.processBorderOverlap(p, prev);
         }
-        if (checkBorders) this.checkBorderIntersection(p, prev);
-    }
-
-    checkBorderIntersection(p: Point, prev: Point) {
+        // check border intersection
         if ((prev.x < 0) !== (p.x < 0)) {
             this.addBorderIntersection(0, interpolate(prev.y, p.y, (0 - prev.x) / (p.x - prev.x)));
         }
@@ -180,6 +171,7 @@ class PartMetadata {
 class FillExtrusionBucket implements Bucket {
     index: number;
     zoom: number;
+    canonical: CanonicalTileID;
     overscaling: number;
     enableTerrain: boolean;
     layers: Array<FillExtrusionStyleLayer>;
@@ -206,15 +198,16 @@ class FillExtrusionBucket implements Bucket {
     features: Array<BucketFeature>;
 
     featuresOnBorder: Array<PartMetadata>;
-    // borders / borderDone: 0 - left, 1, right, 2 - top, 3 - bottom
+    // borders / borderDoneWithNeighborZ: 0 - left, 1, right, 2 - top, 3 - bottom
     borders: Array<Array<number>>; // For each side, indices into featuresOnBorder array.
-    borderDone: Array<boolean>;
+    borderDoneWithNeighborZ: Array<number>;
     needsCentroidUpdate: boolean;
     tileToMeter: number; // cache conversion.
     projection: string;
 
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
+        this.canonical = options.canonical;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
@@ -236,7 +229,7 @@ class FillExtrusionBucket implements Bucket {
         this.hasPattern = hasPattern('fill-extrusion', this.layers, options);
         this.featuresOnBorder = [];
         this.borders = [[], [], [], []];
-        this.borderDone = [false, false, false, false];
+        this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
         this.tileToMeter = tileToMeter(canonical);
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
