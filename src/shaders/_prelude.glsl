@@ -8,9 +8,23 @@
 
 #ifdef FOG
 
-uniform vec4 u_fog_color;
-uniform vec2 u_fog_range;
-uniform float u_fog_horizon_blend;
+#ifdef GL_ES
+precision highp float;
+#else
+#if !defined(lowp)
+#define lowp
+#endif
+#if !defined(mediump)
+#define mediump
+#endif
+#if !defined(highp)
+#define highp
+#endif
+#endif
+
+uniform highp vec4 u_fog_color;
+uniform highp vec2 u_fog_range;
+uniform highp float u_fog_horizon_blend;
 
 varying vec3 v_fog_pos;
 
