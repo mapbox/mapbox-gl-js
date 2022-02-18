@@ -1,3 +1,4 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import validateExpression from './validate_expression.js';
@@ -7,7 +8,13 @@ import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
 import extend from '../util/extend.js';
 import {isExpressionFilter} from '../feature_filter/index.js';
 
-export default function validateFilter(options) {
+import type {ValidationOptions} from './validate.js';
+
+type Options = ValidationOptions & {
+    layerType: string;
+}
+
+export default function validateFilter(options: Options): Array<ValidationError> {
     if (isExpressionFilter(deepUnbundle(options.value))) {
         const layerType = deepUnbundle(options.layerType);
         return validateExpression(extend({}, options, {

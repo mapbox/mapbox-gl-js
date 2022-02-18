@@ -1,3 +1,4 @@
+// @flow
 
 import validate from './validate.js';
 import ValidationError from '../error/validation_error.js';
@@ -6,7 +7,14 @@ import {isFunction} from '../function/index.js';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
 import {supportsPropertyExpression} from '../util/properties.js';
 
-export default function validateProperty(options, propertyType) {
+import type {ValidationOptions} from './validate.js';
+
+type Options = ValidationOptions & {
+    objectKey: string;
+    layerType: string;
+}
+
+export default function validateProperty(options: Options, propertyType: string): Array<ValidationError> {
     const key = options.key;
     const style = options.style;
     const styleSpec = options.styleSpec;

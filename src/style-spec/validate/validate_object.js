@@ -1,9 +1,17 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import validateSpec from './validate.js';
 
-export default function validateObject(options) {
+import type {ValidationOptions} from './validate.js';
+
+type Options = ValidationOptions & {
+    valueSpec?: any;
+    objectElementValidators?: Function;
+}
+
+export default function validateObject(options: Options): Array<ValidationError> {
     const key = options.key;
     const object = options.value;
     const elementSpecs = options.valueSpec || {};

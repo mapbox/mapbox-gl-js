@@ -1,8 +1,12 @@
 // @flow
+
+import ValidationError from '../error/validation_error.js';
 import validateExpression from './validate_expression.js';
 import validateString from './validate_string.js';
 
-export default function validateFormatted(options: any) {
+import type {ValidationOptions} from './validate.js';
+
+export default function validateFormatted(options: ValidationOptions): Array<ValidationError> {
     if (validateString(options).length === 0) {
         return [];
     }

@@ -1,8 +1,11 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import validateString from './validate_string.js';
 
-export default function(options) {
+import type {ValidationOptions} from './validate.js';
+
+export default function(options: ValidationOptions): Array<ValidationError> {
     const value = options.value;
     const key = options.key;
 

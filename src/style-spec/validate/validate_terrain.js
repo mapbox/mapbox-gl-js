@@ -1,10 +1,13 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import validate from './validate.js';
 import getType from '../util/get_type.js';
 import {unbundle} from '../util/unbundle_jsonlint.js';
 
-export default function validateTerrain(options) {
+import type {ValidationOptions} from './validate.js';
+
+export default function validateTerrain(options: ValidationOptions): Array<ValidationError> {
     const terrain = options.value;
     const key = options.key;
     const style = options.style;

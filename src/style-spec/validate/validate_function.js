@@ -1,3 +1,4 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import getType from '../util/get_type.js';
@@ -13,7 +14,9 @@ import {
     supportsInterpolation
 } from '../util/properties.js';
 
-export default function validateFunction(options) {
+import type {ValidationOptions} from './validate.js';
+
+export default function validateFunction(options: ValidationOptions): any {
     const functionValueSpec = options.valueSpec;
     const functionType = unbundle(options.value.type);
     let stopKeyType;

@@ -1,3 +1,4 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import {unbundle} from '../util/unbundle_jsonlint.js';
@@ -8,7 +9,15 @@ import validateLayoutProperty from './validate_layout_property.js';
 import validateSpec from './validate.js';
 import extend from '../util/extend.js';
 
-export default function validateLayer(options) {
+import type {ValidationOptions} from './validate.js';
+import type {LayerSpecification} from '../types.js';
+
+type Options = ValidationOptions & {
+    value: LayerSpecification;
+    arrayIndex: number;
+}
+
+export default function validateLayer(options: Options): Array<ValidationError> {
     let errors = [];
 
     const layer = options.value;
