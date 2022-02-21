@@ -115,9 +115,11 @@ function camelize (str) {
 global.camelize = camelize;
 
 import posAttributes from '../src/data/pos_attributes.js';
+import {posAttributesGlobeExt} from '../src/data/pos_attributes.js';
 import boundsAttributes from '../src/data/bounds_attributes.js';
 
 createStructArrayType('pos', posAttributes);
+createStructArrayType('pos_globe_ext', posAttributesGlobeExt);
 createStructArrayType('raster_bounds', boundsAttributes);
 
 import {circleAttributes, circleGlobeAttributesExt} from '../src/data/bucket/circle_attributes.js';

@@ -715,14 +715,17 @@ class Transform {
         if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
 
         const centerCoord = this.locationCoordinate(this.center);
+        const centerLatitude = this.center.lat;
+        const ppcAtCenter = this.pixelsPerMeter / (mercatorZfromAltitude(1, centerLatitude) * this.worldSize);
         const numTiles = 1 << z;
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
-        const zInMeters = this.projection.name !== 'globe';
+        const isGlobe = this.projection.name === 'globe';
+        const zInMeters = !isGlobe;
         const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z, zInMeters);
         const cameraCoord = this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
-        const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude];
+        const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude * (zInMeters ? 1 : meterToTile)];
         // Let's consider an example for !roundZoom: e.g. tileZoom 16 is used from zoom 16 all the way to zoom 16.99.
         // This would mean that the minimal distance to split would be based on distance from camera to center of 16.99 zoom.
         // The same is already incorporated in logic behind roundZoom for raster (so there is no adjustment needed in following line).
@@ -849,20 +852,35 @@ class Transform {
             const dy = it.aabb.distanceY(cameraPoint);
             let dzSqr = cameraHeightSqr;
 
-            if (useElevationData) {
-                dzSqr = square(it.aabb.distanceZ(cameraPoint) * meterToTile);
-            }
-
             let tileScaleAdjustment = 1;
-            if (this.projection.isReprojectedInTileSpace && actualZ <= 5) {
-                // In other projections, not all tiles are the same size.
-                // Account for the tile size difference by adjusting the distToSplit.
-                // Adjust by the ratio of the area at the tile center to the area at the map center.
-                // Adjustments are only needed at lower zooms where tiles are not similarly sized.
-                const numTiles = Math.pow(2, it.zoom);
-                const relativeScale = relativeScaleAtMercatorCoord(new MercatorCoordinate((it.x + 0.5) / numTiles, (it.y + 0.5) / numTiles));
-                // Fudge the ratio slightly so that all tiles near the center have the same zoom level.
-                tileScaleAdjustment = relativeScale > 0.85 ? 1 : relativeScale;
+            if (isGlobe) {
+                dzSqr = square(it.aabb.distanceZ(cameraPoint));
+                // Compensate physical sizes of the tiles when determining which zoom level to use.
+                // In practice tiles closer to poles should use more aggressive LOD as their
+                // physical size is already smaller than size of tiles near the equator.
+                const tilesAtZoom = Math.pow(2, it.zoom);
+                const minLat = latFromMercatorY((it.y + 1) / tilesAtZoom);
+                const maxLat = latFromMercatorY((it.y) / tilesAtZoom);
+                const closestLat = Math.min(Math.max(centerLatitude, minLat), maxLat);
+                const ppmAtTileLat = this.projection.pixelsPerMeter(closestLat, this.worldSize);
+                const ppcAtTile = ppmAtTileLat / (mercatorZfromAltitude(1, closestLat) * this.worldSize);
+
+                tileScaleAdjustment = Math.min(ppcAtTile / ppcAtCenter, 1.0);
+            } else {
+                assert(zInMeters);
+                if (useElevationData) {
+                    dzSqr = square(it.aabb.distanceZ(cameraPoint) * meterToTile);
+                }
+                if (this.projection.isReprojectedInTileSpace && actualZ <= 5) {
+                    // In other projections, not all tiles are the same size.
+                    // Account for the tile size difference by adjusting the distToSplit.
+                    // Adjust by the ratio of the area at the tile center to the area at the map center.
+                    // Adjustments are only needed at lower zooms where tiles are not similarly sized.
+                    const numTiles = Math.pow(2, it.zoom);
+                    const relativeScale = relativeScaleAtMercatorCoord(new MercatorCoordinate((it.x + 0.5) / numTiles, (it.y + 0.5) / numTiles));
+                    // Fudge the ratio slightly so that all tiles near the center have the same zoom level.
+                    tileScaleAdjustment = relativeScale > 0.85 ? 1 : relativeScale;
+                }
             }
 
             const distanceSqr = dx * dx + dy * dy + dzSqr;
@@ -888,7 +906,7 @@ class Transform {
             const y = it.y;
             let fullyVisible = it.fullyVisible;
 
-            // Visibility of a tile is not required if any of its ancestor if fully inside the frustum
+            // Visibility of a tile is not required if any of its ancestor is fully inside the frustum
             if (!fullyVisible) {
                 const intersectResult = it.aabb.intersects(cameraFrustum);
 
@@ -919,7 +937,7 @@ class Transform {
 
                 const aabb = isMercator ? it.aabb.quadrant(i) : tileAABB(this, numTiles, it.zoom + 1, childX, childY, it.wrap, it.minZ, it.maxZ, this.projection);
                 const child = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined, minZ: it.minZ, maxZ: it.maxZ};
-                if (useElevationData) {
+                if (useElevationData && !isGlobe) {
                     child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
                     getAABBFromElevation(child);
                 }

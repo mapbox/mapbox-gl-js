@@ -6,7 +6,7 @@ import FeatureIndex from '../data/feature_index.js';
 import GeoJSONFeature from '../util/vectortile_to_geojson.js';
 import featureFilter from '../style-spec/feature_filter/index.js';
 import SymbolBucket from '../data/bucket/symbol_bucket.js';
-import {CollisionBoxArray, TileBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
+import {CollisionBoxArray, TileBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray, PosGlobeExtArray} from '../data/array_types.js';
 import Texture from '../render/texture.js';
 import browser from '../util/browser.js';
 import {Debug} from '../util/debug.js';
@@ -22,6 +22,8 @@ import getTileMesh from './tile_mesh.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 
 import boundsAttributes from '../data/bounds_attributes.js';
+import posAttributes, {posAttributesGlobeExt} from '../data/pos_attributes.js';
+
 import EXTENT from '../data/extent.js';
 import Point from '@mapbox/point-geometry';
 import SegmentVector from '../data/segment.js';
@@ -40,7 +42,7 @@ import type ImageAtlas from '../render/image_atlas.js';
 import type LineAtlas from '../render/line_atlas.js';
 import type ImageManager from '../render/image_manager.js';
 import type Context from '../gl/context.js';
-import type {OverscaledTileID} from './tile_id.js';
+import type {CanonicalTileID, OverscaledTileID} from './tile_id.js';
 import type Framebuffer from '../gl/framebuffer.js';
 import type Transform from '../geo/transform.js';
 import type {LayerFeatureStates} from './source_state.js';
@@ -54,6 +56,8 @@ import type {TileTransform} from '../geo/projection/tile_transform.js';
 import type {QueryResult} from '../data/feature_index.js';
 import type Painter from '../render/painter.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
+import {globeTileBounds,  globeNormalizeECEF, tileCoordToECEF} from '../geo/projection/globe_util.js';
+import {vec3} from 'gl-matrix';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -147,6 +151,11 @@ class Tile {
     _tileBoundsIndexBuffer: IndexBuffer;
     _tileDebugSegments: SegmentVector;
     _tileBoundsSegments: SegmentVector;
+    _globeTileDebugBorderBuffer: ?VertexBuffer;
+    _tileDebugTextBuffer: ?VertexBuffer;
+    _tileDebugTextSegments: SegmentVector;
+    _tileDebugTextIndexBuffer: IndexBuffer;
+    _globeTileDebugTextBuffer: ?VertexBuffer;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -330,6 +339,23 @@ class Tile {
         if (this.globeGridBuffer) {
             this.globeGridBuffer.destroy();
             this.globeGridBuffer = null;
+        }
+
+        if (this._globeTileDebugBorderBuffer) {
+            this._globeTileDebugBorderBuffer.destroy();
+            this._globeTileDebugBorderBuffer = null;
+        }
+
+        if (this._tileDebugTextBuffer) {
+            this._tileDebugTextBuffer.destroy();
+            this._tileDebugTextSegments.destroy();
+            this._tileDebugTextIndexBuffer.destroy();
+            this._tileDebugTextBuffer = null;
+        }
+
+        if (this._globeTileDebugTextBuffer) {
+            this._globeTileDebugTextBuffer.destroy();
+            this._globeTileDebugTextBuffer = null;
         }
 
         Debug.run(() => {
@@ -622,7 +648,7 @@ class Tile {
         debugIndices.emplaceBack(0);
 
         this._tileDebugIndexBuffer = context.createIndexBuffer(debugIndices);
-        this._tileDebugBuffer = context.createVertexBuffer(debugVertices, boundsAttributes.members);
+        this._tileDebugBuffer = context.createVertexBuffer(debugVertices, posAttributes.members);
         this._tileDebugSegments = SegmentVector.simpleSegment(0, 0, debugVertices.length, debugIndices.length);
     }
 
@@ -652,10 +678,112 @@ class Tile {
                 boundsIndices.emplaceBack(indices[i], indices[i + 1], indices[i + 2]);
             }
         }
-
         this._tileBoundsBuffer = context.createVertexBuffer(boundsVertices, boundsAttributes.members);
         this._tileBoundsIndexBuffer = context.createIndexBuffer(boundsIndices);
         this._tileBoundsSegments = SegmentVector.simpleSegment(0, 0, boundsVertices.length, boundsIndices.length);
+    }
+
+    _makeGlobeTileDebugBuffers(context: Context, projection: Projection) {
+        if (this._globeTileDebugBorderBuffer || this._globeTileDebugTextBuffer || !projection || projection.name !== 'globe') return;
+
+        const id = this.tileID.canonical;
+        const bounds = globeTileBounds(id);
+        const normalizationMatrix = globeNormalizeECEF(bounds);
+
+        this._makeGlobeTileDebugBorderBuffer(context, id, normalizationMatrix);
+        this._makeGlobeTileDebugTextBuffer(context, id, normalizationMatrix);
+    }
+
+    _makeGlobeTileDebugBorderBuffer(context: Context, id: CanonicalTileID, normalizationMatrix: Float64Array) {
+        const vertices = new PosArray();
+        const indices = new LineStripIndexArray();
+        const extraGlobe = new PosGlobeExtArray();
+
+        const addLine = (sx: number, sy: number, ex: number, ey: number, pointCount: number) => {
+            const stepX = (ex - sx) / (pointCount - 1);
+            const stepY = (ey - sy) / (pointCount - 1);
+
+            const vOffset = vertices.length;
+
+            for (let i = 0; i < pointCount; i++) {
+                const x = sx + i * stepX;
+                const y = sy + i * stepY;
+                vertices.emplaceBack(x, y);
+
+                // The next two lines are equivalent to doing projection.projectTilePoint.
+                // This way we don't recompute the normalization matrix everytime since it remains the same for all points.
+                const ecef = tileCoordToECEF(x, y, id);
+                const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
+
+                extraGlobe.emplaceBack(gp[0], gp[1], gp[2]);
+                indices.emplaceBack(vOffset + i);
+            }
+        };
+
+        const e = EXTENT;
+        addLine(0, 0, e, 0, 16);
+        addLine(e, 0, e, e, 16);
+        addLine(e, e, 0, e, 16);
+        addLine(0, e, 0, 0, 16);
+
+        this._tileDebugIndexBuffer = context.createIndexBuffer(indices);
+        this._tileDebugBuffer = context.createVertexBuffer(vertices, posAttributes.members);
+        this._globeTileDebugBorderBuffer = context.createVertexBuffer(extraGlobe, posAttributesGlobeExt.members);
+        this._tileDebugSegments = SegmentVector.simpleSegment(0, 0, vertices.length, indices.length);
+    }
+
+    _makeGlobeTileDebugTextBuffer(context: Context, id: CanonicalTileID, normalizationMatrix: Float64Array) {
+        const SEGMENTS = 4;
+        const numVertices = SEGMENTS + 1;
+        const step = EXTENT / SEGMENTS;
+
+        const vertices = new PosArray();
+        const indices = new TriangleIndexArray();
+        const extraGlobe = new PosGlobeExtArray();
+
+        const totalVertices = numVertices * numVertices;
+        const totalTriangles = SEGMENTS * SEGMENTS * 2;
+        indices.reserve(totalTriangles);
+        vertices.reserve(totalVertices);
+        extraGlobe.reserve(totalVertices);
+
+        const toIndex = (j: number, i: number): number => {
+            return totalVertices * j + i;
+        };
+
+        // add vertices.
+        for (let j = 0; j < totalVertices; j++) {
+            const y = j * step;
+            for (let i = 0; i < totalVertices; i++) {
+                const x = i * step;
+                vertices.emplaceBack(x, y);
+
+                const ecef = tileCoordToECEF(x, y, id);
+                const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
+                extraGlobe.emplaceBack(gp[0], gp[1], gp[2]);
+            }
+        }
+
+        // add indices.
+        for (let j = 0; j < SEGMENTS; j++) {
+            for (let i = 0; i < SEGMENTS; i++) {
+                const tl = toIndex(j, i);
+                const tr = toIndex(j, i + 1);
+                const bl = toIndex(j + 1, i);
+                const br = toIndex(j + 1, i + 1);
+
+                // first triangle of the sub-patch.
+                indices.emplaceBack(tl, tr, bl);
+
+                // second triangle of the sub-patch.
+                indices.emplaceBack(bl, tr, br);
+            }
+        }
+
+        this._tileDebugTextIndexBuffer = context.createIndexBuffer(indices);
+        this._tileDebugTextBuffer = context.createVertexBuffer(vertices, posAttributes.members);
+        this._globeTileDebugTextBuffer = context.createVertexBuffer(extraGlobe, posAttributesGlobeExt.members);
+        this._tileDebugTextSegments = SegmentVector.simpleSegment(0, 0, totalVertices, totalTriangles);
     }
 }
 

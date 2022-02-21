@@ -4,9 +4,9 @@ import MercatorCoordinate, {altitudeFromMercatorZ, lngFromMercatorX, latFromMerc
 import EXTENT from '../../data/extent.js';
 import {vec3} from 'gl-matrix';
 import {Aabb} from '../../util/primitives.js';
-import {globeTileBounds} from './globe_util.js';
-import {UnwrappedTileID, CanonicalTileID} from '../../source/tile_id.js';
+import {aabbForTileOnGlobe} from './globe_util.js';
 import assert from 'assert';
+import {CanonicalTileID} from '../../source/tile_id.js';
 
 import type {Vec3} from 'gl-matrix';
 import type Projection from './projection.js';
@@ -95,24 +95,8 @@ export default function tileTransform(id: Object, projection: Projection): TileT
 
 export function tileAABB(tr: Transform, numTiles: number, z: number, x: number, y: number, wrap: number, min: number, max: number, projection: Projection): Aabb {
     if (projection.name === 'globe') {
-        const tileId = new UnwrappedTileID(wrap, new CanonicalTileID(z, x, y));
-        const aabb = globeTileBounds(tileId.canonical);
-
-        // Transform corners of the aabb to the correct space
-        const corners = aabb.getCorners();
-
-        const mx = Number.MAX_VALUE;
-        const cornerMax = [-mx, -mx, -mx];
-        const cornerMin = [mx, mx, mx];
-        for (let i = 0; i < corners.length; i++) {
-            vec3.transformMat4(corners[i], corners[i], tr.globeMatrix);
-            vec3.min(cornerMin, cornerMin, corners[i]);
-            vec3.max(cornerMax, cornerMax, corners[i]);
-        }
-        const scale = numTiles / tr.worldSize;
-        vec3.scale(cornerMin, cornerMin, scale);
-        vec3.scale(cornerMax, cornerMax, scale);
-        return new Aabb(cornerMin, cornerMax);
+        const tileId = new CanonicalTileID(z, x, y);
+        return aabbForTileOnGlobe(tr, numTiles, tileId);
     }
 
     const tt = tileTransform({z, x, y}, projection);
