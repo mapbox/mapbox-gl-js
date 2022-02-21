@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import minimist from 'minimist';
-import {format, migrate} from '../dist/index.es.js';
+import {format, migrate} from '@mapbox/mapbox-gl-style-spec';
 
 const argv = minimist(process.argv.slice(2));
 

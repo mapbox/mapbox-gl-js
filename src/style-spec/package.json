@@ -22,10 +22,11 @@
     }
   },
   "scripts": {
+    "pretest": "npm run build",
     "test": "node ./test.js",
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
-    "prepublishOnly": "git clean -fdx && yarn copy-flow-typed && yarn build",
+    "prepublishOnly": "git clean -fdx && npm run copy-flow-typed && npm run build",
     "postpublish": "rm -r flow-typed dist/index.cjs"
   },
   "repository": {
@@ -39,7 +40,6 @@
     "gl-style-composite": "./bin/gl-style-composite.js"
   },
   "dependencies": {
-    "@mapbox/flow-remove-types": "^2.0.0",
     "@mapbox/jsonlint-lines-primitives": "~2.0.2",
     "@mapbox/point-geometry": "^0.1.0",
     "@mapbox/unitbezier": "^0.0.0",
