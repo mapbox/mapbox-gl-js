@@ -216,6 +216,7 @@ export default class Popup extends Evented {
         if (map) {
             map.off('move', this._update);
             map.off('move', this._onClose);
+            map.off('preclick', this._onClose);
             map.off('click', this._onClose);
             map.off('remove', this.remove);
             map.off('mousemove', this._onMouseEvent);
