@@ -22,7 +22,7 @@
     }
   },
   "scripts": {
-    "copy-run-node": "cp -R ../../build/{run-node,node-loader.js} ./build",
+    "copy-run-node": "cp -R ../../build/run-node ../../build/node-loader.js ./build",
     "test": "yarn copy-run-node && ./build/run-node ./test.js",
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
