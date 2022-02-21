@@ -22,22 +22,21 @@
     }
   },
   "scripts": {
-    "copy-run-node": "cp -R ../../build/run-node ../../build/node-loader.js ./build",
-    "test": "yarn copy-run-node && ./build/run-node ./test.js",
+    "test": "node ./test.js",
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
-    "prepublishOnly": "git clean -fdx && yarn copy-flow-typed && yarn copy-run-node && yarn build",
-    "postpublish": "rm -r flow-typed build/node-loader.js build/run-node dist/index.cjs"
+    "prepublishOnly": "git clean -fdx && yarn copy-flow-typed && yarn build",
+    "postpublish": "rm -r flow-typed dist/index.cjs"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:mapbox/mapbox-gl-js.git"
   },
   "bin": {
-    "gl-style-migrate": "build/run-node bin/gl-style-migrate.js",
-    "gl-style-validate": "build/run-node bin/gl-style-validate.js",
-    "gl-style-format": "build/run-node bin/gl-style-format.js",
-    "gl-style-composite": "build/run-node bin/gl-style-composite.js"
+    "gl-style-migrate": "./bin/gl-style-migrate.js",
+    "gl-style-validate": "./bin/gl-style-validate.js",
+    "gl-style-format": "./bin/gl-style-format.js",
+    "gl-style-composite": "./bin/gl-style-composite.js"
   },
   "dependencies": {
     "@mapbox/flow-remove-types": "^2.0.0",

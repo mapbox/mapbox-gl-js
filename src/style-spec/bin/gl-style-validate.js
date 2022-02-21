@@ -3,7 +3,7 @@
 
 import rw from 'rw';
 import minimist from 'minimist';
-import {validate, validateMapboxApiSupported} from '../style-spec.js';
+import {validate, validateMapboxApiSupported} from '../dist/index.es.js';
 
 const argv = minimist(process.argv.slice(2), {
     boolean: ['json', 'mapbox-api-supported'],

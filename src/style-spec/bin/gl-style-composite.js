@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import minimist from 'minimist';
-import {format, composite} from '../style-spec.js';
+import {format, composite} from '../dist/index.es.js';
 
 const argv = minimist(process.argv.slice(2));
 

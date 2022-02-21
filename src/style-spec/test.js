@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /* eslint-disable no-process-exit */
 
+import fs from 'fs';
 import {execSync} from 'child_process';
 import {createRequire} from 'module';
-import packageJson from './package.json';
+
+const packageJson = JSON.parse(fs.readFileSync('./package.json'));
 
 process.on('unhandledRejection', error => {
     // don't log `error` directly, because errors from child_process.execSync
