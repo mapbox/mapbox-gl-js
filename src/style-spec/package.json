@@ -26,8 +26,8 @@
     "test": "yarn copy-run-node && ./build/run-node ./test.js",
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
-    "prepublishOnly": "git clean -fdx && yarn copy-flow-typed && yarn build",
-    "postpublish": "rm -r flow-typed dist/index.cjs"
+    "prepublishOnly": "git clean -fdx && yarn copy-flow-typed && yarn copy-run-node && yarn build",
+    "postpublish": "rm -r flow-typed build/node-loader.js build/run-node dist/index.cjs"
   },
   "repository": {
     "type": "git",
