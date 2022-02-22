@@ -1031,12 +1031,23 @@ class Transform {
     get point(): Point { return this.project(this.center); }
 
     setLocationAtPoint(lnglat: LngLat, point: Point) {
-        const a = this.pointCoordinate(point);
-        const b = this.pointCoordinate(this.centerPoint);
+        let x, y;
+        const centerPoint = this.centerPoint;
+
+        if (this.projection.name === 'globe') {
+            // Pixel coordinates are applied directly to the globe
+            const worldSize = this.worldSize;
+            x = (point.x - centerPoint.x) / worldSize;
+            y = (point.y - centerPoint.y) / worldSize;
+        } else {
+            const a = this.pointCoordinate(point);
+            const b = this.pointCoordinate(centerPoint);
+            x = a.x - b.x;
+            y = a.y - b.y;
+        }
+
         const loc = this.locationCoordinate(lnglat);
-        this.setLocation(new MercatorCoordinate(
-            loc.x - (a.x - b.x),
-            loc.y - (a.y - b.y)));
+        this.setLocation(new MercatorCoordinate(loc.x - x, loc.y - y));
     }
 
     setLocation(location: MercatorCoordinate) {
