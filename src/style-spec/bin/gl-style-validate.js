@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* eslint-disable import/no-unresolved, no-process-exit */
+/* eslint-disable no-process-exit */
+/* eslint import/no-unresolved: [error, { ignore: ['^@mapbox/mapbox-gl-style-spec$'] }] */
 
 import rw from 'rw';
 import minimist from 'minimist';
