@@ -20,7 +20,7 @@ export default function validateFunction(options: ValidationOptions): any {
     const functionValueSpec = options.valueSpec;
     const functionType = unbundle(options.value.type);
     let stopKeyType;
-    let stopDomainValues = {};
+    let stopDomainValues: {[string | number]: boolean} = {};
     let previousStopDomainValue;
     let previousStopDomainZoom;
 
@@ -69,7 +69,7 @@ export default function validateFunction(options: ValidationOptions): any {
 
     return errors;
 
-    function validateFunctionStops(options) {
+    function validateFunctionStops(options: ValidationOptions) {
         if (functionType === 'identity') {
             return [new ValidationError(options.key, options.value, 'identity function may not have a "stops" property')];
         }
@@ -93,7 +93,7 @@ export default function validateFunction(options: ValidationOptions): any {
         return errors;
     }
 
-    function validateFunctionStop(options) {
+    function validateFunctionStop(options: ValidationOptions) {
         let errors = [];
         const value = options.value;
         const key = options.key;
@@ -116,11 +116,17 @@ export default function validateFunction(options: ValidationOptions): any {
             if (value[0].value === undefined) {
                 return [new ValidationError(key, value, 'object stop key must have value')];
             }
-            if (previousStopDomainZoom && previousStopDomainZoom > unbundle(value[0].zoom)) {
+
+            const nextStopDomainZoom = unbundle(value[0].zoom);
+            if (typeof nextStopDomainZoom !== 'number') {
+                return [new ValidationError(key, value, 'stop zoom values must be numbers')];
+            }
+
+            if (previousStopDomainZoom && previousStopDomainZoom > nextStopDomainZoom) {
                 return [new ValidationError(key, value[0].zoom, 'stop zoom values must appear in ascending order')];
             }
-            if (unbundle(value[0].zoom) !== previousStopDomainZoom) {
-                previousStopDomainZoom = unbundle(value[0].zoom);
+            if (nextStopDomainZoom !== previousStopDomainZoom) {
+                previousStopDomainZoom = nextStopDomainZoom;
                 previousStopDomainValue = undefined;
                 stopDomainValues = {};
             }
@@ -155,7 +161,7 @@ export default function validateFunction(options: ValidationOptions): any {
         }));
     }
 
-    function validateStopDomainValue(options, stop) {
+    function validateStopDomainValue(options: ValidationOptions, stop) {
         const type = getType(options.value);
         const value = unbundle(options.value);
 
@@ -167,7 +173,7 @@ export default function validateFunction(options: ValidationOptions): any {
             return [new ValidationError(options.key, reportValue, `${type} stop domain type must match previous stop domain type ${stopKeyType}`)];
         }
 
-        if (type !== 'number' && type !== 'string' && type !== 'boolean') {
+        if (type !== 'number' && type !== 'string' && type !== 'boolean' && typeof value !== 'number' && typeof value !== 'string' && typeof value !== 'boolean') {
             return [new ValidationError(options.key, reportValue, 'stop domain value must be a number, string, or boolean')];
         }
 
@@ -179,26 +185,26 @@ export default function validateFunction(options: ValidationOptions): any {
             return [new ValidationError(options.key, reportValue, message)];
         }
 
-        if (functionType === 'categorical' && type === 'number' && (!isFinite(value) || Math.floor(value) !== value)) {
-            return [new ValidationError(options.key, reportValue, `integer expected, found ${value}`)];
+        if (functionType === 'categorical' && type === 'number' && (typeof value !== 'number' || !isFinite(value) || Math.floor(value) !== value)) {
+            return [new ValidationError(options.key, reportValue, `integer expected, found ${String(value)}`)];
         }
 
-        if (functionType !== 'categorical' && type === 'number' && previousStopDomainValue !== undefined && value < previousStopDomainValue) {
+        if (functionType !== 'categorical' && type === 'number' && typeof value === 'number' && typeof previousStopDomainValue === 'number' && previousStopDomainValue !== undefined && value < previousStopDomainValue) {
             return [new ValidationError(options.key, reportValue, 'stop domain values must appear in ascending order')];
         } else {
             previousStopDomainValue = value;
         }
 
-        if (functionType === 'categorical' && value in stopDomainValues) {
+        if (functionType === 'categorical' && (value: any) in stopDomainValues) {
             return [new ValidationError(options.key, reportValue, 'stop domain values must be unique')];
         } else {
-            stopDomainValues[value] = true;
+            stopDomainValues[(value: any)] = true;
         }
 
         return [];
     }
 
-    function validateFunctionDefault(options) {
+    function validateFunctionDefault(options: ValidationOptions) {
         return validate({
             key: options.key,
             value: options.value,

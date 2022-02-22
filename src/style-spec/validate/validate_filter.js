@@ -17,6 +17,12 @@ type Options = ValidationOptions & {
 export default function validateFilter(options: Options): Array<ValidationError> {
     if (isExpressionFilter(deepUnbundle(options.value))) {
         const layerType = deepUnbundle(options.layerType);
+        if (typeof layerType !== 'string') {
+            const key = options.key;
+            const value = options.value;
+            return [new ValidationError(key, value, `layer type must be a string`)];
+        }
+
         return validateExpression(extend({}, options, {
             expressionContext: 'filter',
             // We default to a layerType of `fill` because that points to a non-dynamic filter definition within the style-spec.

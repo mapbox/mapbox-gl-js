@@ -1,7 +1,5 @@
 // @flow
 
-import latestStyleSpec from '../reference/latest.js';
-
 import extend from '../util/extend.js';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
 import {isExpression} from '../expression/index.js';
@@ -26,6 +24,7 @@ import validateFormatted from './validate_formatted.js';
 import validateImage from './validate_image.js';
 import validateProjection from './validate_projection.js';
 
+import type {StyleReference} from '../reference/latest.js';
 import type {StyleSpecification} from '../types.js';
 
 const VALIDATORS = {
@@ -62,10 +61,10 @@ const VALIDATORS = {
 // - styleSpec: current full spec being evaluated.
 export type ValidationOptions = {
     key: string;
-    value: any;
+    value: Object;
+    valueSpec: Object;
     style: $Shape<StyleSpecification>;
-    valueSpec: any;
-    styleSpec: $Shape<typeof latestStyleSpec>;
+    styleSpec: StyleReference;
 }
 
 export default function validate(options: ValidationOptions) {

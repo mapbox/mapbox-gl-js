@@ -36,6 +36,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
         for (let i = 0; i < options.arrayIndex; i++) {
             const otherLayer = style.layers[i];
             if (unbundle(otherLayer.id) === layerId) {
+                // $FlowFixMe[prop-missing] - id.__line__ is added dynamically during the readStyle step
                 errors.push(new ValidationError(key, layer.id, `duplicate layer id "${layer.id}", previously used at line ${otherLayer.id.__line__}`));
             }
         }
@@ -55,7 +56,8 @@ export default function validateLayer(options: Options): Array<ValidationError> 
         });
 
         if (!parent) {
-            errors.push(new ValidationError(key, layer.ref, `ref layer "${ref}" not found`));
+            if (typeof ref === 'string')
+                errors.push(new ValidationError(key, layer.ref, `ref layer "${ref}" not found`));
         } else if (parent.ref) {
             errors.push(new ValidationError(key, layer.ref, 'ref cannot reference another ref layer'));
         } else {
@@ -115,6 +117,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
                     layer,
                     key: options.key,
                     value: options.value,
+                    valueSpec: {},
                     style: options.style,
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
@@ -129,6 +132,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
                     layer,
                     key: options.key,
                     value: options.value,
+                    valueSpec: {},
                     style: options.style,
                     styleSpec: options.styleSpec,
                     objectElementValidators: {

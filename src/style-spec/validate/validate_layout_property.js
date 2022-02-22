@@ -1,9 +1,9 @@
 // @flow
 
-import ValidationError from '../error/validation_error.js';
 import validateProperty from './validate_property.js';
 
 import type {ValidationOptions} from './validate.js';
+import type ValidationError from '../error/validation_error.js';
 
 type Options = ValidationOptions & {
     objectKey: string;

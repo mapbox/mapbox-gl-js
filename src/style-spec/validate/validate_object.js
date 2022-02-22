@@ -7,9 +7,8 @@ import validateSpec from './validate.js';
 import type {ValidationOptions} from './validate.js';
 
 type Options = ValidationOptions & {
-    valueSpec?: any;
     objectElementValidators?: Function;
-}
+};
 
 export default function validateObject(options: Options): Array<ValidationError> {
     const key = options.key;
@@ -43,6 +42,8 @@ export default function validateObject(options: Options): Array<ValidationError>
             continue;
         }
 
+        if (!validateElement) continue;
+
         errors = errors.concat(validateElement({
             key: (key ? `${key}.` : key) + objectKey,
             value: object[objectKey],
@@ -51,6 +52,7 @@ export default function validateObject(options: Options): Array<ValidationError>
             styleSpec,
             object,
             objectKey
+        // $FlowFixMe[extra-arg]
         }, object));
     }
 

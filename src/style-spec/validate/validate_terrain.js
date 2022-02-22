@@ -55,7 +55,7 @@ export default function validateTerrain(options: ValidationOptions): Array<Valid
         if (!source) {
             errors.push(new ValidationError(key, terrain.source, `source "${terrain.source}" not found`));
         } else if (sourceType !== 'raster-dem') {
-            errors.push(new ValidationError(key, terrain.source, `terrain cannot be used with a source of type ${sourceType}, it only be used with a "raster-dem" source type`));
+            errors.push(new ValidationError(key, terrain.source, `terrain cannot be used with a source of type ${String(sourceType)}, it only be used with a "raster-dem" source type`));
         }
     }
 
