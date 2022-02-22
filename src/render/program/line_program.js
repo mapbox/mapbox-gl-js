@@ -9,7 +9,6 @@ import {
     UniformMatrix4f
 } from '../uniform_binding.js';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
-import browser from '../../util/browser.js';
 
 import type Context from '../../gl/context.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
@@ -79,7 +78,8 @@ const lineUniformValues = (
     layer: LineStyleLayer,
     crossfade: CrossfadeParameters,
     matrix: ?Float32Array,
-    imageHeight: number
+    imageHeight: number,
+    pixelRatio: number
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
     const pixelsToTileUnits = transform.calculatePixelsToTileUnitsMatrix(tile);
@@ -87,7 +87,7 @@ const lineUniformValues = (
     const values = {
         'u_matrix': calculateMatrix(painter, tile, layer, matrix),
         'u_pixels_to_tile_units': pixelsToTileUnits,
-        'u_device_pixel_ratio': browser.devicePixelRatio,
+        'u_device_pixel_ratio': pixelRatio,
         'u_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
@@ -114,7 +114,8 @@ const linePatternUniformValues = (
     tile: Tile,
     layer: LineStyleLayer,
     crossfade: CrossfadeParameters,
-    matrix: ?Float32Array
+    matrix: ?Float32Array,
+    pixelRatio: number
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
     const tileZoomRatio = calculateTileRatio(tile, transform);
@@ -123,7 +124,7 @@ const linePatternUniformValues = (
         'u_texsize': tile.imageAtlasTexture.size,
         // camera zoom ratio
         'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile),
-        'u_device_pixel_ratio': browser.devicePixelRatio,
+        'u_device_pixel_ratio': pixelRatio,
         'u_image': 0,
         'u_scale': [tileZoomRatio, crossfade.fromScale, crossfade.toScale],
         'u_fade': crossfade.t,
