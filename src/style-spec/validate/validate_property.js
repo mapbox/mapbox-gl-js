@@ -9,12 +9,12 @@ import {supportsPropertyExpression} from '../util/properties.js';
 
 import type {ValidationOptions} from './validate.js';
 
-type Options = ValidationOptions & {
+export type PropertyValidationOptions = ValidationOptions & {
     objectKey: string;
     layerType: string;
 }
 
-export default function validateProperty(options: Options, propertyType: string): Array<ValidationError> {
+export default function validateProperty(options: PropertyValidationOptions, propertyType: string): Array<ValidationError> {
     const key = options.key;
     const style = options.style;
     const styleSpec = options.styleSpec;

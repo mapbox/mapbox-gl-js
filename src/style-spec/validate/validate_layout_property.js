@@ -2,14 +2,9 @@
 
 import validateProperty from './validate_property.js';
 
-import type {ValidationOptions} from './validate.js';
 import type ValidationError from '../error/validation_error.js';
+import type {PropertyValidationOptions} from './validate_property.js';
 
-type Options = ValidationOptions & {
-    objectKey: string;
-    layerType: string;
-}
-
-export default function validateLayoutProperty(options: Options): Array<ValidationError> {
+export default function validateLayoutProperty(options: PropertyValidationOptions): Array<ValidationError> {
     return validateProperty(options, 'layout');
 }
