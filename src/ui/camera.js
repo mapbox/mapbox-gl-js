@@ -1536,7 +1536,7 @@ class Camera extends Evented {
 
             const newCenter = k === 1 ? center : tr.unproject(from.add(delta.mult(u(s))).mult(scale));
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
-            tr._updateCenterElevation();
+            tr._updateCameraOnTerrain();
 
             if (!options.preloadOnly) {
                 this._fireMoveEvents(eventData);
