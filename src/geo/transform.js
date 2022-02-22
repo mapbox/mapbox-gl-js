@@ -113,7 +113,7 @@ class Transform {
     _fov: number;
     _pitch: number;
     _zoom: number;
-    _cameraZoom: ?number;
+    _seaLevelZoom: ?number;
     _unmodified: boolean;
     _renderWorldCopies: boolean;
     _minZoom: number;
@@ -188,7 +188,7 @@ class Transform {
         clone.cameraElevationReference = this.cameraElevationReference;
         clone._center = this._center;
         clone._setZoom(this.zoom);
-        clone._cameraZoom = this._cameraZoom;
+        clone._seaLevelZoom = this._seaLevelZoom;
         clone.angle = this.angle;
         clone._fov = this._fov;
         clone._pitch = this._pitch;
@@ -211,7 +211,7 @@ class Transform {
         this._calcMatrices();
     }
     updateElevation(constrainCameraOverTerrain: boolean) { // On render, no need for higher granularity on update reasons.
-        if (this._cameraZoom == null) {
+        if (this._seaLevelZoom == null) {
             this._updateCameraOnTerrain();
         }
         if (constrainCameraOverTerrain) {
@@ -364,7 +364,7 @@ class Transform {
         if (this._zoom === z) return;
         this._unmodified = false;
         this._setZoom(z);
-        this._updateCameraZoom();
+        this._updateSeaLevelZoom();
         this._constrain();
         this._calcMatrices();
     }
@@ -379,28 +379,29 @@ class Transform {
         if (!this._elevation || !this._elevation.isDataAvailableAtPoint(this.locationCoordinate(this.center))) {
             // Elevation data not loaded yet, reset
             this._centerAltitude = 0;
-            this._cameraZoom = null;
+            this._seaLevelZoom = null;
             this._centerAltitudeValid = false;
             return;
         }
 
         this._centerAltitude = this._elevation.getAtPointOrZero(this.locationCoordinate(this.center));
         this._centerAltitudeValid = true;
-        this._updateCameraZoom();
+        this._updateSeaLevelZoom();
     }
 
-    _updateCameraZoom() {
+    _updateSeaLevelZoom() {
         if (!this._centerAltitudeValid) {
             return;
         }
-        // Camera zoom describes the distance of the camera to the sea level (altitude).
-        // It is used only for manipulating the camera location. The standard zoom (this._zoom)
-        // defines the camera distance to the terrain (height). Its behavior and conceptual
-        // meaning in determining which tiles to stream is same with or without the terrain.
         const height = this.cameraToCenterDistance;
         const terrainElevation = this.pixelsPerMeter * this._centerAltitude;
         const mercatorZ = (terrainElevation + height) / this.worldSize;
-        this._cameraZoom = this._zoomFromMercatorZ(mercatorZ);
+
+        // MSL (Mean Sea Level) zoom describes the distance of the camera to the sea level (altitude).
+        // It is used only for manipulating the camera location. The standard zoom (this._zoom)
+        // defines the camera distance to the terrain (height). Its behavior and conceptual
+        // meaning in determining which tiles to stream is same with or without the terrain.
+        this._seaLevelZoom = this._zoomFromMercatorZ(mercatorZ);
     }
 
     sampleAverageElevation(): number {
@@ -455,14 +456,14 @@ class Transform {
     }
 
     _updateZoomFromElevation() {
-        if (this._cameraZoom == null || !this._elevation)
+        if (this._seaLevelZoom == null || !this._elevation)
             return;
 
         // Compute zoom level from the height of the camera relative to the terrain
-        const cameraZoom: number = this._cameraZoom;
+        const seaLevelZoom: number = this._seaLevelZoom;
         const elevationAtCenter = this._elevation.getAtPointOrZero(this.locationCoordinate(this.center));
         const mercatorElevation = this.pixelsPerMeter / this.worldSize * elevationAtCenter;
-        const altitude  = this._mercatorZfromZoom(cameraZoom);
+        const altitude  = this._mercatorZfromZoom(seaLevelZoom);
         const minHeight = this._mercatorZfromZoom(this._maxZoom);
         const height = Math.max(altitude - mercatorElevation, minHeight);
 
@@ -1481,7 +1482,7 @@ class Transform {
 
             const camToNew = [newCenter.x - start[0], newCenter.y - start[1], newCenter.z - start[2] * metersToMerc];
             const maxAltitude = (newCenter.z + vec3.length(camToNew)) * this._projectionScaler;
-            this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
+            this._seaLevelZoom = this._zoomFromMercatorZ(maxAltitude);
 
             // Camera zoom has to be updated as the orbit distance might have changed
             this._centerAltitude = newCenter.toAltitude();
@@ -1771,7 +1772,7 @@ class Transform {
         // Compute camera position using the following vector math: camera.position = map.center - camera.forward * cameraToCenterDist
         // Camera distance to the center can be found in mercator units by subtracting the center elevation from
         // camera's zenith position (which can be deduced from the zoom level)
-        const zoom = this._cameraZoom ? this._cameraZoom : this._zoom;
+        const zoom = this._seaLevelZoom ? this._seaLevelZoom : this._zoom;
         const altitude = this._mercatorZfromZoom(zoom) * pixelSpaceConversion;
         const distance = altitude - targetPixelsPerMeter / this.worldSize * this._centerAltitude;
 
@@ -1829,7 +1830,7 @@ class Transform {
         this._pitch = clamp(pitch, degToRad(this.minPitch), degToRad(this.maxPitch));
         this.angle = wrap(bearing, -Math.PI, Math.PI);
         this._setZoom(clamp(zoom, this._minZoom, this._maxZoom));
-        this._updateCameraZoom();
+        this._updateSeaLevelZoom();
 
         this._center = this.coordinateLocation(new MercatorCoordinate(position[0], position[1], position[2]));
         this._unmodified = false;
@@ -1851,7 +1852,7 @@ class Transform {
         // drape raster overscale artifacts or cut terrain (see under it) as it gets clipped on
         // near plane. Returned value is in mercator coordinates.
         const MAX_DRAPE_OVERZOOM = 2;
-        const zoom = Math.min((this._cameraZoom != null ? this._cameraZoom : this._zoom) + MAX_DRAPE_OVERZOOM, this._maxZoom);
+        const zoom = Math.min((this._seaLevelZoom != null ? this._seaLevelZoom : this._zoom) + MAX_DRAPE_OVERZOOM, this._maxZoom);
         return this._mercatorZfromZoom(zoom);
     }
 

@@ -748,7 +748,7 @@ test('transform', (t) => {
         transform.zoom = zoom;
 
         t.false(transform._centerAltitudeValid);
-        t.equal(transform._cameraZoom, transformBefore._cameraZoom);
+        t.equal(transform._seaLevelZoom, transformBefore._seaLevelZoom);
 
         t.end();
     });
@@ -762,7 +762,7 @@ test('transform', (t) => {
         t.equal(transform.elevation.getAtPointOrZero(new MercatorCoordinate(1.0, 0.5)), 250);
 
         t.equal(transform.zoom, 16);
-        t.equal(transform._cameraZoom, 16);
+        t.equal(transform._seaLevelZoom, 16);
 
         // zoom should remain unchanged
         transform.cameraElevationReference = "ground";
@@ -775,9 +775,9 @@ test('transform', (t) => {
         // zoom should change so that the altitude remains constant
         transform.cameraElevationReference = "sea";
         transform.center = new LngLat(180, 0);
-        t.equal(transform._cameraZoom, 16);
+        t.equal(transform._seaLevelZoom, 16);
 
-        const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._cameraZoom) * transform.tileSize);
+        const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._seaLevelZoom) * transform.tileSize);
         const heightZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform.zoom) * transform.tileSize);
         const elevationZ = mercatorZfromAltitude(250, 0);
         t.equal(fixedNum(elevationZ + heightZ), fixedNum(altitudeZ));
@@ -792,20 +792,20 @@ test('transform', (t) => {
         transform.zoom = 16;
 
         transform.elevation = createConstantElevation(0);
-        t.equal(transform.zoom, transform._cameraZoom);
+        t.equal(transform.zoom, transform._seaLevelZoom);
 
         // Camera zoom should change so that the standard zoom value describes distance between the camera and the terrain
         transform.elevation = createConstantElevation(10000);
-        t.equal(fixedNum(transform._cameraZoom), 11.1449615644);
+        t.equal(fixedNum(transform._seaLevelZoom), 11.1449615644);
 
         // Camera height over terrain should remain constant
-        const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._cameraZoom) * transform.tileSize);
+        const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._seaLevelZoom) * transform.tileSize);
         const heightZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform.zoom) * transform.tileSize);
         const elevationZ = mercatorZfromAltitude(10000, 0);
         t.equal(elevationZ + heightZ, altitudeZ);
 
         transform.pitch = 32;
-        t.equal(fixedNum(transform._cameraZoom), 11.1449615644);
+        t.equal(fixedNum(transform._seaLevelZoom), 11.1449615644);
         t.equal(transform.zoom, 16);
 
         t.end();
