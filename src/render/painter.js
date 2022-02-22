@@ -555,7 +555,7 @@ class Painter {
         if (this.style.fog && this.style.fog.getOpacity(this.transform.pitch)) {
             clearColor = this.style.fog.properties.get('color');
         }
-        this.context.clear({color: options.showOverdrawInspector ? Color.black : clearColor, depth: 1});
+        this.context.clear({color: {r:0.0118, g:0.1451, b:0.3882}, depth: 1});
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;

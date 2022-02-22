@@ -24,5 +24,6 @@ void main() {
 
     vec3 color = mix(u_start_color, u_end_color, 1.0 - t);
 
-    gl_FragColor = vec4(color * t * u_opacity, u_opacity);
+    //gl_FragColor = vec4(color * t * u_opacity, t);
+    gl_FragColor = vec4(color, t);
 }

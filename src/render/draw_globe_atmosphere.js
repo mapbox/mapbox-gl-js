@@ -42,7 +42,7 @@ function drawGlobeAtmosphere(painter: Painter) {
         fadeOutTransition,          // opacity
         2.0,                        // fadeout range
         [1.0, 1.0, 1.0],            // start color
-        [0.0118, 0.7451, 0.9882]);  // end color
+        [0, 0, 0]);  // end color
 
     painter.prepareDrawProgram(context, program);
 
