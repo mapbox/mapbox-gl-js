@@ -4,10 +4,12 @@ import {
     Uniform1i,
     Uniform2f,
     Uniform3f,
+    Uniform4f,
     UniformMatrix4f,
     Uniform1f,
     UniformMatrix3f
 } from '../render/uniform_binding.js';
+import browser from '../util/browser.js';
 
 import type Context from '../gl/context.js';
 import type {UniformValues, UniformLocations} from '../render/uniform_binding.js';
@@ -31,8 +33,14 @@ export type AtmosphereUniformsType = {|
     'u_globe_radius': Uniform1f,
     'u_opacity': Uniform1f,
     'u_fadeout_range': Uniform1f,
-    'u_start_color': Uniform3f,
-    'u_end_color': Uniform3f
+    'u_color': Uniform4f,
+    'u_sky_color': Uniform4f,
+    'u_space_color': Uniform4f,
+    'u_latlon': Uniform2f,
+    'u_star_intensity': Uniform1f,
+    'u_star_size': Uniform1f,
+    'u_star_density': Uniform1f,
+    'u_temporal_offset': Uniform1f
 |};
 
 const globeRasterUniforms = (context: Context, locations: UniformLocations): GlobeRasterUniformsType => ({
@@ -54,8 +62,14 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_globe_radius': new Uniform1f(context, locations.u_globe_radius),
     'u_opacity': new Uniform1f(context, locations.u_opacity),
     'u_fadeout_range': new Uniform1f(context, locations.u_fadeout_range),
-    'u_start_color': new Uniform3f(context, locations.u_start_color),
-    'u_end_color': new Uniform3f(context, locations.u_end_color)
+    'u_color': new Uniform4f(context, locations.u_color),
+    'u_sky_color': new Uniform4f(context, locations.u_sky_color),
+    'u_space_color': new Uniform4f(context, locations.u_space_color),
+    'u_latlon': new Uniform2f(context, locations.u_latlon),
+    'u_star_intensity': new Uniform1f(context, locations.u_star_intensity),
+    'u_star_density': new Uniform1f(context, locations.u_star_density),
+    'u_star_size': new Uniform1f(context, locations.u_star_size),
+    'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset)
 });
 
 const globeRasterUniformValues = (
@@ -84,8 +98,12 @@ const atmosphereUniformValues = (
     globeRadius: number,
     opacity: number,
     fadeoutRange: number,
-    startColor: [number, number, number],
-    endColor: [number, number, number]
+    color: [number, number, number, number],
+    skyColor: [number, number, number, number],
+    spaceColor: [number, number, number, number],
+    latlon: [number, number],
+    starIntensity: number,
+    temporalOffset: number
 ): UniformValues<AtmosphereUniformsType> => ({
     'u_frustum_tl': frustumDirTl,
     'u_frustum_tr': frustumDirTr,
@@ -95,8 +113,14 @@ const atmosphereUniformValues = (
     'u_globe_radius': globeRadius,
     'u_opacity': opacity,
     'u_fadeout_range': fadeoutRange,
-    'u_start_color': startColor,
-    'u_end_color': endColor
+    'u_color': color,
+    'u_sky_color': skyColor,
+    'u_space_color': spaceColor,
+    'u_latlon': latlon,
+    'u_star_intensity': starIntensity,
+    'u_star_size': 5.0 * browser.devicePixelRatio,
+    'u_star_density': 0.0,
+    'u_temporal_offset': temporalOffset
 });
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};

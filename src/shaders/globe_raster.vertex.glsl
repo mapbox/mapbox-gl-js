@@ -76,7 +76,9 @@ void main() {
     height += wireframeOffset;
 #endif
 
-    vec4 globe = u_globe_matrix * vec4(globe_pos + up_vector.xyz * height, 1.0);
+    globe_pos += up_vector.xyz * height;
+
+    vec4 globe = u_globe_matrix * vec4(globe_pos, 1.0);
 
     vec4 mercator = vec4(0.0);
     if (u_zoom_transition > 0.0) {
@@ -89,4 +91,8 @@ void main() {
     vec3 position = mix(globe.xyz, mercator.xyz, u_zoom_transition);
 
     gl_Position = u_proj_matrix * vec4(position, 1.0);
+
+#ifdef FOG
+    v_fog_pos = fog_position(globe_pos);
+#endif
 }
