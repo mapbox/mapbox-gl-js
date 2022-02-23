@@ -379,8 +379,8 @@ class Painter {
             const tile = sourceCache.getTile(tileID);
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
-                // Tests will always pass, and ref value will be written to stencil buffer.
-                new StencilMode({func: gl.ALWAYS, mask: 0}, this._tileClippingMaskIDs[tileID.key], 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
+                // Tests will pass if the new ref is greater than the previous value, and ref value will be written to stencil buffer.
+                new StencilMode({func: gl.GREATER, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
                 ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
                 '$clipping', tileBoundsBuffer,
                 tileBoundsIndexBuffer, tileBoundsSegments);
@@ -391,7 +391,7 @@ class Painter {
                 renderStencil(tileID);
             }
         } else {
-            if (this.nextStencilID + tileIDs.length > 256) {
+            if (Object.keys(this._tileClippingMaskIDs).length === 0 || this.nextStencilID + tileIDs.length > 256) {
                 // we'll run out of fresh IDs so we need to clear and start from scratch
                 this.clearStencil();
             }
