@@ -3838,12 +3838,48 @@
         }
       }
     },
+    "sky-color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": ""
+        }
+      }
+    },
+    "space-color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": ""
+        }
+      }
+    },
     "horizon-blend": {
       "type": "number",
       "property-type": "data-constant",
       "default": 0.1,
       "minimum": 0,
-      "maximum": 1,
+      "maximum": 10,
       "expression": {
         "interpolated": true,
         "parameters": [
@@ -3855,6 +3891,26 @@
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
+        }
+      }
+    },
+    "star-intensity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0.15,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": ""
         }
       }
     }

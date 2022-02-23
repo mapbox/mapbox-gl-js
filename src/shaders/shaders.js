@@ -65,8 +65,8 @@ import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 import globeFrag from './globe_raster.fragment.glsl';
 import globeVert from './globe_raster.vertex.glsl';
-import atmosphereFrag from './globe_atmosphere.fragment.glsl';
-import atmosphereVert from './globe_atmosphere.vertex.glsl';
+import atmosphereFrag from './atmosphere.fragment.glsl';
+import atmosphereVert from './atmosphere.vertex.glsl';
 
 export let preludeTerrain = {};
 export let preludeFog = {};

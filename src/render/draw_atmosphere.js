@@ -7,15 +7,22 @@ import CullFaceMode from '../gl/cull_face_mode.js';
 import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
+import {degToRad, mapValue} from '../util/util.js';
 import {vec3, mat4} from 'gl-matrix';
 
-export default drawGlobeAtmosphere;
+export default drawAtmosphere;
 
 function project(point, m) {
     return vec3.transformMat4(point, point, m);
 }
 
-function drawGlobeAtmosphere(painter: Painter) {
+function drawAtmosphere(painter: Painter) {
+    const fog = painter.style.fog;
+
+    if (!fog) {
+        return;
+    }
+
     const context = painter.context;
     const gl = context.gl;
     const transform = painter.transform;
@@ -46,6 +53,37 @@ function drawGlobeAtmosphere(painter: Painter) {
 
     const fadeOutTransition = 1.0 - globeToMercatorTransition(transform.zoom);
 
+    const fogOpacity = fog.getOpacity(transform.pitch);
+    const fogColor = fog.properties.get('color');
+    const fogColorUnpremultiplied = [
+        fogColor.a === 0.0 ? 0 : fogColor.r / fogColor.a,
+        fogColor.a === 0.0 ? 0 : fogColor.g / fogColor.a,
+        fogColor.a === 0.0 ? 0 : fogColor.b / fogColor.a,
+        fogColor.a
+    ];
+    const skyColor = fog.properties.get('sky-color');
+    const skyColorUnpremultiplied = [
+        skyColor.a === 0.0 ? 0 : skyColor.r / skyColor.a,
+        skyColor.a === 0.0 ? 0 : skyColor.g / skyColor.a,
+        skyColor.a === 0.0 ? 0 : skyColor.b / skyColor.a,
+        skyColor.a
+    ];
+    const spaceColor = fog.properties.get('space-color');
+    const spaceColorUnpremultiplied = [
+        spaceColor.a === 0.0 ? 0 : spaceColor.r / spaceColor.a,
+        spaceColor.a === 0.0 ? 0 : spaceColor.g / spaceColor.a,
+        spaceColor.a === 0.0 ? 0 : spaceColor.b / spaceColor.a,
+        spaceColor.a
+    ];
+
+    const temporalOffset = (painter.frameCounter / 1000.0) % 1;
+    const latlon = [
+        degToRad(transform._center.lat) / (Math.PI * 0.5),
+        degToRad(transform._center.lng) / Math.PI
+    ];
+
+    const starIntensity = mapValue(fog.properties.get('star-intensity'), 0.0, 1.0, 0.0, 0.25);
+
     const uniforms = atmosphereUniformValues(
         frustumTl,
         frustumTr,
@@ -53,10 +91,14 @@ function drawGlobeAtmosphere(painter: Painter) {
         frustumBl,
         globeCenterInViewSpace,
         globeRadius,
-        fadeOutTransition,          // opacity
-        2.0,                        // fadeout range
-        [1.0, 1.0, 1.0],            // start color
-        [0.0118, 0.7451, 0.9882]);  // end color
+        fadeOutTransition,
+        fog.properties.get('horizon-blend'),
+        fogColorUnpremultiplied,
+        skyColorUnpremultiplied,
+        spaceColorUnpremultiplied,
+        latlon,
+        starIntensity,
+        temporalOffset);
 
     painter.prepareDrawProgram(context, program);
 
