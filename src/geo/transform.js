@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE, circumferenceAtLatitude} from './mercator_coordinate.js';
 import {getProjection} from './projection/index.js';
 import {tileAABB} from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
@@ -716,13 +716,12 @@ class Transform {
 
         const centerCoord = this.locationCoordinate(this.center);
         const centerLatitude = this.center.lat;
-        const ppcAtCenter = this.pixelsPerMeter / (mercatorZfromAltitude(1, centerLatitude) * this.worldSize);
         const numTiles = 1 << z;
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
         const isGlobe = this.projection.name === 'globe';
         const zInMeters = !isGlobe;
         const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z, zInMeters);
-        const cameraCoord = this.pointCoordinate(this.getCameraPoint());
+        const cameraCoord = isGlobe ? this._camera.mercatorPosition : this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
         const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude * (zInMeters ? 1 : meterToTile)];
@@ -862,10 +861,8 @@ class Transform {
                 const minLat = latFromMercatorY((it.y + 1) / tilesAtZoom);
                 const maxLat = latFromMercatorY((it.y) / tilesAtZoom);
                 const closestLat = Math.min(Math.max(centerLatitude, minLat), maxLat);
-                const ppmAtTileLat = this.projection.pixelsPerMeter(closestLat, this.worldSize);
-                const ppcAtTile = ppmAtTileLat / (mercatorZfromAltitude(1, closestLat) * this.worldSize);
-
-                tileScaleAdjustment = Math.min(ppcAtTile / ppcAtCenter, 1.0);
+                const scale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
+                tileScaleAdjustment = Math.min(scale, 1.0);
             } else {
                 assert(zInMeters);
                 if (useElevationData) {
