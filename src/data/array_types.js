@@ -1360,7 +1360,7 @@ export {
     StructArrayLayout3f12 as CollisionVertexExtArray,
     StructArrayLayout3ui6 as QuadTriangleArray,
     StructArrayLayout7f28 as GlobeVertexArray,
-    StructArrayLayout5f20 as GlobeAtmosphereVertexArray,
+    StructArrayLayout5f20 as AtmosphereVertexArray,
     StructArrayLayout3ui6 as TriangleIndexArray,
     StructArrayLayout2ui4 as LineIndexArray,
     StructArrayLayout1ui2 as LineStripIndexArray,

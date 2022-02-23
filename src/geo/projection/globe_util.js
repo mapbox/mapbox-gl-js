@@ -14,7 +14,7 @@ import {vec3, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
 import posAttributes from '../../data/pos_attributes.js';
-import {TriangleIndexArray, GlobeVertexArray, GlobeAtmosphereVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
+import {TriangleIndexArray, GlobeVertexArray, AtmosphereVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
 
@@ -570,7 +570,7 @@ export class GlobeSharedBuffers {
     }
 
     _createAtmosphere(context: Context) {
-        const atmosphereVertices = new GlobeAtmosphereVertexArray();
+        const atmosphereVertices = new AtmosphereVertexArray();
         atmosphereVertices.emplaceBack(-1, 1, 1, 0, 0);
         atmosphereVertices.emplaceBack(1, 1, 1, 1, 0);
         atmosphereVertices.emplaceBack(1, -1, 1, 1, 1);

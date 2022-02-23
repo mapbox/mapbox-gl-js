@@ -3,7 +3,7 @@
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 
-import {mat4} from 'gl-matrix';
+import {mat4, vec3} from 'gl-matrix';
 import SourceCache from '../source/source_cache.js';
 import EXTENT from '../data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
@@ -40,7 +40,7 @@ import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
-import drawGlobeAtmosphere from './draw_globe_atmosphere.js';
+import drawAtmosphere from './draw_atmosphere.js';
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
@@ -586,9 +586,9 @@ class Painter {
         // Clear buffers in preparation for drawing to the main framebuffer
         // If fog is enabled, use the fog color as default clear color.
         let clearColor = Color.transparent;
-        if (this.style.fog && this.style.fog.getOpacity(this.transform.pitch)) {
-            clearColor = this.style.fog.properties.get('color');
-        }
+        // if (this.style.fog && this.style.fog.getOpacity(this.transform.pitch)) {
+        //     clearColor = this.style.fog.properties.get('horizon-color');
+        // }
         this.context.clear({color: options.showOverdrawInspector ? Color.black : clearColor, depth: 1});
         this.clearStencil();
 
@@ -626,9 +626,8 @@ class Painter {
                 this.renderLayer(this, sourceCache, layer, coords);
             }
         }
-        if (this.transform.projection.name === 'globe') {
-            drawGlobeAtmosphere(this);
-        }
+
+        drawAtmosphere(this);
 
         // Translucent pass ===============================================
         // Draw all other layers bottom-to-top.
@@ -884,7 +883,7 @@ class Painter {
         if (terrain) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {
+        if (fog && !rtt) { // if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {
             defines.push('FOG');
         }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
@@ -978,9 +977,31 @@ class Painter {
 
         if (fog) {
             const fogOpacity = fog.getOpacity(this.transform.pitch);
-            if (fogOpacity !== 0.0) {
-                program.setFogUniformValues(context, fogUniformValues(this, fog, tileID, fogOpacity));
-            }
+            // if (fogOpacity !== 0.0) {
+                const tr = this.transform;
+                const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
+                const viewToProj = tr._camera.getCameraToClipPerspective(tr._fov, tr.width / tr.height, tr._nearZ, tr._farZ);
+                const projToView = mat4.invert([], viewToProj);
+
+                const frustumTl = vec3.transformMat4([], [-1, 1, 1], projToView);
+                const frustumTr = vec3.transformMat4([], [1, 1, 1], projToView);
+                const frustumBr = vec3.transformMat4([], [1, -1, 1], projToView);
+                const frustumBl = vec3.transformMat4([], [-1, -1, 1], projToView);
+
+                const center = [tr.globeMatrix[12], tr.globeMatrix[13], tr.globeMatrix[14]];
+                const globeCenterInViewSpace = vec3.transformMat4([], center, viewMatrix);
+                const globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
+                const viewport = [
+                    tr.width * browser.devicePixelRatio,
+                    tr.height * browser.devicePixelRatio
+                ];
+
+                const fogUniforms = fogUniformValues(
+                    this, fog, tileID, fogOpacity, frustumTl, frustumTr, frustumBr,
+                    frustumBl, globeCenterInViewSpace, globeRadius, viewport);
+
+                program.setFogUniformValues(context, fogUniforms);
+            // }
         }
     }
 
