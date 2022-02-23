@@ -16,6 +16,8 @@ import type Painter from '../painter.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import {globeECEFOrigin} from '../../geo/projection/globe_util.js';
 
+import type {InterpolatedSize} from '../../symbol/symbol_size.js';
+
 export type SymbolIconUniformsType = {|
     'u_is_size_zoom_constant': Uniform1i,
     'u_is_size_feature_constant': Uniform1i,
@@ -174,7 +176,7 @@ const identityMatrix = mat4.create();
 
 const symbolIconUniformValues = (
     functionType: string,
-    size: ?{uSizeT: number, uSize: number},
+    size: ?InterpolatedSize,
     rotateInShader: boolean,
     pitchWithMap: boolean,
     painter: Painter,
@@ -230,7 +232,7 @@ const symbolIconUniformValues = (
 
 const symbolSDFUniformValues = (
     functionType: string,
-    size: ?{uSizeT: number, uSize: number},
+    size: ?InterpolatedSize,
     rotateInShader: boolean,
     pitchWithMap: boolean,
     painter: Painter,
@@ -258,7 +260,7 @@ const symbolSDFUniformValues = (
 
 const symbolTextAndIconUniformValues = (
     functionType: string,
-    size: ?{uSizeT: number, uSize: number},
+    size: ?InterpolatedSize,
     rotateInShader: boolean,
     pitchWithMap: boolean,
     painter: Painter,

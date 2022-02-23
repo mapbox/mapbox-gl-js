@@ -61,6 +61,11 @@ export type Shaping = {
     hasBaseline: boolean
 };
 
+type AnchorAlignment = {|
+    horizontalAlign: number,
+    verticalAlign: number
+|};
+
 function isEmpty(positionedLines: Array<PositionedLine>) {
     for (const line of positionedLines) {
         if (line.positionedGlyphs.length !== 0) {
@@ -528,7 +533,7 @@ function determineLineBreaks(logicalInput: TaggedString,
             true));
 }
 
-function getAnchorAlignment(anchor: SymbolAnchor) {
+function getAnchorAlignment(anchor: SymbolAnchor): AnchorAlignment {
     let horizontalAlign = 0.5, verticalAlign = 0.5;
 
     switch (anchor) {

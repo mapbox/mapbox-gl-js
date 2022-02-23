@@ -623,10 +623,16 @@ test('transform', (t) => {
 
     const createCollisionElevation = (elevation) => {
         return {
+            isDataAvailableAtPoint(_) {
+                return true;
+            },
             getAtPointOrZero(p) {
                 if (p.x === 0.5 && p.y === 0.5)
                     return 0;
                 return elevation;
+            },
+            getAtPoint(p) {
+                return this.getAtPointOrZero(p);
             },
             getForTilePoints(tileID, points) {
                 for (const p of points) {
@@ -638,10 +644,34 @@ test('transform', (t) => {
         };
     };
 
+    const createCollisionElevationNoData = () => {
+        return {
+            isDataAvailableAtPoint(_) {
+                return false;
+            },
+            getAtPointOrZero() {
+                return 0.0;
+            },
+            getAtPoint(p) {
+                return this.getAtPointOrZero(p);
+            },
+            getForTilePoints() {
+                return true;
+            },
+            getMinElevationBelowMSL: () => 0
+        };
+    };
+
     const createConstantElevation = (elevation) => {
         return {
+            isDataAvailableAtPoint(_) {
+                return true;
+            },
             getAtPointOrZero(_) {
                 return elevation;
+            },
+            getAtPoint(_) {
+                return this.getAtPointOrZero();
             },
             getForTilePoints(tileID, points) {
                 for (const p of points) {
@@ -655,8 +685,14 @@ test('transform', (t) => {
 
     const createRampElevation = (scale) => {
         return {
+            isDataAvailableAtPoint(_) {
+                return true;
+            },
             getAtPointOrZero(p) {
                 return scale * (p.x + p.y - 1.0);
+            },
+            getAtPoint(p) {
+                return this.getAtPointOrZero(p);
             },
             getForTilePoints(tileID, points) {
                 for (const p of points) {
@@ -694,6 +730,29 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('Constrained camera height over terrain without data', t => {
+        const transform = new Transform();
+        transform.resize(200, 200);
+
+        transform.elevation = createCollisionElevationNoData();
+
+        t.false(transform._centerAltitudeValid);
+
+        const transformBefore = transform.clone();
+
+        // Set camera altitude to 5 meters
+        const altitudeZ = mercatorZfromAltitude(5, transform.center.lat) / Math.cos(degToRad(85));
+        const zoom = transform._zoomFromMercatorZ(altitudeZ);
+
+        // Apply zoom
+        transform.zoom = zoom;
+
+        t.false(transform._centerAltitudeValid);
+        t.equal(transform._seaLevelZoom, transformBefore._seaLevelZoom);
+
+        t.end();
+    });
+
     test('Compute zoom from camera height', (t) => {
         const transform = new Transform();
         transform.resize(200, 200);
@@ -703,7 +762,7 @@ test('transform', (t) => {
         t.equal(transform.elevation.getAtPointOrZero(new MercatorCoordinate(1.0, 0.5)), 250);
 
         t.equal(transform.zoom, 16);
-        t.equal(transform._cameraZoom, 16);
+        t.equal(transform._seaLevelZoom, 16);
 
         // zoom should remain unchanged
         transform.cameraElevationReference = "ground";
@@ -716,9 +775,9 @@ test('transform', (t) => {
         // zoom should change so that the altitude remains constant
         transform.cameraElevationReference = "sea";
         transform.center = new LngLat(180, 0);
-        t.equal(transform._cameraZoom, 16);
+        t.equal(transform._seaLevelZoom, 16);
 
-        const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._cameraZoom) * transform.tileSize);
+        const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._seaLevelZoom) * transform.tileSize);
         const heightZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform.zoom) * transform.tileSize);
         const elevationZ = mercatorZfromAltitude(250, 0);
         t.equal(fixedNum(elevationZ + heightZ), fixedNum(altitudeZ));
@@ -733,20 +792,20 @@ test('transform', (t) => {
         transform.zoom = 16;
 
         transform.elevation = createConstantElevation(0);
-        t.equal(transform.zoom, transform._cameraZoom);
+        t.equal(transform.zoom, transform._seaLevelZoom);
 
         // Camera zoom should change so that the standard zoom value describes distance between the camera and the terrain
         transform.elevation = createConstantElevation(10000);
-        t.equal(fixedNum(transform._cameraZoom), 11.1449615644);
+        t.equal(fixedNum(transform._seaLevelZoom), 11.1449615644);
 
         // Camera height over terrain should remain constant
-        const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._cameraZoom) * transform.tileSize);
+        const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._seaLevelZoom) * transform.tileSize);
         const heightZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform.zoom) * transform.tileSize);
         const elevationZ = mercatorZfromAltitude(10000, 0);
         t.equal(elevationZ + heightZ, altitudeZ);
 
         transform.pitch = 32;
-        t.equal(fixedNum(transform._cameraZoom), 11.1449615644);
+        t.equal(fixedNum(transform._seaLevelZoom), 11.1449615644);
         t.equal(transform.zoom, 16);
 
         t.end();
@@ -764,8 +823,14 @@ test('transform', (t) => {
         let tilesDefaultElevation = 0;
         const tileElevation = {};
         const elevation = {
+            isDataAvailableAtPoint(_) {
+                return true;
+            },
             getAtPointOrZero(_) {
                 return this.exaggeration() * centerElevation;
+            },
+            getAtPoint(_) {
+                return this.getAtPointOrZero();
             },
             getMinMaxForTile(tileID) {
                 const ele = tileElevation[tileID.key] !== undefined ? tileElevation[tileID.key] : tilesDefaultElevation;
@@ -963,8 +1028,14 @@ test('transform', (t) => {
 
         const transform = new Transform();
         transform.elevation = {
+            isDataAvailableAtPoint(_) {
+                return true;
+            },
             getAtPointOrZero(_) {
                 return 2760;
+            },
+            getAtPoint(_) {
+                return this.getAtPointOrZero();
             },
             getMinMaxForTile(tileID) {
                 for (let z = tileID.canonical.z - 1; z >= 9; z--) {
@@ -1454,7 +1525,9 @@ test('transform', (t) => {
             const transform = new Transform(0, 22, 0, 85);
             transform.resize(100, 100);
             transform._elevation = {
+                isDataAvailableAtPoint: () => true,
                 getAtPointOrZero: () => groundElevation,
+                getAtPoint: () => groundElevation,
                 exaggeration: () => 1.0,
                 raycast: () => undefined,
                 getMinElevationBelowMSL: () => 0

@@ -204,8 +204,11 @@ class CustomStyleLayer extends StyleLayer {
 
     recalculate() {}
     updateTransitions() {}
-    hasTransition() {}
+    hasTransition(): boolean {
+        return false;
+    }
 
+    // $FlowFixMe[incompatible-extend] - CustomStyleLayer is not serializable
     serialize() {
         assert(false, "Custom layers cannot be serialized");
     }

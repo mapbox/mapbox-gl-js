@@ -1,25 +1,28 @@
 #!/usr/bin/env node
+/* eslint-disable no-process-exit */
+/* eslint import/no-unresolved: [error, { ignore: ['^@mapbox/mapbox-gl-style-spec$'] }] */
 
+import rw from 'rw';
+import minimist from 'minimist';
+import {validate, validateMapboxApiSupported} from '@mapbox/mapbox-gl-style-spec';
 
-var argv = require('minimist')(process.argv.slice(2), {
-        boolean: 'json',
-        boolean: 'mapbox-api-supported'
-    }),
-    validate = require('../').validate,
-    validateMapboxApiSupported = require('../').validateMapboxApiSupported
-    rw = require('rw'),
-    status = 0;
+const argv = minimist(process.argv.slice(2), {
+    boolean: ['json', 'mapbox-api-supported'],
+});
+
+let status = 0;
 
 if (argv.help || argv.h || (!argv._.length && process.stdin.isTTY)) {
-    return help();
+    help();
+    process.exit(status);
 }
 
 if (!argv._.length) {
     argv._.push('/dev/stdin');
 }
 
-argv._.forEach(function(file) {
-    var errors;
+argv._.forEach((file) => {
+    let errors = [];
     if (argv['mapbox-api-supported']) {
         errors = validateMapboxApiSupported(rw.readFileSync(file, 'utf8'));
     } else {
@@ -29,7 +32,7 @@ argv._.forEach(function(file) {
         if (argv.json) {
             process.stdout.write(JSON.stringify(errors, null, 2));
         } else {
-            errors.forEach(function (e) {
+            errors.forEach((e) => {
                 console.log('%s:%d: %s', file, e.line, e.message);
             });
         }

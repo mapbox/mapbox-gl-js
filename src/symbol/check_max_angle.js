@@ -18,7 +18,7 @@ import type Anchor from './anchor.js';
  * @returns {boolean} whether the label should be placed
  * @private
  */
-function checkMaxAngle(line: Array<Point>, anchor: Anchor, labelLength: number, windowSize: number, maxAngle: number) {
+function checkMaxAngle(line: Array<Point>, anchor: Anchor, labelLength: number, windowSize: number, maxAngle: number): boolean {
 
     // horizontal labels always pass
     if (anchor.segment === undefined) return true;

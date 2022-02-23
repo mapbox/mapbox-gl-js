@@ -29,6 +29,30 @@ export type ElevationQueryOptions = {
  * Provides access to elevation data from raster-dem source cache.
  */
 export class Elevation {
+
+    /**
+     * Helper that checks whether DEM data is available at a given mercator coordinate.
+     * @param {MercatorCoordinate} point Mercator coordinate of the point to check against.
+     * @returns {number} `true` indicating whether the data is available at `point`, and `false` otherwise.
+     */
+    isDataAvailableAtPoint(point: MercatorCoordinate) {
+        const sourceCache = this._source();
+        if (!sourceCache || point.y < 0.0 || point.y > 1.0) {
+            return false;
+        }
+
+        const cache: SourceCache = sourceCache;
+        const z = cache.getSource().maxzoom;
+        const tiles = 1 << z;
+        const wrap = Math.floor(point.x);
+        const px = point.x - wrap;
+        const x = Math.floor(px * tiles);
+        const y = Math.floor(point.y * tiles);
+        const demTile = this.findDEMTileFor(new OverscaledTileID(z, wrap, z, x, y));
+
+        return demTile && demTile.dem;
+    }
+
     /**
      * Helper around `getAtPoint` that guarantees that a numeric value is returned.
      * @param {MercatorCoordinate} point Mercator coordinate of the point.

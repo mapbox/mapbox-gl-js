@@ -31,6 +31,11 @@ export type SizeData = {
     interpolationType: ?InterpolationType
 };
 
+export type InterpolatedSize = {|
+    uSize: number,
+    uSizeT: number
+|};
+
 // For {text,icon}-size, get the bucket-level data that will be needed by
 // the painter to set symbol-size-related uniforms
 function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>): SizeData {
@@ -74,8 +79,8 @@ function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEval
 }
 
 function evaluateSizeForFeature(sizeData: SizeData,
-                                {uSize, uSizeT}: { uSize: number, uSizeT: number },
-                                {lowerSize, upperSize}: { lowerSize: number, upperSize: number}) {
+                                {uSize, uSizeT}: InterpolatedSize,
+                                {lowerSize, upperSize}: { lowerSize: number, upperSize: number}): number {
     if (sizeData.kind === 'source') {
         return lowerSize / SIZE_PACK_FACTOR;
     } else if (sizeData.kind === 'composite') {
@@ -84,7 +89,7 @@ function evaluateSizeForFeature(sizeData: SizeData,
     return uSize;
 }
 
-function evaluateSizeForZoom(sizeData: SizeData, zoom: number) {
+function evaluateSizeForZoom(sizeData: SizeData, zoom: number): InterpolatedSize {
     let uSizeT = 0;
     let uSize = 0;
 
