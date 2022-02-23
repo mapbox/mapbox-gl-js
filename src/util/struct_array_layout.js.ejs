@@ -21,6 +21,7 @@ for (const member of members) {
  * @private
  */
 class <%=StructArrayLayoutClass%> extends StructArray {
+    view: <%=usedTypes[0]%>Array;
 <%
 for (const type of usedTypes) {
 -%>
@@ -31,9 +32,9 @@ for (const type of usedTypes) {
 
     _refreshViews() {
 <%
-for (const type of usedTypes) {
+for (const [i, type] of Object.entries(usedTypes)) {
 -%>
-        this.<%=type.toLowerCase()%> = new <%=type%>Array(this.arrayBuffer);
+        <%if (i == 0) {%>this.view = <%}%>this.<%=type.toLowerCase()%> = new <%=type%>Array(this.arrayBuffer);
 <%
 }
 -%>

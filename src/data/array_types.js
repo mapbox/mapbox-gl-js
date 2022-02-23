@@ -13,12 +13,11 @@ import {register} from '../util/web_worker_transfer.js';
  * @private
  */
 class StructArrayLayout2i4 extends StructArray {
-    uint8: Uint8Array;
+    view: Int16Array;
     int16: Int16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number): number {
@@ -45,12 +44,11 @@ register(StructArrayLayout2i4);
  * @private
  */
 class StructArrayLayout4i8 extends StructArray {
-    uint8: Uint8Array;
+    view: Int16Array;
     int16: Int16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number): number {
@@ -81,12 +79,13 @@ register(StructArrayLayout4i8);
  * @private
  */
 class StructArrayLayout2i4ub1f12 extends StructArray {
+    view: Uint8Array;
     uint8: Uint8Array;
     int16: Int16Array;
     float32: Float32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.view = this.uint8 = new Uint8Array(this.arrayBuffer);
         this.int16 = new Int16Array(this.arrayBuffer);
         this.float32 = new Float32Array(this.arrayBuffer);
     }
@@ -122,12 +121,11 @@ register(StructArrayLayout2i4ub1f12);
  * @private
  */
 class StructArrayLayout3f12 extends StructArray {
-    uint8: Uint8Array;
+    view: Float32Array;
     float32: Float32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number): number {
@@ -155,12 +153,11 @@ register(StructArrayLayout3f12);
  * @private
  */
 class StructArrayLayout10ui20 extends StructArray {
-    uint8: Uint8Array;
+    view: Uint16Array;
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number): number {
@@ -195,12 +192,11 @@ register(StructArrayLayout10ui20);
  * @private
  */
 class StructArrayLayout8ui16 extends StructArray {
-    uint8: Uint8Array;
+    view: Uint16Array;
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number): number {
@@ -272,13 +268,12 @@ register(StructArrayLayout6i12);
  * @private
  */
 class StructArrayLayout4i4ui4i4i32 extends StructArray {
-    uint8: Uint8Array;
+    view: Int16Array;
     int16: Int16Array;
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
         this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
@@ -320,12 +315,11 @@ register(StructArrayLayout4i4ui4i4i32);
  * @private
  */
 class StructArrayLayout1ul4 extends StructArray {
-    uint8: Uint8Array;
+    view: Uint32Array;
     uint32: Uint32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.uint32 = new Uint32Array(this.arrayBuffer);
+        this.view = this.uint32 = new Uint32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number): number {
@@ -355,18 +349,17 @@ register(StructArrayLayout1ul4);
  * @private
  */
 class StructArrayLayout5i4f1i1ul2ui40 extends StructArray {
-    uint8: Uint8Array;
+    view: Int16Array;
     int16: Int16Array;
+    uint16: Uint16Array;
     float32: Float32Array;
     uint32: Uint32Array;
-    uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
+        this.uint16 = new Uint16Array(this.arrayBuffer);
         this.float32 = new Float32Array(this.arrayBuffer);
         this.uint32 = new Uint32Array(this.arrayBuffer);
-        this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number): number {
@@ -407,12 +400,11 @@ register(StructArrayLayout5i4f1i1ul2ui40);
  * @private
  */
 class StructArrayLayout3i2i2i16 extends StructArray {
-    uint8: Uint8Array;
+    view: Int16Array;
     int16: Int16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number): number {
@@ -446,14 +438,13 @@ register(StructArrayLayout3i2i2i16);
  * @private
  */
 class StructArrayLayout2f1f2i16 extends StructArray {
-    uint8: Uint8Array;
-    float32: Float32Array;
+    view: Int16Array;
     int16: Int16Array;
+    float32: Float32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
         this.float32 = new Float32Array(this.arrayBuffer);
-        this.int16 = new Int16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number): number {
@@ -485,11 +476,12 @@ register(StructArrayLayout2f1f2i16);
  * @private
  */
 class StructArrayLayout2ub2f12 extends StructArray {
+    view: Uint8Array;
     uint8: Uint8Array;
     float32: Float32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.view = this.uint8 = new Uint8Array(this.arrayBuffer);
         this.float32 = new Float32Array(this.arrayBuffer);
     }
 
@@ -520,12 +512,11 @@ register(StructArrayLayout2ub2f12);
  * @private
  */
 class StructArrayLayout3ui6 extends StructArray {
-    uint8: Uint8Array;
+    view: Uint16Array;
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number): number {
@@ -562,17 +553,18 @@ register(StructArrayLayout3ui6);
  * @private
  */
 class StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1ub60 extends StructArray {
+    view: Uint8Array;
     uint8: Uint8Array;
     int16: Int16Array;
-    float32: Float32Array;
     uint16: Uint16Array;
+    float32: Float32Array;
     uint32: Uint32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.view = this.uint8 = new Uint8Array(this.arrayBuffer);
         this.int16 = new Int16Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
         this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
         this.uint32 = new Uint32Array(this.arrayBuffer);
     }
 
@@ -626,17 +618,16 @@ register(StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1ub60);
  * @private
  */
 class StructArrayLayout3i2f6i15ui1ul3f76 extends StructArray {
-    uint8: Uint8Array;
+    view: Int16Array;
     int16: Int16Array;
-    float32: Float32Array;
     uint16: Uint16Array;
+    float32: Float32Array;
     uint32: Uint32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.int16 = new Int16Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
         this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
         this.uint32 = new Uint32Array(this.arrayBuffer);
     }
 
@@ -693,12 +684,11 @@ register(StructArrayLayout3i2f6i15ui1ul3f76);
  * @private
  */
 class StructArrayLayout1f4 extends StructArray {
-    uint8: Uint8Array;
+    view: Float32Array;
     float32: Float32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number): number {
@@ -724,12 +714,11 @@ register(StructArrayLayout1f4);
  * @private
  */
 class StructArrayLayout3i6 extends StructArray {
-    uint8: Uint8Array;
+    view: Int16Array;
     int16: Int16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.int16 = new Int16Array(this.arrayBuffer);
+        this.view = this.int16 = new Int16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number): number {
@@ -757,12 +746,11 @@ register(StructArrayLayout3i6);
  * @private
  */
 class StructArrayLayout7f28 extends StructArray {
-    uint8: Uint8Array;
+    view: Float32Array;
     float32: Float32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number): number {
@@ -830,14 +818,13 @@ register(StructArrayLayout5f20);
  * @private
  */
 class StructArrayLayout1ul3ui12 extends StructArray {
-    uint8: Uint8Array;
-    uint32: Uint32Array;
+    view: Uint16Array;
     uint16: Uint16Array;
+    uint32: Uint32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
         this.uint32 = new Uint32Array(this.arrayBuffer);
-        this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number): number {
@@ -867,12 +854,11 @@ register(StructArrayLayout1ul3ui12);
  * @private
  */
 class StructArrayLayout2ui4 extends StructArray {
-    uint8: Uint8Array;
+    view: Uint16Array;
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number): number {
@@ -899,12 +885,11 @@ register(StructArrayLayout2ui4);
  * @private
  */
 class StructArrayLayout1ui2 extends StructArray {
-    uint8: Uint8Array;
+    view: Uint16Array;
     uint16: Uint16Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.view = this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number): number {
@@ -930,12 +915,11 @@ register(StructArrayLayout1ui2);
  * @private
  */
 class StructArrayLayout2f8 extends StructArray {
-    uint8: Uint8Array;
+    view: Float32Array;
     float32: Float32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number): number {
@@ -962,12 +946,11 @@ register(StructArrayLayout2f8);
  * @private
  */
 class StructArrayLayout4f16 extends StructArray {
-    uint8: Uint8Array;
+    view: Float32Array;
     float32: Float32Array;
 
     _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
+        this.view = this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number): number {

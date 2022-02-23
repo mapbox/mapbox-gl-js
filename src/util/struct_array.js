@@ -92,7 +92,6 @@ class StructArray {
     length: number;
     isTransferred: boolean;
     arrayBuffer: ArrayBuffer;
-    uint8: Uint8Array;
 
     // The following properties are defined on the prototype.
     members: Array<StructArrayMember>;
@@ -178,9 +177,11 @@ class StructArray {
             this.capacity = Math.max(n, Math.floor(this.capacity * RESIZE_MULTIPLIER), DEFAULT_CAPACITY);
             this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
 
-            const oldUint8Array = this.uint8;
+            // $FlowFixMe use generics for StructArray to type `view` properly
+            const oldView = this.view;
             this._refreshViews();
-            if (oldUint8Array) this.uint8.set(oldUint8Array);
+            // $FlowFixMe
+            if (oldView) this.view.set(oldView);
         }
     }
 
@@ -193,7 +194,7 @@ class StructArray {
 
     destroy() {
         // $FlowFixMe
-        this.int8 = this.uint8 = this.int16 = this.uint16 = this.int32 = this.uint32 = this.float32 = null;
+        this.view = this.int8 = this.uint8 = this.int16 = this.uint16 = this.int32 = this.uint32 = this.float32 = null;
         this.arrayBuffer = (null: any);
     }
 }
