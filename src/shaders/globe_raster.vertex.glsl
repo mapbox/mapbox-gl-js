@@ -23,17 +23,23 @@ void main() {
     height += wireframeOffset;
 #endif
 
-    vec4 globe = u_globe_matrix * vec4(a_globe_pos + up_vector.xyz * height, 1.0);
+    vec3 globe = a_globe_pos + up_vector.xyz * height;
+    vec4 globe_world = u_globe_matrix * vec4(globe, 1.0);
 
-    vec4 mercator = vec4(0.0);
+    vec4 mercator_world = vec4(0.0);
+    vec3 mercator = vec3(0.0);
     if (u_zoom_transition > 0.0) {
-        mercator = vec4(a_merc_pos, height, 1.0);
+        mercator = vec3(a_merc_pos, height);
         mercator.xy -= u_merc_center;
         mercator.x = wrap(mercator.x, -0.5, 0.5);
-        mercator = u_merc_matrix * mercator;
+        mercator_world = u_merc_matrix * vec4(mercator, 1.0);
     }
 
-    vec3 position = mix(globe.xyz, mercator.xyz, u_zoom_transition);
+    vec3 position = mix(globe_world.xyz, mercator_world.xyz, u_zoom_transition);
 
     gl_Position = u_proj_matrix * vec4(position, 1.0);
+
+#ifdef FOG
+    v_fog_pos = fog_position(globe);
+#endif
 }

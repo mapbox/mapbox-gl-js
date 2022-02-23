@@ -302,7 +302,7 @@ class Transform {
     }
 
     get cameraPixelsPerMeter(): number {
-        return this.projection.pixelsPerMeter(this.center.lat, this.cameraWorldSize);
+        return mercatorZfromAltitude(this.center.lat, this.cameraWorldSize);
     }
 
     get centerOffset(): Point {
@@ -927,7 +927,7 @@ class Transform {
             }
         }
 
-        if (this.fogCullDistSq) {
+        if (this.fogCullDistSq && this.projection.name !== 'globe') {
             const fogCullDistSq = this.fogCullDistSq;
             const horizonLineFromTop = this.horizonLineFromTop();
             result = result.filter(entry => {
@@ -1776,7 +1776,7 @@ class Transform {
 
         // The worldToFogMatrix can be used for conversion from world coordinates to relative camera position in
         // units of fractions of the map height. Later composed with tile position to construct the fog tile matrix.
-        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
+        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(this.worldSize, cameraPixelsPerMeter, windowScaleFactor / this._projectionScaler);
     }
 
     _computeCameraPosition(targetPixelsPerMeter: ?number): Vec3 {

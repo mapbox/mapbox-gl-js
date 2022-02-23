@@ -28,13 +28,13 @@
 
 var GUIParams = function() {
     this.enableFog = true;
-    this.enableTerrain = true;
+    this.enableTerrain = false;
     this.freezeTileCoverage = false;
     this.enableSky = true;
     this.terrainExaggeration = 1.5;
     this.style = 'satellite-streets-v11';
-    this.start = 2;
-    this.end = 12;
+    this.start = 0.3;
+    this.end = 0.6;
     this.color = [255, 255, 255];
     this.opacity = 1.0;
     this.horizonBlend = 0.1;
@@ -52,7 +52,8 @@ var map = window.map = new mapboxgl.Map({
     pitch: 75,
     bearing: -10,
     style: 'mapbox://styles/mapbox/satellite-streets-v11',
-    hash: true
+    hash: true,
+    projection: 'globe'
 });
 
 window.onload = function() {
@@ -151,21 +152,6 @@ window.onload = function() {
         });
     });
 };
-
-var popup = new mapboxgl.Popup().setHTML('Pitch Alignment: auto<br>Rotation Alignment: auto');
-
-var marker = new mapboxgl.Marker({
-    color: `rgb(200, 0, 0)`,
-    scale: 1,
-    draggable: true,
-    pitchAlignment: 'auto',
-    rotationAlignment: 'auto'
-})
-    .setLngLat(map.getCenter())
-    .setPopup(popup)
-    .addTo(map);
-
-marker.togglePopup();
 
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {
