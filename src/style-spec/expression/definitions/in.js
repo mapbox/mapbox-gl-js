@@ -42,7 +42,7 @@ class In implements Expression {
         const needle = (this.needle.evaluate(ctx): any);
         const haystack = (this.haystack.evaluate(ctx): any);
 
-        if (!haystack) return false;
+        if (haystack == null) return false;
 
         if (!isValidNativeType(needle, ['boolean', 'string', 'number', 'null'])) {
             throw new RuntimeError(`Expected first argument to be of type boolean, string, number or null, but found ${toString(typeOf(needle))} instead.`);
