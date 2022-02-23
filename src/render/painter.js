@@ -130,7 +130,7 @@ class Painter {
     quadTriangleIndexBuffer: IndexBuffer;
     mercatorBoundsBuffer: VertexBuffer;
     mercatorBoundsSegments: SegmentVector;
-    _tileClippingMaskIDs: {[_: number]: number };
+    _tileClippingMaskIDs: Map<number, number>;
     _skippedStencilTileIDs: Set<number>;
     stencilClearMode: StencilMode;
     style: Style;
@@ -181,6 +181,7 @@ class Painter {
         this.gpuTimers = {};
         this.frameCounter = 0;
         this._backgroundTiles = {};
+        this._tileClippingMaskIDs = new Map();
         this._skippedStencilTileIDs = new Set();
     }
 
@@ -321,7 +322,7 @@ class Painter {
 
         this.nextStencilID = 1;
         this.currentStencilSource = undefined;
-        this._tileClippingMaskIDs = {};
+        this._tileClippingMaskIDs.clear();
         this._skippedStencilTileIDs.clear();
 
         // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
@@ -338,7 +339,7 @@ class Painter {
     resetStencilClippingMasks() {
         if (!this.terrain) {
             this.currentStencilSource = undefined;
-            this._tileClippingMaskIDs = {};
+            this._tileClippingMaskIDs.clear();
             this._skippedStencilTileIDs.clear();
         }
     }
@@ -353,7 +354,7 @@ class Painter {
         if (this._tileClippingMaskIDs && !this.terrain) {
             // Equivalent tile set is already rendered in stencil
             for (const coord of tileIDs) {
-                if (this._tileClippingMaskIDs[coord.key] === undefined) {
+                if (!this._tileClippingMaskIDs.has(coord.key)) {
                     dirtyStencilClippingMasks = true;
                 }
                 if (this._skippedStencilTileIDs.has(coord.key)) {
@@ -380,7 +381,7 @@ class Painter {
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will pass if the new ref is greater than the previous value, and ref value will be written to stencil buffer.
-                new StencilMode({func: gl.GREATER, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
+                new StencilMode({func: gl.GREATER, mask: 0xFF}, this._tileClippingMaskIDs.get(tileID.key) || 0, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
                 ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
                 '$clipping', tileBoundsBuffer,
                 tileBoundsIndexBuffer, tileBoundsSegments);
@@ -391,16 +392,16 @@ class Painter {
                 renderStencil(tileID);
             }
         } else {
-            if (Object.keys(this._tileClippingMaskIDs).length === 0 || this.nextStencilID + tileIDs.length > 256) {
+            if (this._tileClippingMaskIDs.size === 0 || this.nextStencilID + tileIDs.length > 256) {
                 // we'll run out of fresh IDs so we need to clear and start from scratch
                 this.clearStencil();
             }
 
-            this._tileClippingMaskIDs = {};
+            this._tileClippingMaskIDs.clear();
             this._skippedStencilTileIDs.clear();
 
             for (const tileID of tileIDs) {
-                this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
+                this._tileClippingMaskIDs.set(tileID.key, this.nextStencilID++);
                 if (!sourceCache.getTile(tileID).getBucket(layer)) {
                     this._skippedStencilTileIDs.add(tileID.key);
                     continue;
@@ -429,7 +430,7 @@ class Painter {
     stencilModeForClipping(tileID: OverscaledTileID): $ReadOnly<StencilMode>  {
         if (this.terrain) return this.terrain.stencilModeForRTTOverlap(tileID);
         const gl = this.context.gl;
-        return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
+        return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs.get(tileID.key) || 0, 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
     /*
