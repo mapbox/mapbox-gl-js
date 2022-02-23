@@ -119,7 +119,7 @@ export default function validateFunction(options: ValidationOptions): any {
 
             const nextStopDomainZoom = unbundle(value[0].zoom);
             if (typeof nextStopDomainZoom !== 'number') {
-                return [new ValidationError(key, value, 'stop zoom values must be numbers')];
+                return [new ValidationError(key, value[0].zoom, 'stop zoom values must be numbers')];
             }
 
             if (previousStopDomainZoom && previousStopDomainZoom > nextStopDomainZoom) {
