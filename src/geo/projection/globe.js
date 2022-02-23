@@ -40,7 +40,7 @@ export default class Globe extends Mercator {
         super(options);
         this.requiresDraping = true;
         this.supportsWorldCopies = false;
-        this.supportsFog = false;
+        this.supportsFog = true;
         this.zAxisUnit = "pixels";
         this.unsupportedLayers = ['debug', 'custom'];
     }
