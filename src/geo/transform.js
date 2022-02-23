@@ -722,7 +722,7 @@ class Transform {
         const isGlobe = this.projection.name === 'globe';
         const zInMeters = !isGlobe;
         const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z, zInMeters);
-        const cameraCoord = this.pointCoordinate(this.getCameraPoint());
+        const cameraCoord = isGlobe ? this._camera.mercatorPosition : this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
         const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude * (zInMeters ? 1 : meterToTile)];
