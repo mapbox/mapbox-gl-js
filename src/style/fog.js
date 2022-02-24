@@ -1,7 +1,7 @@
 // @flow
 
 import styleSpec from '../style-spec/reference/latest.js';
-import {endsWith, extend, smoothstep} from '../util/util.js';
+import {endsWith, extend, smoothstep, clamp} from '../util/util.js';
 import {Evented} from '../util/evented.js';
 import {validateStyle, validateFog, emitValidationErrors} from './validate_style.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
@@ -76,15 +76,25 @@ class Fog extends Evented {
         }
     }
 
+    // In globe view, fade in opacity after transitioning to Mercator.
+    _globeFadeIn(): number {
+        return this._map.getProjection().name === "globe" ?
+            clamp((this._map.getZoom() - GLOBE_ZOOM_THRESHOLD_MAX) / GLOBE_FOG_TRANSITION_LENGTH, 0, 1) :
+            1;
+    }
+
+    getColor(): Color {
+        if (!this._map.transform.projection.supportsFog || this._map.getPitch() < FOG_PITCH_START) return Color.transparent;
+        const c = this.properties.get('color');
+        return new Color(c.r, c.g, c.b, c.a * this._globeFadeIn());
+    }
+
     getOpacity(pitch: number): number {
         if (!this._map.transform.projection.supportsFog) return 0;
 
-        // In globe view, fade in opacity after transitioning to Mercator.
-        const globeFadeIn = this._map.getProjection().name === "globe" ? smoothstep(GLOBE_ZOOM_THRESHOLD_MAX, GLOBE_ZOOM_THRESHOLD_MAX + GLOBE_FOG_TRANSITION_LENGTH, this._map.getZoom()) : 1;
-
         const fogColor = (this.properties && this.properties.get('color')) || 1.0;
         const pitchFactor = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-        return pitchFactor * fogColor.a * globeFadeIn;
+        return pitchFactor * fogColor.a * this._globeFadeIn();
     }
 
     getOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
