@@ -190,8 +190,8 @@ export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
     return Float32Array.from(posMatrix);
 }
 
-export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
-export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
+export const GLOBE_ZOOM_THRESHOLD_MIN = 7;
+export const GLOBE_ZOOM_THRESHOLD_MAX = 8;
 
 export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
