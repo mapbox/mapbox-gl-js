@@ -77,6 +77,8 @@ import bloomOverlayFrag from './bloom_overlay.fragment.glsl';
 import bloomVert from './bloom.vertex.glsl';
 import modelShadowFrag from './model_shadow.fragment.glsl';
 import modelShadowVert from './model_shadow.vertex.glsl'
+import routeLineFrag from './route_line.fragment.glsl';
+import routeLineVert from './route_line.vertex.glsl'
 
 
 export let preludeTerrain = {};
@@ -161,7 +163,8 @@ export default {
     bloomBlur: compile(bloomBlurFrag, bloomVert),
     bloomApply: compile(bloomApplyFrag, bloomVert),
     bloomOverlay: compile(bloomOverlayFrag, bloomVert),
-    modelShadow: compile(modelShadowFrag, modelShadowVert)
+    modelShadow: compile(modelShadowFrag, modelShadowVert),
+    routeLine: compile(routeLineFrag, routeLineVert)
 };
 
 // Expand #pragmas to #ifdefs.
