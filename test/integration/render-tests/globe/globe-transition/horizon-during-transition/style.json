@@ -3,24 +3,20 @@
   "metadata": {
     "test": {
       "width": 512,
-      "height": 512,
-      "operations": [
-        ["setProjection", "globe"],
-        ["wait"],
-        ["setZoom", 4.5],
-        ["wait"]
-      ]
+      "height": 512
     }
   },
   "center": [
     -40,
     -10
   ],
-  "zoom": 5.5,
+  "zoom": 7.5,
   "pitch": 85.0,
+  "projection": {
+    "name": "globe"
+  },
   "sources": {
   },
-  "sprite": "local://sprites/emerald",
   "layers": [
     {
       "id": "sky",
