@@ -34,6 +34,8 @@ varying highp vec2 v_uv;
 
 #define saturate(_x) clamp(_x, 0., 1.)
 
+uniform float u_specular_intensity;
+uniform vec3 u_specular_lightcolor;
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -77,9 +79,9 @@ void main() {
         highp vec3 l = normalize(vec3(-1., -1., 0.2));
         highp vec3 h = normalize(v + l);
         highp float NdotH = saturate(dot(n, h));
-        highp vec3 specularTerm = pow(NdotH, 32.) * vec3(1.);
+        highp vec3 specularTerm = pow(NdotH, 32.) * u_specular_lightcolor;
         // Just adding specular to the base color is enough to get the expected effect.
-        out_color = vec4(specularTerm * 0.4 + color.rgb, 1.0);
+        out_color = vec4(specularTerm * u_specular_intensity + color.rgb, 1.0);
     }
 #endif
 

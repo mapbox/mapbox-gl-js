@@ -13,7 +13,11 @@ uniform float u_lightintensity;
 uniform float u_vertical_gradient;
 uniform float u_opacity;
 uniform float u_specular_factor;
-uniform vec3 u_specular_color;
+uniform float u_specular_intensity;
+uniform vec3 u_specular_lightcolor;
+uniform vec3 u_diffuse_lightcolor;
+uniform vec3 u_shadow_lightpos;
+
 
 varying vec4 v_pos_light_view_0;
 varying vec4 v_pos_light_view_1;
@@ -160,7 +164,7 @@ void main() {
     #pragma mapbox: initialize highp vec4 color
 
     highp vec3 n = normalize(v_normal);
-    float NdotSL = saturate(dot(n, normalize(vec3(-1., -1., 1.))));
+    float NdotSL = saturate(dot(n, normalize(u_shadow_lightpos)));
 
     float biasT = pow(NdotSL, 1.0);
     float biasL0 = mix(0.01, 0.004, biasT);
@@ -170,7 +174,7 @@ void main() {
     float occlusion = 0.0; 
 
     // Alleviate projective aliasing by forcing backfacing triangles to be occluded
-    float backfacing = 1.0 - step(0.1, dot(v_normal, normalize(vec3(-1., -1., 1.))));
+    float backfacing = 1.0 - step(0.1, dot(v_normal, normalize(u_shadow_lightpos)));
 
     if (v_depth < u_cascade_distances.x)
         occlusion = occlusionL0;
@@ -192,9 +196,9 @@ void main() {
     vec3 ambientTerm = 0.11 * vec3(color.rgb);
     // compute two diffuse ligths, one for the viewport aligned light and one for the specular light matching the shadows.
     vec3 diffuseTermViewport = computeDiffuseLightContribution(u_lightpos, color.rgb, n, u_lightcolor * 0.5, u_lightintensity) * 0.8;
-    vec3 diffuseTerm = computeDiffuseLightContribution(vec3(-1., -1., 0.2), color.rgb, n, u_lightcolor * 0.5, u_lightintensity);
+    vec3 diffuseTerm = computeDiffuseLightContribution(vec3(u_shadow_lightpos.x, u_shadow_lightpos.y, 0.2), color.rgb, n, u_diffuse_lightcolor * 0.5, u_lightintensity);
 
-    vec3 specularTerm = pow(NdotH, u_specular_factor) * u_specular_color * (1.0 - u_lightintensity);
+    vec3 specularTerm = pow(NdotH, u_specular_factor) * u_specular_lightcolor * u_specular_intensity;
     vec3 outColor = vec3(ambientTerm + diffuseTerm + specularTerm + diffuseTermViewport);
     occlusion = mix(occlusion, 1.0, backfacing);
     outColor = vec3(outColor * mix(1.0, 1.0 - u_shadow_intensity, occlusion));
