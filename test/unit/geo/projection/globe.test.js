@@ -43,6 +43,9 @@ test('Globe', (t) => {
     t.test('coveringTiles', (t) => {
         const createConstantElevation = (elevation) => {
             return {
+                isDataAvailableAtPoint(_) {
+                    return true;
+                },
                 getAtPointOrZero(_) {
                     return elevation;
                 },
