@@ -3,6 +3,7 @@
 
 uniform float u_specular_intensity;
 uniform vec3 u_specular_lightcolor;
+uniform vec3 u_shadow_lightpos;
 varying vec3 v_position;
 #define saturate(_x) clamp(_x, 0., 1.)
 void main() {
@@ -15,7 +16,7 @@ void main() {
     highp vec3 v = normalize(-v_position);
     // Adjust the light to match the shadows direction. Use a lower angle
     // to increase the specular effect when tilted
-    highp vec3 l = normalize(vec3(-1., -1., 0.2));
+    highp vec3 l = normalize(vec3(u_shadow_lightpos.x, u_shadow_lightpos.y, 0.2));
     highp vec3 h = normalize(v + l);
     highp float NdotH = saturate(dot(n, h));
     highp vec3 specularTerm = pow(NdotH, 32.) * u_specular_lightcolor;

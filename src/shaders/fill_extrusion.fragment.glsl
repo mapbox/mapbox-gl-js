@@ -184,7 +184,7 @@ void main() {
         occlusion = 0.0;
 
     highp vec3 v = normalize(-v_position);
-    highp vec3 l = normalize(vec3(-1., -1., 0.2));
+    highp vec3 l = normalize(vec3(u_shadow_lightpos.x, u_shadow_lightpos.y, 0.2));
     // Adjust the light to match the shadows direction. Use a lower angle
     // to increase the specular effect when tilted
     highp vec3 h = normalize(v + l);
