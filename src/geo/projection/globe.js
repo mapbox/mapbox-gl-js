@@ -116,7 +116,7 @@ export default class Globe extends Mercator {
         const p0p1 = vec3.sub([], point1, point0);
         const direction = vec3.normalize([], p0p1);
 
-        // Compute globe origo in world space
+        // Compute globe origin in world space
         const m = tr.globeMatrix;
         const globeCenter = [m[12], m[13], m[14]];
         const radius = tr.worldSize / (2.0 * Math.PI);
