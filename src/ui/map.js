@@ -1014,7 +1014,7 @@ class Map extends Camera {
      * map.setRenderWorldCopies(true);
      * @see [Example: Render world copies](https://docs.mapbox.com/mapbox-gl-js/example/render-world-copies/)
      */
-    setRenderWorldCopies(renderWorldCopies?: ?boolean) {
+    setRenderWorldCopies(renderWorldCopies?: ?boolean): Map {
         this.transform.renderWorldCopies = renderWorldCopies;
         return this._update();
     }
@@ -1039,6 +1039,17 @@ class Map extends Camera {
     }
 
     /**
+     * Returns true if map [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) has been set to globe AND the map is at a low enough zoom level that globe view is enabled.
+     *
+     * @returns {boolean} Returns `globe-is-active` boolean.
+     * @example
+     * if (map.isGlobe()) {
+     *     // do globe things here
+     * }
+     */
+    usingGlobe(): boolean { return this.transform.projection.name === 'globe'; }
+
+    /**
      * Sets the map's projection. If called with `null` or `undefined`, the map will reset to Mercator.
      *
      * @param {ProjectionSpecification | string | null | undefined} projection The projection that the map should be rendered in.
@@ -1054,7 +1065,7 @@ class Map extends Camera {
      * @see [Example: Display a web map using an alternate projection](https://docs.mapbox.com/mapbox-gl-js/example/map-projection/)
      * @see [Example: Use different map projections for web maps](https://docs.mapbox.com/mapbox-gl-js/example/projections/)
      */
-    setProjection(projection?: ?ProjectionSpecification | string) {
+    setProjection(projection?: ?ProjectionSpecification | string): Map {
         this._lazyInitEmptyStyle();
         if (!projection) {
             projection = null;
@@ -1064,7 +1075,7 @@ class Map extends Camera {
         return this._updateProjection(projection);
     }
 
-    _updateProjection(projection?: ProjectionSpecification | null) {
+    _updateProjection(projection?: ProjectionSpecification | null): Map {
         const prevProjection = this.getProjection();
         if (projection === undefined) { projection = prevProjection; }
 
@@ -1112,7 +1123,7 @@ class Map extends Camera {
      * const coordinate = [-122.420679, 37.772537];
      * const point = map.project(coordinate);
      */
-    project(lnglat: LngLatLike) {
+    project(lnglat: LngLatLike): Point {
         return this.transform.locationPoint3D(LngLat.convert(lnglat));
     }
 
@@ -1130,7 +1141,7 @@ class Map extends Camera {
      *     const coordinate = map.unproject(e.point);
      * });
      */
-    unproject(point: PointLike) {
+    unproject(point: PointLike): LngLat {
         return this.transform.pointLocation3D(Point.convert(point));
     }
 
@@ -2844,7 +2855,7 @@ class Map extends Camera {
      * @returns {Map} this
      * @private
      */
-    _update(updateStyle?: boolean) {
+    _update(updateStyle?: boolean): Map {
         if (!this.style) return this;
 
         this._styleDirty = this._styleDirty || updateStyle;
