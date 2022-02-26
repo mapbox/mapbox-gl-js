@@ -409,6 +409,19 @@ export default class Marker extends Evented {
         return this;
     }
 
+    _occluded(mapLocation: LngLat): boolean {
+        if (!this._map) return false;
+        const camera = this._map.getFreeCameraOptions();
+        if (camera.position) {
+            const cameraPos = camera.position.toLngLat();
+            // the distance to the marker lat/lng + marker offset location
+            const offsetDistance = cameraPos.distanceTo(mapLocation);
+            const distance = cameraPos.distanceTo(this._lngLat);
+            return offsetDistance < distance * 0.9;
+        }
+        return false;
+    }
+
     _evaluateOpacity() {
         const map = this._map;
         if (!map) return;
@@ -419,25 +432,25 @@ export default class Marker extends Evented {
             this._clearFadeTimer();
             return;
         }
-
         const mapLocation = map.unproject(pos);
-
-        let terrainOccluded = false;
-        if (map.transform._terrainEnabled() && map.getTerrain()) {
-            const camera = map.getFreeCameraOptions();
-            if (camera.position) {
-                const cameraPos = camera.position.toLngLat();
-                // the distance to the marker lat/lng + marker offset location
-                const offsetDistance = cameraPos.distanceTo(mapLocation);
-                const distance = cameraPos.distanceTo(this._lngLat);
-                terrainOccluded = offsetDistance < distance * 0.9;
-            }
+        let opacity = 1;
+        if (map.usingGlobe()) {
+            opacity = this._occluded(mapLocation) ? 0 : 1;
+        } else if (map.transform.projection.name === 'globe' || (map.transform._terrainEnabled() && map.getTerrain())) {
+            opacity = this._occluded(mapLocation) ? TERRAIN_OCCLUDED_OPACITY : 1;
         }
 
         const fogOpacity = map._queryFogOpacity(mapLocation);
-        const opacity = (1.0 - fogOpacity) * (terrainOccluded ? TERRAIN_OCCLUDED_OPACITY : 1.0);
+        opacity *= (1.0 - fogOpacity);
+        const pointerEvents = opacity ? 'auto' : 'none';
+
         this._element.style.opacity = `${opacity}`;
-        if (this._popup) this._popup._setOpacity(`${opacity}`);
+        this._element.style.pointerEvents = pointerEvents;
+        if (this._popup) {
+            const container = this._popup._container;
+            if (container) { container.style.pointerEvents = pointerEvents; }
+            this._popup._setOpacity(opacity);
+        }
 
         this._fadeTimer = null;
     }
@@ -506,7 +519,7 @@ export default class Marker extends Evented {
                 this._updateDOM();
             }
 
-            if ((map.getTerrain() || map.getFog()) && !this._fadeTimer) {
+            if ((map.usingGlobe() || map.getTerrain() || map.getFog()) && !this._fadeTimer) {
                 this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
             }
         });
