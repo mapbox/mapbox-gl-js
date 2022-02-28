@@ -4880,12 +4880,12 @@
       },
       "property-type": "color-ramp"
     },
-    "line-gradient-trim-offset": {
-      "type": "number",
-      "doc": "The line gradient trim off percentage based on the whole line gradinet range [0, 1]. The line part between [0, trim-offset] will be marked as transparent to make a routing vanishing effect.",
-      "default": "0.0",
-      "minimum": 0.0,
-      "maximum": 1.0,
+    "line-trim-offset": {
+      "type": "array",
+      "value": "number",
+      "doc": "The line trim-off percentage range based on the whole line gradinet range [0.0, 1.0]. The line part between [trim-start, trim-end] will be marked as transparent to make a route vanishing effect. If either 'trim-start' or 'trim-end' offset is out of valid range, the default range will be set.",
+      "length": 2,
+      "default": [0.0, 0.0],
       "transition": false,
       "requires": [
           "line-gradient",

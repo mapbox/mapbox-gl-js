@@ -2,6 +2,8 @@
 // Generated code; do not edit. Edit build/generate-flow-typed-style-spec.js instead.
 /* eslint-disable */
 
+import { DataConstantProperty } from "../style/properties";
+
 export type ColorSpecification = string;
 
 export type FormattedSpecification = string;
@@ -229,7 +231,8 @@ export type LineLayerSpecification = {|
         "line-blur"?: DataDrivenPropertyValueSpecification<number>,
         "line-dasharray"?: DataDrivenPropertyValueSpecification<Array<number>>,
         "line-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
-        "line-gradient"?: ExpressionSpecification
+        "line-gradient"?: ExpressionSpecification,
+        "line-trim-offset"?: PropertyValueSpecification<[number, number]>
     |}
 |}
 
