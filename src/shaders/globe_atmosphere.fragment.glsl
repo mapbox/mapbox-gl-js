@@ -2,8 +2,11 @@ uniform float u_opacity;
 uniform highp float u_fadeout_range;
 uniform vec3 u_start_color;
 uniform vec3 u_end_color;
+
+#ifndef FOG
 uniform highp vec3 u_globe_pos;
 uniform highp float u_globe_radius;
+#endif
 
 varying highp vec3 v_ray_dir;
 

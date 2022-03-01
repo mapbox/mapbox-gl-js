@@ -2,6 +2,26 @@
 
 uniform float u_fog_temporal_offset;
 
+uniform highp vec3 u_frustum_tl;
+uniform highp vec3 u_frustum_tr;
+uniform highp vec3 u_frustum_br;
+uniform highp vec3 u_frustum_bl;
+uniform highp vec3 u_globe_pos;
+uniform highp float u_globe_radius;
+uniform highp vec2 u_viewport;
+
+float globe_glow_progress() {
+    vec2 uv = gl_FragCoord.xy / u_viewport;
+    vec3 ray_dir = mix(
+        mix(u_frustum_tl, u_frustum_tr, uv.x),
+        mix(u_frustum_bl, u_frustum_br, uv.x),
+        1.0 - uv.y);
+    vec3 dir = normalize(ray_dir);
+    vec3 closest_point = dot(u_globe_pos, dir) * dir;
+    float sdf = length(closest_point - u_globe_pos) / u_globe_radius;
+    return sdf + PI * 0.5;
+}
+
 // This function is only used in rare places like heatmap where opacity is used
 // directly, outside the normal fog_apply method.
 float fog_opacity(vec3 pos) {
@@ -11,7 +31,7 @@ float fog_opacity(vec3 pos) {
 
 vec3 fog_apply(vec3 color, vec3 pos) {
     float depth = length(pos);
-    float opacity = fog_opacity(fog_range(depth));
+    float opacity = fog_opacity(fog_range(globe_glow_progress()));
     opacity *= fog_horizon_blending(pos / depth);
     return mix(color, u_fog_color.rgb, opacity);
 }
