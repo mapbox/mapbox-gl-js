@@ -77,7 +77,8 @@ class Fog extends Evented {
         if (!this._transform.projection.supportsFog) return 0;
 
         const fogColor = (this.properties && this.properties.get('color')) || 1.0;
-        const pitchFactor = 1.0; //smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+        const isGlobe = this._transform.projection.name === 'globe';
+        const pitchFactor = isGlobe ? 1.0 : smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
         return pitchFactor * fogColor.a;
     }
 

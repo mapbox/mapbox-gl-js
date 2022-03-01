@@ -1776,7 +1776,7 @@ class Transform {
 
         // The worldToFogMatrix can be used for conversion from world coordinates to relative camera position in
         // units of fractions of the map height. Later composed with tile position to construct the fog tile matrix.
-        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(this.worldSize, cameraPixelsPerMeter, windowScaleFactor / this._projectionScaler);
+        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor / this._projectionScaler);
     }
 
     _computeCameraPosition(targetPixelsPerMeter: ?number): Vec3 {
