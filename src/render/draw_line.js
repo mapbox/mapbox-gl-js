@@ -102,12 +102,14 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                     const maxTextureCoverage = lineLength * maxTilePixelSize * potentialOverzoom;
                     textureResolution = clamp(nextPowerOfTwo(maxTextureCoverage), 256, context.maxTextureSize);
                 }
+                const curTrimOffset = layer.paint.get('line-trim-offset');
                 layerGradient.gradient = renderColorRamp({
                     expression: layer.gradientExpression(),
                     evaluationKey: 'lineProgress',
                     resolution: textureResolution,
                     image: layerGradient.gradient || undefined,
-                    clips: bucket.lineClipsArray
+                    clips: bucket.lineClipsArray,
+                    trimOffset: curTrimOffset
                 });
                 if (layerGradient.texture) {
                     layerGradient.texture.update(layerGradient.gradient);
