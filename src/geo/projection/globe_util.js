@@ -23,6 +23,7 @@ import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Tile from '../../source/tile.js';
 import type Painter from '../../render/painter.js';
 import type Transform from '../transform.js';
+import Point from '@mapbox/point-geometry';
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
@@ -234,6 +235,19 @@ export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Flo
 const POLE_RAD = degToRad(85.0);
 const POLE_COS = Math.cos(POLE_RAD);
 const POLE_SIN = Math.sin(POLE_RAD);
+
+export function screenPixelToECEF(tr: Transform, point: Point): Array<number> {
+    const lngLat = tr.pointLocation(point);
+    return latLngToECEF(lngLat.lat, lngLat.lng);
+}
+
+// Returns the angle of the normal to a point on the globe.
+export function tiltAt(tr: Transform, point: Point): number {
+    const position = screenPixelToECEF(tr, point);
+    const surfaceCenter = latLngToECEF(tr._center.lat, tr._center.lng);
+    return vec3.angle(surfaceCenter, position);
+
+}
 
 export class GlobeSharedBuffers {
     poleNorthVertexBuffer: VertexBuffer;

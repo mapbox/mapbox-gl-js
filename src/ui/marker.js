@@ -13,6 +13,7 @@ import type Popup from './popup.js';
 import type {LngLatLike} from "../geo/lng_lat.js";
 import type {MapMouseEvent, MapTouchEvent} from './events.js';
 import type {PointLike} from '@mapbox/point-geometry';
+import {tiltAt} from '../geo/projection/globe_util.js';
 
 type Options = {
     element?: HTMLElement,
@@ -470,9 +471,15 @@ export default class Marker extends Evented {
     }
 
     _calculatePitch(): number {
+        const pos = this._pos;
         if (this._pitchAlignment === "viewport" || this._pitchAlignment === "auto") {
             return 0;
         } if (this._map && this._pitchAlignment === "map") {
+            if (this._map.transform.projection.name === 'globe') {
+                const angle  = tiltAt(this._map.transform, pos) * 180 / Math.PI;
+                console.log("final angle is: ", angle);
+                return 90 - angle;
+            }
             return this._map.getPitch();
         }
         return 0;
@@ -482,6 +489,16 @@ export default class Marker extends Evented {
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
             return this._rotation;
         } if (this._map && this._rotationAlignment === "map") {
+            const pos = this._pos;
+            if (pos && this._map && this._map.transform.projection.name === 'globe') {
+                const globeCenter = this._map.transform.globeCenterPoint();
+                const relativePosition = pos.sub(globeCenter);
+                let rotation = Math.atan(relativePosition.x / relativePosition.y) * -180 / Math.PI;
+                if (relativePosition.y > 0) {
+                    rotation += 180;
+                }
+                return rotation;
+            }
             return this._rotation - this._map.getBearing();
         }
         return 0;

@@ -1973,6 +1973,15 @@ class Transform {
         const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
         return this.centerPoint.add(new Point(0, yOffset));
     }
+
+    globeCenterPoint(): Point {
+        const tr = this;
+        const pos = [0, 0, 0];
+        const matrix = mat4.identity(new Float64Array(16));
+        mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
+        vec3.transformMat4(pos, pos, matrix);
+        return new Point(pos[0], pos[1]);
+    }
 }
 
 export default Transform;
