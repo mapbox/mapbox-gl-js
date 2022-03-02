@@ -62,13 +62,13 @@ export function farthestPixelDistanceOnSphere(tr: Transform, pixelsPerMeter: num
     } else {
         // Background space is visible. Find distance to the point of the
         // globe where surface normal is parallel to the view vector
-        const p0 = vec3.sub([], cameraPosition, globeCenter);
-        const p1 = vec3.sub([], globeCenter, cameraPosition);
-        vec3.normalize(p1, p1);
+        const globeCenterToCamera = vec3.sub([], cameraPosition, globeCenter);
+        const cameraToGlobe = vec3.sub([], globeCenter, cameraPosition);
+        vec3.normalize(cameraToGlobe, cameraToGlobe);
 
-        const cameraHeight = vec3.length(p0) - globeRadius;
-        pixelDistance = Math.sqrt(cameraHeight * cameraHeight + 2 * globeRadius * cameraHeight);
-        const angle = Math.acos(pixelDistance / (globeRadius + cameraHeight)) - Math.acos(vec3.dot(forward, p1));
+        const cameraHeight = vec3.length(globeCenterToCamera) - globeRadius;
+        pixelDistance = Math.sqrt(cameraHeight * (cameraHeight + 2 * globeRadius));
+        const angle = Math.acos(pixelDistance / (globeRadius + cameraHeight)) - Math.acos(vec3.dot(forward, cameraToGlobe));
         pixelDistance *= Math.cos(angle);
     }
 
