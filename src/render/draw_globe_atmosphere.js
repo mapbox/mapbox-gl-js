@@ -16,6 +16,12 @@ function project(point, m) {
 }
 
 function drawGlobeAtmosphere(painter: Painter) {
+    const fog = painter.style.fog;
+
+    if (!fog) {
+        return;
+    }
+
     const context = painter.context;
     const gl = context.gl;
     const transform = painter.transform;
@@ -41,6 +47,15 @@ function drawGlobeAtmosphere(painter: Painter) {
 
     const fadeOutTransition = 1.0 - globeToMercatorTransition(transform.zoom);
 
+    const fogOpacity = fog.getOpacity(transform.pitch);
+    const fogColor = fog.properties.get('color');
+    const fogColorUnpremultiplied = [
+        fogColor.r / fogColor.a,
+        fogColor.g / fogColor.a,
+        fogColor.b / fogColor.a,
+        fogOpacity
+    ];
+
     const uniforms = atmosphereUniformValues(
         frustumTl,
         frustumTr,
@@ -48,10 +63,9 @@ function drawGlobeAtmosphere(painter: Painter) {
         frustumBl,
         globeCenterInViewSpace,
         globeRadius,
-        fadeOutTransition,          // opacity
-        2.0,                        // fadeout range
-        [1.0, 1.0, 1.0],            // start color
-        [0.0118, 0.7451, 0.9882]);  // end color
+        fadeOutTransition * fogColor.a,
+        fog.properties.get('horizon-blend'),
+        fogColorUnpremultiplied);
 
     painter.prepareDrawProgram(context, program);
 
