@@ -4,6 +4,7 @@ import {
     Uniform1i,
     Uniform2f,
     Uniform3f,
+    Uniform4f,
     UniformMatrix4f,
     Uniform1f,
     UniformMatrix3f
@@ -31,8 +32,7 @@ export type AtmosphereUniformsType = {|
     'u_globe_radius': Uniform1f,
     'u_opacity': Uniform1f,
     'u_fadeout_range': Uniform1f,
-    'u_start_color': Uniform3f,
-    'u_end_color': Uniform3f
+    'u_color': Uniform4f,
 |};
 
 const globeRasterUniforms = (context: Context, locations: UniformLocations): GlobeRasterUniformsType => ({
@@ -54,8 +54,7 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_globe_radius': new Uniform1f(context, locations.u_globe_radius),
     'u_opacity': new Uniform1f(context, locations.u_opacity),
     'u_fadeout_range': new Uniform1f(context, locations.u_fadeout_range),
-    'u_start_color': new Uniform3f(context, locations.u_start_color),
-    'u_end_color': new Uniform3f(context, locations.u_end_color)
+    'u_color': new Uniform4f(context, locations.u_color),
 });
 
 const globeRasterUniformValues = (
@@ -84,8 +83,7 @@ const atmosphereUniformValues = (
     globeRadius: number,
     opacity: number,
     fadeoutRange: number,
-    startColor: [number, number, number],
-    endColor: [number, number, number]
+    color: [number, number, number, number],
 ): UniformValues<AtmosphereUniformsType> => ({
     'u_frustum_tl': frustumDirTl,
     'u_frustum_tr': frustumDirTr,
@@ -95,8 +93,7 @@ const atmosphereUniformValues = (
     'u_globe_radius': globeRadius,
     'u_opacity': opacity,
     'u_fadeout_range': fadeoutRange,
-    'u_start_color': startColor,
-    'u_end_color': endColor
+    'u_color': color,
 });
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};
