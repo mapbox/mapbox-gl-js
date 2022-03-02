@@ -4899,6 +4899,15 @@
               }
           }
       ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0",
+          "android": "10.5.0",
+          "ios": "10.5.0",
+          "macos": "10.5.0"
+        },
+        "data-driven styling": {}
+      },
       "property-type": "constant"
     }
   },
