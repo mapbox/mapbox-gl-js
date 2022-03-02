@@ -3843,7 +3843,7 @@
       "property-type": "data-constant",
       "default": 0.1,
       "minimum": 0,
-      "maximum": 1,
+      "maximum": 10,
       "expression": {
         "interpolated": true,
         "parameters": [
