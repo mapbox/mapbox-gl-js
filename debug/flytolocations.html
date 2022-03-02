@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #checkboxes {
+            position: absolute;
+            background: #fff;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<div id='checkboxes'>
+    <label><input id='fly-around' type='checkbox'> fly around</label><br />
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+let flyaround = false;
+let index = 0;
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 3.5,
+    center: [8.41, 22.9],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true,
+    projection: {
+        name: 'globe'
+    }
+});
+
+const locations = [
+    {
+        center: [8.41, 22.9],
+        zoom: 3.5,
+        pitch: 0
+    },
+    {
+        center: [14.956, 49.337],
+        zoom: 5.38,
+        pitch: 0
+    },
+    {
+        center: [104.69, 16.31],
+        zoom: 4.31,
+        pitch: 0
+    },
+    {
+        center: [141.463, -31.308],
+        zoom: 5.66,
+        pitch: 67
+    },
+    {
+        center: [-83.16, 55.23],
+        zoom: 2.42,
+        pitch: 0
+    },
+    {
+        center: [-63.56, -41.99],
+        zoom: 3.93,
+        pitch: 55
+    },
+    {
+        center: [50.8, 38.2],
+        zoom: 1.45,
+        pitch: 0
+    }
+];
+
+function playback() {
+    map.flyTo(locations[index]);
+    map.once('moveend', () => {
+        window.setTimeout(() => {
+            if (flyaround) {
+                index = (index + 1) % locations.length;
+                playback(index);
+            }
+        }, 1000);
+    });
+}
+
+map.on('load', () => {
+    playback();
+});
+
+document.getElementById('fly-around').onclick = function() {
+    flyaround = !flyaround;
+    playback();
+};
+
+</script>
+</body>
+</html>
