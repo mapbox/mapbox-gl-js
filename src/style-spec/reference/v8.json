@@ -3838,6 +3838,24 @@
         }
       }
     },
+    "sky-color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0"
+        }
+      }
+    },
     "horizon-blend": {
       "type": "number",
       "property-type": "data-constant",

@@ -7,6 +7,7 @@ import CullFaceMode from '../gl/cull_face_mode.js';
 import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
+import {degToRad} from '../util/util.js';
 import {vec3, mat4} from 'gl-matrix';
 
 export default drawGlobeAtmosphere;
@@ -55,10 +56,22 @@ function drawGlobeAtmosphere(painter: Painter) {
     const fogOpacity = fog.getOpacity(transform.pitch);
     const fogColor = fog.properties.get('color');
     const fogColorUnpremultiplied = [
-        fogColor.r / fogColor.a,
-        fogColor.g / fogColor.a,
-        fogColor.b / fogColor.a,
-        fogOpacity
+        fogColor.a === 0.0 ? 0 : fogColor.r / fogColor.a,
+        fogColor.a === 0.0 ? 0 : fogColor.g / fogColor.a,
+        fogColor.a === 0.0 ? 0 : fogColor.b / fogColor.a,
+        fogColor.a
+    ];
+    const skyColor = fog.properties.get('sky-color');
+    const skyColorUnpremultiplied = [
+        skyColor.a === 0.0 ? 0 : skyColor.r / skyColor.a,
+        skyColor.a === 0.0 ? 0 : skyColor.g / skyColor.a,
+        skyColor.a === 0.0 ? 0 : skyColor.b / skyColor.a,
+        skyColor.a
+    ];
+
+    const latlon = [
+        degToRad(transform._center.lat) / (Math.PI * 0.5),
+        degToRad(transform._center.lng) / Math.PI
     ];
 
     const uniforms = atmosphereUniformValues(
@@ -68,9 +81,11 @@ function drawGlobeAtmosphere(painter: Painter) {
         frustumBl,
         globeCenterInViewSpace,
         globeRadius,
-        fadeOutTransition * fogColor.a,
+        fadeOutTransition,
         fog.properties.get('horizon-blend'),
-        fogColorUnpremultiplied);
+        fogColorUnpremultiplied,
+        skyColorUnpremultiplied,
+        latlon);
 
     painter.prepareDrawProgram(context, program);
 

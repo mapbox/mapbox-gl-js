@@ -33,6 +33,8 @@ export type AtmosphereUniformsType = {|
     'u_opacity': Uniform1f,
     'u_fadeout_range': Uniform1f,
     'u_color': Uniform4f,
+    'u_sky_color': Uniform4f,
+    'u_latlon': Uniform2f,
 |};
 
 const globeRasterUniforms = (context: Context, locations: UniformLocations): GlobeRasterUniformsType => ({
@@ -55,6 +57,8 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_opacity': new Uniform1f(context, locations.u_opacity),
     'u_fadeout_range': new Uniform1f(context, locations.u_fadeout_range),
     'u_color': new Uniform4f(context, locations.u_color),
+    'u_sky_color': new Uniform4f(context, locations.u_sky_color),
+    'u_latlon': new Uniform2f(context, locations.u_latlon),
 });
 
 const globeRasterUniformValues = (
@@ -84,6 +88,8 @@ const atmosphereUniformValues = (
     opacity: number,
     fadeoutRange: number,
     color: [number, number, number, number],
+    skyColor: [number, number, number, number],
+    latlon: [number, number]
 ): UniformValues<AtmosphereUniformsType> => ({
     'u_frustum_tl': frustumDirTl,
     'u_frustum_tr': frustumDirTr,
@@ -94,6 +100,8 @@ const atmosphereUniformValues = (
     'u_opacity': opacity,
     'u_fadeout_range': fadeoutRange,
     'u_color': color,
+    'u_sky_color': skyColor,
+    'u_latlon': latlon
 });
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};

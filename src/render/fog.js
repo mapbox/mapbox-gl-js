@@ -20,7 +20,6 @@ export type FogUniformsType = {|
     'u_globe_pos': Uniform3f,
     'u_globe_radius': Uniform1f,
     'u_viewport': Uniform2f,
-
 |};
 
 export const fogUniforms = (context: Context, locations: UniformLocations): FogUniformsType => ({
