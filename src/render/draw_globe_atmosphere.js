@@ -80,7 +80,10 @@ function drawGlobeAtmosphere(painter: Painter) {
         fog.properties.get('horizon-blend'),
         fogColorUnpremultiplied,
         skyColorUnpremultiplied,
-        latlon);
+        latlon,
+        fog.properties.get('star-intensity'),
+        fog.properties.get('star-density'),
+        fog.properties.get('star-scale'));
 
     painter.prepareDrawProgram(context, program);
 

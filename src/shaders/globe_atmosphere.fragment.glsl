@@ -4,6 +4,9 @@ uniform vec3 u_start_color;
 uniform vec4 u_color;
 uniform vec4 u_sky_color;
 uniform vec2 u_latlon;
+uniform float u_star_intensity;
+uniform float u_star_scale;
+uniform float u_star_density;
 
 #ifndef FOG
 uniform highp vec3 u_globe_pos;
@@ -12,27 +15,27 @@ uniform highp float u_globe_radius;
 
 varying vec3 v_ray_dir;
 
-vec2 random(vec3 p) {
-    p = fract(p * vec3(443.8975, 397.2973, 491.1871));
-    p += dot(p.zxy, p.yxz + 5.27);
-    return fract(vec2(p.x * p.y, p.z * p.x));
+float random(vec3 p) {
+    p = fract(p * vec3(23.2342, 97.1231, 91.2342));
+    p += dot(p.zxy, p.yxz + 123.1234);
+    return fract(p.x * p.y);
 }
 
 float stars(vec3 p) {
     float star = 0.0;
-    float resolution = 0.15 * u_viewport.x;
+    float res = 0.1 * u_star_scale * u_viewport.x;
+    float decay = 1.3;
 
-    for (float i = 0.0; i < 5.0; i++) {
-        vec3 q = fract(p * resolution) - 0.5;
-        vec3 id = floor(p * resolution);
-        vec2 rn = random(id);
-        float visibility = step(rn.x, 0.005 + i * i * 0.001);
+    for (float i = 0.0; i < 10.0; i++) {
+        vec3 q = fract(p * res) - 0.5;
+        vec3 id = floor(p * res);
+        float visibility = step(random(id), 0.005 * u_star_density);
         float circle = (1.0 - smoothstep(0.0, 0.5, length(q)));
         star += circle * visibility;
-        p *= 1.1;
+        p *= decay;
     }
 
-    return pow(star, 2.0);
+    return pow(star, max(u_star_intensity, 2.0));
 }
 
 void main() {
