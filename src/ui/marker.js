@@ -473,8 +473,9 @@ export default class Marker extends Evented {
     _calculatePitch(): number {
         const pos = this._pos;
 
-        if (this._map && (this._pitchAlignment === 'map' || (this._pitchAlignment === 'auto' && this._rotationAlignment === 'map'))) {
-            if (this._map.transform.projection.name === 'globe') {
+        if (this._map && (this._pitchAlignment === 'map' ||
+            (this._pitchAlignment === 'auto' && this._rotationAlignment === 'map' && this._map.transform.projection.name !== 'globe'))) {
+            if (this._map.transform.projection.name === 'globe' && this._pitchAlignment === 'map') {
                 const angle  = tiltAt(this._map.transform, pos) * 180 / Math.PI;
                 return 90 - angle;
             }
