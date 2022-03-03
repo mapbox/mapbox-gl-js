@@ -435,7 +435,7 @@ export default class Marker extends Evented {
         }
         const mapLocation = map.unproject(pos);
         let opacity = 1;
-        if (map.usingGlobe()) {
+        if (map._usingGlobe()) {
             opacity = this._occluded(mapLocation) ? 0 : 1;
         } else if (map.transform.projection.name === 'globe' || (map.transform._terrainEnabled() && map.getTerrain())) {
             opacity = this._occluded(mapLocation) ? TERRAIN_OCCLUDED_OPACITY : 1;
@@ -535,7 +535,7 @@ export default class Marker extends Evented {
                 this._updateDOM();
             }
 
-            if ((map.usingGlobe() || map.getTerrain() || map.getFog()) && !this._fadeTimer) {
+            if ((map._usingGlobe() || map.getTerrain() || map.getFog()) && !this._fadeTimer) {
                 this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
             }
         });

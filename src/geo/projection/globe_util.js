@@ -245,7 +245,7 @@ export function screenPixelToECEF(tr: Transform, point: Point): Array<number> {
 export function tiltAt(tr: Transform, point: Point): number {
     const position = screenPixelToECEF(tr, point);
     const surfaceCenter = latLngToECEF(tr._center.lat, tr._center.lng);
-    return vec3.angle((surfaceCenter: ReadonlyVec3), position);
+    return vec3.angle(surfaceCenter, position);
 
 }
 
