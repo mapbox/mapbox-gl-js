@@ -18,12 +18,14 @@ import type {FogState} from './fog_helpers.js';
 type Props = {|
     "range": DataConstantProperty<[number, number]>,
     "color": DataConstantProperty<Color>,
+    "sky-color": DataConstantProperty<Color>,
     "horizon-blend": DataConstantProperty<number>,
 |};
 
 const fogProperties: Properties<Props> = new Properties({
     "range": new DataConstantProperty(styleSpec.fog.range),
     "color": new DataConstantProperty(styleSpec.fog.color),
+    "sky-color": new DataConstantProperty(styleSpec.fog["sky-color"]),
     "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
 });
 
