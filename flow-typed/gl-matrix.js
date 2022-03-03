@@ -40,7 +40,8 @@ declare module "gl-matrix" {
         max<T: Vec3>(T, Vec3, Vec3): T,
         transformQuat<T: Vec3>(T, Vec3, Quat): T,
         transformMat3<T: Vec3>(T, Vec3, Mat3): T,
-        transformMat4<T: Vec3>(T, Vec3, Mat4): T
+        transformMat4<T: Vec3>(T, Vec3, Mat4): T,
+        angle(Vec3, Vec3): number;
     };
 
     declare var vec4: {
