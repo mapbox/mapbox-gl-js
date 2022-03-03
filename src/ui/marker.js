@@ -112,7 +112,7 @@ export default class Marker extends Evented {
         this._state = 'inactive';
         this._rotation = (options && options.rotation) || 0;
         this._rotationAlignment = (options && options.rotationAlignment) || 'auto';
-        this._pitchAlignment = options && options.pitchAlignment && options.pitchAlignment !== 'auto' ?  options.pitchAlignment : this._rotationAlignment;
+        this._pitchAlignment = (options && options.pitchAlignment && options.pitchAlignment) || 'auto';
         this._updateMoving = () => this._update(true);
 
         if (!options || !options.element) {
@@ -472,12 +472,10 @@ export default class Marker extends Evented {
 
     _calculatePitch(): number {
         const pos = this._pos;
-        if (this._pitchAlignment === "viewport" || this._pitchAlignment === "auto") {
-            return 0;
-        } if (this._map && this._pitchAlignment === "map") {
+
+        if (this._map && (this._pitchAlignment === 'map' || (this._pitchAlignment === 'auto' && this._rotationAlignment === 'map'))) {
             if (this._map.transform.projection.name === 'globe') {
                 const angle  = tiltAt(this._map.transform, pos) * 180 / Math.PI;
-                console.log("final angle is: ", angle);
                 return 90 - angle;
             }
             return this._map.getPitch();
@@ -779,7 +777,7 @@ export default class Marker extends Evented {
      * marker.setPitchAlignment('map');
      */
     setPitchAlignment(alignment: string): this {
-        this._pitchAlignment = alignment && alignment !== 'auto' ? alignment : this._rotationAlignment;
+        this._pitchAlignment = alignment || 'auto';
         this._update();
         return this;
     }
@@ -787,7 +785,7 @@ export default class Marker extends Evented {
     /**
      * Returns the current `pitchAlignment` property of the marker.
      *
-     * @returns {string} The current pitch alignment of the marker in degrees.
+     * @returns {string} The current pitch alignment of the marker.
      * @example
      * const alignment = marker.getPitchAlignment();
      */
