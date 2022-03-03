@@ -32,6 +32,10 @@ var GUIParams = function() {
     this.opacity = 1.0;
     this.skyOpacity = 1.0;
     this.horizonBlend = 0.5;
+    this.starIntensity = 5.0;
+    this.starDensity = 0.0;
+    this.starScale = 1.0;
+    this.presets = 'preset1';
 };
 
 var guiParams = new GUIParams();
@@ -47,20 +51,68 @@ var map = window.map = new mapboxgl.Map({
     projection: 'globe'
 });
 
+function updateFog() {
+    map.setStyle('mapbox://styles/mapbox/' + guiParams.style);
+}
+
+function updatePreset(value) {
+    if (value === 'preset1') {
+        guiParams.enableFog = true;
+        guiParams.style = 'satellite-streets-v11';
+        guiParams.start = 0.46;
+        guiParams.end = 2.9;
+        guiParams.color = [220, 159, 159];
+        guiParams.skyColor = [36, 92, 223];
+        guiParams.opacity = 1.0;
+        guiParams.skyOpacity = 0.7;
+        guiParams.horizonBlend = 1.15;
+        guiParams.starIntensity = 5.6;
+        guiParams.starDensity = 0;
+        guiParams.starScale = 1.0;
+    } else if (value === 'preset2') {
+        guiParams.enableFog = true;
+        guiParams.style = 'streets-v11';
+        guiParams.start = 0.79;
+        guiParams.end = 2.2;
+        guiParams.color = [255, 255, 255];
+        guiParams.skyColor = [19, 122, 255];
+        guiParams.opacity = 1;
+        guiParams.skyOpacity = 1;
+        guiParams.horizonBlend = 1.9;
+        guiParams.starIntensity = 1;
+        guiParams.starDensity = 0;
+        guiParams.starScale = 0.5;
+    } else if (value === 'preset3') {
+        guiParams.enableFog = true;
+        guiParams.style = 'light-v10';
+        guiParams.start = 0.46;
+        guiParams.end = 2.9;
+        guiParams.color = [0, 0, 0];
+        guiParams.skyColor = [200, 200, 200];
+        guiParams.opacity = 1;
+        guiParams.skyOpacity = 1;
+        guiParams.horizonBlend = 0.3;
+        guiParams.starIntensity = 10.0;
+        guiParams.starDensity = 3;
+        guiParams.starScale = 0.87;
+    }
+    updateFog();
+}
+
+updatePreset('preset1');
+
 window.onload = function() {
     var gui = new dat.GUI(); // eslint-disable-line
 
-    var style = gui.add(guiParams, 'style', [
-        'mapbox/streets-v11',
-        'mapbox/satellite-streets-v11',
-        'mapbox/light-v10',
-        'mapbox/dark-v10',
-        'mapbox/outdoors-v11',
-        'mapbox/satellite-v9',
+    var presets = gui.add(guiParams, 'presets', [
+        'preset1',
+        'preset2',
+        'preset3',
+        'preset4'
     ]);
 
-    style.onFinishChange((value) => {
-        map.setStyle('mapbox://styles/' + value);
+    presets.onFinishChange((value) => {
+        updatePreset(value);
     });
 
     var fog = gui.addFolder('Fog');
@@ -93,11 +145,35 @@ window.onload = function() {
             "horizon-blend": value,
         });
     });
+    var starDensity = fog.add(guiParams, 'starDensity', 0.0, 5.0);
+    starDensity.onChange((value) => {
+        map.setFog({
+            "star-density": value,
+        });
+    });
+    var starIntensity = fog.add(guiParams, 'starIntensity', 0.0, 10.0);
+    starIntensity.onChange((value) => {
+        map.setFog({
+            "star-intensity": value,
+        });
+    });
+    var starScale = fog.add(guiParams, 'starScale', 0.5, 1.0);
+    starScale.onChange((value) => {
+        map.setFog({
+            "star-scale": value,
+        });
+    });
 
     var opacity = fog.add(guiParams, 'opacity', 0.0, 1.0);
     opacity.onChange((value) => {
         map.setFog({
             "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + value + ')'
+        });
+    });
+    var skyOpacity = fog.add(guiParams, 'skyOpacity', 0.0, 1.0);
+    skyOpacity.onChange((value) => {
+        map.setFog({
+            "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + value + ')'
         });
     });
 
@@ -107,14 +183,6 @@ window.onload = function() {
             "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.opacity + ')'
         });
     });
-
-    var skyOpacity = fog.add(guiParams, 'skyOpacity', 0.0, 1.0);
-    skyOpacity.onChange((value) => {
-        map.setFog({
-            "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + value + ')'
-        });
-    });
-
     var skyColor = fog.addColor(guiParams, 'skyColor');
     skyColor.onChange((value) => {
         map.setFog({
@@ -124,24 +192,15 @@ window.onload = function() {
 };
 
 map.on('style.load', function() {
-    map.setFog(guiParams.enableFog ? {
+    map.setFog({
         "range": [guiParams.start, guiParams.end],
         "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
         "horizon-blend": guiParams.horizonBlend,
         "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + guiParams.skyOpacity + ')',
-        'color-transition': {
-            'duration': 500
-        },
-        'range-transition': {
-            'duration': 500
-        },
-        'horizon-blend-transition': {
-            'duration': 500
-        },
-        'sky-color-transition': {
-            'duration': 500
-        },
-    } : null);
+        "star-intensity": guiParams.starIntensity,
+        "star-density": guiParams.starDensity,
+        "star-scale": guiParams.starScale
+    });
 });
 
 </script>
