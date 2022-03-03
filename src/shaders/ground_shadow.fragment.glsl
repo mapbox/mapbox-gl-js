@@ -7,6 +7,7 @@ uniform sampler2D u_image1;
 uniform float u_shadow_intensity;
 uniform float u_texel_size;
 uniform vec3 u_cascade_distances;
+uniform vec4 u_bias;
 
 varying vec2 v_uv;
 varying vec4 v_pos_light_view_0;
@@ -24,8 +25,12 @@ float shadowOcclusionL1(vec4 pos) {
     pos.xyz = pos.xyz * 0.5 + 0.5;
     float fragDepth = min(pos.z, 0.999);
     vec2 uv = pos.xy;
-    float bias = 0.001;
-#if 1
+
+    if (any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0))))
+        return 0.0;
+
+    float bias = u_bias.y;// 0.001;
+#if 0
     return step(unpack_depth(texture2D(u_image1, uv)) + bias, fragDepth);
 #else
     vec2 texel = uv / u_texel_size - vec2(0.5);
@@ -77,7 +82,7 @@ float shadowOcclusionL0(vec4 pos) {
     vec2 uv23 = uv03 + vec2(2.0 * s, 0);
     vec2 uv33 = uv03 + vec2(3.0 * s, 0);
 
-    float bias = 0.001;
+    float bias = u_bias.x;// 0.001;
     float o00 = step(unpack_depth(texture2D(u_image0, uv00)) + bias, fragDepth);
     float o10 = step(unpack_depth(texture2D(u_image0, uv10)) + bias, fragDepth);
     float o20 = step(unpack_depth(texture2D(u_image0, uv20)) + bias, fragDepth);
