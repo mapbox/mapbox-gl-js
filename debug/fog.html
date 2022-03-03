@@ -56,6 +56,12 @@ function updateFog() {
 }
 
 function updatePreset(value) {
+    // 'mapbox/streets-v11',
+    // 'mapbox/satellite-streets-v11',
+    // 'mapbox/light-v10',
+    // 'mapbox/dark-v10',
+    // 'mapbox/outdoors-v11',
+    // 'mapbox/satellite-v9',
     if (value === 'preset1') {
         guiParams.enableFog = true;
         guiParams.style = 'satellite-streets-v11';
@@ -95,6 +101,45 @@ function updatePreset(value) {
         guiParams.starIntensity = 10.0;
         guiParams.starDensity = 3;
         guiParams.starScale = 0.87;
+    } else if (value === 'preset4') {
+        guiParams.enableFog = true;
+        guiParams.style = 'satellite-streets-v11';
+        guiParams.start = 0.46;
+        guiParams.end = 2.8;
+        guiParams.color = [131, 147, 222];
+        guiParams.skyColor = [119, 80, 200];
+        guiParams.opacity = 1;
+        guiParams.skyOpacity = 1;
+        guiParams.horizonBlend = 0.22;
+        guiParams.starIntensity = 10.0;
+        guiParams.starDensity = 0;
+        guiParams.starScale = 0.5;
+    } else if (value === 'preset5') {
+        guiParams.enableFog = true;
+        guiParams.style = 'dark-v10';
+        guiParams.start = 0.46;
+        guiParams.end = 2.9;
+        guiParams.color = [13, 13, 13];
+        guiParams.skyColor = [110, 110, 110];
+        guiParams.opacity = 1;
+        guiParams.skyOpacity = 0.38;
+        guiParams.horizonBlend = 0.9;
+        guiParams.starIntensity = 5.6;
+        guiParams.starDensity = 0;
+        guiParams.starScale = 1;
+    } else if (value === 'preset6') {
+        guiParams.enableFog = true;
+        guiParams.style = 'outdoors-v11';
+        guiParams.start = 0.68;
+        guiParams.end = 2.4;
+        guiParams.color = [40, 40, 65];
+        guiParams.skyColor = [0, 30, 102];
+        guiParams.opacity = 1;
+        guiParams.skyOpacity = 0.88;
+        guiParams.horizonBlend = 3.4;
+        guiParams.starIntensity = 5.9;
+        guiParams.starDensity = 0;
+        guiParams.starScale = 0.51;
     }
     updateFog();
 }
@@ -108,7 +153,9 @@ window.onload = function() {
         'preset1',
         'preset2',
         'preset3',
-        'preset4'
+        'preset4',
+        'preset5',
+        'preset6'
     ]);
 
     presets.onFinishChange((value) => {
