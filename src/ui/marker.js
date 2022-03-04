@@ -450,12 +450,16 @@ export default class Marker extends Evented {
     }
 
     _updateDOM() {
-        const offset = this._transformedOffset();
-        if (!this._pos) { return; }
-        const pos = this._pos.clone()._add(offset);
+        const pos = this._pos;
+        if (!pos) { return; }
+        const offset = this._offset.mult(this._scale);
         const pitch = this._calculatePitch();
         const rotation  = this._calculateRotation();
-        this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${pos.x}px, ${pos.y}px) rotateX(${pitch}deg) rotateZ(${rotation}deg)`;
+        this._element.style.transform = `
+            translate(${pos.x}px, ${pos.y}px) ${anchorTranslate[this._anchor]}
+            rotateX(${pitch}deg) rotateZ(${rotation}deg)
+            translate(${offset.x}px, ${offset.y}px)
+        `;
     }
 
     _calculatePitch(): number {
@@ -512,20 +516,6 @@ export default class Marker extends Evented {
                 this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
             }
         });
-    }
-
-    /**
-     * This is initially added to fix the behavior of default symbols only, in order
-     * to prevent any regression for custom symbols in client code.
-     * @private
-     */
-    _transformedOffset() {
-        if (!this._defaultMarker || !this._map) return this._offset;
-        const tr = this._map.transform;
-        const offset = this._offset.mult(this._scale);
-        if (this._rotationAlignment === "map") offset._rotate(tr.angle);
-        if (this._pitchAlignment === "map") offset.y *= Math.cos(tr._pitch);
-        return offset;
     }
 
     /**
