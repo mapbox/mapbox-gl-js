@@ -9,7 +9,7 @@ let reducedMotionQuery: MediaQueryList;
 
 let stubTime;
 
-let cachedCanvas;
+let canvas;
 
 /**
  * @private
@@ -41,18 +41,19 @@ const exported = {
     getImageData(img: CanvasImageSource, padding?: number = 0): ImageData {
         const {width, height} = img;
 
-        const canvas = (!cachedCanvas || cachedCanvas.width < width || cachedCanvas.height < height) ?
-            window.document.createElement('canvas') :
-            cachedCanvas;
+        if (!canvas) {
+            canvas = window.document.createElement('canvas');
+        }
 
         const context = canvas.getContext('2d');
         if (!context) {
             throw new Error('failed to create canvas 2d context');
         }
 
-        canvas.width = width;
-        canvas.height = height;
-        cachedCanvas = canvas;
+        if (!canvas.width || canvas.width < width || !canvas.height || canvas.height < height) {
+            canvas.width = width;
+            canvas.height = height;
+        }
 
         context.drawImage(img, 0, 0, width, height);
         return context.getImageData(-padding, -padding, width + 2 * padding, height + 2 * padding);
