@@ -135,7 +135,7 @@ class ImageSource extends Evented implements Source {
         this.options = options;
     }
 
-    load(newCoordinates?: Coordinates, successCallback?: () => void) {
+    load(newCoordinates?: Coordinates) {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
@@ -156,9 +156,6 @@ class ImageSource extends Evented implements Source {
                 this.height = this.image.height;
                 if (newCoordinates) {
                     this.coordinates = newCoordinates;
-                }
-                if (successCallback) {
-                    successCallback();
                 }
                 this._finishLoading();
             }
