@@ -465,13 +465,19 @@ export default class Marker extends Evented {
 
     _updateDOM() {
         const pos = this._pos;
-        if (!pos) { return; }
+        const map = this._map;
+        if (!pos || !map) { return; }
         const offset = this._offset.mult(this._scale);
-        const pitch = this._calculatePitch();
-        const rotation  = this._calculateRotation();
+        const rZ  = `rotateZ(${this._calculateRotation()}deg)`;
+        const rX = `rotateX(${this._calculatePitch()}deg)`;
+        // With pitch-alignment: map on a flat map, we adjust rotation before pitch,
+        // which skews the marker to simulate it lying flat on the map surface.
+        // In globe view, we adjust first pitch, then rotation so that the marker
+        // is always compressed vertically and appears to be popping out from the map.
+        const rotationTransform = map._usingGlobe() ? rZ + rX : rX + rZ;
         this._element.style.transform = `
             translate(${pos.x}px, ${pos.y}px) ${anchorTranslate[this._anchor]}
-            rotateX(${pitch}deg) rotateZ(${rotation}deg)
+            ${rotationTransform}
             translate(${offset.x}px, ${offset.y}px)
         `;
     }
