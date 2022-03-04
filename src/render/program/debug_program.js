@@ -33,3 +33,5 @@ const debugUniformValues = (matrix: Float32Array, color: Color, scaleRatio: numb
 });
 
 export {debugUniforms, debugUniformValues};
+
+export type DebugDefinesType = 'PROJECTION_GLOBE_VIEW';

@@ -4,20 +4,22 @@ import {
     latFromMercatorY,
     mercatorZfromAltitude,
     mercatorXfromLng,
-    mercatorYfromLat
+    mercatorYfromLat,
+    MAX_MERCATOR_LATITUDE
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import {degToRad, smoothstep} from '../../util/util.js';
+import {degToRad, smoothstep, clamp} from '../../util/util.js';
 import {mat4, vec3} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
 import {TriangleIndexArray, GlobeVertexArray, GlobeAtmosphereVertexArray, LineIndexArray} from '../../data/array_types.js';
 import {Aabb} from '../../util/primitives.js';
+import LngLatBounds from '../lng_lat_bounds.js';
 
 import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
-import type {Mat4} from 'gl-matrix';
+import type {Mat4, Vec3} from 'gl-matrix';
 import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Tile from '../../source/tile.js';
@@ -43,6 +45,51 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
     new Aabb([GLOBE_MIN, 0, GLOBE_MIN], [0, GLOBE_MAX, GLOBE_MAX]), // x=0, y=1
     new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
 ];
+
+export class Arc {
+    constructor(p0: Vec3, p1: Vec3, center: Vec3) {
+        this.a = vec3.sub([], p0, center);
+        this.b = vec3.sub([], p1, center);
+        this.center = center;
+        const an = vec3.normalize([], this.a);
+        const bn = vec3.normalize([], this.b);
+        this.angle = Math.acos(vec3.dot(an, bn));
+    }
+
+    a: Vec3;
+    b: Vec3;
+    center: Vec3;
+    angle: number;
+}
+
+export function slerp(a: number, b: number, angle: number, t: number): number {
+    const sina = Math.sin(angle);
+    return a * (Math.sin((1.0 - t) * angle) / sina) + b * (Math.sin(t * angle) / sina);
+}
+
+// Computes local extremum point of an arc on one of the dimensions (x, y or z),
+// i.e. value of a point where d/dt*f(x,y,t) == 0
+export function localExtremum(arc: Arc, dim: number): ?number {
+    // d/dt*slerp(x,y,t) = 0
+    // => t = (1/a)*atan(y/(x*sin(a))-1/tan(a)), x > 0
+    // => t = (1/a)*(pi/2), x == 0
+    if (arc.angle === 0) {
+        return null;
+    }
+
+    let t: number;
+    if (arc.a[dim] === 0) {
+        t = (1.0 / arc.angle) * 0.5 * Math.PI;
+    } else {
+        t = 1.0 / arc.angle * Math.atan(arc.b[dim] / arc.a[dim] / Math.sin(arc.angle) - 1.0 / Math.tan(arc.angle));
+    }
+
+    if (t < 0 || t > 1) {
+        return null;
+    }
+
+    return slerp(arc.a[dim], arc.b[dim], arc.angle, clamp(t, 0.0, 1.0)) + arc.center[dim];
+}
 
 export function globeTileBounds(id: CanonicalTileID): Aabb {
     if (id.z <= 1) {
@@ -76,6 +123,127 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     return new Aabb(bMin, bMax);
 }
 
+export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: CanonicalTileID): Aabb {
+    const scale = numTiles / tr.worldSize;
+    const to1to1Units = (cornerMin: Vec3, cornerMax: Vec3) => {
+        vec3.scale(cornerMin, cornerMin, scale);
+        vec3.scale(cornerMax, cornerMax, scale);
+    };
+
+    const mx = Number.MAX_VALUE;
+    const cornerMax = [-mx, -mx, -mx];
+    const cornerMin = [mx, mx, mx];
+    const m = calculateGlobeMatrix(tr);
+
+    if (tileId.z <= 1) {
+        // Compute minimum bounding box that fully encapsulates
+        // transformed corners of the local aabb
+        const aabb = globeTileBounds(tileId);
+        const corners = aabb.getCorners();
+
+        for (let i = 0; i < corners.length; i++) {
+            vec3.transformMat4(corners[i], corners[i], m);
+            vec3.min(cornerMin, cornerMin, corners[i]);
+            vec3.max(cornerMax, cornerMax, corners[i]);
+        }
+
+        to1to1Units(cornerMin, cornerMax);
+        return new Aabb(cornerMin, cornerMax);
+    }
+
+    // Find minimal aabb for a tile. Correct solution would be to compute bounding box that
+    // fully encapsulates the curved patch that represents the tile on globes surface.
+    // This can be simplified a bit as the globe transformation is constrained:
+    //  1. Camera always faces the center point on the map
+    //  2. Camera is always above (z-coordinate) all of the tiles
+    //  3. Up direction of the coordinate space (pixel space) is always +z. This means that
+    //     the "highest" point of the map is at the center.
+    //  4. z-coordinate of any point in any tile descends as a function of the distance from the center
+
+    // Simplified aabb is computed by first encapsulating 4 transformed corner points of the tile.
+    // The resulting aabb is not complete yet as curved edges of the tile might span outside of the boundaries.
+    // It is enough to extend the aabb to contain only the edge that's closest to the center point.
+    const [nw, se] = globeTileLatLngCorners(tileId);
+    const bounds = new LngLatBounds();
+    bounds.setSouthWest([nw[1], se[0]]);
+    bounds.setNorthEast([se[1], nw[0]]);
+
+    const corners = [
+        latLngToECEF(bounds.getSouth(), bounds.getWest()),
+        latLngToECEF(bounds.getSouth(), bounds.getEast()),
+        latLngToECEF(bounds.getNorth(), bounds.getEast()),
+        latLngToECEF(bounds.getNorth(), bounds.getWest())
+    ];
+
+    // Note that here we're transforming the corners to world space while finding the min/max values.
+    for (let i = 0; i < corners.length; i++) {
+        vec3.transformMat4(corners[i], corners[i], m);
+        vec3.min(cornerMin, cornerMin, corners[i]);
+        vec3.max(cornerMax, cornerMax, corners[i]);
+    }
+
+    if (bounds.contains(tr.center)) {
+        cornerMax[2] = 0.0;
+        to1to1Units(cornerMin, cornerMax);
+        return new Aabb(cornerMin, cornerMax);
+    }
+
+    // Compute parameters describing edges of the tile (i.e. arcs) on the globe surface.
+    // Vertical edges revolves around the globe origin whereas horizontal edges revolves around the y-axis.
+    const globeCenter = [m[12], m[13], m[14]];
+
+    const centerLng = tr.center.lng;
+    const centerLat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+    const center = [mercatorXfromLng(centerLng), mercatorYfromLat(centerLat)];
+
+    const tileCenterLng = bounds.getCenter().lng;
+    const tileCenterLat = clamp(bounds.getCenter().lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+    const tileCenter = [mercatorXfromLng(tileCenterLng), mercatorYfromLat(tileCenterLat)];
+    let arcCenter = new Array(3);
+    let closestArcIdx = 0;
+
+    const dx = center[0] - tileCenter[0];
+    const dy = center[1] - tileCenter[1];
+
+    // Here we determine the arc which is closest to the map center point.
+    // Horizontal arcs origin = globeCenter.
+    // Vertical arcs origin = globeCenter + yAxis * shift.
+    // Where `shift` is determined by latitude.
+    if (Math.abs(dx) > Math.abs(dy)) {
+        closestArcIdx = dx >= 0 ? 1 : 3;
+        arcCenter = globeCenter;
+    } else {
+        closestArcIdx = dy >= 0 ? 0 : 2;
+        const yAxis = [m[4], m[5], m[6]];
+        let shift: number;
+        if (dy >= 0) {
+            shift = -Math.sin(degToRad(bounds.getSouth())) * GLOBE_RADIUS;
+        } else {
+            shift = -Math.sin(degToRad(bounds.getNorth())) * GLOBE_RADIUS;
+        }
+        arcCenter = vec3.scaleAndAdd(arcCenter, globeCenter, yAxis, shift);
+    }
+
+    const arcA = corners[closestArcIdx];
+    const arcB = corners[(closestArcIdx + 1) % 4];
+
+    const closestArc = new Arc(arcA, arcB, arcCenter);
+    const arcBounds = [(localExtremum(closestArc, 0) || arcA[0]),
+        (localExtremum(closestArc, 1) || arcA[1]),
+        (localExtremum(closestArc, 2) || arcA[2])];
+
+    // Reduce height of the aabb to match height of the closest arc. This reduces false positives
+    // of tiles farther away from the center as they would otherwise intersect with far end
+    // of the view frustum
+    cornerMin[2] = Math.min(arcA[2], arcB[2]);
+
+    vec3.min(cornerMin, cornerMin, arcBounds);
+    vec3.max(cornerMax, cornerMax, arcBounds);
+
+    to1to1Units(cornerMin, cornerMax);
+    return new Aabb(cornerMin, cornerMax);
+}
+
 function globeTileLatLngCorners(id: CanonicalTileID) {
     const tileScale = 1 << id.z;
     const left = id.x / tileScale;
@@ -102,6 +270,16 @@ function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: num
 
 export function latLngToECEF(lat: number, lng: number, radius?: number): Array<number> {
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
+}
+
+export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID): Array<number> {
+    const tiles = Math.pow(2.0, id.z);
+    const mx = (x / EXTENT + id.x) / tiles;
+    const my = (y / EXTENT + id.y) / tiles;
+    const lat = latFromMercatorY(my);
+    const lng = lngFromMercatorX(mx);
+    const pos = latLngToECEF(lat, lng);
+    return pos;
 }
 
 export function globeECEFOrigin(tileMatrix: Mat4, id: UnwrappedTileID): [number, number, number] {

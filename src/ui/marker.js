@@ -427,7 +427,7 @@ export default class Marker extends Evented {
         const map = this._map;
         if (!map) return;
 
-        const pos = this._pos ? this._pos.sub(this._transformedOffset()) : null;
+        const pos = this._pos;
 
         if (!pos || pos.x < 0 || pos.x > map.transform.width || pos.y < 0 || pos.y > map.transform.height) {
             this._clearFadeTimer();
@@ -464,10 +464,16 @@ export default class Marker extends Evented {
     }
 
     _updateDOM() {
-        const pos = this._pos || new Point(0, 0);
+        const pos = this._pos;
+        if (!pos) { return; }
+        const offset = this._offset.mult(this._scale);
         const pitch = this._calculatePitch();
         const rotation  = this._calculateRotation();
-        this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${pos.x}px, ${pos.y}px) rotateX(${pitch}deg) rotateZ(${rotation}deg)`;
+        this._element.style.transform = `
+            translate(${pos.x}px, ${pos.y}px) ${anchorTranslate[this._anchor]}
+            rotateX(${pitch}deg) rotateZ(${rotation}deg)
+            translate(${offset.x}px, ${offset.y}px)
+        `;
     }
 
     _calculatePitch(): number {
@@ -512,7 +518,7 @@ export default class Marker extends Evented {
             this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
         }
 
-        this._pos = map.project(this._lngLat)._add(this._transformedOffset());
+        this._pos = map.project(this._lngLat);
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
@@ -539,20 +545,6 @@ export default class Marker extends Evented {
                 this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
             }
         });
-    }
-
-    /**
-     * This is initially added to fix the behavior of default symbols only, in order
-     * to prevent any regression for custom symbols in client code.
-     * @private
-     */
-    _transformedOffset() {
-        if (!this._defaultMarker || !this._map) return this._offset;
-        const tr = this._map.transform;
-        const offset = this._offset.mult(this._scale);
-        if (this._rotationAlignment === "map") offset._rotate(tr.angle);
-        if (this._pitchAlignment === "map") offset.y *= Math.cos(tr._pitch);
-        return offset;
     }
 
     /**
@@ -669,7 +661,7 @@ export default class Marker extends Evented {
             // to calculate the new marker position.
             // If we don't do this, the marker 'jumps' to the click position
             // creating a jarring UX effect.
-            this._positionDelta = e.point.sub(this._pos).add(this._transformedOffset());
+            this._positionDelta = e.point.sub(this._pos);
 
             this._pointerdownPos = e.point;
 
