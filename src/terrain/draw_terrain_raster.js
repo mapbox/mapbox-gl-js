@@ -20,7 +20,8 @@ import {
     globeToMercatorTransition,
     globeMatrixForTile,
     globePoleMatrixForTile,
-    globeVertexBufferForTileMesh
+    globeVertexBufferForTileMesh,
+    globeTileLatLngCorners
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
 
@@ -171,7 +172,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
         for (const coord of tileIDs) {
             const tile = sourceCache.getTile(coord);
-            const gridBuffer = globeVertexBufferForTileMesh(painter, tile, coord);
+            // const gridBuffer = globeVertexBufferForTileMesh(painter, tile, coord);
             const stencilMode = StencilMode.disabled;
 
             const prevDemTile = terrain.prevTerrainTileForTile[coord.key];
@@ -193,10 +194,13 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 extend(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
             }
 
-            const posMatrix = globeMatrixForTile(coord.canonical, tr.globeMatrix);
+            // const posMatrix = globeMatrixForTile(coord.canonical, tr.globeMatrix);
+            const posMatrix = Float32Array.from(tr.globeMatrix);
+            const tileBounds = globeTileLatLngCorners(coord.canonical);
+            const sizeY = [1 << coord.canonical.z, coord.canonical.y];
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, posMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter);
+                globeToMercatorTransition(tr.zoom), mercatorCenter, tileBounds, sizeY);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -210,33 +214,34 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                     [sharedBuffers.gridIndexBuffer, sharedBuffers.gridSegments];
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
-                    uniformValues, "globe_raster", gridBuffer, buffer, segments);
+                    uniformValues, "globe_raster", sharedBuffers.gridBuffer, buffer, segments);
             }
 
-            if (!isWireframe && sharedBuffers) {
-                // Fill poles by extrapolating adjacent border tiles
-                const {x, y, z} = coord.canonical;
-                const topCap = y === 0;
-                const bottomCap = y === (1 << z) - 1;
-                const segment = sharedBuffers.poleSegments[z];
+            // TODO: Refactor, re-enable and use a different program for poles.
+            // if (!isWireframe && sharedBuffers) {
+            //     // Fill poles by extrapolating adjacent border tiles
+            //     const {x, y, z} = coord.canonical;
+            //     const topCap = y === 0;
+            //     const bottomCap = y === (1 << z) - 1;
+            //     const segment = sharedBuffers.poleSegments[z];
 
-                if (segment && (topCap || bottomCap)) {
-                    let poleMatrix = globePoleMatrixForTile(z, x, tr);
+            //     if (segment && (topCap || bottomCap)) {
+            //         let poleMatrix = globePoleMatrixForTile(z, x, tr);
 
-                    const drawPole = (program, vertexBuffer) => program.draw(
-                        context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                        globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
-                        "globe_pole_raster", vertexBuffer, sharedBuffers.poleIndexBuffer, segment);
+            //         const drawPole = (program, vertexBuffer) => program.draw(
+            //             context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            //             globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
+            //             "globe_pole_raster", vertexBuffer, sharedBuffers.poleIndexBuffer, segment);
 
-                    if (topCap) {
-                        drawPole(program, sharedBuffers.poleNorthVertexBuffer);
-                    }
-                    if (bottomCap) {
-                        poleMatrix = mat4.scale(mat4.create(), poleMatrix, [1, -1, 1]);
-                        drawPole(program, sharedBuffers.poleSouthVertexBuffer);
-                    }
-                }
-            }
+            //         if (topCap) {
+            //             drawPole(program, sharedBuffers.poleNorthVertexBuffer);
+            //         }
+            //         if (bottomCap) {
+            //             poleMatrix = mat4.scale(mat4.create(), poleMatrix, [1, -1, 1]);
+            //             drawPole(program, sharedBuffers.poleSouthVertexBuffer);
+            //         }
+            //     }
+            // }
         }
     });
 }

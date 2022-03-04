@@ -13,7 +13,8 @@ import {degToRad, smoothstep, clamp} from '../../util/util.js';
 import {mat4, vec3} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
-import {TriangleIndexArray, GlobeVertexArray, GlobeAtmosphereVertexArray, LineIndexArray} from '../../data/array_types.js';
+import posAttributes from '../../data/pos_attributes.js';
+import {TriangleIndexArray, GlobeVertexArray, GlobeAtmosphereVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
 
@@ -243,7 +244,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     return new Aabb(cornerMin, cornerMax);
 }
 
-function globeTileLatLngCorners(id: CanonicalTileID) {
+export function globeTileLatLngCorners(id: CanonicalTileID) {
     const tileScale = 1 << id.z;
     const left = id.x / tileScale;
     const right = (id.x + 1) / tileScale;
@@ -419,6 +420,7 @@ export class GlobeSharedBuffers {
     poleIndexBuffer: IndexBuffer;
     poleSegments: Array<SegmentVector>;
 
+    gridBuffer: VertexBuffer;
     gridIndexBuffer: IndexBuffer;
     gridSegments: SegmentVector;
 
@@ -437,6 +439,7 @@ export class GlobeSharedBuffers {
 
     destroy() {
         this.poleIndexBuffer.destroy();
+        this.gridBuffer.destroy();
         this.gridIndexBuffer.destroy();
         this.poleNorthVertexBuffer.destroy();
         this.poleSouthVertexBuffer.destroy();
@@ -453,22 +456,23 @@ export class GlobeSharedBuffers {
     }
 
     _createGrid(context: Context) {
+        const gridVertices = new PosArray();
         const gridIndices = new TriangleIndexArray();
         const quadExt = GLOBE_VERTEX_GRID_SIZE;
         const vertexExt = quadExt + 1;
 
         for (let j = 0; j < quadExt; j++) {
             for (let i = 0; i < quadExt; i++) {
+                gridVertices.emplaceBack(i, j);
                 const index = j * vertexExt + i;
                 gridIndices.emplaceBack(index + 1, index, index + vertexExt);
                 gridIndices.emplaceBack(index + vertexExt, index + vertexExt + 1, index + 1);
             }
         }
-        this.gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
-
+        this.gridIndexBuffer = context.createIndexBuffer(gridIndices, true); // this shouldn't be dynamic
+        this.gridBuffer = context.createVertexBuffer(gridVertices, posAttributes.members);
         const gridPrimitives = GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE * 2;
-        const gridVertices = (GLOBE_VERTEX_GRID_SIZE + 1) * (GLOBE_VERTEX_GRID_SIZE + 1);
-        this.gridSegments = SegmentVector.simpleSegment(0, 0, gridVertices, gridPrimitives);
+        this.gridSegments = SegmentVector.simpleSegment(0, 0, gridVertices.length, gridPrimitives);
     }
 
     _createPoles(context: Context) {
