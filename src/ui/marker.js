@@ -29,6 +29,7 @@ type Options = {
 };
 
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
+export const MAX_PITCH = 80; // Ensure that markers on globe doen't disappear completely (as they would at pitch 90)
 
 /**
  * Creates a marker component.
@@ -410,15 +411,17 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _occluded(mapLocation: LngLat): boolean {
-        if (!this._map) return false;
-        const camera = this._map.getFreeCameraOptions();
+    _occluded(unprojected: LngLat): boolean {
+        const map = this._map;
+        if (!map) return false;
+        const camera = map.getFreeCameraOptions();
         if (camera.position) {
-            const cameraPos = camera.position.toLngLat();
-            // the distance to the marker lat/lng + marker offset location
-            const offsetDistance = cameraPos.distanceTo(mapLocation);
-            const distance = cameraPos.distanceTo(this._lngLat);
-            return offsetDistance < distance * 0.9;
+            const cameraLngLat = camera.position.toLngLat();
+            const shortestDistance = cameraLngLat.distanceTo(unprojected);
+            const distanceToMarker = cameraLngLat.distanceTo(this._lngLat);
+            // In globe view only occlude if past ~100 km from the camera.
+            // This fixes an issue where points at the center would be considered occluded
+            return shortestDistance < distanceToMarker * 0.9 && (!map._usingGlobe() || distanceToMarker > 100000);
         }
         return false;
     }
@@ -489,7 +492,7 @@ export default class Marker extends Evented {
             (this._pitchAlignment === 'auto' && this._rotationAlignment === 'map' && this._map.transform.projection.name !== 'globe'))) {
             if (this._map.transform.projection.name === 'globe' && this._pitchAlignment === 'map') {
                 const angle  = tiltAt(this._map.transform, pos) * 180 / Math.PI;
-                return 90 - angle;
+                return MAX_PITCH * (1 - angle / 90);
             }
             return this._map.getPitch();
         }
