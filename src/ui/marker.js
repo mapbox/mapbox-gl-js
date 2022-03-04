@@ -450,8 +450,9 @@ export default class Marker extends Evented {
     }
 
     _updateDOM() {
+        const offset = this._transformedOffset();
         if (!this._pos) { return; }
-        const pos = this._pos._add(this._transformedOffset());
+        const pos = this._pos.clone()._add(offset);
         const pitch = this._calculatePitch();
         const rotation  = this._calculateRotation();
         this._element.style.transform = `${anchorTranslate[this._anchor]} translate(${pos.x}px, ${pos.y}px) rotateX(${pitch}deg) rotateZ(${rotation}deg)`;
