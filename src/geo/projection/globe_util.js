@@ -256,14 +256,6 @@ function globeTileLatLngCorners(id: CanonicalTileID) {
     return [latLngTL, latLngBR];
 }
 
-function csLatcsLngToECEF(cosLat: number, sinLat: number, cosLng: number, sinLng: number, radius: number = GLOBE_RADIUS): Array<number> {
-    const sx = cosLat * sinLng * radius;
-    const sy = -sinLat * radius;
-    const sz = cosLat * cosLng * radius;
-
-    return [sx, sy, sz];
-}
-
 function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: number = GLOBE_RADIUS): Array<number> {
     lng = degToRad(lng);
 
@@ -541,54 +533,19 @@ export class GlobeSharedBuffers {
         const boundsArray = new GlobeVertexArray();
         boundsArray.reserve(GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE);
 
-        // TODO: Make more readable.
-        const uvYs = new Array<number>(vertexExt);
-        const mercatorYs = new Array<number>(vertexExt);
-        const cosLats = new Array<number>(vertexExt);
-        const sinLats = new Array<number>(vertexExt);
         for (let y = 0; y < vertexExt; y++) {
             const lat = interpolate(latLngTL[0], latLngBR[0], y / GLOBE_VERTEX_GRID_SIZE);
             const mercatorY = mercatorYfromLat(lat);
             const uvY = (mercatorY * tiles) - id.y;
             const sinLat = Math.sin(degToRad(lat));
             const cosLat = Math.cos(degToRad(lat));
-            uvYs[y] = uvY;
-            mercatorYs[y] = mercatorY;
-            cosLats[y] = cosLat;
-            sinLats[y] = sinLat;
-        }
-
-        const uvXs = new Array<number>(vertexExt);
-        const mercatorXs = new Array<number>(vertexExt);
-        const cosLngs = new Array<number>(vertexExt);
-        const sinLngs = new Array<number>(vertexExt);
-        for (let x = 0; x < vertexExt; x++) {
-            const uvX = x / GLOBE_VERTEX_GRID_SIZE;
-            const lng = interpolate(latLngTL[1], latLngBR[1], uvX);
-            const sinLng = Math.sin(degToRad(lng));
-            const cosLng = Math.cos(degToRad(lng));
-            const mercatorX = mercatorXfromLng(lng);
-            uvXs[x] = uvX;
-            mercatorXs[x] = mercatorX;
-            cosLngs[x] = cosLng;
-            sinLngs[x] = sinLng;
-        }
-
-        for (let y = 0; y < vertexExt; y++) {
-            const mercatorY = mercatorYs[y];
-            const uvY = uvYs[y];
-
-            const cosLat = cosLats[y];
-            const sinLat = sinLats[y];
 
             for (let x = 0; x < vertexExt; x++) {
-                const uvX = uvXs[x];
-                const mercatorX = mercatorXs[x];
+                const uvX = x / GLOBE_VERTEX_GRID_SIZE;
+                const lng = interpolate(latLngTL[1], latLngBR[1], uvX);
+                const mercatorX = mercatorXfromLng(lng);
 
-                const cosLng = cosLngs[x];
-                const sinLng = sinLngs[x];
-
-                const pGlobe = csLatcsLngToECEF(cosLat, sinLat, cosLng, sinLng);
+                const pGlobe = csLatLngToECEF(cosLat, sinLat, lng);
                 const [px, py, pz] = vec3.transformMat4(pGlobe, pGlobe, norm);
 
                 boundsArray.emplaceBack(px, py, pz, mercatorX, mercatorY, uvX, uvY);
