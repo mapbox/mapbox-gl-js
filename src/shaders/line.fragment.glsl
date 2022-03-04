@@ -1,5 +1,6 @@
 uniform lowp float u_device_pixel_ratio;
 uniform float u_alpha_discard_threshold;
+uniform float u_trim_offset;
 
 varying vec2 v_width2;
 varying vec2 v_normal;
@@ -15,7 +16,7 @@ varying vec2 v_tex_b;
 
 #ifdef RENDER_LINE_GRADIENT
 uniform sampler2D u_gradient_image;
-varying highp vec2 v_uv;
+varying highp vec4 v_uv;
 #endif
 
 #pragma mapbox: define highp vec4 color
@@ -54,7 +55,13 @@ void main() {
 #ifdef RENDER_LINE_GRADIENT
     // For gradient lines, v_lineprogress is the ratio along the
     // entire line, the gradient ramp is stored in a texture.
-    vec4 out_color = texture2D(u_gradient_image, v_uv);
+    vec4 out_color = texture2D(u_gradient_image, v_uv.xy);
+    float start = v_uv[2];
+    float end = v_uv[3];
+    float test = (start + (v_uv.x) * (end - start));
+    if (test < u_trim_offset) {
+        out_color = vec4(0,0,0,0);
+    }
 #else
     vec4 out_color = color;
 #endif
