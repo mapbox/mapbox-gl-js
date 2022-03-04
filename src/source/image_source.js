@@ -152,7 +152,6 @@ class ImageSource extends Evented implements Source {
                 } else {
                     this.image = image;
                 }
-                console.log('this.image: ', this.image);
                 this.width = this.image.width;
                 this.height = this.image.height;
                 if (newCoordinates) {
