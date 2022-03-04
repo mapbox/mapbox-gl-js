@@ -791,6 +791,27 @@ test('Marker transforms pitch with the map', (t) => {
     t.end();
 });
 
+test('Unset pitchAlignment default to rotationAlignment', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.equal(marker.getRotationAlignment(), 'viewport');
+    t.equal(marker.getPitchAlignment(), 'viewport');
+
+    marker.setRotationAlignment('map');
+    t.equal(marker.getRotationAlignment(), 'map');
+    t.equal(marker.getPitchAlignment(), 'map');
+
+    marker.setRotationAlignment('auto');
+    t.equal(marker.getRotationAlignment(), 'viewport');
+    t.equal(marker.getPitchAlignment(), 'viewport');
+
+    map.remove();
+    t.end();
+});
+
 test('Marker pitchAlignment when set to auto defaults to rotationAlignment', (t) => {
     const map = createMap(t);
     const marker = new Marker({rotationAlignment: 'map', pitchAlignment: 'auto'})

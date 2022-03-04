@@ -488,9 +488,8 @@ export default class Marker extends Evented {
     _calculatePitch(): number {
         const pos = this._pos;
 
-        if (this._map && (this._pitchAlignment === 'map' ||
-            (this._pitchAlignment === 'auto' && this._rotationAlignment === 'map' && this._map.transform.projection.name !== 'globe'))) {
-            if (this._map.transform.projection.name === 'globe' && this._pitchAlignment === 'map') {
+        if (this._map && this.getPitchAlignment() === 'map') {
+            if (this._map.transform.projection.name === 'globe') {
                 const angle  = tiltAt(this._map.transform, pos) * 180 / Math.PI;
                 return MAX_PITCH * (1 - angle / 90);
             }
@@ -767,7 +766,8 @@ export default class Marker extends Evented {
      * const alignment = marker.getRotationAlignment();
      */
     getRotationAlignment(): string {
-        return this._rotationAlignment;
+        // return this._rotationAlignment;
+        return this._rotationAlignment === `auto` ? 'viewport' : this._rotationAlignment;
     }
 
     /**
@@ -785,13 +785,13 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Returns the current `pitchAlignment` property of the marker.
+     * Returns the current `pitchAlignment` behavior of the marker.
      *
      * @returns {string} The current pitch alignment of the marker.
      * @example
      * const alignment = marker.getPitchAlignment();
      */
     getPitchAlignment(): string {
-        return this._pitchAlignment;
+        return this._pitchAlignment === `auto` ? this.getRotationAlignment() : this._pitchAlignment;
     }
 }
