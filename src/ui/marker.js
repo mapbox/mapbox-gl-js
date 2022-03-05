@@ -487,13 +487,14 @@ export default class Marker extends Evented {
 
     _calculatePitch(): number {
         const pos = this._pos;
+        const map = this._map;
 
-        if (this._map && this.getPitchAlignment() === 'map') {
-            if (this._map.transform.projection.name === 'globe') {
-                const angle  = tiltAt(this._map.transform, pos) * 180 / Math.PI;
+        if (map && this.getPitchAlignment() === 'map') {
+            if (map.transform.projection.name === 'globe') {
+                const angle  = tiltAt(map.transform, pos) * 180 / Math.PI + map.getPitch();
                 return MAX_PITCH * (1 - angle / 90);
             }
-            return this._map.getPitch();
+            return map.getPitch();
         }
         return 0;
     }
