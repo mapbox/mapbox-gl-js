@@ -50,9 +50,12 @@ const exported = {
             throw new Error('failed to create canvas 2d context');
         }
 
-        canvas.width = width > canvas.width ? width : canvas.width;
-        canvas.height = height > canvas.height ? height : canvas.height;
+        if (width > canvas.width || height > canvas.height) {
+            canvas.width = width;
+            canvas.height = height;
+        }
 
+        context.clearRect(-padding, -padding, width + 2 * padding, height + 2 * padding);
         context.drawImage(img, 0, 0, width, height);
         return context.getImageData(-padding, -padding, width + 2 * padding, height + 2 * padding);
     },
