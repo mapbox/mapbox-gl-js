@@ -36,6 +36,9 @@ float mercatorYfromLat(float lat) {
 }
 
 vec3 latLngToECEF(float lat, float lng) {
+    lat = DEG_TO_RAD * lat;
+    lng = DEG_TO_RAD * lng;
+    
     float cosLat = cos(lat);
     float sinLat = sin(lat);
     float cosLng = cos(lng);

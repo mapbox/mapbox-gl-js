@@ -461,9 +461,12 @@ export class GlobeSharedBuffers {
         const quadExt = GLOBE_VERTEX_GRID_SIZE;
         const vertexExt = quadExt + 1;
 
+        for (let j = 0; j < vertexExt; j++)
+            for (let i = 0; i < vertexExt; i++)
+                gridVertices.emplaceBack(i, j);
+
         for (let j = 0; j < quadExt; j++) {
             for (let i = 0; i < quadExt; i++) {
-                gridVertices.emplaceBack(i, j);
                 const index = j * vertexExt + i;
                 gridIndices.emplaceBack(index + 1, index, index + vertexExt);
                 gridIndices.emplaceBack(index + vertexExt, index + vertexExt + 1, index + 1);
