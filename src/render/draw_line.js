@@ -81,11 +81,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        const trimOffset = 0.4;
+        const curTrimOffset = layer.paint.get('line-trim-offset');
         const matrix = painter.terrain ? coord.projMatrix : null;
         const uniformValues = image ?
             linePatternUniformValues(painter, tile, layer, crossfade, matrix, pixelRatio) :
-            lineUniformValues(painter, tile, layer, crossfade, matrix, bucket.lineClipsArray.length, pixelRatio, trimOffset);
+            lineUniformValues(painter, tile, layer, crossfade, matrix, bucket.lineClipsArray.length, pixelRatio, curTrimOffset);
 
         if (gradient) {
             const layerGradient = bucket.gradients[layer.id];
@@ -103,14 +103,12 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                     const maxTextureCoverage = lineLength * maxTilePixelSize * potentialOverzoom;
                     textureResolution = clamp(nextPowerOfTwo(maxTextureCoverage), 256, context.maxTextureSize);
                 }
-                const curTrimOffset = layer.paint.get('line-trim-offset');
                 layerGradient.gradient = renderColorRamp({
                     expression: layer.gradientExpression(),
                     evaluationKey: 'lineProgress',
                     resolution: textureResolution,
                     image: layerGradient.gradient || undefined,
-                    clips: bucket.lineClipsArray,
-                    trimOffset: curTrimOffset
+                    clips: bucket.lineClipsArray
                 });
                 if (layerGradient.texture) {
                     layerGradient.texture.update(layerGradient.gradient);

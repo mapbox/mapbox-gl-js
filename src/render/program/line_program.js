@@ -30,7 +30,7 @@ export type LineUniformsType = {|
     'u_scale': Uniform3f,
     'u_mix': Uniform1f,
     'u_alpha_discard_threshold': Uniform1f,
-    'u_trim_offset': Uniform1f
+    'u_trim_offset': Uniform2f
 |};
 
 export type LinePatternUniformsType = {|
@@ -59,7 +59,7 @@ const lineUniforms = (context: Context, locations: UniformLocations): LineUnifor
     'u_scale': new Uniform3f(context, locations.u_scale),
     'u_mix': new Uniform1f(context, locations.u_mix),
     'u_alpha_discard_threshold': new Uniform1f(context, locations.u_alpha_discard_threshold),
-    'u_trim_offset': new Uniform1f(context, locations.u_trim_offset)
+    'u_trim_offset': new Uniform2f(context, locations.u_trim_offset)
 });
 
 const linePatternUniforms = (context: Context, locations: UniformLocations): LinePatternUniformsType => ({
@@ -82,7 +82,7 @@ const lineUniformValues = (
     matrix: ?Float32Array,
     imageHeight: number,
     pixelRatio: number,
-    trimOffset: number,
+    trimOffset: [number, number],
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
     const pixelsToTileUnits = transform.calculatePixelsToTileUnitsMatrix(tile);
@@ -102,7 +102,7 @@ const lineUniformValues = (
         'u_scale': [0, 0, 0],
         'u_mix': 0,
         'u_alpha_discard_threshold': 0.0,
-        'u_trim_offset': trimOffset,
+        'u_trim_offset': trimOffset
     };
     if (hasDash(layer)) {
         const tileZoomRatio = calculateTileRatio(tile, painter.transform);

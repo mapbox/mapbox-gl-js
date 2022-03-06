@@ -1,6 +1,6 @@
 uniform lowp float u_device_pixel_ratio;
 uniform float u_alpha_discard_threshold;
-uniform float u_trim_offset;
+uniform vec2 u_trim_offset;
 
 varying vec2 v_width2;
 varying vec2 v_normal;
@@ -59,8 +59,8 @@ void main() {
     float start = v_uv[2];
     float end = v_uv[3];
     float test = (start + (v_uv.x) * (end - start));
-    if (test < u_trim_offset) {
-        out_color = vec4(0,0,0,0);
+    if (test < u_trim_offset[1] && test > u_trim_offset[0]) {
+        out_color = vec4(0, 0, 0, 0);
     }
 #else
     vec4 out_color = color;
