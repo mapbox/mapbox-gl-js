@@ -53,13 +53,20 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_GRADIENT
-    // For gradient lines, v_lineprogress is the ratio along the
-    // entire line, the gradient ramp is stored in a texture.
+    // For gradient lines, v_uv.xy are the coord specify where the texture will be simapled.
+    // v_uv[2] and v_uv[3] are specifying the original clip range that the vertex is located in.
     vec4 out_color = texture2D(u_gradient_image, v_uv.xy);
     float start = v_uv[2];
     float end = v_uv[3];
-    float test = (start + (v_uv.x) * (end - start));
-    if (test < u_trim_offset[1] && test > u_trim_offset[0]) {
+    // v_uv.x is the relative prorgress based on each clip. Calculate the absolute progress based on
+    // the whole line by combining the clip start and end value.
+    float line_progress = (start + (v_uv.x) * (end - start));
+    // Mark the pixel to be transparent when:
+    // 1. trim_offset range is valid
+    // 2. line_progress is within trim_offset range
+    // 3. or if trim_offset end is line end (1.0), mark line_progress >=1.0 part to be transparent to cover 'round'/'square' cp
+    if (u_trim_offset[1] >= u_trim_offset[0] && ((line_progress <= u_trim_offset[1] && line_progress >= u_trim_offset[0]) ||
+       (u_trim_offset[1] == 1.0 && line_progress >= 1.0))) {
         out_color = vec4(0, 0, 0, 0);
     }
 #else
