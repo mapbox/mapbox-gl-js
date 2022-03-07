@@ -58,6 +58,8 @@ void main() {
     vec4 out_color = texture2D(u_gradient_image, v_uv.xy);
     float start = v_uv[2];
     float end = v_uv[3];
+    float trim_start = u_trim_offset[0];
+    float trim_end = u_trim_offset[1];
     // v_uv.x is the relative prorgress based on each clip. Calculate the absolute progress based on
     // the whole line by combining the clip start and end value.
     float line_progress = (start + (v_uv.x) * (end - start));
@@ -65,8 +67,8 @@ void main() {
     // 1. trim_offset range is valid
     // 2. line_progress is within trim_offset range
     // 3. or if trim_offset end is line end (1.0), mark line_progress >=1.0 part to be transparent to cover 'round'/'square' cp
-    if (u_trim_offset[1] >= u_trim_offset[0] && ((line_progress <= u_trim_offset[1] && line_progress >= u_trim_offset[0]) ||
-       (u_trim_offset[1] == 1.0 && line_progress >= 1.0))) {
+    if (trim_end > trim_start && ((line_progress <= trim_end && line_progress >= trim_start) ||
+       (trim_end == 1.0 && line_progress >= trim_end))) {
         out_color = vec4(0, 0, 0, 0);
     }
 #else
