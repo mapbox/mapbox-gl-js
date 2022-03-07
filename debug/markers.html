@@ -104,7 +104,7 @@ map.addControl(new mapboxgl.NavigationControl());
 map.on('load', function() {
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
-        "url": "mapbox://mapbox.terrain-rgb",
+        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
         "tileSize": 512,
         "maxzoom": 14
     });
