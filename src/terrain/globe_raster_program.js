@@ -4,9 +4,9 @@ import {
     Uniform1i,
     Uniform2f,
     Uniform3f,
-    Uniform4f,
     UniformMatrix4f,
-    Uniform1f
+    Uniform1f,
+    UniformMatrix3f
 } from '../render/uniform_binding.js';
 
 import type Context from '../gl/context.js';
@@ -19,8 +19,7 @@ export type GlobeRasterUniformsType = {|
     'u_zoom_transition': Uniform1f,
     'u_merc_center': Uniform2f,
     'u_image0': Uniform1i,
-    'u_tile_bounds': Uniform4f,
-    'u_size_y': Uniform2f
+    'u_grid_matrix': UniformMatrix3f
 |};
 
 export type AtmosphereUniformsType = {|
@@ -43,8 +42,7 @@ const globeRasterUniforms = (context: Context, locations: UniformLocations): Glo
     'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
     'u_merc_center': new Uniform2f(context, locations.u_merc_center),
     'u_image0': new Uniform1i(context, locations.u_image0),
-    'u_tile_bounds': new Uniform4f(context, locations.u_tile_bounds),
-    'u_size_y': new Uniform2f(context, locations.u_size_y)
+    'u_grid_matrix': new UniformMatrix3f(context, locations.u_grid_matrix)
 });
 
 const atmosphereUniforms = (context: Context, locations: UniformLocations): AtmosphereUniformsType => ({
@@ -66,8 +64,7 @@ const globeRasterUniformValues = (
     globeMercatorMatrix: Float32Array,
     zoomTransition: number,
     mercCenter: [number, number],
-    tileBounds: [Array<number>, Array<number>],
-    sizeY: [number, number]
+    gridMatrix: Array<number>
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
     'u_globe_matrix': globeMatrix,
@@ -75,8 +72,7 @@ const globeRasterUniformValues = (
     'u_zoom_transition': zoomTransition,
     'u_merc_center': mercCenter,
     'u_image0': 0,
-    'u_tile_bounds': [tileBounds[0][0], tileBounds[0][1], tileBounds[1][0], tileBounds[1][1]],
-    'u_size_y': sizeY
+    'u_grid_matrix': Float32Array.from(gridMatrix)
 });
 
 const atmosphereUniformValues = (

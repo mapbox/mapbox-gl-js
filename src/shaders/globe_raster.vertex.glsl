@@ -1,27 +1,17 @@
-#define CALCULATE_GLOBE_PROPERTIES 1
-#define GLOBE_VERTEX_GRID_SIZE 64.0 // TODO: Perhaps pass the reciprocal as a uniform?
+#define HALF_PI PI / 2.0
+#define QUARTER_PI PI / 4.0
+#define RAD_TO_DEG 180.0 / PI
+#define DEG_TO_RAD PI / 180.0
+#define GLOBE_RADIUS EXTENT / PI / 2.0
 
 uniform mat4 u_proj_matrix;
 uniform mat4 u_globe_matrix;
 uniform mat4 u_merc_matrix;
 uniform float u_zoom_transition;
 uniform vec2 u_merc_center;
+uniform mat3 u_grid_matrix;
 
-#ifdef CALCULATE_GLOBE_PROPERTIES
-uniform vec4 u_tile_bounds;
-uniform vec2 u_size_y;
 attribute vec2 a_pos;
-#else
-attribute vec3 a_globe_pos;
-attribute vec2 a_merc_pos;
-attribute vec2 a_uv;
-#endif
-
-#define HALF_PI PI / 2.0
-#define QUARTER_PI PI / 4.0
-#define RAD_TO_DEG 180.0 / PI
-#define DEG_TO_RAD PI / 180.0
-#define GLOBE_RADIUS EXTENT / PI / 2.0
 
 varying vec2 v_pos0;
 
@@ -35,14 +25,13 @@ float mercatorYfromLat(float lat) {
     return (180.0 - (RAD_TO_DEG* log(tan(QUARTER_PI + lat / 2.0 * DEG_TO_RAD)))) / 360.0;
 }
 
-vec3 latLngToECEF(float lat, float lng) {
-    lat = DEG_TO_RAD * lat;
-    lng = DEG_TO_RAD * lng;
+vec3 latLngToECEF(vec2 latLng) {
+    latLng = DEG_TO_RAD * latLng;
     
-    float cosLat = cos(lat);
-    float sinLat = sin(lat);
-    float cosLng = cos(lng);
-    float sinLng = sin(lng);
+    float cosLat = cos(latLng[0]);
+    float sinLat = sin(latLng[0]);
+    float cosLng = cos(latLng[1]);
+    float sinLng = sin(latLng[1]);
 
     // Convert lat & lng to spherical representation. Use zoom=0 as a reference
     float sx = cosLat * sinLng * GLOBE_RADIUS;
@@ -53,34 +42,25 @@ vec3 latLngToECEF(float lat, float lng) {
 }
 
 void main() {
-#ifdef CALCULATE_GLOBE_PROPERTIES
-    float top = u_tile_bounds[0];
-    float bottom = u_tile_bounds[2];
-    float left = u_tile_bounds[1];
-    float right = u_tile_bounds[3];
+    float tiles = u_grid_matrix[0][2];
+    float idy = u_grid_matrix[1][2];
+    float S = u_grid_matrix[2][2];
 
-    float tiles = u_size_y[0];
-    float idy = u_size_y[1];
+    vec3 latLng = u_grid_matrix * vec3(a_pos, 1.0);
 
-    float x = a_pos[0] / GLOBE_VERTEX_GRID_SIZE;
-    float y = a_pos[1] / GLOBE_VERTEX_GRID_SIZE;
-    
-    float lat = mix(top, bottom, y);
-    float mercatorY = mercatorYfromLat(lat);
+    float mercatorY = mercatorYfromLat(latLng[0]);
     float uvY = mercatorY * tiles - idy;
     
-    float lng = mix(left, right, x);
-    float mercatorX = mercatorXfromLng(lng);
-    float uvX = x;
+    float mercatorX = mercatorXfromLng(latLng[1]);
+    float uvX = a_pos[0] * S;
 
-    vec3 a_globe_pos = latLngToECEF(lat, lng);
-    vec2 a_merc_pos = vec2(mercatorX, mercatorY);
-    vec2 a_uv = vec2(uvX, uvY);
-#endif
+    vec3 globe_pos = latLngToECEF(latLng.xy);
+    vec2 merc_pos = vec2(mercatorX, mercatorY);
+    vec2 uv = vec2(uvX, uvY);
 
-    v_pos0 = a_uv;
+    v_pos0 = uv;
 
-    vec2 uv = a_uv * EXTENT;
+    uv = uv * EXTENT;
     vec4 up_vector = vec4(elevationVector(uv), 1.0);
     float height = elevation(uv);
 
@@ -88,11 +68,11 @@ void main() {
     height += wireframeOffset;
 #endif
 
-    vec4 globe = u_globe_matrix * vec4(a_globe_pos + up_vector.xyz * height, 1.0);
+    vec4 globe = u_globe_matrix * vec4(globe_pos + up_vector.xyz * height, 1.0);
 
     vec4 mercator = vec4(0.0);
     if (u_zoom_transition > 0.0) {
-        mercator = vec4(a_merc_pos, height, 1.0);
+        mercator = vec4(merc_pos, height, 1.0);
         mercator.xy -= u_merc_center;
         mercator.x = wrap(mercator.x, -0.5, 0.5);
         mercator = u_merc_matrix * mercator;

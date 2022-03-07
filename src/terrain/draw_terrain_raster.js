@@ -21,7 +21,8 @@ import {
     globeMatrixForTile,
     globePoleMatrixForTile,
     globeVertexBufferForTileMesh,
-    globeTileLatLngCorners
+    globeTileLatLngCorners,
+    getGridMatrix
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
 
@@ -196,11 +197,10 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             // const posMatrix = globeMatrixForTile(coord.canonical, tr.globeMatrix);
             const posMatrix = Float32Array.from(tr.globeMatrix);
-            const tileBounds = globeTileLatLngCorners(coord.canonical);
-            const sizeY = [1 << coord.canonical.z, coord.canonical.y];
+            const gridMatrix = getGridMatrix(coord.canonical);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, posMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter, tileBounds, sizeY);
+                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix);
 
             setShaderMode(shaderMode, isWireframe);
 

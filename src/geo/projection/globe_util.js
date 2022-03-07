@@ -410,6 +410,15 @@ export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Flo
     return Float32Array.from(poleMatrix);
 }
 
+export function getGridMatrix(id: CanonicalTileID, gridSize: number = GLOBE_VERTEX_GRID_SIZE): Array<number> {
+    const [tl, br] = globeTileLatLngCorners(id);
+    const S = 1.0 / gridSize;
+    const x = (br[1] - tl[1]) * S;
+    const y = (br[0] - tl[0]) * S;
+    const tileZoom = 1 << id.z;
+    return [0, x, tileZoom, y, 0, id.y, tl[0], tl[1], S];
+}
+
 const POLE_RAD = degToRad(85.0);
 const POLE_COS = Math.cos(POLE_RAD);
 const POLE_SIN = Math.sin(POLE_RAD);
