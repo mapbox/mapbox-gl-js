@@ -64,7 +64,7 @@ const globeRasterUniformValues = (
     globeMercatorMatrix: Float32Array,
     zoomTransition: number,
     mercCenter: [number, number],
-    gridMatrix: Array<number>
+    gridMatrix: ?Array<number>
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
     'u_globe_matrix': globeMatrix,
@@ -72,7 +72,7 @@ const globeRasterUniformValues = (
     'u_zoom_transition': zoomTransition,
     'u_merc_center': mercCenter,
     'u_image0': 0,
-    'u_grid_matrix': Float32Array.from(gridMatrix)
+    'u_grid_matrix': gridMatrix ? Float32Array.from(gridMatrix) : new Float32Array(9)
 });
 
 const atmosphereUniformValues = (
@@ -100,3 +100,5 @@ const atmosphereUniformValues = (
 });
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};
+
+export type GlobeDefinesType = 'PROJECTION_GLOBE_VIEW' | 'GLOBE_POLES';

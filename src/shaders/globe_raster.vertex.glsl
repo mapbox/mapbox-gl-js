@@ -11,7 +11,13 @@ uniform float u_zoom_transition;
 uniform vec2 u_merc_center;
 uniform mat3 u_grid_matrix;
 
+#ifdef GLOBE_POLES
+attribute vec3 a_globe_pos;
+attribute vec2 a_merc_pos;
+attribute vec2 a_uv;
+#else
 attribute vec2 a_pos;
+#endif
 
 varying vec2 v_pos0;
 
@@ -42,6 +48,11 @@ vec3 latLngToECEF(vec2 latLng) {
 }
 
 void main() {
+#ifdef GLOBE_POLES
+    vec3 globe_pos = a_globe_pos;
+    vec2 merc_pos = a_merc_pos;
+    vec2 uv = a_uv;
+#else
     float tiles = u_grid_matrix[0][2];
     float idy = u_grid_matrix[1][2];
     float S = u_grid_matrix[2][2];
@@ -57,6 +68,7 @@ void main() {
     vec3 globe_pos = latLngToECEF(latLng.xy);
     vec2 merc_pos = vec2(mercatorX, mercatorY);
     vec2 uv = vec2(uvX, uvY);
+#endif
 
     v_pos0 = uv;
 
