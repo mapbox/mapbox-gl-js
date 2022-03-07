@@ -53,7 +53,7 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_GRADIENT
-    // For gradient lines, v_uv.xy are the coord specify where the texture will be simapled.
+    // For gradient lines, v_uv.xy are the coord specify where the texture will be simpled.
     // v_uv[2] and v_uv[3] are specifying the original clip range that the vertex is located in.
     vec4 out_color = texture2D(u_gradient_image, v_uv.xy);
     float start = v_uv[2];
@@ -66,7 +66,7 @@ void main() {
     // Mark the pixel to be transparent when:
     // 1. trim_offset range is valid
     // 2. line_progress is within trim_offset range
-    // 3. or if trim_offset end is line end (1.0), mark line_progress >=1.0 part to be transparent to cover 'round'/'square' cp
+    // 3. or if trim_offset end is line end (1.0), mark line_progress >=1.0 part to be transparent to cover 'round'/'square' cap
     if (trim_end > trim_start && ((line_progress <= trim_end && line_progress >= trim_start) ||
        (trim_end == 1.0 && line_progress >= trim_end))) {
         out_color = vec4(0, 0, 0, 0);
