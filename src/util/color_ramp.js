@@ -12,7 +12,6 @@ export type ColorRampParams = {
     resolution?: number;
     image?: RGBAImage;
     clips?: Array<Object>;
-    trimOffset?: [number, number];
 }
 
 /**
@@ -53,15 +52,7 @@ export function renderColorRamp(params: ColorRampParams): RGBAImage {
                 const progress = i / (width - 1);
                 const {start, end} = params.clips[clip];
                 const evaluationProgress = start * (1 - progress) + end * progress;
-                if (params.trimOffset && params.trimOffset[0] !== params.trimOffset[1] && evaluationProgress <= params.trimOffset[1] &&
-                    evaluationProgress >= params.trimOffset[0]) {
-                    image.data[stride + j + 0] = 0;
-                    image.data[stride + j + 1] = 0;
-                    image.data[stride + j + 2] = 0;
-                    image.data[stride + j + 3] = 0;
-                } else {
-                    renderPixel(stride, j, evaluationProgress);
-                }
+                renderPixel(stride, j, evaluationProgress);
             }
         }
     }
