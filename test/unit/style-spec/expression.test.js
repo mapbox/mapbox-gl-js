@@ -1,5 +1,6 @@
 import {test} from '../../util/test.js';
 import {createPropertyExpression} from '../../../src/style-spec/expression/index.js';
+import validateExpression from '../../../src/style-spec/validate/validate_expression.js';
 import definitions from '../../../src/style-spec/expression/definitions/index.js';
 import v8 from '../../../src/style-spec/reference/v8.json';
 
@@ -34,6 +35,20 @@ test('createPropertyExpression', (t) => {
         t.equal(result, 'error');
         t.equal(value.length, 1);
         t.equal(value[0].message, '"interpolate" expressions cannot be used with this property');
+        t.end();
+    });
+
+    t.end();
+});
+
+test('validateExpression', (t) => {
+    //see https://github.com/mapbox/mapbox-gl-js/issues/11457
+    test('ensure lack of valueSpec does not cause uncaught error', (t) => {
+        const result = validateExpression({
+            value: ['get', 'x'],
+            expressionContext: 'filter'
+        });
+        t.equal(result.length, 0);
         t.end();
     });
 
