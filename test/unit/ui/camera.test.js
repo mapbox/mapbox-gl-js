@@ -985,6 +985,80 @@ test('camera', (t) => {
             camera.easeTo({center: [100, 0], zoom: 3.2, bearing: 90, duration: 1000});
         });
 
+        t.test('Globe', (t) => {
+            t.test('pans to specified location', (t) => {
+                const camera = createCamera();
+                camera.transform.zoom = 4;
+                camera.transform.setProjection({name: 'globe'});
+
+                camera.easeTo({center: [90, 10], duration:0});
+                t.deepEqual(camera.getCenter(), {lng: 90, lat: 10});
+
+                t.end();
+            });
+
+            t.test('rotate the globe once around its axis', (t) => {
+                const camera = createCamera();
+                const stub = t.stub(browser, 'now');
+                stub.callsFake(() => 0);
+
+                camera.transform.zoom = 4;
+                camera.transform.setProjection({name: 'globe'});
+
+                camera.easeTo({center: [360, 0], duration: 100, easing: e => e});
+
+                camera.simulateFrame();
+                t.deepEqual(camera.getCenter(), {lng: 0, lat: 0});
+
+                stub.callsFake(() => 25);
+                camera.simulateFrame();
+                t.deepEqual(camera.getCenter(), {lng: 90, lat: 0});
+
+                stub.callsFake(() => 50);
+                camera.simulateFrame();
+                t.deepEqual(camera.getCenter(), {lng: 180, lat: 0});
+
+                stub.callsFake(() => 75);
+                camera.simulateFrame();
+                t.deepEqual(camera.getCenter(), {lng: -90, lat: 0});
+
+                stub.callsFake(() => 100);
+                camera.simulateFrame();
+                t.deepEqual(camera.getCenter(), {lng: 0, lat: 0});
+
+                t.end();
+            });
+
+            t.test('pans with padding', (t) => {
+                const camera = createCamera();
+                camera.transform.setProjection({name: 'globe'});
+
+                camera.easeTo({center: [90, 0], duration:0, padding:{top: 100}});
+                t.deepEqual(camera.getCenter(), {lng: 90, lat: 0});
+                t.deepEqual(camera.getPadding(), {top:100, bottom:0, left:0, right:0});
+                t.end();
+            });
+
+            t.test('pans with specified offset and bearing', (t) => {
+                const camera = createCamera();
+                const stub = t.stub(browser, 'now');
+                stub.callsFake(() => 0);
+
+                camera.transform.setProjection({name: 'globe'});
+                camera.easeTo({center: [170, 0], offset: [100, 0], duration: 2000, bearing: 45});
+
+                for (let i = 1; i <= 10; i++) {
+                    stub.callsFake(() => i * 200);
+                    camera.simulateFrame();
+                }
+
+                t.deepEqual(fixedLngLat(camera.getCenter()), {lng: 99.6875, lat: 0});
+                t.end();
+            });
+
+            t.end();
+        });
+
         t.end();
     });
 

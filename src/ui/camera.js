@@ -18,7 +18,7 @@ import Point from '@mapbox/point-geometry';
 import {Event, Evented} from '../util/evented.js';
 import assert from 'assert';
 import {Debug} from '../util/debug.js';
-import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
+import MercatorCoordinate, {mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import {vec3} from 'gl-matrix';
 import type {FreeCameraOptions} from './free_camera.js';
 import type Transform from '../geo/transform.js';
@@ -1180,15 +1180,35 @@ class Camera extends Evented {
             padding = 'padding' in options ? options.padding : tr.padding;
 
         const offsetAsPoint = Point.convert(options.offset);
-        let pointAtOffset = tr.centerPoint.add(offsetAsPoint);
-        const locationAtOffset = tr.projection.name === 'globe' ?
-            tr.pointCoordinate(pointAtOffset).toLngLat() :
-            tr.pointLocation(pointAtOffset);
-        const center = LngLat.convert(options.center || locationAtOffset);
-        this._normalizeCenter(center);
 
-        const from = tr.project(locationAtOffset);
-        const delta = tr.project(center).sub(from);
+        let pointAtOffset;
+        let from;
+        let delta;
+
+        if (tr.projection.name === 'globe') {
+            // Pixel coordinates will be applied directly to translate the globe
+            const centerCoord = MercatorCoordinate.fromLngLat(tr.center);
+
+            const rotatedOffset = offsetAsPoint.rotate(-tr.angle);
+            centerCoord.x += rotatedOffset.x / tr.worldSize;
+            centerCoord.y += rotatedOffset.y / tr.worldSize;
+
+            const locationAtOffset = centerCoord.toLngLat();
+            const center = LngLat.convert(options.center || locationAtOffset);
+            this._normalizeCenter(center);
+
+            pointAtOffset = tr.centerPoint.add(rotatedOffset);
+            from = new Point(centerCoord.x, centerCoord.y).mult(tr.worldSize);
+            delta = new Point(mercatorXfromLng(center.lng), mercatorYfromLat(center.lat)).mult(tr.worldSize).sub(from);
+        } else {
+            pointAtOffset = tr.centerPoint.add(offsetAsPoint);
+            const locationAtOffset = tr.pointLocation(pointAtOffset);
+            const center = LngLat.convert(options.center || locationAtOffset);
+            this._normalizeCenter(center);
+
+            from = tr.project(locationAtOffset);
+            delta = tr.project(center).sub(from);
+        }
         const finalScale = tr.zoomScale(zoom - startZoom);
 
         let around, aroundPoint;

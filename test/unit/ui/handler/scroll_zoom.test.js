@@ -227,6 +227,38 @@ test('ScrollZoomHandler', (t) => {
         t.end();
     });
 
+    t.test('Globe', (t) => {
+        t.test('Zoom towards a point on the globe', (t) => {
+            const map = createMap(t);
+
+            // Scroll zoom should result in identical movement in both mercator and globe projections
+            map.transform.zoom = 0;
+
+            for (let i = 0; i < 5; i++) {
+                simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -100});
+                map._renderTaskQueue.run();
+            }
+
+            t.equal(fixedNum(map.transform.zoom, 5), 2.46106);
+
+            now += 500;
+            map.transform.zoom = 0;
+            map.setProjection({name:'globe'});
+
+            for (let i = 0; i < 5; i++) {
+                simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -100});
+                map._renderTaskQueue.run();
+            }
+
+            t.equal(fixedNum(map.transform.zoom, 5), 2.46106);
+
+            map.remove();
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('Gracefully ignores wheel events with deltaY: 0', (t) => {
         const map = createMap(t);
         map._renderTaskQueue.run();
