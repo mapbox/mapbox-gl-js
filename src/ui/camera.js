@@ -624,16 +624,14 @@ class Camera extends Evented {
         // We want to calculate the corners of the box defined by p0 and p1 in a coordinate system
         // rotated to match the destination bearing. All four corners of the box must be taken
         // into account because of camera rotation.
-        const p0LatLng = LngLat.convert(p0);
-        const p1LatLng = LngLat.convert(p1);
-        const p0world = tr.project(p0LatLng);
-        const p1world = tr.project(p1LatLng);
-        const p2world = tr.project(new LngLat(p0LatLng.lng, p1LatLng.lat));
-        const p3world = tr.project(new LngLat(p1LatLng.lng, p0LatLng.lat));
+        const p0world = tr.project(LngLat.convert(p0));
+        const p1world = tr.project(LngLat.convert(p1));
+        const p2world = new Point(p0world.x, p1world.y);
+        const p3world = new Point(p1world.x, p0world.y);
         const p0rotated = p0world.rotate(-degToRad(bearing));
         const p1rotated = p1world.rotate(-degToRad(bearing));
-        const p2rotated = p2world.rotate(-bearing * Math.PI / 180);
-        const p3rotated = p3world.rotate(-bearing * Math.PI / 180);
+        const p2rotated = p2world.rotate(-degToRad(bearing));
+        const p3rotated = p3world.rotate(-degToRad(bearing));
 
         const upperRight = new Point(
             Math.max(p0rotated.x, p1rotated.x, p2rotated.x, p3rotated.x),
