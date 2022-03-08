@@ -29,8 +29,8 @@ var GUIParams = function() {
     this.end = 2.5;
     this.color = [255, 255, 255];
     this.skyColor = [0, 0, 0];
-    this.opacity = 1.0;
-    this.skyOpacity = 1.0;
+    this.colorAlpha = 1.0;
+    this.skyAlpha = 1.0;
     this.horizonBlend = 0.5;
     this.starIntensity = 0.15;
     this.presets = 'preset1';
@@ -67,8 +67,8 @@ function updatePreset(value) {
         guiParams.end = 3.4;
         guiParams.color = [220, 159, 159];
         guiParams.skyColor = [36, 92, 223];
-        guiParams.opacity = 1.0;
-        guiParams.skyOpacity = 0.7;
+        guiParams.colorAlpha = 1.0;
+        guiParams.skyAlpha = 0.7;
         guiParams.horizonBlend = 1.15;
         guiParams.starIntensity = 0.15;
     } else if (value === 'preset2') {
@@ -78,8 +78,8 @@ function updatePreset(value) {
         guiParams.end = 2.2;
         guiParams.color = [255, 255, 255];
         guiParams.skyColor = [19, 122, 255];
-        guiParams.opacity = 1;
-        guiParams.skyOpacity = 1;
+        guiParams.colorAlpha = 1;
+        guiParams.skyAlpha = 1;
         guiParams.horizonBlend = 1.9;
         guiParams.starIntensity = 0.15    } else if (value === 'preset3') {
         guiParams.enableFog = true;
@@ -88,8 +88,8 @@ function updatePreset(value) {
         guiParams.end = 2.9;
         guiParams.color = [0, 0, 0];
         guiParams.skyColor = [200, 200, 200];
-        guiParams.opacity = 1;
-        guiParams.skyOpacity = 1;
+        guiParams.colorAlpha = 1;
+        guiParams.skyAlpha = 1;
         guiParams.horizonBlend = 0.3;
         guiParams.starIntensity = 0.150;
     } else if (value === 'preset4') {
@@ -99,8 +99,8 @@ function updatePreset(value) {
         guiParams.end = 2.8;
         guiParams.color = [131, 147, 222];
         guiParams.skyColor = [119, 80, 200];
-        guiParams.opacity = 1;
-        guiParams.skyOpacity = 1;
+        guiParams.colorAlpha = 1;
+        guiParams.skyAlpha = 1;
         guiParams.horizonBlend = 0.22;
         guiParams.starIntensity = 0.150;
     } else if (value === 'preset5') {
@@ -110,8 +110,8 @@ function updatePreset(value) {
         guiParams.end = 2.9;
         guiParams.color = [13, 13, 13];
         guiParams.skyColor = [110, 110, 110];
-        guiParams.opacity = 1;
-        guiParams.skyOpacity = 0.38;
+        guiParams.colorAlpha = 1;
+        guiParams.skyAlpha = 0.38;
         guiParams.horizonBlend = 0.9;
         guiParams.starIntensity = 0.15;
     } else if (value === 'preset6') {
@@ -121,8 +121,8 @@ function updatePreset(value) {
         guiParams.end = 2.4;
         guiParams.color = [40, 40, 65];
         guiParams.skyColor = [0, 30, 102];
-        guiParams.opacity = 1;
-        guiParams.skyOpacity = 0.88;
+        guiParams.colorAlpha = 1;
+        guiParams.skyAlpha = 0.88;
         guiParams.horizonBlend = 3.4;
         guiParams.starIntensity = 0.15;
     }
@@ -152,7 +152,7 @@ window.onload = function() {
     enableFog.onFinishChange((value) => {
         map.setFog(value ? {
             "range": [guiParams.start, guiParams.end],
-            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
+            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
             "horizon-blend": guiParams.horizonBlend
         } : null);
     });
@@ -184,29 +184,30 @@ window.onload = function() {
         });
     });
 
-    var opacity = fog.add(guiParams, 'opacity', 0.0, 1.0);
-    opacity.onChange((value) => {
+    var colorAlpha = fog.add(guiParams, 'colorAlpha', 0.0, 1.0);
+    colorAlpha.onChange((value) => {
         map.setFog({
             "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + value + ')'
-        });
-    });
-    var skyOpacity = fog.add(guiParams, 'skyOpacity', 0.0, 1.0);
-    skyOpacity.onChange((value) => {
-        map.setFog({
-            "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + value + ')'
         });
     });
 
     var color = fog.addColor(guiParams, 'color');
     color.onChange((value) => {
         map.setFog({
-            "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.opacity + ')'
+            "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.colorAlpha + ')'
+        });
+    });
+
+    var skyAlpha = fog.add(guiParams, 'skyAlpha', 0.0, 1.0);
+    skyAlpha.onChange((value) => {
+        map.setFog({
+            "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + value + ')'
         });
     });
     var skyColor = fog.addColor(guiParams, 'skyColor');
     skyColor.onChange((value) => {
         map.setFog({
-            "sky-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.skyOpacity + ')'
+            "sky-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.skyAlpha + ')'
         });
     });
 };
@@ -214,9 +215,9 @@ window.onload = function() {
 map.on('style.load', function() {
     map.setFog({
         "range": [guiParams.start, guiParams.end],
-        "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
+        "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
         "horizon-blend": guiParams.horizonBlend,
-        "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + guiParams.skyOpacity + ')',
+        "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + guiParams.skyAlpha + ')',
         "star-intensity": guiParams.starIntensity
     });
 });

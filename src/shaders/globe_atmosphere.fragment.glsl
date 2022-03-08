@@ -51,12 +51,18 @@ void main() {
 
     vec4 color = mix(vec4(u_sky_color.rgb, u_sky_color.a), u_color, t);
 
+    // Accumulate star field
     float star_field = 0.0;
 
+    // Create stars of various scales and offset to improve randomness
     star_field += stars(D, 1.2, vec2(0.0, 0.0));
     star_field += stars(D, 1.0, vec2(1.0, 0.0));
     star_field += stars(D, 0.8, vec2(0.0, 1.0));
     star_field += stars(D, 0.6, vec2(1.0, 1.0));
 
-    gl_FragColor = vec4(color.rgb * t * u_color.a * color.a + star_field, u_color.a + star_field);
+    // Fade stars as they get closer to horizon to
+    // give the feeling of an atmosphere with thickness
+    star_field *= (1.0 - pow(t, 0.25));
+
+    gl_FragColor = vec4(color.rgb * t * u_color.a * color.a + star_field, u_color.a);
 }
