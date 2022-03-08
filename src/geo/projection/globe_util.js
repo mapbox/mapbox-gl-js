@@ -19,13 +19,11 @@ import {Aabb} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
 import assert from 'assert';
 
-import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../source/tile_id.js';
+import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
 import type {Mat4, Vec3} from 'gl-matrix';
 import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
-import type Tile from '../../source/tile.js';
-import type Painter from '../../render/painter.js';
 import type Transform from '../transform.js';
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
@@ -46,7 +44,7 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
     new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
 ];
 
-const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [64, 52, 52, 40, 32];
+const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [64, 54, 36, 32, 30];
 const MAX_VERTEX_GRID_SIZE = Math.max(...GLOBE_VERTEX_GRID_SIZE_LOD_TABLE);
 
 export class Arc {
@@ -475,7 +473,7 @@ export class GlobeSharedBuffers {
             for (let i = 0; i < maxVertices; i++)
                 gridVertices.emplaceBack(i, j);
 
-        for(let z = 0, primitiveOffset = 0; z < GLOBE_ZOOM_THRESHOLD_MIN; z++) {
+        for (let z = 0, primitiveOffset = 0; z < GLOBE_ZOOM_THRESHOLD_MIN; z++) {
             const quadExt = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[z];
             const vertexExt = quadExt + 1;
 
@@ -497,7 +495,7 @@ export class GlobeSharedBuffers {
         this._gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
         this._gridBuffer = context.createVertexBuffer(gridVertices, posAttributes.members);
     }
-    
+
     _createPoles(context: Context) {
         const poleIndices = new TriangleIndexArray();
         for (let i = 0; i < MAX_VERTEX_GRID_SIZE; i++)
@@ -566,7 +564,7 @@ export class GlobeSharedBuffers {
 
             const wireframeIndices = new LineIndexArray();
 
-            for(let z = 0, primitiveOffset = 0; z < GLOBE_ZOOM_THRESHOLD_MIN; z++) {
+            for (let z = 0, primitiveOffset = 0; z < GLOBE_ZOOM_THRESHOLD_MIN; z++) {
                 const quadExt = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[z];
                 const vertexExt = quadExt + 1;
 
@@ -581,7 +579,7 @@ export class GlobeSharedBuffers {
 
                 const numVertices = vertexExt * vertexExt;
                 const numPrimitives = quadExt * quadExt * 3;
-    
+
                 this._wireframeSegments.push(SegmentVector.simpleSegment(0, primitiveOffset, numVertices, numPrimitives));
                 primitiveOffset += numPrimitives;
             }
