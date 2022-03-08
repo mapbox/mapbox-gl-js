@@ -16,6 +16,7 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
     layers: Array<Layer>,
     zoom: number,
+    canonical: CanonicalTileID,
     pixelRatio: number,
     overscaling: number,
     collisionBoxArray: CollisionBoxArray,
