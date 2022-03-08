@@ -20,9 +20,7 @@ type Props = {|
     "color": DataConstantProperty<Color>,
     "sky-color": DataConstantProperty<Color>,
     "horizon-blend": DataConstantProperty<number>,
-    "star-density": DataConstantProperty<number>,
     "star-intensity": DataConstantProperty<number>,
-    "star-scale": DataConstantProperty<number>
 |};
 
 const fogProperties: Properties<Props> = new Properties({
@@ -30,9 +28,7 @@ const fogProperties: Properties<Props> = new Properties({
     "color": new DataConstantProperty(styleSpec.fog.color),
     "sky-color": new DataConstantProperty(styleSpec.fog["sky-color"]),
     "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
-    "star-density": new DataConstantProperty(styleSpec.fog["star-density"]),
     "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
-    "star-scale": new DataConstantProperty(styleSpec.fog["star-scale"])
 });
 
 const TRANSITION_SUFFIX = '-transition';

@@ -3879,47 +3879,7 @@
     "star-intensity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
-      "minimum": 1,
-      "maximum": 10,
-      "expression": {
-        "interpolated": true,
-        "parameters": [
-          "zoom"
-        ]
-      },
-      "transition": true,
-      "doc": "",
-      "sdk-support": {
-        "basic functionality": {
-          "js": ""
-        }
-      }
-    },
-    "star-density": {
-      "type": "number",
-      "property-type": "data-constant",
-      "default": 1,
-      "minimum": 0,
-      "maximum": 5,
-      "expression": {
-        "interpolated": true,
-        "parameters": [
-          "zoom"
-        ]
-      },
-      "transition": true,
-      "doc": "",
-      "sdk-support": {
-        "basic functionality": {
-          "js": ""
-        }
-      }
-    },
-    "star-scale": {
-      "type": "number",
-      "property-type": "data-constant",
-      "default": 1,
+      "default": 0.15,
       "minimum": 0,
       "maximum": 1,
       "expression": {

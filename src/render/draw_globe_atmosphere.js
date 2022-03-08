@@ -7,7 +7,7 @@ import CullFaceMode from '../gl/cull_face_mode.js';
 import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
-import {degToRad} from '../util/util.js';
+import {degToRad, mapValue} from '../util/util.js';
 import {vec3, mat4} from 'gl-matrix';
 
 export default drawGlobeAtmosphere;
@@ -69,6 +69,8 @@ function drawGlobeAtmosphere(painter: Painter) {
         degToRad(transform._center.lng) / Math.PI
     ];
 
+    const starIntensity = mapValue(fog.properties.get('star-intensity'), 0.0, 1.0, 0.0, 0.25);
+
     const uniforms = atmosphereUniformValues(
         frustumTl,
         frustumTr,
@@ -81,9 +83,7 @@ function drawGlobeAtmosphere(painter: Painter) {
         fogColorUnpremultiplied,
         skyColorUnpremultiplied,
         latlon,
-        fog.properties.get('star-intensity'),
-        fog.properties.get('star-density'),
-        fog.properties.get('star-scale'));
+        starIntensity);
 
     painter.prepareDrawProgram(context, program);
 

@@ -8,9 +8,9 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-        .mapboxgl-canvas {
+        /*.mapboxgl-canvas {
             background-color: blue;
-        }
+        }*/
     </style>
 </head>
 
@@ -32,9 +32,7 @@ var GUIParams = function() {
     this.opacity = 1.0;
     this.skyOpacity = 1.0;
     this.horizonBlend = 0.5;
-    this.starIntensity = 5.0;
-    this.starDensity = 0.0;
-    this.starScale = 1.0;
+    this.starIntensity = 0.15;
     this.presets = 'preset1';
 };
 
@@ -66,15 +64,13 @@ function updatePreset(value) {
         guiParams.enableFog = true;
         guiParams.style = 'satellite-streets-v11';
         guiParams.start = 0.46;
-        guiParams.end = 2.9;
+        guiParams.end = 3.4;
         guiParams.color = [220, 159, 159];
         guiParams.skyColor = [36, 92, 223];
         guiParams.opacity = 1.0;
         guiParams.skyOpacity = 0.7;
         guiParams.horizonBlend = 1.15;
-        guiParams.starIntensity = 5.6;
-        guiParams.starDensity = 0;
-        guiParams.starScale = 1.0;
+        guiParams.starIntensity = 0.15;
     } else if (value === 'preset2') {
         guiParams.enableFog = true;
         guiParams.style = 'streets-v11';
@@ -85,10 +81,7 @@ function updatePreset(value) {
         guiParams.opacity = 1;
         guiParams.skyOpacity = 1;
         guiParams.horizonBlend = 1.9;
-        guiParams.starIntensity = 1;
-        guiParams.starDensity = 0;
-        guiParams.starScale = 0.5;
-    } else if (value === 'preset3') {
+        guiParams.starIntensity = 0.15    } else if (value === 'preset3') {
         guiParams.enableFog = true;
         guiParams.style = 'light-v10';
         guiParams.start = 0.46;
@@ -98,9 +91,7 @@ function updatePreset(value) {
         guiParams.opacity = 1;
         guiParams.skyOpacity = 1;
         guiParams.horizonBlend = 0.3;
-        guiParams.starIntensity = 10.0;
-        guiParams.starDensity = 3;
-        guiParams.starScale = 0.87;
+        guiParams.starIntensity = 0.150;
     } else if (value === 'preset4') {
         guiParams.enableFog = true;
         guiParams.style = 'satellite-streets-v11';
@@ -111,9 +102,7 @@ function updatePreset(value) {
         guiParams.opacity = 1;
         guiParams.skyOpacity = 1;
         guiParams.horizonBlend = 0.22;
-        guiParams.starIntensity = 10.0;
-        guiParams.starDensity = 0;
-        guiParams.starScale = 0.5;
+        guiParams.starIntensity = 0.150;
     } else if (value === 'preset5') {
         guiParams.enableFog = true;
         guiParams.style = 'dark-v10';
@@ -124,9 +113,7 @@ function updatePreset(value) {
         guiParams.opacity = 1;
         guiParams.skyOpacity = 0.38;
         guiParams.horizonBlend = 0.9;
-        guiParams.starIntensity = 5.6;
-        guiParams.starDensity = 0;
-        guiParams.starScale = 1;
+        guiParams.starIntensity = 0.15;
     } else if (value === 'preset6') {
         guiParams.enableFog = true;
         guiParams.style = 'outdoors-v11';
@@ -137,9 +124,7 @@ function updatePreset(value) {
         guiParams.opacity = 1;
         guiParams.skyOpacity = 0.88;
         guiParams.horizonBlend = 3.4;
-        guiParams.starIntensity = 5.9;
-        guiParams.starDensity = 0;
-        guiParams.starScale = 0.51;
+        guiParams.starIntensity = 0.15;
     }
     updateFog();
 }
@@ -192,22 +177,10 @@ window.onload = function() {
             "horizon-blend": value,
         });
     });
-    var starDensity = fog.add(guiParams, 'starDensity', 0.0, 5.0);
-    starDensity.onChange((value) => {
-        map.setFog({
-            "star-density": value,
-        });
-    });
-    var starIntensity = fog.add(guiParams, 'starIntensity', 0.0, 10.0);
+    var starIntensity = fog.add(guiParams, 'starIntensity', 0.0, 1.0);
     starIntensity.onChange((value) => {
         map.setFog({
             "star-intensity": value,
-        });
-    });
-    var starScale = fog.add(guiParams, 'starScale', 0.5, 1.0);
-    starScale.onChange((value) => {
-        map.setFog({
-            "star-scale": value,
         });
     });
 
@@ -244,9 +217,7 @@ map.on('style.load', function() {
         "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.opacity + ')',
         "horizon-blend": guiParams.horizonBlend,
         "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + guiParams.skyOpacity + ')',
-        "star-intensity": guiParams.starIntensity,
-        "star-density": guiParams.starDensity,
-        "star-scale": guiParams.starScale
+        "star-intensity": guiParams.starIntensity
     });
 });
 

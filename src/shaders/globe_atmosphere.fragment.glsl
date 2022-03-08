@@ -5,7 +5,7 @@ uniform vec4 u_color;
 uniform vec4 u_sky_color;
 uniform vec2 u_latlon;
 uniform float u_star_intensity;
-uniform float u_star_scale;
+uniform float u_star_size;
 uniform float u_star_density;
 
 #ifndef FOG
@@ -21,21 +21,17 @@ float random(vec3 p) {
     return fract(p.x * p.y);
 }
 
-float stars(vec3 p) {
-    float star = 0.0;
-    float res = 0.1 * u_star_scale * u_viewport.x;
-    float decay = 1.3;
+float stars(vec3 p, float scale, vec2 offset) {
+    vec2 uv_scale = (u_viewport / u_star_size) * scale;
+    vec3 position = vec3(p.xy * uv_scale + offset * u_viewport, p.z);
 
-    for (float i = 0.0; i < 10.0; i++) {
-        vec3 q = fract(p * res) - 0.5;
-        vec3 id = floor(p * res);
-        float visibility = step(random(id), 0.005 * u_star_density);
-        float circle = (1.0 - smoothstep(0.0, 0.5, length(q)));
-        star += circle * visibility;
-        p *= decay;
-    }
+    vec3 q = fract(position) - 0.5;
+    vec3 id = floor(position);
 
-    return pow(star, max(u_star_intensity, 2.0));
+    float random_visibility = step(random(id), u_star_density);
+    float circle = smoothstep(0.5 + u_star_intensity, 0.5, length(q));
+
+    return circle * random_visibility;
 }
 
 void main() {
@@ -54,7 +50,13 @@ void main() {
     vec3 D = vec3(uv + vec2(-u_latlon.y, -u_latlon.x), 1.0);
 
     vec4 color = mix(vec4(u_sky_color.rgb, u_sky_color.a), u_color, t);
-    float s = stars(D) * (1.0 - t);
 
-    gl_FragColor = vec4(color.rgb * t * u_color.a * color.a + s, u_color.a + s);
+    float star_field = 0.0;
+
+    star_field += stars(D, 1.2, vec2(0.0, 0.0));
+    star_field += stars(D, 1.0, vec2(1.0, 0.0));
+    star_field += stars(D, 0.8, vec2(0.0, 1.0));
+    star_field += stars(D, 0.6, vec2(1.0, 1.0));
+
+    gl_FragColor = vec4(color.rgb * t * u_color.a * color.a + star_field, u_color.a + star_field);
 }

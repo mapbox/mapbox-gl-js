@@ -34,7 +34,7 @@ export type AtmosphereUniformsType = {|
     'u_sky_color': Uniform4f,
     'u_latlon': Uniform2f,
     'u_star_intensity': Uniform1f,
-    'u_star_scale': Uniform1f,
+    'u_star_size': Uniform1f,
     'u_star_density': Uniform1f
 |};
 
@@ -61,7 +61,7 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_latlon': new Uniform2f(context, locations.u_latlon),
     'u_star_intensity': new Uniform1f(context, locations.u_star_intensity),
     'u_star_density': new Uniform1f(context, locations.u_star_density),
-    'u_star_scale': new Uniform1f(context, locations.u_star_scale)
+    'u_star_size': new Uniform1f(context, locations.u_star_size)
 });
 
 const globeRasterUniformValues = (
@@ -91,9 +91,7 @@ const atmosphereUniformValues = (
     color: [number, number, number, number],
     skyColor: [number, number, number, number],
     latlon: [number, number],
-    starIntensity: number,
-    starDensity: number,
-    starScale: number
+    starIntensity: number
 ): UniformValues<AtmosphereUniformsType> => ({
     'u_frustum_tl': frustumDirTl,
     'u_frustum_tr': frustumDirTr,
@@ -107,8 +105,8 @@ const atmosphereUniformValues = (
     'u_sky_color': skyColor,
     'u_latlon': latlon,
     'u_star_intensity': starIntensity,
-    'u_star_scale': starScale,
-    'u_star_density': starDensity
+    'u_star_size': 5.0,
+    'u_star_density': 0.0
 });
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};
