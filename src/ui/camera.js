@@ -628,10 +628,12 @@ class Camera extends Evented {
         const p1world = tr.project(LngLat.convert(p1));
         const p2world = new Point(p0world.x, p1world.y);
         const p3world = new Point(p1world.x, p0world.y);
-        const p0rotated = p0world.rotate(-degToRad(bearing));
-        const p1rotated = p1world.rotate(-degToRad(bearing));
-        const p2rotated = p2world.rotate(-degToRad(bearing));
-        const p3rotated = p3world.rotate(-degToRad(bearing));
+
+        const angleRadians = -degToRad(bearing);
+        const p0rotated = p0world.rotate(angleRadians);
+        const p1rotated = p1world.rotate(angleRadians);
+        const p2rotated = p2world.rotate(angleRadians);
+        const p3rotated = p3world.rotate(angleRadians);
 
         const upperRight = new Point(
             Math.max(p0rotated.x, p1rotated.x, p2rotated.x, p3rotated.x),
