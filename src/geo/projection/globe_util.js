@@ -48,6 +48,7 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
 ];
 
 const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [12, 24, 36, 48, 64];
+const GLOBE_VERTEX_POLE_GRID_SIZE_LOD_TABLE = [64, 64, 64, 64, 64];
 const MAX_VERTEX_GRID_SIZE = Math.max(...GLOBE_VERTEX_GRID_SIZE_LOD_TABLE);
 
 export class Arc {
@@ -497,37 +498,36 @@ export class GlobeSharedBuffers {
     
     _createPoles(context: Context) {
         const poleIndices = new TriangleIndexArray();
-        for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
-            poleIndices.emplaceBack(0, i + 1, i + 2);
-        }
-        this.poleIndexBuffer = context.createIndexBuffer(poleIndices, true);
-
         const northVertices = new GlobeVertexArray();
         const southVertices = new GlobeVertexArray();
-        const polePrimitives = GLOBE_VERTEX_GRID_SIZE;
-        const poleVertices = GLOBE_VERTEX_GRID_SIZE + 2;
         this.poleSegments = [];
 
-        for (let zoom = 0, offset = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
+        for (let zoom = 0, vertexOffset = 0, primitiveOffset = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
             const tiles = 1 << zoom;
             const radius = tiles * TILE_SIZE / Math.PI / 2.0;
             const endAngle = 360.0 / tiles;
 
+            const numPrimitives = GLOBE_VERTEX_POLE_GRID_SIZE_LOD_TABLE[zoom];
+            const numVertices = numPrimitives + 2;
+
             northVertices.emplaceBack(0, -radius, 0, 0, 0, 0.5, 0); // place the tip
             southVertices.emplaceBack(0, -radius, 0, 0, 0, 0.5, 1);
 
-            for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
-                const uvX = i / GLOBE_VERTEX_GRID_SIZE;
+            for (let i = 0; i <= numPrimitives; i++) {
+                if (i < numPrimitives) poleIndices.emplaceBack(0, i + 1, i + 2);
+                const uvX = i / numPrimitives;
                 const angle = interpolate(0, endAngle, uvX);
                 const [gx, gy, gz] = csLatLngToECEF(POLE_COS, POLE_SIN, angle, radius);
                 northVertices.emplaceBack(gx, gy, gz, 0, 0, uvX, 0);
                 southVertices.emplaceBack(gx, gy, gz, 0, 0, uvX, 1);
             }
 
-            this.poleSegments.push(SegmentVector.simpleSegment(offset, 0, poleVertices, polePrimitives));
-            offset += poleVertices;
+            this.poleSegments.push(SegmentVector.simpleSegment(vertexOffset, primitiveOffset, numVertices, numPrimitives));
+            vertexOffset += numVertices;
+            primitiveOffset += numPrimitives;
         }
 
+        this.poleIndexBuffer = context.createIndexBuffer(poleIndices, true);
         this.poleNorthVertexBuffer = context.createVertexBuffer(northVertices, globeLayoutAttributes, false);
         this.poleSouthVertexBuffer = context.createVertexBuffer(southVertices, globeLayoutAttributes, false);
     }
