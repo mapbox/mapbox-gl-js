@@ -17,6 +17,7 @@ import posAttributes from '../../data/pos_attributes.js';
 import {TriangleIndexArray, GlobeVertexArray, GlobeAtmosphereVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
+import assert from 'assert';
 
 import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
@@ -30,7 +31,7 @@ import type Transform from '../transform.js';
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
-const GLOBE_VERTEX_GRID_SIZE = 64;
+const GLOBE_VERTEX_GRID_SIZE = 64; // TODO: Remove.
 const TILE_SIZE = 512;
 
 const GLOBE_MIN = -GLOBE_RADIUS;
@@ -45,6 +46,9 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
     new Aabb([GLOBE_MIN, 0, GLOBE_MIN], [0, GLOBE_MAX, GLOBE_MAX]), // x=0, y=1
     new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
 ];
+
+const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [12, 24, 36, 48, 64];
+const MAX_VERTEX_GRID_SIZE = Math.max(...GLOBE_VERTEX_GRID_SIZE_LOD_TABLE);
 
 export class Arc {
     constructor(p0: Vec3, p1: Vec3, center: Vec3) {
@@ -376,19 +380,6 @@ export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
 }
 
-export function globeVertexBufferForTileMesh(painter: Painter, tile: Tile, coord: OverscaledTileID): VertexBuffer {
-    const context = painter.context;
-    const id = coord.canonical;
-    let gridBuffer = tile.globeGridBuffer;
-
-    if (!gridBuffer) {
-        const gridMesh = GlobeSharedBuffers.createGridVertices(id);
-        gridBuffer = tile.globeGridBuffer = context.createVertexBuffer(gridMesh, globeLayoutAttributes, false);
-    }
-
-    return gridBuffer;
-}
-
 export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Array): Float32Array {
     const decode = globeDenormalizeECEF(globeTileBounds(id));
     return mat4.mul(mat4.create(), globeMatrix, decode);
@@ -410,7 +401,9 @@ export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Flo
     return Float32Array.from(poleMatrix);
 }
 
-export function getGridMatrix(id: CanonicalTileID, gridSize: number = GLOBE_VERTEX_GRID_SIZE): Array<number> {
+export function getGridMatrix(id: CanonicalTileID): Array<number> {
+    const zoom = Math.min(id.z, GLOBE_ZOOM_THRESHOLD_MIN - 1);
+    const gridSize = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[zoom];
     const [tl, br] = globeTileLatLngCorners(id);
     const S = 1.0 / gridSize;
     const x = (br[1] - tl[1]) * S;
@@ -431,16 +424,17 @@ export class GlobeSharedBuffers {
 
     gridBuffer: VertexBuffer;
     gridIndexBuffer: IndexBuffer;
-    gridSegments: SegmentVector;
+    gridSegments: Array<SegmentVector>;
 
     atmosphereVertexBuffer: VertexBuffer;
     atmosphereIndexBuffer: IndexBuffer;
     atmosphereSegments: SegmentVector;
 
     wireframeIndexBuffer: IndexBuffer;
-    wireframeSegments: SegmentVector;
+    wireframeSegments: Array<SegmentVector>;
 
     constructor(context: Context) {
+        assert(GLOBE_VERTEX_GRID_SIZE_LOD_TABLE.length === GLOBE_ZOOM_THRESHOLD_MIN);
         this._createGrid(context);
         this._createPoles(context);
         this._createAtmosphere(context);
@@ -453,40 +447,54 @@ export class GlobeSharedBuffers {
         this.poleNorthVertexBuffer.destroy();
         this.poleSouthVertexBuffer.destroy();
         for (const segments of this.poleSegments) segments.destroy();
-        this.gridSegments.destroy();
+        for (const segments of this.gridSegments) segments.destroy();
         this.atmosphereVertexBuffer.destroy();
         this.atmosphereIndexBuffer.destroy();
         this.atmosphereSegments.destroy();
 
         if (this.wireframeIndexBuffer) {
             this.wireframeIndexBuffer.destroy();
-            this.wireframeSegments.destroy();
+            for (const segments of this.wireframeSegments) segments.destroy();
         }
     }
 
     _createGrid(context: Context) {
+        // All tiles use the same vertex and index buffer. Different segments view into the index buffer.
+        // This allows picking different "resolution" for a given tile based on its zoom level.
         const gridVertices = new PosArray();
         const gridIndices = new TriangleIndexArray();
-        const quadExt = GLOBE_VERTEX_GRID_SIZE;
-        const vertexExt = quadExt + 1;
 
-        for (let j = 0; j < vertexExt; j++)
-            for (let i = 0; i < vertexExt; i++)
+        const maxVertices = MAX_VERTEX_GRID_SIZE + 1;
+
+        this.gridSegments = [];
+
+        for (let j = 0; j < maxVertices; j++)
+            for (let i = 0; i < maxVertices; i++)
                 gridVertices.emplaceBack(i, j);
 
-        for (let j = 0; j < quadExt; j++) {
-            for (let i = 0; i < quadExt; i++) {
-                const index = j * vertexExt + i;
-                gridIndices.emplaceBack(index + 1, index, index + vertexExt);
-                gridIndices.emplaceBack(index + vertexExt, index + vertexExt + 1, index + 1);
-            }
-        }
-        this.gridIndexBuffer = context.createIndexBuffer(gridIndices, true); // this shouldn't be dynamic
-        this.gridBuffer = context.createVertexBuffer(gridVertices, posAttributes.members);
-        const gridPrimitives = GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE * 2;
-        this.gridSegments = SegmentVector.simpleSegment(0, 0, gridVertices.length, gridPrimitives);
-    }
+        for(let z = 0, primitiveOffset = 0; z < GLOBE_ZOOM_THRESHOLD_MIN; z++) {
+            const quadExt = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[z];
+            const vertexExt = quadExt + 1;
 
+            for (let j = 0; j < quadExt; j++) {
+                for (let i = 0; i < quadExt; i++) {
+                    const index = j * maxVertices + i;
+                    gridIndices.emplaceBack(index + 1, index, index + maxVertices);
+                    gridIndices.emplaceBack(index + maxVertices, index + maxVertices + 1, index + 1);
+                }
+            }
+
+            const numVertices = vertexExt * vertexExt;
+            const numPrimitives = quadExt * quadExt * 2;
+
+            this.gridSegments.push(SegmentVector.simpleSegment(0, primitiveOffset, numVertices, numPrimitives));
+            primitiveOffset += numPrimitives;
+        }
+
+        this.gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
+        this.gridBuffer = context.createVertexBuffer(gridVertices, posAttributes.members);
+    }
+    
     _createPoles(context: Context) {
         const poleIndices = new TriangleIndexArray();
         for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
@@ -540,54 +548,41 @@ export class GlobeSharedBuffers {
         this.atmosphereSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
     }
 
-    static createGridVertices(id: CanonicalTileID): GlobeVertexArray {
-        const tiles = 1 << id.z;
-        const [latLngTL, latLngBR] = globeTileLatLngCorners(id);
-        const norm = globeNormalizeECEF(globeTileBounds(id));
-        const vertexExt = GLOBE_VERTEX_GRID_SIZE + 1;
-
-        const boundsArray = new GlobeVertexArray();
-        boundsArray.reserve(GLOBE_VERTEX_GRID_SIZE * GLOBE_VERTEX_GRID_SIZE);
-
-        for (let y = 0; y < vertexExt; y++) {
-            const lat = interpolate(latLngTL[0], latLngBR[0], y / GLOBE_VERTEX_GRID_SIZE);
-            const mercatorY = mercatorYfromLat(lat);
-            const uvY = (mercatorY * tiles) - id.y;
-            const sinLat = Math.sin(degToRad(lat));
-            const cosLat = Math.cos(degToRad(lat));
-
-            for (let x = 0; x < vertexExt; x++) {
-                const uvX = x / GLOBE_VERTEX_GRID_SIZE;
-                const lng = interpolate(latLngTL[1], latLngBR[1], uvX);
-                const mercatorX = mercatorXfromLng(lng);
-
-                const pGlobe = csLatLngToECEF(cosLat, sinLat, lng);
-                const [px, py, pz] = vec3.transformMat4(pGlobe, pGlobe, norm);
-
-                boundsArray.emplaceBack(px, py, pz, mercatorX, mercatorY, uvX, uvY);
-            }
-        }
-
-        return boundsArray;
+    getGridBuffer(id: CanonicalTileID): [IndexBuffer, SegmentVector] {
+        const zoom = Math.min(id.z, GLOBE_ZOOM_THRESHOLD_MIN - 1);
+        return [this.gridIndexBuffer, this.gridSegments[zoom]];
     }
 
-    getWirefameBuffer(context: Context): [IndexBuffer, SegmentVector] {
+    getWirefameBuffer(context: Context, id: CanonicalTileID): [IndexBuffer, SegmentVector] {
         if (!this.wireframeSegments) {
-            const wireframeIndices = new LineIndexArray();
-            const quadExt = GLOBE_VERTEX_GRID_SIZE;
-            const vertexExt = quadExt + 1;
+            this.wireframeSegments = [];
+            const maxVertices = MAX_VERTEX_GRID_SIZE + 1;
 
-            for (let j = 0; j < quadExt; j++) {
-                for (let i = 0; i < quadExt; i++) {
-                    const index = j * vertexExt + i;
-                    wireframeIndices.emplaceBack(index, index + 1);
-                    wireframeIndices.emplaceBack(index, index + vertexExt);
-                    wireframeIndices.emplaceBack(index, index + vertexExt + 1);
+            const wireframeIndices = new LineIndexArray();
+
+            for(let z = 0, primitiveOffset = 0; z < GLOBE_ZOOM_THRESHOLD_MIN; z++) {
+                const quadExt = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[z];
+                const vertexExt = quadExt + 1;
+
+                for (let j = 0; j < quadExt; j++) {
+                    for (let i = 0; i < quadExt; i++) {
+                        const index = j * maxVertices + i;
+                        wireframeIndices.emplaceBack(index, index + 1);
+                        wireframeIndices.emplaceBack(index, index + maxVertices);
+                        wireframeIndices.emplaceBack(index, index + maxVertices + 1);
+                    }
                 }
+
+                const numVertices = vertexExt * vertexExt;
+                const numPrimitives = quadExt * quadExt * 3;
+    
+                this.wireframeSegments.push(SegmentVector.simpleSegment(0, primitiveOffset, numVertices, numPrimitives));
+                primitiveOffset += numPrimitives;
             }
+
             this.wireframeIndexBuffer = context.createIndexBuffer(wireframeIndices);
-            this.wireframeSegments = SegmentVector.simpleSegment(0, 0, quadExt * quadExt, wireframeIndices.length);
         }
-        return [this.wireframeIndexBuffer, this.wireframeSegments];
+        const zoom = Math.min(id.z, GLOBE_ZOOM_THRESHOLD_MIN - 1);
+        return [this.wireframeIndexBuffer, this.wireframeSegments[zoom]];
     }
 }

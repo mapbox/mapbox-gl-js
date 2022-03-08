@@ -205,8 +205,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             if (sharedBuffers) {
                 const [buffer, segments] = isWireframe ?
-                    sharedBuffers.getWirefameBuffer(painter.context) :
-                    [sharedBuffers.gridIndexBuffer, sharedBuffers.gridSegments];
+                    sharedBuffers.getWirefameBuffer(painter.context, coord.canonical) :
+                    sharedBuffers.getGridBuffer(coord.canonical);
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                     uniformValues, "globe_raster", sharedBuffers.gridBuffer, buffer, segments);
@@ -214,6 +214,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         }
     });
 
+    // Render the poles.
     if (sharedBuffers) {
         const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
         program = painter.useProgram('globeRaster', null, defines);
