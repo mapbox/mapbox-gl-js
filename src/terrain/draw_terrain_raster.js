@@ -19,7 +19,8 @@ import {
     calculateGlobeMercatorMatrix,
     globeToMercatorTransition,
     globePoleMatrixForTile,
-    getGridMatrix
+    getGridMatrix,
+    getTileLod
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
 
@@ -169,6 +170,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         const primitive = isWireframe ? gl.LINES : gl.TRIANGLES;
 
         for (const coord of tileIDs) {
+            const tileLod = getTileLod(coord.canonical);
+
             const tile = sourceCache.getTile(coord);
             const stencilMode = StencilMode.disabled;
 
@@ -204,12 +207,12 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
             if (sharedBuffers) {
-                const [buffer, segments] = isWireframe ?
-                    sharedBuffers.getWirefameBuffer(painter.context, coord.canonical) :
-                    sharedBuffers.getGridBuffer(coord.canonical);
+                const [buffer, indexBuffer, segments] = isWireframe ?
+                    sharedBuffers.getWirefameBuffers(painter.context, tileLod) :
+                    sharedBuffers.getGridBuffers(tileLod);
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
-                    uniformValues, "globe_raster", sharedBuffers.gridBuffer, buffer, segments);
+                    uniformValues, "globe_raster", buffer, indexBuffer, segments);
             }
         }
     });
@@ -223,7 +226,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const {x, y, z} = coord.canonical;
             const topCap = y === 0;
             const bottomCap = y === (1 << z) - 1;
-            const segment = sharedBuffers.poleSegments[z];
+
+            const tileLod = getTileLod(coord.canonical);
+            const [northPoleBuffer, southPoleBuffer, indexBuffer, segment] = sharedBuffers.getPoleBuffers(tileLod);
 
             if (segment && (topCap || bottomCap)) {
                 const tile = sourceCache.getTile(coord);
@@ -237,18 +242,18 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 const drawPole = (program, vertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
-                    "globe_pole_raster", vertexBuffer, sharedBuffers.poleIndexBuffer, segment);
+                    "globe_pole_raster", vertexBuffer, indexBuffer, segment);
 
                 terrain.setupElevationDraw(tile, program, {});
 
                 painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
                 if (topCap) {
-                    drawPole(program, sharedBuffers.poleNorthVertexBuffer);
+                    drawPole(program, northPoleBuffer);
                 }
                 if (bottomCap) {
                     poleMatrix = mat4.scale(mat4.create(), poleMatrix, [1, -1, 1]);
-                    drawPole(program, sharedBuffers.poleSouthVertexBuffer);
+                    drawPole(program, southPoleBuffer);
                 }
             }
         }
