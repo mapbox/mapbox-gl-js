@@ -31,7 +31,6 @@ import type Transform from '../transform.js';
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
-const GLOBE_VERTEX_GRID_SIZE = 64; // TODO: Remove.
 const TILE_SIZE = 512;
 
 const GLOBE_MIN = -GLOBE_RADIUS;
@@ -47,7 +46,7 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
     new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
 ];
 
-const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [12, 24, 36, 48, 64];
+const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [64, 52, 52, 40, 32];
 const MAX_VERTEX_GRID_SIZE = Math.max(...GLOBE_VERTEX_GRID_SIZE_LOD_TABLE);
 
 export class Arc {
@@ -501,11 +500,14 @@ export class GlobeSharedBuffers {
     
     _createPoles(context: Context) {
         const poleIndices = new TriangleIndexArray();
+        for (let i = 0; i < MAX_VERTEX_GRID_SIZE; i++)
+            poleIndices.emplaceBack(0, i + 1, i + 2);
+
         const northVertices = new GlobeVertexArray();
         const southVertices = new GlobeVertexArray();
         this._poleSegments = [];
 
-        for (let zoom = 0, vertexOffset = 0, primitiveOffset = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
+        for (let zoom = 0, vertexOffset = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
             const tiles = 1 << zoom;
             const radius = tiles * TILE_SIZE / Math.PI / 2.0;
             const endAngle = 360.0 / tiles;
@@ -517,7 +519,6 @@ export class GlobeSharedBuffers {
             southVertices.emplaceBack(0, -radius, 0, 0, 0, 0.5, 1);
 
             for (let i = 0; i <= numTriangles; i++) {
-                if (i < numTriangles) poleIndices.emplaceBack(0, i + 1, i + 2);
                 const uvX = i / numTriangles;
                 const angle = interpolate(0, endAngle, uvX);
                 const [gx, gy, gz] = csLatLngToECEF(POLE_COS, POLE_SIN, angle, radius);
@@ -525,9 +526,8 @@ export class GlobeSharedBuffers {
                 southVertices.emplaceBack(gx, gy, gz, 0, 0, uvX, 1);
             }
 
-            this._poleSegments.push(SegmentVector.simpleSegment(vertexOffset, primitiveOffset, numTotalVertices, numTriangles));
+            this._poleSegments.push(SegmentVector.simpleSegment(vertexOffset, 0, numTotalVertices, numTriangles));
             vertexOffset += numTotalVertices;
-            primitiveOffset += numTriangles;
         }
 
         this._poleIndexBuffer = context.createIndexBuffer(poleIndices, false);
