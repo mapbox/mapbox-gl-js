@@ -62,7 +62,7 @@ void main() {
 
     // Fade stars as they get closer to horizon to
     // give the feeling of an atmosphere with thickness
-    star_field *= (1.0 - pow(t, 0.25));
+    star_field *= (1.0 - pow(t, 0.25 + (1.0 - u_sky_color.a) * 0.75));
 
     gl_FragColor = vec4(color.rgb * t * u_color.a * color.a + star_field, u_color.a);
 }
