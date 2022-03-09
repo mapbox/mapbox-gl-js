@@ -60,8 +60,17 @@ const pages = [
         "title": "Query terrain elevation"
     },
     {
+        "key": "add-fog",
+        "title": "Add fog to a map"
+    },
+    {
         "key": "image-on-a-map",
         "title": "Image Source"
+    },
+    {
+        "key": "extrusion-query",
+        "title": "Extrusion Query",
+        "url": "./extrusion-query.html"
     },
     {
         "key": "projections",
