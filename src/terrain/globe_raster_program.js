@@ -8,6 +8,7 @@ import {
     UniformMatrix4f,
     Uniform1f
 } from '../render/uniform_binding.js';
+import browser from '../util/browser.js';
 
 import type Context from '../gl/context.js';
 import type {UniformValues, UniformLocations} from '../render/uniform_binding.js';
@@ -105,7 +106,7 @@ const atmosphereUniformValues = (
     'u_sky_color': skyColor,
     'u_latlon': latlon,
     'u_star_intensity': starIntensity,
-    'u_star_size': 5.0,
+    'u_star_size': 5.0 * browser.devicePixelRatio,
     'u_star_density': 0.0
 });
 
