@@ -70,7 +70,8 @@ test('Globe', (t) => {
                     }
                     return true;
                 },
-                getMinElevationBelowMSL: () => 0
+                getMinElevationBelowMSL: () => 0,
+                exaggeration: () => 1
             };
         };
 

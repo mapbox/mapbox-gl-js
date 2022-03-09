@@ -629,18 +629,22 @@ test('transform', (t) => {
             getAtPointOrZero(p) {
                 if (p.x === 0.5 && p.y === 0.5)
                     return 0;
-                return elevation;
+                return elevation * this.exaggeration();
             },
             getAtPoint(p) {
                 return this.getAtPointOrZero(p);
             },
             getForTilePoints(tileID, points) {
                 for (const p of points) {
-                    p[2] = elevation;
+                    p[2] = elevation * this.exaggeration();
                 }
                 return true;
             },
-            getMinElevationBelowMSL: () => 0
+            getMinElevationBelowMSL: () => 0,
+            _exaggeration: 1,
+            exaggeration() {
+                return this._exaggeration;
+            }
         };
     };
 
@@ -658,7 +662,8 @@ test('transform', (t) => {
             getForTilePoints() {
                 return true;
             },
-            getMinElevationBelowMSL: () => 0
+            getMinElevationBelowMSL: () => 0,
+            exaggeration: () => 1
         };
     };
 
@@ -668,18 +673,22 @@ test('transform', (t) => {
                 return true;
             },
             getAtPointOrZero(_) {
-                return elevation;
+                return elevation * this.exaggeration();
             },
             getAtPoint(_) {
                 return this.getAtPointOrZero();
             },
             getForTilePoints(tileID, points) {
                 for (const p of points) {
-                    p[2] = elevation;
+                    p[2] = elevation * this.exaggeration();
                 }
                 return true;
             },
-            getMinElevationBelowMSL: () => 0
+            getMinElevationBelowMSL: () => 0,
+            _exaggeration: 1,
+            exaggeration() {
+                return this._exaggeration;
+            }
         };
     };
 
@@ -700,7 +709,8 @@ test('transform', (t) => {
                 }
                 return true;
             },
-            getMinElevationBelowMSL: () => 0
+            getMinElevationBelowMSL: () => 0,
+            exaggeration: () => 1
         };
     };
 
@@ -730,13 +740,66 @@ test('transform', (t) => {
         t.end();
     });
 
+    test('Constrained camera height over terrain with exaggeration change', (t) => {
+        const transform = new Transform();
+        transform.resize(200, 200);
+        transform.maxPitch = 85;
+
+        const elevation = createConstantElevation(10);
+        elevation._exaggeration = 0;
+        transform.elevation = elevation;
+        transform.constantCameraHeight = false;
+        transform.bearing = -45;
+        transform.pitch = 85;
+
+        // Set camera altitude to 5 meters
+        const altitudeZ = mercatorZfromAltitude(5, transform.center.lat) / Math.cos(degToRad(85));
+        const zoom = transform._zoomFromMercatorZ(altitudeZ);
+        transform.zoom = zoom;
+
+        const cameraAltitude = () => {
+            return transform.getFreeCameraOptions().position.z / mercatorZfromAltitude(1, transform.center.lat);
+        };
+
+        t.equal(fixedNum(cameraAltitude()), 5);
+        t.equal(transform._centerAltitude, 0);
+        // increase exaggeration to lift the center (and camera that follows it) up.
+        transform.elevation._exaggeration = 1;
+        transform.updateElevation(false);
+        t.equal(transform._centerAltitude, 10);
+        const cameraAltitudeAfterLift = cameraAltitude();
+        t.equal(fixedNum(cameraAltitudeAfterLift), 15);
+        transform.elevation._exaggeration = 15;
+        transform.updateElevation(false);
+        t.equal(transform._centerAltitude, 150);
+        t.equal(fixedNum(cameraAltitude()), 155);
+
+        transform.elevation = null;
+        t.ok(cameraAltitude() < 10);
+
+        // collision elevation keeps center at 0 but pushes camera up.
+        const elevation1 = createCollisionElevation(10);
+        elevation1._exaggeration = 0;
+        transform.elevation = elevation1;
+        transform.updateElevation(false);
+        t.equal(transform._centerAltitude, 0);
+        t.ok(cameraAltitude() < 10);
+
+        elevation1._exaggeration = 1;
+        transform.updateElevation(false);
+        t.equal(transform._centerAltitude, 0);
+        t.ok(cameraAltitude() > 11 && cameraAltitude() < 12);
+
+        t.end();
+    });
+
     t.test('Constrained camera height over terrain without data', t => {
         const transform = new Transform();
         transform.resize(200, 200);
 
         transform.elevation = createCollisionElevationNoData();
 
-        t.false(transform._centerAltitudeValid);
+        t.equal(transform._centerAltitudeValidForExaggeration, 0);
 
         const transformBefore = transform.clone();
 
@@ -747,7 +810,7 @@ test('transform', (t) => {
         // Apply zoom
         transform.zoom = zoom;
 
-        t.false(transform._centerAltitudeValid);
+        t.equal(transform._centerAltitudeValidForExaggeration, 0);
         t.equal(transform._seaLevelZoom, transformBefore._seaLevelZoom);
 
         t.end();
