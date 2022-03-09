@@ -181,7 +181,7 @@ createStructArrayType('symbol_line_vertex', lineVertex, true);
 
 import globeAttributes, {atmosphereLayout} from '../src/terrain/globe_attributes.js';
 createStructArrayType('globe_vertex', globeAttributes);
-createStructArrayType('globe_atmosphere_vertex', atmosphereLayout);
+createStructArrayType('atmosphere_vertex', atmosphereLayout);
 
 // feature index array
 createStructArrayType('feature_index', createLayout([

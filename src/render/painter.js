@@ -40,7 +40,7 @@ import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
-import drawGlobeAtmosphere from './draw_globe_atmosphere.js';
+import drawAtmosphere from './draw_atmosphere.js';
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
@@ -597,9 +597,8 @@ class Painter {
                 this.renderLayer(this, sourceCache, layer, coords);
             }
         }
-        if (this.transform.projection.name === 'globe') {
-            drawGlobeAtmosphere(this);
-        }
+
+        drawAtmosphere(this);
 
         // Translucent pass ===============================================
         // Draw all other layers bottom-to-top.
