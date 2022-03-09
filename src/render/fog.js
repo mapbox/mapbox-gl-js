@@ -5,7 +5,8 @@ import type {UniformLocations, UniformValues} from './uniform_binding.js';
 import type {UnwrappedTileID} from '../source/tile_id.js';
 import Painter from './painter.js';
 import Fog from '../style/fog.js';
-import {Uniform1f, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from './uniform_binding.js';
+import {Uniform1f, Uniform1i, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from './uniform_binding.js';
+import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 
 export type FogUniformsType = {|
     'u_fog_matrix': UniformMatrix4f,
@@ -19,6 +20,8 @@ export type FogUniformsType = {|
     'u_frustum_bl': Uniform3f,
     'u_globe_pos': Uniform3f,
     'u_globe_radius': Uniform1f,
+    'u_globe_transition': Uniform1f,
+    'u_is_globe': Uniform1i,
     'u_viewport': Uniform2f,
 |};
 
@@ -34,6 +37,8 @@ export const fogUniforms = (context: Context, locations: UniformLocations): FogU
     'u_frustum_bl': new Uniform3f(context, locations.u_frustum_bl),
     'u_globe_pos': new Uniform3f(context, locations.u_globe_pos),
     'u_globe_radius': new Uniform1f(context, locations.u_globe_radius),
+    'u_globe_transition': new Uniform1f(context, locations.u_globe_transition),
+    'u_is_globe': new Uniform1i(context, locations.u_is_globe),
     'u_viewport': new Uniform2f(context, locations.u_viewport)
 });
 
@@ -50,6 +55,7 @@ export const fogUniformValues = (
     globeRadius: number,
     viewport: [number, number]
 ): UniformValues<FogUniformsType> => {
+    const tr = painter.transform;
     const fogColor = fog.properties.get('color');
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     const fogColorUnpremultiplied = [
@@ -59,8 +65,8 @@ export const fogUniformValues = (
         fogOpacity
     ];
     return {
-        'u_fog_matrix': tileID ? painter.transform.calculateFogTileMatrix(tileID) : painter.identityMat,
-        'u_fog_range': fog.getFovAdjustedRange(painter.transform._fov),
+        'u_fog_matrix': tileID ? tr.calculateFogTileMatrix(tileID) : painter.identityMat,
+        'u_fog_range': fog.getFovAdjustedRange(tr._fov),
         'u_fog_color': fogColorUnpremultiplied,
         'u_fog_horizon_blend': fog.properties.get('horizon-blend'),
         'u_fog_temporal_offset': temporalOffset,
@@ -70,6 +76,8 @@ export const fogUniformValues = (
         'u_frustum_bl': frustumDirBl,
         'u_globe_pos': globePosition,
         'u_globe_radius': globeRadius,
-        'u_viewport': viewport
+        'u_viewport': viewport,
+        'u_globe_transition': globeToMercatorTransition(tr.zoom),
+        'u_is_globe': +(tr.projection.name === 'globe')
     };
 };

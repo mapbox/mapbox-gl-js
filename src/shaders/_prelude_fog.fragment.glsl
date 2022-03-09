@@ -9,6 +9,8 @@ uniform highp vec3 u_frustum_bl;
 uniform highp vec3 u_globe_pos;
 uniform highp float u_globe_radius;
 uniform highp vec2 u_viewport;
+uniform float u_globe_transition;
+uniform int u_is_globe;
 
 float globe_glow_progress() {
     vec2 uv = gl_FragCoord.xy / u_viewport;
@@ -31,7 +33,14 @@ float fog_opacity(vec3 pos) {
 
 vec3 fog_apply(vec3 color, vec3 pos) {
     float depth = length(pos);
-    float opacity = fog_opacity(fog_range(globe_glow_progress()));
+    float opacity;
+    if (u_is_globe == 1) {
+        float glow_progress = globe_glow_progress();
+        float t = mix(glow_progress, depth, u_globe_transition);
+        opacity = fog_opacity(fog_range(t));
+    } else {
+        opacity = fog_opacity(fog_range(depth));
+    }
     opacity *= fog_horizon_blending(pos / depth);
     return mix(color, u_fog_color.rgb, opacity);
 }

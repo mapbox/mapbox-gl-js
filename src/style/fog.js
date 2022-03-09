@@ -51,8 +51,9 @@ class Fog extends Evented {
     }
 
     get state(): FogState {
+        const isGlobe = this._transform.projection.name === 'globe';
         return {
-            range: this.properties.get('range'),
+            range: isGlobe ? [0.5, 3] : this.properties.get('range'),
             horizonBlend: this.properties.get('horizon-blend'),
             alpha: this.properties.get('color').a
         };
