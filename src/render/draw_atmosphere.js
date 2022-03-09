@@ -10,13 +10,13 @@ import type Painter from './painter.js';
 import {degToRad, mapValue} from '../util/util.js';
 import {vec3, mat4} from 'gl-matrix';
 
-export default drawGlobeAtmosphere;
+export default drawAtmosphere;
 
 function project(point, m) {
     return vec3.transformMat4(point, point, m);
 }
 
-function drawGlobeAtmosphere(painter: Painter) {
+function drawAtmosphere(painter: Painter) {
     const fog = painter.style.fog;
 
     if (!fog) {
