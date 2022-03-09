@@ -37,12 +37,12 @@ export default function validateObject(options: Options): Array<ValidationError>
             validateElement = elementValidators['*'];
         } else if (elementSpecs['*']) {
             validateElement = validateSpec;
-        } else {
+        }
+
+        if (!validateElement) {
             errors.push(new ValidationError(key, object[objectKey], `unknown property "${objectKey}"`));
             continue;
         }
-
-        if (!validateElement) continue;
 
         errors = errors.concat(validateElement({
             key: (key ? `${key}.` : key) + objectKey,

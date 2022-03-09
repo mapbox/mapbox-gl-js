@@ -16,11 +16,12 @@ type Options = ValidationOptions & {
 
 export default function validateFilter(options: Options): Array<ValidationError> {
     if (isExpressionFilter(deepUnbundle(options.value))) {
-        const layerType = deepUnbundle(options.layerType);
+        // We default to a layerType of `fill` because that points to a non-dynamic filter definition within the style-spec.
+        const layerType = options.layerType || 'fill';
+
         return validateExpression(extend({}, options, {
             expressionContext: 'filter',
-            // We default to a layerType of `fill` because that points to a non-dynamic filter definition within the style-spec.
-            valueSpec: options.styleSpec[`filter_${layerType ? String(layerType) : 'fill'}`]
+            valueSpec: options.styleSpec[`filter_${layerType}`]
         }));
     } else {
         return validateNonExpressionFilter(options);
