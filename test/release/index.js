@@ -27,6 +27,10 @@ const pages = [
         "title": "Display driving directions"
     },
     {
+        "key": "locate-user",
+        "title": "Locate the user"
+    },
+    {
         "key": "mapbox-gl-draw",
         "title": "Show drawn polygon area"
     },
@@ -52,22 +56,12 @@ const pages = [
         "title": "Animate the camera along a path"
     },
     {
+        "key": "query-terrain-elevation",
+        "title": "Query terrain elevation"
+    },
+    {
         "key": "image-on-a-map",
         "title": "Image Source"
-    },
-    {
-        "key": "locate-user",
-        "title": "Locate the user"
-    },
-    {
-        "key": "3d-playground",
-        "title": "3D Playground",
-        "url": "./3d-playground.html"
-    },
-    {
-        "key": "fog",
-        "title": "Fog",
-        "url": "./fog.html"
     },
     {
         "key": "projections",
