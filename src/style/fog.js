@@ -14,6 +14,8 @@ import type LngLat from '../geo/lng_lat.js';
 import type Transform from '../geo/transform.js';
 import type {StyleSetterOptions} from '../style/style.js';
 import type {FogState} from './fog_helpers.js';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
+import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 
 type Props = {|
     "range": DataConstantProperty<[number, number]>,
@@ -51,9 +53,16 @@ class Fog extends Evented {
     }
 
     get state(): FogState {
-        const isGlobe = this._transform.projection.name === 'globe';
+        const tr = this._transform;
+        const isGlobe = tr.projection.name === 'globe';
+        const transitionT = globeToMercatorTransition(tr.zoom);
+        const range = this.properties.get('range');
+        const globeFixedFogRange = [0.5, 3];
         return {
-            range: isGlobe ? [0.5, 3] : this.properties.get('range'),
+            range: isGlobe ? [
+                interpolate(globeFixedFogRange[0], range[0], transitionT),
+                interpolate(globeFixedFogRange[1], range[1], transitionT)
+            ] : range,
             horizonBlend: this.properties.get('horizon-blend'),
             alpha: this.properties.get('color').a
         };

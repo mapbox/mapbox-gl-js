@@ -26,7 +26,7 @@ var GUIParams = function() {
     this.enable = true;
     this.style = 'streets-v11';
     this.start = 0.8;
-    this.end = 2.5;
+    this.end = 8.0;
     this.color = [255, 255, 255];
     this.skyColor = [0, 0, 0];
     this.colorAlpha = 1.0;
@@ -63,8 +63,6 @@ function updatePreset(value) {
     if (value === 'preset1') {
         guiParams.enable = true;
         guiParams.style = 'satellite-streets-v11';
-        guiParams.start = 0.46;
-        guiParams.end = 3.4;
         guiParams.color = [220, 159, 159];
         guiParams.skyColor = [36, 92, 223];
         guiParams.colorAlpha = 1.0;
@@ -74,18 +72,15 @@ function updatePreset(value) {
     } else if (value === 'preset2') {
         guiParams.enable = true;
         guiParams.style = 'streets-v11';
-        guiParams.start = 0.79;
-        guiParams.end = 2.2;
         guiParams.color = [255, 255, 255];
         guiParams.skyColor = [19, 122, 255];
         guiParams.colorAlpha = 1;
         guiParams.skyAlpha = 1;
         guiParams.horizonBlend = 1.9;
-        guiParams.starIntensity = 0.15    } else if (value === 'preset3') {
+        guiParams.starIntensity = 0.15
+    } else if (value === 'preset3') {
         guiParams.enable = true;
         guiParams.style = 'light-v10';
-        guiParams.start = 0.46;
-        guiParams.end = 2.9;
         guiParams.color = [0, 0, 0];
         guiParams.skyColor = [200, 200, 200];
         guiParams.colorAlpha = 1;
@@ -95,8 +90,6 @@ function updatePreset(value) {
     } else if (value === 'preset4') {
         guiParams.enable = true;
         guiParams.style = 'satellite-streets-v11';
-        guiParams.start = 0.46;
-        guiParams.end = 2.8;
         guiParams.color = [131, 147, 222];
         guiParams.skyColor = [119, 80, 200];
         guiParams.colorAlpha = 1;
@@ -106,8 +99,6 @@ function updatePreset(value) {
     } else if (value === 'preset5') {
         guiParams.enable = true;
         guiParams.style = 'dark-v10';
-        guiParams.start = 0.46;
-        guiParams.end = 2.9;
         guiParams.color = [13, 13, 13];
         guiParams.skyColor = [110, 110, 110];
         guiParams.colorAlpha = 1;
@@ -117,8 +108,6 @@ function updatePreset(value) {
     } else if (value === 'preset6') {
         guiParams.enable = true;
         guiParams.style = 'outdoors-v11';
-        guiParams.start = 0.68;
-        guiParams.end = 2.4;
         guiParams.color = [40, 40, 65];
         guiParams.skyColor = [0, 30, 102];
         guiParams.colorAlpha = 1;
