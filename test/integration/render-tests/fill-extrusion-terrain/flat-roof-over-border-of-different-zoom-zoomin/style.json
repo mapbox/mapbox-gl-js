@@ -64,19 +64,6 @@
       "id": "building",
       "source": "mapbox",
       "paint": {
-        "fill-opacity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          15.0,
-          0.0,
-          16.0,
-          1.0
-        ],
         "fill-outline-color": [
           "rgba",
           205.00001525878907,

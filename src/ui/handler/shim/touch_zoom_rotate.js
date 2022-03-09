@@ -71,7 +71,7 @@ export default class TouchZoomRotateHandler {
      * @example
      * const isTouchZoomRotateEnabled = map.touchZoomRotate.isEnabled();
      */
-    isEnabled() {
+    isEnabled(): boolean {
         return this._touchZoom.isEnabled() &&
             (this._rotationDisabled || this._touchRotate.isEnabled()) &&
             this._tapDragZoom.isEnabled();
@@ -84,7 +84,7 @@ export default class TouchZoomRotateHandler {
      * @example
      * const isTouchZoomRotateActive = map.touchZoomRotate.isActive();
      */
-    isActive() {
+    isActive(): boolean {
         return this._touchZoom.isActive() || this._touchRotate.isActive() || this._tapDragZoom.isActive();
     }
 

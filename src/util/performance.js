@@ -21,6 +21,8 @@ export type PerformanceMetrics = {
     placementTime: number
 };
 
+export type PerformanceMark = {mark: string, name: string};
+
 export const PerformanceMarkers = {
     create: 'create',
     load: 'load',
@@ -56,7 +58,7 @@ export const PerformanceUtils = {
     measure(name: string, begin?: string, end?: string) {
         performance.measure(name, begin, end);
     },
-    beginMeasure(name: string) {
+    beginMeasure(name: string): PerformanceMark {
         const mark = name + i++;
         performance.mark(mark);
         return {
@@ -64,7 +66,7 @@ export const PerformanceUtils = {
             name
         };
     },
-    endMeasure(m: { name: string, mark: string }) {
+    endMeasure(m: PerformanceMark) {
         performance.measure(m.name, m.mark);
     },
     recordPlacementTime(time: number) {
@@ -172,7 +174,7 @@ export const PerformanceUtils = {
         return metrics;
     },
 
-    getWorkerPerformanceMetrics() {
+    getWorkerPerformanceMetrics(): { timeOrigin: string, measures: Array<PerformanceEntry> } {
         return JSON.parse(JSON.stringify({
             timeOrigin: performance.timeOrigin,
             measures: performance.getEntriesByType("measure")
@@ -180,7 +182,7 @@ export const PerformanceUtils = {
     }
 };
 
-export function getPerformanceMeasurement(request: ?RequestParameters) {
+export function getPerformanceMeasurement(request: ?RequestParameters): Array<PerformanceEntry> {
     const url = request ? request.url.toString() : undefined;
     return performance.getEntriesByName(url);
 }

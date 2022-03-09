@@ -14,8 +14,8 @@ class RasterDEMTileWorkerSource {
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         const {uid, encoding, rawImageData, padding, buildQuadTree} = params;
         // Main thread will transfer ImageBitmap if offscreen decode with OffscreenCanvas is supported, else it will transfer an already decoded image.
-        const imagePixels = window.ImageBitmap && rawImageData instanceof window.ImageBitmap ? this.getImageData(rawImageData, padding) : rawImageData;
-        // $FlowFixMe Flow struggles to refine ImageBitmap type, likely due to the JSDom shim
+        // Flow struggles to refine ImageBitmap type, likely due to the JSDom shim
+        const imagePixels = window.ImageBitmap && rawImageData instanceof window.ImageBitmap ? this.getImageData(rawImageData, padding) : ((rawImageData: any): ImageData);
         const dem = new DEMData(uid, imagePixels, encoding, padding < 1, buildQuadTree);
         callback(null, dem);
     }

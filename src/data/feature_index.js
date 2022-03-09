@@ -311,11 +311,7 @@ class FeatureIndex {
     }
 }
 
-register(
-    'FeatureIndex',
-    FeatureIndex,
-    {omit: ['rawTileData', 'sourceLayerCoder']}
-);
+register(FeatureIndex, {omit: ['rawTileData', 'sourceLayerCoder']});
 
 export default FeatureIndex;
 

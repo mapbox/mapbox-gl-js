@@ -1,25 +1,16 @@
 // @flow
 import LngLat from '../lng_lat.js';
 import {clamp, degToRad, radToDeg} from '../../util/util.js';
-import {mercatorZfromAltitude, MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
-import type Transform from '../../geo/transform.js';
-import Point from '@mapbox/point-geometry';
-import FlatTileTransform from './flat_tile_transform.js';
-import {farthestPixelDistanceOnPlane} from './far_z.js';
-import type {Vec3} from 'gl-matrix';
-import type {ElevationScale} from './index.js';
+import {MAX_MERCATOR_LATITUDE} from '../mercator_coordinate.js';
+import Projection from './projection.js';
+
+import type {ProjectedPoint} from './projection.js';
 
 const maxPhi = degToRad(MAX_MERCATOR_LATITUDE);
 
-export default {
-    name: 'winkelTripel',
-    center: [0, 0],
-    range: [3.5, 7],
-    zAxisUnit: "meters",
-    isReprojectedInTileSpace: true,
-    unsupportedLayers: ['custom'],
+export default class WinkelTripel extends Projection {
 
-    project(lng: number, lat: number) {
+    project(lng: number, lat: number): ProjectedPoint {
         lat = degToRad(lat);
         lng = degToRad(lng);
         const cosLat = Math.cos(lat);
@@ -33,9 +24,9 @@ export default {
             y: 1 - (y / Math.PI + 1) * 0.5,
             z: 0
         };
-    },
+    }
 
-    unproject(x: number, y: number) {
+    unproject(x: number, y: number): LngLat {
         // based on https://github.com/d3/d3-geo-projection, MIT-licensed
         x = (2 * x - 0.5) * Math.PI;
         y = (2 * (1 - y) - 1) * Math.PI;
@@ -73,34 +64,5 @@ export default {
         } while ((Math.abs(dlambda) > epsilon || Math.abs(dphi) > epsilon) && --i > 0);
 
         return new LngLat(radToDeg(lambda), radToDeg(phi));
-    },
-
-    projectTilePoint(x: number, y: number): {x: number, y: number, z: number} {
-        return {x, y, z: 0};
-    },
-
-    locationPoint(tr: Transform, lngLat: LngLat): Point {
-        return tr._coordinatePoint(tr.locationCoordinate(lngLat), false);
-    },
-
-    pixelsPerMeter(lat: number, worldSize: number) {
-        return mercatorZfromAltitude(1, lat) * worldSize;
-    },
-
-    farthestPixelDistance(tr: Transform): number {
-        const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
-        return farthestPixelDistanceOnPlane(tr, pixelsPerMeter);
-    },
-
-    createTileTransform(tr: Transform, worldSize: number): Object {
-        return new FlatTileTransform(tr, worldSize);
-    },
-
-    upVector(): Vec3 {
-        return [0, 0, 1];
-    },
-
-    upVectorScale(): ElevationScale {
-        return {metersToTile: 1, metersToLabelSpace: 1};
     }
-};
+}

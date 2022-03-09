@@ -1,29 +1,10 @@
-import latest from './reference/latest.js';
+// @flow
+import type {StyleSpecification} from './types.js';
 
-export default function emptyStyle() {
-    const style = {};
-
-    const version = latest['$version'];
-    for (const styleKey in latest['$root']) {
-        const spec = latest['$root'][styleKey];
-
-        if (spec.required) {
-            let value = null;
-            if (styleKey === 'version') {
-                value = version;
-            } else {
-                if (spec.type === 'array') {
-                    value = [];
-                } else {
-                    value = {};
-                }
-            }
-
-            if (value != null) {
-                style[styleKey] = value;
-            }
-        }
-    }
-
-    return style;
+export default function emptyStyle(): StyleSpecification {
+    return {
+        version: 8,
+        layers: [],
+        sources: {}
+    };
 }

@@ -18,11 +18,11 @@ class Anchor extends Point {
         }
     }
 
-    clone() {
+    clone(): Anchor {
         return new Anchor(this.x, this.y, this.z, this.angle, this.segment);
     }
 }
 
-register('Anchor', Anchor);
+register(Anchor);
 
 export default Anchor;

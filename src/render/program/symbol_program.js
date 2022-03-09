@@ -13,9 +13,10 @@ import browser from '../../util/browser.js';
 import {OverscaledTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
-import type {TileTransform} from '../../geo/projection/index.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
-import {globeECEFOrigin, calculateGlobeMatrix} from '../../geo/projection/globe.js';
+import {globeECEFOrigin} from '../../geo/projection/globe_util.js';
+
+import type {InterpolatedSize} from '../../symbol/symbol_size.js';
 
 export type SymbolIconUniformsType = {|
     'u_is_size_zoom_constant': Uniform1i,
@@ -175,7 +176,7 @@ const identityMatrix = mat4.create();
 
 const symbolIconUniformValues = (
     functionType: string,
-    size: ?{uSizeT: number, uSize: number},
+    size: ?InterpolatedSize,
     rotateInShader: boolean,
     pitchWithMap: boolean,
     painter: Painter,
@@ -187,7 +188,7 @@ const symbolIconUniformValues = (
     coord: OverscaledTileID,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    tileTransform: TileTransform
+    invMatrix: Float32Array
 ): UniformValues<SymbolIconUniformsType> => {
     const transform = painter.transform;
 
@@ -217,14 +218,13 @@ const symbolIconUniformValues = (
     };
 
     if (transform.projection.name === 'globe') {
-        const tileMatrix = calculateGlobeMatrix(transform, transform.worldSize);
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = zoomTransition;
-        values['u_inv_rot_matrix'] = tileTransform.createInversionMatrix(coord.canonical);
+        values['u_inv_rot_matrix'] = invMatrix;
         values['u_merc_center'] = mercatorCenter;
         values['u_camera_forward'] = ((transform._camera.forward(): any): [number, number, number]);
-        values['u_ecef_origin'] = globeECEFOrigin(tileMatrix, coord.toUnwrapped());
-        values['u_tile_matrix'] = Float32Array.from(tileMatrix);
+        values['u_ecef_origin'] = globeECEFOrigin(transform.globeMatrix, coord.toUnwrapped());
+        values['u_tile_matrix'] = Float32Array.from(transform.globeMatrix);
     }
 
     return values;
@@ -232,7 +232,7 @@ const symbolIconUniformValues = (
 
 const symbolSDFUniformValues = (
     functionType: string,
-    size: ?{uSizeT: number, uSize: number},
+    size: ?InterpolatedSize,
     rotateInShader: boolean,
     pitchWithMap: boolean,
     painter: Painter,
@@ -245,13 +245,13 @@ const symbolSDFUniformValues = (
     coord: OverscaledTileID,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    tileTransform: TileTransform
+    invMatrix: Float32Array
 ): UniformValues<SymbolSDFUniformsType> => {
     const {cameraToCenterDistance, _pitch} = painter.transform;
 
     return extend(symbolIconUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, isText,
-        texSize, coord, zoomTransition, mercatorCenter, tileTransform), {
+        texSize, coord, zoomTransition, mercatorCenter, invMatrix), {
         'u_gamma_scale': pitchWithMap ? cameraToCenterDistance * Math.cos(painter.terrain ? 0 : _pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo
@@ -260,7 +260,7 @@ const symbolSDFUniformValues = (
 
 const symbolTextAndIconUniformValues = (
     functionType: string,
-    size: ?{uSizeT: number, uSize: number},
+    size: ?InterpolatedSize,
     rotateInShader: boolean,
     pitchWithMap: boolean,
     painter: Painter,
@@ -272,11 +272,11 @@ const symbolTextAndIconUniformValues = (
     coord: OverscaledTileID,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    tileTransform: TileTransform
+    invMatrix: Float32Array
 ): UniformValues<SymbolIconUniformsType> => {
     return extend(symbolSDFUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, true, texSizeSDF,
-        true, coord, zoomTransition, mercatorCenter, tileTransform), {
+        true, coord, zoomTransition, mercatorCenter, invMatrix), {
         'u_texsize_icon': texSizeIcon,
         'u_texture_icon': 1
     });

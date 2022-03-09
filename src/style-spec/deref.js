@@ -1,7 +1,10 @@
+// @flow
 
 import refProperties from './util/ref_properties.js';
 
-function deref(layer, parent) {
+import type {LayerSpecification} from './types.js';
+
+function deref(layer: LayerSpecification, parent: LayerSpecification): LayerSpecification {
     const result = {};
 
     for (const k in layer) {
@@ -12,14 +15,12 @@ function deref(layer, parent) {
 
     refProperties.forEach((k) => {
         if (k in parent) {
-            result[k] = parent[k];
+            result[k] = (parent: any)[k];
         }
     });
 
-    return result;
+    return ((result: any): LayerSpecification);
 }
-
-export default derefLayers;
 
 /**
  * Given an array of layers, some of which may contain `ref` properties
@@ -34,7 +35,7 @@ export default derefLayers;
  * @param {Array<Layer>} layers
  * @returns {Array<Layer>}
  */
-function derefLayers(layers) {
+export default function derefLayers(layers: Array<LayerSpecification>): Array<LayerSpecification> {
     layers = layers.slice();
 
     const map = Object.create(null);
@@ -44,7 +45,7 @@ function derefLayers(layers) {
 
     for (let i = 0; i < layers.length; i++) {
         if ('ref' in layers[i]) {
-            layers[i] = deref(layers[i], map[layers[i].ref]);
+            layers[i] = deref(layers[i], map[(layers[i]: any).ref]);
         }
     }
 

@@ -200,8 +200,8 @@ export class Transitionable<Props: Object> {
         this._values[name].transition = clone(value) || undefined;
     }
 
-    serialize() {
-        const result: any = {};
+    serialize(): PropertyValueSpecifications<Props> {
+        const result: Object = {};
         for (const property of Object.keys(this._values)) {
             const value = this.getValue(property);
             if (value !== undefined) {
@@ -329,7 +329,7 @@ export class Transitioning<Props: Object> {
         return result;
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         for (const property of Object.keys(this._values)) {
             if (this._values[property].prior) {
                 return true;
@@ -351,6 +351,15 @@ type PropertyValues<Props: Object>
     = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => PropertyValue<T, R>>>
 
 /**
+ * A helper type: given an object type `Properties` whose values are each of type `Property<T, R>`, it calculates
+ * an object type with the same keys and values of type `PropertyValueSpecification<T>`.
+ *
+ * @private
+ */
+type PropertyValueSpecifications<Props: Object>
+    = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => PropertyValueSpecification<T>>>
+
+/**
  * Because layout properties are not transitionable, they have a simpler representation and evaluation chain than
  * paint properties: `PropertyValue`s are possibly evaluated, producing possibly evaluated values, which are then
  * fully evaluated.
@@ -370,7 +379,7 @@ export class Layout<Props: Object> {
         this._values = (Object.create(properties.defaultPropertyValues): any);
     }
 
-    getValue<S: string>(name: S) {
+    getValue<S: string, T>(name: S): PropertyValueSpecification<T> | void {
         return clone(this._values[name].value);
     }
 
@@ -378,8 +387,8 @@ export class Layout<Props: Object> {
         this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value));
     }
 
-    serialize() {
-        const result: any = {};
+    serialize(): PropertyValueSpecifications<Props> {
+        const result: Object = {};
         for (const property of Object.keys(this._values)) {
             const value = this.getValue(property);
             if (value !== undefined) {
@@ -755,8 +764,8 @@ export class Properties<Props: Object> {
     }
 }
 
-register('DataDrivenProperty', DataDrivenProperty);
-register('DataConstantProperty', DataConstantProperty);
-register('CrossFadedDataDrivenProperty', CrossFadedDataDrivenProperty);
-register('CrossFadedProperty', CrossFadedProperty);
-register('ColorRampProperty', ColorRampProperty);
+register(DataDrivenProperty);
+register(DataConstantProperty);
+register(CrossFadedDataDrivenProperty);
+register(CrossFadedProperty);
+register(ColorRampProperty);

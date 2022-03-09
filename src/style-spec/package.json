@@ -22,9 +22,11 @@
     }
   },
   "scripts": {
+    "pretest": "npm run build",
+    "test": "node ./test.js",
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
-    "prepublishOnly": "git clean -fdx && yarn copy-flow-typed && yarn build",
+    "prepublishOnly": "git clean -fdx && npm run copy-flow-typed && npm run build",
     "postpublish": "rm -r flow-typed dist/index.cjs"
   },
   "repository": {
@@ -32,15 +34,15 @@
     "url": "git@github.com:mapbox/mapbox-gl-js.git"
   },
   "bin": {
-    "gl-style-migrate": "bin/gl-style-migrate",
-    "gl-style-validate": "bin/gl-style-validate",
-    "gl-style-format": "bin/gl-style-format",
-    "gl-style-composite": "bin/gl-style-composite"
+    "gl-style-migrate": "./bin/gl-style-migrate.js",
+    "gl-style-validate": "./bin/gl-style-validate.js",
+    "gl-style-format": "./bin/gl-style-format.js",
+    "gl-style-composite": "./bin/gl-style-composite.js"
   },
   "dependencies": {
     "@mapbox/jsonlint-lines-primitives": "~2.0.2",
-    "@mapbox/unitbezier": "^0.0.0",
     "@mapbox/point-geometry": "^0.1.0",
+    "@mapbox/unitbezier": "^0.0.0",
     "csscolorparser": "~1.0.2",
     "json-stringify-pretty-compact": "^2.0.0",
     "minimist": "^1.2.5",

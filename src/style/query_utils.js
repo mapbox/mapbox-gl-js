@@ -16,7 +16,7 @@ export function getMaximumPaintValue(property: string, layer: StyleLayer, bucket
     }
 }
 
-export function translateDistance(translate: [number, number]) {
+export function translateDistance(translate: [number, number]): number {
     return Math.sqrt(translate[0] * translate[0] + translate[1] * translate[1]);
 }
 

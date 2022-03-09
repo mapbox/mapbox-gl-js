@@ -1,8 +1,8 @@
 // @flow
 
-import {FillExtrusionLayoutArray, FillExtrusionCentroidArray} from '../array_types.js';
+import {FillExtrusionLayoutArray, FillExtrusionExtArray, FillExtrusionCentroidArray} from '../array_types.js';
 
-import {members as layoutAttributes, centroidAttributes} from './fill_extrusion_attributes.js';
+import {members as layoutAttributes, centroidAttributes, fillExtrusionAttributesExt} from './fill_extrusion_attributes.js';
 import SegmentVector from '../segment.js';
 import {ProgramConfigurationSet} from '../program_configuration.js';
 import {TriangleIndexArray} from '../index_array_type.js';
@@ -20,7 +20,9 @@ import toEvaluationFeature from '../evaluation_feature.js';
 import EvaluationParameters from '../../style/evaluation_parameters.js';
 import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-
+import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat} from '../../geo/mercator_coordinate.js';
+import type {Vec3} from 'gl-matrix';
+import {subdividePolygons} from '../../util/polygon_clipping.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
@@ -60,6 +62,13 @@ function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
     );
 }
 
+function addGlobeExtVertex(vertexArray: FillExtrusionExtArray, pos: {x: number, y: number, z: number}, normal: Vec3) {
+    const encode = 1 << 14;
+    vertexArray.emplaceBack(
+        pos.x, pos.y, pos.z,
+        normal[0] * encode, normal[1] * encode, normal[2] * encode);
+}
+
 class PartMetadata {
     acc: Point;
     min: Point;
@@ -86,32 +95,23 @@ class PartMetadata {
         this.currentPolyCount.edges++;
 
         this.acc._add(p);
-        let checkBorders = !!this.borders;
-
         const min = this.min, max = this.max;
         if (p.x < min.x) {
             min.x = p.x;
-            checkBorders = true;
         } else if (p.x > max.x) {
             max.x = p.x;
-            checkBorders = true;
         }
         if (p.y < min.y) {
             min.y = p.y;
-            checkBorders = true;
         } else if (p.y > max.y) {
             max.y = p.y;
-            checkBorders = true;
         }
         if (((p.x === 0 || p.x === EXTENT) && p.x === prev.x) !== ((p.y === 0 || p.y === EXTENT) && p.y === prev.y)) {
             // Custom defined geojson buildings are cut on borders. Points are
             // repeated when edge cuts tile corner (reason for using xor).
             this.processBorderOverlap(p, prev);
         }
-        if (checkBorders) this.checkBorderIntersection(p, prev);
-    }
-
-    checkBorderIntersection(p: Point, prev: Point) {
+        // check border intersection
         if ((prev.x < 0) !== (p.x < 0)) {
             this.addBorderIntersection(0, interpolate(prev.y, p.y, (0 - prev.x) / (p.x - prev.x)));
         }
@@ -171,6 +171,7 @@ class PartMetadata {
 class FillExtrusionBucket implements Bucket {
     index: number;
     zoom: number;
+    canonical: CanonicalTileID;
     overscaling: number;
     enableTerrain: boolean;
     layers: Array<FillExtrusionStyleLayer>;
@@ -184,6 +185,9 @@ class FillExtrusionBucket implements Bucket {
     centroidVertexArray: FillExtrusionCentroidArray;
     centroidVertexBuffer: VertexBuffer;
 
+    layoutVertexExtArray: ?FillExtrusionExtArray;
+    layoutVertexExtBuffer: ?VertexBuffer;
+
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
@@ -194,19 +198,22 @@ class FillExtrusionBucket implements Bucket {
     features: Array<BucketFeature>;
 
     featuresOnBorder: Array<PartMetadata>;
-    // borders / borderDone: 0 - left, 1, right, 2 - top, 3 - bottom
+    // borders / borderDoneWithNeighborZ: 0 - left, 1, right, 2 - top, 3 - bottom
     borders: Array<Array<number>>; // For each side, indices into featuresOnBorder array.
-    borderDone: Array<boolean>;
+    borderDoneWithNeighborZ: Array<number>;
     needsCentroidUpdate: boolean;
     tileToMeter: number; // cache conversion.
+    projection: string;
 
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
+        this.canonical = options.canonical;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
         this.hasPattern = false;
+        this.projection = options.projection;
 
         this.layoutVertexArray = new FillExtrusionLayoutArray();
         this.centroidVertexArray = new FillExtrusionCentroidArray();
@@ -222,7 +229,7 @@ class FillExtrusionBucket implements Bucket {
         this.hasPattern = hasPattern('fill-extrusion', this.layers, options);
         this.featuresOnBorder = [];
         this.borders = [[], [], [], []];
-        this.borderDone = [false, false, false, false];
+        this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
         this.tileToMeter = tileToMeter(canonical);
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
@@ -245,7 +252,7 @@ class FillExtrusionBucket implements Bucket {
             if (this.hasPattern) {
                 this.features.push(addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, options));
             } else {
-                this.addFeature(bucketFeature, bucketFeature.geometry, index, canonical, {}, options.availableImages);
+                this.addFeature(bucketFeature, bucketFeature.geometry, index, canonical, {}, options.availableImages, tileTransform);
             }
 
             options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
@@ -253,10 +260,10 @@ class FillExtrusionBucket implements Bucket {
         this.sortBorders();
     }
 
-    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>) {
+    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform) {
         for (const feature of this.features) {
             const {geometry} = feature;
-            this.addFeature(feature, geometry, feature.index, canonical, imagePositions, availableImages);
+            this.addFeature(feature, geometry, feature.index, canonical, imagePositions, availableImages, tileTransform);
         }
         this.sortBorders();
     }
@@ -278,6 +285,10 @@ class FillExtrusionBucket implements Bucket {
         if (!this.uploaded) {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
+
+            if (this.layoutVertexExtArray) {
+                this.layoutVertexExtBuffer = context.createVertexBuffer(this.layoutVertexExtArray, fillExtrusionAttributesExt.members, true);
+            }
         }
         this.programConfigurations.upload(context);
         this.uploaded = true;
@@ -296,22 +307,79 @@ class FillExtrusionBucket implements Bucket {
     destroy() {
         if (!this.layoutVertexBuffer) return;
         this.layoutVertexBuffer.destroy();
-        if (this.centroidVertexBuffer) this.centroidVertexBuffer.destroy();
+        if (this.centroidVertexBuffer) {
+            this.centroidVertexBuffer.destroy();
+        }
+        if (this.layoutVertexExtBuffer) {
+            this.layoutVertexExtBuffer.destroy();
+        }
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();
         this.segments.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>) {
-        const metadata = this.enableTerrain ? new PartMetadata() : null;
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform) {
+        const tileBounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
+        const projection = tileTransform.projection;
+        const isGlobe = projection.name === 'globe';
+        const metadata = this.enableTerrain && !isGlobe ? new PartMetadata() : null;
 
-        for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
+        if (isGlobe && !this.layoutVertexExtArray) {
+            this.layoutVertexExtArray = new FillExtrusionExtArray();
+        }
+
+        const polygons = classifyRings(geometry, EARCUT_MAX_RINGS);
+
+        for (let i = polygons.length - 1; i >= 0; i--) {
+            const polygon = polygons[i];
+            if (polygon.length === 0 || isEntirelyOutside(polygon[0])) {
+                polygons.splice(i, 1);
+            }
+        }
+
+        let clippedPolygons;
+        if (isGlobe) {
+            // Perform tesselation for polygons of tiles in order to support long planar
+            // triangles on the curved surface of the globe. This is done for all polygons
+            // regardless of their size in order guarantee identical results on all sides of
+            // tile boundaries.
+            //
+            // The globe is subdivided into a 32x16 grid. The number of subdivisions done
+            // for a tile depends on the zoom level. For example tile with z=0 requires 2⁴
+            // subdivisions, tile with z=1 2³ etc. The subdivision is done in polar coordinates
+            // instead of tile coordinates.
+            const cellCount = 360.0 / 32.0;
+            const tiles = 1 << canonical.z;
+            const leftLng = lngFromMercatorX(canonical.x / tiles);
+            const rightLng = lngFromMercatorX((canonical.x + 1) / tiles);
+            const topLat = latFromMercatorY(canonical.y / tiles);
+            const bottomLat = latFromMercatorY((canonical.y + 1) / tiles);
+            const cellCountOnXAxis = Math.ceil((rightLng - leftLng) / cellCount);
+            const cellCountOnYAxis = Math.ceil((topLat - bottomLat) / cellCount);
+
+            const splitFn = (axis, min, max) => {
+                if (axis === 0) {
+                    return 0.5 * (min + max);
+                } else {
+                    const maxLat = latFromMercatorY((canonical.y + min / EXTENT) / tiles);
+                    const minLat = latFromMercatorY((canonical.y + max / EXTENT) / tiles);
+                    const midLat = 0.5 * (minLat + maxLat);
+                    return (mercatorYfromLat(midLat) * tiles - canonical.y) * EXTENT;
+                }
+            };
+
+            clippedPolygons = subdividePolygons(polygons, tileBounds, cellCountOnXAxis, cellCountOnYAxis, 1.0, splitFn);
+        } else {
+            clippedPolygons = [];
+            for (const polygon of polygons) {
+                clippedPolygons.push({polygon, bounds: tileBounds});
+            }
+        }
+
+        for (const clippedPolygon of clippedPolygons) {
+            const polygon = clippedPolygon.polygon;
             let numVertices = 0;
             let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
-
-            if (polygon.length === 0 || isEntirelyOutside(polygon[0])) {
-                continue;
-            }
 
             for (let i = 0; i < polygon.length; i++) {
                 const ring = polygon[i];
@@ -328,8 +396,7 @@ class FillExtrusionBucket implements Bucket {
 
                     if (p >= 1) {
                         const p2 = ring[p - 1];
-
-                        if (!isBoundaryEdge(p1, p2)) {
+                        if (!isBoundaryEdge(p1, p2, clippedPolygon.bounds)) {
                             if (metadata) metadata.append(p1, p2);
                             if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
@@ -363,6 +430,21 @@ class FillExtrusionBucket implements Bucket {
 
                             segment.vertexLength += 4;
                             segment.primitiveLength += 2;
+
+                            if (isGlobe) {
+                                const array: any = this.layoutVertexExtArray;
+
+                                const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
+                                const projectedP2 = projection.projectTilePoint(p2.x, p2.y, canonical);
+
+                                const n1 = projection.upVector(canonical, p1.x, p1.y);
+                                const n2 = projection.upVector(canonical, p2.x, p2.y);
+
+                                addGlobeExtVertex(array, projectedP1, n1);
+                                addGlobeExtVertex(array, projectedP1, n1);
+                                addGlobeExtVertex(array, projectedP2, n2);
+                                addGlobeExtVertex(array, projectedP2, n2);
+                            }
                         }
                     }
                 }
@@ -399,6 +481,13 @@ class FillExtrusionBucket implements Bucket {
                     flattened.push(p.x);
                     flattened.push(p.y);
                     if (metadata) metadata.currentPolyCount.top++;
+
+                    if (isGlobe) {
+                        const array: any = this.layoutVertexExtArray;
+                        const projectedP = projection.projectTilePoint(p.x, p.y, canonical);
+                        const n = projection.upVector(canonical, p.x, p.y);
+                        addGlobeExtVertex(array, projectedP, n);
+                    }
                 }
             }
 
@@ -416,6 +505,8 @@ class FillExtrusionBucket implements Bucket {
             segment.primitiveLength += indices.length / 3;
             segment.vertexLength += numVertices;
         }
+
+        assert(!isGlobe || (this.layoutVertexExtArray && this.layoutVertexExtArray.length === this.layoutVertexArray.length));
 
         if (metadata && metadata.polyCount.length > 0) {
             // When building is split between tiles, don't handle flat roofs here.
@@ -487,14 +578,14 @@ class FillExtrusionBucket implements Bucket {
     }
 }
 
-register('FillExtrusionBucket', FillExtrusionBucket, {omit: ['layers', 'features']});
-register('PartMetadata', PartMetadata);
+register(FillExtrusionBucket, {omit: ['layers', 'features']});
+register(PartMetadata);
 
 export default FillExtrusionBucket;
 
-function isBoundaryEdge(p1, p2) {
-    return (p1.x === p2.x && (p1.x < 0 || p1.x > EXTENT)) ||
-        (p1.y === p2.y && (p1.y < 0 || p1.y > EXTENT));
+function isBoundaryEdge(p1, p2, bounds) {
+    return (p1.x === p2.x && (p1.x < bounds[0].x || p1.x > bounds[1].x)) ||
+           (p1.y === p2.y && (p1.y < bounds[0].y || p1.y > bounds[1].y));
 }
 
 function isEntirelyOutside(ring) {

@@ -91,6 +91,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-style-spec:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
       - collect-stats:
           requires:
             - build
@@ -290,6 +296,13 @@ jobs:
             rm -rf node_modules
       - store_artifacts:
           path: "test/build/transpilation"
+
+  test-style-spec:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: yarn run test-style-spec
 
   collect-stats:
     <<: *defaults

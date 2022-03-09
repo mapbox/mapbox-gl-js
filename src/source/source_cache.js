@@ -139,17 +139,17 @@ class SourceCache extends Evented {
         if (this.transform) this.update(this.transform);
     }
 
-    _loadTile(tile: Tile, callback: Callback<void>) {
+    _loadTile(tile: Tile, callback: Callback<void>): void {
         tile.isSymbolTile = this._onlySymbols;
         return this._source.loadTile(tile, callback);
     }
 
-    _unloadTile(tile: Tile) {
+    _unloadTile(tile: Tile): void {
         if (this._source.unloadTile)
             return this._source.unloadTile(tile, () => {});
     }
 
-    _abortTile(tile: Tile) {
+    _abortTile(tile: Tile): void {
         if (this._source.abortTile)
             return this._source.abortTile(tile, () => {});
     }

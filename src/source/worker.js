@@ -27,7 +27,7 @@ import type {WorkerGlobalScopeInterface} from '../util/web_worker.js';
 import type {Callback} from '../types/callback.js';
 import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types.js';
 import type {PluginState} from './rtl_text_plugin.js';
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 
 /**
  * @private

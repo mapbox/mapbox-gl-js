@@ -111,7 +111,7 @@ class ScrollZoomHandler {
      * @example
      * const isScrollZoomEnabled = map.scrollZoom.isEnabled();
      */
-    isEnabled() {
+    isEnabled(): boolean {
         return !!this._enabled;
     }
 
@@ -120,11 +120,11 @@ class ScrollZoomHandler {
     * render is called, so _active is not a good candidate for determining if a scroll zoom animation is in
     * progress.
     */
-    isActive() {
+    isActive(): boolean {
         return !!this._active || this._finishTimeout !== undefined;
     }
 
-    isZooming() {
+    isZooming(): boolean {
         return !!this._zooming;
     }
 
@@ -397,7 +397,7 @@ class ScrollZoomHandler {
         }
     }
 
-    _isFullscreen() {
+    _isFullscreen(): boolean {
         return !!window.document.fullscreenElement;
     }
 

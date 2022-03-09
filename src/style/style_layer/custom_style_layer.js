@@ -3,6 +3,7 @@
 import StyleLayer from '../style_layer.js';
 import type Map from '../../ui/map.js';
 import assert from 'assert';
+import type {ValidationErrors} from '../validate_style.js';
 
 type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => void;
 
@@ -157,7 +158,7 @@ export type CustomLayerInterface = {
     onRemove: ?(map: Map, gl: WebGLRenderingContext) => void
 }
 
-export function validateCustomStyleLayer(layerObject: CustomLayerInterface) {
+export function validateCustomStyleLayer(layerObject: CustomLayerInterface): ValidationErrors {
     const errors = [];
     const id = layerObject.id;
 
@@ -193,18 +194,21 @@ class CustomStyleLayer extends StyleLayer {
         this.implementation = implementation;
     }
 
-    is3D() {
+    is3D(): boolean {
         return this.implementation.renderingMode === '3d';
     }
 
-    hasOffscreenPass() {
+    hasOffscreenPass(): boolean {
         return this.implementation.prerender !== undefined;
     }
 
     recalculate() {}
     updateTransitions() {}
-    hasTransition() {}
+    hasTransition(): boolean {
+        return false;
+    }
 
+    // $FlowFixMe[incompatible-extend] - CustomStyleLayer is not serializable
     serialize() {
         assert(false, "Custom layers cannot be serialized");
     }

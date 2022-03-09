@@ -216,6 +216,7 @@ export default class Popup extends Evented {
         if (map) {
             map.off('move', this._update);
             map.off('move', this._onClose);
+            map.off('preclick', this._onClose);
             map.off('click', this._onClose);
             map.off('remove', this.remove);
             map.off('mousemove', this._onMouseEvent);
@@ -589,15 +590,16 @@ export default class Popup extends Evented {
     _update(cursor?: Point) {
         const hasPosition = this._lngLat || this._trackPointer;
         const map = this._map;
+        const content = this._content;
 
-        if (!map || !hasPosition || !this._content) { return; }
+        if (!map || !hasPosition || !content) { return; }
 
         let container = this._container;
 
         if (!container) {
             container = this._container = DOM.create('div', 'mapboxgl-popup', map.getContainer());
             this._tip = DOM.create('div', 'mapboxgl-popup-tip', container);
-            container.appendChild(this._content);
+            container.appendChild(content);
         }
 
         if (this.options.maxWidth && container.style.maxWidth !== this.options.maxWidth) {

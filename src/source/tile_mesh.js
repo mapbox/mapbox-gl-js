@@ -7,7 +7,7 @@ import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js'
 import {TileBoundsArray, TriangleIndexArray} from '../data/array_types.js';
 
 import type {CanonicalTileID} from './tile_id.js';
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 
 const meshSize = 32;
 const gridSize = meshSize + 1;

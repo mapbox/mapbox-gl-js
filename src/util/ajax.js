@@ -72,7 +72,7 @@ export type RequestParameters = {
 
 export type ResponseCallback<T> = (error: ?Error, data: ?T, cacheControl: ?string, expires: ?string) => void;
 
-class AJAXError extends Error {
+export class AJAXError extends Error {
     status: number;
     url: string;
     constructor(message: string, status: number, url: string) {

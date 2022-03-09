@@ -8,6 +8,7 @@ import WorkerTile from './worker_tile.js';
 import {extend} from '../util/util.js';
 import {getPerformanceMeasurement} from '../util/performance.js';
 import {Evented} from '../util/evented.js';
+import tileTransform from '../geo/projection/tile_transform.js';
 
 import type {
     WorkerSource,
@@ -249,6 +250,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             workerTile.showCollisionBoxes = params.showCollisionBoxes;
             workerTile.enableTerrain = !!params.enableTerrain;
             workerTile.projection = params.projection;
+            workerTile.tileTransform = tileTransform(params.tileID.canonical, params.projection);
 
             const done = (err, data) => {
                 const reloadCallback = workerTile.reloadCallback;

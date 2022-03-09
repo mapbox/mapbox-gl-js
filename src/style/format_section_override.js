@@ -45,13 +45,13 @@ export default class FormatSectionOverride<T> implements Expression {
     }
 
     // Cannot be statically evaluated, as the output depends on the evaluation context.
-    outputDefined() {
+    outputDefined(): boolean {
         return false;
     }
 
-    serialize() {
+    serialize(): null {
         return null;
     }
 }
 
-register('FormatSectionOverride', FormatSectionOverride, {omit: ['defaultValue']});
+register(FormatSectionOverride, {omit: ['defaultValue']});

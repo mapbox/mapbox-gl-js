@@ -23,7 +23,7 @@ import window from '../util/window.js';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 import {vec3} from 'gl-matrix';
-import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import MercatorCoordinate, {latFromMercatorY, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 
 import type {Vec3} from 'gl-matrix';
 
@@ -98,25 +98,25 @@ export interface Handler {
 
     // Handlers can optionally implement these methods.
     // They are called with dom events whenever those dom evens are received.
-    +touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-    +touchmove?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-    +touchend?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-    +touchcancel?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-    +mousedown?: (e: MouseEvent, point: Point) => HandlerResult | void;
-    +mousemove?: (e: MouseEvent, point: Point) => HandlerResult | void;
-    +mouseup?: (e: MouseEvent, point: Point) => HandlerResult | void;
-    +dblclick?: (e: MouseEvent, point: Point) => HandlerResult | void;
-    +wheel?: (e: WheelEvent, point: Point) => HandlerResult | void;
-    +keydown?: (e: KeyboardEvent) => HandlerResult | void;
-    +keyup?: (e: KeyboardEvent) => HandlerResult | void;
+    +touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
+    +touchmove?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
+    +touchend?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
+    +touchcancel?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
+    +mousedown?: (e: MouseEvent, point: Point) => ?HandlerResult;
+    +mousemove?: (e: MouseEvent, point: Point) => ?HandlerResult;
+    +mouseup?: (e: MouseEvent, point: Point) => ?HandlerResult;
+    +dblclick?: (e: MouseEvent, point: Point) => ?HandlerResult;
+    +wheel?: (e: WheelEvent, point: Point) => ?HandlerResult;
+    +keydown?: (e: KeyboardEvent) => ?HandlerResult;
+    +keyup?: (e: KeyboardEvent) => ?HandlerResult;
 
     // `renderFrame` is the only non-dom event. It is called during render
     // frames and can be used to smooth camera changes (see scroll handler).
-    +renderFrame?: () => HandlerResult | void;
+    +renderFrame?: () => ?HandlerResult;
 }
 
 // All handler methods that are called with events can optionally return a `HandlerResult`.
-export type HandlerResult = {|
+export type HandlerResult = {
     panDelta?: Point,
     zoomDelta?: number,
     bearingDelta?: number,
@@ -137,7 +137,7 @@ export type HandlerResult = {|
     needsRenderFrame?: boolean,
     // The camera changes won't get recorded for inertial zooming.
     noInertia?: boolean
-|};
+};
 
 function hasChange(result: HandlerResult) {
     return (result.panDelta && result.panDelta.mag()) || result.zoomDelta || result.bearingDelta || result.pitchDelta;
@@ -372,7 +372,7 @@ class HandlerManager {
         for (const {handlerName, handler, allowed} of this._handlers) {
             if (!handler.isEnabled()) continue;
 
-            let data: HandlerResult | void;
+            let data: ?HandlerResult;
             if (this._blockedByActive(activeHandlers, allowed, handlerName)) {
                 handler.reset();
 
@@ -524,11 +524,26 @@ class HandlerManager {
             assert(this._dragOrigin, '_dragOrigin should have been setup with a previous dragstart');
 
             const startPoint = tr.pointCoordinate(around);
-            const endPoint = tr.pointCoordinate(around.sub(panDelta));
+            if (tr.projection.name === 'globe') {
+                const startLat = latFromMercatorY(startPoint.y);
+                const centerLat = tr.center.lat;
 
-            if (startPoint && endPoint) {
-                panVec[0] = endPoint.x - startPoint.x;
-                panVec[1] = endPoint.y - startPoint.y;
+                // Compute pan vector directly in pixel coordinates for the globe.
+                // Rotate the globe a bit faster when dragging near poles to compensate
+                // different pixel-per-meter ratios (ie. pixel-to-physical-rotation is lower)
+                const scale = Math.min(mercatorZfromAltitude(1, startLat) / mercatorZfromAltitude(1, centerLat), 2);
+
+                panDelta = panDelta.rotate(-tr.angle);
+
+                panVec[0] = -panDelta.x / tr.worldSize * scale;
+                panVec[1] = -panDelta.y / tr.worldSize * scale;
+            } else {
+                const endPoint = tr.pointCoordinate(around.sub(panDelta));
+
+                if (startPoint && endPoint) {
+                    panVec[0] = endPoint.x - startPoint.x;
+                    panVec[1] = endPoint.y - startPoint.y;
+                }
             }
         }
 

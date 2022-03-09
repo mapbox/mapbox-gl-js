@@ -54,8 +54,8 @@ class Fog extends Evented {
         };
     }
 
-    get() {
-        return this._transitionable.serialize();
+    get(): FogSpecification {
+        return (this._transitionable.serialize(): any);
     }
 
     set(fog?: FogSpecification, options: StyleSetterOptions = {}) {
@@ -98,7 +98,7 @@ class Fog extends Evented {
         this._transitioning = this._transitionable.transitioned(parameters, this._transitioning);
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return this._transitioning.hasTransition();
     }
 
@@ -106,7 +106,7 @@ class Fog extends Evented {
         this.properties = this._transitioning.possiblyEvaluate(parameters);
     }
 
-    _validate(validate: Function, value: mixed, options?: {validate?: boolean}) {
+    _validate(validate: Function, value: mixed, options?: {validate?: boolean}): boolean {
         if (options && options.validate === false) {
             return false;
         }

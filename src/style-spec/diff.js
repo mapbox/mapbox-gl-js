@@ -1,7 +1,15 @@
+// @flow
 
 import isEqual from './util/deep_equal.js';
 
-const operations = {
+import type {StyleSpecification} from './types.js';
+
+type Command = {
+    command: string;
+    args: Array<any>;
+};
+
+export const operations: {[_: string]: string} = {
 
     /*
      * { command: 'setStyle', args: [stylesheet] }
@@ -330,7 +338,7 @@ function diffLayers(before, after, commands) {
  * @param {*} after stylesheet to compare to
  * @returns Array list of changes
  */
-function diffStyles(before, after) {
+export default function diffStyles(before: StyleSpecification, after: StyleSpecification): Array<Command> {
     if (!before) return [{command: operations.setStyle, args: [after]}];
 
     let commands = [];
@@ -388,7 +396,7 @@ function diffStyles(before, after) {
         const beforeLayers = [];
         if (before.layers) {
             before.layers.forEach((layer) => {
-                if (sourcesRemoved[layer.source]) {
+                if (layer.source && sourcesRemoved[layer.source]) {
                     commands.push({command: operations.removeLayer, args: [layer.id]});
                 } else {
                     beforeLayers.push(layer);
@@ -424,6 +432,3 @@ function diffStyles(before, after) {
 
     return commands;
 }
-
-export default diffStyles;
-export {operations};

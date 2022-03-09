@@ -43,7 +43,7 @@ class EvaluationParameters {
         return isStringInSupportedScript(str, rtlTextPlugin.isLoaded());
     }
 
-    crossFadingFactor() {
+    crossFadingFactor(): number {
         if (this.fadeDuration === 0) {
             return 1;
         } else {

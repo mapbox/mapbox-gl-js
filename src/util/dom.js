@@ -5,14 +5,15 @@ import Point from '@mapbox/point-geometry';
 import window from './window.js';
 import assert from 'assert';
 
-export function create(tagName: string, className: ?string, container?: HTMLElement) {
+// refine the return type based on tagName, e.g. 'button' -> HTMLButtonElement
+export function create<T: string>(tagName: T, className: ?string, container?: HTMLElement): $Call<typeof document.createElement, T> {
     const el = window.document.createElement(tagName);
     if (className !== undefined) el.className = className;
     if (container) container.appendChild(el);
     return el;
 }
 
-export function createSVG(tagName: string, attributes: {[string]: string | number}, container?: HTMLElement) {
+export function createSVG(tagName: string, attributes: {[string]: string | number}, container?: Element): Element {
     const el = window.document.createElementNS('http://www.w3.org/2000/svg', tagName);
     for (const name of Object.keys(attributes)) {
         el.setAttributeNS(null, name, attributes[name]);
@@ -52,12 +53,12 @@ export function suppressClick() {
     }, 0);
 }
 
-export function mousePos(el: HTMLElement, e: MouseEvent | WheelEvent) {
+export function mousePos(el: HTMLElement, e: MouseEvent | WheelEvent): Point {
     const rect = el.getBoundingClientRect();
     return getScaledPoint(el, rect, e);
 }
 
-export function touchPos(el: HTMLElement, touches: TouchList) {
+export function touchPos(el: HTMLElement, touches: TouchList): Array<Point> {
     const rect = el.getBoundingClientRect(),
         points = [];
 
@@ -67,7 +68,7 @@ export function touchPos(el: HTMLElement, touches: TouchList) {
     return points;
 }
 
-export function mouseButton(e: MouseEvent) {
+export function mouseButton(e: MouseEvent): number {
     assert(e.type === 'mousedown' || e.type === 'mouseup');
     if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
         window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {

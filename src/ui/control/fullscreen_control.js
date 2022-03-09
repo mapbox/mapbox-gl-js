@@ -80,7 +80,7 @@ class FullscreenControl {
 
     _setupUI() {
         const button = this._fullscreenButton = DOM.create('button', (`mapboxgl-ctrl-fullscreen`), this._controlContainer);
-        DOM.create('span', `mapboxgl-ctrl-icon`, button).setAttribute('aria-hidden', true);
+        DOM.create('span', `mapboxgl-ctrl-icon`, button).setAttribute('aria-hidden', 'true');
         button.type = 'button';
         this._updateTitle();
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);

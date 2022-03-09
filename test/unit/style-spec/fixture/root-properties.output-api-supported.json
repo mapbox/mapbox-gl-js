@@ -4,24 +4,16 @@
     "line": 2
   },
   {
-    "message": "constants: constants have been deprecated as of v8",
-    "line": 3
-  },
-  {
     "message": "sources: object expected, array found",
-    "line": 4
+    "line": 3
   },
   {
     "message": "layers: array expected, object found",
-    "line": 5
+    "line": 4
   },
   {
     "message": "light: object expected, boolean found",
-    "line": 11
-  },
-  {
-    "message": "Unsupported property \"constants\"",
-    "line": 3
+    "line": 10
   },
   {
     "message": "version: Style version must be 8",

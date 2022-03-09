@@ -5,7 +5,7 @@ import Point from '@mapbox/point-geometry';
 import {mat2, mat4, vec4} from 'gl-matrix';
 import * as symbolSize from './symbol_size.js';
 import {addDynamicAttributes} from '../data/bucket/symbol_bucket.js';
-import type {Projection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 import type Painter from '../render/painter.js';
 import type Transform from '../geo/transform.js';
 import type SymbolBucket from '../data/bucket/symbol_bucket.js';
@@ -18,8 +18,19 @@ import type {Mat4, Vec4} from 'gl-matrix';
 
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix, globeDenormalizeECEF, globeTileBounds} from '../geo/projection/globe.js';
+import {calculateGlobeLabelMatrix} from '../geo/projection/globe_util.js';
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, projectVector, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
+
+type ProjectedSymbol = {|
+    point: Point,
+    signedDistanceFromCamera: number
+|};
+type PlacedGlyph = {|
+    angle: number,
+    path: Array<Point>,
+    point: Point,
+    tilePath: Array<Point>,
+|}
 
 const FlipState = {
     unknown: 0,
@@ -86,13 +97,7 @@ function getLabelPlaneMatrix(posMatrix: Float32Array,
     const m = mat4.create();
     if (pitchWithMap) {
         if (transform.projection.name === 'globe') {
-            // Camera is moved closer towards the ground near poles as part of
-            // compesanting the reprojection. This has to be compensated for the
-            // map aligned label space. Whithout this logic map aligned symbols
-            // would appear larger than intended.
-            const labelWorldSize = transform.worldSize / transform._projectionScaler;
-            const globeMatrix = calculateGlobeMatrix(transform, labelWorldSize, [0, 0]);
-            mat4.multiply(m, globeMatrix, globeDenormalizeECEF(globeTileBounds(tileID)));
+            mat4.multiply(m, m, calculateGlobeLabelMatrix(transform, tileID));
 
         } else {
             const s = mat2.invert([], pixelsToTileUnits);
@@ -118,7 +123,7 @@ function getGlCoordMatrix(posMatrix: Float32Array,
                           pitchWithMap: boolean,
                           rotateWithMap: boolean,
                           transform: Transform,
-                          pixelsToTileUnits: Float32Array) {
+                          pixelsToTileUnits: Float32Array): Float32Array {
     if (pitchWithMap) {
         if (transform.projection.name === 'globe') {
             const m = getLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits);
@@ -143,7 +148,7 @@ function getGlCoordMatrix(posMatrix: Float32Array,
     }
 }
 
-function project(point: Point, matrix: Mat4, elevation: number = 0) {
+function project(point: Point, matrix: Mat4, elevation: number = 0): ProjectedSymbol {
     const pos = [point.x, point.y, elevation, 1];
     if (elevation) {
         vec4.transformMat4(pos, pos, matrix);
@@ -157,7 +162,7 @@ function project(point: Point, matrix: Mat4, elevation: number = 0) {
     };
 }
 
-function projectVector(point: [number, number, number], matrix: Mat4) {
+function projectVector(point: [number, number, number], matrix: Mat4): ProjectedSymbol {
     const pos = [point[0], point[1], point[2], 1];
     vec4.transformMat4(pos, pos, matrix);
     const w = pos[3];
@@ -290,7 +295,23 @@ function updateLineLabels(bucket: SymbolBucket,
     }
 }
 
-function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffsetArray, lineOffsetX: number, lineOffsetY: number, flip: boolean, anchorPoint: Point, tileAnchorPoint: Point, symbol: any, lineVertexArray: SymbolLineVertexArray, labelPlaneMatrix: Float32Array, projectionCache: any, getElevation: ?((p: Point) => Array<number>), returnPathInTileCoords: ?boolean, projection: Projection, tileID: OverscaledTileID) {
+function placeFirstAndLastGlyph(
+    fontScale: number,
+    glyphOffsetArray: GlyphOffsetArray,
+    lineOffsetX: number,
+    lineOffsetY: number,
+    flip: boolean,
+    anchorPoint: Point,
+    tileAnchorPoint: Point,
+    symbol: any,
+    lineVertexArray: SymbolLineVertexArray,
+    labelPlaneMatrix: Float32Array,
+    projectionCache: any,
+    getElevation: ?((p: Point) => Array<number>),
+    returnPathInTileCoords: ?boolean,
+    projection: Projection,
+    tileID: OverscaledTileID): null | {|first: PlacedGlyph, last: PlacedGlyph|} {
+
     const glyphEndIndex = symbol.glyphStartIndex + symbol.numGlyphs;
     const lineStartIndex = symbol.lineStartIndex;
     const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
@@ -450,23 +471,24 @@ function interpolate(p1, p2, a) {
     return new Point(p1.x * b + p2.x * a, p1.y * b + p2.y * a);
 }
 
-function placeGlyphAlongLine(offsetX: number,
-                             lineOffsetX: number,
-                             lineOffsetY: number,
-                             flip: boolean,
-                             anchorPoint: Point,
-                             tileAnchorPoint: Point,
-                             anchorSegment: number,
-                             lineStartIndex: number,
-                             lineEndIndex: number,
-                             lineVertexArray: SymbolLineVertexArray,
-                             labelPlaneMatrix: Float32Array,
-                             projectionCache: {[_: number]: Point},
-                             getElevation: ?((p: Point) => Array<number>),
-                             returnPathInTileCoords: ?boolean,
-                             endGlyph: ?boolean,
-                             reprojection: Projection,
-                             tileID: OverscaledTileID) {
+function placeGlyphAlongLine(
+    offsetX: number,
+    lineOffsetX: number,
+    lineOffsetY: number,
+    flip: boolean,
+    anchorPoint: Point,
+    tileAnchorPoint: Point,
+    anchorSegment: number,
+    lineStartIndex: number,
+    lineEndIndex: number,
+    lineVertexArray: SymbolLineVertexArray,
+    labelPlaneMatrix: Float32Array,
+    projectionCache: {[_: number]: Point},
+    getElevation: ?((p: Point) => Array<number>),
+    returnPathInTileCoords: ?boolean,
+    endGlyph: ?boolean,
+    reprojection: Projection,
+    tileID: OverscaledTileID): null | PlacedGlyph {
 
     const combinedOffsetX = flip ?
         offsetX - lineOffsetX :
@@ -589,7 +611,7 @@ function hideGlyphs(num: number, dynamicLayoutVertexArray: SymbolDynamicLayoutAr
 
 // For line label layout, we're not using z output and our w input is always 1
 // This custom matrix transformation ignores those components to make projection faster
-function xyTransformMat4(out: Vec4, a: Vec4, m: Mat4) {
+function xyTransformMat4(out: Vec4, a: Vec4, m: Mat4): Vec4 {
     const x = a[0], y = a[1];
     out[0] = m[0] * x + m[4] * y + m[12];
     out[1] = m[1] * x + m[5] * y + m[13];

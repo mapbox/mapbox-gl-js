@@ -5,6 +5,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import EXTENT from '../data/extent.js';
+import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
 import {
     fillExtrusionUniformValues,
     fillExtrusionPatternUniformValues,
@@ -12,11 +13,14 @@ import {
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
+import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import type Transform from '../geo/transform.js';
+import {earthRadius} from '../geo/lng_lat.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer.js';
-import type FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
 
 export default draw;
 
@@ -52,30 +56,56 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 }
 
+function fillExtrusionHeightLift(transform: Transform): number {
+    if (transform.projection.name !== 'globe') {
+        return 0;
+    }
+    // A rectangle covering globe is subdivided into a grid of 32 cells
+    // This information can be used to deduce a minimum lift value so that
+    // fill extrusions with 0 height will never go below the ground.
+    const angle = Math.PI / 32.0;
+    const tanAngle = Math.tan(angle);
+    const r = earthRadius;
+    return r * Math.sqrt(1.0 + 2.0 * tanAngle * tanAngle) - r;
+}
+
 function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
+    const tr = painter.transform;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
     const image = patternProperty.constantOr((1: any));
     const crossfade = layer.getCrossfadeParameters();
     const opacity = layer.paint.get('fill-extrusion-opacity');
+    const heightLift = fillExtrusionHeightLift(tr);
+    const isGlobeProjection = tr.projection.name === 'globe';
+    const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
+    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+    const baseDefines = ([]: any);
+    if (isGlobeProjection) {
+        baseDefines.push('PROJECTION_GLOBE_VIEW');
+    }
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
-        if (!bucket) continue;
+        if (!bucket || bucket.projection !== tr.projection.name) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
+        const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration, baseDefines);
 
         if (painter.terrain) {
             const terrain = painter.terrain;
-            if (!bucket.enableTerrain) continue;
-            terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
-            flatRoofsUpdate(context, source, coord, bucket, layer, terrain);
-            if (!bucket.centroidVertexBuffer) {
-                const attrIndex: number | void = program.attributes['a_centroid_pos'];
-                if (attrIndex !== undefined) gl.vertexAttrib2f(attrIndex, 0, 0);
+            if (painter.style.terrainSetForDrapingOnly()) {
+                terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
+            } else {
+                if (!bucket.enableTerrain) continue;
+                terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
+                flatRoofsUpdate(context, source, coord, bucket, layer, terrain);
+                if (!bucket.centroidVertexBuffer) {
+                    const attrIndex: number | void = program.attributes['a_centroid_pos'];
+                    if (attrIndex !== undefined) gl.vertexAttrib2f(attrIndex, 0, 0);
+                }
             }
         }
 
@@ -98,17 +128,25 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             layer.paint.get('fill-extrusion-translate'),
             layer.paint.get('fill-extrusion-translate-anchor'));
 
+        const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
+
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord, crossfade, tile) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity);
+            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
+                crossfade, tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
+                heightLift, globeToMercator, mercatorCenter, invMatrix);
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+
+        assert(!isGlobeProjection || bucket.layoutVertexExtBuffer);
 
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             bucket.segments, layer.paint, painter.transform.zoom,
-            programConfiguration, painter.terrain ? bucket.centroidVertexBuffer : null);
+            programConfiguration,
+            painter.terrain ? bucket.centroidVertexBuffer : null,
+            isGlobeProjection ? bucket.layoutVertexExtBuffer : null);
     }
 }
 
@@ -142,23 +180,26 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
     ];
 
     const getLoadedBucket = (nid) => {
-        const maxzoom = source.getSource().maxzoom;
+        const minzoom = source.getSource().minzoom;
         const getBucket = (key) => {
             const n = source.getTileByID(key);
             if (n && n.hasData()) {
                 return n.getBucket(layer);
             }
         };
-        // In overscale range, we look one tile zoom above and under. We do this to avoid
-        // flickering and use the content in Z-1 and Z+1 buckets until Z bucket is loaded.
-        let b0, b1, b2;
-        if (nid.overscaledZ === nid.canonical.z || nid.overscaledZ >= maxzoom)
-            b0 = getBucket(nid.key);
-        if (nid.overscaledZ >= maxzoom)
-            b1 = getBucket(nid.calculateScaledKey(nid.overscaledZ + 1));
-        if (nid.overscaledZ > maxzoom)
-            b2 = getBucket(nid.calculateScaledKey(nid.overscaledZ - 1));
-        return b0 || b1 || b2;
+        // Look one tile zoom above and under. We do this to avoid flickering and
+        // use the content in Z-1 and Z+1 buckets until Z bucket is loaded or handle
+        // behavior on borders between different zooms.
+        const zoomLevels = [0, -1, 1];
+        for (const i of zoomLevels) {
+            const z = nid.overscaledZ + i;
+            if (z < minzoom) continue;
+            const key = nid.calculateScaledKey(nid.overscaledZ + i);
+            const b = getBucket(key);
+            if (b) {
+                return b;
+            }
+        }
     };
 
     const projectedToBorder = [0, 0, 0]; // [min, max, maxOffsetFromBorder]
@@ -203,13 +244,19 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
 
     // Process all four borders: get neighboring tile
     for (let i = 0; i < 4; i++) {
+        // borders / borderDoneWithNeighborZ: 0 - left, 1, right, 2 - top, 3 - bottom
+        // bucket's border i is neighboring bucket's border j:
+        const j = (i < 2 ? 1 : 5) - i;
         // Sort by border intersection area minimums, ascending.
         const a = bucket.borders[i];
-        if (a.length === 0) { bucket.borderDone[i] = true; }
-        if (bucket.borderDone[i]) continue;
+        if (a.length === 0) continue;
         const nid = neighborTileID = neighborCoord[i](coord);
-        const nBucket: ?FillExtrusionBucket = getLoadedBucket(nid);
-        if (!nBucket || !nBucket.enableTerrain) continue;
+        const nBucket = getLoadedBucket(nid);
+        if (!nBucket || !(nBucket instanceof FillExtrusionBucket) || !nBucket.enableTerrain) continue;
+        if (bucket.borderDoneWithNeighborZ[i] === nBucket.canonical.z &&
+            nBucket.borderDoneWithNeighborZ[j] === bucket.canonical.z) {
+            continue;
+        }
 
         neighborDEMTile = terrain.findDEMTileFor(nid);
         if (!neighborDEMTile || !neighborDEMTile.dem) continue;
@@ -218,9 +265,28 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
             if (!(dem && dem.dem)) return; // defer update until an elevation tile is available.
             demTile = dem;
         }
-        const j = (i < 2 ? 1 : 5) - i;
         const b = nBucket.borders[j];
         let ib = 0;
+
+        const updateNeighbor = nBucket.borderDoneWithNeighborZ[j] !== bucket.canonical.z;
+        // If neighbors are of different canonical z, we cannot join parts but show
+        // all without flat roofs.
+        if (bucket.canonical.z !== nBucket.canonical.z) {
+            for (const index of a) {
+                bucket.encodeCentroid(undefined, bucket.featuresOnBorder[index], false);
+            }
+            if (updateNeighbor) {
+                for (const index of b) {
+                    nBucket.encodeCentroid(undefined, nBucket.featuresOnBorder[index], false);
+                }
+                nBucket.borderDoneWithNeighborZ[j] = bucket.canonical.z;
+                nBucket.needsCentroidUpdate = true;
+            }
+            bucket.borderDoneWithNeighborZ[i] = nBucket.canonical.z;
+            bucket.needsCentroidUpdate = true;
+            continue;
+        }
+
         for (let ia = 0; ia < a.length; ia++) {
             const parta = bucket.featuresOnBorder[a[ia]];
             const partABorderRange = parta.borders[i];
@@ -231,7 +297,7 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
                 partb = nBucket.featuresOnBorder[b[ib]];
                 const partBBorderRange = partb.borders[j];
                 if (partBBorderRange[1] > partABorderRange[0] + error) break;
-                if (!nBucket.borderDone[j]) nBucket.encodeCentroid(undefined, partb, false);
+                if (updateNeighbor) nBucket.encodeCentroid(undefined, partb, false);
                 ib++;
             }
             if (partb && ib < b.length) {
@@ -254,7 +320,7 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
                     }
 
                     bucket.encodeCentroid(undefined, parta, false);
-                    if (!nBucket.borderDone[j]) nBucket.encodeCentroid(undefined, partb, false);
+                    if (updateNeighbor) nBucket.encodeCentroid(undefined, partb, false);
                     continue;
                 }
 
@@ -269,16 +335,18 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
                 bucket.encodeCentroid(centroid, parta, false);
 
                 assert(partb.vertexArrayOffset !== undefined && partb.vertexArrayOffset < nBucket.layoutVertexArray.length);
-                if (!nBucket.borderDone[j]) nBucket.encodeCentroid(centroid, partb, false);
+                if (updateNeighbor) nBucket.encodeCentroid(centroid, partb, false);
             } else {
                 assert(parta.intersectsCount() > 1 || (partb && partb.intersectsCount() > 1)); // expected at the end of border, when buildings cover corner (show building w/o flat roof).
                 bucket.encodeCentroid(undefined, parta, false);
             }
         }
 
-        bucket.borderDone[i] = bucket.needsCentroidUpdate = true;
-        if (!nBucket.borderDone[j]) {
-            nBucket.borderDone[j] = nBucket.needsCentroidUpdate = true;
+        bucket.borderDoneWithNeighborZ[i] = nBucket.canonical.z;
+        bucket.needsCentroidUpdate = true;
+        if (updateNeighbor) {
+            nBucket.borderDoneWithNeighborZ[j] = bucket.canonical.z;
+            nBucket.needsCentroidUpdate = true;
         }
     }
 

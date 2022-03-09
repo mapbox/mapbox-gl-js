@@ -115,9 +115,11 @@ function camelize (str) {
 global.camelize = camelize;
 
 import posAttributes from '../src/data/pos_attributes.js';
+import {posAttributesGlobeExt} from '../src/data/pos_attributes.js';
 import boundsAttributes from '../src/data/bounds_attributes.js';
 
 createStructArrayType('pos', posAttributes);
+createStructArrayType('pos_globe_ext', posAttributesGlobeExt);
 createStructArrayType('raster_bounds', boundsAttributes);
 
 import {circleAttributes, circleGlobeAttributesExt} from '../src/data/bucket/circle_attributes.js';
@@ -128,7 +130,7 @@ import patternAttributes from '../src/data/bucket/pattern_attributes.js';
 import dashAttributes from '../src/data/bucket/dash_attributes.js';
 import skyboxAttributes from '../src/render/skybox_attributes.js';
 import tileBoundsAttributes from '../src/data/bounds_attributes.js';
-import {fillExtrusionAttributes, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
+import {fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
 
 // layout vertex arrays
 const layoutAttributes = {
@@ -144,6 +146,9 @@ const layoutAttributes = {
 for (const name in layoutAttributes) {
     createStructArrayType(`${name.replace(/-/g, '_')}_layout`, layoutAttributes[name]);
 }
+
+// Globe extension arrays
+createStructArrayType('fill_extrusion_ext', fillExtrusionAttributesExt, true);
 
 // symbol layer specific arrays
 import {
@@ -176,8 +181,9 @@ createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
 createStructArrayType('symbol_line_vertex', lineVertex, true);
 
-import globeAttributes from '../src/terrain/globe_attributes.js';
+import globeAttributes, {atmosphereLayout} from '../src/terrain/globe_attributes.js';
 createStructArrayType('globe_vertex', globeAttributes);
+createStructArrayType('globe_atmosphere_vertex', atmosphereLayout);
 
 // feature index array
 createStructArrayType('feature_index', createLayout([

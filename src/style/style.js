@@ -17,7 +17,14 @@ import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
 import browser from '../util/browser.js';
 import Dispatcher from '../util/dispatcher.js';
-import {validateStyle, emitValidationErrors as _emitValidationErrors} from './validate_style.js';
+import {
+    validateStyle,
+    validateSource,
+    validateLayer,
+    validateFilter,
+    validateTerrain,
+    emitValidationErrors as _emitValidationErrors
+} from './validate_style.js';
 import {QueryGeometry} from '../style/query_geometry.js';
 import {
     create as createSource,
@@ -46,7 +53,7 @@ import {validateCustomStyleLayer} from './style_layer/custom_style_layer.js';
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
 // smart setStyle (see https://github.com/mapbox/mapbox-gl-js/pull/6424):
-const emitValidationErrors = (evented: Evented, errors: ?$ReadOnlyArray<{message: string, identifier?: string}>) =>
+const emitValidationErrors = (evented: Evented, errors: ?ValidationErrors) =>
     _emitValidationErrors(evented, errors && errors.filter(error => error.identifier !== 'source.canvas'));
 
 import type Map from '../ui/map.js';
@@ -70,7 +77,7 @@ import type {
     ProjectionSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
-import type {Validator} from './validate_style.js';
+import type {Validator, ValidationErrors} from './validate_style.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type {PointLike} from '@mapbox/point-geometry';
 
@@ -297,8 +304,7 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = json;
-
-        this.updateProjection();
+        this._updateProjection();
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -352,16 +358,22 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        this.updateProjection();
+        if (!this.map._explicitProjection) {
+            this.map._updateProjection();
+        }
     }
 
-    updateProjection() {
-        const prevProjection = this.map.transform.projection;
-        const projectionChanged = this.map.transform.setProjection(this.map._runtimeProjection || (this.stylesheet ? this.stylesheet.projection : undefined));
-        const projection = this.map.transform.projection;
+    _updateProjection() {
+        if (!this.map._explicitProjection) {
+            this.map._updateProjection();
+        } else { // Ensure that style is consistent with current projection on style load
+            this.enableDraping();
+        }
+    }
 
+    enableDraping() {
         if (this._loaded) {
-            if (projection.requiresDraping) {
+            if (this.map.transform.projection.requiresDraping) {
                 const hasTerrain = this.getTerrain() || this.stylesheet.terrain;
                 if (!hasTerrain) {
                     this.setTerrainForDraping();
@@ -370,23 +382,6 @@ class Style extends Evented {
                 this.setTerrain(null);
             }
         }
-
-        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
-
-        if (!projectionChanged) return;
-
-        const globeChanged = (projection.name === 'globe' || prevProjection.name === 'globe') && !this.map._transitionFromGlobe;
-
-        if (projection.isReprojectedInTileSpace || prevProjection.isReprojectedInTileSpace || globeChanged) {
-            this.map.painter.clearBackgroundTiles();
-            for (const id in this._sourceCaches) {
-                this._sourceCaches[id].clearTiles();
-            }
-        } else {
-            this._forceSymbolLayerUpdate();
-        }
-
-        this.map._update(true);
     }
 
     _loadSprite(url: string) {
@@ -668,7 +663,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this.updateProjection();
+        this._updateProjection();
 
         return true;
     }
@@ -723,7 +718,7 @@ class Style extends Evented {
 
         const builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
         const shouldValidate = builtIns.indexOf(source.type) >= 0;
-        if (shouldValidate && this._validate(validateStyle.source, `sources.${id}`, source, null, options)) return;
+        if (shouldValidate && this._validate(validateSource, `sources.${id}`, source, null, options)) return;
 
         if (this.map && this.map._collectResourceTiming) (source: any).collectResourceTiming = true;
 
@@ -853,7 +848,7 @@ class Style extends Evented {
             }
 
             // this layer is not in the style.layers array, so we pass an impossible array index
-            if (this._validate(validateStyle.layer,
+            if (this._validate(validateLayer,
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
             layer = createStyleLayer(layerObject);
@@ -1051,7 +1046,7 @@ class Style extends Evented {
             return;
         }
 
-        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, {layerType: layer.type}, options)) {
+        if (this._validate(validateFilter, `layers.${layer.id}.filter`, filter, {layerType: layer.type}, options)) {
             return;
         }
 
@@ -1321,7 +1316,7 @@ class Style extends Evented {
 
     queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: any, transform: Transform) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, null, params);
+            this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
 
         const includedSources = {};
@@ -1389,7 +1384,7 @@ class Style extends Evented {
 
     querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter, null, params);
+            this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);
         }
         const sourceCaches = this._getSourceCaches(sourceID);
         let results = [];
@@ -1479,7 +1474,7 @@ class Style extends Evented {
                 terrainOptions = (extend(terrainOptions, {source: id}): any);
             }
 
-            if (this._validate(validateStyle.terrain, 'terrain', terrainOptions)) {
+            if (this._validate(validateTerrain, 'terrain', terrainOptions)) {
                 return;
             }
         }
@@ -1597,7 +1592,7 @@ class Style extends Evented {
     _createTerrain(terrainOptions: TerrainSpecification, drapeRenderMode: number) {
         const terrain = this.terrain = new Terrain(terrainOptions, drapeRenderMode);
         this.stylesheet.terrain = terrainOptions;
-        this.dispatcher.broadcast('enableTerrain', true);
+        this.dispatcher.broadcast('enableTerrain', !this.terrainSetForDrapingOnly());
         this._force3DLayerUpdate();
         const parameters = {
             now: browser.now(),

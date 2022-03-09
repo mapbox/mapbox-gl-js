@@ -5,6 +5,7 @@ import type Map from '../map.js';
 import {indexTouches} from './handler_util.js';
 import {bindAll} from '../../util/util.js';
 import * as DOM from '../../util/dom.js';
+import type {HandlerResult} from '../handler_manager.js';
 
 export default class TouchPanHandler {
 
@@ -34,11 +35,11 @@ export default class TouchPanHandler {
         this._sum = new Point(0, 0);
     }
 
-    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         return this._calculateTransform(e, points, mapTouches);
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         if (!this._active || mapTouches.length < this._minTouches) return;
 
         // if cooperative gesture handling is set to true, require two fingers to touch pan
@@ -70,7 +71,7 @@ export default class TouchPanHandler {
         this.reset();
     }
 
-    _calculateTransform(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    _calculateTransform(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         if (mapTouches.length > 0) this._active = true;
 
         const touches = indexTouches(mapTouches, points);
@@ -125,11 +126,11 @@ export default class TouchPanHandler {
         this.reset();
     }
 
-    isEnabled() {
+    isEnabled(): boolean {
         return this._enabled;
     }
 
-    isActive() {
+    isActive(): boolean {
         return this._active;
     }
 
