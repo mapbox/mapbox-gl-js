@@ -23,7 +23,7 @@
 <script>
 
 var GUIParams = function() {
-    this.enableFog = true;
+    this.enable = true;
     this.style = 'streets-v11';
     this.start = 0.8;
     this.end = 2.5;
@@ -61,7 +61,7 @@ function updatePreset(value) {
     // 'mapbox/outdoors-v11',
     // 'mapbox/satellite-v9',
     if (value === 'preset1') {
-        guiParams.enableFog = true;
+        guiParams.enable = true;
         guiParams.style = 'satellite-streets-v11';
         guiParams.start = 0.46;
         guiParams.end = 3.4;
@@ -72,7 +72,7 @@ function updatePreset(value) {
         guiParams.horizonBlend = 1.15;
         guiParams.starIntensity = 0.15;
     } else if (value === 'preset2') {
-        guiParams.enableFog = true;
+        guiParams.enable = true;
         guiParams.style = 'streets-v11';
         guiParams.start = 0.79;
         guiParams.end = 2.2;
@@ -82,7 +82,7 @@ function updatePreset(value) {
         guiParams.skyAlpha = 1;
         guiParams.horizonBlend = 1.9;
         guiParams.starIntensity = 0.15    } else if (value === 'preset3') {
-        guiParams.enableFog = true;
+        guiParams.enable = true;
         guiParams.style = 'light-v10';
         guiParams.start = 0.46;
         guiParams.end = 2.9;
@@ -93,7 +93,7 @@ function updatePreset(value) {
         guiParams.horizonBlend = 0.3;
         guiParams.starIntensity = 0.150;
     } else if (value === 'preset4') {
-        guiParams.enableFog = true;
+        guiParams.enable = true;
         guiParams.style = 'satellite-streets-v11';
         guiParams.start = 0.46;
         guiParams.end = 2.8;
@@ -104,7 +104,7 @@ function updatePreset(value) {
         guiParams.horizonBlend = 0.22;
         guiParams.starIntensity = 0.150;
     } else if (value === 'preset5') {
-        guiParams.enableFog = true;
+        guiParams.enable = true;
         guiParams.style = 'dark-v10';
         guiParams.start = 0.46;
         guiParams.end = 2.9;
@@ -115,7 +115,7 @@ function updatePreset(value) {
         guiParams.horizonBlend = 0.9;
         guiParams.starIntensity = 0.15;
     } else if (value === 'preset6') {
-        guiParams.enableFog = true;
+        guiParams.enable = true;
         guiParams.style = 'outdoors-v11';
         guiParams.start = 0.68;
         guiParams.end = 2.4;
@@ -147,9 +147,9 @@ window.onload = function() {
         updatePreset(value);
     });
 
-    var fog = gui.addFolder('Fog');
-    var enableFog = fog.add(guiParams, 'enableFog');
-    enableFog.onFinishChange((value) => {
+    var fog = gui.addFolder('Atmosphere');
+    var enable = fog.add(guiParams, 'enable');
+    enable.onFinishChange((value) => {
         map.setFog(value ? {
             "range": [guiParams.start, guiParams.end],
             "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
@@ -157,19 +157,19 @@ window.onload = function() {
         } : null);
     });
 
-    var start = fog.add(guiParams, 'start', 0, 5);
-    start.onChange((value) => {
-        map.setFog({
-            "range": [value, guiParams.end],
-        });
-    });
+    // var start = fog.add(guiParams, 'start', 0, 5);
+    // start.onChange((value) => {
+    //     map.setFog({
+    //         "range": [value, guiParams.end],
+    //     });
+    // });
 
-    var end = fog.add(guiParams, 'end', 0, 5);
-    end.onChange((value) => {
-        map.setFog({
-            "range": [guiParams.start, value],
-        });
-    });
+    // var end = fog.add(guiParams, 'end', 0, 5);
+    // end.onChange((value) => {
+    //     map.setFog({
+    //         "range": [guiParams.start, value],
+    //     });
+    // });
 
     var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 10.0);
     horizonBlend.onChange((value) => {
