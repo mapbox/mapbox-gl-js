@@ -1,9 +1,12 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import {parseCSSColor} from 'csscolorparser';
 
-export default function validateColor(options) {
+import type {ValidationOptions} from './validate.js';
+
+export default function validateColor(options: ValidationOptions): Array<ValidationError> {
     const key = options.key;
     const value = options.value;
     const type = getType(value);

@@ -1,8 +1,15 @@
+// @flow
 
 import getType from '../util/get_type.js';
 import ValidationError from '../error/validation_error.js';
 
-export default function validateNumber(options) {
+import type {ValidationOptions} from './validate.js';
+
+type Options = ValidationOptions & {
+    arrayIndex: number;
+}
+
+export default function validateNumber(options: Options): Array<ValidationError> {
     const key = options.key;
     const value = options.value;
     const valueSpec = options.valueSpec;

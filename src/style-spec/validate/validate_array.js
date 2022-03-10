@@ -1,9 +1,16 @@
+// @flow
 
 import getType from '../util/get_type.js';
 import validate from './validate.js';
 import ValidationError from '../error/validation_error.js';
 
-export default function validateArray(options) {
+import type {ValidationOptions} from './validate.js';
+
+type Options = ValidationOptions & {
+    arrayElementValidator: Function;
+};
+
+export default function validateArray(options: Options): Array<ValidationError> {
     const array = options.value;
     const arraySpec = options.valueSpec;
     const style = options.style;
@@ -27,7 +34,8 @@ export default function validateArray(options) {
         "type": arraySpec.value,
         "values": arraySpec.values,
         "minimum": arraySpec.minimum,
-        "maximum": arraySpec.maximum
+        "maximum": arraySpec.maximum,
+        function: undefined
     };
 
     if (styleSpec.$version < 7) {

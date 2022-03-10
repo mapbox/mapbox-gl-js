@@ -1,8 +1,11 @@
+// @flow
 
 import getType from '../util/get_type.js';
 import ValidationError from '../error/validation_error.js';
 
-export default function validateString(options) {
+import type {ValidationOptions} from './validate.js';
+
+export default function validateString(options: $Shape<ValidationOptions>): Array<ValidationError> {
     const value = options.value;
     const key = options.key;
     const type = getType(value);

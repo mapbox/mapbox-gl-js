@@ -1,3 +1,4 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import {unbundle} from '../util/unbundle_jsonlint.js';
@@ -8,7 +9,15 @@ import validateLayoutProperty from './validate_layout_property.js';
 import validateSpec from './validate.js';
 import extend from '../util/extend.js';
 
-export default function validateLayer(options) {
+import type {ValidationOptions} from './validate.js';
+import type {LayerSpecification} from '../types.js';
+
+type Options = ValidationOptions & {
+    value: LayerSpecification;
+    arrayIndex: number;
+}
+
+export default function validateLayer(options: Options): Array<ValidationError> {
     let errors = [];
 
     const layer = options.value;
@@ -27,6 +36,7 @@ export default function validateLayer(options) {
         for (let i = 0; i < options.arrayIndex; i++) {
             const otherLayer = style.layers[i];
             if (unbundle(otherLayer.id) === layerId) {
+                // $FlowFixMe[prop-missing] - id.__line__ is added dynamically during the readStyle step
                 errors.push(new ValidationError(key, layer.id, `duplicate layer id "${layer.id}", previously used at line ${otherLayer.id.__line__}`));
             }
         }
@@ -46,7 +56,8 @@ export default function validateLayer(options) {
         });
 
         if (!parent) {
-            errors.push(new ValidationError(key, layer.ref, `ref layer "${ref}" not found`));
+            if (typeof ref === 'string')
+                errors.push(new ValidationError(key, layer.ref, `ref layer "${ref}" not found`));
         } else if (parent.ref) {
             errors.push(new ValidationError(key, layer.ref, 'ref cannot reference another ref layer'));
         } else {
@@ -106,6 +117,7 @@ export default function validateLayer(options) {
                     layer,
                     key: options.key,
                     value: options.value,
+                    valueSpec: {},
                     style: options.style,
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
@@ -120,6 +132,7 @@ export default function validateLayer(options) {
                     layer,
                     key: options.key,
                     value: options.value,
+                    valueSpec: {},
                     style: options.style,
                     styleSpec: options.styleSpec,
                     objectElementValidators: {

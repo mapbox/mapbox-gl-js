@@ -1,8 +1,12 @@
+// @flow
+
 import ValidationError from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import validate from './validate.js';
 
-export default function validateProjection(options) {
+import type {ValidationOptions} from './validate.js';
+
+export default function validateProjection(options: ValidationOptions): Array<ValidationError> {
     const projection = options.value;
     const styleSpec = options.styleSpec;
     const projectionSpec = styleSpec.projection;

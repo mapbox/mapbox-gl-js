@@ -1,0 +1,10 @@
+{
+  "overrides": [
+    {
+      "files": ["rollup.config.js", "test.js"],
+      "rules": {
+        "flowtype/require-valid-file-annotation": "off"
+      }
+    }
+  ]
+}

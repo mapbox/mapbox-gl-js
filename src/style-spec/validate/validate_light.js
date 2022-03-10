@@ -1,9 +1,12 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import validate from './validate.js';
 
-export default function validateLight(options) {
+import type {ValidationOptions} from './validate.js';
+
+export default function validateLight(options: ValidationOptions): Array<ValidationError> {
     const light = options.value;
     const styleSpec = options.styleSpec;
     const lightSpec = styleSpec.light;
