@@ -44,7 +44,7 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
     new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
 ];
 
-const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [64, 54, 36, 32, 30];
+const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [64, 64, 64, 64, 32];
 const MAX_VERTEX_GRID_SIZE = Math.max(...GLOBE_VERTEX_GRID_SIZE_LOD_TABLE);
 
 export class Arc {
