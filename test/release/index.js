@@ -7,56 +7,16 @@
 
 const pages = [
     {
-        "key": "geojson-markers",
-        "title": "Add GeoJSON marker"
-    },
-    {
         "key": "animate-point-along-line",
         "title": "Animate point"
-    },
-    {
-        "key": "queryrenderedfeatures",
-        "title": "Get features under the mouse pointer"
-    },
-    {
-        "key": "scroll-fly-to",
-        "title": "Fly to a location based on scroll position"
-    },
-    {
-        "key": "popup-on-click",
-        "title": "Display a popup on click"
-    },
-    {
-        "key": "hover-styles",
-        "title": "Create a hover effect"
-    },
-    {
-        "key": "satellite-map",
-        "title": "Display a satellite map"
-    },
-    {
-        "key": "custom-marker-icons",
-        "title": "Add custom icons with Markers"
     },
     {
         "key": "filter-features-within-map-view",
         "title": "Filter features within map view"
     },
     {
-        "key": "video-on-a-map",
-        "title": "Add a video"
-    },
-    {
         "key": "custom-style-layer",
         "title": "Add a custom style layer"
-    },
-    {
-        "key": "adjust-layer-opacity",
-        "title": "Adjust a layer's opacity"
-    },
-    {
-        "key": "check-for-support",
-        "title": "Check for browser support"
     },
     {
         "key": "mapbox-gl-geocoder",
@@ -65,6 +25,10 @@ const pages = [
     {
         "key": "mapbox-gl-directions",
         "title": "Display driving directions"
+    },
+    {
+        "key": "locate-user",
+        "title": "Locate the user"
     },
     {
         "key": "mapbox-gl-draw",
@@ -83,18 +47,6 @@ const pages = [
         "title": "Add a heatmap layer"
     },
     {
-        "key": "add-terrain",
-        "title": "Add Terrain"
-    },
-    {
-        "key": "atmospheric-sky",
-        "title": "Atmospheric Sky"
-    },
-    {
-        "key": "free-camera-point",
-        "title": "Free Camera Point"
-    },
-    {
         "key": "three-js-antenna",
         "title": "Add a 3d model on terrain with ThreeJS",
         "url": "./three-js-antenna.html"
@@ -104,42 +56,21 @@ const pages = [
         "title": "Animate the camera along a path"
     },
     {
+        "key": "query-terrain-elevation",
+        "title": "Query terrain elevation"
+    },
+    {
+        "key": "add-fog",
+        "title": "Add fog to a map"
+    },
+    {
         "key": "image-on-a-map",
         "title": "Image Source"
     },
     {
-        "key": "locate-user",
-        "title": "Locate the user"
-    },
-    {
         "key": "extrusion-query",
-        "url": "./extrusion-query.html",
-        "title": "Fill extrusion querying with terrain"
-    },
-    {
-        "key": "3d-playground",
-        "title": "3D Playground",
-        "url": "./3d-playground.html"
-    },
-    {
-        "key": "fog-demo",
-        "title": "Fog Demo",
-        "url": "./fog-demo.html"
-    },
-    {
-        "key": "fog",
-        "title": "Fog",
-        "url": "./fog.html"
-    },
-    {
-        "key": "skybox-gradient",
-        "title": "Skybox gradient",
-        "url": "./skybox-gradient.html"
-    },
-    {
-        "key": "canvas-size",
-        "title": "Canvas Size",
-        "url": "./canvas-size.html"
+        "title": "Extrusion Query",
+        "url": "./extrusion-query.html"
     },
     {
         "key": "projections",
@@ -163,7 +94,7 @@ const pages = [
     },
     {
         "key": "scroll_zoom_blocker",
-        "title": "Cooperative gesture handling",
+        "title": "Gestures",
         "url": "./scroll_zoom_blocker.html"
     },
     {
