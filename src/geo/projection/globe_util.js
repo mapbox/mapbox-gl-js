@@ -398,10 +398,9 @@ export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Flo
     return Float32Array.from(poleMatrix);
 }
 
-export function getGridMatrix(id: CanonicalTileID): Array<number> {
-    const zoom = Math.min(id.z, GLOBE_ZOOM_THRESHOLD_MIN - 1);
-    const gridSize = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[zoom];
-    const [tl, br] = globeTileLatLngCorners(id);
+export function getGridMatrix(id: CanonicalTileID, corners: Array<Array<number>>, lod: number): Array<number> {
+    const gridSize = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[lod];
+    const [tl, br] = corners;
     const S = 1.0 / gridSize;
     const x = (br[1] - tl[1]) * S;
     const y = (br[0] - tl[0]) * S;
@@ -413,8 +412,11 @@ const POLE_RAD = degToRad(85.0);
 const POLE_COS = Math.cos(POLE_RAD);
 const POLE_SIN = Math.sin(POLE_RAD);
 
-export function getTileLod(id: CanonicalTileID) {
-    return Math.min(id.z, GLOBE_ZOOM_THRESHOLD_MIN - 1);
+export function getTileLod(id: CanonicalTileID, latitude: number) {
+    const maxLod = GLOBE_ZOOM_THRESHOLD_MIN - 1;
+    const z = Math.min(id.z, maxLod);
+    const lod = latitude ? (z + Math.floor((maxLod - z) * Math.abs(Math.sin(degToRad(latitude))))) : z;
+    return lod;
 }
 
 export class GlobeSharedBuffers {
@@ -553,8 +555,8 @@ export class GlobeSharedBuffers {
         return [this._gridBuffer, this._gridIndexBuffer, this._gridSegments[lod]];
     }
 
-    getPoleBuffers(lod: number): [VertexBuffer, VertexBuffer, IndexBuffer, SegmentVector] {
-        return [this._poleNorthVertexBuffer, this._poleSouthVertexBuffer, this._poleIndexBuffer, this._poleSegments[lod]];
+    getPoleBuffers(z: number): [VertexBuffer, VertexBuffer, IndexBuffer, SegmentVector] {
+        return [this._poleNorthVertexBuffer, this._poleSouthVertexBuffer, this._poleIndexBuffer, this._poleSegments[z]];
     }
 
     getWirefameBuffers(context: Context, lod: number): [VertexBuffer, IndexBuffer, SegmentVector] {
