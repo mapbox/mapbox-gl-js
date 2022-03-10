@@ -20,8 +20,7 @@ import {
     globeToMercatorTransition,
     globePoleMatrixForTile,
     getGridMatrix,
-    getTileLod,
-    globeMatrixForTile
+    getTileLod
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
 
@@ -189,18 +188,17 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
             const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
-            const elevationOptions = {};
+            const elevationOptions = {denormalize: true};
 
             if (morph) {
                 extend(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
             }
 
-            const globeMatrix = globeMatrixForTile(coord.canonical, tr.globeMatrix);
-            const denormalizedGlobeMatrix = Float32Array.from(tr.globeMatrix);
+            const globeMatrix = Float32Array.from(tr.globeMatrix);
             const gridMatrix = getGridMatrix(coord.canonical);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix, denormalizedGlobeMatrix);
+                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix);
 
             setShaderMode(shaderMode, isWireframe);
 

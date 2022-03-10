@@ -10,7 +10,6 @@ uniform mat4 u_merc_matrix;
 uniform float u_zoom_transition;
 uniform vec2 u_merc_center;
 uniform mat3 u_grid_matrix;
-uniform mat4 u_denormed_globe_matrix;
 
 #ifdef GLOBE_POLES
 attribute vec3 a_globe_pos;
@@ -81,13 +80,7 @@ void main() {
     height += wireframeOffset;
 #endif
 
-#ifdef GLOBE_POLES
     vec4 globe = u_globe_matrix * vec4(globe_pos + up_vector.xyz * height, 1.0);
-#else
-    vec4 elevation_offset = u_globe_matrix * vec4(up_vector.xyz * height, 0.0);
-    vec4 globe = u_denormed_globe_matrix * vec4(globe_pos, 1.0);
-    globe += elevation_offset;
-#endif
 
     vec4 mercator = vec4(0.0);
     if (u_zoom_transition > 0.0) {

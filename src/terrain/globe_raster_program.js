@@ -19,8 +19,7 @@ export type GlobeRasterUniformsType = {|
     'u_zoom_transition': Uniform1f,
     'u_merc_center': Uniform2f,
     'u_image0': Uniform1i,
-    'u_grid_matrix': UniformMatrix3f,
-    'u_denormed_globe_matrix': UniformMatrix4f
+    'u_grid_matrix': UniformMatrix3f
 |};
 
 export type AtmosphereUniformsType = {|
@@ -43,8 +42,7 @@ const globeRasterUniforms = (context: Context, locations: UniformLocations): Glo
     'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
     'u_merc_center': new Uniform2f(context, locations.u_merc_center),
     'u_image0': new Uniform1i(context, locations.u_image0),
-    'u_grid_matrix': new UniformMatrix3f(context, locations.u_grid_matrix),
-    'u_denormed_globe_matrix': new UniformMatrix4f(context, locations.u_denormed_globe_matrix),
+    'u_grid_matrix': new UniformMatrix3f(context, locations.u_grid_matrix)
 });
 
 const atmosphereUniforms = (context: Context, locations: UniformLocations): AtmosphereUniformsType => ({
@@ -66,8 +64,7 @@ const globeRasterUniformValues = (
     globeMercatorMatrix: Float32Array,
     zoomTransition: number,
     mercCenter: [number, number],
-    gridMatrix: ?Array<number>,
-    denormedGlobeMatrix: ?Float32Array
+    gridMatrix: ?Array<number>
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
     'u_globe_matrix': globeMatrix,
@@ -75,8 +72,7 @@ const globeRasterUniformValues = (
     'u_zoom_transition': zoomTransition,
     'u_merc_center': mercCenter,
     'u_image0': 0,
-    'u_grid_matrix': gridMatrix ? Float32Array.from(gridMatrix) : new Float32Array(9),
-    'u_denormed_globe_matrix' : denormedGlobeMatrix ? denormedGlobeMatrix : new Float32Array(16)
+    'u_grid_matrix': gridMatrix ? Float32Array.from(gridMatrix) : new Float32Array(9)
 });
 
 const atmosphereUniformValues = (
