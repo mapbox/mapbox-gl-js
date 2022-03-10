@@ -8,14 +8,26 @@ git tag --points-at HEAD | while read tag; do
     disttag=${disttag:-latest}
 
     if [[ $tag =~ ^style-spec@ ]]; then
-        echo "Publishing style-spec: $tag"
         cd src/style-spec
-        npm publish --tag $disttag --access public || true
+        spec_version=$(node -p "require('./package.json').version")
+        echo "Publishing style-spec: $spec_version"
+
+        if [[ -z $(npm view .@$spec_version) ]]; then
+            echo "npm publish --tag $disttag"
+        else
+            echo "Already published."
+        fi
         cd ../..
 
     elif [[ $tag =~ ^v[0-9] ]]; then
-        echo "Publishing mapbox-gl: $tag"
-        npm publish --tag $disttag || true
+        version=$(node -p "require('./package.json').version")
+        echo "Publishing mapbox-gl: $version"
+
+        if [[ -z $(npm view .@$version) ]]; then
+            echo "npm publish --tag $disttag"
+        else
+            echo "Already published."
+        fi
 
     else
         echo "Unrecognized tag: $tag"
