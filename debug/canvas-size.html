@@ -9,25 +9,34 @@
         html, body {
             margin: 0;
             padding: 0;
-            background-color: gray;
         }
-        #map-container {
-            width: 500.52px;
-            height: 500.52px;
-            transform: scale(0.7);
+
+        #scaled-container {
+            width: 1920px;
+            height: 1080px;
+            transform: scale(0.35);
             transform-origin: top left;
-            background-color: black;
-        }  
+            background-color: grey;
+        }
+
+        #map-container {
+            width: 1720px;
+            height: 880px;  
+            transform: translate(100px, 100px);
+        }
+
         #map {
             height: 100%;
-            width: 100%;
+            width: 100%; 
         }
     </style>
 </head>
 
 <body>
-    <div id="map-container">
-        <div id="map"></div>
+    <div id="scaled-container">
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
     </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
