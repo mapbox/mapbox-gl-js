@@ -10,12 +10,12 @@ git tag --points-at HEAD | while read tag; do
     if [[ $tag =~ ^style-spec@ ]]; then
         echo "Publishing style-spec: $tag"
         cd src/style-spec
-        npm publish --tag $disttag
+        npm publish --tag $disttag --access public || true
         cd ../..
 
     elif [[ $tag =~ ^v[0-9] ]]; then
         echo "Publishing mapbox-gl: $tag"
-        npm publish --tag $disttag
+        npm publish --tag $disttag || true
 
     else
         echo "Unrecognized tag: $tag"
