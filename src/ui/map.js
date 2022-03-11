@@ -364,6 +364,7 @@ class Map extends Camera {
     _cooperativeGestures: boolean;
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
+    _averageElevationExaggeration: number;
     _averageElevation: EasedVariable;
     _containerWidth: number;
     _containerHeight: number;
@@ -476,6 +477,7 @@ class Map extends Camera {
         this._containerHeight = 0;
 
         this._averageElevationLastSampledAt = -Infinity;
+        this._averageElevationExaggeration = 0;
         this._averageElevation = new EasedVariable(0);
 
         this._explicitProjection = null; // Fallback to stylesheet by default
@@ -2908,8 +2910,6 @@ class Map extends Camera {
 
         const m = PerformanceUtils.beginMeasure('render');
 
-        let averageElevationChanged = this._updateAverageElevation(frameStartTime);
-
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
         this.painter.context.setDirty();
         this.painter.setBaseState();
@@ -2971,13 +2971,17 @@ class Map extends Camera {
         // If we are in _render for any reason other than an in-progress paint
         // transition, update source caches to check for and load any tiles we
         // need for the current transform
+        let averageElevationChanged = false;
         if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
             this.painter._updateFog(this.style);
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
+            averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style._updateSources(this.transform);
             // Update positions of markers on enabling/disabling terrain
             this._forceMarkerUpdate();
+        } else {
+            averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
 
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
@@ -3120,6 +3124,12 @@ class Map extends Camera {
         if (timeoutElapsed && !this._averageElevation.isEasing(timeStamp)) {
             const currentElevation = this.transform.averageElevation;
             let newElevation = this.transform.sampleAverageElevation();
+            let exaggerationChanged = false;
+            if (this.transform.elevation) {
+                exaggerationChanged = this.transform.elevation.exaggeration() !== this._averageElevationExaggeration;
+                // $FlowIgnore[incompatible-use]
+                this._averageElevationExaggeration = this.transform.elevation.exaggeration();
+            }
 
             // New elevation is NaN if no terrain tiles were available
             if (isNaN(newElevation)) {
@@ -3131,7 +3141,7 @@ class Map extends Camera {
             const elevationChange = Math.abs(currentElevation - newElevation);
 
             if (elevationChange > AVERAGE_ELEVATION_EASE_THRESHOLD) {
-                if (this._isInitialLoad) {
+                if (this._isInitialLoad || exaggerationChanged) {
                     this._averageElevation.jumpTo(newElevation);
                     return applyUpdate(newElevation);
                 } else {

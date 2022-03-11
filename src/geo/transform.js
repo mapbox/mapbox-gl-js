@@ -135,7 +135,7 @@ class Transform {
     _distanceTileDataCache: {[_: number]: FeatureDistanceData};
     _camera: FreeCamera;
     _centerAltitude: number;
-    _centerAltitudeValid: boolean;
+    _centerAltitudeValidForExaggeration: number;
     _horizonShift: number;
     _projectionScaler: number;
     _nearZ: number;
@@ -171,7 +171,7 @@ class Transform {
         this._distanceTileDataCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
-        this._centerAltitudeValid = false;
+        this._centerAltitudeValidForExaggeration = 0;
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
         this._projectionScaler = 1.0;
@@ -184,7 +184,7 @@ class Transform {
         const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.getProjection());
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
-        clone._centerAltitudeValid = this._centerAltitudeValid;
+        clone._centerAltitudeValidForExaggeration = this._centerAltitudeValidForExaggeration;
         clone.tileSize = this.tileSize;
         clone.width = this.width;
         clone.height = this.height;
@@ -214,10 +214,11 @@ class Transform {
         this._calcMatrices();
     }
     updateElevation(constrainCameraOverTerrain: boolean) { // On render, no need for higher granularity on update reasons.
-        if (this._seaLevelZoom == null) {
+        const centerAltitudeChanged = this._elevation && this._elevation.exaggeration() !== this._centerAltitudeValidForExaggeration;
+        if (this._seaLevelZoom == null || centerAltitudeChanged) {
             this._updateCameraOnTerrain();
         }
-        if (constrainCameraOverTerrain) {
+        if (constrainCameraOverTerrain || centerAltitudeChanged) {
             this._constrainCameraAltitude();
         }
         this._calcMatrices();
@@ -361,6 +362,7 @@ class Transform {
     set averageElevation(averageElevation: number) {
         this._averageElevation = averageElevation;
         this._calcFogMatrices();
+        this._distanceTileDataCache = {};
     }
 
     get zoom(): number { return this._zoom; }
@@ -385,17 +387,17 @@ class Transform {
             // Elevation data not loaded yet, reset
             this._centerAltitude = 0;
             this._seaLevelZoom = null;
-            this._centerAltitudeValid = false;
+            this._centerAltitudeValidForExaggeration = 0;
             return;
         }
-
-        this._centerAltitude = this._elevation.getAtPointOrZero(this.locationCoordinate(this.center));
-        this._centerAltitudeValid = true;
+        const elevation: Elevation = this._elevation;
+        this._centerAltitude = elevation.getAtPointOrZero(this.locationCoordinate(this.center));
+        this._centerAltitudeValidForExaggeration = elevation.exaggeration();
         this._updateSeaLevelZoom();
     }
 
     _updateSeaLevelZoom() {
-        if (!this._centerAltitudeValid) {
+        if (this._centerAltitudeValidForExaggeration === 0) {
             return;
         }
         const height = this.cameraToCenterDistance;
