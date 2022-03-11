@@ -172,7 +172,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
         for (const coord of tileIDs) {
             const [latLngTL, latLngBR] = globeTileLatLngCorners(coord.canonical);
-            const tileCenterLatitude = (latLngTL[0] - latLngBR[0]) / 2.0;
+            const tileCenterLatitude = latLngTL[0] - (latLngTL[0] - latLngBR[0]) / 2.0;
             const tileLod = getTileLod(coord.canonical, tileCenterLatitude);
 
             const tile = sourceCache.getTile(coord);

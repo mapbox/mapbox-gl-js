@@ -415,7 +415,7 @@ const POLE_SIN = Math.sin(POLE_RAD);
 export function getTileLod(id: CanonicalTileID, latitude: number) {
     const maxLod = GLOBE_ZOOM_THRESHOLD_MIN - 1;
     const z = Math.min(id.z, maxLod);
-    const lod = latitude ? (z + Math.floor((maxLod - z) * Math.abs(Math.sin(degToRad(latitude))))) : z;
+    const lod = latitude ? (z + Math.round((maxLod - z) * Math.abs(Math.sin(degToRad(latitude))))) : z;
     return lod;
 }
 
