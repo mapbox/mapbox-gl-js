@@ -1660,13 +1660,12 @@ test('Map', (t) => {
                 t.equal(map.transform.getProjection().name, 'winkelTripel');
 
                 // Runtime api overrides stylesheet projection
-                map.style.setState(Object.assign({}, style.serialize(), {projection: {name: 'naturalEarth'}}));
+                style.setState(Object.assign({}, style.serialize(), {projection: {name: 'naturalEarth'}}));
                 t.equal(style.serialize().projection.name, 'naturalEarth');
                 t.equal(map.transform.getProjection().name, 'winkelTripel');
 
                 // Unsetting runtime projection reveals stylesheet projection
                 map.setProjection(null);
-                style._updateMapProjection();
                 t.equal(style.serialize().projection.name, 'naturalEarth');
                 t.equal(map.transform.getProjection().name, 'naturalEarth');
                 t.equal(map.getProjection().name, 'naturalEarth');

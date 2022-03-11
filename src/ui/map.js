@@ -368,7 +368,7 @@ class Map extends Camera {
     _containerWidth: number;
     _containerHeight: number;
 
-    // `_explicitProjection represents projection as set with a call to map.setProjection()
+    // `_explicitProjection represents projection as set by a call to map.setProjection()
     // For the actual projection displayed, use `transform.projection`.
     // (The two diverge above the transition zoom threshold in Globe view or when _explicitProjection === null
     // a null _explicitProjection indicates the map defaults to first the stylesheet projection if present, then Mercator)
@@ -1057,27 +1057,27 @@ class Map extends Camera {
     setProjection(projection?: ?ProjectionSpecification | string) {
         this._lazyInitEmptyStyle();
         if (!projection) {
-            projection = null;
+            this._explicitProjection = projection = null;
         } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
         return this._updateProjection(projection);
     }
 
-    _updateProjection(projection?: ProjectionSpecification | null) {
+    _updateProjection(explicitProjection?: ProjectionSpecification | null) {
         const prevProjection = this.getProjection();
-        if (projection === undefined) { projection = prevProjection; }
+        const projection = explicitProjection || prevProjection;
 
-        // At high zoom on globe, set transform projection to mercator.
+        // At high zoom on globe, set transform explicitProjection to Mercator.
         const newProjection = this.transform.setProjection(projection && projection.name === 'globe' ?
             {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')} :
             projection);
 
         // When triggered by a call to setProjection, update _explicitProjection
-        if (projection !== prevProjection) {
-            this._explicitProjection = projection ?
-                (projection.name === "globe" ? {name:'globe', center:[0, 0]} : this.transform.getProjection()) :
-                null;
+        if (explicitProjection) {
+            this._explicitProjection = (explicitProjection.name === "globe" ?
+                {name:'globe', center:[0, 0]} :
+                this.transform.getProjection());
         }
 
         if (newProjection) {
