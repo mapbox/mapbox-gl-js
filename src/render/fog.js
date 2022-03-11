@@ -59,9 +59,9 @@ export const fogUniformValues = (
     const fogColor = fog.properties.get('color');
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     const fogColorUnpremultiplied = [
-        fogColor.r / fogColor.a,
-        fogColor.g / fogColor.a,
-        fogColor.b / fogColor.a,
+        fogColor.a === 0.0 ? 0 : fogColor.r / fogColor.a,
+        fogColor.a === 0.0 ? 0 : fogColor.g / fogColor.a,
+        fogColor.a === 0.0 ? 0 : fogColor.b / fogColor.a,
         fogOpacity
     ];
     return {
