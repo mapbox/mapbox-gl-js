@@ -364,7 +364,7 @@ class Style extends Evented {
     }
 
     _updateMapProjection() {
-        if (!this.map._explicitProjection) { // Update the visible projection if its not overrridden by the map
+        if (!this.map._explicitProjection) { // Update the visible projection if map's is null
             this.map._updateProjection();
         } else { // Ensure that style is consistent with current projection on style load
             this.updateProjection();
