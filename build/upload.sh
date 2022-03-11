@@ -83,8 +83,8 @@ do
 
 	if [ "$2" = "dry-run" ]
 	then
-		echo "aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file}"
+		echo "aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file} --metadata-directive REPLACE --cache-control \"no-cache\""
 	else
-		aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file}
+		aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file} --metadata-directive REPLACE --cache-control "no-cache"
 	fi
 done
