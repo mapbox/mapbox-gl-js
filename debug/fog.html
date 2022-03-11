@@ -8,9 +8,9 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-        /*.mapboxgl-canvas {
-            background-color: blue;
-        }*/
+        .mapboxgl-canvas {
+          background-image: url("https://img.favpng.com/9/21/21/royalty-free-photography-illustration-png-favpng-d38x16Mw2kxSFqtUSXG8gT5CQ_t.jpg");
+        }
     </style>
 </head>
 
@@ -29,6 +29,8 @@ var GUIParams = function() {
     this.end = 8.0;
     this.color = [255, 255, 255];
     this.skyColor = [0, 0, 0];
+    this.spaceColor = [0, 0, 0];
+    this.spaceAlpha = 1.0;
     this.colorAlpha = 1.0;
     this.skyAlpha = 1.0;
     this.horizonBlend = 0.5;
@@ -49,10 +51,6 @@ var map = window.map = new mapboxgl.Map({
     projection: 'globe'
 });
 
-function updateFog() {
-    map.setStyle('mapbox://styles/mapbox/' + guiParams.style);
-}
-
 function updatePreset(value) {
     // 'mapbox/streets-v11',
     // 'mapbox/satellite-streets-v11',
@@ -65,6 +63,8 @@ function updatePreset(value) {
         guiParams.style = 'satellite-streets-v11';
         guiParams.color = [220, 159, 159];
         guiParams.skyColor = [36, 92, 223];
+        guiParams.spaceColor = [0, 0, 0];
+        guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1.0;
         guiParams.skyAlpha = 0.7;
         guiParams.horizonBlend = 1.15;
@@ -74,6 +74,8 @@ function updatePreset(value) {
         guiParams.style = 'streets-v11';
         guiParams.color = [255, 255, 255];
         guiParams.skyColor = [19, 122, 255];
+        guiParams.spaceColor = [0, 0, 0];
+        guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1;
         guiParams.skyAlpha = 1;
         guiParams.horizonBlend = 1.9;
@@ -83,6 +85,8 @@ function updatePreset(value) {
         guiParams.style = 'light-v10';
         guiParams.color = [0, 0, 0];
         guiParams.skyColor = [200, 200, 200];
+        guiParams.spaceColor = [0, 0, 0];
+        guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1;
         guiParams.skyAlpha = 1;
         guiParams.horizonBlend = 0.3;
@@ -92,6 +96,8 @@ function updatePreset(value) {
         guiParams.style = 'satellite-streets-v11';
         guiParams.color = [131, 147, 222];
         guiParams.skyColor = [119, 80, 200];
+        guiParams.spaceColor = [0, 0, 0];
+        guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1;
         guiParams.skyAlpha = 1;
         guiParams.horizonBlend = 0.22;
@@ -101,6 +107,8 @@ function updatePreset(value) {
         guiParams.style = 'dark-v10';
         guiParams.color = [13, 13, 13];
         guiParams.skyColor = [110, 110, 110];
+        guiParams.spaceColor = [0, 0, 0];
+        guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1;
         guiParams.skyAlpha = 0.38;
         guiParams.horizonBlend = 0.9;
@@ -110,12 +118,14 @@ function updatePreset(value) {
         guiParams.style = 'outdoors-v11';
         guiParams.color = [40, 40, 65];
         guiParams.skyColor = [0, 30, 102];
+        guiParams.spaceColor = [0, 0, 0];
+        guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1;
         guiParams.skyAlpha = 0.88;
         guiParams.horizonBlend = 3.4;
         guiParams.starIntensity = 0.15;
     }
-    updateFog();
+    map.setStyle('mapbox://styles/mapbox/' + guiParams.style);
 }
 
 updatePreset('preset1');
@@ -142,25 +152,14 @@ window.onload = function() {
         map.setFog(value ? {
             "range": [guiParams.start, guiParams.end],
             "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
-            "horizon-blend": guiParams.horizonBlend
+            "horizon-blend": guiParams.horizonBlend,
+            "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + guiParams.skyAlpha + ')',
+            "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + guiParams.spaceAlpha + ')',
+            "star-intensity": guiParams.starIntensity
         } : null);
     });
 
-    // var start = fog.add(guiParams, 'start', 0, 5);
-    // start.onChange((value) => {
-    //     map.setFog({
-    //         "range": [value, guiParams.end],
-    //     });
-    // });
-
-    // var end = fog.add(guiParams, 'end', 0, 5);
-    // end.onChange((value) => {
-    //     map.setFog({
-    //         "range": [guiParams.start, value],
-    //     });
-    // });
-
-    var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 10.0);
+    var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 5.0);
     horizonBlend.onChange((value) => {
         map.setFog({
             "horizon-blend": value,
@@ -199,6 +198,19 @@ window.onload = function() {
             "sky-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.skyAlpha + ')'
         });
     });
+
+    var spaceAlpha = fog.add(guiParams, 'spaceAlpha', 0.0, 1.0);
+    spaceAlpha.onChange((value) => {
+        map.setFog({
+            "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + value + ')'
+        });
+    });
+    var spaceColor = fog.addColor(guiParams, 'spaceColor');
+    spaceColor.onChange((value) => {
+        map.setFog({
+            "space-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.spaceAlpha + ')'
+        });
+    });
 };
 
 map.on('style.load', function() {
@@ -207,6 +219,7 @@ map.on('style.load', function() {
         "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
         "horizon-blend": guiParams.horizonBlend,
         "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + guiParams.skyAlpha + ')',
+        "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + guiParams.spaceAlpha + ')',
         "star-intensity": guiParams.starIntensity
     });
 });

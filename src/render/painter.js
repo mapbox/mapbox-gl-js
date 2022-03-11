@@ -846,7 +846,7 @@ class Painter {
         if (terrain) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {
+        if (fog && !rtt) { // if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {
             defines.push('FOG');
         }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
@@ -940,7 +940,7 @@ class Painter {
 
         if (fog) {
             const fogOpacity = fog.getOpacity(this.transform.pitch);
-            if (fogOpacity !== 0.0) {
+            // if (fogOpacity !== 0.0) {
                 const tr = this.transform;
                 const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
                 const viewToProj = tr._camera.getCameraToClipPerspective(tr._fov, tr.width / tr.height, tr._nearZ, tr._farZ);
@@ -964,7 +964,7 @@ class Painter {
                     frustumBl, globeCenterInViewSpace, globeRadius, viewport);
 
                 program.setFogUniformValues(context, fogUniforms);
-            }
+            // }
         }
     }
 
