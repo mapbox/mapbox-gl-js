@@ -1084,7 +1084,7 @@ class Map extends Camera {
             // If a zoom transition on globe
             if (deepEqual(prevProjection, this.getProjection())) {
                 this.style._forceSymbolLayerUpdate();
-            } else { // If a switch between different expressions
+            } else { // If a switch between different projections
                 this.painter.clearBackgroundTiles();
                 for (const id in this.style._sourceCaches) {
                     this.style._sourceCaches[id].clearTiles();
