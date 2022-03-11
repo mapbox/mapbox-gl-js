@@ -67,9 +67,31 @@ function updatePreset(value) {
         guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1.0;
         guiParams.skyAlpha = 0.7;
-        guiParams.horizonBlend = 1.15;
+        guiParams.horizonBlend = 0.5;
         guiParams.starIntensity = 0.15;
     } else if (value === 'preset2') {
+        guiParams.enable = true;
+        guiParams.style = 'satellite-v9';
+        guiParams.color = [225, 225, 225];
+        guiParams.skyColor = [44, 73, 175];
+        guiParams.spaceColor = [11, 11, 25];
+        guiParams.spaceAlpha = 1.0;
+        guiParams.colorAlpha = 1.0;
+        guiParams.skyAlpha = 1;
+        guiParams.horizonBlend = 0.025;
+        guiParams.starIntensity = 0.150;
+    } else if (value === 'preset3') {
+        guiParams.enable = true;
+        guiParams.style = 'light-v10';
+        guiParams.color = [200, 160, 160];
+        guiParams.skyColor = [200, 200, 200];
+        guiParams.spaceColor = [57, 72, 85];
+        guiParams.spaceAlpha = 1.0;
+        guiParams.colorAlpha = 0.5;
+        guiParams.skyAlpha = 1;
+        guiParams.horizonBlend = 0.05;
+        guiParams.starIntensity = 0.2;
+    } else if (value === 'preset4') {
         guiParams.enable = true;
         guiParams.style = 'streets-v11';
         guiParams.color = [255, 255, 255];
@@ -79,51 +101,29 @@ function updatePreset(value) {
         guiParams.colorAlpha = 1;
         guiParams.skyAlpha = 1;
         guiParams.horizonBlend = 1.9;
-        guiParams.starIntensity = 0.15
-    } else if (value === 'preset3') {
-        guiParams.enable = true;
-        guiParams.style = 'light-v10';
-        guiParams.color = [0, 0, 0];
-        guiParams.skyColor = [200, 200, 200];
-        guiParams.spaceColor = [0, 0, 0];
-        guiParams.spaceAlpha = 1.0;
-        guiParams.colorAlpha = 1;
-        guiParams.skyAlpha = 1;
-        guiParams.horizonBlend = 0.3;
-        guiParams.starIntensity = 0.150;
-    } else if (value === 'preset4') {
-        guiParams.enable = true;
-        guiParams.style = 'satellite-streets-v11';
-        guiParams.color = [131, 147, 222];
-        guiParams.skyColor = [119, 80, 200];
-        guiParams.spaceColor = [0, 0, 0];
-        guiParams.spaceAlpha = 1.0;
-        guiParams.colorAlpha = 1;
-        guiParams.skyAlpha = 1;
-        guiParams.horizonBlend = 0.22;
-        guiParams.starIntensity = 0.150;
+        guiParams.starIntensity = 1.0;
     } else if (value === 'preset5') {
         guiParams.enable = true;
         guiParams.style = 'dark-v10';
         guiParams.color = [13, 13, 13];
-        guiParams.skyColor = [110, 110, 110];
-        guiParams.spaceColor = [0, 0, 0];
+        guiParams.skyColor = [255, 255, 255];
+        guiParams.spaceColor = [50, 50, 50];
         guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1;
-        guiParams.skyAlpha = 0.38;
-        guiParams.horizonBlend = 0.9;
-        guiParams.starIntensity = 0.15;
+        guiParams.skyAlpha = 0.5;
+        guiParams.horizonBlend = 0.025;
+        guiParams.starIntensity = 0.1;
     } else if (value === 'preset6') {
         guiParams.enable = true;
         guiParams.style = 'outdoors-v11';
-        guiParams.color = [40, 40, 65];
-        guiParams.skyColor = [0, 30, 102];
-        guiParams.spaceColor = [0, 0, 0];
+        guiParams.color = [85, 119, 140];
+        guiParams.skyColor = [36, 92, 223];
+        guiParams.spaceColor = [2, 20, 50];
         guiParams.spaceAlpha = 1.0;
-        guiParams.colorAlpha = 1;
-        guiParams.skyAlpha = 0.88;
-        guiParams.horizonBlend = 3.4;
-        guiParams.starIntensity = 0.15;
+        guiParams.colorAlpha = 0.8;
+        guiParams.skyAlpha = 1.0;
+        guiParams.horizonBlend = 1;
+        guiParams.starIntensity = 0.75;
     }
     map.setStyle('mapbox://styles/mapbox/' + guiParams.style);
 }
