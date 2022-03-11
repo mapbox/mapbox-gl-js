@@ -1,5 +1,15 @@
 version: 0.2
+
 phases:
+  install:
+    runtime-versions:
+      nodejs: 14
+    commands:
+      - echo "//registry.npmjs.org/:_authToken=$NPMAccessToken" > ~/.npmrc
+      - npm whoami
+      - npm set unsafe-perm true
+      - npm install -g yarn
+      - yarn
   build:
     commands:
-      - echo TODO
+      - ./build/publish.sh
