@@ -71,6 +71,7 @@ function drawAtmosphere(painter: Painter) {
         spaceColor.a
     ];
 
+    const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     const latlon = [
         degToRad(transform._center.lat) / (Math.PI * 0.5),
         degToRad(transform._center.lng) / Math.PI
@@ -91,7 +92,8 @@ function drawAtmosphere(painter: Painter) {
         skyColorUnpremultiplied,
         spaceColorUnpremultiplied,
         latlon,
-        starIntensity);
+        starIntensity,
+        temporalOffset);
 
     painter.prepareDrawProgram(context, program);
 
