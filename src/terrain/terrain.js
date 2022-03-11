@@ -589,7 +589,7 @@ export class Terrain extends Elevation {
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
             morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number },
-            denormalize?: boolean
+            useDenormalizedUpVectorScale?: boolean
         }) {
         const context = this.painter.context;
         const gl = context.gl;
@@ -605,8 +605,7 @@ export class Terrain extends Elevation {
         uniforms['u_tile_tr_up'] = (projection.upVector(id, EXTENT, 0): any);
         uniforms['u_tile_br_up'] = (projection.upVector(id, EXTENT, EXTENT): any);
         uniforms['u_tile_bl_up'] = (projection.upVector(id, 0, EXTENT): any);
-        if (options && options.denormalize) {
-            assert(projection.name === 'globe');
+        if (options && options.useDenormalizedUpVectorScale) {
             uniforms['u_tile_up_scale'] = GLOBE_METERS_TO_ECEF;
         } else {
             uniforms['u_tile_up_scale'] = projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile;

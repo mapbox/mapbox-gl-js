@@ -191,7 +191,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
             const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
-            const elevationOptions = {denormalize: true};
+            const elevationOptions = {useDenormalizedUpVectorScale: true};
 
             if (morph) {
                 extend(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
