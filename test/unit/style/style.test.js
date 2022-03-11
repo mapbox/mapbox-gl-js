@@ -2431,7 +2431,7 @@ test('Style#setProjection', (t) => {
             // Runtime api overrides style projection
             // Stylesheet projection not changed by runtime apis
             style.map.setProjection({name: 'winkelTripel'});
-            style._updateProjection();
+            style._updateMapProjection();
             t.equal(style.serialize().projection.name, 'albers');
             t.equal(style.map.transform.getProjection().name, 'winkelTripel');
 
@@ -2442,7 +2442,7 @@ test('Style#setProjection', (t) => {
 
             // Unsetting runtime projection reveals map projection
             style.map.setProjection(null);
-            style._updateProjection();
+            style._updateMapProjection();
             t.equal(style.serialize().projection.name, 'naturalEarth');
             t.equal(style.map.transform.getProjection().name, 'naturalEarth');
 

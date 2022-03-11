@@ -1666,7 +1666,7 @@ test('Map', (t) => {
 
                 // Unsetting runtime projection reveals stylesheet projection
                 map.setProjection(null);
-                style._updateProjection();
+                style._updateMapProjection();
                 t.equal(style.serialize().projection.name, 'naturalEarth');
                 t.equal(map.transform.getProjection().name, 'naturalEarth');
                 t.equal(map.getProjection().name, 'naturalEarth');
