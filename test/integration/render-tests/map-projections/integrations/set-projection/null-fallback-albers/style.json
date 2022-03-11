@@ -12,9 +12,7 @@
               "vector": {
                 "type": "vector",
                 "maxzoom": 14,
-                "tiles": [
-                  "local://tiles/{z}-{x}-{y}.mvt"
-                ]
+                "tiles": ["local://tiles/mapbox.mapbox-streets-v8/{z}-{x}-{y}.mvt"]
               },
               "geojson": {
                 "type": "geojson",
