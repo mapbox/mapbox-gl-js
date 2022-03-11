@@ -1,5 +1,6 @@
 uniform float u_opacity;
 uniform highp float u_fadeout_range;
+uniform highp float u_temporal_offset;
 uniform vec3 u_start_color;
 uniform vec4 u_color;
 uniform vec4 u_space_color;
@@ -69,7 +70,7 @@ void main() {
     float a2 = mix(a0, a1, t);
     float a3 = mix(alpha_2, a2, t);
 
-    float a = a2 * t + a3 * (1.0 - t);
+    float composited_alpha = a2 * t + a3 * (1.0 - t);
 
     vec2 uv = (gl_FragCoord.xy / u_viewport) * (2.0 - 1.0);
     vec3 D = vec3(uv + vec2(-u_latlon.y, -u_latlon.x), 1.0);
@@ -87,5 +88,11 @@ void main() {
     // give the feeling of an atmosphere with thickness
     star_field *= (1.0 - pow(t, 0.25 + (1.0 - u_sky_color.a) * 0.75));
 
-    gl_FragColor = vec4(color + star_field * alpha_2, a);
+    // Additive star field
+    color = color + star_field * alpha_2;
+
+    // Dither
+    color = dither(color, gl_FragCoord.xy + u_temporal_offset);
+
+    gl_FragColor = vec4(color, composited_alpha);
 }
