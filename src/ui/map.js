@@ -1,7 +1,7 @@
 // @flow
 
 import {version} from '../../package.json';
-import {asyncAll, extend, bindAll, warnOnce, uniqueId, deepEqual} from '../util/util.js';
+import {asyncAll, extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 import * as DOM from '../util/dom.js';
@@ -1082,7 +1082,7 @@ class Map extends Camera {
 
         if (newProjection) {
             // If a zoom transition on globe
-            if (deepEqual(prevProjection, this.getProjection())) {
+            if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
                 this.style._forceSymbolLayerUpdate();
             } else { // If a switch between different projections
                 this.painter.clearBackgroundTiles();
