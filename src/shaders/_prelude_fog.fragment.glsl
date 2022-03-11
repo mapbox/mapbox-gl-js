@@ -40,8 +40,8 @@ vec3 fog_apply(vec3 color, vec3 pos) {
         opacity = fog_opacity(fog_range(t));
     } else {
         opacity = fog_opacity(fog_range(depth));
+        opacity *= fog_horizon_blending(pos / depth);
     }
-    opacity *= fog_horizon_blending(pos / depth);
     return mix(color, u_fog_color.rgb, opacity);
 }
 
