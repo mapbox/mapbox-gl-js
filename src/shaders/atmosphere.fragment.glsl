@@ -2,6 +2,7 @@ uniform float u_opacity;
 uniform highp float u_fadeout_range;
 uniform vec3 u_start_color;
 uniform vec4 u_color;
+uniform vec4 u_space_color;
 uniform vec4 u_sky_color;
 uniform vec2 u_latlon;
 uniform float u_star_intensity;
@@ -42,14 +43,28 @@ void main() {
     if (normDistFromCenter < 1.0)
         discard;
 
-    // exponential (sqrt) curve
+    // exponential curve
     // [0.0, 1.0] == inside the globe, > 1.0 == outside of the globe
-    float t = clamp(1.0 - sqrt(normDistFromCenter - 1.0) / u_fadeout_range, 0.0, 1.0);
+    // https://www.desmos.com/calculator/l5v8lw9zby
+    float t = clamp(exp(-(normDistFromCenter - 1.0) * pow(u_fadeout_range, -1.0)), 0.0, 1.0);
+
+    float alpha_0 = u_color.a;
+    float alpha_1 = u_sky_color.a;
+    float alpha_3 = u_space_color.a;
+
+    vec4 color_stop_0 = vec4(u_color.rgb, 1.0);
+    vec4 color_stop_1 = vec4(u_sky_color.rgb, 1.0);
+    vec4 color_stop_3 = u_space_color;
+
+    vec4 c0 = mix(color_stop_3, color_stop_1, alpha_1);
+    vec4 c1 = mix(c0, color_stop_0, alpha_0);
+    vec4 c2 = mix(c0, c1, t);
+    vec4 c3 = mix(color_stop_3, c2, t);
+
+    vec4 color = c2 * t + c3 * (1.0 - t);
 
     vec2 uv = (gl_FragCoord.xy / u_viewport) * (2.0 - 1.0);
     vec3 D = vec3(uv + vec2(-u_latlon.y, -u_latlon.x), 1.0);
-
-    vec4 color = mix(vec4(u_sky_color.rgb, u_sky_color.a), u_color, t);
 
     // Accumulate star field
     float star_field = 0.0;
@@ -64,5 +79,5 @@ void main() {
     // give the feeling of an atmosphere with thickness
     star_field *= (1.0 - pow(t, 0.25 + (1.0 - u_sky_color.a) * 0.75));
 
-    gl_FragColor = vec4(color.rgb * t * u_color.a * color.a + star_field, u_color.a);
+    gl_FragColor = vec4(color.rgb * color.a + star_field * alpha_3, color.a);
 }

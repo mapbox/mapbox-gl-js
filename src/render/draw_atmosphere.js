@@ -63,6 +63,13 @@ function drawAtmosphere(painter: Painter) {
         skyColor.a === 0.0 ? 0 : skyColor.b / skyColor.a,
         skyColor.a
     ];
+    const spaceColor = fog.properties.get('space-color');
+    const spaceColorUnpremultiplied = [
+        spaceColor.a === 0.0 ? 0 : spaceColor.r / spaceColor.a,
+        spaceColor.a === 0.0 ? 0 : spaceColor.g / spaceColor.a,
+        spaceColor.a === 0.0 ? 0 : spaceColor.b / spaceColor.a,
+        spaceColor.a
+    ];
 
     const latlon = [
         degToRad(transform._center.lat) / (Math.PI * 0.5),
@@ -82,6 +89,7 @@ function drawAtmosphere(painter: Painter) {
         fog.properties.get('horizon-blend'),
         fogColorUnpremultiplied,
         skyColorUnpremultiplied,
+        spaceColorUnpremultiplied,
         latlon,
         starIntensity);
 

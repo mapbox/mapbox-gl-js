@@ -33,6 +33,7 @@ export type AtmosphereUniformsType = {|
     'u_fadeout_range': Uniform1f,
     'u_color': Uniform4f,
     'u_sky_color': Uniform4f,
+    'u_space_color': Uniform4f,
     'u_latlon': Uniform2f,
     'u_star_intensity': Uniform1f,
     'u_star_size': Uniform1f,
@@ -59,6 +60,7 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_fadeout_range': new Uniform1f(context, locations.u_fadeout_range),
     'u_color': new Uniform4f(context, locations.u_color),
     'u_sky_color': new Uniform4f(context, locations.u_sky_color),
+    'u_space_color': new Uniform4f(context, locations.u_space_color),
     'u_latlon': new Uniform2f(context, locations.u_latlon),
     'u_star_intensity': new Uniform1f(context, locations.u_star_intensity),
     'u_star_density': new Uniform1f(context, locations.u_star_density),
@@ -91,6 +93,7 @@ const atmosphereUniformValues = (
     fadeoutRange: number,
     color: [number, number, number, number],
     skyColor: [number, number, number, number],
+    spaceColor: [number, number, number, number],
     latlon: [number, number],
     starIntensity: number
 ): UniformValues<AtmosphereUniformsType> => ({
@@ -104,6 +107,7 @@ const atmosphereUniformValues = (
     'u_fadeout_range': fadeoutRange,
     'u_color': color,
     'u_sky_color': skyColor,
+    'u_space_color': spaceColor,
     'u_latlon': latlon,
     'u_star_intensity': starIntensity,
     'u_star_size': 5.0 * browser.devicePixelRatio,

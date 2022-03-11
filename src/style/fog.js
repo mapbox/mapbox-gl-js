@@ -21,6 +21,7 @@ type Props = {|
     "range": DataConstantProperty<[number, number]>,
     "color": DataConstantProperty<Color>,
     "sky-color": DataConstantProperty<Color>,
+    "space-color": DataConstantProperty<Color>,
     "horizon-blend": DataConstantProperty<number>,
     "star-intensity": DataConstantProperty<number>,
 |};
@@ -29,6 +30,7 @@ const fogProperties: Properties<Props> = new Properties({
     "range": new DataConstantProperty(styleSpec.fog.range),
     "color": new DataConstantProperty(styleSpec.fog.color),
     "sky-color": new DataConstantProperty(styleSpec.fog["sky-color"]),
+    "space-color": new DataConstantProperty(styleSpec.fog["space-color"]),
     "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
     "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
 });
