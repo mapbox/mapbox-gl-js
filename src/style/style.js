@@ -304,7 +304,7 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = json;
-        this._updateProjection();
+        this._updateMapProjection();
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -363,24 +363,25 @@ class Style extends Evented {
         }
     }
 
-    _updateProjection() {
-        if (!this.map._explicitProjection) {
+    _updateMapProjection() {
+        if (!this.map._explicitProjection) { // Update the visible projection if its not overrridden by the map
             this.map._updateProjection();
         } else { // Ensure that style is consistent with current projection on style load
-            this.enableDraping();
+            this.updateProjection();
         }
     }
 
-    enableDraping() {
-        if (this._loaded) {
-            if (this.map.transform.projection.requiresDraping) {
-                const hasTerrain = this.getTerrain() || this.stylesheet.terrain;
-                if (!hasTerrain) {
-                    this.setTerrainForDraping();
-                }
-            } else if (this.terrainSetForDrapingOnly()) {
-                this.setTerrain(null);
+    updateProjection() {
+        if (!this._loaded) return;
+        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
+
+        if (this.map.transform.projection.requiresDraping) {
+            const hasTerrain = this.getTerrain() || this.stylesheet.terrain;
+            if (!hasTerrain) {
+                this.setTerrainForDraping();
             }
+        } else if (this.terrainSetForDrapingOnly()) {
+            this.setTerrain(null);
         }
     }
 
@@ -663,7 +664,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this._updateProjection();
+        this._updateMapProjection();
 
         return true;
     }

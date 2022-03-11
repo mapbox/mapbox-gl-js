@@ -1090,8 +1090,7 @@ class Map extends Camera {
                     this.style._sourceCaches[id].clearTiles();
                 }
             }
-            this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
-            this.style.enableDraping();
+            this.style.updateProjection();
             this._update(true);
         }
 
