@@ -33,11 +33,6 @@ if (includeStructAccessors && !useComponentGetters) {
 class <%=StructTypeClass%> extends Struct {
     _structArray: <%=StructArrayClass%>;
 <%
-    // property declarations
-    for (const {name} of components) {-%>
-    <%=name%>: number;
-<%  } -%>
-<%
 for (const {name, member, component} of components) {
     const elementOffset = `this._pos${member.size.toFixed(0)}`;
     const componentOffset = (member.offset / member.size + component).toFixed(0);

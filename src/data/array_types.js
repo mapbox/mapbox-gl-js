@@ -1032,12 +1032,6 @@ register(StructArrayLayout6i1f16);
 
 class FillExtrusionExtStruct extends Struct {
     _structArray: FillExtrusionExtArray;
-    a_pos_30: number;
-    a_pos_31: number;
-    a_pos_32: number;
-    a_pos_normal_30: number;
-    a_pos_normal_31: number;
-    a_pos_normal_32: number;
     get a_pos_30(): number { return this._structArray.int16[this._pos2 + 0]; }
     get a_pos_31(): number { return this._structArray.int16[this._pos2 + 1]; }
     get a_pos_32(): number { return this._structArray.int16[this._pos2 + 2]; }
@@ -1069,19 +1063,6 @@ register(FillExtrusionExtArray);
 
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
-    projectedAnchorX: number;
-    projectedAnchorY: number;
-    projectedAnchorZ: number;
-    tileAnchorX: number;
-    tileAnchorY: number;
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
-    padding: number;
-    featureIndex: number;
-    sourceLayerIndex: number;
-    bucketIndex: number;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
     get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 1]; }
     get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 2]; }
@@ -1120,27 +1101,6 @@ register(CollisionBoxArray);
 
 class PlacedSymbolStruct extends Struct {
     _structArray: PlacedSymbolArray;
-    projectedAnchorX: number;
-    projectedAnchorY: number;
-    projectedAnchorZ: number;
-    tileAnchorX: number;
-    tileAnchorY: number;
-    glyphStartIndex: number;
-    numGlyphs: number;
-    vertexStartIndex: number;
-    lineStartIndex: number;
-    lineLength: number;
-    segment: number;
-    lowerSize: number;
-    upperSize: number;
-    lineOffsetX: number;
-    lineOffsetY: number;
-    writingMode: number;
-    placedOrientation: number;
-    hidden: number;
-    crossTileID: number;
-    associatedIconIndex: number;
-    flipState: number;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
     get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 1]; }
     get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 2]; }
@@ -1191,36 +1151,6 @@ register(PlacedSymbolArray);
 
 class SymbolInstanceStruct extends Struct {
     _structArray: SymbolInstanceArray;
-    projectedAnchorX: number;
-    projectedAnchorY: number;
-    projectedAnchorZ: number;
-    tileAnchorX: number;
-    tileAnchorY: number;
-    rightJustifiedTextSymbolIndex: number;
-    centerJustifiedTextSymbolIndex: number;
-    leftJustifiedTextSymbolIndex: number;
-    verticalPlacedTextSymbolIndex: number;
-    placedIconSymbolIndex: number;
-    verticalPlacedIconSymbolIndex: number;
-    key: number;
-    textBoxStartIndex: number;
-    textBoxEndIndex: number;
-    verticalTextBoxStartIndex: number;
-    verticalTextBoxEndIndex: number;
-    iconBoxStartIndex: number;
-    iconBoxEndIndex: number;
-    verticalIconBoxStartIndex: number;
-    verticalIconBoxEndIndex: number;
-    featureIndex: number;
-    numHorizontalGlyphVertices: number;
-    numVerticalGlyphVertices: number;
-    numIconVertices: number;
-    numVerticalIconVertices: number;
-    useRuntimeCollisionCircles: number;
-    crossTileID: number;
-    textOffset0: number;
-    textOffset1: number;
-    collisionCircleDiameter: number;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
     get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 1]; }
     get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 2]; }
@@ -1297,10 +1227,6 @@ register(SymbolLineVertexArray);
 
 class FeatureIndexStruct extends Struct {
     _structArray: FeatureIndexArray;
-    featureIndex: number;
-    sourceLayerIndex: number;
-    bucketIndex: number;
-    layoutVertexArrayOffset: number;
     get featureIndex(): number { return this._structArray.uint32[this._pos4 + 0]; }
     get sourceLayerIndex(): number { return this._structArray.uint16[this._pos2 + 2]; }
     get bucketIndex(): number { return this._structArray.uint16[this._pos2 + 3]; }
@@ -1330,8 +1256,6 @@ register(FeatureIndexArray);
 
 class FillExtrusionCentroidStruct extends Struct {
     _structArray: FillExtrusionCentroidArray;
-    a_centroid_pos0: number;
-    a_centroid_pos1: number;
     get a_centroid_pos0(): number { return this._structArray.uint16[this._pos2 + 0]; }
     get a_centroid_pos1(): number { return this._structArray.uint16[this._pos2 + 1]; }
 }
@@ -1359,13 +1283,6 @@ register(FillExtrusionCentroidArray);
 
 class CircleGlobeExtStruct extends Struct {
     _structArray: CircleGlobeExtArray;
-    a_pos_30: number;
-    a_pos_31: number;
-    a_pos_32: number;
-    a_pos_normal_30: number;
-    a_pos_normal_31: number;
-    a_pos_normal_32: number;
-    a_scale: number;
     get a_pos_30(): number { return this._structArray.int16[this._pos2 + 0]; }
     get a_pos_31(): number { return this._structArray.int16[this._pos2 + 1]; }
     get a_pos_32(): number { return this._structArray.int16[this._pos2 + 2]; }
