@@ -42,8 +42,6 @@ import type {StyleOptions, StyleSetterOptions} from '../style/style.js';
 import type {MapEvent, MapDataEvent} from './events.js';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer.js';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image.js';
-import Terrain from '../style/terrain.js';
-import Fog from '../style/fog.js';
 
 import type ScrollZoomHandler from './handler/scroll_zoom.js';
 import type BoxZoomHandler from './handler/box_zoom.js';
@@ -2499,7 +2497,7 @@ class Map extends Camera {
      * @example
      * const terrain = map.getTerrain();
      */
-    getTerrain(): Terrain | null {
+    getTerrain(): ?TerrainSpecification {
         return this.style ? this.style.getTerrain() : null;
     }
 
@@ -2530,7 +2528,7 @@ class Map extends Camera {
      * @example
      * const fog = map.getFog();
      */
-    getFog(): Fog | null {
+    getFog(): ?FogSpecification {
         return this.style ? this.style.getFog() : null;
     }
 
