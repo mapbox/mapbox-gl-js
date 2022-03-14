@@ -177,8 +177,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const tileCenterLatitude = (latLngTL[0] + latLngBR[0]) / 2.0;
             const tileCenterLongitude= (latLngTL[1] + latLngBR[1]) / 2.0;
             const tileCenterLatLng = new LngLat(tileCenterLongitude, tileCenterLatitude);
-            const tileLod = getTileLod(coord.canonical, tileCenterLatitude);
-            // const tileLod = getTileLodForCenter(tileCenterLatLng, painter.transform.center);
+            // const tileLod = getTileLod(coord.canonical, tileCenterLatitude);
+            const tileLod = getTileLodForCenter(tileCenterLatLng, painter.transform.center);
 
             const tile = sourceCache.getTile(coord);
             const stencilMode = StencilMode.disabled;
