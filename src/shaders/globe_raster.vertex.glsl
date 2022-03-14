@@ -1,9 +1,3 @@
-#define HALF_PI PI / 2.0
-#define QUARTER_PI PI / 4.0
-#define RAD_TO_DEG 180.0 / PI
-#define DEG_TO_RAD PI / 180.0
-#define GLOBE_RADIUS EXTENT / PI / 2.0
-
 uniform mat4 u_proj_matrix;
 uniform mat4 u_globe_matrix;
 uniform mat4 u_merc_matrix;
@@ -53,6 +47,8 @@ void main() {
     vec2 merc_pos = a_merc_pos;
     vec2 uv = a_uv;
 #else
+    // The 3rd row of u_grid_matrix is only used as a spare space to 
+    // pass the following 3 uniforms to avoid explicitly introducing new ones.
     float tiles = u_grid_matrix[0][2];
     float idy = u_grid_matrix[1][2];
     float S = u_grid_matrix[2][2];
