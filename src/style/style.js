@@ -673,12 +673,13 @@ class Style extends Evented {
         return true;
     }
 
-    addImage(id: string, image: StyleImage): ?this {
+    addImage(id: string, image: StyleImage): this {
         if (this.getImage(id)) {
             return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
         }
         this.imageManager.addImage(id, image);
         this._afterImageUpdated(id);
+        return this;
     }
 
     updateImage(id: string, image: StyleImage) {
@@ -689,12 +690,13 @@ class Style extends Evented {
         return this.imageManager.getImage(id);
     }
 
-    removeImage(id: string): ?this {
+    removeImage(id: string): this {
         if (!this.getImage(id)) {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
         this.imageManager.removeImage(id);
         this._afterImageUpdated(id);
+        return this;
     }
 
     _afterImageUpdated(id: string) {
@@ -760,7 +762,7 @@ class Style extends Evented {
      * @throws {Error} If no source is found with the given ID.
      * @returns {Map} The {@link Map} object.
      */
-    removeSource(id: string): ?this {
+    removeSource(id: string): this {
         this._checkLoaded();
 
         const source = this.getSource(id);
@@ -792,6 +794,7 @@ class Style extends Evented {
             source.onRemove(this.map);
         }
         this._changed = true;
+        return this;
     }
 
     /**
