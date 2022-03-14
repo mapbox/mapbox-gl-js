@@ -426,7 +426,8 @@ export function getTileLodForCenter(tileCenter: LngLat, mapCenter: LngLat) {
     let b  = latLngToECEF(mapCenter.lat, mapCenter.lng);
     a = vec3.normalize([], a);
     b = vec3.normalize([], b);
-    let t = clamp(vec3.dot(a, b), 0.707106781187, 1);
+    const cosOfPiFourth = 0.707106781187;
+    let t = clamp(vec3.dot(a, b), cosOfPiFourth, 1.0);
     t = 1.0 - Math.pow(t, 4.0);
     const lod = Math.round(maxLod * t); 
     return lod;
