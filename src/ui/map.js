@@ -2499,7 +2499,7 @@ class Map extends Camera {
      * @example
      * const terrain = map.getTerrain();
      */
-    getTerrain(): Terrain | null {
+    getTerrain(): ?TerrainSpecification {
         return this.style ? this.style.getTerrain() : null;
     }
 
@@ -2530,7 +2530,7 @@ class Map extends Camera {
      * @example
      * const fog = map.getFog();
      */
-    getFog(): Fog | null {
+    getFog(): ?FogSpecification {
         return this.style ? this.style.getFog() : null;
     }
 
