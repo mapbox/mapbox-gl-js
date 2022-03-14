@@ -17,7 +17,7 @@ class Scope {
         }
     }
 
-    concat(bindings: Array<[string, Expression]>) {
+    concat(bindings: Array<[string, Expression]>): Scope {
         return new Scope(this, bindings);
     }
 
