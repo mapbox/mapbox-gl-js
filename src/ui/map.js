@@ -1,7 +1,7 @@
 // @flow
 
 import {version} from '../../package.json';
-import {asyncAll, extend, bindAll, warnOnce, uniqueId, deepEqual} from '../util/util.js';
+import {asyncAll, extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 import * as DOM from '../util/dom.js';
@@ -367,7 +367,7 @@ class Map extends Camera {
     _containerWidth: number;
     _containerHeight: number;
 
-    // `_explicitProjection represents projection as set with a call to map.setProjection()
+    // `_explicitProjection represents projection as set by a call to map.setProjection()
     // For the actual projection displayed, use `transform.projection`.
     // (The two diverge above the transition zoom threshold in Globe view or when _explicitProjection === null
     // a null _explicitProjection indicates the map defaults to first the stylesheet projection if present, then Mercator)
@@ -1064,34 +1064,34 @@ class Map extends Camera {
         return this._updateProjection(projection);
     }
 
-    _updateProjection(projection?: ProjectionSpecification | null) {
+    _updateProjection(explicitProjection?: ProjectionSpecification | null) {
         const prevProjection = this.getProjection();
-        if (projection === undefined) { projection = prevProjection; }
+        if (explicitProjection === null) { this._explicitProjection = null; }
+        const projection = explicitProjection || this.getProjection();
 
-        // At high zoom on globe, set transform projection to mercator.
+        // At high zoom on globe, set transform projection to Mercator while _explicitProjection stays globe.
         const newProjection = this.transform.setProjection(projection && projection.name === 'globe' ?
             {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')} :
             projection);
 
-        // When triggered by a call to setProjection, update _explicitProjection
-        if (projection !== prevProjection) {
-            this._explicitProjection = projection ?
-                (projection.name === "globe" ? {name:'globe', center:[0, 0]} : this.transform.getProjection()) :
-                null;
+        // When called through setProjection, update _explicitProjection
+        if (explicitProjection) {
+            this._explicitProjection = (explicitProjection.name === "globe" ?
+                {name:'globe', center:[0, 0]} :
+                this.transform.getProjection());
         }
 
         if (newProjection) {
             // If a zoom transition on globe
-            if (deepEqual(prevProjection, this.getProjection())) {
+            if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
                 this.style._forceSymbolLayerUpdate();
-            } else { // If a switch between different expressions
+            } else { // If a switch between different projections
                 this.painter.clearBackgroundTiles();
                 for (const id in this.style._sourceCaches) {
                     this.style._sourceCaches[id].clearTiles();
                 }
             }
-            this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
-            this.style.enableDraping();
+            this.style.applyProjectionUpdate();
             this._update(true);
         }
 
