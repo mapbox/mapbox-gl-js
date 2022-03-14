@@ -40,6 +40,7 @@ import {DrapeRenderMode} from '../style/terrain.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
 import {RGBAImage} from '../util/image.js';
+import {GLOBE_METERS_TO_ECEF} from '../geo/projection/globe.js';
 
 import type Map from '../ui/map.js';
 import type Painter from '../render/painter.js';
@@ -587,7 +588,8 @@ export class Terrain extends Elevation {
             useDepthForOcclusion?: boolean,
             useMeterToDem?: boolean,
             labelPlaneMatrixInv?: ?Float32Array,
-            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number }
+            morphing?: { srcDemTile: Tile, dstDemTile: Tile, phase: number },
+            useDenormalizedUpVectorScale?: boolean
         }) {
         const context = this.painter.context;
         const gl = context.gl;
@@ -603,7 +605,11 @@ export class Terrain extends Elevation {
         uniforms['u_tile_tr_up'] = (projection.upVector(id, EXTENT, 0): any);
         uniforms['u_tile_br_up'] = (projection.upVector(id, EXTENT, EXTENT): any);
         uniforms['u_tile_bl_up'] = (projection.upVector(id, 0, EXTENT): any);
-        uniforms['u_tile_up_scale'] = projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile;
+        if (options && options.useDenormalizedUpVectorScale) {
+            uniforms['u_tile_up_scale'] = GLOBE_METERS_TO_ECEF;
+        } else {
+            uniforms['u_tile_up_scale'] = projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile;
+        }
 
         let demTile = null;
         let prevDemTile = null;

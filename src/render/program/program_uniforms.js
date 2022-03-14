@@ -21,8 +21,9 @@ import {skyboxCaptureUniforms} from './skybox_capture_program.js';
 import {globeRasterUniforms, atmosphereUniforms} from '../../terrain/globe_raster_program.js';
 import type {HeatmapDefinesType} from './heatmap_program.js';
 import type {DebugDefinesType} from './debug_program.js';
+import type {GlobeDefinesType} from '../../terrain/globe_raster_program.js';
 
-export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType | DebugDefinesType;
+export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType | DebugDefinesType | GlobeDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,
