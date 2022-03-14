@@ -367,11 +367,11 @@ class Style extends Evented {
         if (!this.map._explicitProjection) { // Update the visible projection if map's is null
             this.map._updateProjection();
         } else { // Ensure that style is consistent with current projection on style load
-            this.updateProjection();
+            this.onProjectionChange();
         }
     }
 
-    updateProjection() {
+    onProjectionChange() {
         if (!this._loaded) return;
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 

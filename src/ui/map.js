@@ -1091,7 +1091,7 @@ class Map extends Camera {
                     this.style._sourceCaches[id].clearTiles();
                 }
             }
-            this.style.updateProjection();
+            this.style.onProjectionChange();
             this._update(true);
         }
 
