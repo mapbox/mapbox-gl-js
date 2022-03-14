@@ -20,12 +20,9 @@ import {
     globeToMercatorTransition,
     globePoleMatrixForTile,
     getGridMatrix,
-    getTileLod,
-    getTileLodForCenter,
     globeTileLatLngCorners
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
-import LngLat from '../geo/lng_lat.js';
 
 export {
     drawTerrainRaster,
@@ -173,13 +170,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         const primitive = isWireframe ? gl.LINES : gl.TRIANGLES;
 
         for (const coord of tileIDs) {
-            const [latLngTL, latLngBR] = globeTileLatLngCorners(coord.canonical);
-            const tileCenterLatitude = (latLngTL[0] + latLngBR[0]) / 2.0;
-            const tileCenterLongitude= (latLngTL[1] + latLngBR[1]) / 2.0;
-            const tileCenterLatLng = new LngLat(tileCenterLongitude, tileCenterLatitude);
-            // const tileLod = getTileLod(coord.canonical, tileCenterLatitude);
-            const tileLod = getTileLodForCenter(tileCenterLatLng, painter.transform.center);
-
             const tile = sourceCache.getTile(coord);
             const stencilMode = StencilMode.disabled;
 
@@ -203,7 +193,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             }
 
             const globeMatrix = Float32Array.from(tr.globeMatrix);
-            const gridMatrix = getGridMatrix(coord.canonical, [latLngTL, latLngBR], tileLod);
+            const corners = globeTileLatLngCorners(coord.canonical);
+            const gridMatrix = getGridMatrix(coord.canonical, corners);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix,
                 globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix);
@@ -216,8 +207,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             if (sharedBuffers) {
                 const [buffer, indexBuffer, segments] = isWireframe ?
-                    sharedBuffers.getWirefameBuffers(painter.context, tileLod) :
-                    sharedBuffers.getGridBuffers(tileLod);
+                    sharedBuffers.getWirefameBuffers(painter.context) :
+                    sharedBuffers.getGridBuffers();
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                     uniformValues, "globe_raster", buffer, indexBuffer, segments);

@@ -17,7 +17,6 @@ import posAttributes from '../../data/pos_attributes.js';
 import {TriangleIndexArray, GlobeVertexArray, GlobeAtmosphereVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
-import assert from 'assert';
 
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
@@ -25,11 +24,11 @@ import type {Mat4, Vec3} from 'gl-matrix';
 import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Transform from '../transform.js';
-import LngLat from '../lng_lat.js';
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
+const GLOBE_VERTEX_GRID_SIZE = 64;
 const TILE_SIZE = 512;
 
 const GLOBE_MIN = -GLOBE_RADIUS;
@@ -44,9 +43,6 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
     new Aabb([GLOBE_MIN, 0, GLOBE_MIN], [0, GLOBE_MAX, GLOBE_MAX]), // x=0, y=1
     new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
 ];
-
-const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [64, 64, 64, 64, 64];
-const MAX_VERTEX_GRID_SIZE = Math.max(...GLOBE_VERTEX_GRID_SIZE_LOD_TABLE);
 
 export class Arc {
     constructor(p0: Vec3, p1: Vec3, center: Vec3) {
@@ -399,10 +395,9 @@ export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Flo
     return Float32Array.from(poleMatrix);
 }
 
-export function getGridMatrix(id: CanonicalTileID, corners: Array<Array<number>>, lod: number): Array<number> {
-    const gridSize = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[lod];
+export function getGridMatrix(id: CanonicalTileID, corners: Array<Array<number>>): Array<number> {
     const [tl, br] = corners;
-    const S = 1.0 / gridSize;
+    const S = 1.0 / GLOBE_VERTEX_GRID_SIZE;
     const x = (br[1] - tl[1]) * S;
     const y = (br[0] - tl[0]) * S;
     const tileZoom = 1 << id.z;
@@ -413,26 +408,6 @@ const POLE_RAD = degToRad(85.0);
 const POLE_COS = Math.cos(POLE_RAD);
 const POLE_SIN = Math.sin(POLE_RAD);
 
-export function getTileLod(id: CanonicalTileID, latitude: number) {
-    const maxLod = GLOBE_ZOOM_THRESHOLD_MIN - 1;
-    const z = Math.min(id.z, maxLod);
-    const lod = latitude ? (z + Math.round((maxLod - z) * Math.abs(Math.sin(degToRad(latitude))))) : z;
-    return lod;
-}
-
-export function getTileLodForCenter(tileCenter: LngLat, mapCenter: LngLat) {
-    const maxLod = GLOBE_ZOOM_THRESHOLD_MIN - 1;
-    let a = latLngToECEF(tileCenter.lat, tileCenter.lng);
-    let b  = latLngToECEF(mapCenter.lat, mapCenter.lng);
-    a = vec3.normalize([], a);
-    b = vec3.normalize([], b);
-    const cosOfPiFourth = 0.707106781187;
-    let t = clamp(vec3.dot(a, b), cosOfPiFourth, 1.0);
-    t = 1.0 - Math.pow(t, 4.0);
-    const lod = Math.round(maxLod * t); 
-    return lod;
-}
-
 export class GlobeSharedBuffers {
     _poleNorthVertexBuffer: VertexBuffer;
     _poleSouthVertexBuffer: VertexBuffer;
@@ -441,17 +416,16 @@ export class GlobeSharedBuffers {
 
     _gridBuffer: VertexBuffer;
     _gridIndexBuffer: IndexBuffer;
-    _gridSegments: Array<SegmentVector>;
+    _gridSegments: SegmentVector;
 
     atmosphereVertexBuffer: VertexBuffer;
     atmosphereIndexBuffer: IndexBuffer;
     atmosphereSegments: SegmentVector;
 
     _wireframeIndexBuffer: IndexBuffer;
-    _wireframeSegments: Array<SegmentVector>;
+    _wireframeSegments: SegmentVector;
 
     constructor(context: Context) {
-        assert(GLOBE_VERTEX_GRID_SIZE_LOD_TABLE.length === GLOBE_ZOOM_THRESHOLD_MIN);
         this._createGrid(context);
         this._createPoles(context);
         this._createAtmosphere(context);
@@ -464,87 +438,78 @@ export class GlobeSharedBuffers {
         this._poleNorthVertexBuffer.destroy();
         this._poleSouthVertexBuffer.destroy();
         for (const segments of this._poleSegments) segments.destroy();
-        for (const segments of this._gridSegments) segments.destroy();
+        this._gridSegments.destroy();
         this.atmosphereVertexBuffer.destroy();
         this.atmosphereIndexBuffer.destroy();
         this.atmosphereSegments.destroy();
 
         if (this._wireframeIndexBuffer) {
             this._wireframeIndexBuffer.destroy();
-            for (const segments of this._wireframeSegments) segments.destroy();
+            this._wireframeSegments.destroy();
         }
     }
 
     _createGrid(context: Context) {
-        // All tiles use the same vertex and index buffer. Different segments view into the index buffer.
-        // This allows picking different "resolution" for a given tile based on its zoom level.
         const gridVertices = new PosArray();
         const gridIndices = new TriangleIndexArray();
 
-        const maxVertices = MAX_VERTEX_GRID_SIZE + 1;
+        const quadExt = GLOBE_VERTEX_GRID_SIZE;
+        const vertexExt = quadExt + 1;
 
-        this._gridSegments = [];
-
-        for (let j = 0; j < maxVertices; j++)
-            for (let i = 0; i < maxVertices; i++)
+        for (let j = 0; j < vertexExt; j++)
+            for (let i = 0; i < vertexExt; i++)
                 gridVertices.emplaceBack(i, j);
 
-        for (let z = 0, primitiveOffset = 0; z < GLOBE_ZOOM_THRESHOLD_MIN; z++) {
-            const quadExt = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[z];
-            const vertexExt = quadExt + 1;
-
-            for (let j = 0; j < quadExt; j++) {
-                for (let i = 0; i < quadExt; i++) {
-                    const index = j * maxVertices + i;
-                    gridIndices.emplaceBack(index + 1, index, index + maxVertices);
-                    gridIndices.emplaceBack(index + maxVertices, index + maxVertices + 1, index + 1);
-                }
+        for (let j = 0; j < quadExt; j++) {
+            for (let i = 0; i < quadExt; i++) {
+                const index = j * vertexExt + i;
+                gridIndices.emplaceBack(index + 1, index, index + vertexExt);
+                gridIndices.emplaceBack(index + vertexExt, index + vertexExt + 1, index + 1);
             }
-
-            const numVertices = vertexExt * vertexExt;
-            const numPrimitives = quadExt * quadExt * 2;
-
-            this._gridSegments.push(SegmentVector.simpleSegment(0, primitiveOffset, numVertices, numPrimitives));
-            primitiveOffset += numPrimitives;
         }
 
-        this._gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
+        const numVertices = vertexExt * vertexExt;
+        const numPrimitives = quadExt * quadExt * 2;
+
         this._gridBuffer = context.createVertexBuffer(gridVertices, posAttributes.members);
+        this._gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
+        this._gridSegments = SegmentVector.simpleSegment(0, 0, numVertices, numPrimitives);
     }
 
     _createPoles(context: Context) {
         const poleIndices = new TriangleIndexArray();
-        for (let i = 0; i < MAX_VERTEX_GRID_SIZE; i++)
+        for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
             poleIndices.emplaceBack(0, i + 1, i + 2);
+        }
+        this._poleIndexBuffer = context.createIndexBuffer(poleIndices, true);
 
         const northVertices = new GlobeVertexArray();
         const southVertices = new GlobeVertexArray();
+        const polePrimitives = GLOBE_VERTEX_GRID_SIZE;
+        const poleVertices = GLOBE_VERTEX_GRID_SIZE + 2;
         this._poleSegments = [];
 
-        for (let zoom = 0, vertexOffset = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
+        for (let zoom = 0, offset = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
             const tiles = 1 << zoom;
             const radius = tiles * TILE_SIZE / Math.PI / 2.0;
             const endAngle = 360.0 / tiles;
 
-            const numTriangles = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[zoom];
-            const numTotalVertices = numTriangles + 2;
-
             northVertices.emplaceBack(0, -radius, 0, 0, 0, 0.5, 0); // place the tip
             southVertices.emplaceBack(0, -radius, 0, 0, 0, 0.5, 1);
 
-            for (let i = 0; i <= numTriangles; i++) {
-                const uvX = i / numTriangles;
+            for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
+                const uvX = i / GLOBE_VERTEX_GRID_SIZE;
                 const angle = interpolate(0, endAngle, uvX);
                 const [gx, gy, gz] = csLatLngToECEF(POLE_COS, POLE_SIN, angle, radius);
                 northVertices.emplaceBack(gx, gy, gz, 0, 0, uvX, 0);
                 southVertices.emplaceBack(gx, gy, gz, 0, 0, uvX, 1);
             }
 
-            this._poleSegments.push(SegmentVector.simpleSegment(vertexOffset, 0, numTotalVertices, numTriangles));
-            vertexOffset += numTotalVertices;
+            this._poleSegments.push(SegmentVector.simpleSegment(offset, 0, poleVertices, polePrimitives));
+
+            offset += poleVertices;
         }
 
-        this._poleIndexBuffer = context.createIndexBuffer(poleIndices, false);
         this._poleNorthVertexBuffer = context.createVertexBuffer(northVertices, globeLayoutAttributes, false);
         this._poleSouthVertexBuffer = context.createVertexBuffer(southVertices, globeLayoutAttributes, false);
     }
@@ -565,43 +530,32 @@ export class GlobeSharedBuffers {
         this.atmosphereSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
     }
 
-    getGridBuffers(lod: number): [VertexBuffer, IndexBuffer, SegmentVector] {
-        return [this._gridBuffer, this._gridIndexBuffer, this._gridSegments[lod]];
+    getGridBuffers(): [VertexBuffer, IndexBuffer, SegmentVector] {
+        return [this._gridBuffer, this._gridIndexBuffer, this._gridSegments];
     }
 
     getPoleBuffers(z: number): [VertexBuffer, VertexBuffer, IndexBuffer, SegmentVector] {
         return [this._poleNorthVertexBuffer, this._poleSouthVertexBuffer, this._poleIndexBuffer, this._poleSegments[z]];
     }
 
-    getWirefameBuffers(context: Context, lod: number): [VertexBuffer, IndexBuffer, SegmentVector] {
+    getWirefameBuffers(context: Context): [VertexBuffer, IndexBuffer, SegmentVector] {
         if (!this._wireframeSegments) {
-            this._wireframeSegments = [];
-            const maxVertices = MAX_VERTEX_GRID_SIZE + 1;
-
             const wireframeIndices = new LineIndexArray();
+            const quadExt = GLOBE_VERTEX_GRID_SIZE;
+            const vertexExt = quadExt + 1;
 
-            for (let z = 0, primitiveOffset = 0; z < GLOBE_ZOOM_THRESHOLD_MIN; z++) {
-                const quadExt = GLOBE_VERTEX_GRID_SIZE_LOD_TABLE[z];
-                const vertexExt = quadExt + 1;
-
-                for (let j = 0; j < quadExt; j++) {
-                    for (let i = 0; i < quadExt; i++) {
-                        const index = j * maxVertices + i;
-                        wireframeIndices.emplaceBack(index, index + 1);
-                        wireframeIndices.emplaceBack(index, index + maxVertices);
-                        wireframeIndices.emplaceBack(index, index + maxVertices + 1);
-                    }
+            for (let j = 0; j < quadExt; j++) {
+                for (let i = 0; i < quadExt; i++) {
+                    const index = j * vertexExt + i;
+                    wireframeIndices.emplaceBack(index, index + 1);
+                    wireframeIndices.emplaceBack(index, index + vertexExt);
+                    wireframeIndices.emplaceBack(index, index + vertexExt + 1);
                 }
-
-                const numVertices = vertexExt * vertexExt;
-                const numPrimitives = quadExt * quadExt * 3;
-
-                this._wireframeSegments.push(SegmentVector.simpleSegment(0, primitiveOffset, numVertices, numPrimitives));
-                primitiveOffset += numPrimitives;
             }
 
             this._wireframeIndexBuffer = context.createIndexBuffer(wireframeIndices);
+            this._wireframeSegments = SegmentVector.simpleSegment(0, 0, quadExt * quadExt, wireframeIndices.length);
         }
-        return [this._gridBuffer, this._wireframeIndexBuffer, this._wireframeSegments[lod]];
+        return [this._gridBuffer, this._wireframeIndexBuffer, this._wireframeSegments];
     }
 }
