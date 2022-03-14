@@ -25,6 +25,7 @@ import type {Mat4, Vec3} from 'gl-matrix';
 import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Transform from '../transform.js';
+import LngLat from '../lng_lat.js';
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
@@ -44,7 +45,7 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
     new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
 ];
 
-const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [64, 64, 64, 64, 32];
+const GLOBE_VERTEX_GRID_SIZE_LOD_TABLE = [64, 64, 64, 64, 64];
 const MAX_VERTEX_GRID_SIZE = Math.max(...GLOBE_VERTEX_GRID_SIZE_LOD_TABLE);
 
 export class Arc {
@@ -416,6 +417,18 @@ export function getTileLod(id: CanonicalTileID, latitude: number) {
     const maxLod = GLOBE_ZOOM_THRESHOLD_MIN - 1;
     const z = Math.min(id.z, maxLod);
     const lod = latitude ? (z + Math.round((maxLod - z) * Math.abs(Math.sin(degToRad(latitude))))) : z;
+    return lod;
+}
+
+export function getTileLodForCenter(tileCenter: LngLat, mapCenter: LngLat) {
+    const maxLod = GLOBE_ZOOM_THRESHOLD_MIN - 1;
+    let a = latLngToECEF(tileCenter.lat, tileCenter.lng);
+    let b  = latLngToECEF(mapCenter.lat, mapCenter.lng);
+    a = vec3.normalize([], a);
+    b = vec3.normalize([], b);
+    let t = clamp(vec3.dot(a, b), 0.707106781187, 1);
+    t = 1.0 - Math.pow(t, 4.0);
+    const lod = Math.round(maxLod * t); 
     return lod;
 }
 
