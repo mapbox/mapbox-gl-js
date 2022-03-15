@@ -192,6 +192,7 @@ function getTilePoints(geometry, pointBBox, polyBBox, canonical: CanonicalTileID
     const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
     const tilePoints = [];
+    if (!geometry) return tilePoints;
     for (const points of geometry) {
         for (const point of points) {
             const p = [point.x + shifts[0], point.y + shifts[1]];
@@ -206,6 +207,7 @@ function getTileLines(geometry, lineBBox, polyBBox, canonical: CanonicalTileID) 
     const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
     const tileLines = [];
+    if (!geometry) return tileLines;
     for (const line of geometry) {
         const tileLine = [];
         for (const point of line) {

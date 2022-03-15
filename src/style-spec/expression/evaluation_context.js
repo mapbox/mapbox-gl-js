@@ -42,7 +42,7 @@ class EvaluationContext {
         return this.feature ? typeof this.feature.type === 'number' ? geometryTypes[this.feature.type] : this.feature.type : null;
     }
 
-    geometry() {
+    geometry(): ?Array<Array<Point>> {
         return this.feature && 'geometry' in this.feature ? this.feature.geometry : null;
     }
 

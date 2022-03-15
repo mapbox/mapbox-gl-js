@@ -5,7 +5,7 @@ import Assertion from './assertion.js';
 import {typeOf} from '../values.js';
 import RuntimeError from '../runtime_error.js';
 
-import type {Expression, SerializedExpression} from '../expression.js';
+import type {Expression, SerializedExpression, ExpressionRegistration} from '../expression.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type ParsingContext from '../parsing_context.js';
 import type {Type} from '../types.js';
@@ -59,7 +59,7 @@ function gteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { 
  *
  * @private
  */
-function makeComparison(op: ComparisonOperator, compareBasic: (EvaluationContext, any, any) => boolean, compareWithCollator: (EvaluationContext, any, any, any) => boolean) {
+function makeComparison(op: ComparisonOperator, compareBasic: (EvaluationContext, any, any) => boolean, compareWithCollator: (EvaluationContext, any, any, any) => boolean): ExpressionRegistration {
     const isOrderComparison = op !== '==' && op !== '!=';
 
     return class Comparison implements Expression {

@@ -15,7 +15,7 @@ import type {StyleSpecification} from '../types.js';
  * this will convert (a) "stop" functions, and (b) legacy filters to their
  * expression equivalents.
  */
-export default function(style: StyleSpecification) {
+export default function(style: StyleSpecification): StyleSpecification {
     const converted = [];
 
     eachLayer(style, (layer) => {
