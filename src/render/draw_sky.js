@@ -111,7 +111,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
 
-function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, faceRotate: Mat4, sunDirection: [number, number, number], i: number) {
+function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<any>, faceRotate: Mat4, sunDirection: [number, number, number], i: number) {
     const gl = context.gl;
 
     const atmosphereColor = layer.paint.get('sky-atmosphere-color');

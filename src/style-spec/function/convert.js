@@ -1,15 +1,15 @@
 // @flow
 
 import assert from 'assert';
-import type {StylePropertySpecification} from '../style-spec.js';
 
-export default convertFunction;
+import type {StylePropertySpecification} from '../style-spec.js';
+import type {ExpressionSpecification} from '../types.js';
 
 function convertLiteral(value) {
     return typeof value === 'object' ? ['literal', value] : value;
 }
 
-function convertFunction(parameters: any, propertySpec: StylePropertySpecification) {
+export default function convertFunction(parameters: any, propertySpec: StylePropertySpecification): ExpressionSpecification {
     let stops = parameters.stops;
     if (!stops) {
         // identity function
@@ -244,7 +244,7 @@ function getFunctionType(parameters, propertySpec) {
 }
 
 // "String with {name} token" => ["concat", "String with ", ["get", "name"], " token"]
-export function convertTokenString(s: string) {
+export function convertTokenString(s: string): string | ExpressionSpecification {
     const result = ['concat'];
     const re = /{([^{}]+)}/g;
     let pos = 0;

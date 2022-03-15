@@ -47,7 +47,7 @@ class MouseHandler {
         return false; // implemented by child
     }
 
-    _move(lastPoint: Point, point: Point) {  //eslint-disable-line
+    _move(lastPoint: Point, point: Point): ?HandlerResult {  //eslint-disable-line
         return {}; // implemented by child
     }
 
@@ -61,7 +61,7 @@ class MouseHandler {
         this._eventButton = eventButton;
     }
 
-    mousemoveWindow(e: MouseEvent, point: Point) {
+    mousemoveWindow(e: MouseEvent, point: Point): ?HandlerResult {
         const lastPoint = this._lastPoint;
         if (!lastPoint) return;
         e.preventDefault();
@@ -121,7 +121,7 @@ export class MousePanHandler extends MouseHandler {
         return button === LEFT_BUTTON && !e.ctrlKey;
     }
 
-    _move(lastPoint: Point, point: Point) {
+    _move(lastPoint: Point, point: Point): ?HandlerResult {
         return {
             around: point,
             panDelta: point.sub(lastPoint)

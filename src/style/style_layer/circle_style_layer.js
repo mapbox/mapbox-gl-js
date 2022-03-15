@@ -33,7 +33,7 @@ class CircleStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    createBucket(parameters: BucketParameters<*>) {
+    createBucket(parameters: BucketParameters<*>): CircleBucket<CircleStyleLayer> {
         return new CircleBucket(parameters);
     }
 
@@ -66,7 +66,7 @@ class CircleStyleLayer extends StyleLayer {
             this.paint.get('circle-pitch-scale') === 'map', translation, size);
     }
 
-    getProgramIds() {
+    getProgramIds(): Array<string> {
         return ['circle'];
     }
 
