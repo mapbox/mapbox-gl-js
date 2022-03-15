@@ -5,7 +5,7 @@ import {NumberType} from '../types.js';
 import {findStopLessThanOrEqualTo} from '../stops.js';
 
 import type {Stops} from '../stops.js';
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -105,7 +105,7 @@ class Step implements Expression {
         return this.outputs.every(out => out.outputDefined());
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         const serialized = ["step", this.input.serialize()];
         for (let i = 0; i < this.labels.length; i++) {
             if (i > 0) {

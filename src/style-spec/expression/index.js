@@ -31,7 +31,7 @@ import type {FeatureDistanceData} from '../feature_filter/index.js';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
-    +id?: any,
+    +id?: number | null,
     +properties: {[_: string]: any},
     +patterns?: {[_: string]: {"min": string, "mid": string, "max": string}},
     +geometry?: Array<Array<Point>>

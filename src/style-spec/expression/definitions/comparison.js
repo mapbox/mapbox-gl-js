@@ -5,7 +5,7 @@ import Assertion from './assertion.js';
 import {typeOf} from '../values.js';
 import RuntimeError from '../runtime_error.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type ParsingContext from '../parsing_context.js';
 import type {Type} from '../types.js';
@@ -28,19 +28,19 @@ function isComparableType(op: ComparisonOperator, type: Type) {
     }
 }
 
-function eq(ctx, a, b) { return a === b; }
-function neq(ctx, a, b) { return a !== b; }
-function lt(ctx, a, b) { return a < b; }
-function gt(ctx, a, b) { return a > b; }
-function lteq(ctx, a, b) { return a <= b; }
-function gteq(ctx, a, b) { return a >= b; }
+function eq(ctx: EvaluationContext, a: any, b: any): boolean { return a === b; }
+function neq(ctx: EvaluationContext, a: any, b: any): boolean { return a !== b; }
+function lt(ctx: EvaluationContext, a: any, b: any): boolean { return a < b; }
+function gt(ctx: EvaluationContext, a: any, b: any): boolean { return a > b; }
+function lteq(ctx: EvaluationContext, a: any, b: any): boolean { return a <= b; }
+function gteq(ctx: EvaluationContext, a: any, b: any): boolean { return a >= b; }
 
-function eqCollate(ctx, a, b, c) { return c.compare(a, b) === 0; }
-function neqCollate(ctx, a, b, c) { return !eqCollate(ctx, a, b, c); }
-function ltCollate(ctx, a, b, c) { return c.compare(a, b) < 0; }
-function gtCollate(ctx, a, b, c) { return c.compare(a, b) > 0; }
-function lteqCollate(ctx, a, b, c) { return c.compare(a, b) <= 0; }
-function gteqCollate(ctx, a, b, c) { return c.compare(a, b) >= 0; }
+function eqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) === 0; }
+function neqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return !eqCollate(ctx, a, b, c); }
+function ltCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) < 0; }
+function gtCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) > 0; }
+function lteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) <= 0; }
+function gteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) >= 0; }
 
 /**
  * Special form for comparison operators, implementing the signatures:
@@ -59,7 +59,7 @@ function gteqCollate(ctx, a, b, c) { return c.compare(a, b) >= 0; }
  *
  * @private
  */
-function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollator) {
+function makeComparison(op: ComparisonOperator, compareBasic: (EvaluationContext, any, any) => boolean, compareWithCollator: (EvaluationContext, any, any, any) => boolean) {
     const isOrderComparison = op !== '==' && op !== '!=';
 
     return class Comparison implements Expression {
@@ -130,7 +130,7 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
             return new Comparison(lhs, rhs, collator);
         }
 
-        evaluate(ctx: EvaluationContext) {
+        evaluate(ctx: EvaluationContext): boolean {
             const lhs = this.lhs.evaluate(ctx);
             const rhs = this.rhs.evaluate(ctx);
 
@@ -168,7 +168,7 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
             return true;
         }
 
-        serialize() {
+        serialize(): SerializedExpression {
             const serialized = [op];
             this.eachChild(child => { serialized.push(child.serialize()); });
             return serialized;

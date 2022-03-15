@@ -3,7 +3,7 @@
 import {StringType, BooleanType, CollatorType} from '../types.js';
 import Collator from '../types/collator.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type ParsingContext from '../parsing_context.js';
 import type {Type} from '../types.js';
@@ -66,7 +66,7 @@ export default class CollatorExpression implements Expression {
         return false;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         const options = {};
         options['case-sensitive'] = this.caseSensitive.serialize();
         options['diacritic-sensitive'] = this.diacriticSensitive.serialize();
