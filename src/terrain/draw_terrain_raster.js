@@ -20,7 +20,8 @@ import {
     globeToMercatorTransition,
     globePoleMatrixForTile,
     getGridMatrix,
-    globeTileLatLngCorners
+    globeTileLatLngCorners,
+    getLatitudinalLod
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
 
@@ -194,7 +195,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             const globeMatrix = Float32Array.from(tr.globeMatrix);
             const corners = globeTileLatLngCorners(coord.canonical);
-            const gridMatrix = getGridMatrix(coord.canonical, corners);
+            const latitudinalLod = getLatitudinalLod(coord.canonical, corners);
+            const gridMatrix = getGridMatrix(coord.canonical, corners, latitudinalLod);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix,
                 globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix);
@@ -207,8 +209,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             if (sharedBuffers) {
                 const [buffer, indexBuffer, segments] = isWireframe ?
-                    sharedBuffers.getWirefameBuffers(painter.context) :
-                    sharedBuffers.getGridBuffers();
+                    sharedBuffers.getWirefameBuffers(painter.context, latitudinalLod) :
+                    sharedBuffers.getGridBuffers(latitudinalLod);
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                     uniformValues, "globe_raster", buffer, indexBuffer, segments);
