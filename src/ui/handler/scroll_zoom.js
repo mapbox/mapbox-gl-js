@@ -10,7 +10,7 @@ import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import Point from '@mapbox/point-geometry';
 
 import type Map from '../map.js';
-import type HandlerManager from '../handler_manager.js';
+import type HandlerManager, {HandlerResult} from '../handler_manager.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 // deltaY value for mouse scroll wheel identification
@@ -263,7 +263,7 @@ class ScrollZoomHandler {
         }
     }
 
-    renderFrame() {
+    renderFrame(): ?HandlerResult {
         if (!this._frameId) return;
         this._frameId = null;
 
@@ -350,7 +350,7 @@ class ScrollZoomHandler {
         };
     }
 
-    _smoothOutEasing(duration: number) {
+    _smoothOutEasing(duration: number): (number) => number {
         let easing = _ease;
 
         if (this._prevEase) {

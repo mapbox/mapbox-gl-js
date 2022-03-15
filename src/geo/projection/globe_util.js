@@ -242,7 +242,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     return new Aabb(cornerMin, cornerMax);
 }
 
-export function globeTileLatLngCorners(id: CanonicalTileID) {
+export function globeTileLatLngCorners(id: CanonicalTileID): [[number, number], [number, number]] {
     const tileScale = 1 << id.z;
     const left = id.x / tileScale;
     const right = (id.x + 1) / tileScale;
@@ -395,7 +395,7 @@ export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Flo
     return Float32Array.from(poleMatrix);
 }
 
-export function getGridMatrix(id: CanonicalTileID, corners: Array<Array<number>>): Array<number> {
+export function getGridMatrix(id: CanonicalTileID, corners: [[number, number], [number, number]]): Array<number> {
     const [tl, br] = corners;
     const S = 1.0 / GLOBE_VERTEX_GRID_SIZE;
     const x = (br[1] - tl[1]) * S;

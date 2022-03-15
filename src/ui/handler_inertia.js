@@ -4,7 +4,9 @@ import browser from '../util/browser.js';
 import type Map from './map.js';
 import {bezier, clamp, extend} from '../util/util.js';
 import Point from '@mapbox/point-geometry';
+
 import type {DragPanOptions} from './handler/shim/drag_pan.js';
+import type {EasingOptions} from '../ui/camera.js';
 
 const defaultInertiaOptions = {
     linearity: 0.3,
@@ -67,7 +69,7 @@ export default class HandlerInertia {
             inertia.shift();
     }
 
-    _onMoveEnd(panInertiaOptions?: DragPanOptions) {
+    _onMoveEnd(panInertiaOptions?: DragPanOptions): ?(EasingOptions & {easeId?: string, preloadOnly?: boolean}) {
         this._drainInertiaBuffer();
         if (this._inertiaBuffer.length < 2) {
             return;
@@ -127,10 +129,8 @@ export default class HandlerInertia {
         }
 
         this.clear();
-        return extend(easeOptions, {
-            noMoveStart: true
-        });
-
+        easeOptions.noMoveStart = true;
+        return easeOptions;
     }
 }
 

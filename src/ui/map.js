@@ -3185,7 +3185,7 @@ class Map extends Camera {
         getMapSessionAPI(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err) => {
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
-                if (err.message === AUTH_ERR_MSG || err.status === 401) {
+                if (err.message === AUTH_ERR_MSG || (err: any).status === 401) {
                     const gl = this.painter.context.gl;
                     storeAuthState(gl, false);
                     if (this._logoControl instanceof LogoControl) {

@@ -33,9 +33,9 @@ export class Elevation {
     /**
      * Helper that checks whether DEM data is available at a given mercator coordinate.
      * @param {MercatorCoordinate} point Mercator coordinate of the point to check against.
-     * @returns {number} `true` indicating whether the data is available at `point`, and `false` otherwise.
+     * @returns {boolean} `true` indicating whether the data is available at `point`, and `false` otherwise.
      */
-    isDataAvailableAtPoint(point: MercatorCoordinate) {
+    isDataAvailableAtPoint(point: MercatorCoordinate): boolean {
         const sourceCache = this._source();
         if (!sourceCache || point.y < 0.0 || point.y > 1.0) {
             return false;
@@ -50,7 +50,7 @@ export class Elevation {
         const y = Math.floor(point.y * tiles);
         const demTile = this.findDEMTileFor(new OverscaledTileID(z, wrap, z, x, y));
 
-        return demTile && demTile.dem;
+        return !!(demTile && demTile.dem);
     }
 
     /**

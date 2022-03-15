@@ -24,7 +24,7 @@ class TwoTouchHandler {
     }
 
     _start(points: [Point, Point]) {} //eslint-disable-line
-    _move(points: [Point, Point], pinchAround: Point, e: TouchEvent) { return {}; } //eslint-disable-line
+    _move(points: [Point, Point], pinchAround: Point, e: TouchEvent): ?HandlerResult { return {}; } //eslint-disable-line
 
     touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         //console.log(e.target, e.targetTouches.length ? e.targetTouches[0].target : null);
@@ -40,7 +40,7 @@ class TwoTouchHandler {
         this._start([points[0], points[1]]);
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         const firstTouches = this._firstTwoTouches;
         if (!firstTouches) return;
 
@@ -122,7 +122,7 @@ export class TouchZoomHandler extends TwoTouchHandler {
         this._startDistance = this._distance = points[0].dist(points[1]);
     }
 
-    _move(points: [Point, Point], pinchAround: Point) {
+    _move(points: [Point, Point], pinchAround: Point): ?HandlerResult {
         const lastDistance = this._distance;
         this._distance = points[0].dist(points[1]);
         if (!this._active && Math.abs(getZoomDelta(this._distance, this._startDistance)) < ZOOM_THRESHOLD) return;
@@ -157,7 +157,7 @@ export class TouchRotateHandler extends TwoTouchHandler {
         this._minDiameter = points[0].dist(points[1]);
     }
 
-    _move(points: [Point, Point], pinchAround: Point) {
+    _move(points: [Point, Point], pinchAround: Point): ?HandlerResult {
         const lastVector = this._vector;
         this._vector = points[0].sub(points[1]);
 
