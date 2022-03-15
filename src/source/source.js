@@ -49,6 +49,8 @@ export interface Source {
     tileID?: CanonicalTileID;
     reparseOverscaled?: boolean,
     vectorLayerIds?: Array<string>,
+    minTileCacheSize?: ?number;
+    maxTileCacheSize?: ?number;
 
     hasTransition(): boolean;
     loaded(): boolean;
@@ -64,6 +66,7 @@ export interface Source {
     +hasTile?: (tileID: OverscaledTileID) => boolean;
     +abortTile?: (tile: Tile, callback: Callback<void>) => void;
     +unloadTile?: (tile: Tile, callback: Callback<void>) => void;
+    +renderTile?: (tileID: OverscaledTileID) => ?Tile;
 
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.
@@ -96,6 +99,7 @@ import geojson from '../source/geojson_source.js';
 import video from '../source/video_source.js';
 import image from '../source/image_source.js';
 import canvas from '../source/canvas_source.js';
+import customRaster from '../source/custom_raster_tile_source.js';
 
 import type {SourceSpecification} from '../style-spec/types.js';
 
@@ -106,7 +110,8 @@ const sourceTypes = {
     geojson,
     video,
     image,
-    canvas
+    canvas,
+    'custom-raster': customRaster
 };
 
 /*

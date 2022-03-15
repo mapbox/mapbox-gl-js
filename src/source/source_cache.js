@@ -91,8 +91,8 @@ class SourceCache extends Evented {
         this._cache = new TileCache(0, this._unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
-        this._minTileCacheSize = null;
-        this._maxTileCacheSize = null;
+        this._minTileCacheSize = source.minTileCacheSize;
+        this._maxTileCacheSize = source.maxTileCacheSize;
         this._loadedParentTiles = {};
 
         this._coveredTiles = {};
@@ -101,8 +101,8 @@ class SourceCache extends Evented {
 
     onAdd(map: MapboxMap) {
         this.map = map;
-        this._minTileCacheSize = map ? map._minTileCacheSize : null;
-        this._maxTileCacheSize = map ? map._maxTileCacheSize : null;
+        this._minTileCacheSize = this._minTileCacheSize === undefined && map ? map._minTileCacheSize : this._minTileCacheSize;
+        this._maxTileCacheSize = this._maxTileCacheSize === undefined && map ? map._maxTileCacheSize : this._maxTileCacheSize;
     }
 
     /**
@@ -164,6 +164,20 @@ class SourceCache extends Evented {
         }
 
         this._state.coalesceChanges(this._tiles, this.map ? this.map.painter : null);
+
+        if (this._source.renderTile) {
+            for (const i in this._tiles) {
+                const tile = this._tiles[i];
+                if (this.map.painter.terrain) this.map.painter.terrain._clearRenderCacheForTile(this.id, tile.tileID);
+                this._source.renderTile(tile.tileID);
+
+                tile.upload(context);
+                tile.prepare(this.map.style.imageManager);
+            }
+
+            return;
+        }
+
         for (const i in this._tiles) {
             const tile = this._tiles[i];
             tile.upload(context);
@@ -735,9 +749,12 @@ class SourceCache extends Evented {
      * @private
      */
     _addTile(tileID: OverscaledTileID): Tile {
-        let tile = this._tiles[tileID.key];
-        if (tile)
-            return tile;
+        // the tile may be outdated in the external source cache
+        let tile = this._externalCacheLookup(tileID);
+        if (tile) return tile;
+
+        tile = this._tiles[tileID.key];
+        if (tile) return tile;
 
         tile = this._cache.getAndRemove(tileID);
         if (tile) {
@@ -767,6 +784,21 @@ class SourceCache extends Evented {
         this._tiles[tileID.key] = tile;
         if (!cached) this._source.fire(new Event('dataloading', {tile, coord: tile.tileID, dataType: 'source'}));
 
+        return tile;
+    }
+
+    /**
+     * Find tile in the external tile cache
+     * @private
+     */
+    _externalCacheLookup(tileID: OverscaledTileID): ?Tile {
+        if (!this._source.renderTile) return null;
+
+        const tile = this._source.renderTile(tileID);
+        if (!tile) return null;
+
+        tile.uses++;
+        this._tiles[tileID.key] = tile;
         return tile;
     }
 

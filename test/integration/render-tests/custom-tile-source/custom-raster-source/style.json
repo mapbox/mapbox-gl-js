@@ -1,0 +1,37 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "debug": true,
+      "height": 256,
+      "allowed": 0.02975,
+      "operations": [
+        [
+          "addCustomRasterTileSource",
+          "/tiles/{z}-{x}-{y}.satellite.png"
+        ],
+        [
+          "sleep",
+          1500
+        ]
+      ]
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 16,
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    }
+  ]
+}
