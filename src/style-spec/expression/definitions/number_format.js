@@ -93,7 +93,7 @@ export default class NumberFormat implements Expression {
         return new NumberFormat(number, locale, currency, minFractionDigits, maxFractionDigits);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): string {
         return new Intl.NumberFormat(this.locale ? this.locale.evaluate(ctx) : [],
             {
                 style: this.currency ? "currency" : "decimal",
@@ -119,7 +119,7 @@ export default class NumberFormat implements Expression {
         }
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return false;
     }
 

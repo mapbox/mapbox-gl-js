@@ -176,9 +176,9 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
     };
 }
 
-export const Equals = makeComparison('==', eq, eqCollate);
-export const NotEquals = makeComparison('!=', neq, neqCollate);
-export const LessThan = makeComparison('<', lt, ltCollate);
-export const GreaterThan = makeComparison('>', gt, gtCollate);
-export const LessThanOrEqual = makeComparison('<=', lteq, lteqCollate);
-export const GreaterThanOrEqual = makeComparison('>=', gteq, gteqCollate);
+export const Equals: $Call<typeof makeComparison, '==', typeof eq, typeof eqCollate> = makeComparison('==', eq, eqCollate);
+export const NotEquals: $Call<typeof makeComparison, '!=', typeof neq, typeof neqCollate> = makeComparison('!=', neq, neqCollate);
+export const LessThan: $Call<typeof makeComparison, '<', typeof lt, typeof ltCollate> = makeComparison('<', lt, ltCollate);
+export const GreaterThan: $Call<typeof makeComparison, '>', typeof gt, typeof gtCollate> = makeComparison('>', gt, gtCollate);
+export const LessThanOrEqual: $Call<typeof makeComparison, '<=', typeof lteq, typeof lteqCollate> = makeComparison('<=', lteq, lteqCollate);
+export const GreaterThanOrEqual: $Call<typeof makeComparison, '>=', typeof gteq, typeof gteqCollate> = makeComparison('>=', gteq, gteqCollate);

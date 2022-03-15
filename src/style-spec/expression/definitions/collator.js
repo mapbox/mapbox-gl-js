@@ -46,7 +46,7 @@ export default class CollatorExpression implements Expression {
         return new CollatorExpression(caseSensitive, diacriticSensitive, locale);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): Collator {
         return new Collator(this.caseSensitive.evaluate(ctx), this.diacriticSensitive.evaluate(ctx), this.locale ? this.locale.evaluate(ctx) : null);
     }
 
@@ -58,7 +58,7 @@ export default class CollatorExpression implements Expression {
         }
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         // Technically the set of possible outputs is the combinatoric set of Collators produced
         // by all possible outputs of locale/caseSensitive/diacriticSensitive
         // But for the primary use of Collators in comparison operators, we ignore the Collator's

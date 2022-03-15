@@ -83,7 +83,7 @@ export default class FormatExpression implements Expression {
         return new FormatExpression(sections);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): Formatted {
         const evaluateSection = section => {
             const evaluatedContent = section.content.evaluate(ctx);
             if (typeOf(evaluatedContent) === ResolvedImageType) {
@@ -117,7 +117,7 @@ export default class FormatExpression implements Expression {
         }
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         // Technically the combinatoric set of all children
         // Usually, this.text will be undefined anyway
         return false;

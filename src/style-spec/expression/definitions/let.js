@@ -16,7 +16,7 @@ class Let implements Expression {
         this.result = result;
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any {
         return this.result.evaluate(ctx);
     }
 
@@ -27,7 +27,7 @@ class Let implements Expression {
         fn(this.result);
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Let {
         if (args.length < 4)
             return context.error(`Expected at least 3 arguments, but found ${args.length - 1} instead.`);
 
@@ -55,7 +55,7 @@ class Let implements Expression {
         return new Let(bindings, result);
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return this.result.outputDefined();
     }
 

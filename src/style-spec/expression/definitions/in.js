@@ -20,7 +20,7 @@ class In implements Expression {
         this.haystack = haystack;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?In {
         if (args.length !== 3) {
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
         }
@@ -38,7 +38,7 @@ class In implements Expression {
         return new In(needle, haystack);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): boolean {
         const needle = (this.needle.evaluate(ctx): any);
         const haystack = (this.haystack.evaluate(ctx): any);
 
@@ -60,7 +60,7 @@ class In implements Expression {
         fn(this.haystack);
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return true;
     }
 

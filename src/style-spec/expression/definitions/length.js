@@ -19,7 +19,7 @@ class Length implements Expression {
         this.input = input;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Length {
         if (args.length !== 2)
             return context.error(`Expected 1 argument, but found ${args.length - 1} instead.`);
 
@@ -32,7 +32,7 @@ class Length implements Expression {
         return new Length(input);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any | number {
         const input = this.input.evaluate(ctx);
         if (typeof input === 'string') {
             return input.length;
@@ -47,7 +47,7 @@ class Length implements Expression {
         fn(this.input);
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return false;
     }
 

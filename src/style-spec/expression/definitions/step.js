@@ -29,7 +29,7 @@ class Step implements Expression {
         }
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Step {
         if (args.length - 1 < 4) {
             return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
         }
@@ -72,7 +72,7 @@ class Step implements Expression {
         return new Step(outputType, input, stops);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any {
         const labels = this.labels;
         const outputs = this.outputs;
 

@@ -19,7 +19,7 @@ class Coalesce implements Expression {
         this.args = args;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Coalesce {
         if (args.length < 2) {
             return context.error("Expectected at least one argument.");
         }
@@ -51,7 +51,7 @@ class Coalesce implements Expression {
             new Coalesce((outputType: any), parsedArgs);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any | null {
         let result = null;
         let argCount = 0;
         let firstImage;

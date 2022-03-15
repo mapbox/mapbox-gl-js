@@ -41,7 +41,7 @@ class Interpolate implements Expression {
         }
     }
 
-    static interpolationFactor(interpolation: InterpolationType, input: number, lower: number, upper: number) {
+    static interpolationFactor(interpolation: InterpolationType, input: number, lower: number, upper: number): number {
         let t = 0;
         if (interpolation.name === 'exponential') {
             t = exponentialInterpolation(input, interpolation.base, lower, upper);
@@ -55,7 +55,7 @@ class Interpolate implements Expression {
         return t;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Interpolate {
         let [operator, interpolation, input, ...rest] = args;
 
         if (!Array.isArray(interpolation) || interpolation.length === 0) {

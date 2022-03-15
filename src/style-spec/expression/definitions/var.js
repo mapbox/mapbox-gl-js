@@ -16,7 +16,7 @@ class Var implements Expression {
         this.boundExpression = boundExpression;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): void | Var {
         if (args.length !== 2 || typeof args[1] !== 'string')
             return context.error(`'var' expression requires exactly one string literal argument.`);
 
@@ -28,17 +28,17 @@ class Var implements Expression {
         return new Var(name, context.scope.get(name));
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any {
         return this.boundExpression.evaluate(ctx);
     }
 
     eachChild() {}
 
-    outputDefined() {
+    outputDefined(): boolean {
         return false;
     }
 
-    serialize() {
+    serialize(): Array<string> {
         return ["var", this.name];
     }
 }

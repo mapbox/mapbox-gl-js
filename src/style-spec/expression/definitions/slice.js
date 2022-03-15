@@ -23,7 +23,7 @@ class Slice implements Expression {
 
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Slice {
         if (args.length <= 2 ||  args.length >= 5) {
             return context.error(`Expected 3 or 4 arguments, but found ${args.length - 1} instead.`);
         }
@@ -46,7 +46,7 @@ class Slice implements Expression {
         }
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any {
         const input = (this.input.evaluate(ctx): any);
         const beginIndex = (this.beginIndex.evaluate(ctx): number);
 
@@ -70,7 +70,7 @@ class Slice implements Expression {
         }
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return false;
     }
 
