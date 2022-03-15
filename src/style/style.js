@@ -85,6 +85,7 @@ import type {QueryResult} from '../data/feature_index.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {FeatureStates} from '../source/source_state.js';
 import type {PointLike} from '@mapbox/point-geometry';
+import type {Source} from '../source/source.js';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -767,7 +768,7 @@ class Style extends Evented {
         this._checkLoaded();
 
         const source = this.getSource(id);
-        if (source === undefined) {
+        if (!source) {
             throw new Error('There is no source with this ID');
         }
         for (const layerId in this._layers) {
@@ -817,9 +818,9 @@ class Style extends Evented {
     /**
      * Get a source by ID.
      * @param {string} id ID of the desired source.
-     * @returns {Object} The source object.
+     * @returns {?Source} The source object.
      */
-    getSource(id: string): Object {
+    getSource(id: string): ?Source {
         const sourceCache = this._getSourceCache(id);
         return sourceCache && sourceCache.getSource();
     }
@@ -984,9 +985,9 @@ class Style extends Evented {
      * Return the style layer object with the given `id`.
      *
      * @param {string} id ID of the desired layer.
-     * @returns {?Object} A layer, if one with the given `id` exists.
+     * @returns {?StyleLayer} A layer, if one with the given `id` exists.
      */
-    getLayer(id: string): Object {
+    getLayer(id: string): ?StyleLayer {
         return this._layers[id];
     }
 
@@ -1065,11 +1066,12 @@ class Style extends Evented {
 
     /**
      * Get a layer's filter object.
-     * @param {string} layer The layer to inspect.
+     * @param {string} layerId The layer to inspect.
      * @returns {*} The layer's filter, if any.
      */
-    getFilter(layer: string): ?FilterSpecification {
-        return clone(this.getLayer(layer).filter);
+    getFilter(layerId: string): ?FilterSpecification {
+        const layer = this.getLayer(layerId);
+        return layer && clone(layer.filter);
     }
 
     setLayoutProperty(layerId: string, name: string, value: any,  options: StyleSetterOptions = {}) {
@@ -1123,8 +1125,9 @@ class Style extends Evented {
         this._updatedPaintProps[layerId] = true;
     }
 
-    getPaintProperty(layer: string, name: string): void | TransitionSpecification | PropertyValueSpecification<mixed> {
-        return this.getLayer(layer).getPaintProperty(name);
+    getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<mixed> {
+        const layer = this.getLayer(layerId);
+        return layer && layer.getPaintProperty(name);
     }
 
     setFeatureState(target: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
@@ -1133,7 +1136,7 @@ class Style extends Evented {
         const sourceLayer = target.sourceLayer;
         const source = this.getSource(sourceId);
 
-        if (source === undefined) {
+        if (!source) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
             return;
         }
@@ -1161,7 +1164,7 @@ class Style extends Evented {
         const sourceId = target.source;
         const source = this.getSource(sourceId);
 
-        if (source === undefined) {
+        if (!source) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
             return;
         }
@@ -1191,7 +1194,7 @@ class Style extends Evented {
         const sourceLayer = target.sourceLayer;
         const source = this.getSource(sourceId);
 
-        if (source === undefined) {
+        if (!source) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
             return;
         }
@@ -1831,11 +1834,11 @@ class Style extends Evented {
         return sourceCaches;
     }
 
-    _isSourceCacheLoaded(source: string): ?boolean {
+    _isSourceCacheLoaded(source: string): boolean {
         const sourceCaches = this._getSourceCaches(source);
         if (sourceCaches.length === 0) {
             this.fire(new ErrorEvent(new Error(`There is no source with ID '${source}'`)));
-            return;
+            return false;
         }
         return sourceCaches.every(sc => sc.loaded());
     }
