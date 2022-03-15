@@ -5,11 +5,11 @@ uniform vec3 u_end_color;
 uniform highp vec3 u_globe_pos;
 uniform highp float u_globe_radius;
 
-varying vec3 v_ray_dir;
+varying highp vec3 v_ray_dir;
 
 void main() {
-    vec3 dir = normalize(v_ray_dir);
-    vec3 closest_point = abs(dot(u_globe_pos, dir)) * dir;
+    highp vec3 dir = normalize(v_ray_dir);
+    highp vec3 closest_point = abs(dot(u_globe_pos, dir)) * dir;
     float norm_dist_from_center = length(closest_point - u_globe_pos) / u_globe_radius;
 
     if (norm_dist_from_center < 1.0)

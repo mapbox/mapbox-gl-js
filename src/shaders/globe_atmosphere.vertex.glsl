@@ -7,7 +7,7 @@ uniform vec3 u_frustum_tr;
 uniform vec3 u_frustum_br;
 uniform vec3 u_frustum_bl;
 
-varying vec3 v_ray_dir;
+varying highp vec3 v_ray_dir;
 
 void main() {
     v_ray_dir = mix(mix(u_frustum_tl, u_frustum_tr, a_uv.x),
