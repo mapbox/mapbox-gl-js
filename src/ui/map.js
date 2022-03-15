@@ -1987,7 +1987,6 @@ class Map extends Camera {
             this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
                 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
-            return;
         } else {
             const {width, height} = image;
             const userImage = ((image: any): StyleImageInterface);
