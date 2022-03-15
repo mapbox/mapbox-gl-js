@@ -3,7 +3,7 @@
 import {isValue} from '../values.js';
 import type {Type} from '../types.js';
 import {BooleanType} from '../types.js';
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {GeoJSON, GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson-types';
@@ -339,7 +339,7 @@ class Within implements Expression {
         return true;
     }
 
-    serialize(): Array<mixed> {
+    serialize(): SerializedExpression {
         return ["within", this.geojson];
     }
 

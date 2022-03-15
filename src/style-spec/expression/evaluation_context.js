@@ -34,8 +34,8 @@ class EvaluationContext {
         this.featureDistanceData = null;
     }
 
-    id(): null | any {
-        return this.feature && 'id' in this.feature ? this.feature.id : null;
+    id(): number | null {
+        return this.feature && 'id' in this.feature && this.feature.id ? this.feature.id : null;
     }
 
     geometryType(): null | string {

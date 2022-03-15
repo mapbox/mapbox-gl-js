@@ -4,7 +4,7 @@ import assert from 'assert';
 
 import {BooleanType} from '../types.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -75,7 +75,7 @@ class Case implements Expression {
         return this.branches.every(([_, out]) => out.outputDefined()) && this.otherwise.outputDefined();
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         const serialized = ["case"];
         this.eachChild(child => { serialized.push(child.serialize()); });
         return serialized;

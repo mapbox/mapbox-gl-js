@@ -6,7 +6,7 @@ import Formatted from '../types/formatted.js';
 
 import type {Type} from '../types.js';
 import type {Value}  from '../values.js';
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 
 class Literal implements Expression {
@@ -53,7 +53,7 @@ class Literal implements Expression {
         return true;
     }
 
-    serialize(): Array<mixed> {
+    serialize(): SerializedExpression {
         if (this.type.kind === 'array' || this.type.kind === 'object') {
             return ["literal", this.value];
         } else if (this.value instanceof Color) {

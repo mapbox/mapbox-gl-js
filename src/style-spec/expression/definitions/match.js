@@ -5,7 +5,7 @@ import assert from 'assert';
 import {typeOf} from '../values.js';
 import {ValueType, type Type} from '../types.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 
@@ -115,7 +115,7 @@ class Match implements Expression {
         return this.outputs.every(out => out.outputDefined()) && this.otherwise.outputDefined();
     }
 
-    serialize(): Array<mixed> {
+    serialize(): SerializedExpression {
         const serialized = ["match", this.input.serialize()];
 
         // Sort so serialization has an arbitrary defined order, even though

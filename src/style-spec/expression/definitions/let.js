@@ -1,7 +1,7 @@
 // @flow
 
 import type {Type} from '../types.js';
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext  from '../evaluation_context.js';
 
@@ -59,7 +59,7 @@ class Let implements Expression {
         return this.result.outputDefined();
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         const serialized = ["let"];
         for (const [name, expr] of this.bindings) {
             serialized.push(name, expr.serialize());

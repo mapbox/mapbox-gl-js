@@ -5,7 +5,7 @@ import {NumberType, toString} from '../types.js';
 import {typeOf} from '../values.js';
 import RuntimeError from '../runtime_error.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -51,7 +51,7 @@ class Length implements Expression {
         return false;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         const serialized = ["length"];
         this.eachChild(child => { serialized.push(child.serialize()); });
         return serialized;

@@ -4,7 +4,7 @@ import {array, ValueType, NumberType} from '../types.js';
 
 import RuntimeError from '../runtime_error.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type, ArrayType} from '../types.js';
@@ -62,7 +62,7 @@ class At implements Expression {
         return false;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         return ["at", this.index.serialize(), this.input.serialize()];
     }
 }

@@ -4,7 +4,7 @@ import {ValueType, NumberType, StringType, array, toString, isValidType, isValid
 import RuntimeError from '../runtime_error.js';
 import {typeOf} from '../values.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -74,7 +74,7 @@ class Slice implements Expression {
         return false;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         if (this.endIndex != null && this.endIndex !== undefined) {
             const endIndex = this.endIndex.serialize();
             return ["slice", this.input.serialize(), this.beginIndex.serialize(), endIndex];
