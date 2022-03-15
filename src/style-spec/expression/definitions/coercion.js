@@ -60,7 +60,7 @@ class Coercion implements Expression {
         return new Coercion(type, parsed);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): null | boolean | number | string | Color | Formatted | ResolvedImage {
         if (this.type.kind === 'boolean') {
             return Boolean(this.args[0].evaluate(ctx));
         } else if (this.type.kind === 'color') {

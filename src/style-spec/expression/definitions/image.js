@@ -28,7 +28,7 @@ export default class ImageExpression implements Expression {
         return new ImageExpression(name);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): null | ResolvedImage {
         const evaluatedImageName = this.input.evaluate(ctx);
 
         const value = ResolvedImage.fromString(evaluatedImageName);
@@ -41,7 +41,7 @@ export default class ImageExpression implements Expression {
         fn(this.input);
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         // The output of image is determined by the list of available images in the evaluation context
         return false;
     }

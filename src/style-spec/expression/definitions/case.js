@@ -23,7 +23,7 @@ class Case implements Expression {
         this.otherwise = otherwise;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Case {
         if (args.length < 4)
             return context.error(`Expected at least 3 arguments, but found only ${args.length - 1}.`);
         if (args.length % 2 !== 0)
@@ -54,7 +54,7 @@ class Case implements Expression {
         return new Case((outputType: any), branches, otherwise);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any {
         for (const [test, expression] of this.branches) {
             if (test.evaluate(ctx)) {
                 return expression.evaluate(ctx);
