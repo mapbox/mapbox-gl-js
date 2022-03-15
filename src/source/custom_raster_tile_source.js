@@ -125,11 +125,11 @@ class CustomRasterTileSource extends Evented implements Source {
         extend(this, pick(options, ['scheme', 'minzoom', 'maxzoom', 'tileSize', 'minTileCacheSize', 'maxTileCacheSize']));
     }
 
-    serialize() {
+    serialize(): CustomRasterTileSourceOptions {
         return extend({}, this._options);
     }
 
-    onAdd(map: Map) {
+    onAdd(map: Map): void {
         this.map = map;
 
         if (!this._options.onAdd) return this.load();
@@ -187,14 +187,14 @@ class CustomRasterTileSource extends Evented implements Source {
         }
     }
 
-    unloadTile(tile: Tile, callback: Callback<void>) {
+    unloadTile(tile: Tile, callback: Callback<void>): void {
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
 
         if (!this._options.unloadTile) return callback();
         this._options.unloadTile(tile.tileID.canonical, callback);
     }
 
-    abortTile(tile: Tile, callback: Callback<void>) {
+    abortTile(tile: Tile, callback: Callback<void>): void {
         if (tile.request && tile.request.cancel) {
             tile.request.cancel();
             delete tile.request;
@@ -204,7 +204,7 @@ class CustomRasterTileSource extends Evented implements Source {
         this._options.abortTile(tile.tileID.canonical, callback);
     }
 
-    hasTransition() {
+    hasTransition(): boolean {
         return false;
     }
 
