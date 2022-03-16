@@ -581,6 +581,8 @@ class Painter {
             }
         }
 
+        drawAtmosphere(this);
+
         // Sky pass ======================================================
         // Draw all sky layers bottom to top.
         // They are drawn at max depth, they are drawn after opaque and before
@@ -597,8 +599,6 @@ class Painter {
                 this.renderLayer(this, sourceCache, layer, coords);
             }
         }
-
-        drawAtmosphere(this);
 
         // Translucent pass ===============================================
         // Draw all other layers bottom-to-top.

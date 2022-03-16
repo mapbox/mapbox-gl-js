@@ -59,7 +59,7 @@ class Fog extends Evented {
         const isGlobe = tr.projection.name === 'globe';
         const transitionT = globeToMercatorTransition(tr.zoom);
         const range = this.properties.get('range');
-        const globeFixedFogRange = [0.5, 3];
+        const globeFixedFogRange = [0.7, 2.2];
         return {
             range: isGlobe ? [
                 interpolate(globeFixedFogRange[0], range[0], transitionT),
