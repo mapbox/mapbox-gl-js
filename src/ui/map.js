@@ -453,7 +453,7 @@ class Map extends Camera {
 
         if (options.antialias && isSafariWithAntialiasingBug(window)) {
             options.antialias = false;
-            warnOnce('Antialiasing disabled for WebGL context to avoid browser bug');
+            warnOnce('Antialiasing disabled for this WebGL context to avoid browser bug: https://github.com/mapbox/mapbox-gl-js/issues/11609');
         }
 
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
