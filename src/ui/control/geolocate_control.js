@@ -31,7 +31,7 @@ type DeviceOrientationEvent = {
     webkitCompassHeading?: number,
 }
 
-const defaultOptions: Options = {
+const defaultOptions = {
     positionOptions: {
         enableHighAccuracy: false,
         maximumAge: 0,
@@ -43,8 +43,7 @@ const defaultOptions: Options = {
     trackUserLocation: false,
     showAccuracyCircle: true,
     showUserLocation: true,
-    showUserHeading: false,
-    geolocation: window.navigator.geolocation
+    showUserHeading: false
 };
 
 /**
@@ -111,7 +110,8 @@ class GeolocateControl extends Evented {
 
     constructor(options: $Shape<Options>) {
         super();
-        this.options = extend({}, defaultOptions, options);
+        const geolocation = window.navigator.geolocation;
+        this.options = extend({geolocation}, defaultOptions, options);
 
         bindAll([
             '_onSuccess',
