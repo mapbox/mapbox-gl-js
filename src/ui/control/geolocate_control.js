@@ -13,13 +13,13 @@ import type Map from '../map.js';
 import type {AnimationOptions, CameraOptions} from '../camera.js';
 
 type Options = {
-    positionOptions?: PositionOptions,
-    fitBoundsOptions?: AnimationOptions & CameraOptions,
-    trackUserLocation?: boolean,
-    showAccuracyCircle?: boolean,
-    showUserLocation?: boolean,
-    showUserHeading?: boolean,
-    geolocation?: Geolocation,
+    positionOptions: PositionOptions,
+    fitBoundsOptions: AnimationOptions & CameraOptions,
+    trackUserLocation: boolean,
+    showAccuracyCircle: boolean,
+    showUserLocation: boolean,
+    showUserHeading: boolean,
+    geolocation: Geolocation,
 };
 
 type DeviceOrientationEvent = {
@@ -75,7 +75,7 @@ const defaultOptions: Options = {
  * @param {Object} [options.showAccuracyCircle=true] By default, if `showUserLocation` is `true`, a transparent circle will be drawn around the user location indicating the accuracy (95% confidence level) of the user's location. Set to `false` to disable. Always disabled when `showUserLocation` is `false`.
  * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
  * @param {Object} [options.showUserHeading=false] If `true` an arrow will be drawn next to the user location dot indicating the device's heading. This only has affect when `trackUserLocation` is `true`.
- * @param {Object} [options.geolocation=window.navigator.geolocation] By default geolocation uses window.navigator.geolocation but you can customize this object
+ * @param {Object} [options.geolocation=window.navigator.geolocation] `window.navigator.geolocation` by default; you can provide an object with the same shape to customize geolocation handling.
  *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
@@ -109,7 +109,7 @@ class GeolocateControl extends Evented {
     _noTimeout: boolean;
     _supportsGeolocation: boolean;
 
-    constructor(options: Options) {
+    constructor(options: $Shape<Options>) {
         super();
         this.options = extend({}, defaultOptions, options);
 
