@@ -451,6 +451,15 @@ class Map extends Camera {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
         }
 
+        // iOS 15.4 introduced a rendering bug with antialias set to `true`. Disables antialias for these devices.
+        if (!!options.antialias && window.navigator.userAgent && /\b(iPad|iPhone|iPod)\b/.test(window.navigator.userAgent)) {
+            const iosVersion = window.navigator.userAgent.match(/OS ((\d+_?){2,3})\s/);
+            if (iosVersion && iosVersion[1] === '15_4') {
+                options.antialias = false;
+                console.warn(`Antialias has been disabled for iOS 15.4 devices.`);
+            }  
+        }
+
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
@@ -459,9 +468,9 @@ class Map extends Camera {
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
-        this._antialias = options.antialias;
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
+        this._antialias = options.antialias;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
         this._isInitialLoad = true;
