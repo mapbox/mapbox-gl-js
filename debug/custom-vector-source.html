@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script type="module">
+import Protobuf from 'https://cdn.skypack.dev/pbf';
+import vt from 'https://cdn.skypack.dev/@mapbox/vector-tile';
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12,
+    center: [-87.622088, 41.878781],
+    style: 'mapbox://styles/mapbox/light-v10',
+    hash: true
+});
+
+class CustomVectorSource {
+    constructor() {
+        this.id = 'custom-vector';
+        this.type = 'custom';
+        this.minzoom = 6;
+        this.maxzoom = 14;
+        this.tileSize = 512;
+        this.tilesUrl = 'https://tiles.mapillary.com/maps/vtp/mly1_public/2/{z}/{x}/{y}?access_token=MLY|4142433049200173|72206abe5035850d6743b23a49c41333';
+    }
+
+    async loadTile(tile, {signal}) {
+        const url = this.tilesUrl
+            .replace('{z}', String(tile.z))
+            .replace('{x}', String(tile.x))
+            .replace('{y}', String(tile.y));
+
+        const response = await fetch(url, {signal});
+        const data = await response.arrayBuffer();
+        const vectorTile = new vt.VectorTile(new Protobuf(data));
+
+        return vectorTile;
+    }
+}
+
+map.on('load', () => {
+    map.addSource('custom-vector', new CustomVectorSource());
+
+    map.addLayer({
+        id: 'custom-vector',
+        type: 'line',
+        source: 'custom-vector',
+        'source-layer': 'sequence',
+        layout: {
+            'line-cap': 'round',
+            'line-join': 'round'
+        },
+        paint: {
+            'line-opacity': 0.6,
+            'line-color': 'rgb(53, 175, 109)',
+            'line-width': 2
+        }
+    },
+    'road-label'
+    );
+});
+
+</script>
+</body>
+</html>

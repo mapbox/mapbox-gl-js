@@ -7,7 +7,6 @@ import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import loadTileJSON from './load_tilejson.js';
 import {postTurnstileEvent} from '../util/mapbox.js';
 import TileBounds from './tile_bounds.js';
-import Texture from '../render/texture.js';
 import browser from '../util/browser.js';
 
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
@@ -15,10 +14,12 @@ import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 import type {Source} from './source.js';
 import type {OverscaledTileID} from './tile_id.js';
 import type Map from '../ui/map.js';
+import type Painter from '../render/painter.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type Tile from './tile.js';
 import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
+import type {TextureImage} from '../render/texture.js';
 import type {
     RasterSourceSpecification,
     RasterDEMSourceSpecification
@@ -112,39 +113,30 @@ class RasterTileSource extends Evented implements Source {
     loadTile(tile: Tile, callback: Callback<void>) {
         const use2x = browser.devicePixelRatio >= 2;
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), use2x, this.tileSize);
-        tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (err, img, cacheControl, expires) => {
+        tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (error, data, cacheControl, expires) => {
             delete tile.request;
 
-            if (tile.aborted) {
-                tile.state = 'unloaded';
-                callback(null);
-            } else if (err) {
-                tile.state = 'errored';
-                callback(err);
-            } else if (img) {
-                if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
+            if (tile.aborted) return callback(null);
+            if (error) return callback(error);
+            if (!data) return callback(null);
 
-                const context = this.map.painter.context;
-                const gl = context.gl;
-                tile.texture = this.map.painter.getTileTexture(img.width);
-                if (tile.texture) {
-                    tile.texture.update(img, {useMipmap: true});
-                } else {
-                    tile.texture = new Texture(context, img, gl.RGBA, {useMipmap: true});
-                    tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
+            tile.setTexture(data, this.map.painter);
+            tile.state = 'loaded';
 
-                    if (context.extTextureFilterAnisotropic) {
-                        gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
-                    }
-                }
-
-                tile.state = 'loaded';
-
-                cacheEntryPossiblyAdded(this.dispatcher);
-
-                callback(null);
-            }
+            cacheEntryPossiblyAdded(this.dispatcher);
+            callback(null);
         });
+    }
+
+    static loadTileData(tile: Tile, data: TextureImage, painter: Painter) {
+        tile.setTexture(data, painter);
+    }
+
+    static unloadTileData(tile: Tile, painter: Painter) {
+        if (tile.texture) {
+            painter.saveTileTexture(tile.texture);
+        }
     }
 
     abortTile(tile: Tile, callback: Callback<void>) {

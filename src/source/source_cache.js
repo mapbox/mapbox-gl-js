@@ -165,11 +165,11 @@ class SourceCache extends Evented {
 
         this._state.coalesceChanges(this._tiles, this.map ? this.map.painter : null);
 
-        if (this._source.renderTile) {
+        if (this._source.prepareTile) {
             for (const i in this._tiles) {
                 const tile = this._tiles[i];
                 if (this.map.painter.terrain) this.map.painter.terrain._clearRenderCacheForTile(this.id, tile.tileID);
-                this._source.renderTile(tile.tileID);
+                this._source.prepareTile(tile.tileID);
 
                 tile.upload(context);
                 tile.prepare(this.map.style.imageManager);
@@ -750,6 +750,7 @@ class SourceCache extends Evented {
      */
     _addTile(tileID: OverscaledTileID): Tile {
         // the tile may be outdated in the external source cache
+        // TODO: prepare() should be enough, need to check how to get rid of _externalCacheLookup
         let tile = this._externalCacheLookup(tileID);
         if (tile) return tile;
 
@@ -792,9 +793,9 @@ class SourceCache extends Evented {
      * @private
      */
     _externalCacheLookup(tileID: OverscaledTileID): ?Tile {
-        if (!this._source.renderTile) return null;
+        if (!this._source.prepareTile) return null;
 
-        const tile = this._source.renderTile(tileID);
+        const tile = this._source.prepareTile(tileID);
         if (!tile) return null;
 
         tile.uses++;
