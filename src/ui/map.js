@@ -468,9 +468,9 @@ class Map extends Camera {
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
+        this._antialias = options.antialias;
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
-        this._antialias = options.antialias;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
         this._isInitialLoad = true;
