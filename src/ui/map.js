@@ -1,7 +1,7 @@
 // @flow
 
 import {version} from '../../package.json';
-import {asyncAll, extend, bindAll, warnOnce, uniqueId} from '../util/util.js';
+import {asyncAll, extend, bindAll, warnOnce, uniqueId, isSafariWithAntialiasingBug} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 import * as DOM from '../util/dom.js';
@@ -449,6 +449,11 @@ class Map extends Camera {
 
         if (options.maxPitch != null && options.maxPitch > defaultMaxPitch) {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
+        }
+
+        if (options.antialias && isSafariWithAntialiasingBug(window)) {
+            options.antialias = false;
+            warnOnce('Antialiasing disabled for WebGL context to avoid browser bug');
         }
 
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);

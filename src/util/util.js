@@ -624,6 +624,12 @@ export function isSafari(scope: any): boolean {
     return _isSafari;
 }
 
+export function isSafariWithAntialiasingBug(scope: any): boolean {
+    const userAgent = scope.navigator ? scope.navigator.userAgent : null;
+    if (!isSafari(scope)) return false;
+    return userAgent && (userAgent.match('Version/15.4 ') || userAgent.match('Version/15.5 '));
+}
+
 export function storageAvailable(type: string): boolean {
     try {
         const storage = window[type];
