@@ -457,7 +457,7 @@ class Map extends Camera {
             if (iosVersion && iosVersion[1] === '15_4') {
                 options.antialias = false;
                 console.warn(`Antialias has been disabled for iOS 15.4 devices.`);
-            }  
+            }
         }
 
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
