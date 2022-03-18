@@ -464,7 +464,7 @@ test('When cooperativeGestures option is set to true, scroll zoom is not prevent
 
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     map._renderTaskQueue.run();
-    
+
     t.equal(zoomSpy.callCount, 1);
     t.end();
 });
