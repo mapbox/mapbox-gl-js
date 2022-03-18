@@ -631,6 +631,8 @@ export function isSafari(scope: any): boolean {
 export function isSafariWithAntialiasingBug(scope: any): ?boolean {
     const userAgent = scope.navigator ? scope.navigator.userAgent : null;
     if (!isSafari(scope)) return false;
+    // 15.4 is known to be buggy.
+    // 15.5 may or may not include the fix. Mark it as buggy to be on the safe side.
     return userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5'));
 }
 
