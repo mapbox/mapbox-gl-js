@@ -750,7 +750,6 @@ class SourceCache extends Evented {
      */
     _addTile(tileID: OverscaledTileID): Tile {
         // the tile may be outdated in the external source cache
-        // TODO: prepare() should be enough, need to check how to get rid of _externalCacheLookup
         let tile = this._externalCacheLookup(tileID);
         if (tile) return tile;
 

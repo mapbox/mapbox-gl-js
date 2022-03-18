@@ -1,13 +1,13 @@
 // @flow
 
 import Tile from './tile.js';
+import window from '../util/window.js';
+import RasterTileSource from './raster_tile_source.js';
 import {Source} from './source.js';
 import {extend, pick} from '../util/util.js';
 import {OverscaledTileID} from './tile_id.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
-
-import RasterTileSource from './raster_tile_source.js';
 
 import type Map from '../ui/map.js';
 import type {CanonicalTileID} from './tile_id.js';
@@ -17,9 +17,129 @@ import type {Callback} from '../types/callback.js';
 type DataType = 'raster'; // vector | geojson
 
 function isRaster(data: any): boolean {
-    return data instanceof HTMLCanvasElement || data instanceof ImageBitmap;
+    return data instanceof window.ImageBitmap || data instanceof window.HTMLCanvasElement;
 }
 
+/**
+ * Interface for custom sources. This is a specification for
+ * implementers to model: it is not an exported method or class.
+ *
+ * Custom sources allow a user to load and modify their own tiles.
+ * These sources can be added between any regular sources using {@link Map#addSource}.
+ *
+ * Custom sources must have a unique `id` and must have the `type` of `"custom"`.
+ * They must implement `loadTile` and may implement `unloadTile`, `abortTile`, `prepareTile`, `onAdd` and `onRemove`.
+ * They can trigger rendering using {@link Map#triggerRepaint}.
+ *
+ * @interface CustomSourceInterface
+ * @property {string} id A unique source id.
+ * @property {string} type The source's type. Must be `"custom"`.
+ * @example
+ * // Custom source implemented as ES6 class
+ * class CustomSource {
+ *     constructor() {
+ *         this.id = 'custom-source';
+ *         this.type = 'custom';
+ *         this.tileSize = 256;
+ *         this.tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg';
+ *         this.attribution = 'Map tiles by Stamen Design, under CC BY 3.0';
+ *     }
+ *
+ *     async loadTile(tile, {signal}) {
+ *         const url = this.tilesUrl
+ *             .replace('{z}', String(tile.z))
+ *             .replace('{x}', String(tile.x))
+ *             .replace('{y}', String(tile.y));
+ *
+ *         const response = await fetch(url, {signal});
+ *         const data = await response.arrayBuffer();
+ *
+ *         const blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
+ *         const imageBitmap = await window.createImageBitmap(blob);
+ *
+ *         return imageBitmap;
+ *     }
+ * }
+ *
+ * map.on('load', () => {
+ *     map.addSource('custom-source', new CustomSource());
+ *     map.addLayer({
+ *         id: 'layer',
+ *         type: 'raster',
+ *         source: 'custom-source'
+ *     });
+ * });
+ */
+
+/**
+ * Optional method called when the source has been added to the Map with {@link Map#addSource}.
+ * This gives the source a chance to initialize resources and register event listeners.
+ *
+ * @function
+ * @memberof CustomSourceInterface
+ * @instance
+ * @name onAdd
+ * @param {Map} map The Map this custom source was just added to.
+ */
+
+/**
+ * Optional method called when the source has been removed from the Map with {@link Map#removeSource}.
+ * This gives the source a chance to clean up resources and event listeners.
+ *
+ * @function
+ * @memberof CustomSourceInterface
+ * @instance
+ * @name onRemove
+ * @param {Map} map The Map this custom source was added to.
+ */
+
+/**
+ * Optional method called after the tile is unloaded from the map viewport. This
+ * gives the source a chance to clean up resources and event listeners.
+ *
+ * @function
+ * @memberof CustomSourceInterface
+ * @instance
+ * @name unloadTile
+ * @param {OverscaledTileID} tileID The key of the tile to unload.
+ * @param {Function} callback A callback to be called when the tile is unloaded.
+ */
+
+/**
+ * Optional method called if the map canceled request in loadTile. This
+ * gives the source a chance to clean up resources and event listeners.
+ *
+ * @function
+ * @memberof CustomSourceInterface
+ * @instance
+ * @name abortTile
+ * @param {OverscaledTileID} tileID The key of the tile to unload.
+ * @param {Function} callback A callback to be called when the tile is aborted.
+ */
+
+/**
+ * Optional method called during a render frame to allow a source to prepare and modify a tile texture if needed.
+ *
+ * @function
+ * @memberof CustomSourceInterface
+ * @instance
+ * @name prepareTile
+ * @param {OverscaledTileID} tileID The key of the tile to prepare.
+ * @returns {TextureImage} The tile image data as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`.
+ */
+
+/**
+ * Called when the map starts loading tile for the current animation frame.
+ *
+ * @function
+ * @memberof CustomSourceInterface
+ * @instance
+ * @name loadTile
+ * @param {OverscaledTileID} tileID The key of the tile to prepare.
+ * @param {Object} options Options.
+ * @param {AbortSignal} options.signal A signal object that allows the map to cancel tile loading request.
+ * @returns {Promise<TextureImage>} The tile image data as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`.
+ */
 export type CustomSourceInterface<T> = {
     id: string;
     type: 'custom',
@@ -29,10 +149,10 @@ export type CustomSourceInterface<T> = {
     scheme: string;
     tileSize: number,
     attribution: ?string,
-    loadTile: (id: CanonicalTileID, options: { signal: AbortSignal }) => Promise<T>,
-    prepareTile: ?(id: CanonicalTileID) => ?T,
-    unloadTile: ?(id: CanonicalTileID, callback: Callback<void>) => void,
-    abortTile: ?(id: CanonicalTileID, callback: Callback<void>) => void,
+    loadTile: (tileID: CanonicalTileID, options: { signal: AbortSignal }) => Promise<T>,
+    prepareTile: ?(tileID: CanonicalTileID) => ?T,
+    unloadTile: ?(tileID: CanonicalTileID, callback: Callback<void>) => void,
+    abortTile: ?(tileID: CanonicalTileID, callback: Callback<void>) => void,
     onAdd: ?(map: Map, callback: Callback<void>) => void,
     onRemove: ?(map: Map) => void,
 }
@@ -62,6 +182,7 @@ class CustomSource<T> extends Evented implements Source {
         super();
         this.id = id;
         this.type = 'custom';
+        this.dataType = 'raster';
         this.dispatcher = dispatcher;
         this.setEventedParent(eventedParent);
         this.implementation = implementation;
@@ -137,18 +258,22 @@ class CustomSource<T> extends Evented implements Source {
 
             if (tile.aborted) return callback(null);
             if (!data) return callback(null);
+            if (!isRaster(data)) return callback(new Error(`Can't infer data type for ${this.id}, only raster data supported at the moment`));
 
-            if (!this.dataType) {
-                if (!isRaster(data)) return callback(new Error(`Can't infer data type from ${this.id}, only raster data supported at the moment`));
-                this.dataType = 'raster';
-            }
-
-            RasterTileSource.loadTileData(tile, (data: any), this.map.painter);
+            this.loadTileData(tile, data);
             tile.state = 'loaded';
 
             cacheEntryPossiblyAdded(this.dispatcher);
             callback(null);
         }
+    }
+
+    loadTileData(tile: Tile, data: T): void {
+        RasterTileSource.loadTileData(tile, (data: any), this.map.painter);
+    }
+
+    unloadTileData(tile: Tile): void {
+        RasterTileSource.unloadTileData(tile, this.map.painter);
     }
 
     prepareTile(tileID: OverscaledTileID): ?Tile {
