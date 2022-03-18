@@ -454,7 +454,7 @@ class Map extends Camera {
         // disable antialias with OS/iOS 15.4 and 15.5 due to rendering bug
         if (options.antialias && isSafariWithAntialiasingBug(window)) {
             options.antialias = false;
-            warnOnce('Antialiasing disabled for this WebGL context to avoid browser bug: https://github.com/mapbox/mapbox-gl-js/issues/11609');
+            warnOnce('Antialiasing is disabled for this WebGL context to avoid browser bug: https://github.com/mapbox/mapbox-gl-js/issues/11609');
         }
 
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
