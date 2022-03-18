@@ -3,16 +3,16 @@
 import Tile from './tile.js';
 import window from '../util/window.js';
 import RasterTileSource from './raster_tile_source.js';
-import {Source} from './source.js';
 import {extend, pick} from '../util/util.js';
 import {OverscaledTileID} from './tile_id.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 
 import type Map from '../ui/map.js';
-import type {CanonicalTileID} from './tile_id.js';
 import type Dispatcher from '../util/dispatcher.js';
+import type {Source} from './source.js';
 import type {Callback} from '../types/callback.js';
+import type {CanonicalTileID} from './tile_id.js';
 
 type DataType = 'raster'; // vector | geojson
 
