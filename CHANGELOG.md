@@ -2,7 +2,7 @@
 
 ### 🐞 Bug fixes
 
-* Disable antialias for 15.4/15.5 iOS devices and M1 Macbooks using 15.4/15.5 Safari to resolve a [WebKit rendering bug](https://bugs.webkit.org/show_bug.cgi?id=237918#c3) ([#11609](https://github.com/mapbox/mapbox-gl-js/pull/11615))
+* Disable antialias for 15.4/15.5 iOS devices and M1 Macbooks using 15.4/15.5 Safari to resolve a [WebKit rendering bug](https://bugs.webkit.org/show_bug.cgi?id=237918#c3) ([#11615](https://github.com/mapbox/mapbox-gl-js/pull/11615))
 * Fix disabling cooperative gesture handling when map is fullscreen in Safari ([#11619](https://github.com/mapbox/mapbox-gl-js/pull/11619))
 
 ## 2.7.0
