@@ -2,7 +2,7 @@
 
 import {test} from '../../util/test.js';
 
-import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle} from '../../../src/util/util.js';
+import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util.js';
 
 import Point from '@mapbox/point-geometry';
 
@@ -402,6 +402,41 @@ test('util', (t) => {
         t.equal(shortestAngle(100, 123 * 360 + 100), 0);
         t.equal(shortestAngle(-45, 335), 20);
         t.equal(shortestAngle(-100, -270), -170);
+        t.end();
+    });
+
+    t.test('isSafariWithAntialiasingBug', (t) => {
+        _resetSafariCheckForTest();
+
+        // mac
+        t.notOk(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Safari/605.1.15'}}));
+        t.ok(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15'}}));
+        t.ok(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15'}}));
+        t.notOk(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15'}}));
+
+        // iphone
+        t.notOk(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1'}}));
+        t.notOk(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1'}}));
+
+        // ipad
+        t.notOk(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1'}}));
+        t.notOk(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1'}}));
+
+        // chrome
+        _resetSafariCheckForTest();
+        t.notOk(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36'}}));
+        // firefox
+        _resetSafariCheckForTest();
+        t.notOk(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12.3; rv:98.0) Gecko/20100101 Firefox/98.0'}}));
+        // edge
+        _resetSafariCheckForTest();
+        t.notOk(isSafariWithAntialiasingBug({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36 Edg/99.0.1150.36'}}));
+
+        _resetSafariCheckForTest();
         t.end();
     });
 
