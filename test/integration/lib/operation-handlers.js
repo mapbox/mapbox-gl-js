@@ -46,34 +46,33 @@ export const operationHandlers = {
             throw new Error(`addImage opertation failed with src ${image.src}`);
         };
     },
+    addLayer(map, params, doneCb) {
+        map.addLayer(params[0], params[1]);
+        waitForRender(map, () => true, doneCb);
+    },
     addCustomLayer(map, params, doneCb) {
         map.addLayer(new customLayerImplementations[params[0]](), params[1]);
         waitForRender(map, () => true, doneCb);
     },
-    addCustomRasterTileSource(map, params, doneCb) {
-        map.addSource('custom-raster', {
-            type: 'custom-raster',
+    addCustomSource(map, params, doneCb) {
+        map.addSource(params[0], {
+            type: 'custom',
             maxzoom: 17,
             tileSize: 256,
-            async loadTile({z, x, y}, callback) {
-                const url = params[0].replace('{z}', z).replace('{x}', x).replace('{y}', y);
+            async loadTile({z, x, y}) {
+                const url = params[1]
+                    .replace('local://', '/')
+                    .replace('{z}', String(z))
+                    .replace('{x}', String(x))
+                    .replace('{y}', String(y));
+
                 const response = await window.fetch(url);
-                if (!response.ok) return callback(new Error(response.statusText));
+                if (!response.ok) throw new Error(response.statusText);
 
                 const data = await response.arrayBuffer();
                 const blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
                 const imageBitmap = await window.createImageBitmap(blob);
-                callback(null, imageBitmap);
-            }
-        });
-
-        map.addLayer({
-            id: 'custom-raster',
-            type: 'raster',
-            source: 'custom-raster',
-            paint: {
-                'raster-opacity': 1,
-                'raster-fade-duration': 0
+                return imageBitmap;
             }
         });
 

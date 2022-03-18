@@ -7,8 +7,21 @@
       "allowed": 0.02975,
       "operations": [
         [
-          "addCustomRasterTileSource",
-          "/tiles/{z}-{x}-{y}.satellite.png"
+          "addCustomSource",
+          "custom-source",
+          "local://tiles/{z}-{x}-{y}.satellite.png"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "custom-source",
+            "type": "raster",
+            "source": "custom-source",
+            "paint": {
+              "raster-opacity": 1,
+              "raster-fade-duration": 0
+            }
+          }
         ],
         [
           "sleep",
