@@ -466,9 +466,9 @@ test('When cooperativeGestures option is set to true, scroll zoom is not prevent
         return ctrl.hasOwnProperty('_fullscreen');
     });
     control._onClickFullscreen();
+    const zoomSpy = t.spy(map, 'zoom');
 
     map.on('zoom', () => {
-        t.spy();
         control._onClickFullscreen();
         t.equal(zoomSpy.callCount, 1);
     });
