@@ -9,6 +9,7 @@ import sinon from 'sinon';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../../util/dem_mock.js';
 import {fixedNum} from '../../../util/fixed.js';
 import MercatorCoordinate from '../../../../src/geo/mercator_coordinate.js';
+import FullscreenControl from '../../../../src/ui/control/fullscreen_control.js';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
@@ -452,6 +453,27 @@ test('When cooperativeGestures option is set to true, scroll zoom is activated w
     map._renderTaskQueue.run();
 
     t.equal(zoomSpy.callCount, 1);
+    t.end();
+});
+
+test('When cooperativeGestures option is set to true, scroll zoom is not activated when map is fullscreen, cooperativeGestures', (t) => {
+    window.document.fullscreenEnabled = true;
+    const map = createMapWithCooperativeGestures(t);
+    const fullscreen = new FullscreenControl();
+
+    map.addControl(fullscreen);
+    const control = map._controls.find((ctrl) => {
+        return ctrl.hasOwnProperty('_fullscreen');
+    });
+    control._onClickFullscreen();
+
+    map.on('zoom', () => {
+        t.spy();
+        control._onClickFullscreen();
+        t.equal(zoomSpy.callCount, 1);
+    });
+
+    simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     t.end();
 });
 
