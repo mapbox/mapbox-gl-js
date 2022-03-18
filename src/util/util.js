@@ -612,6 +612,10 @@ export function parseCacheControl(cacheControl: string): Object {
 
 let _isSafari = null;
 
+export function _resetSafariCheckForTest() {
+    _isSafari = null;
+}
+
 /**
  * Returns true when run in WebKit derived browsers.
  * This is used as a workaround for a memory leak in Safari caused by using Transferable objects to
@@ -632,6 +636,14 @@ export function isSafari(scope: any): boolean {
         !!(userAgent && (/\b(iPad|iPhone|iPod)\b/.test(userAgent) || (!!userAgent.match('Safari') && !userAgent.match('Chrome'))));
     }
     return _isSafari;
+}
+
+export function isSafariWithAntialiasingBug(scope: any): ?boolean {
+    const userAgent = scope.navigator ? scope.navigator.userAgent : null;
+    if (!isSafari(scope)) return false;
+    // 15.4 is known to be buggy.
+    // 15.5 may or may not include the fix. Mark it as buggy to be on the safe side.
+    return userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5') || userAgent.match(/CPU (OS|iPhone OS) (15_4|15_5) like Mac OS X/));
 }
 
 export function storageAvailable(type: string): boolean {
