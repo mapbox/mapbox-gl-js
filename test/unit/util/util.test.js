@@ -2,7 +2,8 @@
 
 import {test} from '../../util/test.js';
 
-import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util.js';
+import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util.js';
+
 import Point from '@mapbox/point-geometry';
 
 const EPSILON = 1e-8;
@@ -410,6 +411,77 @@ test('util', (t) => {
         t.false(validateUuid(uuid().substr(0, 10)));
         t.false(validateUuid('foobar'));
         t.false(validateUuid(null));
+        t.end();
+    });
+
+    t.test('AntialiasingBug', (t) => {
+
+        const isSafariWithAntialiasingBugReset = (scope) => {
+            _resetSafariCheckForTest();
+            const result = isSafariWithAntialiasingBug(scope);
+            _resetSafariCheckForTest();
+            return result;
+        };
+
+        // mac
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Safari/605.1.15'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15'}}));
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15'}}));
+
+        // iphone
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1'}}));
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1'}}));
+
+        // ipad
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1'}}));
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1'}}));
+
+        // chrome
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36'}}));
+        // firefox
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12.3; rv:98.0) Gecko/20100101 Firefox/98.0'}}));
+        // edge
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36 Edg/99.0.1150.36'}}));
+
+        // chrome on iOS
+        // iphone
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        // ipad
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        // ipod
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+
+        // firefox on iOS
+        // iphone
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        // ipad
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        // ipod
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+
         t.end();
     });
 

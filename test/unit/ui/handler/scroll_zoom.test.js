@@ -423,6 +423,20 @@ test('When cooperativeGestures option is set to true, scroll zoom is activated w
     t.end();
 });
 
+test('When cooperativeGestures option is set to true, scroll zoom is not prevented when map is fullscreen', (t) => {
+    window.document.fullscreenElement = true;
+    const map = createMapWithCooperativeGestures(t);
+
+    const zoomSpy = t.spy();
+    map.on('zoom', zoomSpy);
+
+    simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+    map._renderTaskQueue.run();
+
+    t.equal(zoomSpy.callCount, 1);
+    t.end();
+});
+
 test('Disabling scrollZoom removes scroll zoom blocker container', (t) => {
     const map = createMapWithCooperativeGestures(t);
 
