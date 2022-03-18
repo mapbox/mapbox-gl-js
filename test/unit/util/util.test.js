@@ -2,12 +2,8 @@
 
 import {test} from '../../util/test.js';
 
-<<<<<<< HEAD
-import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util.js';
-=======
 import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util.js';
 
->>>>>>> 6f74fc521 (Disables antialias for 15.4/15.5 iOS and M1 devices and provides a console warning (#11615))
 import Point from '@mapbox/point-geometry';
 
 const EPSILON = 1e-8;
@@ -418,8 +414,6 @@ test('util', (t) => {
         t.end();
     });
 
-<<<<<<< HEAD
-=======
     t.test('shortestAngle', (t) => {
         t.equal(shortestAngle(0, 90), 90);
         t.equal(shortestAngle(0, -270), 90);
@@ -436,7 +430,7 @@ test('util', (t) => {
         t.end();
     });
 
-    t.test('isSafariWithAntialiasingBug', (t) => {
+    t.test('AntialiasingBug', (t) => {
 
         const isSafariWithAntialiasingBugReset = (scope) => {
             _resetSafariCheckForTest();
@@ -507,6 +501,5 @@ test('util', (t) => {
         t.end();
     });
 
->>>>>>> 6f74fc521 (Disables antialias for 15.4/15.5 iOS and M1 devices and provides a console warning (#11615))
     t.end();
 });
