@@ -48,6 +48,7 @@ class SourceCache extends Evented {
     _minTileCacheSize: ?number;
     _maxTileCacheSize: ?number;
     _paused: boolean;
+    _isRaster: boolean;
     _shouldReloadOnResume: boolean;
     _coveredTiles: {[_: number | string]: boolean};
     transform: Transform;
@@ -97,6 +98,11 @@ class SourceCache extends Evented {
 
         this._coveredTiles = {};
         this._state = new SourceFeatureState();
+        this._isRaster =
+            this._source.type === 'raster' ||
+            this._source.type === 'raster-dem' ||
+            // $FlowFixMe[prop-missing]
+            (this._source.type === 'custom' && this._source.dataType === 'raster');
     }
 
     onAdd(map: MapboxMap) {
@@ -772,8 +778,7 @@ class SourceCache extends Evented {
         const cached = Boolean(tile);
         if (!cached) {
             const painter = this.map ? this.map.painter : null;
-            const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
-            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, isRaster);
+            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._isRaster);
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
@@ -1009,10 +1014,9 @@ class SourceCache extends Evented {
         }
 
         const tileIDs = Array.from(coveringTilesIDs.values());
-        const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
 
         asyncAll(tileIDs, (tileID, done) => {
-            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, this.map.painter, isRaster);
+            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, this.map.painter, this._isRaster);
             this._loadTile(tile, (err) => {
                 if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
                 done(err, tile);
