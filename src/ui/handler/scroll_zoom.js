@@ -3,7 +3,7 @@
 import assert from 'assert';
 import * as DOM from '../../util/dom.js';
 
-import {ease as _ease, bindAll, bezier} from '../../util/util.js';
+import {ease as _ease, bindAll, bezier, isSafari} from '../../util/util.js';
 import browser from '../../util/browser.js';
 import window from '../../util/window.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
@@ -398,6 +398,7 @@ class ScrollZoomHandler {
     }
 
     _isFullscreen(): boolean {
+        if (isSafari(window)) return !!window.document.webkitCurrentFullScreenElement;
         return !!window.document.fullscreenElement;
     }
 
