@@ -30,34 +30,7 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-class CustomSource {
-    constructor() {
-        this.id = 'custom-source';
-        this.type = 'custom';
-        this.tileSize = 256;
-        this.tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg';
-        this.attribution = 'Map tiles by Stamen Design, under CC BY 3.0';
-    }
-
-    async loadTile(tile, {signal}) {
-        const url = this.tilesUrl
-            .replace('{z}', String(tile.z))
-            .replace('{x}', String(tile.x))
-            .replace('{y}', String(tile.y));
-
-        const response = await fetch(url, {signal});
-        const data = await response.arrayBuffer();
-
-        const blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
-        const imageBitmap = await window.createImageBitmap(blob);
-
-        return imageBitmap;
-    }
-}
-
 map.on('load', () => {
-    // map.addSource('custom-source', new CustomSource());
-
     map.addSource('custom-source', {
         type: 'custom',
         tileSize: 256,
