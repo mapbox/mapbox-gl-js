@@ -398,7 +398,7 @@ class ScrollZoomHandler {
     }
 
     _isFullscreen(): boolean {
-        if (isSafari(window)) return !!window.document.webkitCurrentFullScreenElement;
+        if (isSafari(window)) return !!window.document.webkitFullscreenElement;
         return !!window.document.fullscreenElement;
     }
 
