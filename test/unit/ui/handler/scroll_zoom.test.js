@@ -9,7 +9,6 @@ import sinon from 'sinon';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../../util/dem_mock.js';
 import {fixedNum} from '../../../util/fixed.js';
 import MercatorCoordinate from '../../../../src/geo/mercator_coordinate.js';
-import FullscreenControl from '../../../../src/ui/control/fullscreen_control.js';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
