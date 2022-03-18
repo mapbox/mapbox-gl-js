@@ -457,15 +457,8 @@ test('When cooperativeGestures option is set to true, scroll zoom is activated w
 });
 
 test('When cooperativeGestures option is set to true, scroll zoom is not prevented when map is fullscreen', (t) => {
-    window.document.fullscreenEnabled = true;
+    window.document.fullscreenElement = true;
     const map = createMapWithCooperativeGestures(t);
-    const fullscreen = new FullscreenControl();
-
-    map.addControl(fullscreen);
-    const control = map._controls.find((ctrl) => {
-        return ctrl.hasOwnProperty('_fullscreen');
-    });
-    control._onClickFullscreen();
 
     const zoomSpy = t.spy();
     map.on('zoom', zoomSpy);
