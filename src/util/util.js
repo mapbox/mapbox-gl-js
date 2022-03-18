@@ -633,7 +633,7 @@ export function isSafariWithAntialiasingBug(scope: any): ?boolean {
     if (!isSafari(scope)) return false;
     // 15.4 is known to be buggy.
     // 15.5 may or may not include the fix. Mark it as buggy to be on the safe side.
-    return userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5'));
+    return userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5') || userAgent.match(/CPU (OS|iPhone OS) (15_4|15_5) like Mac OS X/));
 }
 
 export function storageAvailable(type: string): boolean {
