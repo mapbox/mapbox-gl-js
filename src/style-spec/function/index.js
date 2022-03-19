@@ -260,3 +260,5 @@ function interpolationFactor(input, base, lowerValue, upperValue) {
         return (Math.pow(base, progress) - 1) / (Math.pow(base, difference) - 1);
     }
 }
+
+export {default as convertFunction} from './convert.js';

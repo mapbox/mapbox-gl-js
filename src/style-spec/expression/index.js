@@ -397,3 +397,5 @@ function getDefaultValue(spec: StylePropertySpecification): Value {
         return spec.default;
     }
 }
+
+export {isExpressionFilter} from '../feature_filter/index.js';
