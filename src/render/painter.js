@@ -92,6 +92,7 @@ type PainterOptions = {
     zooming: boolean,
     moving: boolean,
     gpuTiming: boolean,
+    gpuTimingGlobe: boolean,
     fadeDuration: number,
     isInitialLoad: boolean,
     speedIndexTiming: boolean
@@ -151,6 +152,7 @@ class Painter {
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
     gpuTimers: GPUTimers;
+    globeGpuTimeQuery: any;
     emptyTexture: Texture;
     identityMat: Float32Array;
     debugOverlayTexture: Texture;
@@ -746,6 +748,21 @@ class Painter {
         ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, layerTimer.query);
     }
 
+    gpuTimingGlobeStart() {
+        if (this.options.gpuTimingGlobe) {
+            const ext = this.context.extTimerQuery;
+            if (!this.globeGpuTimeQuery)
+                this.globeGpuTimeQuery = ext.createQueryEXT();
+            ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, this.globeGpuTimeQuery);
+        }
+    }
+
+    gpuTimingGlobeEnd() {
+        if (!this.options.gpuTimingGlobe) return;
+        const ext = this.context.extTimerQuery;
+        ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
+    }
+
     gpuTimingEnd() {
         if (!this.options.gpuTiming) return;
         const ext = this.context.extTimerQuery;
@@ -768,6 +785,15 @@ class Painter {
             layers[layerId] = (gpuTime: number);
         }
         return layers;
+    }
+
+    queryGpuTimeGlobe(): number {
+        if (!this.globeGpuTimeQuery) return 0;
+        const ext = this.context.extTimerQuery;
+        const gpuTime = ext.getQueryObjectEXT(this.globeGpuTimeQuery, ext.QUERY_RESULT_EXT) / (1000 * 1000);
+        ext.deleteQueryEXT(this.globeGpuTimeQuery);
+        this.globeGpuTimeQuery = null;
+        return gpuTime;
     }
 
     /**
