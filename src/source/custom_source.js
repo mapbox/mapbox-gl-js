@@ -222,6 +222,9 @@ class CustomSource<T> extends Evented implements Source {
 
     onAdd(map: Map): void {
         this.map = map;
+        this._loaded = false;
+        this.fire(new Event('dataloading', {dataType: 'source'}));
+
         if (this.implementation.onAdd) {
             this.implementation.onAdd(map, this.load);
         } else {
@@ -237,7 +240,7 @@ class CustomSource<T> extends Evented implements Source {
 
     loadTile(tile: Tile, callback: Callback<void>) {
         const {x, y, z} = tile.tileID.canonical;
-        const controller = new AbortController();
+        const controller = new window.AbortController();
         const signal = controller.signal;
 
         // $FlowFixMe[prop-missing]
