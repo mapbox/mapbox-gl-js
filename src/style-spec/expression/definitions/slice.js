@@ -4,7 +4,7 @@ import {ValueType, NumberType, StringType, array, toString, isValidType, isValid
 import RuntimeError from '../runtime_error.js';
 import {typeOf} from '../values.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -23,7 +23,7 @@ class Slice implements Expression {
 
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Slice {
         if (args.length <= 2 ||  args.length >= 5) {
             return context.error(`Expected 3 or 4 arguments, but found ${args.length - 1} instead.`);
         }
@@ -46,7 +46,7 @@ class Slice implements Expression {
         }
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any {
         const input = (this.input.evaluate(ctx): any);
         const beginIndex = (this.beginIndex.evaluate(ctx): number);
 
@@ -70,11 +70,11 @@ class Slice implements Expression {
         }
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return false;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         if (this.endIndex != null && this.endIndex !== undefined) {
             const endIndex = this.endIndex.serialize();
             return ["slice", this.input.serialize(), this.beginIndex.serialize(), endIndex];

@@ -16,7 +16,7 @@ class EvaluationContext {
     featureState: ?FeatureState;
     formattedSection: ?FormattedSection;
     availableImages: ?Array<string>;
-    canonical: ?CanonicalTileID;
+    canonical: null | CanonicalTileID;
     featureTileCoord: ?Point;
     featureDistanceData: ?FeatureDistanceData;
 
@@ -34,27 +34,27 @@ class EvaluationContext {
         this.featureDistanceData = null;
     }
 
-    id() {
-        return this.feature && 'id' in this.feature ? this.feature.id : null;
+    id(): number | null {
+        return this.feature && 'id' in this.feature && this.feature.id ? this.feature.id : null;
     }
 
-    geometryType() {
+    geometryType(): null | string {
         return this.feature ? typeof this.feature.type === 'number' ? geometryTypes[this.feature.type] : this.feature.type : null;
     }
 
-    geometry() {
+    geometry(): ?Array<Array<Point>> {
         return this.feature && 'geometry' in this.feature ? this.feature.geometry : null;
     }
 
-    canonicalID() {
+    canonicalID(): null | CanonicalTileID {
         return this.canonical;
     }
 
-    properties() {
+    properties(): {[string]: any} {
         return (this.feature && this.feature.properties) || {};
     }
 
-    distanceFromCenter() {
+    distanceFromCenter(): number {
         if (this.featureTileCoord && this.featureDistanceData) {
 
             const c = this.featureDistanceData.center;

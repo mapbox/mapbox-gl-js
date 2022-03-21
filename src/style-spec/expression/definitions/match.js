@@ -5,7 +5,7 @@ import assert from 'assert';
 import {typeOf} from '../values.js';
 import {ValueType, type Type} from '../types.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 
@@ -30,7 +30,7 @@ class Match implements Expression {
         this.otherwise = otherwise;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Match {
         if (args.length < 5)
             return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
         if (args.length % 2 !== 1)
@@ -99,7 +99,7 @@ class Match implements Expression {
         return new Match((inputType: any), (outputType: any), input, cases, outputs, otherwise);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any {
         const input = (this.input.evaluate(ctx): any);
         const output = (typeOf(input) === this.inputType && this.outputs[this.cases[input]]) || this.otherwise;
         return output.evaluate(ctx);
@@ -115,7 +115,7 @@ class Match implements Expression {
         return this.outputs.every(out => out.outputDefined()) && this.otherwise.outputDefined();
     }
 
-    serialize(): Array<mixed> {
+    serialize(): SerializedExpression {
         const serialized = ["match", this.input.serialize()];
 
         // Sort so serialization has an arbitrary defined order, even though

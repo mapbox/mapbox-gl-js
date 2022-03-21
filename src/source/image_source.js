@@ -12,6 +12,7 @@ import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import browser from '../util/browser.js';
 import tileTransform, {getTilePoint} from '../geo/projection/tile_transform.js';
 import {mat3, vec3} from 'gl-matrix';
+import window from '../util/window.js';
 
 import type {Source} from './source.js';
 import type {CanvasSourceSpecification} from './canvas_source.js';
@@ -105,7 +106,7 @@ class ImageSource extends Evented implements Source {
     dispatcher: Dispatcher;
     map: Map;
     texture: Texture | null;
-    image: ImageData;
+    image: HTMLImageElement | ImageBitmap | ImageData;
     tileID: CanonicalTileID;
     _boundsArray: ?RasterBoundsArray;
     boundsBuffer: ?VertexBuffer;
@@ -134,7 +135,7 @@ class ImageSource extends Evented implements Source {
         this.options = options;
     }
 
-    load(newCoordinates?: Coordinates, successCallback?: () => void) {
+    load(newCoordinates?: Coordinates) {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
@@ -145,14 +146,16 @@ class ImageSource extends Evented implements Source {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
-                this.image = browser.getImageData(image);
+                const {HTMLImageElement} = window;
+                if (image instanceof HTMLImageElement) {
+                    this.image = browser.getImageData(image);
+                } else {
+                    this.image = image;
+                }
                 this.width = this.image.width;
                 this.height = this.image.height;
                 if (newCoordinates) {
                     this.coordinates = newCoordinates;
-                }
-                if (successCallback) {
-                    successCallback();
                 }
                 this._finishLoading();
             }
@@ -202,7 +205,7 @@ class ImageSource extends Evented implements Source {
             return this;
         }
         this.options.url = options.url;
-        this.load(options.coordinates, () => { this.texture = null; });
+        this.load(options.coordinates);
         return this;
     }
 
@@ -216,6 +219,10 @@ class ImageSource extends Evented implements Source {
     onAdd(map: Map) {
         this.map = map;
         this.load();
+    }
+
+    onRemove() {
+        if (this.texture) this.texture.destroy();
     }
 
     /**
@@ -318,6 +325,8 @@ class ImageSource extends Evented implements Source {
         if (!this.texture) {
             this.texture = new Texture(context, this.image, gl.RGBA);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        } else {
+            this.texture.update(this.image);
         }
 
         this._prepareData(context);

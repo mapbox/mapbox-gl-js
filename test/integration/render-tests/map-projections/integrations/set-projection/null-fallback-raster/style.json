@@ -1,0 +1,87 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "width": 512,
+        "height": 512,
+        "operations": [
+          ["setStyle", {
+            "version": 8,
+            "projection": {"name": "lambertConformalConic"},
+            "sources": {
+              "satellite": {
+                "type": "raster",
+                "tiles": [
+                  "local://tiles/{z}-{x}-{y}.satellite.png"
+                ],
+                "tileSize": 256
+              },
+              "geojson": {
+                "type": "geojson",
+                "data": {
+                  "type": "GeometryCollection",
+                  "geometries": [
+                    {
+                      "type": "Point",
+                      "coordinates": [
+                        0, 0
+                      ]
+                    },
+                    {
+                      "type": "Point",
+                      "coordinates": [
+                        -90, 0
+                      ]
+                    },
+                    {
+                      "type": "Point",
+                      "coordinates": [
+                        -0, -45
+                      ]
+                    },
+                    {
+                      "type": "Point",
+                      "coordinates": [
+                        -90, -45
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "layers": [
+              {
+                "id": "raster",
+                "type": "raster",
+                "source": "satellite",
+                "paint": {
+                  "raster-fade-duration": 0
+                }
+              },
+              {
+                "id": "circle",
+                "type": "circle",
+                "source": "geojson",
+                "paint": {
+                  "circle-radius": 30,
+                  "circle-opacity": 0,
+                  "circle-stroke-color": "purple",
+                  "circle-stroke-width": 3,
+                  "circle-pitch-alignment": "map",
+                  "circle-pitch-scale": "map"
+                }
+              }
+            ]
+          }],
+          ["wait"],
+          ["setProjection", "albers"],
+          ["wait"],
+          ["setProjection", null],
+          ["wait"]
+        ]
+      }
+    },
+    "center": [0, 0],
+    "sources": {},
+    "layers": []
+}

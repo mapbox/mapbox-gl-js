@@ -1,8 +1,11 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import {unbundle} from '../util/unbundle_jsonlint.js';
 
-export default function validateEnum(options) {
+import type {ValidationOptions} from './validate.js';
+
+export default function validateEnum(options: ValidationOptions): Array<ValidationError> {
     const key = options.key;
     const value = options.value;
     const valueSpec = options.valueSpec;

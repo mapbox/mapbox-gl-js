@@ -10,7 +10,7 @@ import FormatExpression from '../definitions/format.js';
 import ImageExpression from '../definitions/image.js';
 import ResolvedImage from '../types/resolved_image.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -60,7 +60,7 @@ class Coercion implements Expression {
         return new Coercion(type, parsed);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): null | boolean | number | string | Color | Formatted | ResolvedImage {
         if (this.type.kind === 'boolean') {
             return Boolean(this.args[0].evaluate(ctx));
         } else if (this.type.kind === 'color') {
@@ -115,7 +115,7 @@ class Coercion implements Expression {
         return this.args.every(arg => arg.outputDefined());
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         if (this.type.kind === 'formatted') {
             return new FormatExpression([{content: this.args[0], scale: null, font: null, textColor: null}]).serialize();
         }

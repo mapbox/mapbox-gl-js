@@ -5,7 +5,7 @@ import {NumberType, toString} from '../types.js';
 import {typeOf} from '../values.js';
 import RuntimeError from '../runtime_error.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -19,7 +19,7 @@ class Length implements Expression {
         this.input = input;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Length {
         if (args.length !== 2)
             return context.error(`Expected 1 argument, but found ${args.length - 1} instead.`);
 
@@ -32,7 +32,7 @@ class Length implements Expression {
         return new Length(input);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any | number {
         const input = this.input.evaluate(ctx);
         if (typeof input === 'string') {
             return input.length;
@@ -47,11 +47,11 @@ class Length implements Expression {
         fn(this.input);
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return false;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         const serialized = ["length"];
         this.eachChild(child => { serialized.push(child.serialize()); });
         return serialized;

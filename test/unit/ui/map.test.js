@@ -1625,14 +1625,33 @@ test('Map', (t) => {
                 });
                 t.end();
             });
-
         });
 
-        t.test('defaults to style sheet projection',  (t) => {
+        t.test('Changing zoom on globe does not clear tiles', (t) => {
             const map = createMap(t, {projection: 'globe'});
-            map.setZoom(12);
-            map.once('render', () => {
-                t.end();
+            t.spy(map.painter, 'clearBackgroundTiles');
+            map.on('load', () => {
+                t.equal(map.painter.clearBackgroundTiles.callCount, 0);
+                t.deepEqual(map.getProjection().name, 'globe');
+                t.deepEqual(map.transform.getProjection().name, `globe`);
+                map.setZoom(12);
+                map.once('render', () => {
+                    t.equal(map.painter.clearBackgroundTiles.callCount, 0);
+                    t.deepEqual(map.getProjection().name, 'globe');
+                    t.deepEqual(map.transform.getProjection().name, `mercator`);
+                    map.setProjection({name: 'mercator'});
+                    t.equal(map.painter.clearBackgroundTiles.callCount, 0);
+                    t.deepEqual(map.getProjection().name, 'mercator');
+                    t.deepEqual(map.transform.getProjection().name, `mercator`);
+                    map.setZoom(3);
+                    map.once('render', () => {
+                        map.setProjection({name: 'globe'});
+                        t.equal(map.painter.clearBackgroundTiles.callCount, 1);
+                        t.deepEqual(map.getProjection().name, 'globe');
+                        t.deepEqual(map.transform.getProjection().name, `globe`);
+                        t.end();
+                    });
+                });
             });
         });
 
@@ -1647,29 +1666,33 @@ test('Map', (t) => {
                 "layers": []
             }});
             const style = map.style;
+            t.spy(map.painter, 'clearBackgroundTiles');
 
             map.on('load', () =>  {
                 // Defaults to style projection
                 t.equal(style.serialize().projection.name, 'albers');
                 t.equal(map.transform.getProjection().name, 'albers');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 1);
 
                 // Runtime api overrides style projection
                 // Stylesheet projection not changed by runtime apis
                 map.setProjection({name: 'winkelTripel'});
                 t.equal(style.serialize().projection.name, 'albers');
                 t.equal(map.transform.getProjection().name, 'winkelTripel');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 2);
 
                 // Runtime api overrides stylesheet projection
-                map.style.setState(Object.assign({}, style.serialize(), {projection: {name: 'naturalEarth'}}));
+                style.setState(Object.assign({}, style.serialize(), {projection: {name: 'naturalEarth'}}));
                 t.equal(style.serialize().projection.name, 'naturalEarth');
                 t.equal(map.transform.getProjection().name, 'winkelTripel');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 2);
 
                 // Unsetting runtime projection reveals stylesheet projection
                 map.setProjection(null);
-                style._updateProjection();
                 t.equal(style.serialize().projection.name, 'naturalEarth');
                 t.equal(map.transform.getProjection().name, 'naturalEarth');
                 t.equal(map.getProjection().name, 'naturalEarth');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 3);
 
                 // Unsetting stylesheet projection reveals mercator
                 const stylesheet = style.serialize();
@@ -1677,6 +1700,43 @@ test('Map', (t) => {
                 style.setState(stylesheet);
                 t.equal(style.serialize().projection, undefined);
                 t.equal(map.transform.getProjection().name, 'mercator');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 4);
+
+                t.end();
+            });
+        });
+
+        t.test('setProjection(null) reveals globe when in style', (t) => {
+            const map = createMap(t, {style: {
+                "version": 8,
+                "projection": {
+                    "name": "globe"
+                },
+                "sources": {},
+                "layers": []
+            }});
+            const style = map.style;
+
+            t.spy(map.painter, 'clearBackgroundTiles');
+
+            map.on('load', () =>  {
+                // Defaults to style projection
+                t.equal(style.serialize().projection.name, 'globe');
+                t.equal(map.transform.getProjection().name, 'globe');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 0);
+
+                // Runtime api overrides stylesheet projection
+                map.setProjection('albers');
+                t.equal(style.serialize().projection.name, 'globe');
+                t.equal(map.transform.getProjection().name, 'albers');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 1);
+
+                // Unsetting runtime projection reveals stylesheet projection
+                map.setProjection(null);
+                t.equal(style.serialize().projection.name, 'globe');
+                t.equal(map.transform.getProjection().name, 'globe');
+                t.equal(map.getProjection().name, 'globe');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 2);
 
                 t.end();
             });

@@ -1,3 +1,4 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import {unbundle} from '../util/unbundle_jsonlint.js';
@@ -7,11 +8,13 @@ import validateExpression from './validate_expression.js';
 import validateString from './validate_string.js';
 import getType from '../util/get_type.js';
 
+import type {ValidationOptions} from './validate.js';
+
 const objectElementValidators = {
     promoteId: validatePromoteId
 };
 
-export default function validateSource(options) {
+export default function validateSource(options: ValidationOptions): Array<ValidationError> {
     const value = options.value;
     const key = options.key;
     const styleSpec = options.styleSpec;

@@ -1,9 +1,13 @@
 #!/usr/bin/env node
+
+// @flow
 /* eslint-disable no-process-exit */
-/* eslint import/no-unresolved: [error, { ignore: ['^@mapbox/mapbox-gl-style-spec$'] }] */
 
 import rw from 'rw';
 import minimist from 'minimist';
+
+/* eslint import/no-unresolved: [error, { ignore: ['^@mapbox/mapbox-gl-style-spec$'] }] */
+/* $FlowFixMe[cannot-resolve-module] */
 import {validate, validateMapboxApiSupported} from '@mapbox/mapbox-gl-style-spec';
 
 const argv = minimist(process.argv.slice(2), {

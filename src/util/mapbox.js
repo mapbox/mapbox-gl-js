@@ -35,6 +35,8 @@ type UrlObject = {|
     params: Array<string>
 |};
 
+type EventCallback = (err: ?Error) => void;
+
 export const AUTH_ERR_MSG: string = 'NO_ACCESS_TOKEN';
 
 export class RequestManager {
@@ -61,7 +63,7 @@ export class RequestManager {
         return Date.now() > this._skuTokenExpiresAt;
     }
 
-    transformRequest(url: string, type: ResourceTypeEnum) {
+    transformRequest(url: string, type: ResourceTypeEnum): RequestParameters {
         if (this._transformRequestFn) {
             return this._transformRequestFn(url, type) || {url};
         }
@@ -136,7 +138,7 @@ export class RequestManager {
         return this._makeAPIURL(urlObject, accessToken);
     }
 
-    canonicalizeTileURL(url: string, removeAccessToken: boolean) {
+    canonicalizeTileURL(url: string, removeAccessToken: boolean): string {
         // matches any file extension specified by a dot and one or more alphanumeric characters
         const extensionRe = /\.[\w]+$/;
 
@@ -167,7 +169,7 @@ export class RequestManager {
         return result;
     }
 
-    canonicalizeTileset(tileJSON: TileJSON, sourceURL?: string) {
+    canonicalizeTileset(tileJSON: TileJSON, sourceURL?: string): Array<string> {
         const removeAccessToken = sourceURL ? isMapboxURL(sourceURL) : false;
         const canonical = [];
         for (const url of tileJSON.tiles || []) {
@@ -211,15 +213,15 @@ export class RequestManager {
     }
 }
 
-function isMapboxURL(url: string) {
+export function isMapboxURL(url: string): boolean {
     return url.indexOf('mapbox:') === 0;
 }
 
-function isMapboxHTTPURL(url: string): boolean {
+export function isMapboxHTTPURL(url: string): boolean {
     return config.API_URL_REGEX.test(url);
 }
 
-function hasCacheDefeatingSku(url: string) {
+export function hasCacheDefeatingSku(url: string): boolean {
     return url.indexOf('sku=') > 0 && isMapboxHTTPURL(url);
 }
 
@@ -252,8 +254,6 @@ function formatUrl(obj: UrlObject): string {
     const params = obj.params.length ? `?${obj.params.join('&')}` : '';
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
-
-export {isMapboxURL, isMapboxHTTPURL, hasCacheDefeatingSku};
 
 const telemEventKey = 'mapbox.eventData';
 
@@ -293,7 +293,7 @@ class TelemetryEvent {
         this.pendingRequest = null;
     }
 
-    getStorageKey(domain: ?string) {
+    getStorageKey(domain: ?string): string {
         const tokenData = parseAccessToken(config.ACCESS_TOKEN);
         let u = '';
         if (tokenData && tokenData['u']) {
@@ -351,7 +351,7 @@ class TelemetryEvent {
     * to the values that should be saved. For this reason, the callback should be invoked prior to the call
     * to TelemetryEvent#saveData
     */
-    postEvent(timestamp: number, additionalPayload: {[_: string]: any}, callback: (err: ?Error) => void, customAccessToken?: ?string) {
+    postEvent(timestamp: number, additionalPayload: {[_: string]: any}, callback: EventCallback, customAccessToken?: ?string) {
         if (!config.EVENTS_URL) return;
         const eventsUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
         eventsUrlObject.params.push(`access_token=${customAccessToken || config.ACCESS_TOKEN || ''}`);
@@ -391,7 +391,7 @@ class TelemetryEvent {
 export class MapLoadEvent extends TelemetryEvent {
     +success: {[_: number]: boolean};
     skuToken: string;
-    errorCb: (err: ?Error) => void;
+    errorCb: EventCallback;
 
     constructor() {
         super('map.load');
@@ -399,7 +399,7 @@ export class MapLoadEvent extends TelemetryEvent {
         this.skuToken = '';
     }
 
-    postMapLoadEvent(mapId: number, skuToken: string, customAccessToken: string, callback: (err: ?Error) => void) {
+    postMapLoadEvent(mapId: number, skuToken: string, customAccessToken: ?string, callback: EventCallback) {
         this.skuToken = skuToken;
         this.errorCb = callback;
 
@@ -441,7 +441,7 @@ export class MapLoadEvent extends TelemetryEvent {
 export class MapSessionAPI extends TelemetryEvent {
     +success: {[_: number]: boolean};
     skuToken: string;
-    errorCb: (err: ?Error) => void;
+    errorCb: EventCallback;
 
     constructor() {
         super('map.auth');
@@ -449,7 +449,7 @@ export class MapSessionAPI extends TelemetryEvent {
         this.skuToken = '';
     }
 
-    getSession(timestamp: number, token: string, callback: (err: ?Error) => void, customAccessToken?: ?string) {
+    getSession(timestamp: number, token: string, callback: EventCallback, customAccessToken?: ?string) {
         if (!config.API_URL || !config.SESSION_PATH) return;
         const authUrlObject: UrlObject = parseUrl(config.API_URL + config.SESSION_PATH);
         authUrlObject.params.push(`sku=${token || ''}`);
@@ -470,7 +470,7 @@ export class MapSessionAPI extends TelemetryEvent {
         });
     }
 
-    getSessionAPI(mapId: number, skuToken: string, customAccessToken: string, callback: (err: ?Error) => void) {
+    getSessionAPI(mapId: number, skuToken: string, customAccessToken: ?string, callback: EventCallback) {
         this.skuToken = skuToken;
         this.errorCb = callback;
 
@@ -549,7 +549,8 @@ export class TurnstileEvent extends TelemetryEvent {
         }
 
         if (!dueForEvent) {
-            return this.processRequests();
+            this.processRequests();
+            return;
         }
 
         this.postEvent(nextUpdate, {"enabled.telemetry": false}, (err) => {
@@ -562,13 +563,13 @@ export class TurnstileEvent extends TelemetryEvent {
 }
 
 const turnstileEvent_ = new TurnstileEvent();
-export const postTurnstileEvent = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
+export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: ?string) => void = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
 
 const mapLoadEvent_ = new MapLoadEvent();
-export const postMapLoadEvent = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
+export const postMapLoadEvent: (number, string, ?string, EventCallback) => void = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
 
 const mapSessionAPI_ = new MapSessionAPI();
-export const getMapSessionAPI = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);
+export const getMapSessionAPI: (number, string, ?string, EventCallback) => void = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);
 
 const authenticatedMaps = new Set();
 export function storeAuthState(gl: WebGLRenderingContext, state: boolean) {

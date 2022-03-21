@@ -67,7 +67,7 @@ export class SingleTapRecognizer {
         }
     }
 
-    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?Point {
         if (!this.centroid || e.timeStamp - this.startTime > MAX_TOUCH_TIME) {
             this.aborted = true;
         }
@@ -110,7 +110,7 @@ export class TapRecognizer {
         this.singleTap.touchmove(e, points, mapTouches);
     }
 
-    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?Point {
         const tap = this.singleTap.touchend(e, points, mapTouches);
         if (tap) {
             const soonEnough = e.timeStamp - this.lastTime < MAX_TAP_INTERVAL;

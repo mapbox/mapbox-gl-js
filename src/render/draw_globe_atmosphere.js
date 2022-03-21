@@ -25,15 +25,20 @@ function drawGlobeAtmosphere(painter: Painter) {
     // Render the gradient atmosphere by casting rays from screen pixels and determining their
     // closest distance to the globe. This is done in view space where camera is located in the origo
     // facing -z direction.
-    const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1.0);
-    const viewToProj = transform._camera.getCameraToClipPerspective(transform._fov, transform.width / transform.height, transform._nearZ, transform._farZ);
-    const projToView = mat4.invert([], viewToProj);
+    const offset = transform.centerOffset;
+    const cameraToClip = transform._camera.getCameraToClipPerspective(transform._fov, transform.width / transform.height, transform._nearZ, transform._farZ);
+
+    cameraToClip[8] = -offset.x * 2 / transform.width;
+    cameraToClip[9] = offset.y * 2 / transform.height;
+
+    const clipToCamera = mat4.invert([], cameraToClip);
+    const viewMatrix = mat4.mul([], clipToCamera, transform.projMatrix);
 
     // Compute direction vectors to each corner point of the view frustum
-    const frustumTl = project([-1, 1, 1], projToView);
-    const frustumTr = project([1, 1, 1], projToView);
-    const frustumBr = project([1, -1, 1], projToView);
-    const frustumBl = project([-1, -1, 1], projToView);
+    const frustumTl = project([-1, 1, 1], clipToCamera);
+    const frustumTr = project([1, 1, 1], clipToCamera);
+    const frustumBr = project([1, -1, 1], clipToCamera);
+    const frustumBl = project([-1, -1, 1], clipToCamera);
 
     const center = [transform.globeMatrix[12], transform.globeMatrix[13], transform.globeMatrix[14]];
     const globeCenterInViewSpace = project(center, viewMatrix);

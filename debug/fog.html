@@ -32,6 +32,8 @@ var GUIParams = function() {
     this.freezeTileCoverage = false;
     this.enableSky = true;
     this.terrainExaggeration = 1.5;
+    this.changeByZoom = false;
+    this.disableAtLowPitch = false;
     this.style = 'satellite-streets-v11';
     this.start = 2;
     this.end = 12;
@@ -105,6 +107,39 @@ window.onload = function() {
             map.setTerrain({"source": "mapbox-dem", "exaggeration": value});
         }
     });
+    var changeByZoom = terrain.add(guiParams, 'changeByZoom');
+    changeByZoom.onFinishChange((value) => {
+        map.setTerrain(guiParams.enableTerrain ? {
+            "source": "mapbox-dem",
+            "exaggeration": value ? [
+                "interpolate",
+                [
+                    "linear"
+                ],
+                [
+                    "zoom"
+                ],
+                0,
+                20,
+                12,
+                guiParams.terrainExaggeration,
+                16,
+                0
+            ] : guiParams.terrainExaggeration
+        } : null);
+    });
+    var disableAtLowPitch = terrain.add(guiParams, 'disableAtLowPitch');
+    let disabledOnPitch = false;
+    map.on('pitch', () => {
+        if (guiParams.enableTerrain && guiParams.disableAtLowPitch) {
+            if (map.getPitch() < 30) {
+                map.setTerrain(map.getPitch < 1 ? null : {"source": "mapbox-dem", "exaggeration": map.getPitch() / 30 * guiParams.terrainExaggeration});
+                disabledOnPitch = true;
+            } else if (disabledOnPitch) {
+                map.setTerrain({"source": "mapbox-dem", "exaggeration": guiParams.terrainExaggeration});
+            }
+        }
+    });
 
     var fog = gui.addFolder('Fog');
     var enableFog = fog.add(guiParams, 'enableFog');
@@ -170,7 +205,7 @@ marker.togglePopup();
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
-        "url": "mapbox://mapbox.terrain-rgb",
+        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
         "tileSize": 512,
         "maxzoom": 14
     });

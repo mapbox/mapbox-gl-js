@@ -52,8 +52,11 @@ export function disallowedFilterParameters(e: Expression, options: any): Array<V
         'pitch',
         'distance-from-center'
     ]);
-    for (const param of options.valueSpec.expression.parameters) {
-        disallowedParameters.delete(param);
+
+    if (options.valueSpec && options.valueSpec.expression) {
+        for (const param of options.valueSpec.expression.parameters) {
+            disallowedParameters.delete(param);
+        }
     }
 
     if (disallowedParameters.size === 0) {

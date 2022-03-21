@@ -38,6 +38,7 @@ declare module "gl-matrix" {
         div<T: Vec3>(T, Vec3, Vec3): T,
         min<T: Vec3>(T, Vec3, Vec3): T,
         max<T: Vec3>(T, Vec3, Vec3): T,
+        lerp<T: Vec3>(T, Vec3, Vec3, number): T,
         transformQuat<T: Vec3>(T, Vec3, Quat): T,
         transformMat3<T: Vec3>(T, Vec3, Mat3): T,
         transformMat4<T: Vec3>(T, Vec3, Mat4): T,

@@ -31,7 +31,7 @@ import type {FeatureDistanceData} from '../feature_filter/index.js';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
-    +id?: any,
+    +id?: number | null,
     +properties: {[_: string]: any},
     +patterns?: {[_: string]: {"min": string, "mid": string, "max": string}},
     +geometry?: Array<Array<Point>>
@@ -69,7 +69,7 @@ export class StyleExpression {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
-        this._evaluator.canonical = canonical;
+        this._evaluator.canonical = canonical || null;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection;
         this._evaluator.featureTileCoord = featureTileCoord || null;
@@ -82,7 +82,7 @@ export class StyleExpression {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;
-        this._evaluator.canonical = canonical;
+        this._evaluator.canonical = canonical || null;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection || null;
         this._evaluator.featureTileCoord = featureTileCoord || null;
@@ -110,7 +110,7 @@ export class StyleExpression {
     }
 }
 
-export function isExpression(expression: mixed) {
+export function isExpression(expression: mixed): boolean {
     return Array.isArray(expression) && expression.length > 0 &&
         typeof expression[0] === 'string' && expression[0] in definitions;
 }

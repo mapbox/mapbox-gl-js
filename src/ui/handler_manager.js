@@ -23,7 +23,7 @@ import window from '../util/window.js';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 import {vec3} from 'gl-matrix';
-import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import MercatorCoordinate, {latFromMercatorY, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 
 import type {Vec3} from 'gl-matrix';
 
@@ -303,26 +303,26 @@ class HandlerManager {
         this._changes = [];
     }
 
-    isActive() {
+    isActive(): boolean {
         for (const {handler} of this._handlers) {
             if (handler.isActive()) return true;
         }
         return false;
     }
 
-    isZooming() {
+    isZooming(): boolean {
         return !!this._eventsInProgress.zoom || this._map.scrollZoom.isZooming();
     }
 
-    isRotating() {
+    isRotating(): boolean {
         return !!this._eventsInProgress.rotate;
     }
 
-    isMoving() {
-        return Boolean(isMoving(this._eventsInProgress)) || this.isZooming();
+    isMoving(): boolean {
+        return !!isMoving(this._eventsInProgress) || this.isZooming();
     }
 
-    _blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string) {
+    _blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string): boolean {
         for (const name in activeHandlers) {
             if (name === myName) continue;
             if (!allowed || allowed.indexOf(name) < 0) {
@@ -336,7 +336,7 @@ class HandlerManager {
         this.handleEvent(e, `${e.type}Window`);
     }
 
-    _getMapTouches(touches: TouchList) {
+    _getMapTouches(touches: TouchList): TouchList {
         const mapTouches = [];
         for (const t of touches) {
             const target = ((t.target: any): Node);
@@ -492,7 +492,8 @@ class HandlerManager {
         }
 
         if (!hasChange(combinedResult)) {
-            return this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
+            this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
+            return;
         }
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, aroundCoord, pinchAround} = combinedResult;
 
@@ -524,11 +525,26 @@ class HandlerManager {
             assert(this._dragOrigin, '_dragOrigin should have been setup with a previous dragstart');
 
             const startPoint = tr.pointCoordinate(around);
-            const endPoint = tr.pointCoordinate(around.sub(panDelta));
+            if (tr.projection.name === 'globe') {
+                const startLat = latFromMercatorY(startPoint.y);
+                const centerLat = tr.center.lat;
 
-            if (startPoint && endPoint) {
-                panVec[0] = endPoint.x - startPoint.x;
-                panVec[1] = endPoint.y - startPoint.y;
+                // Compute pan vector directly in pixel coordinates for the globe.
+                // Rotate the globe a bit faster when dragging near poles to compensate
+                // different pixel-per-meter ratios (ie. pixel-to-physical-rotation is lower)
+                const scale = Math.min(mercatorZfromAltitude(1, startLat) / mercatorZfromAltitude(1, centerLat), 2);
+
+                panDelta = panDelta.rotate(-tr.angle);
+
+                panVec[0] = -panDelta.x / tr.worldSize * scale;
+                panVec[1] = -panDelta.y / tr.worldSize * scale;
+            } else {
+                const endPoint = tr.pointCoordinate(around.sub(panDelta));
+
+                if (startPoint && endPoint) {
+                    panVec[0] = endPoint.x - startPoint.x;
+                    panVec[1] = endPoint.y - startPoint.y;
+                }
             }
         }
 
@@ -642,7 +658,7 @@ class HandlerManager {
         this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 
-    _requestFrame() {
+    _requestFrame(): number {
         this._map.triggerRepaint();
         return this._map._renderTaskQueue.add(timeStamp => {
             this._frameId = undefined;

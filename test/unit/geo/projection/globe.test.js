@@ -6,35 +6,50 @@ import {OverscaledTileID} from '../../../../src/source/tile_id.js';
 test('Globe', (t) => {
     t.test('pointCoordinate', (t) => {
         const tr = new Transform();
-        tr.resize(100, 100);
+        tr.resize(512, 512);
         tr.zoom = 0;
         tr.setProjection({name: 'globe'});
 
-        let point = tr.projection.pointCoordinate(tr, 50, 50);
+        // center
+        let point = tr.projection.pointCoordinate(tr, 256, 256);
         t.same(point.x.toFixed(2), 0.5);
         t.same(point.y.toFixed(2), 0.5);
 
-        point = tr.projection.pointCoordinate(tr, 0, 50);
-        t.same(point.x.toFixed(4), 0.3736);
+        // left, middle
+        point = tr.projection.pointCoordinate(tr, 0, 256);
+        t.same(point.x.toFixed(4), 0.2653);
         t.same(point.y.toFixed(4), 0.5);
 
-        point = tr.projection.pointCoordinate(tr, 50, 0);
+        // right, middle
+        point = tr.projection.pointCoordinate(tr, 512, 256);
+        t.same(point.x.toFixed(4), 0.7347);
+        t.same(point.y.toFixed(4), 0.5);
+
+        // clamp y
+        point = tr.projection.pointCoordinate(tr, 256, 512);
         t.same(point.x.toFixed(4), 0.5);
-        t.same(point.y.toFixed(4), 0.3577);
+        t.same(point.y.toFixed(4), 0.9830);
+
+        // Position should be always clamped to the surface of the globe sphere
+        for (let i = 0; i < 5; i++) {
+            point = tr.projection.pointCoordinate(tr, 512 + i * 50, 256);
+            t.same(point.x.toFixed(4), 0.7347);
+            t.same(point.y.toFixed(4), 0.5);
+        }
 
         tr.center = {lng: 180, lat: 0};
 
-        point = tr.projection.pointCoordinate(tr, 50, 50);
+        point = tr.projection.pointCoordinate(tr, 256, 256);
         t.same(point.x.toFixed(2), 1.0);
         t.same(point.y.toFixed(2), 0.5);
 
-        point = tr.projection.pointCoordinate(tr, 0, 50);
-        t.same(point.x.toFixed(4), 0.8736);
+        point = tr.projection.pointCoordinate(tr, 0, 256);
+        t.same(point.x.toFixed(4), 0.7653);
         t.same(point.y.toFixed(4), 0.5);
 
         // Expect x-coordinate not to wrap
-        point = tr.projection.pointCoordinate(tr, 100, 50);
-        t.same(point.x.toFixed(4), 1.1264);
+        point = tr.projection.pointCoordinate(tr, 512, 256);
+        t.same(point.x.toFixed(4), 1.2347);
         t.same(point.y.toFixed(4), 0.5);
 
         t.end();
@@ -55,7 +70,8 @@ test('Globe', (t) => {
                     }
                     return true;
                 },
-                getMinElevationBelowMSL: () => 0
+                getMinElevationBelowMSL: () => 0,
+                exaggeration: () => 1
             };
         };
 

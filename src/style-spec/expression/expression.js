@@ -4,7 +4,7 @@ import type {Type} from './types.js';
 import type ParsingContext from './parsing_context.js';
 import type EvaluationContext from './evaluation_context.js';
 
-type SerializedExpression = Array<mixed> | string | number | boolean | null;
+export type SerializedExpression = Array<mixed> | Array<string> | string | number | boolean | null;
 
 export interface Expression {
     +type: Type;

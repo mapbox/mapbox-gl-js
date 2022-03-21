@@ -24,7 +24,7 @@ export function translate(queryGeometry: Array<Point>,
                    translate: [number, number],
                    translateAnchor: 'viewport' | 'map',
                    bearing: number,
-                   pixelsToTileUnits: number) {
+                   pixelsToTileUnits: number): Array<Point> {
     if (!translate[0] && !translate[1]) {
         return queryGeometry;
     }

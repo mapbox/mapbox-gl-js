@@ -60,7 +60,7 @@
     "line": 263
   },
   {
-    "message": "layers[15].paint.fill-color.stops[0][0].zoom: number expected, string found",
+    "message": "layers[15].paint.fill-color.stops[0]: stop zoom values must be numbers",
     "line": 284
   },
   {

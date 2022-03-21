@@ -74,12 +74,18 @@ import type {
     SourceSpecification,
     TerrainSpecification,
     FogSpecification,
-    ProjectionSpecification
+    ProjectionSpecification,
+    TransitionSpecification,
+    PropertyValueSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator, ValidationErrors} from './validate_style.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
+import type {QueryResult} from '../data/feature_index.js';
+import type {QueryFeature} from '../util/vectortile_to_geojson.js';
+import type {FeatureStates} from '../source/source_state.js';
 import type {PointLike} from '@mapbox/point-geometry';
+import type {Source} from '../source/source.js';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -304,7 +310,7 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = json;
-        this._updateProjection();
+        this._updateMapProjection();
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -348,8 +354,8 @@ class Style extends Evented {
         this.fire(new Event('style.load'));
     }
 
-    terrainSetForDrapingOnly() {
-        return this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.deferred;
+    terrainSetForDrapingOnly(): boolean {
+        return !!this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.deferred;
     }
 
     setProjection(projection?: ?ProjectionSpecification) {
@@ -363,24 +369,25 @@ class Style extends Evented {
         }
     }
 
-    _updateProjection() {
-        if (!this.map._explicitProjection) {
+    _updateMapProjection() {
+        if (!this.map._explicitProjection) { // Update the visible projection if map's is null
             this.map._updateProjection();
         } else { // Ensure that style is consistent with current projection on style load
-            this.enableDraping();
+            this.applyProjectionUpdate();
         }
     }
 
-    enableDraping() {
-        if (this._loaded) {
-            if (this.map.transform.projection.requiresDraping) {
-                const hasTerrain = this.getTerrain() || this.stylesheet.terrain;
-                if (!hasTerrain) {
-                    this.setTerrainForDraping();
-                }
-            } else if (this.terrainSetForDrapingOnly()) {
-                this.setTerrain(null);
+    applyProjectionUpdate() {
+        if (!this._loaded) return;
+        this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
+
+        if (this.map.transform.projection.requiresDraping) {
+            const hasTerrain = this.getTerrain() || this.stylesheet.terrain;
+            if (!hasTerrain) {
+                this.setTerrainForDraping();
             }
+        } else if (this.terrainSetForDrapingOnly()) {
+            this.setTerrain(null);
         }
     }
 
@@ -423,7 +430,7 @@ class Style extends Evented {
         }
     }
 
-    loaded() {
+    loaded(): boolean {
         if (!this._loaded)
             return false;
 
@@ -451,7 +458,7 @@ class Style extends Evented {
         return serializedLayers;
     }
 
-    hasTransitions() {
+    hasTransitions(): boolean {
         if (this.light && this.light.hasTransition()) {
             return true;
         }
@@ -633,7 +640,7 @@ class Style extends Evented {
      * @returns {boolean} true if any changes were made; false otherwise
      * @private
      */
-    setState(nextState: StyleSpecification) {
+    setState(nextState: StyleSpecification): boolean {
         this._checkLoaded();
 
         if (emitValidationErrors(this, validateStyle(nextState))) return false;
@@ -663,17 +670,18 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this._updateProjection();
+        this._updateMapProjection();
 
         return true;
     }
 
-    addImage(id: string, image: StyleImage) {
+    addImage(id: string, image: StyleImage): this {
         if (this.getImage(id)) {
             return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
         }
         this.imageManager.addImage(id, image);
         this._afterImageUpdated(id);
+        return this;
     }
 
     updateImage(id: string, image: StyleImage) {
@@ -684,12 +692,13 @@ class Style extends Evented {
         return this.imageManager.getImage(id);
     }
 
-    removeImage(id: string) {
+    removeImage(id: string): this {
         if (!this.getImage(id)) {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
         this.imageManager.removeImage(id);
         this._afterImageUpdated(id);
+        return this;
     }
 
     _afterImageUpdated(id: string) {
@@ -755,11 +764,11 @@ class Style extends Evented {
      * @throws {Error} If no source is found with the given ID.
      * @returns {Map} The {@link Map} object.
      */
-    removeSource(id: string) {
+    removeSource(id: string): this {
         this._checkLoaded();
 
         const source = this.getSource(id);
-        if (source === undefined) {
+        if (!source) {
             throw new Error('There is no source with this ID');
         }
         for (const layerId in this._layers) {
@@ -787,6 +796,7 @@ class Style extends Evented {
             source.onRemove(this.map);
         }
         this._changed = true;
+        return this;
     }
 
     /**
@@ -808,9 +818,9 @@ class Style extends Evented {
     /**
      * Get a source by ID.
      * @param {string} id ID of the desired source.
-     * @returns {Object} The source object.
+     * @returns {?Source} The source object.
      */
-    getSource(id: string): Object {
+    getSource(id: string): ?Source {
         const sourceCache = this._getSourceCache(id);
         return sourceCache && sourceCache.getSource();
     }
@@ -975,9 +985,9 @@ class Style extends Evented {
      * Return the style layer object with the given `id`.
      *
      * @param {string} id ID of the desired layer.
-     * @returns {?Object} A layer, if one with the given `id` exists.
+     * @returns {?StyleLayer} A layer, if one with the given `id` exists.
      */
-    getLayer(id: string): Object {
+    getLayer(id: string): ?StyleLayer {
         return this._layers[id];
     }
 
@@ -1056,11 +1066,12 @@ class Style extends Evented {
 
     /**
      * Get a layer's filter object.
-     * @param {string} layer The layer to inspect.
+     * @param {string} layerId The layer to inspect.
      * @returns {*} The layer's filter, if any.
      */
-    getFilter(layer: string) {
-        return clone(this.getLayer(layer).filter);
+    getFilter(layerId: string): ?FilterSpecification {
+        const layer = this.getLayer(layerId);
+        return layer && clone(layer.filter);
     }
 
     setLayoutProperty(layerId: string, name: string, value: any,  options: StyleSetterOptions = {}) {
@@ -1084,7 +1095,7 @@ class Style extends Evented {
      * @param {string} name The name of the layout property.
      * @returns {*} The property value.
      */
-    getLayoutProperty(layerId: string, name: string) {
+    getLayoutProperty(layerId: string, name: string): ?PropertyValueSpecification<mixed> {
         const layer = this.getLayer(layerId);
         if (!layer) {
             this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style.`)));
@@ -1114,8 +1125,9 @@ class Style extends Evented {
         this._updatedPaintProps[layerId] = true;
     }
 
-    getPaintProperty(layer: string, name: string) {
-        return this.getLayer(layer).getPaintProperty(name);
+    getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<mixed> {
+        const layer = this.getLayer(layerId);
+        return layer && layer.getPaintProperty(name);
     }
 
     setFeatureState(target: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
@@ -1124,7 +1136,7 @@ class Style extends Evented {
         const sourceLayer = target.sourceLayer;
         const source = this.getSource(sourceId);
 
-        if (source === undefined) {
+        if (!source) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
             return;
         }
@@ -1152,7 +1164,7 @@ class Style extends Evented {
         const sourceId = target.source;
         const source = this.getSource(sourceId);
 
-        if (source === undefined) {
+        if (!source) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
             return;
         }
@@ -1176,13 +1188,13 @@ class Style extends Evented {
         }
     }
 
-    getFeatureState(target: { source: string; sourceLayer?: string; id: string | number; }) {
+    getFeatureState(target: { source: string; sourceLayer?: string; id: string | number; }): ?FeatureStates {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
         const source = this.getSource(sourceId);
 
-        if (source === undefined) {
+        if (!source) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
             return;
         }
@@ -1199,11 +1211,11 @@ class Style extends Evented {
         return sourceCaches[0].getFeatureState(sourceLayer, target.id);
     }
 
-    getTransition() {
+    getTransition(): TransitionSpecification {
         return extend({duration: 300, delay: 0}, this.stylesheet && this.stylesheet.transition);
     }
 
-    serialize() {
+    serialize(): StyleSpecification {
         const sources = {};
         for (const cacheId in this._sourceCaches) {
             const source = this._sourceCaches[cacheId].getSource();
@@ -1246,7 +1258,7 @@ class Style extends Evented {
 
     }
 
-    _flattenAndSortRenderedFeatures(sourceResults: Array<any>) {
+    _flattenAndSortRenderedFeatures(sourceResults: Array<any>): Array<mixed> {
         // Feature order is complicated.
         // The order between features in two 2D layers is always determined by layer order.
         // The order between features in two 3D layers is always determined by depth.
@@ -1314,7 +1326,7 @@ class Style extends Evented {
         return features;
     }
 
-    queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: any, transform: Transform) {
+    queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: any, transform: Transform): Array<QueryResult> {
         if (params && params.filter) {
             this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
@@ -1336,7 +1348,7 @@ class Style extends Evented {
             }
         }
 
-        const sourceResults = [];
+        const sourceResults: Array<QueryResult> = [];
 
         params.availableImages = this._availableImages;
 
@@ -1379,10 +1391,10 @@ class Style extends Evented {
             );
         }
 
-        return this._flattenAndSortRenderedFeatures(sourceResults);
+        return (this._flattenAndSortRenderedFeatures(sourceResults): any);
     }
 
-    querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
+    querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}): Array<QueryFeature> {
         if (params && params.filter) {
             this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);
         }
@@ -1394,7 +1406,7 @@ class Style extends Evented {
         return results;
     }
 
-    addSourceType(name: string, SourceType: SourceClass, callback: Callback<void>) {
+    addSourceType(name: string, SourceType: SourceClass, callback: Callback<void>): void {
         if (Style.getSourceType(name)) {
             return callback(new Error(`A source type called "${name}" already exists.`));
         }
@@ -1411,7 +1423,7 @@ class Style extends Evented {
         }, callback);
     }
 
-    getLight() {
+    getLight(): LightSpecification {
         return this.light.getLight();
     }
 
@@ -1440,7 +1452,7 @@ class Style extends Evented {
         this.light.updateTransitions(parameters);
     }
 
-    getTerrain() {
+    getTerrain(): ?TerrainSpecification {
         return this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.elevated ? this.terrain.get() : null;
     }
 
@@ -1530,7 +1542,7 @@ class Style extends Evented {
         });
     }
 
-    getFog() {
+    getFog(): ?FogSpecification {
         return this.fog ? this.fog.get() : null;
     }
 
@@ -1622,7 +1634,7 @@ class Style extends Evented {
         }
     }
 
-    _validate(validate: Validator, key: string, value: any, props: any, options: { validate?: boolean } = {}) {
+    _validate(validate: Validator, key: string, value: any, props: any, options: { validate?: boolean } = {}): boolean {
         if (options && options.validate === false) {
             return false;
         }
@@ -1686,7 +1698,7 @@ class Style extends Evented {
         }
     }
 
-    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean, forceFullPlacement: boolean = false) {
+    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean, forceFullPlacement: boolean = false): boolean {
         let symbolBucketsChanged = false;
         let placementCommitted = false;
 
@@ -1822,11 +1834,11 @@ class Style extends Evented {
         return sourceCaches;
     }
 
-    _isSourceCacheLoaded(source: string) {
+    _isSourceCacheLoaded(source: string): boolean {
         const sourceCaches = this._getSourceCaches(source);
         if (sourceCaches.length === 0) {
             this.fire(new ErrorEvent(new Error(`There is no source with ID '${source}'`)));
-            return;
+            return false;
         }
         return sourceCaches.every(sc => sc.loaded());
     }

@@ -563,7 +563,7 @@ export default class Marker extends Evented {
      * @example
      * const offset = marker.getOffset();
      */
-    getOffset() {
+    getOffset(): Point {
         return this._offset;
     }
 

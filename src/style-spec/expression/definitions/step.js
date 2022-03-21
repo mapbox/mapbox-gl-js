@@ -5,7 +5,7 @@ import {NumberType} from '../types.js';
 import {findStopLessThanOrEqualTo} from '../stops.js';
 
 import type {Stops} from '../stops.js';
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -29,7 +29,7 @@ class Step implements Expression {
         }
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Step {
         if (args.length - 1 < 4) {
             return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
         }
@@ -72,7 +72,7 @@ class Step implements Expression {
         return new Step(outputType, input, stops);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any {
         const labels = this.labels;
         const outputs = this.outputs;
 
@@ -105,7 +105,7 @@ class Step implements Expression {
         return this.outputs.every(out => out.outputDefined());
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         const serialized = ["step", this.input.serialize()];
         for (let i = 0; i < this.labels.length; i++) {
             if (i > 0) {

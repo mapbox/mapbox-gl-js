@@ -33,7 +33,7 @@ uniform mat4 u_inv_rot_matrix;
 uniform vec2 u_merc_center;
 uniform vec3 u_camera_forward;
 uniform float u_zoom_transition;
-uniform vec3 u_ecef_origin;;
+uniform vec3 u_ecef_origin;
 uniform mat4 u_tile_matrix;
 #endif
 

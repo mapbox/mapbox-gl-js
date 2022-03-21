@@ -11,7 +11,7 @@ const earthCircumference = 2 * Math.PI * earthRadius; // meters
 /*
  * The circumference at a line of latitude in meters.
  */
-export function circumferenceAtLatitude(latitude: number) {
+export function circumferenceAtLatitude(latitude: number): number {
     return earthCircumference * Math.cos(latitude * Math.PI / 180);
 }
 

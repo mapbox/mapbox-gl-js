@@ -4,7 +4,7 @@ import {BooleanType, StringType, ValueType, NullType, toString, NumberType, isVa
 import RuntimeError from '../runtime_error.js';
 import {typeOf} from '../values.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -20,7 +20,7 @@ class In implements Expression {
         this.haystack = haystack;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?In {
         if (args.length !== 3) {
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
         }
@@ -38,11 +38,11 @@ class In implements Expression {
         return new In(needle, haystack);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): boolean {
         const needle = (this.needle.evaluate(ctx): any);
         const haystack = (this.haystack.evaluate(ctx): any);
 
-        if (!haystack) return false;
+        if (haystack == null) return false;
 
         if (!isValidNativeType(needle, ['boolean', 'string', 'number', 'null'])) {
             throw new RuntimeError(`Expected first argument to be of type boolean, string, number or null, but found ${toString(typeOf(needle))} instead.`);
@@ -60,11 +60,11 @@ class In implements Expression {
         fn(this.haystack);
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return true;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         return ["in", this.needle.serialize(), this.haystack.serialize()];
     }
 }

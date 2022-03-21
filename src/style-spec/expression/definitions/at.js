@@ -4,7 +4,7 @@ import {array, ValueType, NumberType} from '../types.js';
 
 import RuntimeError from '../runtime_error.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type, ArrayType} from '../types.js';
@@ -21,7 +21,7 @@ class At implements Expression {
         this.input = input;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?At {
         if (args.length !== 3)
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
 
@@ -34,7 +34,7 @@ class At implements Expression {
         return new At(t.itemType, index, input);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): Value {
         const index = ((this.index.evaluate(ctx): any): number);
         const array = ((this.input.evaluate(ctx): any): Array<Value>);
 
@@ -58,11 +58,11 @@ class At implements Expression {
         fn(this.input);
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return false;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         return ["at", this.index.serialize(), this.input.serialize()];
     }
 }

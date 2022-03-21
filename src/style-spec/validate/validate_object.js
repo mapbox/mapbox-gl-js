@@ -1,9 +1,16 @@
+// @flow
 
 import ValidationError from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import validateSpec from './validate.js';
 
-export default function validateObject(options) {
+import type {ValidationOptions} from './validate.js';
+
+type Options = ValidationOptions & {
+    objectElementValidators?: Function;
+};
+
+export default function validateObject(options: Options): Array<ValidationError> {
     const key = options.key;
     const object = options.value;
     const elementSpecs = options.valueSpec || {};
@@ -30,7 +37,9 @@ export default function validateObject(options) {
             validateElement = elementValidators['*'];
         } else if (elementSpecs['*']) {
             validateElement = validateSpec;
-        } else {
+        }
+
+        if (!validateElement) {
             errors.push(new ValidationError(key, object[objectKey], `unknown property "${objectKey}"`));
             continue;
         }
@@ -43,6 +52,7 @@ export default function validateObject(options) {
             styleSpec,
             object,
             objectKey
+        // $FlowFixMe[extra-arg]
         }, object));
     }
 
