@@ -34,10 +34,10 @@ map.on('load', () => {
     map.addSource('custom-source', {
         type: 'custom',
         tileSize: 256,
-        tilesUrl: 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg',
         attribution: 'Map tiles by <a target="_top" rel="noopener" href="http://stamen.com">Stamen Design</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>',
         async loadTile(tile, {signal}) {
-            const url = this.tilesUrl
+            const tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg';
+            const url = tilesUrl
                 .replace('{z}', String(tile.z))
                 .replace('{x}', String(tile.x))
                 .replace('{y}', String(tile.y));

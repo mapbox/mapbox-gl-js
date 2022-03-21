@@ -6,13 +6,11 @@ import RasterTileSource from './raster_tile_source.js';
 import {extend, pick} from '../util/util.js';
 import {OverscaledTileID} from './tile_id.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
-import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 
 import type Map from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type {Source} from './source.js';
 import type {Callback} from '../types/callback.js';
-import type {CanonicalTileID} from './tile_id.js';
 
 type DataType = 'raster'; // vector | geojson
 
@@ -101,7 +99,7 @@ function isRaster(data: any): boolean {
  * @memberof CustomSourceInterface
  * @instance
  * @name unloadTile
- * @param {OverscaledTileID} tileID The key of the tile to unload.
+ * @param {{ z: number, x: number, y: number }} tile Tile name to unload in the XYZ scheme format.
  * @param {Function} callback A callback to be called when the tile is unloaded.
  */
 
@@ -113,7 +111,7 @@ function isRaster(data: any): boolean {
  * @memberof CustomSourceInterface
  * @instance
  * @name abortTile
- * @param {OverscaledTileID} tileID The key of the tile to unload.
+ * @param {{ z: number, x: number, y: number }} tile Tile name that was aborted in the XYZ scheme format.
  * @param {Function} callback A callback to be called when the tile is aborted.
  */
 
@@ -124,7 +122,7 @@ function isRaster(data: any): boolean {
  * @memberof CustomSourceInterface
  * @instance
  * @name prepareTile
- * @param {OverscaledTileID} tileID The key of the tile to prepare.
+ * @param {{ z: number, x: number, y: number }} tile Tile name to prepare in the XYZ scheme format.
  * @returns {TextureImage} The tile image data as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`.
  */
 
@@ -135,7 +133,7 @@ function isRaster(data: any): boolean {
  * @memberof CustomSourceInterface
  * @instance
  * @name loadTile
- * @param {OverscaledTileID} tileID The key of the tile to prepare.
+ * @param {{ z: number, x: number, y: number }} tile Tile name to load in the XYZ scheme format.
  * @param {Object} options Options.
  * @param {AbortSignal} options.signal A signal object that allows the map to cancel tile loading request.
  * @returns {Promise<TextureImage>} The tile image data as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`.
@@ -149,10 +147,10 @@ export type CustomSourceInterface<T> = {
     scheme: string;
     tileSize: number,
     attribution: ?string,
-    loadTile: (tileID: CanonicalTileID, options: { signal: AbortSignal }) => Promise<T>,
-    prepareTile: ?(tileID: CanonicalTileID) => ?T,
-    unloadTile: ?(tileID: CanonicalTileID, callback: Callback<void>) => void,
-    abortTile: ?(tileID: CanonicalTileID, callback: Callback<void>) => void,
+    loadTile: (tileID: { z: number, x: number, y: number }, options: { signal: AbortSignal }) => Promise<T>,
+    prepareTile: ?(tileID: { z: number, x: number, y: number }) => ?T,
+    unloadTile: ?(tileID: { z: number, x: number, y: number }, callback: Callback<void>) => void,
+    abortTile: ?(tileID: { z: number, x: number, y: number }, callback: Callback<void>) => void,
     onAdd: ?(map: Map, callback: Callback<void>) => void,
     onRemove: ?(map: Map) => void,
 }
@@ -238,11 +236,12 @@ class CustomSource<T> extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
+        const {x, y, z} = tile.tileID.canonical;
         const controller = new AbortController();
         const signal = controller.signal;
 
         // $FlowFixMe[prop-missing]
-        tile.request = this.implementation.loadTile(tile.tileID.canonical, {signal})
+        tile.request = this.implementation.loadTile({x, y, z}, {signal})
             .then(tileLoaded.bind(this))
             .catch(error => {
                 // silence AbortError and 404 errors
@@ -262,28 +261,29 @@ class CustomSource<T> extends Evented implements Source {
 
             this.loadTileData(tile, data);
             tile.state = 'loaded';
-
-            cacheEntryPossiblyAdded(this.dispatcher);
             callback(null);
         }
     }
 
     loadTileData(tile: Tile, data: T): void {
+        // Only raster data supported at the moment
         RasterTileSource.loadTileData(tile, (data: any), this.map.painter);
     }
 
     unloadTileData(tile: Tile): void {
+        // Only raster data supported at the moment
         RasterTileSource.unloadTileData(tile, this.map.painter);
     }
 
     prepareTile(tileID: OverscaledTileID): ?Tile {
         if (!this.implementation.prepareTile) return null;
 
-        const data = this.implementation.prepareTile(tileID.canonical);
+        const {x, y, z} = tileID.canonical;
+        const data = this.implementation.prepareTile({x, y, z});
         if (!data) return null;
 
-        const painter = this.map ? this.map.painter : null;
-        const tile = new Tile(tileID, this.tileSize * tileID.overscaleFactor(), this.map.transform.tileZoom, painter, true);
+        const isRaster = true; // Only raster data supported at the moment
+        const tile = new Tile(tileID, this.tileSize * tileID.overscaleFactor(), this.map.transform.tileZoom, this.map.painter, isRaster);
 
         RasterTileSource.loadTileData(tile, (data: any), this.map.painter);
         tile.state = 'loaded';
@@ -295,7 +295,8 @@ class CustomSource<T> extends Evented implements Source {
         RasterTileSource.unloadTileData(tile, this.map.painter);
 
         if (this.implementation.unloadTile) {
-            this.implementation.unloadTile(tile.tileID.canonical, callback);
+            const {x, y, z} = tile.tileID.canonical;
+            this.implementation.unloadTile({x, y, z}, callback);
         } else {
             callback();
         }
@@ -308,7 +309,8 @@ class CustomSource<T> extends Evented implements Source {
         }
 
         if (this.implementation.abortTile) {
-            this.implementation.abortTile(tile.tileID.canonical, callback);
+            const {x, y, z} = tile.tileID.canonical;
+            this.implementation.abortTile({x, y, z}, callback);
         } else {
             callback();
         }
@@ -318,14 +320,14 @@ class CustomSource<T> extends Evented implements Source {
         return false;
     }
 
-    coveringTiles(): CanonicalTileID[] {
+    coveringTiles(): { z: number, x: number, y: number }[] {
         const tileIDs = this.map.transform.coveringTiles({
             tileSize: this.tileSize,
             minzoom: this.minzoom,
             maxzoom: this.maxzoom,
         });
 
-        return tileIDs.map(tileID => tileID.canonical);
+        return tileIDs.map(tileID => ({x: tileID.canonical.x, y: tileID.canonical.y, z: tileID.canonical.z}));
     }
 
     update() {
