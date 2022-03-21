@@ -262,7 +262,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
 function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>, now: number) {
     if (painter.transform.projection.name === 'globe') {
+        painter.gpuTimingGlobeStart();
         drawTerrainForGlobe(painter, terrain, sourceCache, tileIDs, now);
+        painter.gpuTimingGlobeEnd();
     } else {
         const context = painter.context;
         const gl = context.gl;
