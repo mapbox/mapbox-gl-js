@@ -4,7 +4,6 @@ import Tile from './tile.js';
 import window from '../util/window.js';
 import RasterTileSource from './raster_tile_source.js';
 import {extend, pick} from '../util/util.js';
-import {OverscaledTileID} from './tile_id.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 
 import type Map from '../ui/map.js';
