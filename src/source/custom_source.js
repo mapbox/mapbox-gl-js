@@ -278,20 +278,15 @@ class CustomSource<T> extends Evented implements Source {
         RasterTileSource.unloadTileData(tile, this.map.painter);
     }
 
-    prepareTile(tileID: OverscaledTileID): ?Tile {
+    prepareTile(tile: Tile): ?T {
         if (!this.implementation.prepareTile) return null;
 
-        const {x, y, z} = tileID.canonical;
+        const {x, y, z} = tile.tileID.canonical;
         const data = this.implementation.prepareTile({x, y, z});
         if (!data) return null;
 
-        const isRaster = true; // Only raster data supported at the moment
-        const tile = new Tile(tileID, this.tileSize * tileID.overscaleFactor(), this.map.transform.tileZoom, this.map.painter, isRaster);
-
         RasterTileSource.loadTileData(tile, (data: any), this.map.painter);
-        tile.state = 'loaded';
-
-        return tile;
+        return data;
     }
 
     unloadTile(tile: Tile, callback: Callback<void>): void {

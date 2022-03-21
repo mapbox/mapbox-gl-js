@@ -66,7 +66,7 @@ export interface Source {
     +hasTile?: (tileID: OverscaledTileID) => boolean;
     +abortTile?: (tile: Tile, callback: Callback<void>) => void;
     +unloadTile?: (tile: Tile, callback: Callback<void>) => void;
-    +prepareTile?: (tileID: OverscaledTileID) => ?Tile;
+    +prepareTile?: (tile: Tile) => ?any;
 
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.
