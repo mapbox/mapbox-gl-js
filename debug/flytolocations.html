@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+let locIndex = 0;
+const locations = [
+    {
+        center: [8.41, 22.9],
+        zoom: 3.5,
+        pitch: 0
+    },
+    {
+        center: [14.956, 49.337],
+        zoom: 5.38,
+        pitch: 0
+    },
+    {
+        center: [104.69, 16.31],
+        zoom: 4.31,
+        pitch: 0
+    },
+    {
+        center: [141.463, -31.308],
+        zoom: 5.66,
+        pitch: 67
+    },
+    {
+        center: [-83.16, 55.23],
+        zoom: 2.42,
+        pitch: 0
+    },
+    {
+        center: [-63.56, -41.99],
+        zoom: 3.93,
+        pitch: 55
+    },
+    {
+        center: [50.8, 38.2],
+        zoom: 1.45,
+        pitch: 0
+    },
+    {
+        center: [8.41, 22.9],
+        zoom: 3.5,
+        pitch: 0
+    }
+];
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 3.5,
+    center: [8.41, 22.9],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true,
+    projection: 'globe',
+    pitch: 0
+});
+
+let measuring = false;
+
+let counter = 0;
+let totalGPUTime = 0;
+let timings = [];
+
+const trials = [];
+
+map.on('gpu-timing-frame', function(data) {
+    if (measuring) {
+        totalGPUTime += data.gpuTime;
+        counter += 1;
+        const t = totalGPUTime / counter;
+        // console.log(t);
+        timings.push(t);
+    }
+});
+
+function playback(cb) {
+    map.flyTo(locations[locIndex]);
+    map.once('moveend', () => {
+        window.setTimeout(() => {
+            if (locIndex < locations.length) {
+                playback();
+                locIndex++;
+            } else {
+                let avgTime = 0;
+                for (const t of timings) avgTime += t;
+                avgTime /= timings.length;
+                console.log(`Meauring finished!\nAverage globe gpu render time is ${avgTime}(ms)`);
+                trials.push(avgTime);
+                map.repaint = false;
+
+                locIndex = 0;
+                measuring = false;
+                counter = 0;
+                totalGPUTime = 0;
+                timings = [];
+                measure();
+            }
+        }, 1000);
+    });
+}
+
+function measureFly() {
+    if (measuring) return;
+    console.log("Measuring started.");
+    measuring = true;
+    map.repaint = true;
+    playback();
+}
+
+let numTrials = 0;
+function measure() {
+    if (numTrials < 10) {
+        setTimeout(() => {
+            console.log(`Trial number ${numTrials}`);
+            measureFly();
+            numTrials++;
+        }, 100);
+    } else {
+        let avgTime = 0;
+        for (const t of trials) avgTime += t;
+        avgTime /= trials.length;
+        console.log(`Trials finished with average time of ${avgTime}`);
+    }
+}
+
+</script>
+</body>
+</html>
