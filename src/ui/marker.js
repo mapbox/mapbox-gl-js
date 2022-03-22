@@ -5,7 +5,7 @@ import window from '../util/window.js';
 import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap.js';
-import {bindAll, extend} from '../util/util.js';
+import {bindAll, extend, radToDeg} from '../util/util.js';
 import {type Anchor, anchorTranslate} from './anchor.js';
 import {Event, Evented} from '../util/evented.js';
 import type Map from './map.js';
@@ -13,7 +13,8 @@ import type Popup from './popup.js';
 import type {LngLatLike} from "../geo/lng_lat.js";
 import type {MapMouseEvent, MapTouchEvent} from './events.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import {tiltAt} from '../geo/projection/globe_util.js';
+import {tiltAt, centerToScreen} from '../geo/projection/globe_util.js';
+import {vec3} from 'gl-matrix';
 
 type Options = {
     element?: HTMLElement,
@@ -470,17 +471,30 @@ export default class Marker extends Evented {
         const pos = this._pos;
         const map = this._map;
         if (!pos || !map) { return; }
+
+        let rotation = ``;
+        const pitch = this._calculatePitch();
+        if (pitch) {
+            if (map.transform.projection.name === 'globe') {
+                const globeCenter = centerToScreen(map.transform);
+                const relativePosition = pos.sub(globeCenter);
+                const absX = Math.abs(relativePosition.x);
+                const absY = Math.abs(relativePosition.y);
+                const totalDist = absX + absY;
+                const yPortion = relativePosition.x / totalDist;
+                const xPortion = -relativePosition.y / totalDist;
+                rotation = `rotateX(${pitch * xPortion}deg) rotateY(${pitch * yPortion}deg)`;
+            } else {
+                rotation = `rotateX(${this._calculatePitch()}deg)`;
+            }
+        }
+        rotation += `rotateZ(${this._calculateRotation()}deg)`;
+
         const offset = this._offset.mult(this._scale);
-        const rZ  = `rotateZ(${this._calculateRotation()}deg)`;
-        const rX = `rotateX(${this._calculatePitch()}deg)`;
-        // With pitch-alignment: map on a flat map, we adjust rotation before pitch,
-        // which skews the marker to simulate it lying flat on the map surface.
-        // In globe view, we adjust first pitch, then rotation so that the marker
-        // is always compressed vertically and appears to be popping out from the map.
-        const rotationTransform = map._usingGlobe() ? rZ + rX : rX + rZ;
+
         this._element.style.transform = `
             translate(${pos.x}px, ${pos.y}px) ${anchorTranslate[this._anchor]}
-            ${rotationTransform}
+            ${rotation}
             translate(${offset.x}px, ${offset.y}px)
         `;
     }
@@ -491,8 +505,7 @@ export default class Marker extends Evented {
 
         if (map && this.getPitchAlignment() === 'map') {
             if (map.transform.projection.name === 'globe') {
-                const angle  = tiltAt(map.transform, pos) * 180 / Math.PI + map.getPitch();
-                return MAX_PITCH * (1 - angle / 90);
+                return radToDeg(tiltAt(map.transform, pos));
             }
             return map.getPitch();
         }
@@ -504,11 +517,13 @@ export default class Marker extends Evented {
             return this._rotation;
         } if (this._map && this._rotationAlignment === "map") {
             const pos = this._pos;
-            if (pos && this._map && this._map.transform.projection.name === 'globe') {
-                const globeCenter = this._map.transform.globeCenterPoint();
-                const relativePosition = pos.sub(globeCenter);
-                let rotation = Math.atan(relativePosition.x / relativePosition.y) * -180 / Math.PI;
-                if (relativePosition.y > 0) {
+            const map = this._map;
+            if (pos && map && map.transform.projection.name === 'globe') {
+                const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001));
+                const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001));
+                const diff = south.sub(north);
+                let rotation = -radToDeg(Math.atan(diff.x / diff.y));
+                if (diff.y < 0) {
                     rotation += 180;
                 }
                 return rotation;

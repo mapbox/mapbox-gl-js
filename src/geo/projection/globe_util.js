@@ -9,8 +9,8 @@ import {
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import {degToRad, smoothstep, clamp} from '../../util/util.js';
-import {mat4, vec3} from 'gl-matrix';
+import {degToRad, radToDeg, smoothstep, clamp} from '../../util/util.js';
+import {vec3, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
 import posAttributes from '../../data/pos_attributes.js';
@@ -20,13 +20,14 @@ import LngLatBounds from '../lng_lat_bounds.js';
 
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
-import type {Mat4, Vec3} from 'gl-matrix';
+import type {Vec3, Mat4} from 'gl-matrix';
 import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Transform from '../transform.js';
 import Point from '@mapbox/point-geometry';
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
+const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
 const GLOBE_VERTEX_GRID_SIZE = 64;
@@ -414,12 +415,43 @@ export function screenPixelToECEF(tr: Transform, point: Point): Array<number> {
     return latLngToECEF(lngLat.lat, lngLat.lng);
 }
 
-// Returns the angle of the normal to a point on the globe.
-export function tiltAt(tr: Transform, point: Point): number {
-    const position = screenPixelToECEF(tr, point);
-    const surfaceCenter = latLngToECEF(tr._center.lat, tr._center.lng);
-    return vec3.angle(surfaceCenter, position);
+function cameraPositionInECEF(tr: Transform): Array<number> {
+    // Here "center" is the center of the globe. We refer to transform._center
+    // (the surface of the map on the center of the screen) as "pivot" to avoid confusion.
+    const centerToPivot = latLngToECEF(tr._center.lat, tr._center.lng);
 
+    // Set axis to East-West line tangent to sphere at pivot
+    const south = vec3.fromValues(0, 1, 0);
+    let axis = vec3.cross([], south, centerToPivot);
+
+    // Rotate axis around pivot by bearing
+    const rotation = mat4.fromRotation([], -tr.angle, centerToPivot);
+    axis = vec3.transformMat4(axis, axis, rotation);
+
+    // Rotate camera around axis by pitch
+    mat4.fromRotation(rotation, -tr._pitch, axis);
+
+    const pivotToCamera = vec3.normalize([], centerToPivot);
+    vec3.scale(pivotToCamera, pivotToCamera, tr.cameraToCenterDistance / tr.pixelsPerMeter * GLOBE_METERS_TO_ECEF);
+    vec3.transformMat4(pivotToCamera, pivotToCamera, rotation);
+
+    return vec3.add([], centerToPivot, pivotToCamera);
+}
+
+// Return the angle of the normal vector of the sphere relative to the camera, i.e. how much to tilt map-aligned markers.
+export function tiltAt(tr: Transform, point: Point): number {
+    const centerToPoint = screenPixelToECEF(tr, point);
+    const centerToCamera = cameraPositionInECEF(tr);
+    const pointToCamera = vec3.subtract([], centerToCamera, centerToPoint);
+    return vec3.angle(pointToCamera, centerToPoint);
+}
+
+export function centerToScreen(tr: Transform): Point {
+    const pos = [0, 0, 0];
+    const matrix = mat4.identity(new Float64Array(16));
+    mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
+    vec3.transformMat4(pos, pos, matrix);
+    return new Point(pos[0], pos[1]);
 }
 
 export class GlobeSharedBuffers {
