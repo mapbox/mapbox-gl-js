@@ -60,17 +60,13 @@ void main() {
     vec3 c0 = mix(color_stop_2, color_stop_1, alpha_1);
     vec3 c1 = mix(c0, color_stop_0, alpha_0);
     vec3 c2 = mix(c0, c1, t);
-    vec3 c3 = mix(color_stop_2, c2, t);
-
-    vec3 color = c2 * t + c3 * (1.0 - t);
+    vec3 c  = mix(color_stop_2, c2, t);
 
     // Blend alphas
     float a0 = mix(alpha_2, 1.0, alpha_1);
     float a1 = mix(a0, 1.0, alpha_0);
     float a2 = mix(a0, a1, t);
-    float a3 = mix(alpha_2, a2, t);
-
-    float composited_alpha = a2 * t + a3 * (1.0 - t);
+    float a  = mix(alpha_2, a2, t);
 
     vec2 uv = (gl_FragCoord.xy / u_viewport) * (2.0 - 1.0);
     vec3 D = vec3(uv + vec2(-u_latlon.y, -u_latlon.x), 1.0);
@@ -89,10 +85,10 @@ void main() {
     star_field *= (1.0 - pow(t, 0.25 + (1.0 - u_sky_color.a) * 0.75));
 
     // Additive star field
-    color = color + star_field * alpha_2;
+    c += star_field * alpha_2;
 
     // Dither
-    color = dither(color, gl_FragCoord.xy + u_temporal_offset);
+    c = dither(c, gl_FragCoord.xy + u_temporal_offset);
 
-    gl_FragColor = vec4(color, composited_alpha);
+    gl_FragColor = vec4(c, a);
 }
