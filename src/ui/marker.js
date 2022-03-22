@@ -493,9 +493,9 @@ export default class Marker extends Evented {
         const offset = this._offset.mult(this._scale);
 
         this._element.style.transform = `
-            translate(${pos.x}px, ${pos.y}px) ${anchorTranslate[this._anchor]}
+            translate(${pos.x}px,${pos.y}px) ${anchorTranslate[this._anchor]}
             ${rotation}
-            translate(${offset.x}px, ${offset.y}px)
+            translate(${offset.x}px,${offset.y}px)
         `;
     }
 
