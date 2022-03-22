@@ -471,25 +471,7 @@ export default class Marker extends Evented {
         const map = this._map;
         if (!pos || !map) { return; }
 
-        let rotation = ``;
-        const pitch = this._calculatePitch();
-        if (pitch) {
-            if (map.transform.projection.name === 'globe') {
-                const globeCenter = centerToScreen(map.transform);
-                const relativePosition = pos.sub(globeCenter);
-                const absX = Math.abs(relativePosition.x);
-                const absY = Math.abs(relativePosition.y);
-                const totalDist = absX + absY;
-                const yPortion = relativePosition.x / totalDist;
-                const xPortion = -relativePosition.y / totalDist;
-                rotation = `rotateX(${pitch * xPortion}deg) rotateY(${pitch * yPortion}deg)`;
-            } else {
-                rotation = `rotateX(${pitch}deg)`;
-            }
-        }
-        const spin = this._calculateRotation();
-        if (spin) { rotation += `rotateZ(${spin}deg)`; }
-
+        const rotation = this._calculateXYTransform() + this._calculateZTransform();
         const offset = this._offset.mult(this._scale);
 
         this._element.style.transform = `
@@ -499,17 +481,27 @@ export default class Marker extends Evented {
         `;
     }
 
-    _calculatePitch(): number {
+    _calculateXYTransform(): string {
         const pos = this._pos;
         const map = this._map;
 
-        if (map && this.getPitchAlignment() === 'map') {
-            if (map.transform.projection.name === 'globe') {
-                return radToDeg(tiltAt(map.transform, pos));
-            }
-            return map.getPitch();
+        if (this.getPitchAlignment() !== 'map' || !map || !pos) { return ''; }
+        if (map.transform.projection.name !== 'globe') {
+            const pitch = map.getPitch();
+            return pitch ? `rotateX(${pitch}deg)` : '';
         }
-        return 0;
+        const tilt = radToDeg(tiltAt(map.transform, pos));
+        const posFromCenter = pos.sub(centerToScreen(map.transform));
+        const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) +  Math.abs(posFromCenter.y));
+        const yTilt = posFromCenter.x * tiltOverDist;
+        const xTilt = -posFromCenter.y * tiltOverDist;
+        if (!xTilt && !yTilt) { return ''; }
+        return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
+    }
+
+    _calculateZTransform(): string {
+        const spin = this._calculateRotation();
+        return spin ? `rotateZ(${spin}deg)` : ``;
     }
 
     _calculateRotation(): number {
