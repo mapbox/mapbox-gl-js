@@ -1227,8 +1227,7 @@ class Transform {
      */
     pointCoordinate3D(p: Point): MercatorCoordinate {
         if (!this.elevation) return this.pointCoordinate(p);
-        const elevation = this.elevation;
-        let raycast = this.elevation.pointCoordinate(p);
+        let raycast = this.projection.pointCoordinate3D(this, p.x, p.y);
         if (raycast) return new MercatorCoordinate(raycast[0], raycast[1], raycast[2]);
         let start = 0, end = this.horizonLineFromTop();
         if (p.y > end) return this.pointCoordinate(p); // holes between tiles below horizon line or below bottom.
@@ -1238,7 +1237,7 @@ class Transform {
 
         for (let i = 0; i < samples && end - start > threshold; i++) {
             r.y = interpolate(start, end, 0.66); // non uniform binary search favoring points closer to horizon.
-            const rCast = elevation.pointCoordinate(r);
+            const rCast = this.projection.pointCoordinate3D(this, r.x, r.y);
             if (rCast) {
                 end = r.y;
                 raycast = rCast;
@@ -1263,7 +1262,7 @@ class Transform {
             const horizon = this.horizonLineFromTop();
             return p.y < horizon;
         } else {
-            return !this.elevation.pointCoordinate(p);
+            return !this.projection.pointCoordinate3D(this, p.x, p.y);
         }
     }
 

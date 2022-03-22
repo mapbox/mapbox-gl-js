@@ -28,7 +28,7 @@ import {
 
 import type Transform from '../transform.js';
 import type {ElevationScale} from './projection.js';
-import type {Vec3} from 'gl-matrix';
+import type {Vec3, Vec4} from 'gl-matrix';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 
@@ -162,6 +162,11 @@ export default class Globe extends Mercator {
         const my = clamp(mercatorYfromLat(lat), 0, 1);
 
         return new MercatorCoordinate(mx, my);
+    }
+
+    pointCoordinate3D(tr: Transform, x: number, y: number): ?Vec4 {
+        const mc = this.pointCoordinate(tr, x, y, 0);
+        return [mc.x, mc.y, mc.z, mc.toAltitude()];
     }
 
     farthestPixelDistance(tr: Transform): number {
