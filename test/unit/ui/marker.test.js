@@ -22,20 +22,6 @@ test('Marker uses a default marker element with an appropriate offset', (t) => {
     t.end();
 });
 
-test('Transform reflects default offset', (t) => {
-    const map = createMap(t);
-    const marker = new Marker()
-        .setLngLat([0, 0])
-        .addTo(map);
-    map._domRenderTaskQueue.run();
-
-    t.ok(marker.getElement().classList.contains('mapboxgl-marker-anchor-center'));
-    t.match(marker.getElement().style.transform, /translate\(0px,-14px\)/);
-
-    map.remove();
-    t.end();
-});
-
 test('Marker uses a default marker element with custom color', (t) => {
     const marker = new Marker({color: '#123456'});
     t.ok(marker.getElement().innerHTML.includes('#123456'));
@@ -269,6 +255,32 @@ test('Marker anchors as specified by the anchor option', (t) => {
 
     t.ok(marker.getElement().classList.contains('mapboxgl-marker-anchor-top'));
     t.match(marker.getElement().style.transform, /translate\(-50%,0\)/);
+
+    map.remove();
+    t.end();
+});
+
+test('Transform reflects default offset', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map);
+    map._domRenderTaskQueue.run();
+
+    t.match(marker.getElement().style.transform, /translate\(0px,-14px\)/);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker is transformed to center of screen', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map);
+    map._domRenderTaskQueue.run();
+
+    t.match(marker.getElement().style.transform, "translate(256px,256px");
 
     map.remove();
     t.end();
@@ -800,26 +812,6 @@ test('Marker transforms pitch with the map', (t) => {
 
     const finalPitch = marker.getElement().style.transform.match(rotationRegex)[1];
     t.equal(finalPitch, "45");
-
-    map.remove();
-    t.end();
-});
-
-test('Transform positin', (t) => {
-    const map = createMap(t);
-    const marker = new Marker({rotationAlignment: 'map'})
-        .setLngLat([0, 0])
-        .addTo(map);
-    map._domRenderTaskQueue.run();
-
-    const rotationRegex = /rotateZ\(-?([0-9]+)deg\)/;
-    t.notOk(marker.getElement().style.transform.match(rotationRegex));
-
-    map.setBearing(map.getBearing() + 180);
-    map._domRenderTaskQueue.run();
-
-    const finalRotation = marker.getElement().style.transform.match(rotationRegex)[1];
-    t.equal(finalRotation, "180");
 
     map.remove();
     t.end();
