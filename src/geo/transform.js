@@ -1085,7 +1085,6 @@ class Transform {
             return this.locationPoint(lnglat);
         }
         return this._coordinatePoint(this.locationCoordinate(lnglat), true);
-
     }
 
     /**

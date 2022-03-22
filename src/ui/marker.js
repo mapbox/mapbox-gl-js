@@ -484,10 +484,11 @@ export default class Marker extends Evented {
                 const xPortion = -relativePosition.y / totalDist;
                 rotation = `rotateX(${pitch * xPortion}deg) rotateY(${pitch * yPortion}deg)`;
             } else {
-                rotation = `rotateX(${this._calculatePitch()}deg)`;
+                rotation = `rotateX(${pitch}deg)`;
             }
         }
-        rotation += `rotateZ(${this._calculateRotation()}deg)`;
+        const spin = this._calculateRotation();
+        if (spin) { rotation += `rotateZ(${spin}deg)`; }
 
         const offset = this._offset.mult(this._scale);
 

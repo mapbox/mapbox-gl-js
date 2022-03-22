@@ -757,13 +757,13 @@ test('Marker transforms rotation with the map', (t) => {
     map._domRenderTaskQueue.run();
 
     const rotationRegex = /rotateZ\(-?([0-9]+)deg\)/;
-    const initialRotation = marker.getElement().style.transform.match(rotationRegex)[1];
+    t.notOk(marker.getElement().style.transform.match(rotationRegex));
 
     map.setBearing(map.getBearing() + 180);
     map._domRenderTaskQueue.run();
 
     const finalRotation = marker.getElement().style.transform.match(rotationRegex)[1];
-    t.notEqual(initialRotation, finalRotation);
+    t.equal(finalRotation, "180");
 
     map.remove();
     t.end();
@@ -779,13 +779,13 @@ test('Marker transforms pitch with the map', (t) => {
     map._domRenderTaskQueue.run();
 
     const rotationRegex = /rotateX\(-?([0-9]+)deg\)/;
-    const initialPitch = marker.getElement().style.transform.match(rotationRegex)[1];
+    t.notOk(marker.getElement().style.transform.match(rotationRegex));
 
     map.setPitch(45);
     map._domRenderTaskQueue.run();
-
+    
     const finalPitch = marker.getElement().style.transform.match(rotationRegex)[1];
-    t.notEqual(initialPitch, finalPitch);
+    t.equal(finalPitch, "45");
 
     map.remove();
     t.end();
