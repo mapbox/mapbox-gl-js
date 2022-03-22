@@ -789,7 +789,7 @@ test('Marker transforms rotation with the map', (t) => {
     map._domRenderTaskQueue.run();
 
     const finalRotation = marker.getElement().style.transform.match(rotationRegex)[1];
-    t.equal(finalRotation, "180");
+    t.same(finalRotation, 180);
 
     map.remove();
     t.end();
@@ -811,7 +811,7 @@ test('Marker transforms pitch with the map', (t) => {
     map._domRenderTaskQueue.run();
 
     const finalPitch = marker.getElement().style.transform.match(rotationRegex)[1];
-    t.equal(finalPitch, "45");
+    t.same(finalPitch, 45);
 
     map.remove();
     t.end();
@@ -983,6 +983,122 @@ test('Marker and fog', (t) => {
             t.end();
         });
     });
+});
+
+test('Globe', (t) => {
+    test('Marker is transformed to center of screen', (t) => {
+        const map = createMap(t);
+        const marker = new Marker()
+            .setLngLat([0, 0])
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        t.match(marker.getElement().style.transform, "translate(256px,256px");
+        map.setProjection('globe');
+        map.once('render', () => {
+            t.match(marker.getElement().style.transform, "translate(256px,256px");
+            map.remove();
+            t.end();
+        });
+    });
+
+    test('Marker is positioned on globe surface', (t) => {
+        const map = createMap(t);
+        const marker = new Marker()
+            .setLngLat([90, 0])
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        t.match(marker.getElement().style.transform, " translate(384px,256px)");
+        map.setProjection('globe');
+        map.once('render', () => {
+            t.match(marker.getElement().style.transform, "translate(330px,256px)");
+            t.same(marker.getElement().style.opacity, 1.0);
+            t.same(marker.getElement().style.pointerEvents, 'auto');
+            map.remove();
+            t.end();
+        });
+    });
+
+    test('Marker is occluded on the far side of the globe', (t) => {
+        const map = createMap(t);
+        const marker = new Marker()
+            .setLngLat([180, 0])
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        t.match(marker.getElement().style.transform, " translate(512px,256px)");
+        map.setProjection('globe');
+        map.once('render', () => {
+            t.match(marker.getElement().style.transform, "translate(256px,256px)");
+            t.same(marker.getElement().style.opacity, 0);
+            t.same(marker.getElement().style.pointerEvents, 'none');
+            map.remove();
+            t.end();
+        });
+    });
+
+    const rotateXReg = /rotateX\(-?([.0-9]+)deg\)/;
+    const rotateYReg = /rotateY\((-?[.0-9]+)deg\)/;
+    const rotateZReg = /rotateZ\(-?([.0-9]+)deg\)/;
+
+    test('Globe with pitchAlignment and rotationAlingment: map, changing longitude', (t) => {
+        const map = createMap(t);
+        map.setProjection('globe');
+        const marker = new Marker({rotationAlignment: 'map', pitchAlignment: 'map'})
+            .setLngLat([0, 0])
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        const transform = () => marker.getElement().style.transform;
+
+        t.match(transform(), "translate(256px,256px)");
+        t.notMatch(transform(), "rotateX");
+        t.notMatch(transform(), "rotateZ");
+
+        marker.setLngLat([90, 0]);
+        map.once('render', () => {
+            t.match(transform(), "translate(330px,256px)");
+            t.same(transform().match(rotateXReg)[1], 0);
+            const yval = transform().match(rotateYReg)[1];
+            t.ok(Math.abs(yval - 90) < 2);
+            map.remove();
+            t.end();
+        });
+    });
+
+    test('Globe with pitchAlignment and rotationAlingment: map, changing lattitude', (t) => {
+        const map = createMap(t);
+        map.setProjection('globe');
+        const marker = new Marker({rotationAlignment: 'map', pitchAlignment: 'map'})
+            .setLngLat([0, 89])
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        const transform = () => marker.getElement().style.transform;
+
+        console.log(transform());
+        t.match(transform(), "translate(256px,182px)");
+        const xval = transform().match(rotateXReg)[1];
+        t.ok(Math.abs(xval - 90) < 2);
+        t.same(transform().match(rotateYReg)[1], 0);
+
+        marker.setLngLat([-45, 45]);
+        map.on('render', () => {
+            console.log(transform());
+            t.match(transform(), "translate(217px,201px)");
+            const xval = transform().match(rotateXReg)[1];
+            t.ok(Math.abs(xval - 38.5) < 1);
+            const yval = transform().match(rotateYReg)[1];
+            t.ok(Math.abs(yval - -27) < 1);
+            const zval = transform().match(rotateZReg)[1];
+            t.ok(Math.abs(zval - 38) < 1);
+            map.remove();
+            t.end();
+        });
+    });
+
+    t.end();
 });
 
 test('Snap To Pixel', (t) => {
