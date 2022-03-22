@@ -196,6 +196,10 @@ class CustomSource<T> extends Evented implements Source {
             this.fire(new ErrorEvent(new Error(`Missing implementation for ${this.id} custom source`)));
         }
 
+        if (!implementation.loadTile) {
+            this.fire(new ErrorEvent(new Error(`Missing loadTile implementation for ${this.id} custom source`)));
+        }
+
         // $FlowFixMe[prop-missing]
         implementation.update = this.update.bind(this);
 

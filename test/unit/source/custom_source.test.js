@@ -1,28 +1,25 @@
 import {test} from '../../util/test.js';
 import CustomSource from '../../../src/source/custom_source.js';
 import Transform from '../../../src/geo/transform.js';
-import {Event, Evented} from '../../../src/util/evented.js';
+import {Evented} from '../../../src/util/evented.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
+import SourceCache from '../../../src/source/source_cache.js';
 
 function createSource(options = {}) {
-    const source = new CustomSource('id', options, {send() {}}, options.eventedParent);
-    return source;
-}
+    const eventedParent = new Evented();
+    const source = new CustomSource('id', options, {send() {}}, eventedParent);
+    const sourceCache = new SourceCache('id', source, /* dispatcher */ {}, eventedParent);
+    sourceCache.transform = new Transform();
+    sourceCache.map = {painter: {transform: sourceCache.transform}};
 
-class StubMap extends Evented {
-    constructor() {
-        super();
-        this.style = {};
-        this.transform = new Transform();
-    }
-
-    triggerRepaint() {
-        this.fire(new Event('repaint'));
-    }
+    return {source, sourceCache, eventedParent};
 }
 
 test('CustomSource', (t) => {
     t.test('constructor', (t) => {
-        const source = createSource();
+        const {source} = createSource({
+            async loadTile() {}
+        });
 
         t.equal(source.scheme, 'xyz');
         t.equal(source.minzoom, 0);
@@ -36,15 +33,16 @@ test('CustomSource', (t) => {
             }
         });
 
-        source.onAdd(new StubMap());
+        source.onAdd();
     });
 
     t.test('fires "dataloading" event', (t) => {
-        const map = new StubMap();
-        const source = createSource({eventedParent: map});
+        const {source, eventedParent} = createSource({
+            async loadTile() {}
+        });
 
         let dataloadingFired = false;
-        map.on('dataloading', () => {
+        eventedParent.on('dataloading', () => {
             dataloadingFired = true;
         });
 
@@ -55,7 +53,41 @@ test('CustomSource', (t) => {
             }
         });
 
-        source.onAdd(map);
+        source.onAdd(eventedParent);
+    });
+
+    t.test('loadTile', (t) => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+
+        const {sourceCache} = createSource({
+            async loadTile(tile, {signal}) {
+                const {x, y, z} = tileID.canonical;
+                t.deepEqual(tile, {x, y, z});
+                t.ok(signal, 'AbortSignal is present in loadTile');
+                t.end();
+            }
+        });
+
+        sourceCache.onAdd();
+        sourceCache._addTile(tileID);
+    });
+
+    t.test('prepareTile', (t) => {
+        const loadTile = t.spy(async () => {});
+        const prepareTile = t.spy();
+
+        const {sourceCache, eventedParent} = createSource({loadTile, prepareTile});
+
+        eventedParent.on('data', () => {
+            t.ok(loadTile.calledOnce);
+            t.ok(prepareTile.calledBefore(loadTile));
+            t.end();
+        });
+
+        sourceCache.onAdd();
+
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+        sourceCache._addTile(tileID);
     });
 
     t.end();
