@@ -25,7 +25,7 @@ function isRaster(data: any): boolean {
  * These sources can be added between any regular sources using {@link Map#addSource}.
  *
  * Custom sources must have a unique `id` and must have the `type` of `"custom"`.
- * They must implement `loadTile` and may implement `unloadTile`, `abortTile`, `prepareTile`, `onAdd` and `onRemove`.
+ * They must implement `loadTile` and may implement `unloadTile`, `prepareTile`, `onAdd` and `onRemove`.
  * They can trigger rendering using {@link Map#triggerRepaint}.
  *
  * @interface CustomSourceInterface
@@ -99,19 +99,6 @@ function isRaster(data: any): boolean {
  * @instance
  * @name unloadTile
  * @param {{ z: number, x: number, y: number }} tile Tile name to unload in the XYZ scheme format.
- * @param {Function} callback A callback to be called when the tile is unloaded.
- */
-
-/**
- * Optional method called if the map canceled request in loadTile. This
- * gives the source a chance to clean up resources and event listeners.
- *
- * @function
- * @memberof CustomSourceInterface
- * @instance
- * @name abortTile
- * @param {{ z: number, x: number, y: number }} tile Tile name that was aborted in the XYZ scheme format.
- * @param {Function} callback A callback to be called when the tile is aborted.
  */
 
 /**
@@ -148,8 +135,7 @@ export type CustomSourceInterface<T> = {
     attribution: ?string,
     loadTile: (tileID: { z: number, x: number, y: number }, options: { signal: AbortSignal }) => Promise<T>,
     prepareTile: ?(tileID: { z: number, x: number, y: number }) => ?T,
-    unloadTile: ?(tileID: { z: number, x: number, y: number }, callback: Callback<void>) => void,
-    abortTile: ?(tileID: { z: number, x: number, y: number }, callback: Callback<void>) => void,
+    unloadTile: ?(tileID: { z: number, x: number, y: number }) => void,
     onAdd: ?(map: Map, callback: Callback<void>) => void,
     onRemove: ?(map: Map) => void,
 }
@@ -294,13 +280,12 @@ class CustomSource<T> extends Evented implements Source {
 
     unloadTile(tile: Tile, callback: Callback<void>): void {
         RasterTileSource.unloadTileData(tile, this.map.painter);
-
         if (this.implementation.unloadTile) {
             const {x, y, z} = tile.tileID.canonical;
-            this.implementation.unloadTile({x, y, z}, callback);
-        } else {
-            callback();
+            this.implementation.unloadTile({x, y, z});
         }
+
+        callback();
     }
 
     abortTile(tile: Tile, callback: Callback<void>): void {
@@ -309,12 +294,7 @@ class CustomSource<T> extends Evented implements Source {
             delete tile.request;
         }
 
-        if (this.implementation.abortTile) {
-            const {x, y, z} = tile.tileID.canonical;
-            this.implementation.abortTile({x, y, z}, callback);
-        } else {
-            callback();
-        }
+        callback();
     }
 
     hasTransition(): boolean {
