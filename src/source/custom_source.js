@@ -128,10 +128,10 @@ export type CustomSourceInterface<T> = {
     id: string;
     type: 'custom',
     dataType: ?DataType,
-    minzoom: number,
-    maxzoom: number,
-    scheme: string;
-    tileSize: number,
+    minzoom: ?number,
+    maxzoom: ?number,
+    scheme: ?string;
+    tileSize: ?number,
     attribution: ?string,
     loadTile: (tileID: { z: number, x: number, y: number }, options: { signal: AbortSignal }) => Promise<T>,
     prepareTile: ?(tileID: { z: number, x: number, y: number }) => ?T,
