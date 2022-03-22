@@ -782,10 +782,10 @@ class SourceCache extends Evented {
             tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._isRaster);
             if (this._source.prepareTile) {
                 const data = this._source.prepareTile(tile);
-                if (data) return tile;
+                if (!data) this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
+            } else {
+                this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
             }
-
-            this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
         // Impossible, but silence flow.
