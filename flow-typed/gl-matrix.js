@@ -43,6 +43,9 @@ declare module "gl-matrix" {
         transformMat3<T: Vec3>(T, Vec3, Mat3): T,
         transformMat4<T: Vec3>(T, Vec3, Mat4): T,
         angle(Vec3, Vec3): number;
+        rotateX<T: Vec3>(T, Vec3, Vec3, number): T,
+        rotateY<T: Vec3>(T, Vec3, Vec3, number): T,
+        rotateZ<T: Vec3>(T, Vec3, Vec3, number): T,
     };
 
     declare var vec4: {
@@ -83,6 +86,8 @@ declare module "gl-matrix" {
         rotateX<T: Mat4>(T, Mat4, number): T,
         rotateY<T: Mat4>(T, Mat4, number): T,
         rotateZ<T: Mat4>(T, Mat4, number): T,
+        rotate<T: Mat4>(T, Mat4, number, Vec3): T,
+        fromRotation<T: Mat4>(T, number, Vec3): T,
         translate<T: Mat4>(T, Mat4, Vec3): T,
         invert<T: Mat4>(T, Mat4): T,
         copy<T: Mat4>(T, Mat4): T,
