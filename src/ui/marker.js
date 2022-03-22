@@ -14,7 +14,6 @@ import type {LngLatLike} from "../geo/lng_lat.js";
 import type {MapMouseEvent, MapTouchEvent} from './events.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import {tiltAt, centerToScreen} from '../geo/projection/globe_util.js';
-import {vec3} from 'gl-matrix';
 
 type Options = {
     element?: HTMLElement,

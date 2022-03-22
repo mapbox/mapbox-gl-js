@@ -9,7 +9,7 @@ import {
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import {degToRad, radToDeg, smoothstep, clamp} from '../../util/util.js';
+import {degToRad, smoothstep, clamp} from '../../util/util.js';
 import {vec3, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
