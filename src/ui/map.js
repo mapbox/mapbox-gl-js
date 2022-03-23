@@ -30,7 +30,6 @@ import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
-import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
 
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
@@ -375,7 +374,7 @@ class Map extends Camera {
 
     // `_explicitProjection represents projection as set by a call to map.setProjection()
     // For the actual projection displayed, use `transform.projection`.
-    // (The two diverge above the transition zoom threshold in Globe view or when _explicitProjection === null
+    // (The two diverge above when _explicitProjection === null
     // a null _explicitProjection indicates the map defaults to first the stylesheet projection if present, then Mercator)
     _explicitProjection: ProjectionSpecification | null;
 
@@ -1081,27 +1080,18 @@ class Map extends Camera {
         if (explicitProjection === null) { this._explicitProjection = null; }
         const projection = explicitProjection || this.getProjection();
 
-        // At high zoom on globe, set transform projection to Mercator while _explicitProjection stays globe.
-        const newProjection = this.transform.setProjection(projection && projection.name === 'globe' ?
-            {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')} :
-            projection);
+        const newProjection = this.transform.setProjection(projection);
 
         // When called through setProjection, update _explicitProjection
         if (explicitProjection) {
-            this._explicitProjection = (explicitProjection.name === "globe" ?
-                {name:'globe', center:[0, 0]} :
-                this.transform.getProjection());
+            this._explicitProjection = this.transform.getProjection();
         }
 
         if (newProjection) {
-            // If a zoom transition on globe
-            if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
-                this.style._forceSymbolLayerUpdate();
-            } else { // If a switch between different projections
-                this.painter.clearBackgroundTiles();
-                for (const id in this.style._sourceCaches) {
-                    this.style._sourceCaches[id].clearTiles();
-                }
+            // If a switch between different projections
+            this.painter.clearBackgroundTiles();
+            for (const id in this.style._sourceCaches) {
+                this.style._sourceCaches[id].clearTiles();
             }
             this.style.applyProjectionUpdate();
             this._update(true);
@@ -2934,17 +2924,6 @@ class Map extends Camera {
         this._domRenderTaskQueue.run(paintStartTimeStamp);
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
-
-        // In globe view, change to/from Mercator when zoom threshold is crossed.
-        if (this.getProjection().name === 'globe') {
-            if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
-                if (this.transform.projection.name === 'globe') {
-                    this._updateProjection();
-                }
-            } else if (this.transform.projection.name === 'mercator') {
-                this._updateProjection();
-            }
-        }
 
         let crossFading = false;
         const fadeDuration = this._isInitialLoad ? 0 : this._fadeDuration;
