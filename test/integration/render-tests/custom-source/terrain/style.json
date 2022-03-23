@@ -9,7 +9,7 @@
         [
           "addCustomSource",
           "custom-source",
-          "local://tiles/{z}-{x}-{y}.satellite.png?debug=7"
+          "local://tiles/{z}-{x}-{y}.satellite.png"
         ],
         [
           "addLayer",
@@ -22,10 +22,6 @@
               "raster-fade-duration": 0
             }
           }
-        ],
-        [
-          "sleep",
-          1500
         ],
         ["wait"],
         ["setTerrain", null],
