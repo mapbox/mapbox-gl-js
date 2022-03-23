@@ -78,6 +78,10 @@ function drawAtmosphere(painter: Painter) {
 
     const starIntensity = mapValue(fog.properties.get('star-intensity'), 0.0, 1.0, 0.0, 0.25);
 
+    const globeCenterDistance = vec3.length(globeCenterInViewSpace);
+    const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(globeRadius, 2.0));
+    const horizonAngle = Math.acos(distanceToHorizon / globeCenterDistance);
+
     const uniforms = atmosphereUniformValues(
         frustumTl,
         frustumTr,
@@ -92,7 +96,8 @@ function drawAtmosphere(painter: Painter) {
         [spaceColor.r, spaceColor.g, spaceColor.b, spaceColor.a],
         latlon,
         starIntensity,
-        temporalOffset);
+        temporalOffset,
+        horizonAngle);
 
     painter.prepareDrawProgram(context, program);
 
