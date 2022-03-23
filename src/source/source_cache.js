@@ -48,6 +48,7 @@ class SourceCache extends Evented {
     _minTileCacheSize: ?number;
     _maxTileCacheSize: ?number;
     _paused: boolean;
+    _isRaster: boolean;
     _shouldReloadOnResume: boolean;
     _coveredTiles: {[_: number | string]: boolean};
     transform: Transform;
@@ -91,18 +92,23 @@ class SourceCache extends Evented {
         this._cache = new TileCache(0, this._unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
-        this._minTileCacheSize = null;
-        this._maxTileCacheSize = null;
+        this._minTileCacheSize = source.minTileCacheSize;
+        this._maxTileCacheSize = source.maxTileCacheSize;
         this._loadedParentTiles = {};
 
         this._coveredTiles = {};
         this._state = new SourceFeatureState();
+        this._isRaster =
+            this._source.type === 'raster' ||
+            this._source.type === 'raster-dem' ||
+            // $FlowFixMe[prop-missing]
+            (this._source.type === 'custom' && this._source._dataType === 'raster');
     }
 
     onAdd(map: MapboxMap) {
         this.map = map;
-        this._minTileCacheSize = map ? map._minTileCacheSize : null;
-        this._maxTileCacheSize = map ? map._maxTileCacheSize : null;
+        this._minTileCacheSize = this._minTileCacheSize === undefined && map ? map._minTileCacheSize : this._minTileCacheSize;
+        this._maxTileCacheSize = this._maxTileCacheSize === undefined && map ? map._maxTileCacheSize : this._maxTileCacheSize;
     }
 
     /**
@@ -164,6 +170,22 @@ class SourceCache extends Evented {
         }
 
         this._state.coalesceChanges(this._tiles, this.map ? this.map.painter : null);
+
+        if (this._source.prepareTile) {
+            for (const i in this._tiles) {
+                const tile = this._tiles[i];
+                const data = this._source.prepareTile(tile);
+                if (data && this.map.painter.terrain) {
+                    this.map.painter.terrain._clearRenderCacheForTile(this.id, tile.tileID);
+                }
+
+                tile.upload(context);
+                tile.prepare(this.map.style.imageManager);
+            }
+
+            return;
+        }
+
         for (const i in this._tiles) {
             const tile = this._tiles[i];
             tile.upload(context);
@@ -736,8 +758,10 @@ class SourceCache extends Evented {
      */
     _addTile(tileID: OverscaledTileID): Tile {
         let tile = this._tiles[tileID.key];
-        if (tile)
+        if (tile) {
+            if (this._source.prepareTile) this._source.prepareTile(tile);
             return tile;
+        }
 
         tile = this._cache.getAndRemove(tileID);
         if (tile) {
@@ -755,9 +779,13 @@ class SourceCache extends Evented {
         const cached = Boolean(tile);
         if (!cached) {
             const painter = this.map ? this.map.painter : null;
-            const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
-            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, isRaster);
-            this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
+            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._isRaster);
+            if (this._source.prepareTile) {
+                const data = this._source.prepareTile(tile);
+                if (!data) this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
+            } else {
+                this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
+            }
         }
 
         // Impossible, but silence flow.
@@ -977,10 +1005,9 @@ class SourceCache extends Evented {
         }
 
         const tileIDs = Array.from(coveringTilesIDs.values());
-        const isRaster = this._source.type === 'raster' || this._source.type === 'raster-dem';
 
         asyncAll(tileIDs, (tileID, done) => {
-            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, this.map.painter, isRaster);
+            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, this.map.painter, this._isRaster);
             this._loadTile(tile, (err) => {
                 if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
                 done(err, tile);
