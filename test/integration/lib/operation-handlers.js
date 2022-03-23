@@ -59,14 +59,14 @@ export const operationHandlers = {
             type: 'custom',
             maxzoom: 17,
             tileSize: 256,
-            async loadTile({z, x, y}) {
+            async loadTile({z, x, y}, {signal}) {
                 const url = params[1]
                     .replace('local://', '/')
                     .replace('{z}', String(z))
                     .replace('{x}', String(x))
                     .replace('{y}', String(y));
 
-                const response = await window.fetch(url);
+                const response = await window.fetch(url, {signal});
                 if (!response.ok) throw new Error(response.statusText);
 
                 const data = await response.arrayBuffer();
