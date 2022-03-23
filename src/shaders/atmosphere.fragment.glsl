@@ -9,6 +9,7 @@ uniform vec2 u_latlon;
 uniform float u_star_intensity;
 uniform float u_star_size;
 uniform float u_star_density;
+uniform float u_horizon_angle;
 
 #ifndef FOG
 uniform highp vec3 u_globe_pos;
@@ -38,16 +39,32 @@ float stars(vec3 p, float scale, vec2 offset) {
 
 void main() {
     highp vec3 dir = normalize(v_ray_dir);
-    highp vec3 closest_point = abs(dot(u_globe_pos, dir)) * dir;
-    float norm_dist_from_center = length(closest_point - u_globe_pos) / u_globe_radius;
+    float globe_pos_dot_dir = dot(u_globe_pos, dir);
+    highp vec3 closest_point_forward = abs(globe_pos_dot_dir) * dir;
+    float norm_dist_from_center = length(closest_point_forward - u_globe_pos) / u_globe_radius;
 
-    if (norm_dist_from_center < 1.0)
+    if (norm_dist_from_center < 1.0) {
         discard;
+    }
+
+    // Angle between dir and globe center
+    highp vec3 closest_point = globe_pos_dot_dir * dir;
+    float closest_point_to_center = length(closest_point - u_globe_pos);
+    float theta = asin(closest_point_to_center / length(u_globe_pos));
+
+    // Backward facing closest point rays should be treated separately
+    float angle_from_horizon = globe_pos_dot_dir < 0.0 ?
+        PI - theta - u_horizon_angle : theta - u_horizon_angle;
+
+    // Normalize in [0, 1]
+    angle_from_horizon /= PI;
+    // FIXME
+    angle_from_horizon *= 10.0;
 
     // exponential curve
     // [0.0, 1.0] == inside the globe, > 1.0 == outside of the globe
     // https://www.desmos.com/calculator/l5v8lw9zby
-    float t = exp(-(norm_dist_from_center - 1.0) * pow(u_fadeout_range, -1.0));
+    float t = exp(-angle_from_horizon * pow(u_fadeout_range, -1.0));
 
     float alpha_0 = u_color.a;
     float alpha_1 = u_sky_color.a;

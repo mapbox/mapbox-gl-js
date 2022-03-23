@@ -40,7 +40,8 @@ export type AtmosphereUniformsType = {|
     'u_star_intensity': Uniform1f,
     'u_star_size': Uniform1f,
     'u_star_density': Uniform1f,
-    'u_temporal_offset': Uniform1f
+    'u_temporal_offset': Uniform1f,
+    'u_horizon_angle': Uniform1f
 |};
 
 const globeRasterUniforms = (context: Context, locations: UniformLocations): GlobeRasterUniformsType => ({
@@ -69,7 +70,8 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_star_intensity': new Uniform1f(context, locations.u_star_intensity),
     'u_star_density': new Uniform1f(context, locations.u_star_density),
     'u_star_size': new Uniform1f(context, locations.u_star_size),
-    'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset)
+    'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset),
+    'u_horizon_angle': new Uniform1f(context, locations.u_horizon_angle)
 });
 
 const globeRasterUniformValues = (
@@ -103,7 +105,8 @@ const atmosphereUniformValues = (
     spaceColor: [number, number, number, number],
     latlon: [number, number],
     starIntensity: number,
-    temporalOffset: number
+    temporalOffset: number,
+    horizonAngle: number
 ): UniformValues<AtmosphereUniformsType> => ({
     'u_frustum_tl': frustumDirTl,
     'u_frustum_tr': frustumDirTr,
@@ -120,7 +123,8 @@ const atmosphereUniformValues = (
     'u_star_intensity': starIntensity,
     'u_star_size': 5.0 * browser.devicePixelRatio,
     'u_star_density': 0.0,
-    'u_temporal_offset': temporalOffset
+    'u_temporal_offset': temporalOffset,
+    'u_horizon_angle': horizonAngle,
 });
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};
