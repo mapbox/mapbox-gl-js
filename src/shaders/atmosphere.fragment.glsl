@@ -1,4 +1,4 @@
-uniform float u_opacity;
+uniform float u_transition;
 uniform highp float u_fadeout_range;
 uniform highp float u_temporal_offset;
 uniform vec3 u_start_color;
@@ -17,6 +17,7 @@ uniform highp float u_globe_radius;
 #endif
 
 varying highp vec3 v_ray_dir;
+varying highp vec3 v_horizon_dir;
 
 float random(vec3 p) {
     p = fract(p * vec3(23.2342, 97.1231, 91.2342));
@@ -39,6 +40,8 @@ float stars(vec3 p, float scale, vec2 offset) {
 
 void main() {
     highp vec3 dir = normalize(v_ray_dir);
+
+#ifdef PROJECTION_GLOBE_VIEW
     float globe_pos_dot_dir = dot(u_globe_pos, dir);
     highp vec3 closest_point_forward = abs(globe_pos_dot_dir) * dir;
     float norm_dist_from_center = length(closest_point_forward - u_globe_pos) / u_globe_radius;
@@ -46,25 +49,36 @@ void main() {
     if (norm_dist_from_center < 1.0) {
         discard;
     }
+#endif
 
+    highp vec3 horizon_dir = normalize(v_horizon_dir);
+    float horizon_angle_mercator = dir.y < horizon_dir.y ? 0.0 : max(acos(dot(dir, horizon_dir)), 0.0);
+
+#ifdef PROJECTION_GLOBE_VIEW
     // Angle between dir and globe center
     highp vec3 closest_point = globe_pos_dot_dir * dir;
     float closest_point_to_center = length(closest_point - u_globe_pos);
     float theta = asin(closest_point_to_center / length(u_globe_pos));
 
     // Backward facing closest point rays should be treated separately
-    float angle_from_horizon = globe_pos_dot_dir < 0.0 ?
+    float horizon_angle = globe_pos_dot_dir < 0.0 ?
         PI - theta - u_horizon_angle : theta - u_horizon_angle;
 
+    // TODO: slerp mix?
+    horizon_angle = mix(horizon_angle, horizon_angle_mercator, u_transition);
+#else
+    float horizon_angle = horizon_angle_mercator;
+#endif
+
     // Normalize in [0, 1]
-    angle_from_horizon /= PI;
+    horizon_angle /= PI;
     // FIXME
-    angle_from_horizon *= 10.0;
+    horizon_angle *= 10.0;
 
     // exponential curve
     // [0.0, 1.0] == inside the globe, > 1.0 == outside of the globe
     // https://www.desmos.com/calculator/l5v8lw9zby
-    float t = exp(-angle_from_horizon * pow(u_fadeout_range, -1.0));
+    float t = exp(-horizon_angle * pow(u_fadeout_range, -1.0));
 
     float alpha_0 = u_color.a;
     float alpha_1 = u_sky_color.a;
