@@ -102,7 +102,7 @@ class SourceCache extends Evented {
             this._source.type === 'raster' ||
             this._source.type === 'raster-dem' ||
             // $FlowFixMe[prop-missing]
-            (this._source.type === 'custom' && this._source.dataType === 'raster');
+            (this._source.type === 'custom' && this._source._dataType === 'raster');
     }
 
     onAdd(map: MapboxMap) {
