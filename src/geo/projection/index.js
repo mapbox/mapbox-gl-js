@@ -7,7 +7,6 @@ import Mercator from './mercator.js';
 import NaturalEarth from './natural_earth.js';
 import WinkelTripel from './winkel_tripel.js';
 import CylindricalEqualArea from './cylindrical_equal_area.js';
-import Globe from './globe.js';
 
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type Projection from './projection.js';
@@ -32,8 +31,6 @@ export function getProjection(config: ProjectionSpecification): Projection {
         return isDegenerateConic ? new CylindricalEqualArea(config) : new Albers(config);
     case 'lambertConformalConic':
         return isDegenerateConic ? new CylindricalEqualArea(config) : new LambertConformalConic(config);
-    case 'globe':
-        return new Globe(config);
     }
 
     throw new Error(`Invalid projection name: ${config.name}`);

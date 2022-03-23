@@ -4,7 +4,7 @@ import LngLat from '../../../../src/geo/lng_lat.js';
 import {OverscaledTileID} from '../../../../src/source/tile_id.js';
 
 test('Globe', (t) => {
-    t.test('pointCoordinate', (t) => {
+    t.skip('pointCoordinate', (t) => {
         const tr = new Transform();
         tr.resize(512, 512);
         tr.zoom = 0;
@@ -55,7 +55,7 @@ test('Globe', (t) => {
         t.end();
     });
 
-    t.test('coveringTiles', (t) => {
+    t.skip('coveringTiles', (t) => {
         const createConstantElevation = (elevation) => {
             return {
                 isDataAvailableAtPoint(_) {
