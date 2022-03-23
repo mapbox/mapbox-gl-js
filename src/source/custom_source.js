@@ -11,7 +11,7 @@ import type Dispatcher from '../util/dispatcher.js';
 import type {Source} from './source.js';
 import type {Callback} from '../types/callback.js';
 
-type DataType = 'raster'; // vector | geojson
+type DataType = 'raster';
 
 function isRaster(data: any): boolean {
     return data instanceof window.ImageBitmap || data instanceof window.HTMLCanvasElement;
