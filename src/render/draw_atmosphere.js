@@ -27,7 +27,8 @@ function drawAtmosphere(painter: Painter) {
     const gl = context.gl;
     const transform = painter.transform;
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
-    const program = painter.useProgram('globeAtmosphere');
+    const defines = transform.projection.name === 'globe' ? ['PROJECTION_GLOBE_VIEW'] : [];
+    const program = painter.useProgram('globeAtmosphere', null, defines);
 
     // Render the gradient atmosphere by casting rays from screen pixels and determining their
     // closest distance to the globe. This is done in view space where camera is located in the origo
@@ -41,6 +42,10 @@ function drawAtmosphere(painter: Painter) {
     const clipToCamera = mat4.invert([], cameraToClip);
     const viewMatrix = mat4.mul([], clipToCamera, transform.projMatrix);
 
+    const horizonFromTopInClip = 1.0 - (transform.horizonLineFromTop() / transform.height) * 2.0;
+    const horizonL = project([-1, horizonFromTopInClip, 1], clipToCamera);
+    const horizonR = project([1, horizonFromTopInClip, 1], clipToCamera);
+
     // Compute direction vectors to each corner point of the view frustum
     const frustumTl = project([-1, 1, 1], clipToCamera);
     const frustumTr = project([1, 1, 1], clipToCamera);
@@ -51,7 +56,7 @@ function drawAtmosphere(painter: Painter) {
     const globeCenterInViewSpace = project(center, viewMatrix);
     const globeRadius = transform.worldSize / 2.0 / Math.PI - 1.0;
 
-    const fadeOutTransition = 1.0 - globeToMercatorTransition(transform.zoom);
+    const transitionT = globeToMercatorTransition(transform.zoom);
 
     const fogOpacity = fog.getOpacity(transform.pitch);
     const fogColor = fog.properties.get('color');
@@ -87,9 +92,11 @@ function drawAtmosphere(painter: Painter) {
         frustumTr,
         frustumBr,
         frustumBl,
+        horizonL,
+        horizonR,
         globeCenterInViewSpace,
         globeRadius,
-        fadeOutTransition,
+        transitionT,
         fog.properties.get('horizon-blend'),
         fogColorUnpremultiplied,
         skyColorUnpremultiplied,
