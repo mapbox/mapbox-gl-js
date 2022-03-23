@@ -6,7 +6,7 @@ import Formatted from '../types/formatted.js';
 
 import type {Type} from '../types.js';
 import type {Value}  from '../values.js';
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 
 class Literal implements Expression {
@@ -18,7 +18,7 @@ class Literal implements Expression {
         this.value = value;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): void | Literal {
         if (args.length !== 2)
             return context.error(`'literal' expression requires exactly one argument, but found ${args.length - 1} instead.`);
 
@@ -43,17 +43,17 @@ class Literal implements Expression {
         return new Literal(type, value);
     }
 
-    evaluate() {
+    evaluate(): Value {
         return this.value;
     }
 
     eachChild() {}
 
-    outputDefined() {
+    outputDefined(): boolean {
         return true;
     }
 
-    serialize(): Array<mixed> {
+    serialize(): SerializedExpression {
         if (this.type.kind === 'array' || this.type.kind === 'object') {
             return ["literal", this.value];
         } else if (this.value instanceof Color) {

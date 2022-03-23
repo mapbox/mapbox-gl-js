@@ -1,0 +1,51 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "description": "In addition to custom source, verifies also toggling terrain off / on",
+      "operations": [
+        [
+          "addCustomSource",
+          "custom-source",
+          "local://tiles/{z}-{x}-{y}.satellite.png"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "custom-source",
+            "type": "raster",
+            "source": "custom-source",
+            "paint": {
+              "raster-opacity": 1,
+              "raster-fade-duration": 0
+            }
+          }
+        ],
+        ["wait"],
+        ["setTerrain", null],
+        ["wait"],
+        ["setTerrain", {"source": "rgbterrain"}],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [-113.26903, 35.9654],
+  "zoom": 11,
+  "pitch": 10,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 256
+    }
+  },
+  "layers": []
+}

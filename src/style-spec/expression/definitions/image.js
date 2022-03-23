@@ -3,7 +3,7 @@
 import {ResolvedImageType, StringType} from '../types.js';
 import ResolvedImage from '../types/resolved_image.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type ParsingContext from '../parsing_context.js';
 import type {Type} from '../types.js';
@@ -28,7 +28,7 @@ export default class ImageExpression implements Expression {
         return new ImageExpression(name);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): null | ResolvedImage {
         const evaluatedImageName = this.input.evaluate(ctx);
 
         const value = ResolvedImage.fromString(evaluatedImageName);
@@ -41,12 +41,12 @@ export default class ImageExpression implements Expression {
         fn(this.input);
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         // The output of image is determined by the list of available images in the evaluation context
         return false;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         return ["image", this.input.serialize()];
     }
 }

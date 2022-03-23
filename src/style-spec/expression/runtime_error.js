@@ -9,7 +9,7 @@ class RuntimeError {
         this.message = message;
     }
 
-    toJSON() {
+    toJSON(): string {
         return this.message;
     }
 }

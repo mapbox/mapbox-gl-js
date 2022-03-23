@@ -123,6 +123,7 @@ export default class ImageAtlas {
     }
 
     patchUpdatedImages(imageManager: ImageManager, texture: Texture) {
+        this.haveRenderCallbacks = this.haveRenderCallbacks.filter(id => imageManager.hasImage(id));
         imageManager.dispatchRenderCallbacks(this.haveRenderCallbacks);
         for (const name in imageManager.updatedImages) {
             this.patchUpdatedImage(this.iconPositions[name], imageManager.getImage(name), texture);

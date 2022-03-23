@@ -58,6 +58,7 @@ import type Painter from '../render/painter.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import {globeTileBounds,  globeNormalizeECEF, tileCoordToECEF} from '../geo/projection/globe_util.js';
 import {vec3} from 'gl-matrix';
+import type {TextureImage} from '../render/texture.js';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -130,7 +131,6 @@ class Tile {
     texture: any;
     fbo: ?Framebuffer;
     demTexture: ?Texture;
-    globeGridBuffer: ?VertexBuffer;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     resourceTiming: ?Array<PerformanceResourceTiming>;
@@ -334,11 +334,6 @@ class Tile {
             this._tileDebugIndexBuffer.destroy();
             this._tileDebugSegments.destroy();
             this._tileDebugBuffer = null;
-        }
-
-        if (this.globeGridBuffer) {
-            this.globeGridBuffer.destroy();
-            this.globeGridBuffer = null;
         }
 
         if (this._globeTileDebugBorderBuffer) {
@@ -595,6 +590,22 @@ class Tile {
 
     setHoldDuration(duration: number) {
         this.symbolFadeHoldUntil = browser.now() + duration;
+    }
+
+    setTexture(img: TextureImage, painter: Painter) {
+        const context = painter.context;
+        const gl = context.gl;
+        this.texture = painter.getTileTexture(img.width);
+        if (this.texture) {
+            this.texture.update(img, {useMipmap: true});
+        } else {
+            this.texture = new Texture(context, img, gl.RGBA, {useMipmap: true});
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+            if (context.extTextureFilterAnisotropic) {
+                gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
+            }
+        }
     }
 
     setDependencies(namespace: string, dependencies: Array<string>) {

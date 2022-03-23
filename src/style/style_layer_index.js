@@ -1,6 +1,5 @@
 // @flow
 
-import StyleLayer from './style_layer.js';
 import createStyleLayer from './create_style_layer.js';
 
 import {values} from '../util/util.js';
@@ -13,11 +12,11 @@ export type LayerConfigs = {[_: string]: LayerSpecification };
 export type Family<Layer: TypedStyleLayer> = Array<Layer>;
 
 class StyleLayerIndex {
-    familiesBySource: { [source: string]: { [sourceLayer: string]: Array<Family<*>> } };
+    familiesBySource: { [source: string]: { [sourceLayer: string]: Array<Family<TypedStyleLayer>> } };
     keyCache: { [source: string]: string };
 
     _layerConfigs: LayerConfigs;
-    _layers: {[_: string]: StyleLayer };
+    _layers: {[_: string]: TypedStyleLayer };
 
     constructor(layerConfigs: ?Array<LayerSpecification>) {
         this.keyCache = {};
@@ -36,7 +35,7 @@ class StyleLayerIndex {
         for (const layerConfig of layerConfigs) {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
-            const layer = this._layers[layerConfig.id] = createStyleLayer(layerConfig);
+            const layer = this._layers[layerConfig.id] = ((createStyleLayer(layerConfig): any): TypedStyleLayer);
             layer.compileFilter();
             if (this.keyCache[layerConfig.id])
                 delete this.keyCache[layerConfig.id];

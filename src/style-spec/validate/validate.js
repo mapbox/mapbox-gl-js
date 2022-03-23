@@ -26,6 +26,7 @@ import validateProjection from './validate_projection.js';
 
 import type {StyleReference} from '../reference/latest.js';
 import type {StyleSpecification} from '../types.js';
+import type ValidationError from '../error/validation_error.js';
 
 const VALIDATORS = {
     '*'() {
@@ -67,7 +68,7 @@ export type ValidationOptions = {
     styleSpec: StyleReference;
 }
 
-export default function validate(options: ValidationOptions) {
+export default function validate(options: ValidationOptions): Array<ValidationError> {
     const value = options.value;
     const valueSpec = options.valueSpec;
     const styleSpec = options.styleSpec;

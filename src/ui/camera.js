@@ -108,6 +108,8 @@ export type AnimationOptions = {
     essential?: boolean
 };
 
+export type EasingOptions = CameraOptions & AnimationOptions;
+
 export type ElevationBoxRaycast = {
     minLngLat: LngLat,
     maxLngLat: LngLat,
@@ -561,7 +563,7 @@ class Camera extends Evented {
      *     padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      */
-    cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
+    cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): ?EasingOptions {
         bounds = LngLatBounds.convert(bounds);
         const bearing = (options && options.bearing) || 0;
         return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), bearing, options);
@@ -616,7 +618,7 @@ class Camera extends Evented {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      */
-    _cameraForBoxAndBearing(p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): void | CameraOptions & AnimationOptions {
+    _cameraForBoxAndBearing(p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
         const eOptions = this._extendCameraOptions(options);
         const tr = this.transform;
         const edgePadding = tr.padding;
@@ -693,7 +695,7 @@ class Camera extends Evented {
      *      `center`, `zoom`, `bearing` and `pitch`. If map is unable to fit, method will warn and return undefined.
      * @private
      */
-    _cameraForBox(p0: LngLatLike, p1: LngLatLike, minAltitude?: number, maxAltitude?: number, options?: CameraOptions): void | CameraOptions & AnimationOptions {
+    _cameraForBox(p0: LngLatLike, p1: LngLatLike, minAltitude?: number, maxAltitude?: number, options?: CameraOptions): ?EasingOptions {
         const eOptions = this._extendCameraOptions(options);
 
         minAltitude = minAltitude || 0;
@@ -804,7 +806,7 @@ class Camera extends Evented {
      * });
      * @see [Example: Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
-    fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object): this {
+    fitBounds(bounds: LngLatBoundsLike, options?: EasingOptions, eventData?: Object): this {
         return this._fitInternal(
             this.cameraForBounds(bounds, options),
             options,
@@ -877,7 +879,7 @@ class Camera extends Evented {
      * });
      * @see Used by {@link BoxZoomHandler}
      */
-    fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: AnimationOptions & CameraOptions, eventData?: Object): this {
+    fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: EasingOptions, eventData?: Object): this {
         let lngLat0, lngLat1, minAltitude, maxAltitude;
         const point0 = Point.convert(p0);
         const point1 = Point.convert(p1);
@@ -919,7 +921,7 @@ class Camera extends Evented {
             options, eventData);
     }
 
-    _fitInternal(calculatedOptions?: CameraOptions & AnimationOptions, options?: AnimationOptions & CameraOptions, eventData?: Object): this {
+    _fitInternal(calculatedOptions?: ?EasingOptions, options?: EasingOptions, eventData?: Object): this {
         // cameraForBounds warns + returns undefined if unable to fit:
         if (!calculatedOptions) return this;
 
@@ -1139,7 +1141,7 @@ class Camera extends Evented {
      * unless `options` includes `essential: true`.
      *
      * @memberof Map#
-     * @param {CameraOptions & AnimationOptions} options Options describing the destination and animation of the transition.
+     * @param {EasingOptions} options Options describing the destination and animation of the transition.
      *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires Map.event:movestart
@@ -1170,7 +1172,7 @@ class Camera extends Evented {
      * });
      * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    easeTo(options: CameraOptions & AnimationOptions & {easeId?: string, preloadOnly?: boolean}, eventData?: Object): this {
+    easeTo(options: EasingOptions & {easeId?: string, preloadOnly?: boolean}, eventData?: Object): this {
         this._stop(false, options.easeId);
 
         options = extend({
@@ -1421,7 +1423,7 @@ class Camera extends Evented {
      * @see [Example: Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
      * @see [Example: Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
-    flyTo(options: CameraOptions & AnimationOptions & {preloadOnly?: boolean}, eventData?: Object): this {
+    flyTo(options: EasingOptions & {preloadOnly?: boolean}, eventData?: Object): this {
         // Fall through to jumpTo if user has set prefers-reduced-motion
         if (!options.essential && browser.prefersReducedMotion) {
             const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']);

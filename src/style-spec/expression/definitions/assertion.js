@@ -15,7 +15,7 @@ import {
 import RuntimeError from '../runtime_error.js';
 import {typeOf} from '../values.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -85,7 +85,7 @@ class Assertion implements Expression {
         return new Assertion(type, parsed);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any | null {
         for (let i = 0; i < this.args.length; i++) {
             const value = this.args[i].evaluate(ctx);
             const error = checkSubtype(this.type, typeOf(value));
@@ -108,7 +108,7 @@ class Assertion implements Expression {
         return this.args.every(arg => arg.outputDefined());
     }
 
-    serialize(): Array<mixed> {
+    serialize(): SerializedExpression {
         const type = this.type;
         const serialized = [type.kind];
         if (type.kind === 'array') {

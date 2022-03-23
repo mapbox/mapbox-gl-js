@@ -15,7 +15,7 @@ export type FeatureFilter = {filter: FilterExpression, dynamicFilter?: FilterExp
 export default createFilter;
 export {isExpressionFilter, isDynamicFilter, extractStaticFilter};
 
-function isExpressionFilter(filter: any) {
+function isExpressionFilter(filter: any): boolean {
     if (filter === true || filter === false) {
         return true;
     }

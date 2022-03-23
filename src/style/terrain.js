@@ -40,8 +40,8 @@ class Terrain extends Evented {
         this.drapeRenderMode = drapeRenderMode;
     }
 
-    get() {
-        return this._transitionable.serialize();
+    get(): TerrainSpecification {
+        return (this._transitionable.serialize(): any);
     }
 
     set(terrain: TerrainSpecification) {

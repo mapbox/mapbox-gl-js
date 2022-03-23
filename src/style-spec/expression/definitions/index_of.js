@@ -4,7 +4,7 @@ import {BooleanType, StringType, ValueType, NullType, toString, NumberType, isVa
 import RuntimeError from '../runtime_error.js';
 import {typeOf} from '../values.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -22,7 +22,7 @@ class IndexOf implements Expression {
         this.fromIndex = fromIndex;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?IndexOf {
         if (args.length <= 2 ||  args.length >= 5) {
             return context.error(`Expected 3 or 4 arguments, but found ${args.length - 1} instead.`);
         }
@@ -45,7 +45,7 @@ class IndexOf implements Expression {
         }
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any {
         const needle = (this.needle.evaluate(ctx): any);
         const haystack = (this.haystack.evaluate(ctx): any);
 
@@ -73,11 +73,11 @@ class IndexOf implements Expression {
         }
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return false;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         if (this.fromIndex != null && this.fromIndex !== undefined) {
             const fromIndex = this.fromIndex.serialize();
             return ["index-of", this.needle.serialize(), this.haystack.serialize(), fromIndex];

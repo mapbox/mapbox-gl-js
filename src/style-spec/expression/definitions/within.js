@@ -3,7 +3,7 @@
 import {isValue} from '../values.js';
 import type {Type} from '../types.js';
 import {BooleanType} from '../types.js';
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {GeoJSON, GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson-types';
@@ -148,7 +148,7 @@ function lineStringWithinPolygons(line, polygons) {
     return false;
 }
 
-function getTilePolygon(coordinates, bbox, canonical) {
+function getTilePolygon(coordinates, bbox: BBox, canonical: CanonicalTileID) {
     const polygon = [];
     for (let i = 0; i < coordinates.length; i++) {
         const ring = [];
@@ -162,7 +162,7 @@ function getTilePolygon(coordinates, bbox, canonical) {
     return polygon;
 }
 
-function getTilePolygons(coordinates, bbox, canonical) {
+function getTilePolygons(coordinates, bbox, canonical: CanonicalTileID) {
     const polygons = [];
     for (let i = 0; i < coordinates.length; i++) {
         const polygon = getTilePolygon(coordinates[i], bbox, canonical);
@@ -188,10 +188,11 @@ function resetBBox(bbox) {
     bbox[2] = bbox[3] = -Infinity;
 }
 
-function getTilePoints(geometry, pointBBox, polyBBox, canonical) {
+function getTilePoints(geometry, pointBBox, polyBBox, canonical: CanonicalTileID) {
     const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
     const tilePoints = [];
+    if (!geometry) return tilePoints;
     for (const points of geometry) {
         for (const point of points) {
             const p = [point.x + shifts[0], point.y + shifts[1]];
@@ -202,10 +203,11 @@ function getTilePoints(geometry, pointBBox, polyBBox, canonical) {
     return tilePoints;
 }
 
-function getTileLines(geometry, lineBBox, polyBBox, canonical) {
+function getTileLines(geometry, lineBBox, polyBBox, canonical: CanonicalTileID) {
     const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
     const tileLines = [];
+    if (!geometry) return tileLines;
     for (const line of geometry) {
         const tileLine = [];
         for (const point of line) {
@@ -231,6 +233,9 @@ function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPo
     const polyBBox = [Infinity, Infinity, -Infinity, -Infinity];
 
     const canonical = ctx.canonicalID();
+    if (!canonical) {
+        return false;
+    }
 
     if (polygonGeometry.type === 'Polygon') {
         const tilePolygon = getTilePolygon(polygonGeometry.coordinates, polyBBox, canonical);
@@ -259,6 +264,9 @@ function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPol
     const polyBBox = [Infinity, Infinity, -Infinity, -Infinity];
 
     const canonical = ctx.canonicalID();
+    if (!canonical) {
+        return false;
+    }
 
     if (polygonGeometry.type === 'Polygon') {
         const tilePolygon = getTilePolygon(polygonGeometry.coordinates, polyBBox, canonical);
@@ -292,7 +300,7 @@ class Within implements Expression {
         this.geometries = geometries;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Within {
         if (args.length !== 2)
             return context.error(`'within' expression requires exactly one argument, but found ${args.length - 1} instead.`);
         if (isValue(args[1])) {
@@ -316,7 +324,7 @@ class Within implements Expression {
         return context.error(`'within' expression requires valid geojson object that contains polygon geometry type.`);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): boolean {
         if (ctx.geometry() != null && ctx.canonicalID() != null) {
             if (ctx.geometryType() === 'Point') {
                 return pointsWithinPolygons(ctx, this.geometries);
@@ -333,7 +341,7 @@ class Within implements Expression {
         return true;
     }
 
-    serialize(): Array<mixed> {
+    serialize(): SerializedExpression {
         return ["within", this.geojson];
     }
 

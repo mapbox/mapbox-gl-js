@@ -1,7 +1,7 @@
 // @flow
 
 import type {Type} from '../types.js';
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext  from '../evaluation_context.js';
 
@@ -16,7 +16,7 @@ class Let implements Expression {
         this.result = result;
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): any {
         return this.result.evaluate(ctx);
     }
 
@@ -27,7 +27,7 @@ class Let implements Expression {
         fn(this.result);
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Let {
         if (args.length < 4)
             return context.error(`Expected at least 3 arguments, but found ${args.length - 1} instead.`);
 
@@ -55,11 +55,11 @@ class Let implements Expression {
         return new Let(bindings, result);
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return this.result.outputDefined();
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         const serialized = ["let"];
         for (const [name, expr] of this.bindings) {
             serialized.push(name, expr.serialize());

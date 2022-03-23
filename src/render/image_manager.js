@@ -82,6 +82,10 @@ class ImageManager extends Evented {
         }
     }
 
+    hasImage(id: string): boolean {
+        return !!this.getImage(id);
+    }
+
     getImage(id: string): ?StyleImage {
         return this.images[id];
     }

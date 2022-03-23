@@ -18,9 +18,9 @@ import {mat4} from 'gl-matrix';
 import {
     calculateGlobeMercatorMatrix,
     globeToMercatorTransition,
-    globeMatrixForTile,
     globePoleMatrixForTile,
-    globeVertexBufferForTileMesh
+    getGridMatrix,
+    globeTileLatLngCorners
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
 
@@ -171,7 +171,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
         for (const coord of tileIDs) {
             const tile = sourceCache.getTile(coord);
-            const gridBuffer = globeVertexBufferForTileMesh(painter, tile, coord);
             const stencilMode = StencilMode.disabled;
 
             const prevDemTile = terrain.prevTerrainTileForTile[coord.key];
@@ -187,16 +186,18 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
             const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
-            const elevationOptions = {};
+            const elevationOptions = {useDenormalizedUpVectorScale: true};
 
             if (morph) {
                 extend(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
             }
 
-            const posMatrix = globeMatrixForTile(coord.canonical, tr.globeMatrix);
+            const globeMatrix = Float32Array.from(tr.globeMatrix);
+            const corners = globeTileLatLngCorners(coord.canonical);
+            const gridMatrix = getGridMatrix(coord.canonical, corners);
             const uniformValues = globeRasterUniformValues(
-                tr.projMatrix, posMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter);
+                tr.projMatrix, globeMatrix, globeMercatorMatrix,
+                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -205,40 +206,56 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
             if (sharedBuffers) {
-                const [buffer, segments] = isWireframe ?
-                    sharedBuffers.getWirefameBuffer(painter.context) :
-                    [sharedBuffers.gridIndexBuffer, sharedBuffers.gridSegments];
+                const [buffer, indexBuffer, segments] = isWireframe ?
+                    sharedBuffers.getWirefameBuffers(painter.context) :
+                    sharedBuffers.getGridBuffers();
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
-                    uniformValues, "globe_raster", gridBuffer, buffer, segments);
-            }
-
-            if (!isWireframe && sharedBuffers) {
-                // Fill poles by extrapolating adjacent border tiles
-                const {x, y, z} = coord.canonical;
-                const topCap = y === 0;
-                const bottomCap = y === (1 << z) - 1;
-                const segment = sharedBuffers.poleSegments[z];
-
-                if (segment && (topCap || bottomCap)) {
-                    let poleMatrix = globePoleMatrixForTile(z, x, tr);
-
-                    const drawPole = (program, vertexBuffer) => program.draw(
-                        context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                        globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
-                        "globe_pole_raster", vertexBuffer, sharedBuffers.poleIndexBuffer, segment);
-
-                    if (topCap) {
-                        drawPole(program, sharedBuffers.poleNorthVertexBuffer);
-                    }
-                    if (bottomCap) {
-                        poleMatrix = mat4.scale(mat4.create(), poleMatrix, [1, -1, 1]);
-                        drawPole(program, sharedBuffers.poleSouthVertexBuffer);
-                    }
-                }
+                    uniformValues, "globe_raster", buffer, indexBuffer, segments);
             }
         }
     });
+
+    // Render the poles.
+    if (sharedBuffers) {
+        const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
+        program = painter.useProgram('globeRaster', null, defines);
+        for (const coord of tileIDs) {
+            // Fill poles by extrapolating adjacent border tiles
+            const {x, y, z} = coord.canonical;
+            const topCap = y === 0;
+            const bottomCap = y === (1 << z) - 1;
+
+            const [northPoleBuffer, southPoleBuffer, indexBuffer, segment] = sharedBuffers.getPoleBuffers(z);
+
+            if (segment && (topCap || bottomCap)) {
+                const tile = sourceCache.getTile(coord);
+
+                // Bind the main draped texture
+                context.activeTexture.set(gl.TEXTURE0);
+                tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+                let poleMatrix = globePoleMatrixForTile(z, x, tr);
+
+                const drawPole = (program, vertexBuffer) => program.draw(
+                    context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
+                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
+                    "globe_pole_raster", vertexBuffer, indexBuffer, segment);
+
+                terrain.setupElevationDraw(tile, program, {});
+
+                painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+
+                if (topCap) {
+                    drawPole(program, northPoleBuffer);
+                }
+                if (bottomCap) {
+                    poleMatrix = mat4.scale(mat4.create(), poleMatrix, [1, -1, 1]);
+                    drawPole(program, southPoleBuffer);
+                }
+            }
+        }
+    }
 }
 
 function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>, now: number) {

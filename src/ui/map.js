@@ -1,7 +1,7 @@
 // @flow
 
 import {version} from '../../package.json';
-import {asyncAll, extend, bindAll, warnOnce, uniqueId, deepEqual} from '../util/util.js';
+import {asyncAll, extend, bindAll, warnOnce, uniqueId, isSafariWithAntialiasingBug} from '../util/util.js';
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 import * as DOM from '../util/dom.js';
@@ -42,8 +42,6 @@ import type {StyleOptions, StyleSetterOptions} from '../style/style.js';
 import type {MapEvent, MapDataEvent} from './events.js';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer.js';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image.js';
-import Terrain from '../style/terrain.js';
-import Fog from '../style/fog.js';
 
 import type ScrollZoomHandler from './handler/scroll_zoom.js';
 import type BoxZoomHandler from './handler/box_zoom.js';
@@ -64,9 +62,15 @@ import type {
     TerrainSpecification,
     FogSpecification,
     SourceSpecification,
-    ProjectionSpecification
+    ProjectionSpecification,
+    PropertyValueSpecification,
+    TransitionSpecification
 } from '../style-spec/types.js';
+import type StyleLayer from '../style/style_layer.js';
 import type {ElevationQueryOptions} from '../terrain/elevation.js';
+import type {Source} from '../source/source.js';
+import type {QueryFeature} from '../util/vectortile_to_geojson.js';
+import type {QueryResult} from '../data/feature_index.js';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
@@ -364,11 +368,12 @@ class Map extends Camera {
     _cooperativeGestures: boolean;
     _silenceAuthErrors: boolean;
     _averageElevationLastSampledAt: number;
+    _averageElevationExaggeration: number;
     _averageElevation: EasedVariable;
     _containerWidth: number;
     _containerHeight: number;
 
-    // `_explicitProjection represents projection as set with a call to map.setProjection()
+    // `_explicitProjection represents projection as set by a call to map.setProjection()
     // For the actual projection displayed, use `transform.projection`.
     // (The two diverge above the transition zoom threshold in Globe view or when _explicitProjection === null
     // a null _explicitProjection indicates the map defaults to first the stylesheet projection if present, then Mercator)
@@ -446,6 +451,12 @@ class Map extends Camera {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
         }
 
+        // disable antialias with OS/iOS 15.4 and 15.5 due to rendering bug
+        if (options.antialias && isSafariWithAntialiasingBug(window)) {
+            options.antialias = false;
+            warnOnce('Antialiasing is disabled for this WebGL context to avoid browser bug: https://github.com/mapbox/mapbox-gl-js/issues/11609');
+        }
+
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
@@ -476,6 +487,7 @@ class Map extends Camera {
         this._containerHeight = 0;
 
         this._averageElevationLastSampledAt = -Infinity;
+        this._averageElevationExaggeration = 0;
         this._averageElevation = new EasedVariable(0);
 
         this._explicitProjection = null; // Fallback to stylesheet by default
@@ -586,7 +598,7 @@ class Map extends Camera {
     * @private
     * @returns {number}
     */
-    _getMapId() {
+    _getMapId(): number {
         return this._mapId;
     }
 
@@ -604,7 +616,7 @@ class Map extends Camera {
      * map.addControl(new mapboxgl.NavigationControl());
      * @see [Example: Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
-    addControl(control: IControl, position?: ControlPosition) {
+    addControl(control: IControl, position?: ControlPosition): this {
         if (position === undefined) {
             if (control.getDefaultPosition) {
                 position = control.getDefaultPosition();
@@ -641,7 +653,7 @@ class Map extends Camera {
      * // Remove zoom and rotation controls from the map.
      * map.removeControl(navigation);
      */
-    removeControl(control: IControl) {
+    removeControl(control: IControl): this {
         if (!control || !control.onRemove) {
             return this.fire(new ErrorEvent(new Error(
                 'Invalid argument to map.removeControl(). Argument must be a control with onAdd and onRemove methods.')));
@@ -666,7 +678,7 @@ class Map extends Camera {
      * const added = map.hasControl(navigation);
      * // added === true
      */
-    hasControl(control: IControl) {
+    hasControl(control: IControl): boolean {
         return this._controls.indexOf(control) > -1;
     }
 
@@ -677,7 +689,7 @@ class Map extends Camera {
      * @example
      * const container = map.getContainer();
      */
-    getContainer() {
+    getContainer(): HTMLElement {
         return this._container;
     }
 
@@ -696,7 +708,7 @@ class Map extends Camera {
      * @see [Example: Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      * @see [Example: Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      */
-    getCanvasContainer() {
+    getCanvasContainer(): HTMLElement {
         return this._canvasContainer;
     }
 
@@ -710,7 +722,7 @@ class Map extends Camera {
      * @see [Example: Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
      * @see [Example: Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
-    getCanvas() {
+    getCanvas(): HTMLCanvasElement {
         return this._canvas;
     }
 
@@ -734,7 +746,7 @@ class Map extends Camera {
      * const mapDiv = document.getElementById('map');
      * if (mapDiv.style.visibility === true) map.resize();
      */
-    resize(eventData?: Object) {
+    resize(eventData?: Object): this {
         this._updateContainerDimensions();
 
         // do nothing if container remained the same size
@@ -804,7 +816,7 @@ class Map extends Camera {
      * // Set the map's max bounds.
      * map.setMaxBounds(bounds);
      */
-    setMaxBounds(bounds: LngLatBoundsLike) {
+    setMaxBounds(bounds: LngLatBoundsLike): this {
         this.transform.setMaxBounds(LngLatBounds.convert(bounds));
         return this._update();
     }
@@ -825,7 +837,7 @@ class Map extends Camera {
      * @example
      * map.setMinZoom(12.25);
      */
-    setMinZoom(minZoom?: ?number) {
+    setMinZoom(minZoom?: ?number): this {
 
         minZoom = minZoom === null || minZoom === undefined ? defaultMinZoom : minZoom;
 
@@ -853,7 +865,7 @@ class Map extends Camera {
      * @example
      * const minZoom = map.getMinZoom();
      */
-    getMinZoom() { return this.transform.minZoom; }
+    getMinZoom(): number { return this.transform.minZoom; }
 
     /**
      * Sets or clears the map's maximum zoom level.
@@ -866,7 +878,7 @@ class Map extends Camera {
      * @example
      * map.setMaxZoom(18.75);
      */
-    setMaxZoom(maxZoom?: ?number) {
+    setMaxZoom(maxZoom?: ?number): this {
 
         maxZoom = maxZoom === null || maxZoom === undefined ? defaultMaxZoom : maxZoom;
 
@@ -894,7 +906,7 @@ class Map extends Camera {
      * @example
      * const maxZoom = map.getMaxZoom();
      */
-    getMaxZoom() { return this.transform.maxZoom; }
+    getMaxZoom(): number { return this.transform.maxZoom; }
 
     /**
      * Sets or clears the map's minimum pitch.
@@ -906,7 +918,7 @@ class Map extends Camera {
      * @example
      * map.setMinPitch(5);
      */
-    setMinPitch(minPitch?: ?number) {
+    setMinPitch(minPitch?: ?number): this {
 
         minPitch = minPitch === null || minPitch === undefined ? defaultMinPitch : minPitch;
 
@@ -938,7 +950,7 @@ class Map extends Camera {
      * @example
      * const minPitch = map.getMinPitch();
      */
-    getMinPitch() { return this.transform.minPitch; }
+    getMinPitch(): number { return this.transform.minPitch; }
 
     /**
      * Sets or clears the map's maximum pitch.
@@ -951,7 +963,7 @@ class Map extends Camera {
      * @example
      * map.setMaxPitch(70);
      */
-    setMaxPitch(maxPitch?: ?number) {
+    setMaxPitch(maxPitch?: ?number): this {
 
         maxPitch = maxPitch === null || maxPitch === undefined ? defaultMaxPitch : maxPitch;
 
@@ -983,7 +995,7 @@ class Map extends Camera {
      * @example
      * const maxPitch = map.getMaxPitch();
      */
-    getMaxPitch() { return this.transform.maxPitch; }
+    getMaxPitch(): number { return this.transform.maxPitch; }
 
     /**
      * Returns the state of `renderWorldCopies`. If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
@@ -997,7 +1009,7 @@ class Map extends Camera {
      * const worldCopiesRendered = map.getRenderWorldCopies();
      * @see [Example: Render world copies](https://docs.mapbox.com/mapbox-gl-js/example/render-world-copies/)
      */
-    getRenderWorldCopies() { return this.transform.renderWorldCopies; }
+    getRenderWorldCopies(): boolean { return this.transform.renderWorldCopies; }
 
     /**
      * Sets the state of `renderWorldCopies`.
@@ -1014,7 +1026,7 @@ class Map extends Camera {
      * map.setRenderWorldCopies(true);
      * @see [Example: Render world copies](https://docs.mapbox.com/mapbox-gl-js/example/render-world-copies/)
      */
-    setRenderWorldCopies(renderWorldCopies?: ?boolean) {
+    setRenderWorldCopies(renderWorldCopies?: ?boolean): this {
         this.transform.renderWorldCopies = renderWorldCopies;
         return this._update();
     }
@@ -1054,7 +1066,7 @@ class Map extends Camera {
      * @see [Example: Display a web map using an alternate projection](https://docs.mapbox.com/mapbox-gl-js/example/map-projection/)
      * @see [Example: Use different map projections for web maps](https://docs.mapbox.com/mapbox-gl-js/example/projections/)
      */
-    setProjection(projection?: ?ProjectionSpecification | string) {
+    setProjection(projection?: ?ProjectionSpecification | string): this {
         this._lazyInitEmptyStyle();
         if (!projection) {
             projection = null;
@@ -1064,34 +1076,34 @@ class Map extends Camera {
         return this._updateProjection(projection);
     }
 
-    _updateProjection(projection?: ProjectionSpecification | null) {
+    _updateProjection(explicitProjection?: ProjectionSpecification | null): this {
         const prevProjection = this.getProjection();
-        if (projection === undefined) { projection = prevProjection; }
+        if (explicitProjection === null) { this._explicitProjection = null; }
+        const projection = explicitProjection || this.getProjection();
 
-        // At high zoom on globe, set transform projection to mercator.
+        // At high zoom on globe, set transform projection to Mercator while _explicitProjection stays globe.
         const newProjection = this.transform.setProjection(projection && projection.name === 'globe' ?
             {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')} :
             projection);
 
-        // When triggered by a call to setProjection, update _explicitProjection
-        if (projection !== prevProjection) {
-            this._explicitProjection = projection ?
-                (projection.name === "globe" ? {name:'globe', center:[0, 0]} : this.transform.getProjection()) :
-                null;
+        // When called through setProjection, update _explicitProjection
+        if (explicitProjection) {
+            this._explicitProjection = (explicitProjection.name === "globe" ?
+                {name:'globe', center:[0, 0]} :
+                this.transform.getProjection());
         }
 
         if (newProjection) {
             // If a zoom transition on globe
-            if (deepEqual(prevProjection, this.getProjection())) {
+            if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
                 this.style._forceSymbolLayerUpdate();
-            } else { // If a switch between different expressions
+            } else { // If a switch between different projections
                 this.painter.clearBackgroundTiles();
                 for (const id in this.style._sourceCaches) {
                     this.style._sourceCaches[id].clearTiles();
                 }
             }
-            this.style.dispatcher.broadcast('setProjection', this.transform.projectionOptions);
-            this.style.enableDraping();
+            this.style.applyProjectionUpdate();
             this._update(true);
         }
 
@@ -1112,7 +1124,7 @@ class Map extends Camera {
      * const coordinate = [-122.420679, 37.772537];
      * const point = map.project(coordinate);
      */
-    project(lnglat: LngLatLike) {
+    project(lnglat: LngLatLike): Point {
         return this.transform.locationPoint3D(LngLat.convert(lnglat));
     }
 
@@ -1130,7 +1142,7 @@ class Map extends Camera {
      *     const coordinate = map.unproject(e.point);
      * });
      */
-    unproject(point: PointLike) {
+    unproject(point: PointLike): LngLat {
         return this.transform.pointLocation3D(Point.convert(point));
     }
 
@@ -1169,7 +1181,7 @@ class Map extends Camera {
         return this._rotating || (this.handlers && this.handlers.isRotating()) || false;
     }
 
-    _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any) {
+    _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any): any {
         if (type === 'mouseenter' || type === 'mouseover') {
             let mousein = false;
             const mousemove = (e) => {
@@ -1337,7 +1349,7 @@ class Map extends Camera {
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
-    on(type: MapEvent, layerIds: any, listener: any) {
+    on(type: MapEvent, layerIds: any, listener: any): this {
         if (listener === undefined) {
             return super.on(type, layerIds);
         }
@@ -1397,7 +1409,7 @@ class Map extends Camera {
      * @see [Example: Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Example: Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-    once(type: MapEvent, layerIds: any, listener: any) {
+    once(type: MapEvent, layerIds: any, listener: any): this | Promise<Event> {
 
         if (listener === undefined) {
             return super.once(type, layerIds);
@@ -1440,7 +1452,7 @@ class Map extends Camera {
      * });
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    off(type: MapEvent, layerIds: any, listener: any) {
+    off(type: MapEvent, layerIds: any, listener: any): this {
         if (listener === undefined) {
             return super.off(type, layerIds);
         }
@@ -1561,7 +1573,7 @@ class Map extends Camera {
      * @see [Example: Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Example: Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
-    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Object) {
+    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Object): Array<QueryResult> {
         // The first parameter can be omitted entirely, making this effectively an overloaded method
         // with two signatures:
         //
@@ -1623,7 +1635,7 @@ class Map extends Camera {
      *
      * @see [Example: Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
-    querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
+    querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}): Array<QueryFeature> {
         return this.style.querySourceFeatures(sourceId, parameters);
     }
 
@@ -1680,7 +1692,7 @@ class Map extends Camera {
      *
      * @see [Example: Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
-    setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
+    setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions): this {
         options = extend({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily}, options);
 
         if ((options.diff !== false &&
@@ -1695,7 +1707,7 @@ class Map extends Camera {
         }
     }
 
-    _getUIString(key: string) {
+    _getUIString(key: string): string {
         const str = this._locale[key];
         if (str == null) {
             throw new Error(`Missing UI string '${key}'`);
@@ -1704,7 +1716,7 @@ class Map extends Camera {
         return str;
     }
 
-    _updateStyle(style: StyleSpecification | string | null,  options?: {diff?: boolean} & StyleOptions) {
+    _updateStyle(style: StyleSpecification | string | null,  options?: {diff?: boolean} & StyleOptions): this {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
@@ -1773,7 +1785,7 @@ class Map extends Camera {
      * });
      *
      */
-    getStyle() {
+    getStyle(): ?StyleSpecification {
         if (this.style) {
             return this.style.serialize();
         }
@@ -1787,8 +1799,11 @@ class Map extends Camera {
      * @example
      * const styleLoadStatus = map.isStyleLoaded();
      */
-    isStyleLoaded() {
-        if (!this.style) return warnOnce('There is no style added to the map.');
+    isStyleLoaded(): boolean {
+        if (!this.style) {
+            warnOnce('There is no style added to the map.');
+            return false;
+        }
         return this.style.loaded();
     }
 
@@ -1826,7 +1841,7 @@ class Map extends Camera {
      * @see Example: GeoJSON source: [Add live realtime data](https://docs.mapbox.com/mapbox-gl-js/example/live-geojson/)
      * @see Example: Raster DEM source: [Add hillshading](https://docs.mapbox.com/mapbox-gl-js/example/hillshade/)
      */
-    addSource(id: string, source: SourceSpecification) {
+    addSource(id: string, source: SourceSpecification): this {
         this._lazyInitEmptyStyle();
         this.style.addSource(id, source);
         return this._update(true);
@@ -1841,8 +1856,8 @@ class Map extends Camera {
      * @example
      * const sourceLoaded = map.isSourceLoaded('bathymetry-data');
      */
-    isSourceLoaded(id: string) {
-        return this.style && this.style._isSourceCacheLoaded(id);
+    isSourceLoaded(id: string): boolean {
+        return !!this.style && this.style._isSourceCacheLoaded(id);
     }
 
     /**
@@ -1854,7 +1869,7 @@ class Map extends Camera {
      * const tilesLoaded = map.areTilesLoaded();
      */
 
-    areTilesLoaded() {
+    areTilesLoaded(): boolean {
         const sources = this.style && this.style._sourceCaches;
         for (const id in sources) {
             const source = sources[id];
@@ -1877,7 +1892,7 @@ class Map extends Camera {
      */
     addSourceType(name: string, SourceType: any, callback: Function) {
         this._lazyInitEmptyStyle();
-        return this.style.addSourceType(name, SourceType, callback);
+        this.style.addSourceType(name, SourceType, callback);
     }
 
     /**
@@ -1888,7 +1903,7 @@ class Map extends Camera {
      * @example
      * map.removeSource('bathymetry-data');
      */
-    removeSource(id: string) {
+    removeSource(id: string): this {
         this.style.removeSource(id);
         this._updateTerrain();
         return this._update(true);
@@ -1914,7 +1929,7 @@ class Map extends Camera {
      * @see [Example: Animate a point](https://docs.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
      * @see [Example: Add live realtime data](https://docs.mapbox.com/mapbox-gl-js/example/live-geojson/)
      */
-    getSource(id: string) {
+    getSource(id: string): ?Source {
         return this.style.getSource(id);
     }
 
@@ -1975,7 +1990,7 @@ class Map extends Camera {
             const {width, height, data} = browser.getImageData(image);
             this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version});
         } else if (image.width === undefined || image.height === undefined) {
-            return this.fire(new ErrorEvent(new Error(
+            this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
                 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
         } else {
@@ -2023,8 +2038,9 @@ class Map extends Camera {
 
         const existingImage = this.style.getImage(id);
         if (!existingImage) {
-            return this.fire(new ErrorEvent(new Error(
+            this.fire(new ErrorEvent(new Error(
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
+            return;
         }
         const imageData = (image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap)) ? browser.getImageData(image) : image;
         const {width, height} = imageData;
@@ -2032,14 +2048,16 @@ class Map extends Camera {
         const data = ((imageData: any).data: Uint8Array | Uint8ClampedArray);
 
         if (width === undefined || height === undefined) {
-            return this.fire(new ErrorEvent(new Error(
+            this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.updateImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
                 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
+            return;
         }
 
         if (width !== existingImage.data.width || height !== existingImage.data.height) {
-            return this.fire(new ErrorEvent(new Error(
+            this.fire(new ErrorEvent(new Error(
                 'The width and height of the updated image must be that same as the previous version of the image')));
+            return;
         }
 
         const copy = !(image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap));
@@ -2120,7 +2138,7 @@ class Map extends Camera {
     * const allImages = map.listImages();
     *
     */
-    listImages() {
+    listImages(): Array<string> {
         return this.style.listImages();
     }
 
@@ -2235,7 +2253,7 @@ class Map extends Camera {
      * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
      * @see [Example: Add a WMS source](https://docs.mapbox.com/mapbox-gl-js/example/wms/)
      */
-    addLayer(layer: LayerSpecification | CustomLayerInterface, beforeId?: string) {
+    addLayer(layer: LayerSpecification | CustomLayerInterface, beforeId?: string): this {
         this._lazyInitEmptyStyle();
         this.style.addLayer(layer, beforeId);
         return this._update(true);
@@ -2252,7 +2270,7 @@ class Map extends Camera {
      * // Move a layer with ID 'polygon' before the layer with ID 'country-label'. The `polygon` layer will appear beneath the `country-label` layer on the map.
      * map.moveLayer('polygon', 'country-label');
      */
-    moveLayer(id: string, beforeId?: string) {
+    moveLayer(id: string, beforeId?: string): this {
         this.style.moveLayer(id, beforeId);
         return this._update(true);
     }
@@ -2270,7 +2288,7 @@ class Map extends Camera {
      * // If a layer with ID 'state-data' exists, remove it.
      * if (map.getLayer('state-data')) map.removeLayer('state-data');
      */
-    removeLayer(id: string) {
+    removeLayer(id: string): this {
         this.style.removeLayer(id);
         return this._update(true);
     }
@@ -2288,7 +2306,7 @@ class Map extends Camera {
      * @see [Example: Filter symbols by toggling a list](https://www.mapbox.com/mapbox-gl-js/example/filter-markers/)
      * @see [Example: Filter symbols by text input](https://www.mapbox.com/mapbox-gl-js/example/filter-markers-by-input/)
      */
-    getLayer(id: string) {
+    getLayer(id: string): ?StyleLayer {
         return this.style.getLayer(id);
     }
 
@@ -2312,7 +2330,7 @@ class Map extends Camera {
      * map.setLayerZoomRange('my-layer', 2, 5);
      *
      */
-    setLayerZoomRange(layerId: string, minzoom: number, maxzoom: number) {
+    setLayerZoomRange(layerId: string, minzoom: number, maxzoom: number): this {
         this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
         return this._update(true);
     }
@@ -2350,7 +2368,7 @@ class Map extends Camera {
      * @see [Example: Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      * @see [Tutorial: Show changes over time](https://docs.mapbox.com/help/tutorials/show-changes-over-time/)
      */
-    setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
+    setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}): this {
         this.style.setFilter(layerId, filter, options);
         return this._update(true);
     }
@@ -2363,7 +2381,7 @@ class Map extends Camera {
      * @example
      * const filter = map.getFilter('myLayer');
      */
-    getFilter(layerId: string) {
+    getFilter(layerId: string): ?FilterSpecification {
         return this.style.getFilter(layerId);
     }
 
@@ -2383,7 +2401,7 @@ class Map extends Camera {
      * @see [Example: Adjust a layer's opacity](https://www.mapbox.com/mapbox-gl-js/example/adjust-layer-opacity/)
      * @see [Example: Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    setPaintProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
+    setPaintProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}): this {
         this.style.setPaintProperty(layerId, name, value, options);
         return this._update(true);
     }
@@ -2397,7 +2415,7 @@ class Map extends Camera {
      * @example
      * const paintProperty = map.getPaintProperty('mySymbolLayer', 'icon-color');
      */
-    getPaintProperty(layerId: string, name: string) {
+    getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<mixed> {
         return this.style.getPaintProperty(layerId, name);
     }
 
@@ -2414,7 +2432,7 @@ class Map extends Camera {
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
      * @see [Example: Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
      */
-    setLayoutProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
+    setLayoutProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}): this {
         this.style.setLayoutProperty(layerId, name, value, options);
         return this._update(true);
     }
@@ -2428,7 +2446,7 @@ class Map extends Camera {
      * @example
      * const layoutProperty = map.getLayoutProperty('mySymbolLayer', 'icon-anchor');
      */
-    getLayoutProperty(layerId: string, name: string) {
+    getLayoutProperty(layerId: string, name: string): ?PropertyValueSpecification<mixed> {
         return this.style.getLayoutProperty(layerId, name);
     }
 
@@ -2445,7 +2463,7 @@ class Map extends Camera {
      * const layerVisibility = map.getLayoutProperty('my-layer', 'visibility');
      * @see [Example: Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
      */
-    setLight(light: LightSpecification, options: StyleSetterOptions = {}) {
+    setLight(light: LightSpecification, options: StyleSetterOptions = {}): this {
         this._lazyInitEmptyStyle();
         this.style.setLight(light, options);
         return this._update(true);
@@ -2458,7 +2476,7 @@ class Map extends Camera {
      * @example
      * const light = map.getLight();
      */
-    getLight() {
+    getLight(): LightSpecification {
         return this.style.getLight();
     }
 
@@ -2479,7 +2497,7 @@ class Map extends Camera {
      * // add the DEM source as a terrain layer with exaggerated height
      * map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
      */
-    setTerrain(terrain: TerrainSpecification) {
+    setTerrain(terrain: TerrainSpecification): this {
         this._lazyInitEmptyStyle();
         if (!terrain && this.transform.projection.requiresDraping) {
             this.style.setTerrainForDraping();
@@ -2497,7 +2515,7 @@ class Map extends Camera {
      * @example
      * const terrain = map.getTerrain();
      */
-    getTerrain(): Terrain | null {
+    getTerrain(): ?TerrainSpecification {
         return this.style ? this.style.getTerrain() : null;
     }
 
@@ -2515,7 +2533,7 @@ class Map extends Camera {
      * });
      * @see [Example: Add fog to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-fog/)
      */
-    setFog(fog: FogSpecification) {
+    setFog(fog: FogSpecification): this {
         this._lazyInitEmptyStyle();
         this.style.setFog(fog);
         return this._update(true);
@@ -2528,7 +2546,7 @@ class Map extends Camera {
      * @example
      * const fog = map.getFog();
      */
-    getFog(): Fog | null {
+    getFog(): ?FogSpecification {
         return this.style ? this.style.getFog() : null;
     }
 
@@ -2589,7 +2607,7 @@ class Map extends Camera {
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Tutorial: Create interactive hover effects with Mapbox GL JS](https://docs.mapbox.com/help/tutorials/create-interactive-hover-effects-with-mapbox-gl-js/)
      */
-    setFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
+    setFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }, state: Object): this {
         this.style.setFeatureState(feature, state);
         return this._update();
     }
@@ -2641,7 +2659,7 @@ class Map extends Camera {
      * });
      *
     */
-    removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
+    removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string): this {
         this.style.removeFeatureState(feature, key);
         return this._update();
     }
@@ -2811,7 +2829,7 @@ class Map extends Camera {
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
 
-    _onMapScroll(event: *) {
+    _onMapScroll(event: *): ?boolean {
         if (event.target !== this._container) return;
 
         // Revert any scroll which would move the canvas outside of the view
@@ -2833,7 +2851,7 @@ class Map extends Camera {
      * @example
      * const isLoaded = map.loaded();
      */
-    loaded() {
+    loaded(): boolean {
         return !this._styleDirty && !this._sourcesDirty && !!this.style && this.style.loaded();
     }
 
@@ -2845,7 +2863,7 @@ class Map extends Camera {
      * @returns {Map} this
      * @private
      */
-    _update(updateStyle?: boolean) {
+    _update(updateStyle?: boolean): this {
         if (!this.style) return this;
 
         this._styleDirty = this._styleDirty || updateStyle;
@@ -2908,8 +2926,6 @@ class Map extends Camera {
 
         const m = PerformanceUtils.beginMeasure('render');
 
-        let averageElevationChanged = this._updateAverageElevation(frameStartTime);
-
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
         this.painter.context.setDirty();
         this.painter.setBaseState();
@@ -2971,13 +2987,17 @@ class Map extends Camera {
         // If we are in _render for any reason other than an in-progress paint
         // transition, update source caches to check for and load any tiles we
         // need for the current transform
+        let averageElevationChanged = false;
         if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
             this.painter._updateFog(this.style);
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
+            averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style._updateSources(this.transform);
             // Update positions of markers on enabling/disabling terrain
             this._forceMarkerUpdate();
+        } else {
+            averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
 
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
@@ -3087,8 +3107,6 @@ class Map extends Camera {
             this._authenticate();
             PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
-
-        return this;
     }
 
     _forceMarkerUpdate() {
@@ -3120,6 +3138,12 @@ class Map extends Camera {
         if (timeoutElapsed && !this._averageElevation.isEasing(timeStamp)) {
             const currentElevation = this.transform.averageElevation;
             let newElevation = this.transform.sampleAverageElevation();
+            let exaggerationChanged = false;
+            if (this.transform.elevation) {
+                exaggerationChanged = this.transform.elevation.exaggeration() !== this._averageElevationExaggeration;
+                // $FlowIgnore[incompatible-use]
+                this._averageElevationExaggeration = this.transform.elevation.exaggeration();
+            }
 
             // New elevation is NaN if no terrain tiles were available
             if (isNaN(newElevation)) {
@@ -3131,7 +3155,7 @@ class Map extends Camera {
             const elevationChange = Math.abs(currentElevation - newElevation);
 
             if (elevationChange > AVERAGE_ELEVATION_EASE_THRESHOLD) {
-                if (this._isInitialLoad) {
+                if (this._isInitialLoad || exaggerationChanged) {
                     this._averageElevation.jumpTo(newElevation);
                     return applyUpdate(newElevation);
                 } else {
@@ -3167,7 +3191,7 @@ class Map extends Camera {
         getMapSessionAPI(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err) => {
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
-                if (err.message === AUTH_ERR_MSG || err.status === 401) {
+                if (err.message === AUTH_ERR_MSG || (err: any).status === 401) {
                     const gl = this.painter.context.gl;
                     storeAuthState(gl, false);
                     if (this._logoControl instanceof LogoControl) {
@@ -3323,7 +3347,7 @@ class Map extends Camera {
      * @private
      * @returns {Object} Returns `this` | Promise.
      */
-    _preloadTiles(transform: Transform | Array<Transform>) {
+    _preloadTiles(transform: Transform | Array<Transform>): this {
         const sources: Array<SourceCache> = this.style ? (Object.values(this.style._sourceCaches): any) : [];
         asyncAll(sources, (source, done) => source._preloadTiles(transform, done), () => {
             this.triggerRepaint();

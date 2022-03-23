@@ -2,7 +2,7 @@
 
 import {StringType, NumberType} from '../types.js';
 
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type ParsingContext from '../parsing_context.js';
 import type {Type} from '../types.js';
@@ -93,7 +93,7 @@ export default class NumberFormat implements Expression {
         return new NumberFormat(number, locale, currency, minFractionDigits, maxFractionDigits);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): string {
         return new Intl.NumberFormat(this.locale ? this.locale.evaluate(ctx) : [],
             {
                 style: this.currency ? "currency" : "decimal",
@@ -119,11 +119,11 @@ export default class NumberFormat implements Expression {
         }
     }
 
-    outputDefined() {
+    outputDefined(): boolean {
         return false;
     }
 
-    serialize() {
+    serialize(): SerializedExpression {
         const options = {};
         if (this.locale) {
             options['locale'] = this.locale.serialize();

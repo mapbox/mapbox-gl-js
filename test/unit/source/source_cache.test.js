@@ -57,7 +57,7 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
 
 setType('mock-source-type', MockSourceType);
 
-function createSourceCache(options, used) {
+export function createSourceCache(options, used) {
     const spec = options || {};
     spec['minzoom'] = spec['minzoom'] || 0;
     spec['maxzoom'] = spec['maxzoom'] || 14;

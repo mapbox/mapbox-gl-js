@@ -303,26 +303,26 @@ class HandlerManager {
         this._changes = [];
     }
 
-    isActive() {
+    isActive(): boolean {
         for (const {handler} of this._handlers) {
             if (handler.isActive()) return true;
         }
         return false;
     }
 
-    isZooming() {
+    isZooming(): boolean {
         return !!this._eventsInProgress.zoom || this._map.scrollZoom.isZooming();
     }
 
-    isRotating() {
+    isRotating(): boolean {
         return !!this._eventsInProgress.rotate;
     }
 
-    isMoving() {
-        return Boolean(isMoving(this._eventsInProgress)) || this.isZooming();
+    isMoving(): boolean {
+        return !!isMoving(this._eventsInProgress) || this.isZooming();
     }
 
-    _blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string) {
+    _blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string): boolean {
         for (const name in activeHandlers) {
             if (name === myName) continue;
             if (!allowed || allowed.indexOf(name) < 0) {
@@ -336,7 +336,7 @@ class HandlerManager {
         this.handleEvent(e, `${e.type}Window`);
     }
 
-    _getMapTouches(touches: TouchList) {
+    _getMapTouches(touches: TouchList): TouchList {
         const mapTouches = [];
         for (const t of touches) {
             const target = ((t.target: any): Node);
@@ -492,7 +492,8 @@ class HandlerManager {
         }
 
         if (!hasChange(combinedResult)) {
-            return this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
+            this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
+            return;
         }
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, aroundCoord, pinchAround} = combinedResult;
 
@@ -657,7 +658,7 @@ class HandlerManager {
         this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 
-    _requestFrame() {
+    _requestFrame(): number {
         this._map.triggerRepaint();
         return this._map._renderTaskQueue.add(timeStamp => {
             this._frameId = undefined;

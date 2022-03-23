@@ -6,9 +6,10 @@ import * as interpolate from '../../util/interpolate.js';
 import {toString, NumberType, ColorType} from '../types.js';
 import {findStopLessThanOrEqualTo} from '../stops.js';
 import {hcl, lab} from '../../util/color_spaces.js';
+import Color from '../../util/color.js';
 
 import type {Stops} from '../stops.js';
-import type {Expression} from '../expression.js';
+import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Type} from '../types.js';
@@ -41,7 +42,7 @@ class Interpolate implements Expression {
         }
     }
 
-    static interpolationFactor(interpolation: InterpolationType, input: number, lower: number, upper: number) {
+    static interpolationFactor(interpolation: InterpolationType, input: number, lower: number, upper: number): number {
         let t = 0;
         if (interpolation.name === 'exponential') {
             t = exponentialInterpolation(input, interpolation.base, lower, upper);
@@ -55,7 +56,7 @@ class Interpolate implements Expression {
         return t;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Interpolate {
         let [operator, interpolation, input, ...rest] = args;
 
         if (!Array.isArray(interpolation) || interpolation.length === 0) {
@@ -144,7 +145,7 @@ class Interpolate implements Expression {
         return new Interpolate(outputType, (operator: any), interpolation, input, stops);
     }
 
-    evaluate(ctx: EvaluationContext) {
+    evaluate(ctx: EvaluationContext): Color {
         const labels = this.labels;
         const outputs = this.outputs;
 
@@ -190,7 +191,7 @@ class Interpolate implements Expression {
         return this.outputs.every(out => out.outputDefined());
     }
 
-    serialize(): Array<mixed> {
+    serialize(): SerializedExpression {
         let interpolation;
         if (this.interpolation.name === 'linear') {
             interpolation = ["linear"];
