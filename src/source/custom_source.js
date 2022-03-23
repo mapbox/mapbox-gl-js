@@ -154,21 +154,21 @@ class CustomSource<T> extends Evented implements Source {
     minTileCacheSize: ?number;
     maxTileCacheSize: ?number;
 
-    dataType: ?DataType;
-    implementation: CustomSourceInterface<T>;
+    _dataType: ?DataType;
+    _implementation: CustomSourceInterface<T>;
 
-    map: Map;
-    dispatcher: Dispatcher;
+    _map: Map;
     _loaded: boolean;
+    _dispatcher: Dispatcher;
 
     constructor(id: string, implementation: CustomSourceInterface<T>, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.type = 'custom';
-        this.dataType = 'raster';
-        this.dispatcher = dispatcher;
+        this._dataType = 'raster';
+        this._dispatcher = dispatcher;
+        this._implementation = implementation;
         this.setEventedParent(eventedParent);
-        this.implementation = implementation;
 
         this.scheme = 'xyz';
         this.minzoom = 0;
@@ -178,19 +178,19 @@ class CustomSource<T> extends Evented implements Source {
         this._loaded = false;
         this.roundZoom = true;
 
-        if (!implementation) {
+        if (!this._implementation) {
             this.fire(new ErrorEvent(new Error(`Missing implementation for ${this.id} custom source`)));
         }
 
-        if (!implementation.loadTile) {
+        if (!this._implementation.loadTile) {
             this.fire(new ErrorEvent(new Error(`Missing loadTile implementation for ${this.id} custom source`)));
         }
 
         // $FlowFixMe[prop-missing]
-        implementation.update = this.update.bind(this);
+        implementation.update = this._update.bind(this);
 
         // $FlowFixMe[prop-missing]
-        implementation.coveringTiles = this.coveringTiles.bind(this);
+        implementation.coveringTiles = this._coveringTiles.bind(this);
 
         extend(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
     }
@@ -210,16 +210,16 @@ class CustomSource<T> extends Evented implements Source {
     }
 
     onAdd(map: Map): void {
-        this.map = map;
+        this._map = map;
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
-        if (this.implementation.onAdd) this.implementation.onAdd(map);
+        if (this._implementation.onAdd) this._implementation.onAdd(map);
         this.load();
     }
 
     onRemove(map: Map): void {
-        if (this.implementation.onRemove) {
-            this.implementation.onRemove(map);
+        if (this._implementation.onRemove) {
+            this._implementation.onRemove(map);
         }
     }
 
@@ -229,7 +229,7 @@ class CustomSource<T> extends Evented implements Source {
         const signal = controller.signal;
 
         // $FlowFixMe[prop-missing]
-        tile.request = this.implementation.loadTile({x, y, z}, {signal})
+        tile.request = this._implementation.loadTile({x, y, z}, {signal})
             .then(tileLoaded.bind(this))
             .catch(error => {
                 // silence AbortError and 404 errors
@@ -260,30 +260,30 @@ class CustomSource<T> extends Evented implements Source {
 
     loadTileData(tile: Tile, data: T): void {
         // Only raster data supported at the moment
-        RasterTileSource.loadTileData(tile, (data: any), this.map.painter);
+        RasterTileSource.loadTileData(tile, (data: any), this._map.painter);
     }
 
     unloadTileData(tile: Tile): void {
         // Only raster data supported at the moment
-        RasterTileSource.unloadTileData(tile, this.map.painter);
+        RasterTileSource.unloadTileData(tile, this._map.painter);
     }
 
     prepareTile(tile: Tile): ?T {
-        if (!this.implementation.prepareTile) return null;
+        if (!this._implementation.prepareTile) return null;
 
         const {x, y, z} = tile.tileID.canonical;
-        const data = this.implementation.prepareTile({x, y, z});
+        const data = this._implementation.prepareTile({x, y, z});
         if (!data) return null;
 
-        RasterTileSource.loadTileData(tile, (data: any), this.map.painter);
+        RasterTileSource.loadTileData(tile, (data: any), this._map.painter);
         return data;
     }
 
     unloadTile(tile: Tile, callback: Callback<void>): void {
-        RasterTileSource.unloadTileData(tile, this.map.painter);
-        if (this.implementation.unloadTile) {
+        RasterTileSource.unloadTileData(tile, this._map.painter);
+        if (this._implementation.unloadTile) {
             const {x, y, z} = tile.tileID.canonical;
-            this.implementation.unloadTile({x, y, z});
+            this._implementation.unloadTile({x, y, z});
         }
 
         callback();
@@ -302,8 +302,8 @@ class CustomSource<T> extends Evented implements Source {
         return false;
     }
 
-    coveringTiles(): { z: number, x: number, y: number }[] {
-        const tileIDs = this.map.transform.coveringTiles({
+    _coveringTiles(): { z: number, x: number, y: number }[] {
+        const tileIDs = this._map.transform.coveringTiles({
             tileSize: this.tileSize,
             minzoom: this.minzoom,
             maxzoom: this.maxzoom,
@@ -312,7 +312,7 @@ class CustomSource<T> extends Evented implements Source {
         return tileIDs.map(tileID => ({x: tileID.canonical.x, y: tileID.canonical.y, z: tileID.canonical.z}));
     }
 
-    update() {
+    _update() {
         this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
     }
 }

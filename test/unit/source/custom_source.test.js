@@ -9,8 +9,13 @@ function createSource(options = {}) {
     const eventedParent = new Evented();
     const source = new CustomSource('id', options, {send() {}}, eventedParent);
     const sourceCache = new SourceCache('id', source, /* dispatcher */ {}, eventedParent);
-    sourceCache.transform = new Transform();
-    sourceCache.map = {painter: {transform: sourceCache.transform}};
+
+    const transform = new Transform();
+    sourceCache.transform = transform;
+    sourceCache.map = {
+        transform,
+        painter: {transform}
+    };
 
     return {source, sourceCache, eventedParent};
 }
@@ -88,6 +93,30 @@ test('CustomSource', (t) => {
 
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
         sourceCache._addTile(tileID);
+    });
+
+    t.test('coveringTiles', (t) => {
+        class CustomSource {
+            async loadTile() {}
+        }
+
+        const customSource = new CustomSource();
+        const {sourceCache, eventedParent} = createSource(customSource);
+
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+
+        eventedParent.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                const coveringTiles = customSource.coveringTiles();
+                t.deepEqual(coveringTiles, [{x: 0, y: 0, z: 0}]);
+                t.end();
+            }
+        });
+
+        sourceCache.getSource().onAdd({transform});
     });
 
     t.end();
