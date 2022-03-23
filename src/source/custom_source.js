@@ -234,6 +234,7 @@ class CustomSource<T> extends Evented implements Source {
             .catch(error => {
                 // silence AbortError and 404 errors
                 if (error.code === 20 || error.code === 404) return;
+                tile.state = 'errored';
                 callback(error);
             });
 
@@ -243,7 +244,11 @@ class CustomSource<T> extends Evented implements Source {
         function tileLoaded(data) {
             delete tile.request;
 
-            if (tile.aborted) return callback(null);
+            if (tile.aborted) {
+                tile.state = 'unloaded';
+                return callback(null);
+            }
+
             if (!data) return callback(null);
             if (!isRaster(data)) return callback(new Error(`Can't infer data type for ${this.id}, only raster data supported at the moment`));
 

@@ -116,8 +116,16 @@ class RasterTileSource extends Evented implements Source {
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (error, data, cacheControl, expires) => {
             delete tile.request;
 
-            if (tile.aborted) return callback(null);
-            if (error) return callback(error);
+            if (tile.aborted) {
+                tile.state = 'unloaded';
+                return callback(null);
+            }
+
+            if (error) {
+                tile.state = 'errored';
+                return callback(error);
+            }
+
             if (!data) return callback(null);
 
             if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
