@@ -33,7 +33,7 @@
   },
   "center": [-113.26903, 35.9654],
   "zoom": 11,
-  "pitch": 45,
+  "pitch": 10,
   "terrain": {
     "source": "rgbterrain"
   },
