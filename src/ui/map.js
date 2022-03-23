@@ -1076,7 +1076,6 @@ class Map extends Camera {
     }
 
     _updateProjection(explicitProjection?: ProjectionSpecification | null): this {
-        const prevProjection = this.getProjection();
         if (explicitProjection === null) { this._explicitProjection = null; }
         const projection = explicitProjection || this.getProjection();
 
