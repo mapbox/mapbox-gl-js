@@ -228,7 +228,7 @@ test('ScrollZoomHandler', (t) => {
         t.end();
     });
 
-    t.test('Globe', (t) => {
+    t.skip('Globe', (t) => {
         t.test('Zoom towards a point on the globe', (t) => {
             const map = createMap(t);
 

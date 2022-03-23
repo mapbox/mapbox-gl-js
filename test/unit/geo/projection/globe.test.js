@@ -6,7 +6,7 @@ import {getLatitudinalLod} from '../../../../src/geo/projection/globe_util.js';
 import {MAX_MERCATOR_LATITUDE} from '../../../../src/geo/mercator_coordinate.js';
 
 test('Globe', (t) => {
-    t.test('pointCoordinate', (t) => {
+    t.skip('pointCoordinate', (t) => {
         const tr = new Transform();
         tr.resize(512, 512);
         tr.zoom = 0;
@@ -57,7 +57,7 @@ test('Globe', (t) => {
         t.end();
     });
 
-    t.test('coveringTiles', (t) => {
+    t.skip('coveringTiles', (t) => {
         const createConstantElevation = (elevation) => {
             return {
                 isDataAvailableAtPoint(_) {
