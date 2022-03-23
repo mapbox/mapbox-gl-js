@@ -136,7 +136,7 @@ export type CustomSourceInterface<T> = {
     loadTile: (tileID: { z: number, x: number, y: number }, options: { signal: AbortSignal }) => Promise<T>,
     prepareTile: ?(tileID: { z: number, x: number, y: number }) => ?T,
     unloadTile: ?(tileID: { z: number, x: number, y: number }) => void,
-    onAdd: ?(map: Map, callback: Callback<void>) => void,
+    onAdd: ?(map: Map) => void,
     onRemove: ?(map: Map) => void,
 }
 
@@ -213,12 +213,8 @@ class CustomSource<T> extends Evented implements Source {
         this.map = map;
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
-
-        if (this.implementation.onAdd) {
-            this.implementation.onAdd(map, this.load);
-        } else {
-            this.load();
-        }
+        if (this.implementation.onAdd) this.implementation.onAdd(map);
+        this.load();
     }
 
     onRemove(map: Map): void {
