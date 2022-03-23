@@ -1598,7 +1598,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('returns globe projection at low zoom', (t) => {
+        t.skip('returns globe projection at low zoom', (t) => {
             const map = createMap(t, {projection: 'globe'});
             map.once('render', () => {
                 t.deepEqual(map.getProjection(), {
@@ -1611,7 +1611,7 @@ test('Map', (t) => {
 
         });
 
-        t.test('returns globe projection at high zoom', (t) => {
+        t.skip('returns globe projection at high zoom', (t) => {
             const map = createMap(t, {projection: 'globe'});
             map.setZoom(12);
             map.once('render', () => {
@@ -1627,7 +1627,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('Changing zoom on globe does not clear tiles', (t) => {
+        t.skip('Changing zoom on globe does not clear tiles', (t) => {
             const map = createMap(t, {projection: 'globe'});
             t.spy(map.painter, 'clearBackgroundTiles');
             map.on('load', () => {
@@ -1706,7 +1706,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('setProjection(null) reveals globe when in style', (t) => {
+        t.skip('setProjection(null) reveals globe when in style', (t) => {
             const map = createMap(t, {style: {
                 "version": 8,
                 "projection": {
@@ -1818,8 +1818,8 @@ test('Map', (t) => {
                 t.equal(map.getProjection().name, 'albers');
                 t.equal(map.style.stylesheet.projection.name, 'winkelTripel');
 
-                map.setProjection({name: 'globe'});
-                t.equal(map.getProjection().name, 'globe');
+                map.setProjection({name: 'mercator'});
+                t.equal(map.getProjection().name, 'mercator');
                 t.equal(map.style.stylesheet.projection.name, 'winkelTripel');
                 map.setProjection({name: 'lambertConformalConic'});
 

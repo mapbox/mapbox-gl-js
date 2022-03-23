@@ -73,6 +73,8 @@ window.onload = function() {
         map.setStyle('mapbox://styles/' + value);
     });
 
+    map._updateProjection({name: 'globe'})
+
     var showTileBoundaries = gui.add(guiParams, 'showTileBoundaries');
     showTileBoundaries.onFinishChange((value) => {
         map.showTileBoundaries = value;
