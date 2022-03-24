@@ -1,0 +1,21 @@
+[
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            0,
+            -44.99588261816546
+          ],
+          [
+            45,
+            44.99588261816547
+          ]
+        ],
+        "type": "LineString"
+      },
+      "properties": {},
+      "source": "geojson",
+      "state": {},
+      "type": "Feature"
+    }
+  ]
