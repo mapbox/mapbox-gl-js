@@ -1,3 +1,28 @@
+## 2.8.0-beta.1
+
+## Features ✨ and improvements 🏁
+* Improve memory usage by reducing repeated line labels on overscraled tiles ([#11414](https://github.com/mapbox/mapbox-gl-js/pull/11414))
+* Improve memory footprint by freeing memory more eagerly after loading tiles. ([#11434](https://github.com/mapbox/mapbox-gl-js/pull/11434))
+* Fix performance issue when placing many symbols on terrain ([#11466](https://github.com/mapbox/mapbox-gl-js/pull/11466))
+* Fix performance regression when animating image sources ([#11564](https://github.com/mapbox/mapbox-gl-js/pull/11564))
+
+## Bug fixes 🐞
+* Fix map.fitBounds(), map.fitScreenCoordinates(), and map.cameraForBounds() incorrectly matching bounds with non-zero bearing. (#10064) ([#11568](https://github.com/mapbox/mapbox-gl-js/pull/11568)) (h/t [TannerPerrien](https://github.com/TannerPerrien))
+* Improve control button appearance by applying border-radius more consistently ([#11423](https://github.com/mapbox/mapbox-gl-js/pull/11423)) (h/t [nagix](https://github.com/nagix))
+* Fix e.isSourceLoaded to check if specific source has loaded. ([#11393](https://github.com/mapbox/mapbox-gl-js/pull/11393))
+* Fix map center not wrapping after a moving the map with no inertia. ([#11448](https://github.com/mapbox/mapbox-gl-js/pull/11448))
+* Fix popup not removing event listeners when closeOnClick:true ([#11540](https://github.com/mapbox/mapbox-gl-js/pull/11540))
+* Fix camera occasionally intersecting terrain when DEM data loads while zooming. ([#11461](https://github.com/mapbox/mapbox-gl-js/pull/11461), [#11578](https://github.com/mapbox/mapbox-gl-js/pull/11578))
+* Increase clarity of line layers with the terrain on high DPI devices. ([#11531](https://github.com/mapbox/mapbox-gl-js/pull/11531))
+* Fix canvas size if more than one parent container has a transform CSS property. ([#11493](https://github.com/mapbox/mapbox-gl-js/pull/11493))
+* Fix error on calling `map.removeImage` on animated image. ([#11580](https://github.com/mapbox/mapbox-gl-js/pull/11580))
+* Fix 3d buildings and fill extrusions sometimes not rendering on terrain. ([#11530](https://github.com/mapbox/mapbox-gl-js/pull/11530))
+
+
+## Workflow 🛠️
+* Upgrade Flow from v0.108.0 to v0.142.0 and enable type-first mode, greatly improving performance to type-checking. ([#11426](https://github.com/mapbox/mapbox-gl-js/issues/11426)
+
+
 ## 2.7.1
 
 ### 🐞 Bug fixes
