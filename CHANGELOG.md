@@ -20,7 +20,7 @@
 
 ### Workflow 🛠️
 
-* Upgrade Flow from `v0.108.0` to `v0.142.0` and enable type-first mode, greatly improving performance to type-checking. ([#11426](https://github.com/mapbox/mapbox-gl-js/issues/11426))
+* Upgrade Flow from `v0.108.0` to `v0.142.0` and enable type-first mode, greatly improving performance of type-checking. ([#11426](https://github.com/mapbox/mapbox-gl-js/issues/11426))
 
 ## 2.7.1
 
