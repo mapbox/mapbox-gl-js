@@ -2,7 +2,7 @@
 
 ### Features ✨ and improvements 🏁
 * Improve memory usage by freeing memory more eagerly after loading tiles. ([#11434](https://github.com/mapbox/mapbox-gl-js/pull/11434))* Improve memory usage by reducing repeated line labels on overscaled tiles. ([#11414](https://github.com/mapbox/mapbox-gl-js/pull/11414))
-* Fix performance issue when placing many symbols on terrain. ([#11466](https://github.com/mapbox/mapbox-gl-js/pull/11466))
+* Improve performance when placing many symbols on terrain. ([#11466](https://github.com/mapbox/mapbox-gl-js/pull/11466))
 
 ### Bug fixes 🐞
 * Fix `map.fitBounds()`, `map.fitScreenCoordinates()`, and `map.cameraForBounds()` incorrectly matching bounds with non-zero bearing. ([#11568](https://github.com/mapbox/mapbox-gl-js/pull/11568)) (h/t [TannerPerrien](https://github.com/TannerPerrien))
