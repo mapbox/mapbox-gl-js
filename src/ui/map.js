@@ -2998,7 +2998,7 @@ class Map extends Camera {
                 isInitialLoad: this._isInitialLoad,
                 showPadding: this.showPadding,
                 gpuTiming: !!this.listens('gpu-timing-layer'),
-                gpuTimingGlobe: !!this.listens('gpu-timing-globe'),
+                gpuTimingDeferredRender: !!this.listens('gpu-timing-deferred-render'),
                 speedIndexTiming: this.speedIndexTiming,
             });
         }
@@ -3051,10 +3051,10 @@ class Map extends Camera {
             }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
         }
 
-        if (this.listens('gpu-timing-globe')) {
+        if (this.listens('gpu-timing-deferred-render')) {
             setTimeout(() => {
-                this.fire(new Event('gpu-timing-globe', {
-                    gpuTime: this.painter.queryGpuTimeGlobe()
+                this.fire(new Event('gpu-timing-deferred-render', {
+                    gpuTime: this.painter.queryGpuTimeDeferredRender()
                 }));
             }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
         }

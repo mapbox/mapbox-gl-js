@@ -674,9 +674,13 @@ export class Terrain extends Elevation {
         context.bindFramebuffer.set(null);
         context.viewport.set([0, 0, painter.width, painter.height]);
 
+        painter.gpuTimingDeferredRenderStart();
+
         this.renderingToTexture = false;
         drawTerrainRaster(painter, this, this.proxySourceCache, accumulatedDrapes, this._updateTimestamp);
         this.renderingToTexture = true;
+
+        painter.gpuTimingDeferredRenderEnd();
 
         accumulatedDrapes.splice(0, accumulatedDrapes.length);
     }
