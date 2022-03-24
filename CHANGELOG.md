@@ -1,7 +1,7 @@
 ## 2.8.0-beta.1
 
 ### Features ✨ and improvements 🏁
-* Improve memory usage by reducing repeated line labels on overscraled tiles. ([#11414](https://github.com/mapbox/mapbox-gl-js/pull/11414))
+* Improve memory usage by reducing repeated line labels on overscaled tiles. ([#11414](https://github.com/mapbox/mapbox-gl-js/pull/11414))
 * Improve memory footprint by freeing memory more eagerly after loading tiles. ([#11434](https://github.com/mapbox/mapbox-gl-js/pull/11434))
 * Fix performance issue when placing many symbols on terrain. ([#11466](https://github.com/mapbox/mapbox-gl-js/pull/11466))
 * Fix performance regression when animating image sources. ([#11564](https://github.com/mapbox/mapbox-gl-js/pull/11564))
@@ -9,7 +9,7 @@
 ### Bug fixes 🐞
 * Fix map.fitBounds(), map.fitScreenCoordinates(), and map.cameraForBounds() incorrectly matching bounds with non-zero bearing. ([#11568](https://github.com/mapbox/mapbox-gl-js/pull/11568)) (h/t [TannerPerrien](https://github.com/TannerPerrien))
 * Improve control button appearance by applying border-radius more consistently. ([#11423](https://github.com/mapbox/mapbox-gl-js/pull/11423)) (h/t [nagix](https://github.com/nagix))
-* Fix e.isSourceLoaded to check if specific source has loaded. ([#11393](https://github.com/mapbox/mapbox-gl-js/pull/11393))
+* Fix `MapDataEvent.isSourceLoaded` to check if specific source has loaded. ([#11393](https://github.com/mapbox/mapbox-gl-js/pull/11393))
 * Fix map center not wrapping after a moving the map with no inertia. ([#11448](https://github.com/mapbox/mapbox-gl-js/pull/11448))
 * Fix popup not removing event listeners when `closeOnClick:true`. ([#11540](https://github.com/mapbox/mapbox-gl-js/pull/11540))
 * Fix camera occasionally intersecting terrain when DEM data loads while zooming. ([#11461](https://github.com/mapbox/mapbox-gl-js/pull/11461), [#11578](https://github.com/mapbox/mapbox-gl-js/pull/11578))
