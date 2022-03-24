@@ -1,9 +1,9 @@
 ## 13.24.0-beta.1
 ### 🐞 Bug fixes
 
-* Fix error on `gl-style-validate` script ([#11538](https://github.com/mapbox/mapbox-gl-js/pull/11538))
-* Allow the second argument to the 'in' expression operator to be an empty string ([#11547](https://github.com/mapbox/mapbox-gl-js/pull/11547))
-* Fix error on some valid filter expressions ([#11475](https://github.com/mapbox/mapbox-gl-js/pull/11475))
+* Fix error on `gl-style-validate` script. ([#11538](https://github.com/mapbox/mapbox-gl-js/pull/11538))
+* Allow the second argument to the `in` expression operator to be an empty string. ([#11547](https://github.com/mapbox/mapbox-gl-js/pull/11547))
+* Fix error on some valid `filter` expressions. ([#11475](https://github.com/mapbox/mapbox-gl-js/pull/11475))
 
 ## 13.23.1
 ### ✨ Features and improvements
