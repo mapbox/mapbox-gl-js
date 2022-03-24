@@ -86,6 +86,11 @@ export default class Globe extends Mercator {
         return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
     }
 
+    createFogTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
+        const matrix = mat4.identity(new Float64Array(16));
+        return mat4.multiply(matrix, matrix, tr.globeMatrix);
+    }
+
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
         const {center, worldSize} = tr;
         const ecefUnitsToPixels = globeECEFUnitsToPixelScale(worldSize);
