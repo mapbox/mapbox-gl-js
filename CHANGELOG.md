@@ -8,7 +8,7 @@
 
 ### Bug fixes 🐞
 * Fix `map.fitBounds()`, `map.fitScreenCoordinates()`, and `map.cameraForBounds()` incorrectly matching bounds with non-zero bearing. ([#11568](https://github.com/mapbox/mapbox-gl-js/pull/11568)) (h/t [TannerPerrien](https://github.com/TannerPerrien))
-* Improve control button appearance by applying border-radius more consistently. ([#11423](https://github.com/mapbox/mapbox-gl-js/pull/11423)) (h/t [nagix](https://github.com/nagix))
+* Improve control button appearance by applying `border-radius` more consistently. ([#11423](https://github.com/mapbox/mapbox-gl-js/pull/11423)) (h/t [nagix](https://github.com/nagix))
 * Fix `MapDataEvent.isSourceLoaded()` to check if specific source has loaded. ([#11393](https://github.com/mapbox/mapbox-gl-js/pull/11393))
 * Fix map center not wrapping after a moving the map with no inertia. ([#11448](https://github.com/mapbox/mapbox-gl-js/pull/11448))
 * Fix popup not removing event listeners when `closeOnClick:true`. ([#11540](https://github.com/mapbox/mapbox-gl-js/pull/11540))
@@ -16,12 +16,11 @@
 * Increase clarity of line layers with the terrain on high DPI devices. ([#11531](https://github.com/mapbox/mapbox-gl-js/pull/11531))
 * Fix canvas size if more than one parent container has a transform CSS property. ([#11493](https://github.com/mapbox/mapbox-gl-js/pull/11493))
 * Fix error on calling `map.removeImage()` on animated image. ([#11580](https://github.com/mapbox/mapbox-gl-js/pull/11580))
-* Fix 3d buildings and fill extrusions sometimes not rendering on terrain. ([#11530](https://github.com/mapbox/mapbox-gl-js/pull/11530))
-
+* Fix occasional issue with `fill-extrusion` layers not rendering on tile borders when used with terrain. ([#11530](https://github.com/mapbox/mapbox-gl-js/pull/11530))
 
 ### Workflow 🛠️
-* Upgrade Flow from v0.108.0 to v0.142.0 and enable type-first mode, greatly improving performance to type-checking. ([#11426](https://github.com/mapbox/mapbox-gl-js/issues/11426))
 
+* Upgrade Flow from `v0.108.0` to `v0.142.0` and enable type-first mode, greatly improving performance to type-checking. ([#11426](https://github.com/mapbox/mapbox-gl-js/issues/11426))
 
 ## 2.7.1
 
