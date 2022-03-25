@@ -29,7 +29,6 @@ type Options = {
 };
 
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
-export const MAX_PITCH = 80; // Ensure that markers on globe doen't disappear completely (as they would at pitch 90)
 
 /**
  * Creates a marker component.
@@ -492,7 +491,7 @@ export default class Marker extends Evented {
         }
         const tilt = radToDeg(tiltAt(map.transform, pos));
         const posFromCenter = pos.sub(centerToScreen(map.transform));
-        const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) +  Math.abs(posFromCenter.y));
+        const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
         const yTilt = posFromCenter.x * tiltOverDist;
         const xTilt = -posFromCenter.y * tiltOverDist;
         if (!xTilt && !yTilt) { return ''; }
