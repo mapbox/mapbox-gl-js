@@ -418,8 +418,9 @@ export default class Marker extends Evented {
             const cameraLngLat = camera.position.toLngLat();
             const shortestDistance = cameraLngLat.distanceTo(unprojected);
             const distanceToMarker = cameraLngLat.distanceTo(this._lngLat);
-            // In globe view only occlude if past ~100 km from the camera.
-            // This fixes an issue where points at the center would be considered occluded
+            // In globe view, we only occlude if past ~100 km from cameraLngLat (i.e. screen center).
+            // This fixes an issue where a marker at screen center results in very small distances,
+            // with the error introduced from `map.unproject(pos)` occasionally causing the marker to be incorrectly occluded.
             return shortestDistance < distanceToMarker * 0.9 && (!map._usingGlobe() || distanceToMarker > 100000);
         }
         return false;
