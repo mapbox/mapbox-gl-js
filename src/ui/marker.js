@@ -5,7 +5,7 @@ import window from '../util/window.js';
 import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap.js';
-import {bindAll, extend, radToDeg} from '../util/util.js';
+import {bindAll, extend, radToDeg, clamp, smoothstep} from '../util/util.js';
 import {type Anchor, anchorTranslate} from './anchor.js';
 import {Event, Evented} from '../util/evented.js';
 import type Map from './map.js';
@@ -29,6 +29,9 @@ type Options = {
 };
 
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
+// Zoom levs to transition "upright" aligned markers in globe view.
+const GLOBE_TRANSITION_START = 3;
+const GLOBE_TRANSITION_END = 6; // Can't be larger than GLOBE_ZOOM_THRESHOLD_MAX.
 
 /**
  * Creates a marker component.
@@ -505,20 +508,27 @@ export default class Marker extends Evented {
     }
 
     _calculateRotation(): number {
-        if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
-            return this._rotation;
-        } if (this._map && this._rotationAlignment === "map") {
-            const pos = this._pos;
-            const map = this._map;
-            if (pos && map && map._usingGlobe()) {
+        const pos = this._pos;
+        const map = this._map;
+        if (!map || !pos) { return 0; }
+        const alignment = this.getRotationAlignment();
+        if (alignment === "map") {
+            if (map._usingGlobe()) {
                 const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001));
                 const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001));
                 const diff = south.sub(north);
                 return radToDeg(Math.atan2(diff.y, diff.x)) - 90;
             }
-            return this._rotation - this._map.getBearing();
+            return this._rotation - map.getBearing();
+        } else if (this._rotationAlignment === "upright" && map._usingGlobe()) {
+            const rel = pos.sub(globeCenterToScreenPoint(map.transform));
+            const angle = radToDeg(Math.atan2(rel.y, rel.x));
+            const up = angle > 90 ? angle - 270 : angle + 90;
+            const transition = clamp((GLOBE_TRANSITION_END - map.getZoom()) / (GLOBE_TRANSITION_END - GLOBE_TRANSITION_START), 0, 1);
+            // TODO: When close to center smoothly switch to upright
+            return up * transition;
         }
-        return 0;
+        return this._rotation;
     }
 
     _update(delaySnap?: boolean) {
