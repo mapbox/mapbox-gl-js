@@ -3052,10 +3052,11 @@ class Map extends Camera {
         }
 
         if (this.listens('gpu-timing-deferred-render')) {
+            const deferredRenderQueries = this.painter.collectDeferredRenderGpuQueries();
+
             setTimeout(() => {
-                this.fire(new Event('gpu-timing-deferred-render', {
-                    gpuTime: this.painter.queryGpuTimeDeferredRender()
-                }));
+                const gpuTime = this.painter.queryGpuTimeDeferredRender(deferredRenderQueries);
+                this.fire(new Event('gpu-timing-deferred-render', {gpuTime}));
             }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
         }
 

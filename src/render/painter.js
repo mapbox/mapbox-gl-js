@@ -776,6 +776,12 @@ class Painter {
         return currentLayerTimers;
     }
 
+    collectDeferredRenderGpuQueries(): Array<any> {
+        const currentQueries = this.deferredRenderGpuTimeQueries;
+        this.deferredRenderGpuTimeQueries = [];
+        return currentQueries;
+    }
+
     queryGpuTimers(gpuTimers: GPUTimers): {[layerId: string]: number} {
         const layers = {};
         for (const layerId in gpuTimers) {
@@ -788,18 +794,17 @@ class Painter {
         return layers;
     }
 
-    queryGpuTimeDeferredRender(): number {
+    queryGpuTimeDeferredRender(gpuQueries: Array<any>): number {
         if (!this.options.gpuTimingDeferredRender) return 0;
         const ext = this.context.extTimerQuery;
 
-        let deferredRenderGpuTime = 0;
-        for (const query of this.deferredRenderGpuTimeQueries) {
-            deferredRenderGpuTime += ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT) / (1000 * 1000);
+        let gpuTime = 0;
+        for (const query of gpuQueries) {
+            gpuTime += ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT) / (1000 * 1000);
             ext.deleteQueryEXT(query);
         }
 
-        this.deferredRenderGpuTimeQueries = [];
-        return deferredRenderGpuTime;
+        return gpuTime;
     }
 
     /**
