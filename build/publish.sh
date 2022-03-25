@@ -14,6 +14,7 @@ git tag --points-at HEAD | while read tag; do
 
         if [[ -z $(npm view .@$spec_version) ]]; then
             echo "npm publish --tag $disttag"
+            npm publish --tag $disttag
         else
             echo "Already published."
         fi
@@ -25,6 +26,7 @@ git tag --points-at HEAD | while read tag; do
 
         if [[ -z $(npm view .@$version) ]]; then
             echo "npm publish --tag $disttag"
+            npm publish --tag $disttag
         else
             echo "Already published."
         fi
