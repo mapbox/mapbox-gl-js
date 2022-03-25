@@ -440,7 +440,7 @@ export default class Marker extends Evented {
         let opacity = 1;
         if (map._usingGlobe()) {
             opacity = this._occluded(mapLocation) ? 0 : 1;
-        } else if (map.transform.projection.name === 'globe' || (map.transform._terrainEnabled() && map.getTerrain())) {
+        } else if (map.transform._terrainEnabled() && map.getTerrain()) {
             opacity = this._occluded(mapLocation) ? TERRAIN_OCCLUDED_OPACITY : 1;
         }
 
@@ -486,7 +486,7 @@ export default class Marker extends Evented {
         const map = this._map;
 
         if (this.getPitchAlignment() !== 'map' || !map || !pos) { return ''; }
-        if (map.transform.projection.name !== 'globe') {
+        if (!map._usingGlobe()) {
             const pitch = map.getPitch();
             return pitch ? `rotateX(${pitch}deg)` : '';
         }
@@ -510,7 +510,7 @@ export default class Marker extends Evented {
         } if (this._map && this._rotationAlignment === "map") {
             const pos = this._pos;
             const map = this._map;
-            if (pos && map && map.transform.projection.name === 'globe') {
+            if (pos && map && map._usingGlobe()) {
                 const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001));
                 const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001));
                 const diff = south.sub(north);
