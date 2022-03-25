@@ -80,12 +80,12 @@ let timings = [];
 
 const trials = [];
 
-map.on('gpu-timing-frame', function(data) {
-    if (measuring) {
+map.on('gpu-timing-deferred-render', function(data) {
+    if (measuring && data.gpuTime !== 0.0) {
         totalGPUTime += data.gpuTime;
         counter += 1;
         const t = totalGPUTime / counter;
-        // console.log(t);
+        console.log(t);
         timings.push(t);
     }
 });

@@ -92,7 +92,7 @@ type PainterOptions = {
     zooming: boolean,
     moving: boolean,
     gpuTiming: boolean,
-    gpuTimingGlobe: boolean,
+    gpuTimingDeferredRender: boolean,
     fadeDuration: number,
     isInitialLoad: boolean,
     speedIndexTiming: boolean
@@ -152,7 +152,7 @@ class Painter {
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
     gpuTimers: GPUTimers;
-    globeGpuTimeQuery: any;
+    deferredRenderGpuTimeQueries: Array<any>;
     emptyTexture: Texture;
     identityMat: Float32Array;
     debugOverlayTexture: Texture;
@@ -180,6 +180,7 @@ class Painter {
 
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
+        this.deferredRenderGpuTimeQueries = [];
         this.gpuTimers = {};
         this.frameCounter = 0;
         this._backgroundTiles = {};
@@ -748,17 +749,17 @@ class Painter {
         ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, layerTimer.query);
     }
 
-    gpuTimingGlobeStart() {
-        if (this.options.gpuTimingGlobe) {
+    gpuTimingDeferredRenderStart() {
+        if (this.options.gpuTimingDeferredRender) {
             const ext = this.context.extTimerQuery;
-            if (!this.globeGpuTimeQuery)
-                this.globeGpuTimeQuery = ext.createQueryEXT();
-            ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, this.globeGpuTimeQuery);
+            const query = ext.createQueryEXT();
+            this.deferredRenderGpuTimeQueries.push(query);
+            ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, query);
         }
     }
 
-    gpuTimingGlobeEnd() {
-        if (!this.options.gpuTimingGlobe) return;
+    gpuTimingDeferredRenderEnd() {
+        if (!this.options.gpuTimingDeferredRender) return;
         const ext = this.context.extTimerQuery;
         ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
     }
@@ -775,6 +776,12 @@ class Painter {
         return currentLayerTimers;
     }
 
+    collectDeferredRenderGpuQueries(): Array<any> {
+        const currentQueries = this.deferredRenderGpuTimeQueries;
+        this.deferredRenderGpuTimeQueries = [];
+        return currentQueries;
+    }
+
     queryGpuTimers(gpuTimers: GPUTimers): {[layerId: string]: number} {
         const layers = {};
         for (const layerId in gpuTimers) {
@@ -787,12 +794,16 @@ class Painter {
         return layers;
     }
 
-    queryGpuTimeGlobe(): number {
-        if (!this.globeGpuTimeQuery) return 0;
+    queryGpuTimeDeferredRender(gpuQueries: Array<any>): number {
+        if (!this.options.gpuTimingDeferredRender) return 0;
         const ext = this.context.extTimerQuery;
-        const gpuTime = ext.getQueryObjectEXT(this.globeGpuTimeQuery, ext.QUERY_RESULT_EXT) / (1000 * 1000);
-        ext.deleteQueryEXT(this.globeGpuTimeQuery);
-        this.globeGpuTimeQuery = null;
+
+        let gpuTime = 0;
+        for (const query of gpuQueries) {
+            gpuTime += ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT) / (1000 * 1000);
+            ext.deleteQueryEXT(query);
+        }
+
         return gpuTime;
     }
 
