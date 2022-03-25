@@ -13,7 +13,7 @@ import type Popup from './popup.js';
 import type {LngLatLike} from "../geo/lng_lat.js";
 import type {MapMouseEvent, MapTouchEvent} from './events.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import {tiltAt, centerToScreen} from '../geo/projection/globe_util.js';
+import {globeTiltAtScreenPoint, globeCenterToScreenPoint} from '../geo/projection/globe_util.js';
 
 type Options = {
     element?: HTMLElement,
@@ -489,8 +489,8 @@ export default class Marker extends Evented {
             const pitch = map.getPitch();
             return pitch ? `rotateX(${pitch}deg)` : '';
         }
-        const tilt = radToDeg(tiltAt(map.transform, pos));
-        const posFromCenter = pos.sub(centerToScreen(map.transform));
+        const tilt = radToDeg(globeTiltAtScreenPoint(map.transform, pos));
+        const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
         const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
         const yTilt = posFromCenter.x * tiltOverDist;
         const xTilt = -posFromCenter.y * tiltOverDist;
@@ -513,11 +513,7 @@ export default class Marker extends Evented {
                 const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001));
                 const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001));
                 const diff = south.sub(north);
-                let rotation = -radToDeg(Math.atan(diff.x / diff.y));
-                if (diff.y < 0) {
-                    rotation += 180;
-                }
-                return rotation;
+                return radToDeg(Math.atan2(diff.y, diff.x)) - 90;
             }
             return this._rotation - this._map.getBearing();
         }
@@ -773,7 +769,6 @@ export default class Marker extends Evented {
      * const alignment = marker.getRotationAlignment();
      */
     getRotationAlignment(): string {
-        // return this._rotationAlignment;
         return this._rotationAlignment === `auto` ? 'viewport' : this._rotationAlignment;
     }
 

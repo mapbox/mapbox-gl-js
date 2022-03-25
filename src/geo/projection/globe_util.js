@@ -410,11 +410,6 @@ const POLE_RAD = degToRad(85.0);
 const POLE_COS = Math.cos(POLE_RAD);
 const POLE_SIN = Math.sin(POLE_RAD);
 
-export function screenPixelToECEF(tr: Transform, point: Point): Array<number> {
-    const lngLat = tr.pointLocation(point);
-    return latLngToECEF(lngLat.lat, lngLat.lng);
-}
-
 function cameraPositionInECEF(tr: Transform): Array<number> {
     // Here "center" is the center of the globe. We refer to transform._center
     // (the surface of the map on the center of the screen) as "pivot" to avoid confusion.
@@ -438,15 +433,17 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
     return vec3.add([], centerToPivot, pivotToCamera);
 }
 
-// Return the angle of the normal vector of the sphere relative to the camera, i.e. how much to tilt map-aligned markers.
-export function tiltAt(tr: Transform, point: Point): number {
-    const centerToPoint = screenPixelToECEF(tr, point);
+// Return the angle of the normal vector of the sphere relative to the camera at a screen point.
+// i.e. how much to tilt map-aligned markers.
+export function globeTiltAtScreenPoint(tr: Transform, point: Point): number {
+    const lngLat = tr.pointLocation(point);
+    const centerToPoint = latLngToECEF(lngLat.lat, lngLat.lng);
     const centerToCamera = cameraPositionInECEF(tr);
     const pointToCamera = vec3.subtract([], centerToCamera, centerToPoint);
     return vec3.angle(pointToCamera, centerToPoint);
 }
 
-export function centerToScreen(tr: Transform): Point {
+export function globeCenterToScreenPoint(tr: Transform): Point {
     const pos = [0, 0, 0];
     const matrix = mat4.identity(new Float64Array(16));
     mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
