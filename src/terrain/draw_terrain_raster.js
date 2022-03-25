@@ -194,9 +194,10 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             }
 
             const globeMatrix = Float32Array.from(tr.globeMatrix);
-            const corners = globeTileLatLngCorners(coord.canonical);
-            const latitudinalLod = getLatitudinalLod(coord.canonical, corners);
-            const gridMatrix = getGridMatrix(coord.canonical, corners, latitudinalLod);
+            const tileCornersLatLng = globeTileLatLngCorners(coord.canonical);
+            const tileCenterLatitude = (tileCornersLatLng[0][0] + tileCornersLatLng[1][0]) / 2.0;
+            const latitudinalLod = getLatitudinalLod(tileCenterLatitude);
+            const gridMatrix = getGridMatrix(coord.canonical, tileCornersLatLng, latitudinalLod);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix,
                 globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix);

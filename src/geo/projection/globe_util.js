@@ -406,10 +406,8 @@ export function getGridMatrix(id: CanonicalTileID, corners: [[number, number], [
     return [0, x, tileZoom, y, 0, id.y, tl[0], tl[1], S];
 }
 
-export function getLatitudinalLod(id: CanonicalTileID, corners: Array<Array<number>>): number {
+export function getLatitudinalLod(lat: number): number {
     const UPPER_LATITUDE = MAX_MERCATOR_LATITUDE - 5.0;
-    const [tl, br] = corners;
-    let lat = (tl[0] + br[0]) / 2.0;
     lat = clamp(lat, -UPPER_LATITUDE, UPPER_LATITUDE) / UPPER_LATITUDE * 90.0;
     // const t = Math.pow(1.0 - Math.cos(degToRad(lat)), 2);
     const t = Math.pow(Math.abs(Math.sin(degToRad(lat))), 3);
