@@ -28,6 +28,9 @@ type Options = {
     pitchAlignment?: string
 };
 
+const defaultHeight = 41;
+const defaultWidth = 27;
+
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
 // Zoom levs to transition "upright" aligned markers in globe view.
 const GLOBE_TRANSITION_START = 3;
@@ -123,8 +126,6 @@ export default class Marker extends Evented {
             this._element = DOM.create('div');
 
             // create default map marker SVG
-            const defaultHeight = 41;
-            const defaultWidth = 27;
 
             const svg = DOM.createSVG('svg', {
                 display: 'block',
@@ -521,12 +522,23 @@ export default class Marker extends Evented {
             }
             return this._rotation - map.getBearing();
         } else if (this._rotationAlignment === "upright" && map._usingGlobe()) {
-            const rel = pos.sub(globeCenterToScreenPoint(map.transform));
+            const centerPoint = globeCenterToScreenPoint(map.transform);
+            const rel = pos.sub(centerPoint);
             const angle = radToDeg(Math.atan2(rel.y, rel.x));
             const up = angle > 90 ? angle - 270 : angle + 90;
-            const transition = clamp((GLOBE_TRANSITION_END - map.getZoom()) / (GLOBE_TRANSITION_END - GLOBE_TRANSITION_START), 0, 1);
-            // TODO: When close to center smoothly switch to upright
-            return up * transition;
+            const zoomTransition = clamp((GLOBE_TRANSITION_END - map.getZoom()) / (GLOBE_TRANSITION_END - GLOBE_TRANSITION_START), 0, 1);
+
+            const centerLngLat = map.unproject(centerPoint);
+            const distance = centerLngLat.distanceTo(this._lngLat);
+            const alignToScreenBelow = 250000;
+            const alignToHorizonAbove = 750000;
+            // const distance = Math.sqrt(rel.y * rel.y + rel.x * rel.x);
+            // // Below X KM from center, display straight
+            // const uprightBelow = defaultHeight * this._scale;
+            // const startTransitionBelow = defaultHeight * this._scale * 2;
+            const centerTransition = clamp((distance - alignToScreenBelow) / (alignToHorizonAbove - alignToScreenBelow), 0, 1);
+            return up * centerTransition * zoomTransition + this._rotation;
+
         }
         return this._rotation;
     }
