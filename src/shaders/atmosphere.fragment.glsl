@@ -52,7 +52,8 @@ void main() {
 #endif
 
     highp vec3 horizon_dir = normalize(v_horizon_dir);
-    float horizon_angle_mercator = dir.y < horizon_dir.y ? 0.0 : max(acos(dot(dir, horizon_dir)), 0.0);
+    float horizon_angle_mercator = dir.y < horizon_dir.y ?
+        0.0 : max(acos(dot(dir, horizon_dir)), 0.0);
 
 #ifdef PROJECTION_GLOBE_VIEW
     // Angle between dir and globe center
@@ -64,7 +65,6 @@ void main() {
     float horizon_angle = globe_pos_dot_dir < 0.0 ?
         PI - theta - u_horizon_angle : theta - u_horizon_angle;
 
-    // TODO: slerp mix?
     horizon_angle = mix(horizon_angle, horizon_angle_mercator, u_transition);
 #else
     float horizon_angle = horizon_angle_mercator;
@@ -72,8 +72,6 @@ void main() {
 
     // Normalize in [0, 1]
     horizon_angle /= PI;
-    // FIXME
-    horizon_angle *= 10.0;
 
     // exponential curve
     // [0.0, 1.0] == inside the globe, > 1.0 == outside of the globe
