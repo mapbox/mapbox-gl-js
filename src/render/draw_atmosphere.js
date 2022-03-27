@@ -87,6 +87,9 @@ function drawAtmosphere(painter: Painter) {
     const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(globeRadius, 2.0));
     const horizonAngle = Math.acos(distanceToHorizon / globeCenterDistance);
 
+    // https://www.desmos.com/calculator/oanvvpr36d
+    const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.0, 0.25);
+
     const uniforms = atmosphereUniformValues(
         frustumTl,
         frustumTr,
@@ -97,7 +100,7 @@ function drawAtmosphere(painter: Painter) {
         globeCenterInViewSpace,
         globeRadius,
         transitionT,
-        fog.properties.get('horizon-blend'),
+        horizonBlend,
         fogColorUnpremultiplied,
         skyColorUnpremultiplied,
         [spaceColor.r, spaceColor.g, spaceColor.b, spaceColor.a],

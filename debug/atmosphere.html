@@ -159,7 +159,7 @@ window.onload = function() {
         } : null);
     });
 
-    var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 5.0);
+    var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 1.0);
     horizonBlend.onChange((value) => {
         map.setFog({
             "horizon-blend": value,
