@@ -5,7 +5,7 @@ import window from '../util/window.js';
 import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap.js';
-import {bindAll, extend, radToDeg, clamp, smoothstep} from '../util/util.js';
+import {bindAll, extend, radToDeg, smoothstep} from '../util/util.js';
 import {type Anchor, anchorTranslate} from './anchor.js';
 import {Event, Evented} from '../util/evented.js';
 import type Map from './map.js';
@@ -33,8 +33,8 @@ const defaultWidth = 27;
 
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
 // Zoom levs to transition "upright" aligned markers in globe view.
-const GLOBE_TRANSITION_START = 3;
-const GLOBE_TRANSITION_END = 6; // Can't be larger than GLOBE_ZOOM_THRESHOLD_MAX.
+const ALIGN_TO_HORIZON_BELOW_ZOOM = 4;
+const ALIGN_TO_SCREEN_ABOVE_ZOOM = 6; // Can't be larger than GLOBE_ZOOM_THRESHOLD_MAX.
 
 /**
  * Creates a marker component.
@@ -522,22 +522,18 @@ export default class Marker extends Evented {
             }
             return this._rotation - map.getBearing();
         } else if (this._rotationAlignment === "upright" && map._usingGlobe()) {
+            const zoom = map.getZoom();
             const centerPoint = globeCenterToScreenPoint(map.transform);
+            let zoomTransition = 1;
+            if (zoom > ALIGN_TO_HORIZON_BELOW_ZOOM) {
+                const smooth = smoothstep(ALIGN_TO_HORIZON_BELOW_ZOOM, ALIGN_TO_SCREEN_ABOVE_ZOOM, zoom);
+                centerPoint.y += smooth * map.transform.height;
+                zoomTransition = 1 - smooth;
+            }
             const rel = pos.sub(centerPoint);
             const angle = radToDeg(Math.atan2(rel.y, rel.x));
             const up = angle > 90 ? angle - 270 : angle + 90;
-            const zoomTransition = clamp((GLOBE_TRANSITION_END - map.getZoom()) / (GLOBE_TRANSITION_END - GLOBE_TRANSITION_START), 0, 1);
-
-            const centerLngLat = map.unproject(centerPoint);
-            const distance = centerLngLat.distanceTo(this._lngLat);
-            const alignToScreenBelow = 250000;
-            const alignToHorizonAbove = 750000;
-            // const distance = Math.sqrt(rel.y * rel.y + rel.x * rel.x);
-            // // Below X KM from center, display straight
-            // const uprightBelow = defaultHeight * this._scale;
-            // const startTransitionBelow = defaultHeight * this._scale * 2;
-            const centerTransition = clamp((distance - alignToScreenBelow) / (alignToHorizonAbove - alignToScreenBelow), 0, 1);
-            return up * centerTransition * zoomTransition + this._rotation;
+            return up * zoomTransition + this._rotation;
 
         }
         return this._rotation;
