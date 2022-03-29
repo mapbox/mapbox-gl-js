@@ -14,7 +14,9 @@ import type {Callback} from '../types/callback.js';
 type DataType = 'raster';
 
 function isRaster(data: any): boolean {
-    return data instanceof window.ImageBitmap || data instanceof window.HTMLCanvasElement;
+    return data instanceof window.ImageData ||
+        data instanceof window.ImageBitmap ||
+        data instanceof window.HTMLCanvasElement;
 }
 
 /**
@@ -293,14 +295,23 @@ class CustomSource<T> extends Evented implements Source {
 
         const {x, y, z} = tile.tileID.canonical;
         const data = this._implementation.prepareTile({x, y, z});
-        if (!data) return null;
 
-        RasterTileSource.loadTileData(tile, (data: any), this._map.painter);
+        // do not change the tile data if the implementation returns `undefined`
+        if (data === undefined) return null;
+
+        // use the empty tile data if the implementation returns `null`
+        if (data === null) {
+            const emptyImage: any = {width: this.tileSize, height: this.tileSize, data: null};
+            this.loadTileData(tile, emptyImage);
+            return emptyImage;
+        }
+
+        this.loadTileData(tile, data);
         return data;
     }
 
     unloadTile(tile: Tile, callback: Callback<void>): void {
-        RasterTileSource.unloadTileData(tile, this._map.painter);
+        this.unloadTileData(tile);
         if (this._implementation.unloadTile) {
             const {x, y, z} = tile.tileID.canonical;
             this._implementation.unloadTile({x, y, z});
