@@ -1,5 +1,4 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
+import * as core from '@actions/core';
 
 try {
     const prBody = core.getInput('pr-body');
