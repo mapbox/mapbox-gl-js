@@ -475,7 +475,11 @@ export default class Marker extends Evented {
         const map = this._map;
         if (!pos || !map) { return; }
 
-        const rotation = this._calculateXYTransform() + this._calculateZTransform();
+        const xy = this._calculateXYTransform();
+        const z = this._calculateZTransform();
+        // In globe `upright` alignment, we adjust first pitch, then rotation so that the marker
+        // is always compressed vertically and appears to be popping out from the map.
+        const rotation = this.getPitchAlignment() === 'upright' ? z + xy : xy + z;
         const offset = this._offset.mult(this._scale);
 
         this._element.style.transform = `
@@ -488,19 +492,35 @@ export default class Marker extends Evented {
     _calculateXYTransform(): string {
         const pos = this._pos;
         const map = this._map;
+        const alignment = this.getPitchAlignment();
 
-        if (this.getPitchAlignment() !== 'map' || !map || !pos) { return ''; }
-        if (!map._usingGlobe()) {
-            const pitch = map.getPitch();
-            return pitch ? `rotateX(${pitch}deg)` : '';
+        if (alignment === 'viewport' || !map || !pos) { return ''; }
+        if (alignment === 'map') {
+            if (!map._usingGlobe()) { // 'map' alignment on a flat map
+                const pitch = map.getPitch();
+                return pitch ? `rotateX(${pitch}deg)` : '';
+            } // "map" alignment on globe
+            const tilt = radToDeg(globeTiltAtScreenPoint(map.transform, pos));
+            const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
+            const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
+            const yTilt = posFromCenter.x * tiltOverDist;
+            const xTilt = -posFromCenter.y * tiltOverDist;
+            if (!xTilt && !yTilt) { return ''; }
+            return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
         }
-        const tilt = radToDeg(globeTiltAtScreenPoint(map.transform, pos));
-        const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
-        const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
-        const yTilt = posFromCenter.x * tiltOverDist;
-        const xTilt = -posFromCenter.y * tiltOverDist;
-        if (!xTilt && !yTilt) { return ''; }
-        return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
+        if (map._usingGlobe()) {         // "upright" with globe
+            const pitch = 90 - radToDeg(globeTiltAtScreenPoint(map.transform, pos));
+            let zoomTransition = 1;
+            const zoom = map.getZoom();
+            const centerPoint = globeCenterToScreenPoint(map.transform);
+            if (zoom > ALIGN_TO_HORIZON_BELOW_ZOOM) {
+                const smooth = smoothstep(ALIGN_TO_HORIZON_BELOW_ZOOM, ALIGN_TO_SCREEN_ABOVE_ZOOM, zoom);
+                centerPoint.y += smooth * map.transform.height;
+                zoomTransition = 1 - smooth;
+            }
+            return `rotateX(${pitch * zoomTransition}deg)`;
+        }
+        return ''; // Upright without globe (or at high zooms) behavies as viewport
     }
 
     _calculateZTransform(): string {
@@ -788,7 +808,9 @@ export default class Marker extends Evented {
      * const alignment = marker.getRotationAlignment();
      */
     getRotationAlignment(): string {
-        return this._rotationAlignment === `auto` ? 'viewport' : this._rotationAlignment;
+        return (this._rotationAlignment === `auto` ||
+            (this._map && this._rotationAlignment === 'upright' && !this._map._usingGlobe())) ?
+            'viewport' : this._rotationAlignment;
     }
 
     /**
@@ -813,6 +835,7 @@ export default class Marker extends Evented {
      * const alignment = marker.getPitchAlignment();
      */
     getPitchAlignment(): string {
+        if (this._map && this._pitchAlignment === 'upright' && !this._map._usingGlobe()) { return "viewport"; }
         return this._pitchAlignment === `auto` ? this.getRotationAlignment() : this._pitchAlignment;
     }
 }
