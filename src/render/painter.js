@@ -581,12 +581,7 @@ class Painter {
         this.context.viewport.set([0, 0, this.width, this.height]);
 
         // Clear buffers in preparation for drawing to the main framebuffer
-        // If fog is enabled, use the fog color as default clear color.
-        let clearColor = Color.transparent;
-        // if (this.style.fog && this.style.fog.getOpacity(this.transform.pitch)) {
-        //     clearColor = this.style.fog.properties.get('horizon-color');
-        // }
-        this.context.clear({color: options.showOverdrawInspector ? Color.black : clearColor, depth: 1});
+        this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
@@ -940,7 +935,7 @@ class Painter {
 
         if (fog) {
             const fogOpacity = fog.getOpacity(this.transform.pitch);
-            // if (fogOpacity !== 0.0) {
+            if (fogOpacity !== 0.0) {
                 const tr = this.transform;
                 const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
                 const viewToProj = tr._camera.getCameraToClipPerspective(tr._fov, tr.width / tr.height, tr._nearZ, tr._farZ);
@@ -964,7 +959,7 @@ class Painter {
                     frustumBl, globeCenterInViewSpace, globeRadius, viewport);
 
                 program.setFogUniformValues(context, fogUniforms);
-            // }
+            }
         }
     }
 
