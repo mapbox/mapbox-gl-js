@@ -5,24 +5,25 @@ import {Evented} from '../../../src/util/evented.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import SourceCache from '../../../src/source/source_cache.js';
 
-function createSource(options = {}) {
-    const eventedParent = new Evented();
-    const source = new CustomSource('id', options, {send() {}}, eventedParent);
-    const sourceCache = new SourceCache('id', source, /* dispatcher */ {}, eventedParent);
-
+function createSource(t, options = {}) {
     const transform = new Transform();
-    sourceCache.transform = transform;
-    sourceCache.map = {
-        transform,
-        painter: {transform}
-    };
+
+    const eventedParent = new Evented();
+    eventedParent.painter = {transform};
+    eventedParent.transform = transform;
+
+    const source = new CustomSource('id', options, {send() {}}, eventedParent);
+    source.loadTileData = t.stub();
+
+    const sourceCache = new SourceCache('id', source, /* dispatcher */ {}, eventedParent);
+    sourceCache.transform = eventedParent.transform;
 
     return {source, sourceCache, eventedParent};
 }
 
 test('CustomSource', (t) => {
     t.test('constructor', (t) => {
-        const {source} = createSource({
+        const {source} = createSource(t, {
             async loadTile() {}
         });
 
@@ -42,7 +43,7 @@ test('CustomSource', (t) => {
     });
 
     t.test('fires "dataloading" event', (t) => {
-        const {source, eventedParent} = createSource({
+        const {source, eventedParent} = createSource(t, {
             async loadTile() {}
         });
 
@@ -64,7 +65,7 @@ test('CustomSource', (t) => {
     t.test('loadTile', (t) => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
-        const {sourceCache} = createSource({
+        const {sourceCache} = createSource(t, {
             async loadTile(tile, {signal}) {
                 const {x, y, z} = tileID.canonical;
                 t.deepEqual(tile, {x, y, z});
@@ -81,16 +82,18 @@ test('CustomSource', (t) => {
         const loadTile = t.spy(async () => {});
         const prepareTile = t.spy();
 
-        const {sourceCache, eventedParent} = createSource({loadTile, prepareTile});
+        const {source, sourceCache, eventedParent} = createSource(t, {loadTile, prepareTile});
 
-        eventedParent.on('data', () => {
-            t.ok(loadTile.calledOnce);
-            t.ok(prepareTile.calledBefore(loadTile));
-            t.end();
+        eventedParent.on('data', (e) => {
+            if (e.dataType === 'source' && e.tile) {
+                t.ok(loadTile.calledOnce, 'loadTile must be called');
+                t.ok(prepareTile.calledBefore(loadTile), 'prepareTile must be called before loadTile');
+                t.equal(source.loadTileData.callCount, 1);
+                t.end();
+            }
         });
 
-        sourceCache.onAdd();
-
+        sourceCache.onAdd(eventedParent);
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
         sourceCache._addTile(tileID);
     });
@@ -101,7 +104,7 @@ test('CustomSource', (t) => {
         }
 
         const customSource = new CustomSource();
-        const {sourceCache, eventedParent} = createSource(customSource);
+        const {sourceCache, eventedParent} = createSource(t, customSource);
 
         const transform = new Transform();
         transform.resize(511, 511);
@@ -117,6 +120,24 @@ test('CustomSource', (t) => {
         });
 
         sourceCache.getSource().onAdd({transform});
+    });
+
+    t.test('update', (t) => {
+        class CustomSource {
+            async loadTile() {}
+        }
+
+        const customSource = new CustomSource();
+        const {eventedParent} = createSource(t, customSource);
+
+        eventedParent.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                t.ok(true);
+                t.end();
+            }
+        });
+
+        customSource.update();
     });
 
     t.end();

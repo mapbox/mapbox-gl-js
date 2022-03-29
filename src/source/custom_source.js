@@ -223,23 +223,32 @@ class CustomSource<T> extends Evented implements Source {
         }
     }
 
-    loadTile(tile: Tile, callback: Callback<void>) {
+    loadTile(tile: Tile, callback: Callback<void>): void {
         const {x, y, z} = tile.tileID.canonical;
         const controller = new window.AbortController();
         const signal = controller.signal;
 
+        const request = this._implementation.loadTile({x, y, z}, {signal});
+        if (!request) {
+            // Create an empty image and set the tile state to `loaded`
+            // if the implementation didn't return the async tile request
+            const emptyImage = {width: this.tileSize, height: this.tileSize, data: null};
+            this.loadTileData(tile, (emptyImage: any));
+            tile.state = 'loaded';
+            return callback(null);
+        }
+
         // $FlowFixMe[prop-missing]
-        tile.request = this._implementation.loadTile({x, y, z}, {signal})
-            .then(tileLoaded.bind(this))
+        request.cancel = () => controller.abort();
+
+        // $FlowFixMe[prop-missing]
+        tile.request = request.then(tileLoaded.bind(this))
             .catch(error => {
-                // silence AbortError and 404 errors
-                if (error.code === 20 || error.code === 404) return;
+                // silence AbortError
+                if (error.code === 20) return;
                 tile.state = 'errored';
                 callback(error);
             });
-
-        // $FlowFixMe[prop-missing]
-        tile.request.cancel = () => controller.abort();
 
         function tileLoaded(data) {
             delete tile.request;
@@ -249,8 +258,19 @@ class CustomSource<T> extends Evented implements Source {
                 return callback(null);
             }
 
-            if (!data) return callback(null);
-            if (!isRaster(data)) return callback(new Error(`Can't infer data type for ${this.id}, only raster data supported at the moment`));
+            if (!data) {
+                // Create an empty image and set the tile state to `loaded`
+                // if the implementation returned no tile data
+                const emptyImage = {width: this.tileSize, height: this.tileSize, data: null};
+                this.loadTileData(tile, (emptyImage: any));
+                tile.state = 'loaded';
+                return callback(null);
+            }
+
+            if (!isRaster(data)) {
+                tile.state = 'errored';
+                return callback(new Error(`Can't infer data type for ${this.id}, only raster data supported at the moment`));
+            }
 
             this.loadTileData(tile, data);
             tile.state = 'loaded';
