@@ -27,7 +27,7 @@ function drawAtmosphere(painter: Painter) {
     const gl = context.gl;
     const transform = painter.transform;
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
-    const defines = transform.projection.name === 'globe' ? ['PROJECTION_GLOBE_VIEW'] : [];
+    const defines = transform.projection.name === 'globe' ? ['PROJECTION_GLOBE_VIEW', 'FOG'] : ['FOG'];
     const program = painter.useProgram('globeAtmosphere', null, defines);
 
     // Render the gradient atmosphere by casting rays from screen pixels and determining their
