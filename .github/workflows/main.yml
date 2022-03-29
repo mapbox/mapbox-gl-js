@@ -1,0 +1,25 @@
+on:
+  pull_request:
+    types: [opened, reopened, edited, labeled]
+    branches: [ main ]
+
+jobs:
+  check-pr-requirements:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip changelog') }}
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: npm install
+      - name: Check if changelog entry exists
+        uses: ./ #uses action in root repository
+        id: check-changelog
+        with:
+          pr-body: ${{ github.event.pull_request.body }}

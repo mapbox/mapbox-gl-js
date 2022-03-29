@@ -1,0 +1,12 @@
+name: 'Check PR Requirements'
+description: 'Ensure PR meets requirements'
+inputs:
+  pr-body:
+    description: 'PR body from the github event'
+    required: true
+outputs:
+  approved-changelog-entry:
+    description: 'Changelog entry has passed requirements'
+runs:
+  using: 'node16'
+  main: 'index.js'
