@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    center: [-74.5, 40],
+    zoom: 2,
+    style: {
+        version: 8,
+        sources: {},
+        layers: []
+    },
+    hash: true
+});
+
+map.on('load', () => {
+    map.addSource('custom-source', {
+        type: 'custom',
+        tileSize: 256,
+        attribution: 'Map tiles by <a target="_top" rel="noopener" href="http://stamen.com">Stamen Design</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>',
+        async loadTile(tile, {signal}) {
+            const tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg';
+            const url = tilesUrl
+                .replace('{z}', String(tile.z))
+                .replace('{x}', String(tile.x))
+                .replace('{y}', String(tile.y));
+
+            const response = await fetch(url, {signal});
+            const data = await response.arrayBuffer();
+
+            const blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
+            const imageBitmap = await window.createImageBitmap(blob);
+
+            return imageBitmap;
+        }
+    });
+
+    map.addLayer({
+        id: 'custom-source',
+        type: 'raster',
+        source: 'custom-source'
+    });
+});
+
+</script>
+</body>
+</html>

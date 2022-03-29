@@ -2,6 +2,8 @@ import {test} from '../../../util/test.js';
 import Transform from '../../../../src/geo/transform.js';
 import LngLat from '../../../../src/geo/lng_lat.js';
 import {OverscaledTileID} from '../../../../src/source/tile_id.js';
+import {getLatitudinalLod} from '../../../../src/geo/projection/globe_util.js';
+import {MAX_MERCATOR_LATITUDE} from '../../../../src/geo/mercator_coordinate.js';
 
 test('Globe', (t) => {
     t.test('pointCoordinate', (t) => {
@@ -145,6 +147,17 @@ test('Globe', (t) => {
             t.end();
         });
 
+        t.end();
+    });
+
+    t.test('getLatitudinalLod', (t) => {
+        t.equal(0, getLatitudinalLod(0));
+        t.equal(1, getLatitudinalLod(45.0));
+        t.equal(1, getLatitudinalLod(-45.0));
+        t.equal(2, getLatitudinalLod(MAX_MERCATOR_LATITUDE));
+        t.equal(2, getLatitudinalLod(-MAX_MERCATOR_LATITUDE));
+        t.equal(2, getLatitudinalLod(90.0));
+        t.equal(2, getLatitudinalLod(-90.0));
         t.end();
     });
 
