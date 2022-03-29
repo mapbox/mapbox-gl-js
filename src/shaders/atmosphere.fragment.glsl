@@ -11,11 +11,6 @@ uniform float u_star_size;
 uniform float u_star_density;
 uniform float u_horizon_angle;
 
-#ifndef FOG
-uniform highp vec3 u_globe_pos;
-uniform highp float u_globe_radius;
-#endif
-
 varying highp vec3 v_ray_dir;
 varying highp vec3 v_horizon_dir;
 
