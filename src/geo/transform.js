@@ -1081,7 +1081,7 @@ class Transform {
      * @private
      */
     locationPoint3D(lnglat: LngLat): Point {
-        return this._coordinatePoint(this.locationCoordinate(lnglat), true);
+        return this.projection.locationPoint(this, lnglat, true);
     }
 
     /**
