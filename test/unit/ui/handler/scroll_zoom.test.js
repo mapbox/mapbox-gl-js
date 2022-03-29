@@ -5,6 +5,7 @@ import Map from '../../../../src/ui/map.js';
 import * as DOM from '../../../../src/util/dom.js';
 import simulate from '../../../util/simulate_interaction.js';
 import {equalWithPrecision} from '../../../util/index.js';
+/*eslint-disable import/no-named-as-default-member */
 import sinon from 'sinon';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../../util/dem_mock.js';
 import {fixedNum} from '../../../util/fixed.js';

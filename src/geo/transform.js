@@ -1081,10 +1081,7 @@ class Transform {
      * @private
      */
     locationPoint3D(lnglat: LngLat): Point {
-        if (this.projection.name === "globe") {
-            return this.locationPoint(lnglat);
-        }
-        return this._coordinatePoint(this.locationCoordinate(lnglat), true);
+        return this.projection.locationPoint(this, lnglat, true);
     }
 
     /**

@@ -1,6 +1,7 @@
 import {test} from '../../util/test.js';
 import {cacheGet, cachePut, cacheClose} from '../../../src/util/tile_request_cache.js';
 import window from '../../../src/util/window.js';
+/*eslint-disable import/no-named-as-default-member */
 import sinon from 'sinon';
 
 test('tile_request_cache', (t) => {

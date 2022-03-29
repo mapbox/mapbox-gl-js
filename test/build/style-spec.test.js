@@ -1,3 +1,4 @@
+/* eslint-disable import/extensions */
 import path from 'path';
 import isBuiltin from 'is-builtin-module';
 import {rollup} from 'rollup';
