@@ -42,16 +42,6 @@ function drawAtmosphere(painter: Painter) {
     const clipToCamera = mat4.invert([], cameraToClip);
     const viewMatrix = mat4.mul([], clipToCamera, transform.projMatrix);
 
-    const horizonFromTopInClip = 1.0 - (transform.horizonLineFromTop() / transform.height) * 2.0;
-    const horizonL = project([-1, horizonFromTopInClip, 1], clipToCamera);
-    const horizonR = project([1, horizonFromTopInClip, 1], clipToCamera);
-
-    // Compute direction vectors to each corner point of the view frustum
-    const frustumTl = project([-1, 1, 1], clipToCamera);
-    const frustumTr = project([1, 1, 1], clipToCamera);
-    const frustumBr = project([1, -1, 1], clipToCamera);
-    const frustumBl = project([-1, -1, 1], clipToCamera);
-
     const center = [transform.globeMatrix[12], transform.globeMatrix[13], transform.globeMatrix[14]];
     const globeCenterInViewSpace = project(center, viewMatrix);
     const globeRadius = transform.worldSize / 2.0 / Math.PI - 1.0;
@@ -91,12 +81,12 @@ function drawAtmosphere(painter: Painter) {
     const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.0, 0.25);
 
     const uniforms = atmosphereUniformValues(
-        frustumTl,
-        frustumTr,
-        frustumBr,
-        frustumBl,
-        horizonL,
-        horizonR,
+        transform.frustumCorners.TL,
+        transform.frustumCorners.TR,
+        transform.frustumCorners.BR,
+        transform.frustumCorners.BL,
+        transform.frustumCorners.horizonL,
+        transform.frustumCorners.horizonR,
         globeCenterInViewSpace,
         globeRadius,
         transitionT,
