@@ -7,6 +7,7 @@ import CullFaceMode from '../gl/cull_face_mode.js';
 import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
+import type {DynamicDefinesType} from '../render/program/program_uniforms.js';
 import {degToRad, mapValue} from '../util/util.js';
 import {vec3, mat4} from 'gl-matrix';
 
@@ -28,7 +29,7 @@ function drawAtmosphere(painter: Painter) {
     const transform = painter.transform;
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
     const defines = transform.projection.name === 'globe' ? ['PROJECTION_GLOBE_VIEW', 'FOG'] : ['FOG'];
-    const program = painter.useProgram('globeAtmosphere', null, defines);
+    const program = painter.useProgram('globeAtmosphere', null, ((defines: any): DynamicDefinesType[]));
 
     // Render the gradient atmosphere by casting rays from screen pixels and determining their
     // closest distance to the globe. This is done in view space where camera is located in the origo

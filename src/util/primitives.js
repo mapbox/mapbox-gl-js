@@ -86,14 +86,14 @@ class Ray {
 }
 
 class FrustumCorners {
-    TL: Vec3;
-    TR: Vec3;
-    BR: Vec3;
-    BL: Vec3;
-    horizonL_: number;
-    horizonR_: number;
+    TL: [number, number, number];
+    TR: [number, number, number];
+    BR: [number, number, number];
+    BL: [number, number, number];
+    horizonL: [number, number, number];
+    horizonR: [number, number, number];
 
-    constructor(TL_: Vec3, TR_: Vec3, BR_: Vec3, BL_: Vec3, horizonL_: number, horizonR_: number) {
+    constructor(TL_: [number, number, number], TR_: [number, number, number], BR_: [number, number, number], BL_: [number, number, number], horizonL_: [number, number, number], horizonR_: [number, number, number]) {
         this.TL = TL_;
         this.TR = TR_;
         this.BR = BR_;
@@ -102,24 +102,24 @@ class FrustumCorners {
         this.horizonR = horizonR_;
     }
 
-    static fromInvProjectionMatrix(invProj: Float64Array, horizonFromTop: number, viewportHeight: number) {
+    static fromInvProjectionMatrix(invProj: Array<number>, horizonFromTop: number, viewportHeight: number): FrustumCorners {
         const TLClip = [-1, 1, 1];
         const TRClip = [1, 1, 1];
         const BRClip = [1, -1, 1];
         const BLClip = [-1, -1, 1];
 
-        const TL = vec3.transformMat4([], TLClip, invProj);
-        const TR = vec3.transformMat4([], TRClip, invProj);
-        const BR = vec3.transformMat4([], BRClip, invProj);
-        const BL = vec3.transformMat4([], BLClip, invProj);
+        const TL = vec3.transformMat4(TLClip, TLClip, invProj);
+        const TR = vec3.transformMat4(TRClip, TRClip, invProj);
+        const BR = vec3.transformMat4(BRClip, BRClip, invProj);
+        const BL = vec3.transformMat4(BLClip, BLClip, invProj);
 
         const horizonFromTopClip = 1.0 - (horizonFromTop / viewportHeight) * 2.0;
 
         const horizonClipL = [-1, horizonFromTopClip, 1];
         const horizonClipR = [1, horizonFromTopClip, 1];
 
-        const horizonL = vec3.transformMat4([], horizonClipL, invProj);
-        const horizonR = vec3.transformMat4([], horizonClipR, invProj);
+        const horizonL = vec3.transformMat4(horizonClipL, horizonClipL, invProj);
+        const horizonR = vec3.transformMat4(horizonClipL, horizonClipR, invProj);
 
         return new FrustumCorners(TL, TR, BR, BL, horizonL, horizonR);
     }

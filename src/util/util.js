@@ -504,12 +504,12 @@ export function clone<T>(input: T): T {
 }
 
 /**
- * Maps a value from a range between [min, max] to the range [out_min, out_max]
+ * Maps a value from a range between [min, max] to the range [outMin, outMax]
  *
  * @private
  */
-export function mapValue(value: number, min: number, max: number, out_min: number, out_max: number) {
-    return clamp((value - min) / (max - min) * (out_max - out_min) + out_min, out_min, out_max);
+export function mapValue(value: number, min: number, max: number, outMin: number, outMax: number): number {
+    return clamp((value - min) / (max - min) * (outMax - outMin) + outMin, outMin, outMax);
 }
 
 /**
