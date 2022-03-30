@@ -18,6 +18,7 @@ import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjus
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import {calculateGlobeMatrix} from '../geo/projection/globe_util.js';
+import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
 import type {Elevation} from '../terrain/elevation.js';
@@ -1992,9 +1993,16 @@ class Transform {
      * the camera is right above the center of the map.
      */
     getCameraPoint(): Point {
-        const pitch = this._pitch;
-        const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
-        return this.centerPoint.add(new Point(0, yOffset));
+        if (this.projection.name === 'globe') {
+            // Find precise location of the projected camera position on the curved surface
+            const center = [this.globeMatrix[12], this.globeMatrix[13], this.globeMatrix[14]];
+            const pos = projectClamped(center, this.pixelMatrix);
+            return new Point(pos[0], pos[1]);
+        } else {
+            const pitch = this._pitch;
+            const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
+            return this.centerPoint.add(new Point(0, yOffset));
+        }
     }
 }
 
