@@ -10,7 +10,7 @@ import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestT
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import {Frustum, Ray} from '../util/primitives.js';
+import {Frustum, FrustumCorners, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
@@ -108,6 +108,8 @@ class Transform {
     worldMinY: number;
     worldMaxY: number;
 
+    frustumCorners: FrustumCorners;
+
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
@@ -203,6 +205,7 @@ class Transform {
         clone._camera = this._camera.clone();
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
+        clone.frustumCorners = this.frustumCorners;
         return clone;
     }
 
@@ -1708,6 +1711,9 @@ class Transform {
         // For tile cover calculation, use inverted of base (non elevated) matrix
         // as tile elevations are in tile coordinates and relative to center elevation.
         this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
+
+        const clipToCamera = mat4.invert([], cameraToClip);
+        this.frustumCorners = FrustumCorners.fromInvProjectionMatrix(clipToCamera, this.horizonLineFromTop(), this.height);
 
         const view = new Float32Array(16);
         mat4.identity(view);

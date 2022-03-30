@@ -85,6 +85,46 @@ class Ray {
     }
 }
 
+class FrustumCorners {
+    TL: Vec3;
+    TR: Vec3;
+    BR: Vec3;
+    BL: Vec3;
+    horizonL_: number;
+    horizonR_: number;
+
+    constructor(TL_: Vec3, TR_: Vec3, BR_: Vec3, BL_: Vec3, horizonL_: number, horizonR_: number) {
+        this.TL = TL_;
+        this.TR = TR_;
+        this.BR = BR_;
+        this.BL = BL_;
+        this.horizonL = horizonL_;
+        this.horizonR = horizonR_;
+    }
+
+    static fromInvProjectionMatrix(invProj: Float64Array, horizonFromTop: number, viewportHeight: number) {
+        const TLClip = [-1, 1, 1];
+        const TRClip = [1, 1, 1];
+        const BRClip = [1, -1, 1];
+        const BLClip = [-1, -1, 1];
+
+        const TL = vec3.transformMat4([], TLClip, invProj);
+        const TR = vec3.transformMat4([], TRClip, invProj);
+        const BR = vec3.transformMat4([], BRClip, invProj);
+        const BL = vec3.transformMat4([], BLClip, invProj);
+
+        const horizonFromTopClip = 1.0 - (horizonFromTop / viewportHeight) * 2.0;
+
+        const horizonClipL = [-1, horizonFromTopClip, 1];
+        const horizonClipR = [1, horizonFromTopClip, 1];
+
+        const horizonL = vec3.transformMat4([], horizonClipL, invProj);
+        const horizonR = vec3.transformMat4([], horizonClipR, invProj);
+
+        return new FrustumCorners(TL, TR, BR, BL, horizonL, horizonR);
+    }
+}
+
 class Frustum {
     points: Array<Array<number>>;
     planes: Array<Array<number>>;
@@ -240,5 +280,6 @@ class Aabb {
 export {
     Aabb,
     Frustum,
+    FrustumCorners,
     Ray
 };

@@ -975,14 +975,6 @@ class Painter {
             if (fogOpacity !== 0.0) {
                 const tr = this.transform;
                 const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
-                const viewToProj = tr._camera.getCameraToClipPerspective(tr._fov, tr.width / tr.height, tr._nearZ, tr._farZ);
-                const projToView = mat4.invert([], viewToProj);
-
-                const frustumTl = vec3.transformMat4([], [-1, 1, 1], projToView);
-                const frustumTr = vec3.transformMat4([], [1, 1, 1], projToView);
-                const frustumBr = vec3.transformMat4([], [1, -1, 1], projToView);
-                const frustumBl = vec3.transformMat4([], [-1, -1, 1], projToView);
-
                 const center = [tr.globeMatrix[12], tr.globeMatrix[13], tr.globeMatrix[14]];
                 const globeCenterInViewSpace = vec3.transformMat4([], center, viewMatrix);
                 const globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
@@ -992,8 +984,14 @@ class Painter {
                 ];
 
                 const fogUniforms = fogUniformValues(
-                    this, fog, tileID, fogOpacity, frustumTl, frustumTr, frustumBr,
-                    frustumBl, globeCenterInViewSpace, globeRadius, viewport);
+                    this, fog, tileID, fogOpacity,
+                    tr.frustumCorners.TL,
+                    tr.frustumCorners.TR,
+                    tr.frustumCorners.BR,
+                    tr.frustumCorners.BL,
+                    globeCenterInViewSpace,
+                    globeRadius,
+                    viewport);
 
                 program.setFogUniformValues(context, fogUniforms);
             }
