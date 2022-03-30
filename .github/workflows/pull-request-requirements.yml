@@ -2,7 +2,7 @@ name: Check PR Requirements
 
 on:
   pull_request:
-    types: [opened, reopened, edited, labeled, unlabeled]
+    types: [opened, reopened, edited, labeled, unlabeled, synchronize]
 
 jobs:
   check-changelog:
