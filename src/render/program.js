@@ -105,7 +105,11 @@ class Program<Us: UniformBindings> {
         }
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
-        assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
+        if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+            console.log(gl.getShaderInfoLog(fragmentShader));
+            console.log(fragmentSource);
+            assert(false);
+        }
         gl.attachShader(this.program, fragmentShader);
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -115,7 +119,11 @@ class Program<Us: UniformBindings> {
         }
         gl.shaderSource(vertexShader, vertexSource);
         gl.compileShader(vertexShader);
-        assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
+        if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+            console.log(gl.getShaderInfoLog(vertexShader));
+            console.log(vertexSource);
+            assert(false);
+        }
         gl.attachShader(this.program, vertexShader);
 
         this.attributes = {};
