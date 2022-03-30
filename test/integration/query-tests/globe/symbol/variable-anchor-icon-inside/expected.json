@@ -1,0 +1,17 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        0,
+        -10.012129557908125
+      ],
+      "type": "Point"
+    },
+    "properties": {
+      "image": "bank-12"
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  }
+]
