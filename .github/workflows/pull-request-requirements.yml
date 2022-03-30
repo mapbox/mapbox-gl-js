@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Check if changelog entry exists
-        uses: ./ #uses action in root repository
+        uses: ./.github/actions/check-pr-requirements #uses action in .github/actions
         id: check-changelog
         with:
           pr-body: ${{ github.event.pull_request.body }}
