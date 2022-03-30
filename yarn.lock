@@ -1550,24 +1550,10 @@
   resolved "https://registry.npmjs.org/@octokit/openapi-types/-/openapi-types-4.0.4.tgz"
   integrity sha512-31zY8JIuz3h6RAFOnyA8FbOwhILILiBu1qD81RyZZWY7oMBhIdBn6MaAmnnptLhB4jk0g50nkQkUVP4kUzppcA==
 
-<<<<<<< HEAD
-"@octokit/plugin-paginate-rest@^2.13.3":
-  version "2.17.0"
-  resolved "https://registry.yarnpkg.com/@octokit/plugin-paginate-rest/-/plugin-paginate-rest-2.17.0.tgz#32e9c7cab2a374421d3d0de239102287d791bce7"
-  integrity sha512-tzMbrbnam2Mt4AhuyCHvpRkS0oZ5MvwwcQPYGtMv4tUa5kkzG58SVB0fcsLulOZQeRnOgdkZWkRUiyBlh0Bkyw==
-  dependencies:
-    "@octokit/types" "^6.34.0"
-
-"@octokit/plugin-paginate-rest@^2.6.2":
-  version "2.9.1"
-  resolved "https://registry.npmjs.org/@octokit/plugin-paginate-rest/-/plugin-paginate-rest-2.9.1.tgz"
-  integrity sha512-8wnuWGjwDIEobbBet2xAjZwgiMVTgIer5wBsnGXzV3lJ4yqphLU2FEMpkhSrDx7y+WkZDfZ+V+1cFMZ1mAaFag==
-=======
 "@octokit/plugin-paginate-rest@^2.16.8":
   version "2.17.0"
   resolved "https://registry.yarnpkg.com/@octokit/plugin-paginate-rest/-/plugin-paginate-rest-2.17.0.tgz#32e9c7cab2a374421d3d0de239102287d791bce7"
   integrity sha512-tzMbrbnam2Mt4AhuyCHvpRkS0oZ5MvwwcQPYGtMv4tUa5kkzG58SVB0fcsLulOZQeRnOgdkZWkRUiyBlh0Bkyw==
->>>>>>> main
   dependencies:
     "@octokit/types" "^6.34.0"
 
@@ -1610,11 +1596,7 @@
     deprecation "^2.0.0"
     once "^1.4.0"
 
-<<<<<<< HEAD
 "@octokit/request@^5.3.0", "@octokit/request@^5.4.11", "@octokit/request@^5.4.12":
-=======
-"@octokit/request@^5.3.0", "@octokit/request@^5.4.11":
->>>>>>> main
   version "5.4.14"
   resolved "https://registry.npmjs.org/@octokit/request/-/request-5.4.14.tgz"
   integrity sha512-VkmtacOIQp9daSnBmDI92xNIeLuSRDOIuplp/CJomkvzt7M18NXgG044Cx/LFKLgjKt9T2tZR6AtJayba9GTSA==
@@ -1640,17 +1622,10 @@
     node-fetch "^2.6.7"
     universal-user-agent "^6.0.0"
 
-<<<<<<< HEAD
-"@octokit/rest@^18.1.1":
-  version "18.1.1"
-  resolved "https://registry.npmjs.org/@octokit/rest/-/rest-18.1.1.tgz"
-  integrity sha512-ZcCHMyfGT1qtJD72usigAfUQ6jU89ZUPFb2AOubR6WZ7/RRFVZUENVm1I2yvJBUicqTujezPW9cY1+o3Mb4rNA==
-=======
 "@octokit/rest@^18.12.0":
   version "18.12.0"
   resolved "https://registry.yarnpkg.com/@octokit/rest/-/rest-18.12.0.tgz#f06bc4952fc87130308d810ca9d00e79f6988881"
   integrity sha512-gDPiOHlyGavxr72y0guQEhLsemgVjwRePayJ+FcKc2SJqKUbxbkvf5kAZEWA/MKvsfYlQAMVzNJE3ezQcxMJ2Q==
->>>>>>> main
   dependencies:
     "@octokit/core" "^3.5.1"
     "@octokit/plugin-paginate-rest" "^2.16.8"
@@ -8329,11 +8304,7 @@ node-fetch@^2.6.7:
   dependencies:
     whatwg-url "^5.0.0"
 
-<<<<<<< HEAD
-node-gyp@^7.1.0:
-=======
 node-gyp@^7.1.2:
->>>>>>> main
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/node-gyp/-/node-gyp-7.1.2.tgz#21a810aebb187120251c3bcec979af1587b188ae"
   integrity sha512-CbpcIo7C3eMu3dL1c3d0xw449fHIGALIJsRP4DDPHpyiW8vcriNY7ubh9TE4zEKfSxscY7PjeFnshE7h75ynjQ==
