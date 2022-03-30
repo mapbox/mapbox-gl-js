@@ -1,0 +1,45 @@
+[
+    {
+      "geometry": {
+        "coordinates": [
+          -7.44873046875,
+          4.368320420876245
+        ],
+        "type": "Point"
+      },
+      "id": 180,
+      "properties": {
+        "featureclass": "cape",
+        "lat_y": 4.373924,
+        "long_x": -7.457356,
+        "name": "Cape Palmas",
+        "region": "Africa",
+        "scalerank": 3
+      },
+      "source": "geojson",
+      "state": {},
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -62.07275390625,
+          5.681583683421124
+        ],
+        "type": "Point"
+      },
+      "id": 164,
+      "properties": {
+        "featureclass": "waterfall",
+        "lat_y": 5.686836,
+        "long_x": -62.061848,
+        "name": "Salto Angel",
+        "name_alt": "Angel Falls",
+        "region": "South America",
+        "scalerank": 2
+      },
+      "source": "geojson",
+      "state": {},
+      "type": "Feature"
+    }
+  ]
