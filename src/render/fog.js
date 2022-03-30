@@ -57,7 +57,7 @@ export const fogUniformValues = (
 ): UniformValues<FogUniformsType> => {
     const tr = painter.transform;
     const fogColor = fog.properties.get('color').toArray01();
-    fogColor.a = fogOpacity;
+    fogColor[3] = fogOpacity; // Update Alpha
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     return {
         'u_fog_matrix': tileID ? tr.calculateFogTileMatrix(tileID) : painter.identityMat,

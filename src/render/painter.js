@@ -976,7 +976,7 @@ class Painter {
                 const tr = this.transform;
                 const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
                 const center = [tr.globeMatrix[12], tr.globeMatrix[13], tr.globeMatrix[14]];
-                const globeCenterInViewSpace = vec3.transformMat4([], center, viewMatrix);
+                const globeCenterInViewSpace = vec3.transformMat4(center, center, viewMatrix);
                 const globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
                 const viewport = [
                     tr.width * browser.devicePixelRatio,
