@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: 14.x
       - name: Install dependencies
-        run: npm install
+        run: npm install --prefix ./.github/actions
       - name: Check if changelog entry exists
         uses: ./.github/actions/check-changelog #uses action in .github/actions
         id: check-changelog
