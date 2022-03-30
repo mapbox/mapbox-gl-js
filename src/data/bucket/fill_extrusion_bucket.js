@@ -21,8 +21,9 @@ import EvaluationParameters from '../../style/evaluation_parameters.js';
 import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat} from '../../geo/mercator_coordinate.js';
-import type {Vec3} from 'gl-matrix';
 import {subdividePolygons} from '../../util/polygon_clipping.js';
+import type {ClippedPolygon} from '../../util/polygon_clipping.js';
+import type {Vec3} from 'gl-matrix';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
@@ -39,6 +40,7 @@ import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {SpritePositions} from '../../util/image.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
+import {earthRadius} from '../../geo/lng_lat.js';
 
 const FACTOR = Math.pow(2, 13);
 
@@ -337,7 +339,7 @@ class FillExtrusionBucket implements Bucket {
             }
         }
 
-        let clippedPolygons;
+        let clippedPolygons: ClippedPolygon[];
         if (isGlobe) {
             // Perform tesselation for polygons of tiles in order to support long planar
             // triangles on the curved surface of the globe. This is done for all polygons
@@ -348,27 +350,7 @@ class FillExtrusionBucket implements Bucket {
             // for a tile depends on the zoom level. For example tile with z=0 requires 2⁴
             // subdivisions, tile with z=1 2³ etc. The subdivision is done in polar coordinates
             // instead of tile coordinates.
-            const cellCount = 360.0 / 32.0;
-            const tiles = 1 << canonical.z;
-            const leftLng = lngFromMercatorX(canonical.x / tiles);
-            const rightLng = lngFromMercatorX((canonical.x + 1) / tiles);
-            const topLat = latFromMercatorY(canonical.y / tiles);
-            const bottomLat = latFromMercatorY((canonical.y + 1) / tiles);
-            const cellCountOnXAxis = Math.ceil((rightLng - leftLng) / cellCount);
-            const cellCountOnYAxis = Math.ceil((topLat - bottomLat) / cellCount);
-
-            const splitFn = (axis, min, max) => {
-                if (axis === 0) {
-                    return 0.5 * (min + max);
-                } else {
-                    const maxLat = latFromMercatorY((canonical.y + min / EXTENT) / tiles);
-                    const minLat = latFromMercatorY((canonical.y + max / EXTENT) / tiles);
-                    const midLat = 0.5 * (minLat + maxLat);
-                    return (mercatorYfromLat(midLat) * tiles - canonical.y) * EXTENT;
-                }
-            };
-
-            clippedPolygons = subdividePolygons(polygons, tileBounds, cellCountOnXAxis, cellCountOnYAxis, 1.0, splitFn);
+            clippedPolygons = resampleFillExtrusionPolygonsForGlobe(polygons, tileBounds, canonical);
         } else {
             clippedPolygons = [];
             for (const polygon of polygons) {
@@ -604,4 +586,40 @@ function tileToMeter(canonical: CanonicalTileID) {
     const exp = Math.exp(Math.PI * (1 - 2 * mercatorY));
     // simplify cos(2 * atan(e) - PI/2) from mercator_coordinate.js, remove trigonometrics.
     return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
+}
+
+export function fillExtrusionHeightLift(): number {
+    // A rectangle covering globe is subdivided into a grid of 32 cells
+    // This information can be used to deduce a minimum lift value so that
+    // fill extrusions with 0 height will never go below the ground.
+    const angle = Math.PI / 32.0;
+    const tanAngle = Math.tan(angle);
+    const r = earthRadius;
+    return r * Math.sqrt(1.0 + 2.0 * tanAngle * tanAngle) - r;
+}
+
+// Resamples fill extrusion polygons by subdividing them into 32x16 cells in mercator space.
+// The idea is to allow reprojection of large continuous planar shapes on the surface of the globe
+export function resampleFillExtrusionPolygonsForGlobe(polygons: Point[][][], tileBounds: [Point, Point], tileID: CanonicalTileID): ClippedPolygon[] {
+    const cellCount = 360.0 / 32.0;
+    const tiles = 1 << tileID.z;
+    const leftLng = lngFromMercatorX(tileID.x / tiles);
+    const rightLng = lngFromMercatorX((tileID.x + 1) / tiles);
+    const topLat = latFromMercatorY(tileID.y / tiles);
+    const bottomLat = latFromMercatorY((tileID.y + 1) / tiles);
+    const cellCountOnXAxis = Math.ceil((rightLng - leftLng) / cellCount);
+    const cellCountOnYAxis = Math.ceil((topLat - bottomLat) / cellCount);
+
+    const splitFn = (axis, min, max) => {
+        if (axis === 0) {
+            return 0.5 * (min + max);
+        } else {
+            const maxLat = latFromMercatorY((tileID.y + min / EXTENT) / tiles);
+            const minLat = latFromMercatorY((tileID.y + max / EXTENT) / tiles);
+            const midLat = 0.5 * (minLat + maxLat);
+            return (mercatorYfromLat(midLat) * tiles - tileID.y) * EXTENT;
+        }
+    };
+
+    return subdividePolygons(polygons, tileBounds, cellCountOnXAxis, cellCountOnYAxis, 1.0, splitFn);
 }

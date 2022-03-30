@@ -3,9 +3,9 @@
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
 
-type ClippedPolygon = {
+export type ClippedPolygon = {
     polygon: Array<Array<Point>>,
-    bounds: Array<Point>
+    bounds: [Point, Point]
 };
 
 function clipPolygon(polygons: Array<Array<Point>>, clipAxis1: number, clipAxis2: number, axis: number): Array<Array<Point>> {
@@ -73,7 +73,7 @@ function clipPolygon(polygons: Array<Array<Point>>, clipAxis1: number, clipAxis2
     return polygonsClipped;
 }
 
-export function subdividePolygons(polygons: Array<Array<Point>>, bounds: Array<Point>, gridSizeX: number, gridSizeY: number, padding: number = 0.0, splitFn: Function): Array<ClippedPolygon> {
+export function subdividePolygons(polygons: Array<Array<Point>>, bounds: [Point, Point], gridSizeX: number, gridSizeY: number, padding: number = 0.0, splitFn: Function): Array<ClippedPolygon> {
     const outPolygons = [];
 
     if (!polygons.length || !gridSizeX || !gridSizeY) {
