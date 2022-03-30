@@ -2,7 +2,7 @@ name: Github Actions
 
 on:
   pull_request:
-    types: [opened, reopened, edited, labeled]
+    types: [opened, reopened, edited, labeled, unlabeled]
 
 jobs:
   check-pr-requirements:
