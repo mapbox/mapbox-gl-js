@@ -4,7 +4,7 @@ uniform highp float u_temporal_offset;
 uniform vec3 u_start_color;
 uniform vec4 u_color;
 uniform vec4 u_space_color;
-uniform vec4 u_sky_color;
+uniform vec4 u_high_color;
 uniform vec2 u_latlon;
 uniform float u_star_intensity;
 uniform float u_star_size;
@@ -74,11 +74,11 @@ void main() {
     float t = exp(-horizon_angle * pow(u_fadeout_range, -1.0));
 
     float alpha_0 = u_color.a;
-    float alpha_1 = u_sky_color.a;
+    float alpha_1 = u_high_color.a;
     float alpha_2 = u_space_color.a;
 
     vec3 color_stop_0 = u_color.rgb;
-    vec3 color_stop_1 = u_sky_color.rgb;
+    vec3 color_stop_1 = u_high_color.rgb;
     vec3 color_stop_2 = u_space_color.rgb;
 
     vec3 c0 = mix(color_stop_2, color_stop_1, alpha_1);
@@ -106,7 +106,7 @@ void main() {
 
     // Fade stars as they get closer to horizon to
     // give the feeling of an atmosphere with thickness
-    star_field *= (1.0 - pow(t, 0.25 + (1.0 - u_sky_color.a) * 0.75));
+    star_field *= (1.0 - pow(t, 0.25 + (1.0 - u_high_color.a) * 0.75));
 
     // Additive star field
     c += star_field * alpha_2;

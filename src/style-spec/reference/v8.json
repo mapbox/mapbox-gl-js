@@ -3838,7 +3838,7 @@
         }
       }
     },
-    "sky-color": {
+    "high-color": {
       "type": "color",
       "property-type": "data-constant",
       "default": "#ffffff",
