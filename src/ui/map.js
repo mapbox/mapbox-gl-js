@@ -1051,6 +1051,17 @@ class Map extends Camera {
     }
 
     /**
+     * Returns true if map [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) has been set to globe AND the map is at a low enough zoom level that globe view is enabled.
+     * @private
+     * @returns {boolean} Returns `globe-is-active` boolean.
+     * @example
+     * if (map._usingGlobe()) {
+     *     // do globe things here
+     * }
+     */
+    _usingGlobe(): boolean { return this.transform.projection.name === 'globe'; }
+
+    /**
      * Sets the map's projection. If called with `null` or `undefined`, the map will reset to Mercator.
      *
      * @param {ProjectionSpecification | string | null | undefined} projection The projection that the map should be rendered in.

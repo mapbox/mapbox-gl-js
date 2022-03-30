@@ -9,6 +9,7 @@
 import jsdom from 'jsdom';
 
 import gl from 'gl';
+/*eslint-disable import/no-named-as-default-member */
 import sinon from 'sinon';
 
 import type {Window} from '../types/window.js';
