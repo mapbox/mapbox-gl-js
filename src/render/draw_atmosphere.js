@@ -48,22 +48,9 @@ function drawAtmosphere(painter: Painter) {
 
     const transitionT = globeToMercatorTransition(transform.zoom);
 
-    const fogOpacity = fog.getOpacity(transform.pitch);
-    const fogColor = fog.properties.get('color');
-    const fogColorUnpremultiplied = [
-        fogColor.a === 0.0 ? 0 : fogColor.r / fogColor.a,
-        fogColor.a === 0.0 ? 0 : fogColor.g / fogColor.a,
-        fogColor.a === 0.0 ? 0 : fogColor.b / fogColor.a,
-        fogColor.a
-    ];
-    const highColor = fog.properties.get('high-color');
-    const highColorUnpremultiplied = [
-        highColor.a === 0.0 ? 0 : highColor.r / highColor.a,
-        highColor.a === 0.0 ? 0 : highColor.g / highColor.a,
-        highColor.a === 0.0 ? 0 : highColor.b / highColor.a,
-        highColor.a
-    ];
-    const spaceColor = fog.properties.get('space-color');
+    const fogColor = fog.properties.get('color').toArray01();
+    const highColor = fog.properties.get('high-color').toArray01();
+    const spaceColor = fog.properties.get('space-color').toArray01PremultipliedAlpha();
 
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     const latlon = [
@@ -91,9 +78,9 @@ function drawAtmosphere(painter: Painter) {
         globeRadius,
         transitionT,
         horizonBlend,
-        fogColorUnpremultiplied,
-        highColorUnpremultiplied,
-        [spaceColor.r, spaceColor.g, spaceColor.b, spaceColor.a],
+        fogColor,
+        highColor,
+        spaceColor,
         latlon,
         starIntensity,
         temporalOffset,
