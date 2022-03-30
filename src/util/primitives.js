@@ -119,7 +119,7 @@ class FrustumCorners {
         const horizonClipR = [1, horizonFromTopClip, 1];
 
         const horizonL = vec3.transformMat4(horizonClipL, horizonClipL, invProj);
-        const horizonR = vec3.transformMat4(horizonClipL, horizonClipR, invProj);
+        const horizonR = vec3.transformMat4(horizonClipR, horizonClipR, invProj);
 
         return new FrustumCorners(TL, TR, BR, BL, horizonL, horizonR);
     }
