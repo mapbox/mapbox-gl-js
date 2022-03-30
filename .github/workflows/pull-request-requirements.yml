@@ -5,7 +5,7 @@ on:
     types: [opened, reopened, edited, labeled, unlabeled]
 
 jobs:
-  check-pr-requirements:
+  check-changelog:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip changelog') }}
     runs-on: ubuntu-latest
     env:
@@ -21,7 +21,7 @@ jobs:
         uses: ./.github/actions
         run: npm install
       - name: Check if changelog entry exists
-        uses: ./.github/actions/check-pr-requirements #uses action in .github/actions
+        uses: ./.github/actions/check-changelog #uses action in .github/actions
         id: check-changelog
         with:
           pr-body: ${{ github.event.pull_request.body }}

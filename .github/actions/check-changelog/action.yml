@@ -1,5 +1,5 @@
-name: 'Check PR Requirements'
-description: 'Ensure PR meets requirements'
+name: 'Check Changelog'
+description: 'Ensure changelog meets requirements'
 inputs:
   pr-body:
     description: 'PR body from the github event'
