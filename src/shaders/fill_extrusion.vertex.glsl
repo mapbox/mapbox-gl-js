@@ -7,7 +7,7 @@ uniform vec3 u_lightcolor;
 uniform vec3 u_lightpos;
 uniform float u_lightintensity;
 uniform float u_vertical_gradient;
-uniform lowp float u_opacity;
+uniform float u_opacity;
 
 attribute vec4 a_pos_normal_ed;
 attribute vec2 a_centroid_pos;
