@@ -32,9 +32,10 @@ const defaultHeight = 41;
 const defaultWidth = 27;
 
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
-// Zoom levs to transition "upright" aligned markers in globe view.
+// Zoom levels to transition "upright" aligned markers in globe view.
 const ALIGN_TO_HORIZON_BELOW_ZOOM = 4;
 const ALIGN_TO_SCREEN_ABOVE_ZOOM = 6; // Can't be larger than GLOBE_ZOOM_THRESHOLD_MAX.
+const MAX_PITCH = 80; // Ensure that markers with "upright" pitch alignment doen't disappear completely (as they would at pitch 90)
 
 /**
  * Creates a marker component.
@@ -509,7 +510,7 @@ export default class Marker extends Evented {
             return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
         }
         if (map._usingGlobe()) {         // "upright" with globe
-            const pitch = 90 - radToDeg(globeTiltAtScreenPoint(map.transform, pos));
+            const pitch = MAX_PITCH * (1 - radToDeg(globeTiltAtScreenPoint(map.transform, pos)) / 90);
             let zoomTransition = 1;
             const zoom = map.getZoom();
             const centerPoint = globeCenterToScreenPoint(map.transform);
@@ -835,7 +836,7 @@ export default class Marker extends Evented {
      * const alignment = marker.getPitchAlignment();
      */
     getPitchAlignment(): string {
-        if (this._map && this._pitchAlignment === 'upright' && !this._map._usingGlobe()) { return "viewport"; }
-        return this._pitchAlignment === `auto` ? this.getRotationAlignment() : this._pitchAlignment;
+        if (this._map && this._pitchAlignment === 'upright' && !this._map._usingGlobe()) { return 'viewport'; }
+        return this._pitchAlignment === 'auto' ? this.getRotationAlignment() : this._pitchAlignment;
     }
 }
