@@ -106,6 +106,17 @@ function isRaster(data: any): boolean {
  */
 
 /**
+ * Optional method called during a render frame to check if there is a tile to render.
+ *
+ * @function
+ * @memberof CustomSourceInterface
+ * @instance
+ * @name hasTile
+ * @param {{ z: number, x: number, y: number }} tile Tile name to prepare in the XYZ scheme format.
+ * @returns {boolean} True if tile exists, otherwise false.
+ */
+
+/**
  * Optional method called during a render frame to allow a source to prepare and modify a tile texture if needed.
  *
  * @function
@@ -138,6 +149,7 @@ export type CustomSourceInterface<T> = {
     tileSize: ?number,
     attribution: ?string,
     bounds: ?[number, number, number, number];
+    hasTile: ?(tileID: { z: number, x: number, y: number }) => boolean,
     loadTile: (tileID: { z: number, x: number, y: number }, options: { signal: AbortSignal }) => Promise<T>,
     prepareTile: ?(tileID: { z: number, x: number, y: number }) => ?T,
     unloadTile: ?(tileID: { z: number, x: number, y: number }) => void,
@@ -233,6 +245,11 @@ class CustomSource<T> extends Evented implements Source {
     }
 
     hasTile(tileID: OverscaledTileID): boolean {
+        if (this._implementation.hasTile) {
+            const {x, y, z} = tileID.canonical;
+            return this._implementation.hasTile({x, y, z});
+        }
+
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
@@ -306,16 +323,7 @@ class CustomSource<T> extends Evented implements Source {
 
         const {x, y, z} = tile.tileID.canonical;
         const data = this._implementation.prepareTile({x, y, z});
-
-        // do not change the tile data if the implementation returns `undefined`
-        if (data === undefined) return null;
-
-        // use the empty tile data if the implementation returns `null`
-        if (data === null) {
-            const emptyImage: any = {width: this.tileSize, height: this.tileSize, data: null};
-            this.loadTileData(tile, emptyImage);
-            return emptyImage;
-        }
+        if (!data) return null;
 
         this.loadTileData(tile, data);
         return data;

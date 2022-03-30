@@ -252,10 +252,8 @@ test('CustomSource', (t) => {
         const prepareTile = t.stub()
             // Do nothing on first call
             .onFirstCall().returns(undefined)
-            // Remove tile data on second call
-            .onSecondCall().returns(null)
             // Return original image on third call
-            .onThirdCall().returns(originalData);
+            .onSecondCall().returns(originalData);
 
         const {source, sourceCache, eventedParent} = createSource(t, {loadTile, prepareTile});
 
@@ -270,12 +268,6 @@ test('CustomSource', (t) => {
         });
 
         source.loadTileData.onSecondCall().callsFake((tile, actualData) => {
-            const expectedData = {width: source.tileSize, height: source.tileSize, data: null};
-            t.deepEqual(actualData, expectedData, 'loadTileData must be called with the empty image if prepareTile returns null');
-            sourceCache._addTile(tileID);
-        });
-
-        source.loadTileData.onThirdCall().callsFake((tile, actualData) => {
             t.equal(actualData, originalData, 'loadTileData must be called with the original image if prepareTile returns valid data');
             t.ok(loadTile.calledOnce, 'loadTile must be called once');
             t.end();
@@ -283,6 +275,31 @@ test('CustomSource', (t) => {
 
         sourceCache.onAdd();
         sourceCache._addTile(tileID);
+    });
+
+    t.test('hasTile', (t) => {
+        const {sourceCache, eventedParent} = createSource(t, {
+            loadTile: async () => {},
+            hasTile: (tileID) => tileID.x !== 0
+        });
+
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 1;
+
+        eventedParent.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getIds().sort(), [
+                    new OverscaledTileID(1, 0, 1, 1, 0).key,
+                    new OverscaledTileID(1, 0, 1, 1, 1).key
+                ].sort());
+                t.end();
+            }
+        });
+
+        sourceCache.used = true;
+        sourceCache.getSource().onAdd();
     });
 
     t.test('coveringTiles', (t) => {
