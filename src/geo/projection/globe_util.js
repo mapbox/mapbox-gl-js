@@ -126,15 +126,13 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
 
 export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: CanonicalTileID): Aabb {
     const scale = numTiles / tr.worldSize;
-    const to1to1Units = (cornerMin: Vec3, cornerMax: Vec3) => {
-        vec3.scale(cornerMin, cornerMin, scale);
-        vec3.scale(cornerMax, cornerMax, scale);
-    };
 
     const mx = Number.MAX_VALUE;
     const cornerMax = [-mx, -mx, -mx];
     const cornerMin = [mx, mx, mx];
-    const m = calculateGlobeMatrix(tr);
+    const m = mat4.identity(new Float64Array(16));
+    mat4.scale(m, m, [scale, scale, scale]);
+    mat4.multiply(m, m, tr.globeMatrix);
 
     if (tileId.z <= 1) {
         // Compute minimum bounding box that fully encapsulates
@@ -148,7 +146,6 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
             vec3.max(cornerMax, cornerMax, corners[i]);
         }
 
-        to1to1Units(cornerMin, cornerMax);
         return new Aabb(cornerMin, cornerMax);
     }
 
@@ -185,7 +182,6 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
 
     if (bounds.contains(tr.center)) {
         cornerMax[2] = 0.0;
-        to1to1Units(cornerMin, cornerMax);
         return new Aabb(cornerMin, cornerMax);
     }
 
@@ -241,7 +237,6 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     vec3.min(cornerMin, cornerMin, arcBounds);
     vec3.max(cornerMax, cornerMax, arcBounds);
 
-    to1to1Units(cornerMin, cornerMax);
     return new Aabb(cornerMin, cornerMax);
 }
 
