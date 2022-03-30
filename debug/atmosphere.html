@@ -28,7 +28,7 @@ var GUIParams = function() {
     this.start = 0.8;
     this.end = 8.0;
     this.color = [255, 255, 255];
-    this.skyColor = [0, 0, 0];
+    this.highColor = [0, 0, 0];
     this.spaceColor = [0, 0, 0];
     this.spaceAlpha = 1.0;
     this.colorAlpha = 1.0;
@@ -62,7 +62,7 @@ function updatePreset(value) {
         guiParams.enable = true;
         guiParams.style = 'satellite-streets-v11';
         guiParams.color = [220, 159, 159];
-        guiParams.skyColor = [36, 92, 223];
+        guiParams.highColor = [36, 92, 223];
         guiParams.spaceColor = [0, 0, 0];
         guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1.0;
@@ -73,7 +73,7 @@ function updatePreset(value) {
         guiParams.enable = true;
         guiParams.style = 'satellite-v9';
         guiParams.color = [225, 225, 225];
-        guiParams.skyColor = [44, 73, 175];
+        guiParams.highColor = [44, 73, 175];
         guiParams.spaceColor = [11, 11, 25];
         guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1.0;
@@ -84,7 +84,7 @@ function updatePreset(value) {
         guiParams.enable = true;
         guiParams.style = 'light-v10';
         guiParams.color = [200, 160, 160];
-        guiParams.skyColor = [200, 200, 200];
+        guiParams.highColor = [200, 200, 200];
         guiParams.spaceColor = [57, 72, 85];
         guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 0.5;
@@ -95,7 +95,7 @@ function updatePreset(value) {
         guiParams.enable = true;
         guiParams.style = 'streets-v11';
         guiParams.color = [255, 255, 255];
-        guiParams.skyColor = [19, 122, 255];
+        guiParams.highColor = [19, 122, 255];
         guiParams.spaceColor = [0, 0, 0];
         guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1;
@@ -106,7 +106,7 @@ function updatePreset(value) {
         guiParams.enable = true;
         guiParams.style = 'dark-v10';
         guiParams.color = [13, 13, 13];
-        guiParams.skyColor = [255, 255, 255];
+        guiParams.highColor = [255, 255, 255];
         guiParams.spaceColor = [50, 50, 50];
         guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 1;
@@ -117,7 +117,7 @@ function updatePreset(value) {
         guiParams.enable = true;
         guiParams.style = 'outdoors-v11';
         guiParams.color = [85, 119, 140];
-        guiParams.skyColor = [36, 92, 223];
+        guiParams.highColor = [36, 92, 223];
         guiParams.spaceColor = [2, 20, 50];
         guiParams.spaceAlpha = 1.0;
         guiParams.colorAlpha = 0.8;
@@ -153,7 +153,7 @@ window.onload = function() {
             "range": [guiParams.start, guiParams.end],
             "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
             "horizon-blend": guiParams.horizonBlend,
-            "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + guiParams.skyAlpha + ')',
+            "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + guiParams.skyAlpha + ')',
             "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + guiParams.spaceAlpha + ')',
             "star-intensity": guiParams.starIntensity
         } : null);
@@ -189,13 +189,13 @@ window.onload = function() {
     var skyAlpha = fog.add(guiParams, 'skyAlpha', 0.0, 1.0);
     skyAlpha.onChange((value) => {
         map.setFog({
-            "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + value + ')'
+            "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + value + ')'
         });
     });
-    var skyColor = fog.addColor(guiParams, 'skyColor');
-    skyColor.onChange((value) => {
+    var highColor = fog.addColor(guiParams, 'highColor');
+    highColor.onChange((value) => {
         map.setFog({
-            "sky-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.skyAlpha + ')'
+            "high-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.skyAlpha + ')'
         });
     });
 
@@ -218,7 +218,7 @@ map.on('style.load', function() {
         "range": [guiParams.start, guiParams.end],
         "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
         "horizon-blend": guiParams.horizonBlend,
-        "sky-color": 'rgba(' + guiParams.skyColor[0] + ', ' + guiParams.skyColor[1] + ', ' + guiParams.skyColor[2] + ', ' + guiParams.skyAlpha + ')',
+        "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + guiParams.skyAlpha + ')',
         "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + guiParams.spaceAlpha + ')',
         "star-intensity": guiParams.starIntensity
     });

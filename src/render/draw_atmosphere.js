@@ -66,12 +66,12 @@ function drawAtmosphere(painter: Painter) {
         fogColor.a === 0.0 ? 0 : fogColor.b / fogColor.a,
         fogColor.a
     ];
-    const skyColor = fog.properties.get('sky-color');
-    const skyColorUnpremultiplied = [
-        skyColor.a === 0.0 ? 0 : skyColor.r / skyColor.a,
-        skyColor.a === 0.0 ? 0 : skyColor.g / skyColor.a,
-        skyColor.a === 0.0 ? 0 : skyColor.b / skyColor.a,
-        skyColor.a
+    const highColor = fog.properties.get('high-color');
+    const highColorUnpremultiplied = [
+        highColor.a === 0.0 ? 0 : highColor.r / highColor.a,
+        highColor.a === 0.0 ? 0 : highColor.g / highColor.a,
+        highColor.a === 0.0 ? 0 : highColor.b / highColor.a,
+        highColor.a
     ];
     const spaceColor = fog.properties.get('space-color');
 
@@ -102,7 +102,7 @@ function drawAtmosphere(painter: Painter) {
         transitionT,
         horizonBlend,
         fogColorUnpremultiplied,
-        skyColorUnpremultiplied,
+        highColorUnpremultiplied,
         [spaceColor.r, spaceColor.g, spaceColor.b, spaceColor.a],
         latlon,
         starIntensity,
