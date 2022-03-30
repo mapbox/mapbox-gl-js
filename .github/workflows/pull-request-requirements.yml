@@ -18,6 +18,7 @@ jobs:
         with:
           node-version: 14.x
       - name: Install dependencies
+        uses: ./.github/actions
         run: npm install
       - name: Check if changelog entry exists
         uses: ./.github/actions/check-pr-requirements #uses action in .github/actions
