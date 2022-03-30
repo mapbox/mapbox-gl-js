@@ -1,7 +1,6 @@
 on:
   pull_request:
     types: [opened, reopened, edited, labeled]
-    branches: 'main'
 
 jobs:
   check-pr-requirements:
