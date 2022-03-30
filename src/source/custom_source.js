@@ -2,6 +2,7 @@
 
 import Tile from './tile.js';
 import window from '../util/window.js';
+import TileBounds from './tile_bounds.js';
 import RasterTileSource from './raster_tile_source.js';
 import {extend, pick} from '../util/util.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
@@ -10,6 +11,7 @@ import type Map from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type {Source} from './source.js';
 import type {Callback} from '../types/callback.js';
+import type {OverscaledTileID} from './tile_id.js';
 
 type DataType = 'raster';
 
@@ -135,6 +137,7 @@ export type CustomSourceInterface<T> = {
     scheme: ?string;
     tileSize: ?number,
     attribution: ?string,
+    bounds: ?[number, number, number, number];
     loadTile: (tileID: { z: number, x: number, y: number }, options: { signal: AbortSignal }) => Promise<T>,
     prepareTile: ?(tileID: { z: number, x: number, y: number }) => ?T,
     unloadTile: ?(tileID: { z: number, x: number, y: number }) => void,
@@ -151,17 +154,17 @@ class CustomSource<T> extends Evented implements Source {
     maxzoom: number;
     tileSize: number;
     attribution: string;
-    roundZoom: boolean;
 
+    roundZoom: boolean;
+    tileBounds: ?TileBounds;
     minTileCacheSize: ?number;
     maxTileCacheSize: ?number;
-
-    _dataType: ?DataType;
-    _implementation: CustomSourceInterface<T>;
 
     _map: Map;
     _loaded: boolean;
     _dispatcher: Dispatcher;
+    _dataType: ?DataType;
+    _implementation: CustomSourceInterface<T>;
 
     constructor(id: string, implementation: CustomSourceInterface<T>, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -186,6 +189,10 @@ class CustomSource<T> extends Evented implements Source {
 
         if (!this._implementation.loadTile) {
             this.fire(new ErrorEvent(new Error(`Missing loadTile implementation for ${this.id} custom source`)));
+        }
+
+        if (this._implementation.bounds) {
+            this.tileBounds = new TileBounds(this._implementation.bounds, this.minzoom, this.maxzoom);
         }
 
         // $FlowFixMe[prop-missing]
@@ -223,6 +230,10 @@ class CustomSource<T> extends Evented implements Source {
         if (this._implementation.onRemove) {
             this._implementation.onRemove(map);
         }
+    }
+
+    hasTile(tileID: OverscaledTileID): boolean {
+        return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
     loadTile(tile: Tile, callback: Callback<void>): void {

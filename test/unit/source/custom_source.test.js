@@ -43,6 +43,23 @@ test('CustomSource', (t) => {
         source.onAdd();
     });
 
+    t.test('respects bounds', (t) => {
+        const {source, eventedParent} = createSource(t, {
+            async loadTile() {},
+            bounds: [-47, -7, -45, -5]
+        });
+
+        source.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                t.false(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132)), 'returns false for tiles outside bounds');
+                t.true(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132)), 'returns true for tiles inside bounds');
+                t.end();
+            }
+        });
+
+        source.onAdd(eventedParent);
+    });
+
     t.test('fires "dataloading" event', (t) => {
         const {source, eventedParent} = createSource(t, {
             async loadTile() {}
