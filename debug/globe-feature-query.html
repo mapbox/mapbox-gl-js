@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script src='/debug/globe-feature-query-style.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 2.5,
+    center: [5, 5],
+    bearing: 0,
+    pitch: 60,
+    style: window.style,
+    hash: true,
+    projection: 'globe',
+    showTileBoundaries: true
+});
+
+let picked = [];
+let queryBox = [];
+let rectangle;
+
+const mouse = {
+    x: 0,
+    y: 0,
+    startX: 0,
+    startY: 0
+};
+
+function execQuery(queryGeometry) {
+    console.time('query');
+    const features = map.queryRenderedFeatures(queryGeometry);
+    console.timeEnd('query');
+
+    for (const feature of picked) {
+        map.removeFeatureState(feature, 'picked');
+    }
+
+    picked = features;
+    const seen = {};
+
+    for (const feature of picked) {
+        if (seen[feature.id]) continue;
+
+        seen[feature.id] = true;
+        map.setFeatureState(feature, {'picked': true});
+    }
+}
+
+map.on('style.load', function() {
+    map.showTileBoundaries = true;
+
+    window.addEventListener('mousemove', function(e) {
+        if (queryBox.length === 0) {
+            execQuery(new mapboxgl.Point(e.clientX, e.clientY));
+        }
+
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+
+        const minx = Math.min(mouse.x, mouse.startX);
+        const maxx = Math.max(mouse.x, mouse.startX);
+        const miny = Math.min(mouse.y, mouse.startY);
+        const maxy = Math.max(mouse.y, mouse.startY);
+
+        if (rectangle && queryBox.length > 0) {
+            rectangle.style.display = 'block';
+        }
+
+        map._requestDomTask(() => {
+            if (rectangle && queryBox.length < 2) {
+                rectangle.style.transform = `translate(${minx}px,${miny}px)`;
+                rectangle.style.width = `${maxx - minx}px`;
+                rectangle.style.height = `${maxy - miny}px`;
+            }
+        });
+    });
+
+    if (!rectangle) {
+        rectangle = window.document.createElement('div');
+        rectangle.className = 'mapboxgl-boxzoom';
+        rectangle.style['pointer-events'] = 'none';
+        rectangle.style.display = 'none';
+        map.getContainer().appendChild(rectangle);
+    }
+});
+
+map.on('click', e => {
+    if (queryBox.length >= 2) {
+        queryBox = [];
+        if (rectangle) {
+            rectangle.style.display = 'none';
+        }
+    } else if (queryBox.length <= 1) {
+        queryBox.push(e.point);
+
+        if (queryBox.length === 1) {
+            mouse.startX = mouse.x;
+            mouse.startY = mouse.y;
+        }
+    }
+    if (queryBox.length === 2) {
+
+        const minx = Math.min(queryBox[0].x, queryBox[1].x);
+        const miny = Math.min(queryBox[0].y, queryBox[1].y);
+        const maxx = Math.max(queryBox[0].x, queryBox[1].x);
+        const maxy = Math.max(queryBox[0].y, queryBox[1].y);
+
+        queryBox[0] = new mapboxgl.Point(minx, miny);
+        queryBox[1] = new mapboxgl.Point(maxx, maxy);
+
+        execQuery(queryBox);
+    }
+});
+
+</script>
+</body>
+</html>
