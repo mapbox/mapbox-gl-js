@@ -13,6 +13,7 @@ import {Ray} from '../util/primitives.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import {getTilePoint, getTileVec3} from '../geo/projection/tile_transform.js';
+import resample from '../geo/projection/resample.js';
 
 /**
  * A data-class that represents a screenspace query from `Map#queryRenderedFeatures`.
@@ -26,7 +27,6 @@ export class QueryGeometry {
     cameraPoint: Point;
     screenGeometry: Point[];
     screenGeometryMercator: MercatorCoordinate[];
-    cameraGeometry: Point[];
 
     _screenRaycastCache: { [_: number]: MercatorCoordinate[]};
     _cameraRaycastCache: { [_: number]: MercatorCoordinate[]};
@@ -42,7 +42,6 @@ export class QueryGeometry {
 
         this.screenGeometry = this.bufferedScreenGeometry(0);
         this.screenGeometryMercator = this.screenGeometry.map((p) => transform.pointCoordinate3D(p));
-        this.cameraGeometry = this.bufferedCameraGeometry(0);
     }
 
     /**
@@ -166,6 +165,53 @@ export class QueryGeometry {
         return bufferConvexPolygon(cameraPolygon, buffer);
     }
 
+    // Creates a convex polygon in screen coordinates that encompasses the query frustum and
+    // the camera location at globe's surface. Camera point can be at any side of the query polygon as
+    // opposed to `bufferedCameraGeometry` which restricts the location to underneath the polygon.
+    bufferedCameraGeometryGlobe(buffer: number): Point[] {
+        const min = this.screenBounds[0];
+        const max = this.screenBounds.length === 1 ? this.screenBounds[0].add(new Point(1, 1)) : this.screenBounds[1];
+
+        // Padding is added to the query polygon before inclusion of the camera location.
+        // Otherwise the buffered (narrow) polygon could penetrate the globe creating a lot of false positives
+        const cameraPolygon = polygonizeBounds(min, max, buffer);
+
+        const camPos = this.cameraPoint.clone();
+        const column = (camPos.x > min.x) + (camPos.x > max.x);
+        const row = (camPos.y > min.y) + (camPos.y > max.y);
+        const sector = row * 3 + column;
+
+        switch (sector) {
+        case 0:     // replace top-left point (closed polygon)
+            cameraPolygon[0] = camPos;
+            cameraPolygon[4] = camPos.clone();
+            break;
+        case 1:     // insert point in the middle of top-left and top-right
+            cameraPolygon.splice(1, 0, camPos);
+            break;
+        case 2:     // replace top-right point
+            cameraPolygon[1] = camPos;
+            break;
+        case 3:     // insert point in the middle of top-left and bottom-left
+            cameraPolygon.splice(4, 0, camPos);
+            break;
+        case 5:     // insert point in the middle of top-right and bottom-right
+            cameraPolygon.splice(2, 0, camPos);
+            break;
+        case 6:     // replace bottom-left point
+            cameraPolygon[3] = camPos;
+            break;
+        case 7:     // insert point in the middle of bottom-left and bottom-right
+            cameraPolygon.splice(3, 0, camPos);
+            break;
+        case 8:     // replace bottom-right point
+            cameraPolygon[2] = camPos;
+            break;
+        }
+
+        return cameraPolygon;
+    }
+
     /**
      * Checks if a tile is contained within this query geometry.
      *
@@ -222,7 +268,10 @@ export class QueryGeometry {
         if (this._screenRaycastCache[key]) {
             return this._screenRaycastCache[key];
         } else {
-            const poly = this.bufferedScreenGeometry(padding).map((p) => transform.pointCoordinate3D(p));
+            const poly = transform.projection.name === 'globe' ?
+                this._projectAndResample(this.bufferedScreenGeometry(padding), transform) :
+                this.bufferedScreenGeometry(padding).map((p) => transform.pointCoordinate3D(p));
+
             this._screenRaycastCache[key] = poly;
             return poly;
         }
@@ -233,10 +282,29 @@ export class QueryGeometry {
         if (this._cameraRaycastCache[key]) {
             return this._cameraRaycastCache[key];
         } else {
-            const poly = this.bufferedCameraGeometry(padding).map((p) => transform.pointCoordinate3D(p));
+            const poly = transform.projection.name === 'globe' ?
+                this._projectAndResample(this.bufferedCameraGeometryGlobe(padding), transform) :
+                this.bufferedCameraGeometry(padding).map((p) => transform.pointCoordinate3D(p));
+
             this._cameraRaycastCache[key] = poly;
             return poly;
         }
+    }
+
+    _projectAndResample(polygon: Point[], transform: Transform): MercatorCoordinate[] {
+        // Resample the polygon by adding intermediate points so that straight lines of the shape
+        // are correctly projected on the surface of the globe.
+        const tolerance = 1.0 / 256.0;
+        const resampledPoly = resample(
+            polygon,
+            p => {
+                const mc = transform.pointCoordinate3D(p);
+                p.x = mc.x;
+                p.y = mc.y;
+            },
+            tolerance);
+
+        return resampledPoly.map(p => new MercatorCoordinate(p.x, p.y));
     }
 }
 
