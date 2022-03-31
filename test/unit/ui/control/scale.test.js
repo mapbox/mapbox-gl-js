@@ -51,3 +51,38 @@ test('ScaleControl should respect the maxWidth regardless of the unit and actual
     t.ok(parseFloat(el.style.width, 10) <= maxWidth, 'ScaleControl respects maxWidth');
     t.end();
 });
+
+test('ScaleControl should support different projections', (t) => {
+    const map = createMap(t, {
+        center: [-180, 0]
+    });
+
+    const scale = new ScaleControl();
+    const selector = '.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale';
+    map.addControl(scale);
+    map.setZoom(12.5);
+
+    map._domRenderTaskQueue.run();
+    let contents = map.getContainer().querySelector(selector).innerHTML;
+    t.notMatch(contents, /NaN|undefined/);
+
+    const projections = [
+        'albers',
+        'equalEarth',
+        'equirectangular',
+        'lambertConformalConic',
+        'mercator',
+        'globe',
+        'naturalEarth',
+        'winkelTripel',
+    ];
+
+    for (const projection of projections) {
+        map.setProjection(projection);
+        map._domRenderTaskQueue.run();
+        contents = map.getContainer().querySelector(selector).innerHTML;
+        t.notMatch(contents, /NaN|undefined/, `ScaleControl supports ${projection}`);
+    }
+
+    t.end();
+});
