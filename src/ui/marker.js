@@ -13,7 +13,7 @@ import type Popup from './popup.js';
 import type {LngLatLike} from "../geo/lng_lat.js";
 import type {MapMouseEvent, MapTouchEvent} from './events.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import {globeTiltAtScreenPoint, globeCenterToScreenPoint} from '../geo/projection/globe_util.js';
+import {globeTiltAtLngLat, globeCenterToScreenPoint, isLngLatBehindGlobe} from '../geo/projection/globe_util.js';
 
 type Options = {
     element?: HTMLElement,
@@ -410,20 +410,17 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _occluded(unprojected: LngLat): boolean {
+    _occluded(): boolean {
         const map = this._map;
         if (!map) return false;
+        const unprojected = map.unproject(this._pos);
         const camera = map.getFreeCameraOptions();
-        if (camera.position) {
-            const cameraLngLat = camera.position.toLngLat();
-            const shortestDistance = cameraLngLat.distanceTo(unprojected);
-            const distanceToMarker = cameraLngLat.distanceTo(this._lngLat);
-            // In globe view, we only occlude if past ~100 km from cameraLngLat (i.e. screen center).
-            // This fixes an issue where a marker at screen center results in very small distances,
-            // with the error introduced from `map.unproject(pos)` occasionally causing the marker to be incorrectly occluded.
-            return shortestDistance < distanceToMarker * 0.9 && (!map._usingGlobe() || distanceToMarker > 100000);
-        }
-        return false;
+        if (!camera.position) return false;
+        const cameraLngLat = camera.position.toLngLat();
+        const toClosestSurface = cameraLngLat.distanceTo(unprojected);
+        const toMarker = cameraLngLat.distanceTo(this._lngLat);
+        return toClosestSurface < toMarker * 0.9;
+
     }
 
     _evaluateOpacity() {
@@ -439,9 +436,9 @@ export default class Marker extends Evented {
         const mapLocation = map.unproject(pos);
         let opacity = 1;
         if (map._usingGlobe()) {
-            opacity = this._occluded(mapLocation) ? 0 : 1;
+            opacity = isLngLatBehindGlobe(map.transform, this._lngLat) ? 0 : 1;
         } else if (map.transform._terrainEnabled() && map.getTerrain()) {
-            opacity = this._occluded(mapLocation) ? TERRAIN_OCCLUDED_OPACITY : 1;
+            opacity = this._occluded() ? TERRAIN_OCCLUDED_OPACITY : 1;
         }
 
         const fogOpacity = map._queryFogOpacity(mapLocation);
@@ -490,7 +487,7 @@ export default class Marker extends Evented {
             const pitch = map.getPitch();
             return pitch ? `rotateX(${pitch}deg)` : '';
         }
-        const tilt = radToDeg(globeTiltAtScreenPoint(map.transform, pos));
+        const tilt = radToDeg(globeTiltAtLngLat(map.transform, this._lngLat));
         const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
         const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
         const yTilt = posFromCenter.x * tiltOverDist;

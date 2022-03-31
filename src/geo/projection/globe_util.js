@@ -9,7 +9,7 @@ import {
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import {degToRad, smoothstep, clamp} from '../../util/util.js';
+import {degToRad, radToDeg, smoothstep, clamp} from '../../util/util.js';
 import {vec3, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
 import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
@@ -18,6 +18,7 @@ import {TriangleIndexArray, GlobeVertexArray, GlobeAtmosphereVertexArray, LineIn
 import {Aabb} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
 
+import type LngLat from '../lng_lat.js';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
 import type {Vec3, Mat4} from 'gl-matrix';
@@ -439,22 +440,26 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
     return vec3.add([], centerToPivot, pivotToCamera);
 }
 
-// Return the angle of the normal vector of the sphere relative to the camera at a screen point.
-// i.e. how much to tilt map-aligned markers.
-export function globeTiltAtScreenPoint(tr: Transform, point: Point): number {
-    const lngLat = tr.pointLocation(point);
-    const centerToPoint = latLngToECEF(lngLat.lat, lngLat.lng);
-    const centerToCamera = cameraPositionInECEF(tr);
-    const pointToCamera = vec3.subtract([], centerToCamera, centerToPoint);
-    return vec3.angle(pointToCamera, centerToPoint);
-}
-
 export function globeCenterToScreenPoint(tr: Transform): Point {
     const pos = [0, 0, 0];
     const matrix = mat4.identity(new Float64Array(16));
     mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
     vec3.transformMat4(pos, pos, matrix);
     return new Point(pos[0], pos[1]);
+}
+
+// Return the angle of the normal vector of the sphere relative to the camera at a screen point.
+// i.e. how much to tilt map-aligned markers.
+export function globeTiltAtLngLat(tr: Transform, lngLat: LngLat): number {
+    const centerToPoint = latLngToECEF(lngLat.lat, lngLat.lng);
+    const centerToCamera = cameraPositionInECEF(tr);
+    const pointToCamera = vec3.subtract([], centerToCamera, centerToPoint);
+    return vec3.angle(pointToCamera, centerToPoint);
+}
+
+export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
+    // Consider 1% past the horizon not occluded, this allows popups to be dragged around the globe edge without fading.
+    return (globeTiltAtLngLat(tr, lngLat) > Math.PI / 2 * 1.01);
 }
 
 export class GlobeSharedBuffers {
