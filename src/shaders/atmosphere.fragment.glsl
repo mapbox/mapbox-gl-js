@@ -5,11 +5,11 @@ uniform vec3 u_start_color;
 uniform vec4 u_color;
 uniform vec4 u_space_color;
 uniform vec4 u_high_color;
-uniform vec2 u_latlon;
 uniform float u_star_intensity;
 uniform float u_star_size;
 uniform float u_star_density;
 uniform float u_horizon_angle;
+uniform mat4 u_rotation_matrix;
 
 varying highp vec3 v_ray_dir;
 varying highp vec3 v_horizon_dir;
@@ -92,8 +92,21 @@ void main() {
     float a2 = mix(a0, a1, t);
     float a  = mix(alpha_2, a2, t);
 
-    vec2 uv = (gl_FragCoord.xy / u_viewport) * (2.0 - 1.0);
-    vec3 D = vec3(uv + vec2(-u_latlon.y, -u_latlon.x), 1.0);
+    vec2 uv = gl_FragCoord.xy / u_viewport - 0.5;
+    float aspect_ratio = u_viewport.x / u_viewport.y;
+
+    vec4 uv_dir = vec4(normalize(vec3(uv.x * aspect_ratio, uv.y, 1.0)), 1.0);
+
+    uv_dir = u_rotation_matrix * uv_dir;
+
+    vec3 n = abs(uv_dir.xyz);
+    vec2 uv_remap = (n.x > n.y && n.x > n.z) ? uv_dir.yz / uv_dir.x:
+                    (n.y > n.x && n.y > n.z) ? uv_dir.zx / uv_dir.y:
+                                               uv_dir.xy / uv_dir.z;
+
+    uv_remap.x /= aspect_ratio;
+
+    vec3 D = vec3(uv_remap, 1.0);
 
     // Accumulate star field
     float star_field = 0.0;
@@ -113,6 +126,8 @@ void main() {
 
     // Dither
     c = dither(c, gl_FragCoord.xy + u_temporal_offset);
+
+    // c = vec3(uv_remap, 1.0);
 
     gl_FragColor = vec4(c, a);
 }
