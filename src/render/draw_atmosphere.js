@@ -9,7 +9,7 @@ import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
 import type {DynamicDefinesType} from '../render/program/program_uniforms.js';
 import {degToRad, mapValue} from '../util/util.js';
-import {vec3} from 'gl-matrix';
+import {vec3, mat4, quat} from 'gl-matrix';
 import Fog from '../style/fog.js';
 
 export default drawAtmosphere;
@@ -42,15 +42,21 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
     const highColor = fog.properties.get('high-color').toArray01();
     const spaceColor = fog.properties.get('space-color').toArray01PremultipliedAlpha();
 
+    const orientation = quat.identity([]);
+
+    quat.rotateY(orientation, orientation, -degToRad(tr._center.lng));
+    quat.rotateX(orientation, orientation, degToRad(tr._center.lat));
+
+    quat.rotateZ(orientation, orientation, tr.angle);
+    quat.rotateX(orientation, orientation, -tr._pitch);
+
+    const rotationMatrix = mat4.fromQuat(new Float32Array(16), orientation);
+
     const starIntensity = mapValue(fog.properties.get('star-intensity'), 0.0, 1.0, 0.0, 0.25);
     // https://www.desmos.com/calculator/oanvvpr36d
     const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.0, 0.25);
 
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
-    const latlon = [
-        degToRad(tr._center.lat) / (Math.PI * 0.5),
-        degToRad(tr._center.lng) / Math.PI
-    ];
 
     const globeCenterDistance = vec3.length(globeCenterInViewSpace);
     const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(globeRadius, 2.0));
@@ -70,10 +76,10 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
         fogColor,
         highColor,
         spaceColor,
-        latlon,
         starIntensity,
         temporalOffset,
-        horizonAngle);
+        horizonAngle,
+        rotationMatrix);
 
     painter.prepareDrawProgram(context, program);
 

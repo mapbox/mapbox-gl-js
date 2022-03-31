@@ -38,12 +38,12 @@ export type AtmosphereUniformsType = {|
     'u_color': Uniform4f,
     'u_high_color': Uniform4f,
     'u_space_color': Uniform4f,
-    'u_latlon': Uniform2f,
     'u_star_intensity': Uniform1f,
     'u_star_size': Uniform1f,
     'u_star_density': Uniform1f,
     'u_temporal_offset': Uniform1f,
-    'u_horizon_angle': Uniform1f
+    'u_horizon_angle': Uniform1f,
+    'u_rotation_matrix': UniformMatrix4f
 |};
 
 const globeRasterUniforms = (context: Context, locations: UniformLocations): GlobeRasterUniformsType => ({
@@ -70,12 +70,12 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_color': new Uniform4f(context, locations.u_color),
     'u_high_color': new Uniform4f(context, locations.u_high_color),
     'u_space_color': new Uniform4f(context, locations.u_space_color),
-    'u_latlon': new Uniform2f(context, locations.u_latlon),
     'u_star_intensity': new Uniform1f(context, locations.u_star_intensity),
     'u_star_density': new Uniform1f(context, locations.u_star_density),
     'u_star_size': new Uniform1f(context, locations.u_star_size),
     'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset),
-    'u_horizon_angle': new Uniform1f(context, locations.u_horizon_angle)
+    'u_horizon_angle': new Uniform1f(context, locations.u_horizon_angle),
+    'u_rotation_matrix': new UniformMatrix4f(context, locations.u_rotation_matrix)
 });
 
 const globeRasterUniformValues = (
@@ -109,10 +109,10 @@ const atmosphereUniformValues = (
     color: [number, number, number, number],
     skyColor: [number, number, number, number],
     spaceColor: [number, number, number, number],
-    latlon: [number, number],
     starIntensity: number,
     temporalOffset: number,
-    horizonAngle: number
+    horizonAngle: number,
+    rotationMatrix: Float32Array
 ): UniformValues<AtmosphereUniformsType> => ({
     'u_frustum_tl': frustumDirTl,
     'u_frustum_tr': frustumDirTr,
@@ -127,12 +127,12 @@ const atmosphereUniformValues = (
     'u_color': color,
     'u_high_color': skyColor,
     'u_space_color': spaceColor,
-    'u_latlon': latlon,
     'u_star_intensity': starIntensity,
     'u_star_size': 5.0 * browser.devicePixelRatio,
     'u_star_density': 0.0,
     'u_temporal_offset': temporalOffset,
     'u_horizon_angle': horizonAngle,
+    'u_rotation_matrix': rotationMatrix
 });
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};
