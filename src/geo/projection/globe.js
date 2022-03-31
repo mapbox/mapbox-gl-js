@@ -172,6 +172,7 @@ export default class Globe extends Mercator {
             const mercatorPixelsPerMeter = mercatorZfromAltitude(1, tr.center.lat) * tr.worldSize;
             const mercatorPixelDistance = farthestPixelDistanceOnPlane(tr, mercatorPixelsPerMeter);
             const pixelRadius = tr.worldSize / (2.0 * Math.PI);
+            const approxTileArcHalfAngel = Math.max(tr.width, tr.height) / tr.worldSize * Math.PI;
             return interpolate(globePixelDistance, mercatorPixelDistance, t);
         }
         return globePixelDistance;
