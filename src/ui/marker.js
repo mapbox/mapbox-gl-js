@@ -333,6 +333,7 @@ export default class Marker extends Evented {
                 } : this._offset;
             }
             this._popup = popup;
+            popup._marker = this;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
             this._element.setAttribute('role', 'button');
