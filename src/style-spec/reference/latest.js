@@ -1,7 +1,8 @@
 // @flow
 
-import spec from './v8.json';
+import * as spec from './v8.json';
 
-export type StyleReference = typeof spec;
+export type StyleReference = typeof spec.default;
 
-export default spec;
+export default spec.default;
+export const min = spec.default;

@@ -3,7 +3,6 @@ import replace from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
-import json from '@rollup/plugin-json';
 import {flow} from '../../build/rollup_plugins.js';
 
 // Build es modules?
@@ -11,6 +10,8 @@ const esm = 'esm' in process.env;
 
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
+const reviver = (key, value) => ['doc', 'example'].includes(key) ? undefined : value;
 
 const config = [{
     input: `${__dirname}/style-spec.js`,
@@ -46,8 +47,33 @@ const config = [{
                 '_token_stack:': ''
             }
         }),
+        replace({
+            include: /\/reference\/latest\.js$/,
+            delimiters: ['', ''],
+            values: {
+                'export const min = spec.default': 'export const min = spec.min'
+            }
+        }),
         flow(),
-        json(),
+        {
+            name: 'json-min',
+            transform(code, id) {
+                if (id.endsWith('.json')) {
+                    const json = JSON.parse(code);
+                    const min = JSON.stringify(json, reviver);
+                    const full = JSON.stringify(json);
+                    code = `export default ${full}`;
+                    if (min !== full) {
+                        code += `\nexport const min = ${min}`;
+                    }
+                    return {
+                        code,
+                        map: null
+                    };
+                }
+                return null;
+            }
+        },
         unassert(),
         resolve({
             browser: true,
