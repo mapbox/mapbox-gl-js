@@ -127,7 +127,6 @@ void main() {
     // Dither
     c = dither(c, gl_FragCoord.xy + u_temporal_offset);
 
-    // c = vec3(uv_remap, 1.0);
 
     gl_FragColor = vec4(c, a);
 }
