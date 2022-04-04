@@ -83,12 +83,10 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
 
     painter.prepareDrawProgram(context, program);
 
-    const sharedBuffers = painter.globeSharedBuffers;
-    if (sharedBuffers) {
+    const buffer = painter.atmosphereBuffer;
+    if (buffer) {
         program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
             ColorMode.alphaBlended, CullFaceMode.backCW, uniforms, "skybox",
-            sharedBuffers.atmosphereVertexBuffer,
-            sharedBuffers.atmosphereIndexBuffer,
-            sharedBuffers.atmosphereSegments);
+            buffer.vertexBuffer, buffer.indexBuffer, buffer.segments);
     }
 }
