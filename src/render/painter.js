@@ -42,6 +42,7 @@ import custom from './draw_custom.js';
 import sky from './draw_sky.js';
 import drawAtmosphere from './draw_atmosphere.js';
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import {AtmosphereBuffer} from '../render/atmosphere_buffer.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
@@ -159,6 +160,7 @@ class Painter {
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
     globeSharedBuffers: ?GlobeSharedBuffers;
+    atmosphereBuffer: AtmosphereBuffer;
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
@@ -293,6 +295,8 @@ class Painter {
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
         this.loadTimeStamps.push(window.performance.now());
+
+        this.atmosphereBuffer = new AtmosphereBuffer(this.context);
     }
 
     getMercatorTileBoundsBuffers(): TileBoundsBuffers {
@@ -953,6 +957,9 @@ class Painter {
         this.emptyTexture.destroy();
         if (this.debugOverlayTexture) {
             this.debugOverlayTexture.destroy();
+        }
+        if (this.atmosphereBuffer) {
+            this.atmosphereBuffer.destroy();
         }
     }
 
