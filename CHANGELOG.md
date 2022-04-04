@@ -2,7 +2,6 @@
 
 ### 🐞 Bug fixes
 
-* Add source field requirement to terrain exaggeration ([#11664](https://github.com/mapbox/mapbox-gl-js/pull/11664))
 * Work around a [Safari rendering bug](https://bugs.webkit.org/show_bug.cgi?id=237918#c3) by disabling WebGL context antialiasing for Safari 15.4 and 15.5 ([#11615](https://github.com/mapbox/mapbox-gl-js/pull/11615))
 * Fix disabling cooperative gesture handling when map is fullscreen in Safari ([#11619](https://github.com/mapbox/mapbox-gl-js/pull/11619))
 
