@@ -609,6 +609,10 @@ class Painter {
             }
         }
 
+        if (this.style.fog) {
+            drawAtmosphere(this, this.style.fog);
+        }
+
         // Sky pass ======================================================
         // Draw all sky layers bottom to top.
         // They are drawn at max depth, they are drawn after opaque and before
@@ -624,10 +628,6 @@ class Painter {
 
                 this.renderLayer(this, sourceCache, layer, coords);
             }
-        }
-
-        if (this.style.fog) {
-            drawAtmosphere(this, this.style.fog);
         }
 
         // Translucent pass ===============================================
