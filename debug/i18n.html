@@ -132,114 +132,6 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
-const style = {
-    "version": 8,
-    "name": "i18n-viewer",
-    "metadata": {
-        "mapbox:type": "default",
-        "mapbox:origin": "satellite-streets-v11",
-        "mapbox:sdk-support": {
-            "android": "10.0.0",
-            "ios": "10.0.0",
-            "js": "2.6.0"
-        },
-        "mapbox:autocomposite": true,
-        "mapbox:groups": {
-            "Satellite imagery, land": {
-                "name": "Satellite imagery, land",
-                "collapsed": true
-            }
-        },
-        "mapbox:trackposition": true
-    },
-    "center": [-122.42757623070412, 48.000447097993174],
-    "zoom": 12.983063860391388,
-    "bearing": 0,
-    "pitch": 0,
-    "sources": {
-        "mapbox://mapbox.satellite": {
-            "url": "mapbox://mapbox.satellite",
-            "type": "raster",
-            "tileSize": 256
-        },
-        "mapbox://mapbox.mapbox-streets-v8-i18n": {
-            "url": "mapbox://mapbox.mapbox-streets-v8-i18n",
-            "type": "vector"
-        }
-    },
-    "sprite": "mapbox://sprites/mapbox/streets-v10",
-    "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-    "layers": [
-        {
-            "id": "background",
-            "type": "background",
-            "metadata": {
-                "mapbox:featureComponent": "satellite",
-                "mapbox:group": "Satellite imagery, land"
-            },
-            "layout": {},
-            "paint": {"background-color": "hsl(222, 56%, 4%)"}
-        },
-        {
-            "id": "satellite",
-            "type": "raster",
-            "metadata": {
-                "mapbox:featureComponent": "satellite",
-                "mapbox:group": "Satellite imagery, land"
-            },
-            "source": "mapbox://mapbox.satellite",
-            "layout": {},
-            "paint": {}
-        },
-        {
-            "id": "background (1)",
-            "type": "background",
-            "layout": {},
-            "paint": {"background-color": "hsla(0, 0%, 0%, 0.54)"}
-        },
-        {
-            "id": "places",
-            "type": "circle",
-            "source": "mapbox://mapbox.mapbox-streets-v8-i18n",
-            "source-layer": "place_label",
-            "layout": {},
-            "paint": {
-                "circle-radius": 3,
-                "circle-color": [
-                    "case",
-                    ["==", ["get", "name"], ["get", "name_local"]], "#4f7ca3",
-                    "#FFFFFF"
-                ]
-            }
-        },
-        {
-            "id": "places labels",
-            "type": "symbol",
-            "source": "mapbox://mapbox.mapbox-streets-v8-i18n",
-            "source-layer": "place_label",
-            "layout": {
-                "text-field": ["to-string", ["get", "name"]],
-                "text-anchor": "bottom-left",
-                "text-size": 14,
-                "text-font": [
-                    "Source Code Pro Semibold",
-                    "Arial Unicode MS Regular"
-                ],
-                "text-offset": [0.4, -0.1],
-                "text-allow-overlap": true,
-                "text-justify": "left"
-            },
-            "paint": {
-                "text-color": [
-                    "case",
-                    ["==", ["get", "name"], ["get", "name_local"]], "#4f7ca3",
-                    "#FFFFFF"
-                ]
-            }
-        }
-    ]
-};
-
 const language = document.getElementById('language');
 const worldview = document.getElementById('worldview');
 
@@ -247,10 +139,124 @@ var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [-122.4194, 37.7749],
-    style,
+    style: 'mapbox://styles/mapbox/streets-v11',
     hash: true,
     language: language.value,
     worldview: worldview.value
+});
+
+map.on('style.load', () => {
+    map.addSource('mapbox://mapbox.mapbox-streets-v8-i18n', {
+        type: 'vector',
+        url: 'mapbox://mapbox.mapbox-streets-v8-i18n',
+    });
+
+    map.addLayer({
+        "id": "places",
+        "type": "circle",
+        "source": "mapbox://mapbox.mapbox-streets-v8-i18n",
+        "source-layer": "place_label",
+        "layout": {},
+        "paint": {
+            "circle-radius": 3,
+            "circle-color": [
+                "case",
+                ["==", ["get", "name"], ["get", "name_local"]], "#4f7ca3",
+                "#000000"
+            ]
+        }
+    });
+
+    map.addLayer({
+        "id": "places-labels",
+        "type": "symbol",
+        "source": "mapbox://mapbox.mapbox-streets-v8-i18n",
+        "source-layer": "place_label",
+        "layout": {
+            "text-field": ["to-string", ["get", "name"]],
+            "text-anchor": "bottom-left",
+            "text-size": [
+                "case",
+                ["==", ["get", "name"], ["get", "name_local"]], 10,
+                12
+            ],
+            "text-font": [
+                "Source Code Pro Semibold",
+                "Arial Unicode MS Regular"
+            ],
+            "text-offset": [0.4, -0.1],
+            "text-allow-overlap": true,
+            "text-justify": "left"
+        },
+        "paint": {
+            "text-color": [
+                "case",
+                ["==", ["get", "name"], ["get", "name_local"]], "#4f7ca3",
+                "#000000"
+            ]
+        }
+    });
+
+    map.addLayer({
+        "id": "borders",
+        "type": "line",
+        "source": "mapbox://mapbox.mapbox-streets-v8-i18n",
+        "source-layer": "admin",
+        "layout": {
+            "line-cap": "round",
+            "line-join": "round"
+        },
+        "paint": {
+          "line-width": 2,
+          "line-opacity": 0.5,
+          "line-color": [
+            "case",
+            ["==", ["get", "worldview"], "US"], "#0074D9",
+            ["==", ["get", "worldview"], "IN"], "#7FDBFF",
+            ["==", ["get", "worldview"], "CN"], "#FF851B",
+            ["==", ["get", "worldview"], "JP"], "#FFDC00",
+            ["==", ["get", "worldview"], "RU"], "#DDDDDD",
+            ["==", ["get", "worldview"], "MA"], "#DDDDDD",
+            ["==", ["get", "worldview"], "AR"], "#DDDDDD",
+            ["==", ["get", "worldview"], "TR"], "#DDDDDD",
+            "#34b5cf"
+          ]
+        }
+    });
+    
+    map.addLayer({
+        "id": "borders-labels",
+        "type": "symbol",
+        "source": "mapbox://mapbox.mapbox-streets-v8-i18n",
+        "source-layer": "admin",
+        "layout": {
+            "text-field": ["to-string", ["get", "worldview"]],
+            "text-size": 14,
+            "text-font": [
+              "Source Code Pro Semibold",
+              "Arial Unicode MS Regular"
+            ],
+            "text-anchor": "center",
+            "text-allow-overlap": true,
+            "symbol-placement": "line",
+            "symbol-spacing": 20,
+            "text-keep-upright": true
+        },
+        "paint": {
+          "text-color": [
+            "case",
+            ["==", ["get", "worldview"], "US"], "#0074D9",
+            ["==", ["get", "worldview"], "IN"], "#7FDBFF",
+            ["==", ["get", "worldview"], "CN"], "#FF851B",
+            ["==", ["get", "worldview"], "JP"], "#FFDC00",
+            ["==", ["get", "worldview"], "RU"], "#DDDDDD",
+            ["==", ["get", "worldview"], "MA"], "#DDDDDD",
+            ["==", ["get", "worldview"], "AR"], "#DDDDDD",
+            ["==", ["get", "worldview"], "TR"], "#DDDDDD",
+            "#79a0a8"
+          ]
+        }
+    });
 });
 
 language.addEventListener('change', (e) => {
