@@ -1,4 +1,4 @@
-## 13.24.0-beta.1
+## 13.24.0
 ### 🐞 Bug fixes
 
 * Fix error on `gl-style-validate` script. ([#11538](https://github.com/mapbox/mapbox-gl-js/pull/11538))
