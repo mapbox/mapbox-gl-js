@@ -116,6 +116,7 @@ void main() {
     float a_clip_end = a_packed[3];
     highp float texel_height = 1.0 / u_image_height;
     highp float half_texel_height = 0.5 * texel_height;
+
     v_uv = vec4(a_uv_x, a_split_index * texel_height - half_texel_height, a_clip_start, a_clip_end);
 #endif
 
