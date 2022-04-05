@@ -82,7 +82,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
 
         const curTrimOffset = layer.paint.get('line-trim-offset');
-        // When line cap is 'round' or 'square', the whole line progress will beyound 1.0 or less than 0.0.
+        // When line cap is 'round' or 'square', the whole line progress will beyond 1.0 or less than 0.0.
         // If trim_offset begin is line begin (0.0), or trim_offset end is line end (1.0), adjust the trim
         // offset with fake offset shift so that the line_progress < 0.0 or line_progress > 1.0 part will be
         // correctly covered.
