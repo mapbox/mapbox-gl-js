@@ -72,7 +72,6 @@ test('ScaleControl should support different projections', (t) => {
         'equirectangular',
         'lambertConformalConic',
         'mercator',
-        'globe',
         'naturalEarth',
         'winkelTripel',
     ];
