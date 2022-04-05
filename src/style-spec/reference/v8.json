@@ -4083,6 +4083,9 @@
       },
       "transition": true,
       "doc": "Exaggerates the elevation of the terrain by multiplying the data from the DEM with this value.",
+      "requires": [
+        "source"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "2.0.0",
