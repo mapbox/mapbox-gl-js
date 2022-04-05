@@ -1,4 +1,4 @@
-## 2.8.0-beta.1
+## 2.8.0
 
 ## Performance improvements 🏁
 * Improve memory usage by freeing memory more eagerly after loading tiles. ([#11434](https://github.com/mapbox/mapbox-gl-js/pull/11434))
