@@ -67,7 +67,7 @@ export const operationHandlers = {
                     .replace('{y}', String(y));
 
                 const response = await window.fetch(url, {signal});
-                if (!response.ok) throw new Error(response.statusText);
+                if (!response.ok) return null;
 
                 const data = await response.arrayBuffer();
                 const blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
