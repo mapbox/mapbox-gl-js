@@ -8,6 +8,7 @@
 ### Bug fixes 🐞
 * Fix `map.fitBounds()`, `map.fitScreenCoordinates()`, and `map.cameraForBounds()` incorrectly matching bounds with non-zero bearing. ([#11568](https://github.com/mapbox/mapbox-gl-js/pull/11568)) (h/t [TannerPerrien](https://github.com/TannerPerrien))
 * Improve control button appearance by applying `border-radius` more consistently. ([#11423](https://github.com/mapbox/mapbox-gl-js/pull/11423)) (h/t [nagix](https://github.com/nagix))
+* Fix `ScaleControl` displaying incorrect units with some projections.([#11657](https://github.com/mapbox/mapbox-gl-js/pull/11657))
 * Fix performance regression when animating image sources. ([#11564](https://github.com/mapbox/mapbox-gl-js/pull/11564))
 * Fix `MapDataEvent.isSourceLoaded()` to check if specific source has loaded. ([#11393](https://github.com/mapbox/mapbox-gl-js/pull/11393))
 * Fix map not wrapping after moving the map with no inertia. ([#11448](https://github.com/mapbox/mapbox-gl-js/pull/11448))
