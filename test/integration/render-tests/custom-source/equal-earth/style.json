@@ -22,10 +22,6 @@
             }
           }
         ],
-        [
-          "sleep",
-          1500
-        ],
         ["wait"],
         ["setProjection", "equalEarth"],
         ["wait"]

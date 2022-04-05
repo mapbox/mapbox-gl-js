@@ -11,9 +11,7 @@
           "custom-source",
           "local://tiles/mapbox.satellite/{z}-{x}-{y}.png"
         ],
-        [
-          "wait"
-        ],
+        ["wait"],
         [
           "addLayer",
           {
@@ -25,20 +23,9 @@
             }
           }
         ],
-        [
-          "sleep",
-          1500
-        ],
-        [
-          "wait"
-        ],
-        [
-          "setProjection",
-          "lambertConformalConic"
-        ],
-        [
-          "wait"
-        ]
+        ["wait"],
+        ["setProjection", "lambertConformalConic"],
+        ["wait"]
       ]
     }
   },
