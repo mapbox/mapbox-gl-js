@@ -8,4 +8,4 @@ Alternatively, you can also access the test page on Circle CI. Find a job named 
 
 To add new pages to the list from our online documentatione, add them to the `pages` object at the beginning of `index.js`. By default, it will load the HTML sample from https://github.com/mapbox/mapbox-gl-js-docs/tree/publisher-production/docs/pages/example using the ID. You can override this by specifying a custom `url` property next to the `title`.
 
-To add new pages from our `debug/` folder, simply add their file names to `local_release_page_list.txt`.
+To add new pages from our `debug/` folder, simply add their file names to [`local_release_page_list.txt`](./local_release_page_list.txt).

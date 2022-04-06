@@ -6,3 +6,4 @@ projections.html
 scroll_zoom_blocker.html
 threejs-antenna.html
 video.html
+custom-source.html
