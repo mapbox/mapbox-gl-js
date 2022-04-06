@@ -8,6 +8,7 @@ import {extend} from '../../../src/util/util.js';
 import {RequestManager} from '../../../src/util/mapbox.js';
 import {Event, Evented} from '../../../src/util/evented.js';
 import window from '../../../src/util/window.js';
+import styleSpec from '../../../src/style-spec/reference/latest.js';
 import {
     setRTLTextPlugin,
     clearRTLTextPlugin,
@@ -2379,19 +2380,56 @@ test('Style#setFog', (t) => {
 });
 
 test('Style#getFog', (t) => {
+    const defaultHighColor = styleSpec.fog["high-color"].default;
+    const defaultStarIntensity = styleSpec.fog["star-intensity"].default;
+    const defaultSpaceColor = styleSpec.fog["space-color"].default;
+    const defaultRange = styleSpec.fog["range"].default;
+    const defaultColor = styleSpec.fog["color"].default;
+    const defaultHorizonBlend = styleSpec.fog["horizon-blend"].default;
+
     t.test('rolls up inline source into style', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
-            "fog": {"range": [1, 2], "color": "white", "horizon-blend": 0.05},
+            "fog": {"range": [1, 2], "color": "white", "horizon-blend": 0},
             "sources": {},
             "layers": []
         });
 
         style.on('style.load', () => {
-            style.setFog({"range": [0, 1], "color": "white", "horizon-blend": 0.0});
+            style.setFog({"range": [0, 1], "color": "white", "horizon-blend": 0});
             t.ok(style.getFog());
-            t.deepEqual(style.getFog(), {"range": [0, 1], "color": "white", "horizon-blend": 0.0});
+            t.deepEqual(style.getFog(), {
+                "range": [0, 1],
+                "color": "white",
+                "horizon-blend": 0,
+                "high-color": defaultHighColor,
+                "star-intensity": defaultStarIntensity,
+                "space-color": defaultSpaceColor
+            });
+            t.end();
+        });
+    });
+
+    t.test('default fog styling', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "fog": {},
+            "sources": {},
+            "layers": []
+        });
+
+        style.on('style.load', () => {
+            t.ok(style.getFog());
+            t.deepEqual(style.getFog(), {
+                "range": defaultRange,
+                "color": defaultColor,
+                "horizon-blend": defaultHorizonBlend,
+                "high-color": defaultHighColor,
+                "star-intensity": defaultStarIntensity,
+                "space-color": defaultSpaceColor
+            });
             t.end();
         });
     });
