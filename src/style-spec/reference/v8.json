@@ -3841,7 +3841,7 @@
     "high-color": {
       "type": "color",
       "property-type": "data-constant",
-      "default": "#ffffff",
+      "default": "#245cdf",
       "expression": {
         "interpolated": true,
         "parameters": [
@@ -3859,7 +3859,21 @@
     "space-color": {
       "type": "color",
       "property-type": "data-constant",
-      "default": "#ffffff",
+
+      "default":
+      [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        4,
+        "#010b19",
+        7,
+        "#367ab9"
+      ],
       "expression": {
         "interpolated": true,
         "parameters": [
@@ -3877,7 +3891,20 @@
     "horizon-blend": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.1,
+      "default":
+      [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        4,
+        0.07,
+        7,
+        0.1
+      ],
       "minimum": 0,
       "maximum": 1,
       "expression": {
@@ -3897,7 +3924,20 @@
     "star-intensity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.15,
+      "default": 
+      [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        5,
+        0.35,
+        6,
+        0
+      ],
       "minimum": 0,
       "maximum": 1,
       "expression": {

@@ -79,6 +79,12 @@ class Fog extends Evented {
             return;
         }
 
+        for (const name of Object.keys(styleSpec.fog)) {
+            if (!fog[name]) {
+                fog[name] = styleSpec.fog[name].default;
+            }
+        }
+
         for (const name in fog) {
             const value = fog[name];
             if (endsWith(name, TRANSITION_SUFFIX)) {

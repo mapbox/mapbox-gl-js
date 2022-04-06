@@ -384,7 +384,7 @@ function getExpectedType(spec: StylePropertySpecification): Type {
 }
 
 function getDefaultValue(spec: StylePropertySpecification): Value {
-    if (spec.type === 'color' && isFunction(spec.default)) {
+    if (spec.type === 'color' && (isFunction(spec.default) || Array.isArray(spec.default))) {
         // Special case for heatmap-color: it uses the 'default:' to define a
         // default color ramp, but createExpression expects a simple value to fall
         // back to in case of runtime errors
