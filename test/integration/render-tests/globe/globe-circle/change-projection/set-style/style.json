@@ -75,6 +75,7 @@
       ]
     }
   },
+  "fog": {},
   "zoom": 2.0,
   "sources": {},
   "layers": []
