@@ -2,18 +2,28 @@
 
 import Point from '@mapbox/point-geometry';
 import {getBounds, clamp, polygonizeBounds, bufferConvexPolygon} from '../util/util.js';
-import {polygonIntersectsBox} from '../util/intersection_tests.js';
+import {polygonIntersectsBox, polygonContainsPoint} from '../util/intersection_tests.js';
 import EXTENT from '../data/extent.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import type Transform from '../geo/transform.js';
 import type Tile from '../source/tile.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
-import {vec3} from 'gl-matrix';
+import {vec3, vec4, mat4} from 'gl-matrix';
 import {Ray} from '../util/primitives.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import {getTilePoint, getTileVec3} from '../geo/projection/tile_transform.js';
 import resample from '../geo/projection/resample.js';
+import {GLOBE_RADIUS} from '../geo/projection/globe_util.js'
+import {number as interpolate} from '../style-spec/util/interpolate.js';
+
+type CachedPolygon = {
+    // Query rectangle projected on the map plane
+    polygon: MercatorCoordinate[];
+
+    // A flag tellingwhether the query polygon might span across mercator boundaries [0, 1]
+    unwrapped: boolean;
+};
 
 /**
  * A data-class that represents a screenspace query from `Map#queryRenderedFeatures`.
@@ -28,8 +38,8 @@ export class QueryGeometry {
     screenGeometry: Point[];
     screenGeometryMercator: MercatorCoordinate[];
 
-    _screenRaycastCache: { [_: number]: MercatorCoordinate[]};
-    _cameraRaycastCache: { [_: number]: MercatorCoordinate[]};
+    _screenRaycastCache: { [_: number]: CachedPolygon};
+    _cameraRaycastCache: { [_: number]: CachedPolygon};
 
     isAboveHorizon: boolean;
 
@@ -228,13 +238,14 @@ export class QueryGeometry {
         const bias = 1;
         const padding = tile.queryPadding + bias;
 
-        // Append camera wrap to the tile wrap value. This is useful for example in globe view where the data
-        // wraps around but world copies are not rendered
-        const wrap = tile.tileID.wrap + cameraWrap;
+        const cachedQuery = use3D ?
+            this._bufferedCameraMercator(padding, transform) :
+            this._bufferedScreenMercator(padding, transform);
 
-        const geometryForTileCheck = use3D ?
-            this._bufferedCameraMercator(padding, transform).map((p) => getTilePoint(tile.tileTransform, p, wrap)) :
-            this._bufferedScreenMercator(padding, transform).map((p) => getTilePoint(tile.tileTransform, p, wrap));
+        // Append camera wrap to the tile wrap value. This is useful for example in globe view where
+        // we want to simulate tiles being wrapped without actually rendering wrapped copies
+        const wrap = tile.tileID.wrap + (cachedQuery.unwrapped ? cameraWrap : 0);
+        const geometryForTileCheck = cachedQuery.polygon.map((p) => getTilePoint(tile.tileTransform, p, wrap));
 
         if (!polygonIntersectsBox(geometryForTileCheck, 0, 0, EXTENT, EXTENT)) {
             return undefined;
@@ -270,49 +281,188 @@ export class QueryGeometry {
      * based on the style. In that case we want to reuse the result from a previously computed terrain raycast.
      */
 
-    _bufferedScreenMercator(padding: number, transform: Transform): MercatorCoordinate[] {
+    _bufferedScreenMercator(padding: number, transform: Transform): CachedPolygon {
         const key = cacheKey(padding);
         if (this._screenRaycastCache[key]) {
             return this._screenRaycastCache[key];
         } else {
-            const poly = transform.projection.name === 'globe' ?
-                this._projectAndResample(this.bufferedScreenGeometry(padding), transform) :
-                this.bufferedScreenGeometry(padding).map((p) => transform.pointCoordinate3D(p));
+            let poly: CachedPolygon;
+
+            if (transform.projection.name === 'globe') {
+                poly = this._projectAndResample(this.bufferedScreenGeometry(padding), transform);
+            } else {
+                poly = {
+                    polygon: this.bufferedScreenGeometry(padding).map((p) => transform.pointCoordinate3D(p)),
+                    unwrapped: true
+                };
+            }
 
             this._screenRaycastCache[key] = poly;
             return poly;
         }
     }
 
-    _bufferedCameraMercator(padding: number, transform: Transform): MercatorCoordinate[] {
+    _bufferedCameraMercator(padding: number, transform: Transform): CachedPolygon {
         const key = cacheKey(padding);
         if (this._cameraRaycastCache[key]) {
             return this._cameraRaycastCache[key];
         } else {
-            const poly = transform.projection.name === 'globe' ?
-                this._projectAndResample(this.bufferedCameraGeometryGlobe(padding), transform) :
-                this.bufferedCameraGeometry(padding).map((p) => transform.pointCoordinate3D(p));
+            let poly: CachedPolygon;
+
+            if (transform.projection.name === 'globe') {
+                poly = this._projectAndResample(this.bufferedCameraGeometryGlobe(padding), transform);
+            } else {
+                poly = {
+                    polygon: this.bufferedCameraGeometry(padding).map((p) => transform.pointCoordinate3D(p)),
+                    unwrapped: true
+                };
+            }
 
             this._cameraRaycastCache[key] = poly;
             return poly;
         }
     }
 
-    _projectAndResample(polygon: Point[], transform: Transform): MercatorCoordinate[] {
+    _projectAndResample(polygon: Point[], transform: Transform): CachedPolygon {
+        // Handle a special case where either north or south pole is inside the query polygon
+        const polePolygon: ?CachedPolygon = projectPolygonCoveringPoles(polygon, transform);
+
+        if (polePolygon) {
+            return polePolygon;
+        }
+
         // Resample the polygon by adding intermediate points so that straight lines of the shape
         // are correctly projected on the surface of the globe.
-        const tolerance = 1.0 / 256.0;
-        const resampledPoly = resample(
-            polygon,
-            p => {
-                const mc = transform.pointCoordinate3D(p);
-                p.x = mc.x;
-                p.y = mc.y;
-            },
-            tolerance);
-
-        return resampledPoly.map(p => new MercatorCoordinate(p.x, p.y));
+        return {
+            polygon: resamplePolygon(polygon, transform).map(p => new MercatorCoordinate(p.x, p.y)),
+            unwrapped: true
+        };
     }
+}
+
+// Special function for handling scenarios where either of the poles is inside the query polygon.
+// Projecting these kind of polygons are more involving as projecting just the corners will
+// produce a degenerate (self-intersecting, non-continuous, etc.) polygon in mercator coordinates
+function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): ?CachedPolygon {
+    const matrix = mat4.multiply([], tr.pixelMatrix, tr.globeMatrix);
+
+    // Transform north and south pole coordinates to the screen to see if they're
+    // inside the query polygon
+    const northPole = [0, -GLOBE_RADIUS, 0, 1];
+    const southPole = [0, GLOBE_RADIUS, 0, 1];
+    const center = [0, 0, 0, 1];
+
+    vec4.transformMat4(northPole, northPole, matrix);
+    vec4.transformMat4(southPole, southPole, matrix);
+    vec4.transformMat4(center, center, matrix);
+
+    const screenNp = new Point(northPole[0] / northPole[3], northPole[1] / northPole[3]);
+    const screenSp = new Point(southPole[0] / southPole[3], southPole[1] / southPole[3]);
+    const containsNp = polygonContainsPoint(polygon, screenNp) && northPole[3] < center[3];
+    const containsSp = polygonContainsPoint(polygon, screenSp) && southPole[3] < center[3];
+
+    if (!containsNp && !containsSp) {
+        return null;
+    }
+
+    // Project corner points of the polygon and traverse the ring to find the edge that's
+    // crossing the zero longitude border.
+    const result = findEdgeCrossingAntimeridian(polygon, tr, containsNp ? -1 : 1);
+
+    if (!result) {
+        return null;
+    }
+
+    // Start constructing the new polygon by resampling edges until the crossing edge
+    const {idx, t} = result;
+    let partA = idx > 1 ? resamplePolygon(polygon.slice(0, idx), tr) : [];
+    let partB = idx < polygon.length ? resamplePolygon(polygon.slice(idx), tr) : [];
+
+    partA = partA.map(p => new Point(wrap(p.x), p.y));
+    partB = partB.map(p => new Point(wrap(p.x), p.y));
+
+    // Resample first section of the ring (up to the edge that crosses the 0-line)
+    const resampled = [...partA];
+
+    if (resampled.length === 0) {
+        resampled.push(partB[partB.length - 1]);
+    }
+
+    // Find location of the crossing by interpolating mercator coordinates.
+    // This will produce slightly off result as the crossing edge is not actually
+    // linear on the globe.
+    const a = resampled[resampled.length - 1];
+    const b = partB.length === 0 ? partA[0] : partB[0];
+    const intersectionY = interpolate(a.y, b.y, t);
+
+    let mid;
+
+    if (containsNp) {
+        mid = [
+            new Point(0, intersectionY),
+            new Point(0, 0),
+            new Point(1, 0),
+            new Point(1, intersectionY)
+        ];
+    } else {
+        mid = [
+            new Point(1, intersectionY),
+            new Point(1, 1),
+            new Point(0, 1),
+            new Point(0, intersectionY)
+        ];
+    }
+
+    resampled.push(...mid);
+
+    // Resample to the second section of the ring
+    if (partB.length === 0) {
+        resampled.push(partA[0]);
+    } else {
+        resampled.push(...partB);
+    }
+
+    return {
+        polygon: resampled.map(p => new MercatorCoordinate(p.x, p.y)),
+        unwrapped: false
+    };
+}
+
+function resamplePolygon(polygon: Point[], transform: Transform): Point[] {
+    const tolerance = 1.0 / 256.0;
+    return resample(
+        polygon,
+        p => {
+            const mc = transform.pointCoordinate3D(p);
+            p.x = mc.x;
+            p.y = mc.y;
+        },
+        tolerance);
+}
+
+function wrap(mercatorX: number): number {
+    return mercatorX < 0 ? 1 + (mercatorX % 1) : mercatorX % 1;
+}
+
+function findEdgeCrossingAntimeridian(polygon: Point[], tr: Transform, direction: number): ?{idx: number, t: number} {
+    for (let i = 1; i < polygon.length; i++) {
+        let a = wrap(tr.pointCoordinate3D(polygon[i - 1]).x);
+        let b = wrap(tr.pointCoordinate3D(polygon[i]).x);
+
+        // direction < 0: mercator coordinate 0 will be crossed from left
+        // direction > 0: mercator coordinate 1 will be crossed from right
+        if (direction < 0) {
+            if (a < b) {
+                return {idx: i, t: -a/(b-1-a)};
+            }
+        } else {
+            if (b < a) {
+                return {idx: i, t: (1-a)/(b+1-a)}
+            }
+        }
+    }
+
+    return null;
 }
 
 //Padding is in screen pixels and is only used as a coarse check, so 2 decimal places of precision should be good enough for a cache.
