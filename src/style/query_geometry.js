@@ -182,8 +182,9 @@ export class QueryGeometry {
         const sector = row * 3 + column;
 
         switch (sector) {
-        case 0:     // replace top-left point
+        case 0:     // replace top-left point (closed polygon)
             cameraPolygon[0] = camPos;
+            cameraPolygon[4] = camPos.clone();
             break;
         case 1:     // insert point in the middle of top-left and top-right
             cameraPolygon.splice(1, 0, camPos);
