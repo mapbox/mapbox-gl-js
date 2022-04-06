@@ -202,6 +202,27 @@ test('CustomSource', (t) => {
         sourceCache._addTile(tileID);
     });
 
+    t.test('loadTile is not called if prepareTile returns data', (t) => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+
+        const loadTile = t.spy();
+        const prepareTile = t.spy((tile) => {
+            const {x, y, z} = tileID.canonical;
+            t.deepEqual(tile, {x, y, z});
+            return new window.ImageData(512, 512);
+        });
+
+        const {sourceCache} = createSource(t, {loadTile, prepareTile});
+
+        sourceCache.onAdd();
+        sourceCache._addTile(tileID);
+
+        t.ok(prepareTile.calledOnce, 'prepareTile must be called');
+        t.notOk(loadTile.calledOnce, 'loadTile must not be called');
+        t.equal(sourceCache._tiles[tileID.key].state, 'loaded', 'tile must be in the loaded state');
+        t.end();
+    });
+
     t.test('prepareTile updates the tile data if it returns valid tile data', (t) => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
