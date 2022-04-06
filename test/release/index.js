@@ -47,9 +47,9 @@ const pages = [
         "title": "Add a heatmap layer"
     },
     {
-        "key": "three-js-antenna",
+        "key": "threejs-antenna",
         "title": "Add a 3d model on terrain with ThreeJS",
-        "url": "./three-js-antenna.html"
+        "url": "./threejs-antenna.html"
     },
     {
         "key": "free-camera-path",
