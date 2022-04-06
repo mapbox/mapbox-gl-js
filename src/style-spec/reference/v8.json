@@ -3901,7 +3901,7 @@
           "zoom"
         ],
         4,
-        0.07,
+        0.2,
         7,
         0.1
       ],
@@ -3924,7 +3924,7 @@
     "star-intensity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 
+      "default":
       [
         "interpolate",
         [

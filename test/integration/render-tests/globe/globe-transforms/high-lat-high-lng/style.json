@@ -15,6 +15,7 @@
     170,
     70
   ],
+  "fog": {},
   "zoom": 1,
   "sources": {
     "satellite": {

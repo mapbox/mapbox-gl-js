@@ -12,6 +12,7 @@
   },
   "center": [ 0, 0 ],
   "zoom": 2.00,
+  "fog": {},
   "sources": {
     "satellite": {
       "type": "raster",
