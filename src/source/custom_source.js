@@ -326,6 +326,7 @@ class CustomSource<T> extends Evented implements Source {
         if (!data) return null;
 
         this.loadTileData(tile, data);
+        tile.state = 'loaded';
         return data;
     }
 
