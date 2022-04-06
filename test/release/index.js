@@ -101,6 +101,11 @@ const pages = [
         "key": "preload-tiles",
         "title": "Preload tiles",
         "url": "./preload-tiles.html"
+    },
+    {
+        "key": "custom-source",
+        "title": "Custom Source",
+        "url": "./custom-source.html"
     }
 ];
 
