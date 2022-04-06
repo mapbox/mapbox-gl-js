@@ -2,18 +2,20 @@
 
 import Point from '@mapbox/point-geometry';
 import {getBounds, clamp, polygonizeBounds, bufferConvexPolygon} from '../util/util.js';
-import {polygonIntersectsBox} from '../util/intersection_tests.js';
+import {polygonIntersectsBox, polygonContainsPoint} from '../util/intersection_tests.js';
 import EXTENT from '../data/extent.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import type Transform from '../geo/transform.js';
 import type Tile from '../source/tile.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
-import {vec3} from 'gl-matrix';
+import {vec3, mat4} from 'gl-matrix';
 import {Ray} from '../util/primitives.js';
-import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng} from '../geo/mercator_coordinate.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import {getTilePoint, getTileVec3} from '../geo/projection/tile_transform.js';
 import resample from '../geo/projection/resample.js';
+import {GLOBE_RADIUS} from '../geo/projection/globe_util.js'
+import {number as interpolate} from '../style-spec/util/interpolate.js';
 
 /**
  * A data-class that represents a screenspace query from `Map#queryRenderedFeatures`.
@@ -292,21 +294,138 @@ export class QueryGeometry {
     }
 
     _projectAndResample(polygon: Point[], transform: Transform): MercatorCoordinate[] {
+        // Handle a special case where either north or south pole is inside the query polygon
+        const polePolygon = projectPolygonCoveringPoles(polygon, transform);
+
+        if (polePolygon) {
+            return polePolygon;
+        }
+
         // Resample the polygon by adding intermediate points so that straight lines of the shape
         // are correctly projected on the surface of the globe.
-        const tolerance = 1.0 / 256.0;
-        const resampledPoly = resample(
-            polygon,
-            p => {
-                const mc = transform.pointCoordinate3D(p);
-                p.x = mc.x;
-                p.y = mc.y;
-            },
-            tolerance);
-
-        return resampledPoly.map(p => new MercatorCoordinate(p.x, p.y));
+        return resamplePolygon(polygon, transform).map(p => new MercatorCoordinate(p.x, p.y));
     }
 }
+
+// Special function for handling scenarios where either of the poles is inside the query polygon.
+// Projecting these kind of polygons are more involving as projecting just the corners will
+// produce a degenerate (self-intersecting, non-continuous, etc.) polygon in mercator coordinates
+function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): ?MercatorCoordinate[] {
+    const matrix = mat4.multiply([], tr.pixelMatrix, tr.globeMatrix);
+
+    // Transform north and south pole coordinates to the screen to see if they're
+    // inside the query polygon
+    const northPole = [0, -GLOBE_RADIUS, 0];
+    const southPole = [0, GLOBE_RADIUS, 0];
+
+    vec3.transformMat4(northPole, northPole, matrix);
+    vec3.transformMat4(southPole, southPole, matrix);
+
+    const containsNp = polygonContainsPoint(polygon, new Point(northPole[0], northPole[1]));
+    const containsSp = polygonContainsPoint(polygon, new Point(southPole[0], southPole[1]));
+
+    if (!containsNp && !containsSp) {
+        return null;
+    }
+
+    // Project corner points of the polygon and traverse the ring to find the edge that's
+    // crossing the zero longitude border.
+    const result = findEdgeCrossingZeroLng(polygon, tr, containsNp ? -1 : 1);
+
+    if (!result) {
+        return null;
+    }
+
+    // Start constructing the new polygon by resampling edges until the crossing edge
+    const {idx, t} = result;
+    let partA = idx > 1 ? resamplePolygon(polygon.slice(0, idx), tr) : [];
+    let partB = idx < polygon.length ? resamplePolygon(polygon.slice(idx), tr) : [];
+
+    partA = partA.map(p => new Point(wrap(p.x), p.y));
+    partB = partB.map(p => new Point(wrap(p.x), p.y));
+    
+    // Resample first section of the ring (up to the edge that crosses the 0-line)
+    const resampled = [...partA];
+
+    if (resampled.length === 0) {
+        resampled.push(partB[partB.length - 1]);
+    }
+
+    // Find location of the crossing by interpolating mercator coordinates.
+    // This will produce slightly off result as the crossing edge is not actually
+    // linear on the globe.
+    const a = resampled[resampled.length - 1];
+    const b = partB.length === 0 ? partA[0] : partB[0];
+    const intersectionY = interpolate(a.y, b.y, t);
+
+    let mid;
+
+    if (containsNp) {
+        mid = [
+            new Point(0, intersectionY),
+            new Point(0, 0),
+            new Point(1, 0),
+            new Point(1, intersectionY)
+        ];
+    } else {
+        mid = [
+            new Point(1, intersectionY),
+            new Point(1, 1),
+            new Point(0, 1),
+            new Point(0, intersectionY)
+        ];
+    }
+    
+    resampled.push(...mid);
+
+    // Resample to the second section of the ring
+    if (partB.length === 0) {
+        resampled.push(partA[0]);
+    } else {
+        resampled.push(...partB);
+    }
+    
+    return resampled.map(p => new MercatorCoordinate(p.x, p.y));
+}
+
+function resamplePolygon(polygon: Point[], transform: Transform): Point[] {
+    const tolerance = 1.0 / 256.0;
+    return resample(
+        polygon,
+        p => {
+            const mc = transform.pointCoordinate3D(p);
+            p.x = mc.x;
+            p.y = mc.y;
+        },
+        tolerance);
+}
+
+function wrap(mercatorX: number): number {
+    return mercatorX < 0 ? 1 + (mercatorX % 1) : mercatorX % 1;
+}
+
+function findEdgeCrossingZeroLng(polygon: Point[], tr: Transform, direction: number): ?{idx: number, t: number} {
+    for (let i = 1; i < polygon.length; i++) {
+        let a = wrap(tr.pointCoordinate3D(polygon[i - 1]).x);
+        let b = wrap(tr.pointCoordinate3D(polygon[i]).x);
+
+        // two cases needs to be covered. The edge might be cossing 0 or 1 border (in mercator units)
+        if (a < b) {
+            // TODO: clarification
+            return {idx: i, t: -a/(b-1-a)};
+        }
+
+
+        // if (a * direction <= 0 && b * direction > 0) {
+        //     return {idx: i, t: (0-a)/(b-a)};
+        // } else if ((a - 1) * direction <= 0 && (b - 1) * direction > 0) {
+        //     return {idx: i, t: (1-a)/(b-a)};
+        // }
+    }
+
+    return null;
+}
+    
 
 //Padding is in screen pixels and is only used as a coarse check, so 2 decimal places of precision should be good enough for a cache.
 function cacheKey(padding: number): number  {
