@@ -80,7 +80,7 @@ class Fog extends Evented {
         }
 
         for (const name of Object.keys(styleSpec.fog)) {
-            if (!fog[name]) {
+            if (fog && fog[name] === undefined) {
                 fog[name] = styleSpec.fog[name].default;
             }
         }
