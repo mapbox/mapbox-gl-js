@@ -47,6 +47,7 @@
       }
     }
   },
+  "fog": {},
   "sprite": "local://sprites/sprite",
   "layers": [
     {

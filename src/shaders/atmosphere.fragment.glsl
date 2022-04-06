@@ -42,7 +42,7 @@ void main() {
     float norm_dist_from_center = length(closest_point_forward - u_globe_pos) / u_globe_radius;
 
     if (norm_dist_from_center < 1.0) {
-        discard;
+        gl_FragColor = u_color;
     }
 #endif
 
