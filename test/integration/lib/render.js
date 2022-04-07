@@ -301,7 +301,8 @@ async function runTest(t) {
                 name: currentTestName,
                 actual,
                 expected,
-                imgDiff
+                imgDiff,
+                minDiff
             };
 
             const pass = minDiff <= options.allowed;
