@@ -11,7 +11,7 @@
           ["wait"],
           ["setStyle", "local://mapbox-gl-styles/styles/basic-v9.json"],
           ["wait"],
-          ["setFog", {}],
+          ["setFog", {"star-intensity": 0}],
           ["wait"]
         ]
       }
