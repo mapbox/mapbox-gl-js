@@ -36,7 +36,7 @@ export class QueryGeometry {
     screenBounds: Point[];
     cameraPoint: Point;
     screenGeometry: Point[];
-    screenGeometryMercator: MercatorCoordinate[];
+    screenGeometryMercator: CachedPolygon;
 
     _screenRaycastCache: { [_: number]: CachedPolygon};
     _cameraRaycastCache: { [_: number]: CachedPolygon};
@@ -51,7 +51,7 @@ export class QueryGeometry {
         this.isAboveHorizon = aboveHorizon;
 
         this.screenGeometry = this.bufferedScreenGeometry(0);
-        this.screenGeometryMercator = this.screenGeometry.map((p) => transform.pointCoordinate3D(p));
+        this.screenGeometryMercator = this._bufferedScreenMercator(0, transform);
     }
 
     /**
@@ -233,10 +233,11 @@ export class QueryGeometry {
      */
     containsTile(tile: Tile, transform: Transform, use3D: boolean, cameraWrap: number = 0): ?TilespaceQueryGeometry {
         // The buffer around the query geometry is applied in screen-space.
+        // transform._projectionScaler is used to compensate any extra scaling applied from currently active projection.
         // Floating point errors when projecting into tilespace could leave a feature
         // outside the query volume even if it looks like it overlaps visually, a 1px bias value overcomes that.
         const bias = 1;
-        const padding = tile.queryPadding + bias;
+        const padding = tile.queryPadding / transform._projectionScaler + bias;
 
         const cachedQuery = use3D ?
             this._bufferedCameraMercator(padding, transform) :
@@ -251,7 +252,8 @@ export class QueryGeometry {
             return undefined;
         }
 
-        const tilespaceVec3s = this.screenGeometryMercator.map((p) => getTileVec3(tile.tileTransform, p, wrap));
+        const screenGeometryWrap = tile.tileID.wrap + (this.screenGeometryMercator.unwrapped ? cameraWrap : 0);
+        const tilespaceVec3s = this.screenGeometryMercator.polygon.map((p) => getTileVec3(tile.tileTransform, p, screenGeometryWrap));
         const tilespaceGeometry = tilespaceVec3s.map((v) => new Point(v[0], v[1]));
 
         const cameraMercator = transform.getFreeCameraOptions().position || new MercatorCoordinate(0, 0, 0);

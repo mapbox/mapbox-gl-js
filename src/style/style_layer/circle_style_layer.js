@@ -12,6 +12,8 @@ import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration.js';
 import {Ray} from '../../util/primitives.js';
 import assert from 'assert';
+import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordinate.js';
+import EXTENT from '../../data/extent.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
 import type Transform from '../../geo/transform.js';
@@ -122,6 +124,14 @@ export function queryIntersectsCircle(queryGeometry: TilespaceQueryGeometry,
                 size *= projectedCenter[3] / transform.cameraToCenterDistance;
             } else if (scaleWithMap && !alignWithMap) {
                 size *= transform.cameraToCenterDistance / projectedCenter[3];
+            }
+
+            if (!scaleWithMap && alignWithMap) {
+                // Apply extra scaling to cover different pixelPerMeter ratios at different latitudes
+                const lat = latFromMercatorY((point.y / EXTENT + tileId.y) / (1 << tileId.z));
+                const scale = transform.projection.pixelsPerMeter(lat, 1) / mercatorZfromAltitude(1, lat);
+
+                size /= scale;
             }
 
             if (polygonIntersectsBufferedPoint(transformedPolygon, transformedPoint, size)) return true;
