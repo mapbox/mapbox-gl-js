@@ -74,7 +74,8 @@
                 "circle-pitch-scale": "map"
               }
             }
-          ]
+          ],
+          "fog": {}
         }],
         ["wait"],
         ["setProjection", "mercator"],

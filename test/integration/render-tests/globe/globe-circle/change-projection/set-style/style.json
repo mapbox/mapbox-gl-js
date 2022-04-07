@@ -69,13 +69,13 @@
                 "circle-pitch-scale": "map"
               }
             }
-          ]
+          ],
+          "fog": {}
         }],
         ["wait"]
       ]
     }
   },
-  "fog": {},
   "zoom": 2.0,
   "sources": {},
   "layers": []

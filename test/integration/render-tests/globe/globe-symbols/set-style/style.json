@@ -133,13 +133,13 @@
                 "text-color": "turquoise"
               }
             }
-          ]
+          ],
+          "fog": {}
         }],
         ["wait"]
       ]
     }
   },
-  "fog": {},
   "center": [ 0, 0 ],
   "zoom": 2.00
 }
