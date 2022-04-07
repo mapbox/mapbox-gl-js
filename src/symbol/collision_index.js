@@ -410,7 +410,9 @@ class CollisionIndex {
         let behindFog = false;
         if (point[2] || this.transform.pitch > 0) {
             vec4.transformMat4(p, p, posMatrix);
-            if (this.fogState && tileID) {
+            // Do not perform symbol occlusion on globe due to fog fixed range
+            const isGlobe = this.transform.projection.name === 'globe';
+            if (this.fogState && tileID && !isGlobe) {
                 const fogOpacity = getFogOpacityAtTileCoord(this.fogState, point[0], point[1], point[2], tileID.toUnwrapped(), this.transform);
                 behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
             }

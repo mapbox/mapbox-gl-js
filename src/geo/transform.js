@@ -938,7 +938,7 @@ class Transform {
             }
         }
 
-        if (this.fogCullDistSq && this.projection.name !== 'globe') {
+        if (this.fogCullDistSq) {
             const fogCullDistSq = this.fogCullDistSq;
             const horizonLineFromTop = this.horizonLineFromTop();
             result = result.filter(entry => {
