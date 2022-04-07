@@ -302,7 +302,7 @@ async function runTest(t) {
                 actual,
                 expected,
                 imgDiff,
-                minDiff.toFixed(5)
+                minDiff: minDiff.toFixed(5)
             };
 
             const pass = minDiff <= options.allowed;
