@@ -41,8 +41,9 @@ map.on('load', () => {
         tileSize,
         async loadTile({z, x, y}) {
             const tileSize = 256;
-            const offscreenCanvas = new OffscreenCanvas(tileSize, tileSize);
-            const context = offscreenCanvas.getContext('2d');
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = tileSize;
+            const context = canvas.getContext('2d');
             context.fillStyle = 'red';
             context.fillRect(0, 0, tileSize, tileSize);
 
@@ -56,8 +57,9 @@ map.on('load', () => {
         },
         prepareTile({z, x, y}) {
             const tileSize = 256;
-            const offscreenCanvas = new OffscreenCanvas(tileSize, tileSize);
-            const context = offscreenCanvas.getContext('2d');
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = tileSize;
+            const context = canvas.getContext('2d');
             context.fillStyle = currentColor;
             context.fillRect(0, 0, tileSize, tileSize);
 
