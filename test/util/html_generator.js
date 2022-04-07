@@ -10,7 +10,7 @@ const generateResultHTML = template(`
     <% } else { %>
       <input type="checkbox" id="<%- r.id %>">
     <% } %>
-    <label class="tab-label" style="background: <%- r.color %>" for="<%- r.id %>"><p class="status-container"><span class="status"><%- r.status %></span> - <%- r.name %></p></label>
+    <label class="tab-label" style="background: <%- r.color %>" for="<%- r.id %>"><p class="status-container"><span class="status"><%- r.status %></span> - <%- r.name %> - diff: <%- r.minDiff %></p></label>
     <div class="tab-content">
       <% if (r.status !== 'errored') { %>
           <img src="<%- r.actual %>">
