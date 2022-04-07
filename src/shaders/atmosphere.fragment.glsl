@@ -14,6 +14,8 @@ uniform mat4 u_rotation_matrix;
 varying highp vec3 v_ray_dir;
 varying highp vec3 v_horizon_dir;
 
+precision highp float;
+
 float random(vec3 p) {
     p = fract(p * vec3(23.2342, 97.1231, 91.2342));
     p += dot(p.zxy, p.yxz + 123.1234);
