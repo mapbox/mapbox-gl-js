@@ -60,7 +60,11 @@ void main() {
     float horizon_angle = globe_pos_dot_dir < 0.0 ?
         PI - theta - u_horizon_angle : theta - u_horizon_angle;
 
-    horizon_angle = mix(horizon_angle, horizon_angle_mercator, u_transition);
+    // Increase speed of change of the angle interpolation for
+    // a smoother visual transition between horizon angle mixing
+    float angle_t = pow(u_transition, 10.0);
+
+    horizon_angle = mix(horizon_angle, horizon_angle_mercator, angle_t);
 #else
     float horizon_angle = horizon_angle_mercator;
 #endif
