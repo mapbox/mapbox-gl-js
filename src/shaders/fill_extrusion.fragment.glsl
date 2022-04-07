@@ -167,8 +167,8 @@ void main() {
     float NdotSL = saturate(dot(n, normalize(u_shadow_lightpos)));
 
     float biasT = pow(NdotSL, 1.0);
-    float biasL0 = mix(0.01, 0.004, biasT);
-    float biasL1 = mix(0.012, 0.004, biasT);
+    float biasL0 = mix(0.02, 0.008, biasT);
+    float biasL1 = mix(0.02, 0.008, biasT);
     float occlusionL0 = shadowOcclusionL0(v_pos_light_view_0, biasL0);
     float occlusionL1 = shadowOcclusionL1(v_pos_light_view_1, biasL1);
     float occlusion = 0.0; 
