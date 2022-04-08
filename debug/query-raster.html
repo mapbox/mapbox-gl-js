@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Mapbox GL JS debug page</title>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, user-scalable=no"
+        />
+        <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            html,
+            body,
+            #map {
+                height: 100%;
+            }
+            #swatch {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100px;
+                height: 100px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="map"></div>
+        <div id="swatch"></div>
+
+        <script src="../dist/mapbox-gl-dev.js"></script>
+        <script src="../debug/access_token_generated.js"></script>
+        <script>
+            var map = (window.map = new mapboxgl.Map({
+                container: "map",
+                zoom: 12.5,
+                center: [-77.01866, 38.888],
+                style: "mapbox://styles/mapbox/satellite-v9",
+                hash: true,
+            }));
+            map.on("load", function () {
+                map.addSource("mapbox-dem", {
+                    type: "raster-dem",
+                    url: "mapbox://mapbox.terrain-rgb",
+                    tileSize: 512,
+                    maxzoom: 14,
+                });
+
+                map.on("mousemove", (event) => {
+                    const pixel = map.colorForLayerPoint(
+                        "satellite",
+                        event.point
+                    );
+
+                    document.getElementById(
+                        "swatch"
+                    ).style.backgroundColor = `rgba(${pixel[0]},${pixel[1]},${pixel[2]},${pixel[3]})`;
+                });
+            });
+        </script>
+    </body>
+</html>
