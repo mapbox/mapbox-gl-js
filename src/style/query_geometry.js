@@ -14,7 +14,7 @@ import MercatorCoordinate, {mercatorXfromLng} from '../geo/mercator_coordinate.j
 import type {OverscaledTileID} from '../source/tile_id.js';
 import {getTilePoint, getTileVec3} from '../geo/projection/tile_transform.js';
 import resample from '../geo/projection/resample.js';
-import {GLOBE_RADIUS} from '../geo/projection/globe_util.js'
+import {GLOBE_RADIUS} from '../geo/projection/globe_util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 
 type CachedPolygon = {
@@ -387,7 +387,7 @@ function unwrapQueryPolygon(polygon: Point[], tr: Transform): {polygon: Point[],
 
     const cameraX = mercatorXfromLng(tr.center.lng);
     if (unwrapped && cameraX < Math.abs(cameraX - 1)) {
-        polygon.forEach(p => p.x -= 1);
+        polygon.forEach(p => { p.x -= 1; });
     }
 
     return {
@@ -502,18 +502,18 @@ function wrap(mercatorX: number): number {
 
 function findEdgeCrossingAntimeridian(polygon: Point[], tr: Transform, direction: number): ?{idx: number, t: number} {
     for (let i = 1; i < polygon.length; i++) {
-        let a = wrap(tr.pointCoordinate3D(polygon[i - 1]).x);
-        let b = wrap(tr.pointCoordinate3D(polygon[i]).x);
+        const a = wrap(tr.pointCoordinate3D(polygon[i - 1]).x);
+        const b = wrap(tr.pointCoordinate3D(polygon[i]).x);
 
         // direction < 0: mercator coordinate 0 will be crossed from left
         // direction > 0: mercator coordinate 1 will be crossed from right
         if (direction < 0) {
             if (a < b) {
-                return {idx: i, t: -a/(b-1-a)};
+                return {idx: i, t: -a / (b - 1 - a)};
             }
         } else {
             if (b < a) {
-                return {idx: i, t: (1-a)/(b+1-a)}
+                return {idx: i, t: (1 - a) / (b + 1 - a)};
             }
         }
     }

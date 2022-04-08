@@ -150,7 +150,7 @@ function multiPolygonContainsPoint(rings: Array<Ring>, p: Point) {
     return c;
 }
 
-function polygonContainsPoint(ring: Ring, p: Point) {
+function polygonContainsPoint(ring: Ring, p: Point): boolean {
     let c = false;
     for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
         const p1 = ring[i];
