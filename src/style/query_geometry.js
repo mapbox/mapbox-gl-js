@@ -10,7 +10,7 @@ import type Tile from '../source/tile.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import {vec3, vec4, mat4} from 'gl-matrix';
 import {Ray} from '../util/primitives.js';
-import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng} from '../geo/mercator_coordinate.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import {getTilePoint, getTileVec3} from '../geo/projection/tile_transform.js';
 import resample from '../geo/projection/resample.js';
@@ -233,7 +233,7 @@ export class QueryGeometry {
      */
     containsTile(tile: Tile, transform: Transform, use3D: boolean, cameraWrap: number = 0): ?TilespaceQueryGeometry {
         // The buffer around the query geometry is applied in screen-space.
-        // transform._projectionScaler is used to compensate any extra scaling applied from currently active projection.
+        // transform._projectionScaler is used to compensate any extra scaling applied from the currently active projection.
         // Floating point errors when projecting into tilespace could leave a feature
         // outside the query volume even if it looks like it overlaps visually, a 1px bias value overcomes that.
         const bias = 1;
@@ -243,17 +243,15 @@ export class QueryGeometry {
             this._bufferedCameraMercator(padding, transform) :
             this._bufferedScreenMercator(padding, transform);
 
-        // Append camera wrap to the tile wrap value. This is useful for example in globe view where
-        // we want to simulate tiles being wrapped without actually rendering wrapped copies
-        const wrap = tile.tileID.wrap + (cachedQuery.unwrapped ? cameraWrap : 0);
+        let wrap = tile.tileID.wrap + (cachedQuery.unwrapped ? cameraWrap : 0);
         const geometryForTileCheck = cachedQuery.polygon.map((p) => getTilePoint(tile.tileTransform, p, wrap));
 
         if (!polygonIntersectsBox(geometryForTileCheck, 0, 0, EXTENT, EXTENT)) {
             return undefined;
         }
 
-        const screenGeometryWrap = tile.tileID.wrap + (this.screenGeometryMercator.unwrapped ? cameraWrap : 0);
-        const tilespaceVec3s = this.screenGeometryMercator.polygon.map((p) => getTileVec3(tile.tileTransform, p, screenGeometryWrap));
+        wrap = tile.tileID.wrap + (this.screenGeometryMercator.unwrapped ? cameraWrap : 0);
+        const tilespaceVec3s = this.screenGeometryMercator.polygon.map((p) => getTileVec3(tile.tileTransform, p, wrap));
         const tilespaceGeometry = tilespaceVec3s.map((v) => new Point(v[0], v[1]));
 
         const cameraMercator = transform.getFreeCameraOptions().position || new MercatorCoordinate(0, 0, 0);
@@ -335,11 +333,67 @@ export class QueryGeometry {
 
         // Resample the polygon by adding intermediate points so that straight lines of the shape
         // are correctly projected on the surface of the globe.
+        const resampled = unwrapQueryPolygon(resamplePolygon(polygon, transform).map(p => new Point(wrap(p.x), p.y)), transform);
+
         return {
-            polygon: resamplePolygon(polygon, transform).map(p => new MercatorCoordinate(p.x, p.y)),
-            unwrapped: true
+            polygon: resampled.polygon.map(p => new MercatorCoordinate(p.x, p.y)),
+            unwrapped: resampled.unwrapped
         };
     }
+}
+
+// Checks whether the provided polygon is crossing the antimeridian line and unwraps it if necessary.
+// The resulting polygon is continuous
+function unwrapQueryPolygon(polygon: Point[], tr: Transform): {polygon: Point[], unwrapped: boolean} {
+    let unwrapped = false;
+
+    // Traverse edges of the polygon and unwrap vertices that are crossing the antimeridian.
+    let maxX = -Infinity;
+    let startEdge = 0;
+
+    for (let e = 0; e < polygon.length - 1; e++) {
+        if (polygon[e].x > maxX) {
+            maxX = polygon[e].x;
+            startEdge = e;
+        }
+    }
+
+    for (let i = 0; i < polygon.length - 1; i++) {
+        const edge = (startEdge + i) % (polygon.length - 1);
+        const a = polygon[edge];
+        const b = polygon[edge + 1];
+
+        if (Math.abs(a.x - b.x) > 0.5) {
+            // A straight line drawn on the globe can't have longer length than 0.5 on the x-axis
+            // without crossing the antimeridian
+            if (a.x < b.x) {
+                a.x += 1;
+
+                if (edge === 0) {
+                    // First and last points are duplicate for closed polygons
+                    polygon[polygon.length - 1].x += 1;
+                }
+            } else {
+                b.x += 1;
+
+                if (edge + 1 === polygon.length - 1) {
+                    polygon[0].x += 1;
+                }
+            }
+
+            unwrapped = true;
+        }
+    }
+
+    const cameraX = mercatorXfromLng(tr.center.lng);
+    if (unwrapped && cameraX < Math.abs(cameraX - 1)) {
+        polygon.forEach(p => p.x -= 1);
+    }
+
+    return {
+        polygon,
+        unwrapped
+    };
 }
 
 // Special function for handling scenarios where either of the poles is inside the query polygon.
