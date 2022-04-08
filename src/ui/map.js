@@ -1504,6 +1504,10 @@ class Map extends Camera {
 
     /** @section {Querying features} */
 
+    colorForLayerPoint(layerId: string, point: PointLike) {
+      return this.painter.colorForLayerPoint(layerId, point)
+    }
+
     /**
      * Returns an array of [GeoJSON](http://geojson.org/)
      * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2)
