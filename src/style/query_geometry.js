@@ -344,7 +344,7 @@ export class QueryGeometry {
 
 // Checks whether the provided polygon is crossing the antimeridian line and unwraps it if necessary.
 // The resulting polygon is continuous
-function unwrapQueryPolygon(polygon: Point[], tr: Transform): {polygon: Point[], unwrapped: boolean} {
+export function unwrapQueryPolygon(polygon: Point[], tr: Transform): {polygon: Point[], unwrapped: boolean} {
     let unwrapped = false;
 
     // Traverse edges of the polygon and unwrap vertices that are crossing the antimeridian.
@@ -396,10 +396,10 @@ function unwrapQueryPolygon(polygon: Point[], tr: Transform): {polygon: Point[],
     };
 }
 
-// Special function for handling scenarios where either of the poles is inside the query polygon.
-// Projecting these kind of polygons are more involving as projecting just the corners will
+// Special function for handling scenarios where one of the poles is inside the query polygon.
+// Finding projection of these kind of polygons is more involving as projecting just the corners will
 // produce a degenerate (self-intersecting, non-continuous, etc.) polygon in mercator coordinates
-function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): ?CachedPolygon {
+export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): ?CachedPolygon {
     const matrix = mat4.multiply([], tr.pixelMatrix, tr.globeMatrix);
 
     // Transform north and south pole coordinates to the screen to see if they're
