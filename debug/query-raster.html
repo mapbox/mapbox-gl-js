@@ -42,13 +42,8 @@
                 style: "mapbox://styles/mapbox/satellite-v9",
                 hash: true,
             }));
+
             map.on("load", function () {
-                map.addSource("mapbox-dem", {
-                    type: "raster-dem",
-                    url: "mapbox://mapbox.terrain-rgb",
-                    tileSize: 512,
-                    maxzoom: 14,
-                });
 
                 map.on("mousemove", (event) => {
                     const pixel = map.colorForLayerPoint(

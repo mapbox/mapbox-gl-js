@@ -719,276 +719,50 @@ class Painter {
     }
 
     colorForLayerPoint(layerId: string, point: PointLike) {
-        // this.style = style;
-        // this.options = options;
-
-        // this.lineAtlas = style.lineAtlas;
-        // this.imageManager = style.imageManager;
-        // this.glyphManager = style.glyphManager;
-        //
-        // this.symbolFadeChange = style.placement.symbolFadeChange(browser.now());
-        //
-        this.imageManager.beginFrame();
 
         const layer = this.style._layers[layerId];
         const sourceCache = this.style._getLayerSourceCache(layer);
 
-        // const layerIds = this.style.order;
         const layerIds = [layerId];
-        // const sourceCaches = this.style._sourceCaches;
-        const sourceCaches = { [sourceCache.id]: sourceCache };
 
-        // for (const id in sourceCaches) {
-        //     const sourceCache = sourceCaches[id];
-        //     if (sourceCache.used) {
         sourceCache.prepare(this.context);
-        //     }
-        // }
 
-        const coordsAscending: { [_: string]: Array<OverscaledTileID> } = {};
-        const coordsDescending: { [_: string]: Array<OverscaledTileID> } = {};
-        const coordsDescendingSymbol: {
-            [_: string]: Array<OverscaledTileID>,
-        } = {};
-
-        for (const id in sourceCaches) {
-            const sourceCache = sourceCaches[id];
-            coordsAscending[id] = sourceCache.getVisibleCoordinates();
-            coordsDescending[id] = coordsAscending[id].slice().reverse();
-            coordsDescendingSymbol[id] = sourceCache
+        const coordsAscending: Array<OverscaledTileID> = sourceCache.getVisibleCoordinates();
+        const coordsDescending: Array<OverscaledTileID> = coordsAscending.slice().reverse();
+        const coordsDescendingSymbol: Array<OverscaledTileID> = sourceCache
                 .getVisibleCoordinates(true)
                 .reverse();
-        }
-
-        this.opaquePassCutoff = Infinity;
-        for (let i = 0; i < layerIds.length; i++) {
-            const layerId = layerIds[i];
-            if (this.style._layers[layerId].is3D()) {
-                this.opaquePassCutoff = i;
-                break;
-            }
-        }
-
-        // if (this.terrain) {
-        //     this.terrain.updateTileBinding(coordsDescendingSymbol);
-        //     // All render to texture is done in translucent pass to remove need
-        //     // for depth buffer allocation per tile.
-        //     this.opaquePassCutoff = 0;
-        // }
-
-        if (
-            this.transform.projection.name === "globe" &&
-            !this.globeSharedBuffers
-        ) {
-            this.globeSharedBuffers = new GlobeSharedBuffers(this.context);
-        }
-
-        // Following line is billing related code. Do not change. See LICENSE.txt
-        if (!isMapAuthenticated(this.context.gl)) return;
-
-        // Offscreen pass ===============================================
-        // We first do all rendering that requires rendering to a separate
-        // framebuffer, and then save those for rendering back to the map
-        // later: in doing this we avoid doing expensive framebuffer restores.
-        this.renderPass = "offscreen";
-
-        // for (const layerId of layerIds) {
-        //     const layer = this.style._layers[layerId];
-        //     const sourceCache = this.style._getLayerSourceCache(layer);
-        if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) {
-        } else {
-            const coords = sourceCache
-                ? coordsDescending[sourceCache.id]
-                : undefined;
-            if (
-                !(layer.type === "custom" || layer.isSky()) &&
-                !(coords && coords.length)
-            ) {
-            } else {
-                this.renderLayer(this, sourceCache, layer, coords);
-            }
-        }
-
-        this.depthRangeFor3D = [
-            0,
-            1 -
-                (this.style.order.length + 2) *
-                    this.numSublayers *
-                    this.depthEpsilon,
-        ];
-
-        // Terrain depth offscreen render pass ==========================
-        // With terrain on, renders the depth buffer into a texture.
-        // This texture is used for occlusion testing (labels)
-        if (
-            this.terrain &&
-            (this.style.hasSymbolLayers() || this.style.hasCircleLayers())
-        ) {
-            this.terrain.drawDepth();
-        }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
-        this.context.bindFramebuffer.set(null);
+        // this.context.bindFramebuffer.set(null);
         this.context.viewport.set([0, 0, this.width, this.height]);
 
-        // Clear buffers in preparation for drawing to the main framebuffer
-        // If fog is enabled, use the fog color as default clear color.
-        let clearColor = Color.transparent;
-        if (this.style.fog && this.style.fog.getOpacity(this.transform.pitch)) {
-            clearColor = this.style.fog.properties.get("color");
-        }
         this.context.clear({
-            color: Color.black, //options.showOverdrawInspector ? Color.black : clearColor,
+            color: 'rgba(0,0,0,0)', //options.showOverdrawInspector ? Color.black : clearColor,
             depth: 1,
         });
         this.clearStencil();
 
         this._showOverdrawInspector = false; //options.showOverdrawInspector;
 
-        // Opaque pass ===============================================
-        // Draw opaque layers top-to-bottom first.
-        this.renderPass = "opaque";
-
-        if (!this.terrain) {
-            for (
-                this.currentLayer = layerIds.length - 1;
-                this.currentLayer >= 0;
-                this.currentLayer--
-            ) {
-                const layer = this.style._layers[layerIds[this.currentLayer]];
-                const sourceCache = this.style._getLayerSourceCache(layer);
-                if (layer.isSky()) continue;
-                const coords = sourceCache
-                    ? coordsDescending[sourceCache.id]
-                    : undefined;
-
-                this._renderTileClippingMasks(layer, sourceCache, coords);
-                this.renderLayer(this, sourceCache, layer, coords);
-            }
-        }
-
-        // Sky pass ======================================================
-        // Draw all sky layers bottom to top.
-        // They are drawn at max depth, they are drawn after opaque and before
-        // translucent to fail depth testing and mix with translucent objects.
-        this.renderPass = "sky";
-        const isTransitioning =
-            globeToMercatorTransition(this.transform.zoom) > 0.0;
-        if (
-            (isTransitioning || this.transform.projection.name !== "globe") &&
-            this.transform.isHorizonVisible()
-        ) {
-            for (
-                this.currentLayer = 0;
-                this.currentLayer < layerIds.length;
-                this.currentLayer++
-            ) {
-                const layer = this.style._layers[layerIds[this.currentLayer]];
-                const sourceCache = this.style._getLayerSourceCache(layer);
-                if (!layer.isSky()) continue;
-                const coords = sourceCache
-                    ? coordsDescending[sourceCache.id]
-                    : undefined;
-
-                this.renderLayer(this, sourceCache, layer, coords);
-            }
-        }
-        if (this.transform.projection.name === "globe") {
-            drawGlobeAtmosphere(this);
-        }
-
-        // Translucent pass ===============================================
-        // Draw all other layers bottom-to-top.
         this.renderPass = "translucent";
 
-        this.currentLayer = 0;
-        while (this.currentLayer < 1) {
-            // const layer = this.style._layers[layerIds[this.currentLayer]];
-            // const sourceCache = this.style._getLayerSourceCache(layer);
 
-            // Nothing to draw in translucent pass for sky layers, advance
-            if (layer.isSky()) {
-                ++this.currentLayer;
-                continue;
-            }
+        // For symbol layers in the translucent pass, we add extra tiles to the renderable set
+        // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
+        // separate clipping masks
+        const coords = sourceCache
+            ? (layer.type === "symbol"
+                  ? coordsDescendingSymbol
+                  : coordsDescending)
+            : undefined;
 
-            // With terrain on and for draped layers only, issue rendering and progress
-            // this.currentLayer until the next non-draped layer.
-            // Otherwise we interleave terrain draped render with non-draped layers on top
-            if (this.terrain && this.style.isLayerDraped(layer)) {
-                if (layer.isHidden(this.transform.zoom)) {
-                    ++this.currentLayer;
-                    continue;
-                }
-                const terrain = ((this.terrain: any): Terrain);
-                const prevLayer = this.currentLayer;
-                this.currentLayer = terrain.renderBatch(this.currentLayer);
-                assert(this.context.bindFramebuffer.current === null);
-                assert(this.currentLayer > prevLayer);
-                continue;
-            }
-
-            // For symbol layers in the translucent pass, we add extra tiles to the renderable set
-            // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
-            // separate clipping masks
-            const coords = sourceCache
-                ? (layer.type === "symbol"
-                      ? coordsDescendingSymbol
-                      : coordsDescending)[sourceCache.id]
-                : undefined;
-
-            this._renderTileClippingMasks(
-                layer,
-                sourceCache,
-                sourceCache ? coordsAscending[sourceCache.id] : undefined
-            );
-            this.renderLayer(this, sourceCache, layer, coords);
-
-            ++this.currentLayer;
-        }
-
-        if (this.terrain) {
-            this.terrain.postRender();
-        }
-
-        // if (this.options.showTileBoundaries || this.options.showQueryGeometry) {
-        //     //Use source with highest maxzoom
-        //     let selectedSource = null;
-        //     const layers = values(this.style._layers);
-        //     layers.forEach((layer) => {
-        //         const sourceCache = style._getLayerSourceCache(layer);
-        //         if (sourceCache && !layer.isHidden(this.transform.zoom)) {
-        //             if (!selectedSource || (selectedSource.getSource().maxzoom < sourceCache.getSource().maxzoom)) {
-        //                 selectedSource = sourceCache;
-        //             }
-        //         }
-        //     });
-        //     if (selectedSource) {
-        //         if (this.options.showTileBoundaries) {
-        //             draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates());
-        //         }
-        //
-        //         Debug.run(() => {
-        //             if (this.options.showQueryGeometry && selectedSource) {
-        //                 drawDebugQueryGeometry(this, selectedSource, selectedSource.getVisibleCoordinates());
-        //             }
-        //         });
-        //     }
-        // }
-        //
-        // if (this.options.showPadding) {
-        //     drawDebugPadding(this);
-        // }
-
-        // Set defaults for most GL values so that anyone using the state after the render
-        // encounters more expected values.
-        // this.context.setDefault();
-        // this.frameCounter = (this.frameCounter + 1) % Number.MAX_SAFE_INTEGER;
-        //
-        // if (this.tileLoaded && this.options.speedIndexTiming) {
-        //     this.loadTimeStamps.push(window.performance.now());
-        //     this.saveCanvasCopy();
-        // }
+        this._renderTileClippingMasks(
+            layer,
+            sourceCache,
+            sourceCache ? coordsAscending : undefined
+        );
+        this.renderLayer(this, sourceCache, layer, coords);
 
         const gl = this.context.gl;
         var pixel = new Uint8Array(4);
