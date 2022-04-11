@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "Usa ctrl + scorri per ingrandire la mappa",
     "ScrollZoomBlocker.CmdMessage": "Usa ⌘ + scorri per ingrandire la mappa",
     "TouchPanBlocker.Message": "Usa due dita per spostare la mappa"
-}
+};
 
 export default locale;
