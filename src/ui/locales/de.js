@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "Verwenden Sie Strg + Scrollen, um die Karte zu zoomen",
     "ScrollZoomBlocker.CmdMessage": "Verwenden Sie ⌘ + Scrollen, um die Karte zu zoomen",
     "TouchPanBlocker.Message": "Verwenden Sie zwei Finger, um die Karte zu verschieben"
-}
+};
 
 export default locale;
