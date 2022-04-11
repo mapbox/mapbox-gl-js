@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "استخدم ctrl + التمرير لتكبير الخريطة",
     "ScrollZoomBlocker.CmdMessage": "استخدم ⌘ + مرر لتكبير الخريطة",
     "TouchPanBlocker.Message": "استخدم إصبعين لتحريك الخريطة"
-}
+};
 
 export default locale;
