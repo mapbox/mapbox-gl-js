@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "Gunakan ctrl + gulir untuk memperbesar peta",
     "ScrollZoomBlocker.CmdMessage": "Gunakan + gulir untuk memperbesar peta",
     "TouchPanBlocker.Message": "Gunakan dua jari untuk memindahkan peta"
-}
+};
 
 export default locale;
