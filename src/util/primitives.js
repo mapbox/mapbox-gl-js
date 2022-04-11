@@ -113,13 +113,8 @@ class FrustumCorners {
         const BR = vec3.transformMat4(BRClip, BRClip, invProj);
         const BL = vec3.transformMat4(BLClip, BLClip, invProj);
 
-        const horizonFromTopClip = 1.0 - (horizonFromTop / viewportHeight) * 2.0;
-
-        const horizonClipL = [-1, horizonFromTopClip, 1];
-        const horizonClipR = [1, horizonFromTopClip, 1];
-
-        const horizonL = vec3.transformMat4(horizonClipL, horizonClipL, invProj);
-        const horizonR = vec3.transformMat4(horizonClipR, horizonClipR, invProj);
+        const horizonL = vec3.lerp([0, 0, 0], TL, BL, horizonFromTop / viewportHeight);
+        const horizonR = vec3.lerp([0, 0, 0], TR, BR, horizonFromTop / viewportHeight);
 
         return new FrustumCorners(TL, TR, BR, BL, horizonL, horizonR);
     }

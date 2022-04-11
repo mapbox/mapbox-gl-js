@@ -87,8 +87,7 @@ export default class Globe extends Mercator {
     }
 
     createFogTileMatrix(tr: Transform): Float64Array {
-        const matrix = mat4.identity(new Float64Array(16));
-        return mat4.multiply(matrix, matrix, tr.globeMatrix);
+        return mat4.clone(tr.globeMatrix);
     }
 
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
