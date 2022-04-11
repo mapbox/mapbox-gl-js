@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "برای بزرگنمایی نقشه از ctrl + scroll استفاده کنید",
     "ScrollZoomBlocker.CmdMessage": "از ⌘ + اسکرول برای بزرگنمایی نقشه استفاده کنید",
     "TouchPanBlocker.Message": "از دو انگشت برای حرکت دادن نقشه استفاده کنید"
-}
+};
 
 export default locale;
