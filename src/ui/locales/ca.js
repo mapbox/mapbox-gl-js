@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "Utilitzeu ctrl + desplaçament per ampliar el mapa",
     "ScrollZoomBlocker.CmdMessage": "Utilitzeu ⌘ + desplaçament per ampliar el mapa",
     "TouchPanBlocker.Message": "Feu servir dos dits per moure el mapa"
-}
+};
 
 export default locale;
