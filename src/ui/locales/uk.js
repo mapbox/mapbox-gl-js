@@ -3,23 +3,23 @@
 const locale = {
     "AttributionControl.ToggleAttribution": "Увімкнути атрибуцію",
     "AttributionControl.MapFeedback": "Відгук про карту",
-    "FullscreenControl.Enter": "Перейдіть у повноекранний режим",
+    "FullscreenControl.Enter": "Перейти у повноекранний режим",
     "FullscreenControl.Exit": "Вийти з повноекранного режиму",
     "GeolocateControl.FindMyLocation": "Знайти моє місцезнаходження",
     "GeolocateControl.LocationNotAvailable": "Місцезнаходження недоступне",
     "LogoControl.Title": "Логотип Mapbox",
-    "Map.Title": "карта",
-    "NavigationControl.ResetBearing": "Скиньте пеленг на північ",
-    "NavigationControl.ZoomIn": "Приближувати",
-    "NavigationControl.ZoomOut": "Зменшення",
-    "ScaleControl.Feet": "футів",
+    "Map.Title": "Карта",
+    "NavigationControl.ResetBearing": "Вирівняти карту на північ",
+    "NavigationControl.ZoomIn": "Приблизити",
+    "NavigationControl.ZoomOut": "Віддалити",
+    "ScaleControl.Feet": "ft",
     "ScaleControl.Meters": "м",
     "ScaleControl.Kilometers": "км",
-    "ScaleControl.Miles": "мене",
-    "ScaleControl.NauticalMiles": "нм",
-    "ScrollZoomBlocker.CtrlMessage": "Використовуйте ctrl + прокрутку, щоб збільшити карту",
-    "ScrollZoomBlocker.CmdMessage": "Використовуйте ⌘ + прокрутку, щоб збільшити карту",
-    "TouchPanBlocker.Message": "Переміщайте карту двома пальцями"
+    "ScaleControl.Miles": "mi",
+    "ScaleControl.NauticalMiles": "nm",
+    "ScrollZoomBlocker.CtrlMessage": "Прокрутіть з натиснутим Ctrl, щоб збільшити карту",
+    "ScrollZoomBlocker.CmdMessage": "Прокрутіть з натиснутим ⌘, щоб збільшити карту",
+    "TouchPanBlocker.Message": "Рухайте карту двома пальцями"
 };
 
 export default locale;
