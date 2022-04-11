@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "Brug ctrl + scroll for at zoome ind på kortet",
     "ScrollZoomBlocker.CmdMessage": "Brug ⌘ + rul for at zoome ind på kortet",
     "TouchPanBlocker.Message": "Brug to fingre til at flytte kortet"
-}
+};
 
 export default locale;
