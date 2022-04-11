@@ -207,23 +207,23 @@ map.on('style.load', () => {
             "line-join": "round"
         },
         "paint": {
-          "line-width": 2,
-          "line-opacity": 0.5,
-          "line-color": [
-            "case",
-            ["==", ["get", "worldview"], "US"], "#0074D9",
-            ["==", ["get", "worldview"], "IN"], "#7FDBFF",
-            ["==", ["get", "worldview"], "CN"], "#FF851B",
-            ["==", ["get", "worldview"], "JP"], "#FFDC00",
-            ["==", ["get", "worldview"], "RU"], "#DDDDDD",
-            ["==", ["get", "worldview"], "MA"], "#DDDDDD",
-            ["==", ["get", "worldview"], "AR"], "#DDDDDD",
-            ["==", ["get", "worldview"], "TR"], "#DDDDDD",
-            "#34b5cf"
-          ]
+            "line-width": 2,
+            "line-opacity": 0.5,
+            "line-color": [
+                "case",
+                ["==", ["get", "worldview"], "US"], "#0074D9",
+                ["==", ["get", "worldview"], "IN"], "#7FDBFF",
+                ["==", ["get", "worldview"], "CN"], "#FF851B",
+                ["==", ["get", "worldview"], "JP"], "#FFDC00",
+                ["==", ["get", "worldview"], "RU"], "#DDDDDD",
+                ["==", ["get", "worldview"], "MA"], "#DDDDDD",
+                ["==", ["get", "worldview"], "AR"], "#DDDDDD",
+                ["==", ["get", "worldview"], "TR"], "#DDDDDD",
+                "#34b5cf"
+            ]
         }
     });
-    
+
     map.addLayer({
         "id": "borders-labels",
         "type": "symbol",
@@ -233,8 +233,8 @@ map.on('style.load', () => {
             "text-field": ["to-string", ["get", "worldview"]],
             "text-size": 14,
             "text-font": [
-              "Source Code Pro Semibold",
-              "Arial Unicode MS Regular"
+                "Source Code Pro Semibold",
+                "Arial Unicode MS Regular"
             ],
             "text-anchor": "center",
             "text-allow-overlap": true,
@@ -243,18 +243,18 @@ map.on('style.load', () => {
             "text-keep-upright": true
         },
         "paint": {
-          "text-color": [
-            "case",
-            ["==", ["get", "worldview"], "US"], "#0074D9",
-            ["==", ["get", "worldview"], "IN"], "#7FDBFF",
-            ["==", ["get", "worldview"], "CN"], "#FF851B",
-            ["==", ["get", "worldview"], "JP"], "#FFDC00",
-            ["==", ["get", "worldview"], "RU"], "#DDDDDD",
-            ["==", ["get", "worldview"], "MA"], "#DDDDDD",
-            ["==", ["get", "worldview"], "AR"], "#DDDDDD",
-            ["==", ["get", "worldview"], "TR"], "#DDDDDD",
-            "#79a0a8"
-          ]
+            "text-color": [
+                "case",
+                ["==", ["get", "worldview"], "US"], "#0074D9",
+                ["==", ["get", "worldview"], "IN"], "#7FDBFF",
+                ["==", ["get", "worldview"], "CN"], "#FF851B",
+                ["==", ["get", "worldview"], "JP"], "#FFDC00",
+                ["==", ["get", "worldview"], "RU"], "#DDDDDD",
+                ["==", ["get", "worldview"], "MA"], "#DDDDDD",
+                ["==", ["get", "worldview"], "AR"], "#DDDDDD",
+                ["==", ["get", "worldview"], "TR"], "#DDDDDD",
+                "#79a0a8"
+            ]
         }
     });
 });
