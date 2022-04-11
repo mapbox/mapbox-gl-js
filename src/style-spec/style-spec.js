@@ -66,7 +66,7 @@ export type StylePropertySpecification = {
 };
 
 import v8 from './reference/v8.json';
-import latest, {min as latestWithoutDocsAndExamples} from './reference/latest.js';
+import latest, {min as specMin} from './reference/latest.js';
 import format from './format.js';
 import migrate from './migrate.js';
 import composite from './composite.js';
@@ -109,7 +109,7 @@ const visit = {eachSource, eachLayer, eachProperty};
 export {
     v8,
     latest,
-    latestWithoutDocsAndExamples,
+    specMin,
     format,
     migrate,
     composite,

@@ -11,7 +11,7 @@ const esm = 'esm' in process.env;
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
-const reviver = (key, value) => ['doc', 'example'].includes(key) ? undefined : value;
+const reviver = (key, value) => ['doc', 'example', 'sdk-support'].includes(key) ? undefined : value;
 
 const config = [{
     input: `${__dirname}/style-spec.js`,
