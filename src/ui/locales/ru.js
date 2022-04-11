@@ -1,0 +1,25 @@
+// @flow
+
+const locale = {
+    "AttributionControl.ToggleAttribution": "Переключить атрибуцию",
+    "AttributionControl.MapFeedback": "Отзыв о карте",
+    "FullscreenControl.Enter": "Войти в полноэкранный режим",
+    "FullscreenControl.Exit": "Выйти из полноэкранного режима",
+    "GeolocateControl.FindMyLocation": "найти мое местоположение",
+    "GeolocateControl.LocationNotAvailable": "Местоположение недоступно",
+    "LogoControl.Title": "Логотип мапбокса",
+    "Map.Title": "карта",
+    "NavigationControl.ResetBearing": "Сбросить азимут на север",
+    "NavigationControl.ZoomIn": "Приблизить",
+    "NavigationControl.ZoomOut": "Уменьшить",
+    "ScaleControl.Feet": "футов",
+    "ScaleControl.Meters": "м",
+    "ScaleControl.Kilometers": "км",
+    "ScaleControl.Miles": "меня",
+    "ScaleControl.NauticalMiles": "нм",
+    "ScrollZoomBlocker.CtrlMessage": "Используйте ctrl + прокрутка, чтобы увеличить карту",
+    "ScrollZoomBlocker.CmdMessage": "Используйте ⌘ + прокрутку, чтобы увеличить карту",
+    "TouchPanBlocker.Message": "Двумя пальцами перемещайте карту"
+}
+
+export default locale;
