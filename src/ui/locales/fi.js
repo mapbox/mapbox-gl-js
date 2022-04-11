@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "Käytä ctrl + scrollia zoomataksesi karttaa",
     "ScrollZoomBlocker.CmdMessage": "Zoomaa karttaa ⌘ + selaamalla",
     "TouchPanBlocker.Message": "Siirrä karttaa kahdella sormella"
-}
+};
 
 export default locale;
