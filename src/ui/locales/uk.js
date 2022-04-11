@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "Використовуйте ctrl + прокрутку, щоб збільшити карту",
     "ScrollZoomBlocker.CmdMessage": "Використовуйте ⌘ + прокрутку, щоб збільшити карту",
     "TouchPanBlocker.Message": "Переміщайте карту двома пальцями"
-}
+};
 
 export default locale;
