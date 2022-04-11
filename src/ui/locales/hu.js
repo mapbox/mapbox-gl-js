@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "A térkép nagyításához használja a ctrl + görgetést",
     "ScrollZoomBlocker.CmdMessage": "A térkép nagyításához használja a ⌘ + görgetést",
     "TouchPanBlocker.Message": "Két ujjal mozgassa a térképet"
-}
+};
 
 export default locale;
