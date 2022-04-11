@@ -20,6 +20,6 @@ const locale = {
     "ScrollZoomBlocker.CtrlMessage": "Pro přiblížení mapy použijte ctrl + scroll",
     "ScrollZoomBlocker.CmdMessage": "Pomocí ⌘ + posouvání mapu přiblížíte",
     "TouchPanBlocker.Message": "Pomocí dvou prstů posuňte mapu"
-}
+};
 
 export default locale;
