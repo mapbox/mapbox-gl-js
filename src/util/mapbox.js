@@ -118,6 +118,7 @@ export class RequestManager {
         }
 
         if (tileURL && !isMapboxURL(tileURL)) return tileURL;
+
         const urlObject = parseUrl(tileURL);
         const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
         const extension = webpSupported.supported ? '.webp' : '$1';
