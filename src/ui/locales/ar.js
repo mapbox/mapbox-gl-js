@@ -2,12 +2,12 @@
 
 const locale = {
     "AttributionControl.ToggleAttribution": "تبديل الإحالة",
-    "AttributionControl.MapFeedback": "ملاحظات الخريطة",
+    "AttributionControl.MapFeedback": "علق على الخريطة",
     "FullscreenControl.Enter": "أدخل وضع ملء الشاشة",
     "FullscreenControl.Exit": "الخروج من وضع ملء الشاشة",
     "GeolocateControl.FindMyLocation": "البحث عن موقعي",
     "GeolocateControl.LocationNotAvailable": "الموقع غير متوفر",
-    "LogoControl.Title": "شعار Mapbox",
+    "LogoControl.Title": "Mapbox شعار",
     "Map.Title": "خريطة",
     "NavigationControl.ResetBearing": "إعادة تعيين الإتجاة للشمال",
     "NavigationControl.ZoomIn": "تكبير",
@@ -17,8 +17,8 @@ const locale = {
     "ScaleControl.Kilometers": "كم",
     "ScaleControl.Miles": "ميل",
     "ScaleControl.NauticalMiles": "ميل بحري",
-    "ScrollZoomBlocker.CtrlMessage": "استخدم ctrl + التمرير لتكبير الخريطة",
-    "ScrollZoomBlocker.CmdMessage": "استخدم ⌘ + مرر لتكبير الخريطة",
+    "ScrollZoomBlocker.CtrlMessage": "استخدم مفتاح ctrl + التمرير لتكبير الخريطة",
+    "ScrollZoomBlocker.CmdMessage": "استخدم مفتاح ⌘ + التمرير لتكبير الخريطة",
     "TouchPanBlocker.Message": "استخدم إصبعين لتحريك الخريطة"
 };
 
