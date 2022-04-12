@@ -67,6 +67,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-render-csp:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
       - test-query:
           requires:
             - prepare
@@ -266,6 +272,18 @@ jobs:
           at: ~/
       - browser-tools/install-chrome
       - run: yarn run test-render-prod
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-csp:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-chrome
+      - run: yarn run test-render-csp
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
