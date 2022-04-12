@@ -12,7 +12,7 @@ const locale = {
     "NavigationControl.ResetBearing": "Орієнтувати мапу на північ",
     "NavigationControl.ZoomIn": "Наблизити",
     "NavigationControl.ZoomOut": "Віддалити",
-    "ScaleControl.Feet": "ft",
+    "ScaleControl.Feet": "фт",
     "ScaleControl.Meters": "м",
     "ScaleControl.Kilometers": "км",
     "ScaleControl.Miles": "mi",
