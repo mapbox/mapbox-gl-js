@@ -2,7 +2,7 @@
 
 const locale = {
     "AttributionControl.ToggleAttribution": "Afficher l'attribution",
-    "AttributionControl.MapFeedback": "Donner son avis sur la carte",
+    "AttributionControl.MapFeedback": "Améliorer cette carte",
     "FullscreenControl.Enter": "Passer en mode plein écran",
     "FullscreenControl.Exit": "Quitter le mode plein écran",
     "GeolocateControl.FindMyLocation": "Afficher ma position",
