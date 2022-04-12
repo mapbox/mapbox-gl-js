@@ -2,7 +2,7 @@
 
 const locale = {
     "AttributionControl.ToggleAttribution": "Переключить отображение авторских прав",
-    "AttributionControl.MapFeedback": "Отзыв о карте",
+    "AttributionControl.MapFeedback": "Оставить отзыв о карте",
     "FullscreenControl.Enter": "Войти в полноэкранный режим",
     "FullscreenControl.Exit": "Выйти из полноэкранного режима",
     "GeolocateControl.FindMyLocation": "Найти моё местоположение",
@@ -16,7 +16,7 @@ const locale = {
     "ScaleControl.Meters": "м",
     "ScaleControl.Kilometers": "км",
     "ScaleControl.Miles": "миль",
-    "ScaleControl.NauticalMiles": "нм",
+    "ScaleControl.NauticalMiles": "морских миль",
     "ScrollZoomBlocker.CtrlMessage": "Используйте ctrl + прокрутку, чтобы увеличить карту",
     "ScrollZoomBlocker.CmdMessage": "Используйте ⌘ + прокрутку, чтобы увеличить карту",
     "TouchPanBlocker.Message": "Используйте два пальца для перемещения карты"
