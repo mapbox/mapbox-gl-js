@@ -10,14 +10,14 @@ const locale = {
     "LogoControl.Title": "Logo Mapbox",
     "Map.Title": "Hartă",
     "NavigationControl.ResetBearing": "Resetați rulmentul spre nord",
-    "NavigationControl.ZoomIn": "A mari",
-    "NavigationControl.ZoomOut": "A micsora",
+    "NavigationControl.ZoomIn": "A mări",
+    "NavigationControl.ZoomOut": "A micșora",
     "ScaleControl.Feet": "ft",
     "ScaleControl.Meters": "m",
     "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "pe mine",
+    "ScaleControl.Miles": "mi",
     "ScaleControl.NauticalMiles": "nm",
-    "ScrollZoomBlocker.CtrlMessage": "Folosiți ctrl + derulare pentru a mări harta",
+    "ScrollZoomBlocker.CtrlMessage": "Folosiți ctrl + derulați pentru a mări harta",
     "ScrollZoomBlocker.CmdMessage": "Folosiți ⌘ + derulați pentru a mări harta",
     "TouchPanBlocker.Message": "Folosiți două degete pentru a muta harta"
 };
