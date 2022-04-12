@@ -19,7 +19,7 @@ const locale = {
     "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Прокрутіть з натиснутим Ctrl, щоб збільшити карту",
     "ScrollZoomBlocker.CmdMessage": "Прокрутіть з натиснутим ⌘, щоб збільшити карту",
-    "TouchPanBlocker.Message": "Рухайте карту двома пальцями"
+    "TouchPanBlocker.Message": "Рухайте мапу двома пальцями"
 };
 
 export default locale;
