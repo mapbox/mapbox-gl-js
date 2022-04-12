@@ -17,7 +17,7 @@ const locale = {
     "ScaleControl.Kilometers": "км",
     "ScaleControl.Miles": "миль",
     "ScaleControl.NauticalMiles": "м. миль",
-    "ScrollZoomBlocker.CtrlMessage": "Прокрутіть з натиснутим Ctrl, щоб збільшити карту",
+    "ScrollZoomBlocker.CtrlMessage": "Прокрутіть з натиснутим Ctrl для масштабування мапи",
     "ScrollZoomBlocker.CmdMessage": "Прокрутіть з натиснутим ⌘ для масштабування мапи",
     "TouchPanBlocker.Message": "Рухайте мапу двома пальцями"
 };
