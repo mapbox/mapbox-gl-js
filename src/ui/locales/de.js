@@ -11,7 +11,7 @@ const locale = {
     "Map.Title": "Karte",
     "NavigationControl.ResetBearing": "Setze die Orientierung auf Norden zurück",
     "NavigationControl.ZoomIn": "Hineinzoomen",
-    "NavigationControl.ZoomOut": "Rauszoomen",
+    "NavigationControl.ZoomOut": "Herauszoomen",
     "ScaleControl.Feet": "ft",
     "ScaleControl.Meters": "m",
     "ScaleControl.Kilometers": "km",
