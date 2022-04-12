@@ -15,7 +15,7 @@ const locale = {
     "ScaleControl.Feet": "ft",
     "ScaleControl.Meters": "m",
     "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "ako",
+    "ScaleControl.Miles": "mi",
     "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Gamitin ang ctrl + scroll para i-zoom ang mapa",
     "ScrollZoomBlocker.CmdMessage": "Gamitin ang ⌘ + scroll upang i-zoom ang mapa",
