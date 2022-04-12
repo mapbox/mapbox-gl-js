@@ -1,25 +1,25 @@
 // @flow
 
 const locale = {
-    "AttributionControl.ToggleAttribution": "Chuyển đổi phân bổ",
-    "AttributionControl.MapFeedback": "Phản hồi bản đồ",
-    "FullscreenControl.Enter": "Vào toàn màn hình",
-    "FullscreenControl.Exit": "Thoát toàn màn hình",
+    "AttributionControl.ToggleAttribution": "Hiện/ẩn lời ghi công",
+    "AttributionControl.MapFeedback": "Phản hồi về bản đồ",
+    "FullscreenControl.Enter": "Vào chế độ toàn màn hình",
+    "FullscreenControl.Exit": "Thoát chế độ toàn màn hình",
     "GeolocateControl.FindMyLocation": "Tìm vị trí của tôi",
     "GeolocateControl.LocationNotAvailable": "Vị trí không có sẵn",
-    "LogoControl.Title": "Biểu trưng của hộp bản đồ",
+    "LogoControl.Title": "Biểu trưng Mapbox",
     "Map.Title": "Bản đồ",
-    "NavigationControl.ResetBearing": "Đặt lại ổ trục về phía bắc",
+    "NavigationControl.ResetBearing": "Quay về hướng bắc",
     "NavigationControl.ZoomIn": "Phóng to",
     "NavigationControl.ZoomOut": "Thu nhỏ",
-    "ScaleControl.Feet": "ft",
+    "ScaleControl.Feet": "bộ",
     "ScaleControl.Meters": "m",
     "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "tôi",
-    "ScaleControl.NauticalMiles": "nm",
+    "ScaleControl.Miles": "dặm",
+    "ScaleControl.NauticalMiles": "hải lý",
     "ScrollZoomBlocker.CtrlMessage": "Sử dụng ctrl + cuộn để thu phóng bản đồ",
     "ScrollZoomBlocker.CmdMessage": "Sử dụng ⌘ + cuộn để thu phóng bản đồ",
-    "TouchPanBlocker.Message": "Sử dụng hai ngón tay để di chuyển bản đồ"
+    "TouchPanBlocker.Message": "Vuốt bằng hai ngón tay để cuộn bản đồ"
 };
 
 export default locale;
