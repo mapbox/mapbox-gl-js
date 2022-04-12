@@ -1,25 +1,25 @@
 // @flow
 
 const locale = {
-    "AttributionControl.ToggleAttribution": "Укључите приписивање",
+    "AttributionControl.ToggleAttribution": "Укључи приписивање",
     "AttributionControl.MapFeedback": "Повратне информације о мапи",
-    "FullscreenControl.Enter": "Унесите цео екран",
-    "FullscreenControl.Exit": "Изађите преко целог екрана",
-    "GeolocateControl.FindMyLocation": "Пронађите моју локацију",
+    "FullscreenControl.Enter": "Прикажи на целом екрану",
+    "FullscreenControl.Exit": "Прекини приказ на целом екрану",
+    "GeolocateControl.FindMyLocation": "Пронађи моју локацију",
     "GeolocateControl.LocationNotAvailable": "Локација није доступна",
-    "LogoControl.Title": "Мапбок лого",
+    "LogoControl.Title": "© Mapbox лого",
     "Map.Title": "Мапа",
-    "NavigationControl.ResetBearing": "Ресетујте смер на север",
-    "NavigationControl.ZoomIn": "Увеличати",
-    "NavigationControl.ZoomOut": "Умањите",
+    "NavigationControl.ResetBearing": "Ресетoвати смер на север",
+    "NavigationControl.ZoomIn": "Приближити мапу",
+    "NavigationControl.ZoomOut": "Удаљити мапу",
     "ScaleControl.Feet": "фт",
     "ScaleControl.Meters": "м",
     "ScaleControl.Kilometers": "км",
     "ScaleControl.Miles": "ја",
     "ScaleControl.NauticalMiles": "нм",
-    "ScrollZoomBlocker.CtrlMessage": "Користите цтрл + скрол да бисте зумирали мапу",
-    "ScrollZoomBlocker.CmdMessage": "Користите ⌘ + скролујте да бисте зумирали мапу",
-    "TouchPanBlocker.Message": "Користите два прста да померите мапу"
+    "ScrollZoomBlocker.CtrlMessage": "Користити Ctrl + скрол да бисте зумирали мапу",
+    "ScrollZoomBlocker.CmdMessage": "Користити ⌘ (Cmd) + скрол да бисте зумирали мапу",
+    "TouchPanBlocker.Message": "Користити два прста да померaте мапу"
 };
 
 export default locale;
