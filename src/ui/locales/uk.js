@@ -5,7 +5,7 @@ const locale = {
     "AttributionControl.MapFeedback": "Відгук про мапу",
     "FullscreenControl.Enter": "Перейти у повноекранний режим",
     "FullscreenControl.Exit": "Вийти з повноекранного режиму",
-    "GeolocateControl.FindMyLocation": "Знайти моє місцезнаходження",
+    "GeolocateControl.FindMyLocation": "Показати моє місцезнаходження",
     "GeolocateControl.LocationNotAvailable": "Місцезнаходження недоступне",
     "LogoControl.Title": "Логотип Mapbox",
     "Map.Title": "Мапа",
