@@ -25,10 +25,10 @@ const suitePath = `${suiteName}-tests`;
 const ciOutputFile = `${rootFixturePath}${suitePath}/test-results.xml`;
 const fixtureBuildInterval = 2000;
 
-const testPage = "test/integration/testem_page_" + (
+const testPage = `test/integration/testem_page_${
     process.env.BUILD === "production" ? "prod" :
     process.env.BUILD === "csp" ? "csp" : "dev"
-) + ".html";
+}.html`;
 
 const buildJob =
     process.env.BUILD === "production" ? "build-prod-min" :
