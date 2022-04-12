@@ -11,7 +11,7 @@ const locale = {
     "Map.Title": "Карта",
     "NavigationControl.ResetBearing": "Сбросить азимут на север",
     "NavigationControl.ZoomIn": "Приблизить",
-    "NavigationControl.ZoomOut": "Уменьшить",
+    "NavigationControl.ZoomOut": "Отдалить",
     "ScaleControl.Feet": "футов",
     "ScaleControl.Meters": "м",
     "ScaleControl.Kilometers": "км",
