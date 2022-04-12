@@ -15,7 +15,7 @@ const locale = {
     "ScaleControl.Feet": "фт",
     "ScaleControl.Meters": "м",
     "ScaleControl.Kilometers": "км",
-    "ScaleControl.Miles": "mi",
+    "ScaleControl.Miles": "миль",
     "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Прокрутіть з натиснутим Ctrl, щоб збільшити карту",
     "ScrollZoomBlocker.CmdMessage": "Прокрутіть з натиснутим ⌘, щоб збільшити карту",
