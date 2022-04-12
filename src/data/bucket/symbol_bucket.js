@@ -42,7 +42,11 @@ import EvaluationParameters from '../../style/evaluation_parameters.js';
 import Formatted from '../../style-spec/expression/types/formatted.js';
 import ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin.js';
-import {mat4} from 'gl-matrix';
+import {resamplePred} from '../../geo/projection/resample.js';
+import {lngFromMercatorX, latFromMercatorY} from '../../geo/mercator_coordinate.js';
+import {latLngToECEF} from '../../geo/projection/globe_util.js';
+import {mat4, vec3} from 'gl-matrix';
+import EXTENT from '../extent.js';
 
 import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import type {
@@ -439,6 +443,7 @@ class SymbolBucket implements Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         const layer = this.layers[0];
         const layout = layer.layout;
+        const isGlobe = this.projection === 'globe';
 
         const textFont = layout.get('text-font');
         const textField = layout.get('text-field');
@@ -475,6 +480,29 @@ class SymbolBucket implements Bucket {
             }
 
             if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, canonical, tileTransform);
+
+            if (isGlobe && feature.type !== 1) {
+                // Resample long lines and polygons in globe view so that their length wont exceed ~0.19 radians (360/32 degrees).
+                // Otherwise lines could clip through the globe as the resolution is not enough to represent curved paths.
+                // The threshold value follows subdivision size used with fill extrusions
+                const geom = evaluationFeature.geometry;
+                const tiles = 1 << canonical.z;
+                const mx = canonical.x;
+                const my = canonical.y;
+
+                for (let i = 0; i < geom.length; i++) {
+                    geom[i] = resamplePred(
+                        geom[i],
+                        p => p,
+                        (a, b) => {
+                            const v0 = latLngToECEF(latFromMercatorY((a.y / EXTENT + my) / tiles), lngFromMercatorX((a.x / EXTENT + mx) / tiles), 1);
+                            const v1 = latLngToECEF(latFromMercatorY((b.y / EXTENT + my) / tiles), lngFromMercatorX((b.x / EXTENT + mx) / tiles), 1);
+                            const cosAngle = vec3.dot(v0, v1);
+                            // cos(11.25 degrees) = 0.98078528056
+                            return cosAngle < 0.98078528056;
+                        });
+                }
+            }
 
             let text: Formatted | void;
             if (hasText) {
