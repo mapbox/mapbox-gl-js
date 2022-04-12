@@ -8,7 +8,7 @@ const locale = {
     "GeolocateControl.FindMyLocation": "Найти мое местоположение",
     "GeolocateControl.LocationNotAvailable": "Местоположение недоступно",
     "LogoControl.Title": "Логотип Mapbox",
-    "Map.Title": "карта",
+    "Map.Title": "Карта",
     "NavigationControl.ResetBearing": "Сбросить азимут на север",
     "NavigationControl.ZoomIn": "Приблизить",
     "NavigationControl.ZoomOut": "Уменьшить",
