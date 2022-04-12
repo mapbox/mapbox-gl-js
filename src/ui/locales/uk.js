@@ -1,7 +1,7 @@
 // @flow
 
 const locale = {
-    "AttributionControl.ToggleAttribution": "Показувати атрибуцію",
+    "AttributionControl.ToggleAttribution": "Показати атрибуцію",
     "AttributionControl.MapFeedback": "Відгук про мапу",
     "FullscreenControl.Enter": "Перейти у повноекранний режим",
     "FullscreenControl.Exit": "Вийти з повноекранного режиму",
