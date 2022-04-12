@@ -2,23 +2,23 @@
 
 const locale = {
     "AttributionControl.ToggleAttribution": "Alternar atribuição",
-    "AttributionControl.MapFeedback": "Comentários do mapa",
+    "AttributionControl.MapFeedback": "Enviar feedback",
     "FullscreenControl.Enter": "Entrar em tela cheia",
     "FullscreenControl.Exit": "Sair da tela cheia",
     "GeolocateControl.FindMyLocation": "Encontrar minha localização",
-    "GeolocateControl.LocationNotAvailable": "Local não disponível",
-    "LogoControl.Title": "Logo do Mapbox",
+    "GeolocateControl.LocationNotAvailable": "Localização não disponível",
+    "LogoControl.Title": "Logo Mapbox",
     "Map.Title": "Mapa",
-    "NavigationControl.ResetBearing": "Redefinir rumo para o norte",
-    "NavigationControl.ZoomIn": "Ampliar tela",
-    "NavigationControl.ZoomOut": "Diminuir tela",
-    "ScaleControl.Feet": "pés",
+    "NavigationControl.ResetBearing": "Redefinir orientação para o norte",
+    "NavigationControl.ZoomIn": "Aumentar zoom",
+    "NavigationControl.ZoomOut": "Diminuir zoom",
+    "ScaleControl.Feet": "ft",
     "ScaleControl.Meters": "m",
     "ScaleControl.Kilometers": "km",
     "ScaleControl.Miles": "mi",
     "ScaleControl.NauticalMiles": "mn",
-    "ScrollZoomBlocker.CtrlMessage": "Aperte ctrl + rolar para ampliar o mapa",
-    "ScrollZoomBlocker.CmdMessage": "Aperte ⌘ + rolar para ampliar o mapa",
+    "ScrollZoomBlocker.CtrlMessage": "Pressione ctrl + mouse scroll para ampliar o mapa",
+    "ScrollZoomBlocker.CmdMessage": "Pressione ⌘ + mouse scroll para ampliar o mapa",
     "TouchPanBlocker.Message": "Use dois dedos para mover o mapa"
 };
 
