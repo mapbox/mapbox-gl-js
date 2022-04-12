@@ -1,25 +1,25 @@
 // @flow
 
 const locale = {
-    "AttributionControl.ToggleAttribution": "アトリビューションを切り替える",
-    "AttributionControl.MapFeedback": "マップフィードバック",
-    "FullscreenControl.Enter": "フルスクリーンに入る",
+    "AttributionControl.ToggleAttribution": "アトリビューションを切り替え",
+    "AttributionControl.MapFeedback": "地図へのフィードバック",
+    "FullscreenControl.Enter": "全画面表示を開始",
     "FullscreenControl.Exit": "全画面表示を終了",
-    "GeolocateControl.FindMyLocation": "私の場所を探す",
-    "GeolocateControl.LocationNotAvailable": "場所は利用できません",
+    "GeolocateControl.FindMyLocation": "現在地を検索",
+    "GeolocateControl.LocationNotAvailable": "現在地が見つかりません",
     "LogoControl.Title": "Mapboxのロゴ",
     "Map.Title": "地図",
-    "NavigationControl.ResetBearing": "ベアリングを北にリセット",
+    "NavigationControl.ResetBearing": "北向きに変える",
     "NavigationControl.ZoomIn": "ズームイン",
-    "NavigationControl.ZoomOut": "ズームアウトする",
+    "NavigationControl.ZoomOut": "ズームアウト",
     "ScaleControl.Feet": "フィート",
     "ScaleControl.Meters": "m",
     "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "自分",
-    "ScaleControl.NauticalMiles": "nm",
-    "ScrollZoomBlocker.CtrlMessage": "Ctrlキーを押しながらスクロールして地図をズームします",
-    "ScrollZoomBlocker.CmdMessage": "⌘+スクロールを使用して地図をズームします",
-    "TouchPanBlocker.Message": "2本の指で地図を移動します"
+    "ScaleControl.Miles": "マイル",
+    "ScaleControl.NauticalMiles": "海里",
+    "ScrollZoomBlocker.CtrlMessage": "ctrlキー+スクロールで地図を縮小/拡大",
+    "ScrollZoomBlocker.CmdMessage": "⌘+スクロールで地図を縮小/拡大",
+    "TouchPanBlocker.Message": "指2本で地図をスクロール"
 };
 
 export default locale;
