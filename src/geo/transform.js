@@ -1228,7 +1228,7 @@ class Transform {
      */
     pointCoordinate3D(p: Point): MercatorCoordinate {
         if (!this.elevation) return this.pointCoordinate(p);
-        let raycast = this.projection.pointCoordinate3D(this, p.x, p.y);
+        let raycast: ?Vec3 = this.projection.pointCoordinate3D(this, p.x, p.y);
         if (raycast) return new MercatorCoordinate(raycast[0], raycast[1], raycast[2]);
         let start = 0, end = this.horizonLineFromTop();
         if (p.y > end) return this.pointCoordinate(p); // holes between tiles below horizon line or below bottom.

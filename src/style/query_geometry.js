@@ -485,6 +485,9 @@ export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): ?C
 }
 
 function resamplePolygon(polygon: Point[], transform: Transform): Point[] {
+    // Choose a tolerance value for the resampling logic that produces sufficiently
+    // accurate polygons without creating too many points. The value 1 / 256 was chosen
+    // based on empirical testing
     const tolerance = 1.0 / 256.0;
     return resample(
         polygon,
