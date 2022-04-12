@@ -7,7 +7,7 @@ const locale = {
     "FullscreenControl.Exit": "Выйти из полноэкранного режима",
     "GeolocateControl.FindMyLocation": "Найти мое местоположение",
     "GeolocateControl.LocationNotAvailable": "Местоположение недоступно",
-    "LogoControl.Title": "Логотип мапбокса",
+    "LogoControl.Title": "Логотип Mapbox",
     "Map.Title": "карта",
     "NavigationControl.ResetBearing": "Сбросить азимут на север",
     "NavigationControl.ZoomIn": "Приблизить",
