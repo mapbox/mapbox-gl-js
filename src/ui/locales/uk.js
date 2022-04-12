@@ -9,7 +9,7 @@ const locale = {
     "GeolocateControl.LocationNotAvailable": "Немає даних про місцезнаходження",
     "LogoControl.Title": "Логотип Mapbox",
     "Map.Title": "Мапа",
-    "NavigationControl.ResetBearing": "Вирівняти карту на північ",
+    "NavigationControl.ResetBearing": "Орієнтувати мапу на північ",
     "NavigationControl.ZoomIn": "Приблизити",
     "NavigationControl.ZoomOut": "Віддалити",
     "ScaleControl.Feet": "ft",
