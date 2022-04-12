@@ -10,7 +10,7 @@ const locale = {
     "LogoControl.Title": "Логотип Mapbox",
     "Map.Title": "Мапа",
     "NavigationControl.ResetBearing": "Орієнтувати мапу на північ",
-    "NavigationControl.ZoomIn": "Приблизити",
+    "NavigationControl.ZoomIn": "Наблизити",
     "NavigationControl.ZoomOut": "Віддалити",
     "ScaleControl.Feet": "ft",
     "ScaleControl.Meters": "м",
