@@ -15,7 +15,7 @@ const locale = {
     "ScaleControl.Feet": "ft",
     "ScaleControl.Meters": "m",
     "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "mi"
+    "ScaleControl.Miles": "mi",
     "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Utilisez ctrl + scroll pour zoomer sur la carte",
     "ScrollZoomBlocker.CmdMessage": "Utilisez ⌘ + scroll pour agrandir la carte",
