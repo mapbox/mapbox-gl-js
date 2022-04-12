@@ -2,7 +2,7 @@
 
 const locale = {
     "AttributionControl.ToggleAttribution": "Увімкнути атрибуцію",
-    "AttributionControl.MapFeedback": "Відгук про карту",
+    "AttributionControl.MapFeedback": "Відгук про мапу",
     "FullscreenControl.Enter": "Перейти у повноекранний режим",
     "FullscreenControl.Exit": "Вийти з повноекранного режиму",
     "GeolocateControl.FindMyLocation": "Знайти моє місцезнаходження",
