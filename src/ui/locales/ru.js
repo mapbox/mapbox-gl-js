@@ -1,11 +1,11 @@
 // @flow
 
 const locale = {
-    "AttributionControl.ToggleAttribution": "Переключить атрибуцию",
+    "AttributionControl.ToggleAttribution": "Переключить отображение авторских прав",
     "AttributionControl.MapFeedback": "Отзыв о карте",
     "FullscreenControl.Enter": "Войти в полноэкранный режим",
     "FullscreenControl.Exit": "Выйти из полноэкранного режима",
-    "GeolocateControl.FindMyLocation": "Найти мое местоположение",
+    "GeolocateControl.FindMyLocation": "Найти моё местоположение",
     "GeolocateControl.LocationNotAvailable": "Местоположение недоступно",
     "LogoControl.Title": "Логотип Mapbox",
     "Map.Title": "Карта",
