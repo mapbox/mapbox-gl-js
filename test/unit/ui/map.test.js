@@ -567,7 +567,7 @@ test('Map', (t) => {
                 const fog = new Fog({});
                 const fogSpy = t.spy(fog, '_validate');
 
-                fog.set({color: [444]}, {validate: false});
+                fog.set({color: [444]}, {}, {validate: false});
                 fog.updateTransitions({transition: false}, {});
                 fog.recalculate({zoom: 16, zoomHistory: {}, now: 10});
 
