@@ -77,6 +77,9 @@ type SerializedGrid = { buffer: ArrayBuffer };
 (Grid: any).deserialize = function deserialize(serialized: SerializedGrid): Grid {
     return new Grid(serialized.buffer);
 };
+
+Object.defineProperty(Grid, 'name', {value: 'Grid'});
+
 register(Grid);
 
 register(Color);
