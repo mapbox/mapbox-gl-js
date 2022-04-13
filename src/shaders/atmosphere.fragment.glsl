@@ -43,6 +43,7 @@ void main() {
 
     if (norm_dist_from_center < 1.0) {
         gl_FragColor = u_color;
+        return;
     }
 #endif
 
