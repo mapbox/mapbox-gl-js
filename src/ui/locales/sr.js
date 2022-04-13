@@ -15,7 +15,7 @@ const locale = {
     "ScaleControl.Feet": "фт",
     "ScaleControl.Meters": "м",
     "ScaleControl.Kilometers": "км",
-    "ScaleControl.Miles": "ја",
+    "ScaleControl.Miles": "ми",
     "ScaleControl.NauticalMiles": "нм",
     "ScrollZoomBlocker.CtrlMessage": "Користити Ctrl + скрол да бисте зумирали мапу",
     "ScrollZoomBlocker.CmdMessage": "Користити ⌘ (Cmd) + скрол да бисте зумирали мапу",
