@@ -1,3 +1,8 @@
+## 2.8.1
+
+### Bug fixes 🐞
+* Fix the special bundle for CSP-restricted environments that broke in the v2.8.0 release.
+
 ## 2.8.0
 
 ## Performance improvements 🏁
