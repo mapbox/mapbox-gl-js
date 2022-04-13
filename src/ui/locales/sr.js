@@ -7,7 +7,7 @@ const locale = {
     "FullscreenControl.Exit": "Прекини приказ на целом екрану",
     "GeolocateControl.FindMyLocation": "Пронађи моју локацију",
     "GeolocateControl.LocationNotAvailable": "Локација није доступна",
-    "LogoControl.Title": "© Mapbox лого",
+    "LogoControl.Title": "Mapbox лого",
     "Map.Title": "Мапа",
     "NavigationControl.ResetBearing": "Ресетoвати смер на север",
     "NavigationControl.ZoomIn": "Приближити мапу",
