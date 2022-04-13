@@ -1,0 +1,83 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    "center": [36.504, 45.466],
+    "zoom": 6,
+    "sprite": "local://sprites/sprite",
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "sources": {
+      "vector": {
+        "type": "vector",
+        "tiles": [
+          "local://tiles/i18n/us/{z}-{x}-{y}.mvt"
+        ]
+      }
+    },
+    "layers": [
+        {
+          "id": "borders",
+          "type": "line",
+          "source": "vector",
+          "source-layer": "admin",
+          "layout": {
+              "line-cap": "round",
+              "line-join": "round"
+          },
+          "paint": {
+              "line-width": 2,
+              "line-opacity": 0.5,
+              "line-color": [
+                  "case",
+                  ["==", ["get", "worldview"], "US"], "#0074D9",
+                  ["==", ["get", "worldview"], "IN"], "#7FDBFF",
+                  ["==", ["get", "worldview"], "CN"], "#FF851B",
+                  ["==", ["get", "worldview"], "JP"], "#FFDC00",
+                  ["==", ["get", "worldview"], "RU"], "#DDDDDD",
+                  ["==", ["get", "worldview"], "MA"], "#DDDDDD",
+                  ["==", ["get", "worldview"], "AR"], "#DDDDDD",
+                  ["==", ["get", "worldview"], "TR"], "#DDDDDD",
+                  "#34b5cf"
+              ]
+          }
+        },
+        {
+          "id": "borders-labels",
+          "type": "symbol",
+          "source": "vector",
+          "source-layer": "admin",
+          "layout": {
+              "text-field": ["to-string", ["get", "worldview"]],
+              "text-size": 14,
+              "text-font": [
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+              ],
+              "text-anchor": "center",
+              "text-allow-overlap": true,
+              "symbol-placement": "line",
+              "symbol-spacing": 20,
+              "text-keep-upright": true
+          },
+          "paint": {
+              "text-color": [
+                  "case",
+                  ["==", ["get", "worldview"], "US"], "#0074D9",
+                  ["==", ["get", "worldview"], "IN"], "#7FDBFF",
+                  ["==", ["get", "worldview"], "CN"], "#FF851B",
+                  ["==", ["get", "worldview"], "JP"], "#FFDC00",
+                  ["==", ["get", "worldview"], "RU"], "#DDDDDD",
+                  ["==", ["get", "worldview"], "MA"], "#DDDDDD",
+                  ["==", ["get", "worldview"], "AR"], "#DDDDDD",
+                  ["==", ["get", "worldview"], "TR"], "#DDDDDD",
+                  "#79a0a8"
+              ]
+          }
+        }
+    ]
+  }
+  
