@@ -358,6 +358,7 @@ class CustomSource<T> extends Evented implements Source {
             tileSize: this.tileSize,
             minzoom: this.minzoom,
             maxzoom: this.maxzoom,
+            roundZoom: this.roundZoom
         });
 
         return tileIDs.map(tileID => ({x: tileID.canonical.x, y: tileID.canonical.y, z: tileID.canonical.z}));
