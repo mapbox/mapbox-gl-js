@@ -3852,7 +3852,7 @@
       "doc": "",
       "sdk-support": {
         "basic functionality": {
-          "js": ""
+          "js": "2.9.0"
         }
       }
     },
@@ -3884,7 +3884,7 @@
       "doc": "",
       "sdk-support": {
         "basic functionality": {
-          "js": ""
+          "js": "2.9.0"
         }
       }
     },
@@ -3950,7 +3950,7 @@
       "doc": "",
       "sdk-support": {
         "basic functionality": {
-          "js": ""
+          "js": "2.9.0"
         }
       }
     }
