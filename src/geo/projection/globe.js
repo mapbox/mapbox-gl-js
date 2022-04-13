@@ -164,6 +164,11 @@ export default class Globe extends Mercator {
         return new MercatorCoordinate(mx, my);
     }
 
+    pointCoordinate3D(tr: Transform, x: number, y: number): ?Vec3 {
+        const mc = this.pointCoordinate(tr, x, y, 0);
+        return [mc.x, mc.y, mc.z];
+    }
+
     farthestPixelDistance(tr: Transform): number {
         const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
         const globePixelDistance = farthestPixelDistanceOnSphere(tr, pixelsPerMeter);

@@ -92,6 +92,16 @@ export default class Projection {
         return tr.rayIntersectionCoordinate(tr.pointRayIntersection(clamped, z));
     }
 
+    pointCoordinate3D(tr: Transform, x: number, y: number): ?Vec3 {
+        const p = new Point(x, y);
+        if (tr.elevation) {
+            return tr.elevation.pointCoordinate(p);
+        } else {
+            const mc = this.pointCoordinate(tr, p.x, p.y, 0);
+            return [mc.x, mc.y, mc.z];
+        }
+    }
+
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array { // eslint-disable-line
         return identity;
     }

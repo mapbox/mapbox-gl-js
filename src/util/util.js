@@ -139,7 +139,7 @@ export function polygonizeBounds(min: Point, max: Point, buffer: number = 0, clo
     const polygon = [minBuf, new Point(maxBuf.x, minBuf.y), maxBuf, new Point(minBuf.x, maxBuf.y)];
 
     if (close) {
-        polygon.push(minBuf);
+        polygon.push(minBuf.clone());
     }
     return polygon;
 }

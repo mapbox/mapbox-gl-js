@@ -1,0 +1,23 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        -156.46728515625,
+        71.40617196718856
+      ],
+      "type": "Point"
+    },
+    "id": 200,
+    "properties": {
+      "featureclass": "cape",
+      "lat_y": 71.372637,
+      "long_x": -156.615894,
+      "name": "Point Barrow",
+      "region": "North America",
+      "scalerank": 4
+    },
+    "source": "places",
+    "state": {},
+    "type": "Feature"
+  }
+]

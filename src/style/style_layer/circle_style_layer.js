@@ -12,6 +12,8 @@ import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration.js';
 import {Ray} from '../../util/primitives.js';
 import assert from 'assert';
+import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordinate.js';
+import EXTENT from '../../data/extent.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
 import type Transform from '../../geo/transform.js';
@@ -92,6 +94,9 @@ export function queryIntersectsCircle(queryGeometry: TilespaceQueryGeometry,
     // // A circle with fixed scaling relative to the map gets smaller in viewport space as it moves into the distance
     if (alignWithMap) size *= queryGeometry.pixelToTileUnitsFactor;
 
+    const tileId = queryGeometry.tileID.canonical;
+    const elevationScale = transform.projection.upVectorScale(tileId, transform.center.lat, transform.worldSize).metersToTile;
+
     for (const ring of geometry) {
         for (const point of ring) {
             const translatedPoint = point.add(translation);
@@ -99,16 +104,34 @@ export function queryIntersectsCircle(queryGeometry: TilespaceQueryGeometry,
                 transform.elevation.exaggeration() * elevationHelper.getElevationAt(translatedPoint.x, translatedPoint.y, true) :
                 0;
 
-            const transformedPoint = alignWithMap ? translatedPoint : projectPoint(translatedPoint, z, pixelPosMatrix);
+            // Reproject tile coordinate to the local coordinate space used by the projection
+            const reproj = transform.projection.projectTilePoint(translatedPoint.x, translatedPoint.y, tileId);
+
+            if (z > 0) {
+                const dir = transform.projection.upVector(tileId, translatedPoint.x, translatedPoint.y);
+                reproj.x += dir[0] * elevationScale * z;
+                reproj.y += dir[1] * elevationScale * z;
+                reproj.z += dir[2] * elevationScale * z;
+            }
+
+            const transformedPoint = alignWithMap ? translatedPoint : projectPoint(reproj.x, reproj.y, reproj.z, pixelPosMatrix);
             const transformedPolygon = alignWithMap ?
                 queryGeometry.tilespaceRays.map((r) => intersectAtHeight(r, z)) :
                 queryGeometry.queryGeometry.screenGeometry;
 
-            const projectedCenter = vec4.transformMat4([], [point.x, point.y, z, 1], pixelPosMatrix);
+            const projectedCenter = vec4.transformMat4([], [reproj.x, reproj.y, reproj.z, 1], pixelPosMatrix);
             if (!scaleWithMap && alignWithMap) {
                 size *= projectedCenter[3] / transform.cameraToCenterDistance;
             } else if (scaleWithMap && !alignWithMap) {
                 size *= transform.cameraToCenterDistance / projectedCenter[3];
+            }
+
+            if (!scaleWithMap && alignWithMap) {
+                // Apply extra scaling to cover different pixelPerMeter ratios at different latitudes
+                const lat = latFromMercatorY((point.y / EXTENT + tileId.y) / (1 << tileId.z));
+                const scale = transform.projection.pixelsPerMeter(lat, 1) / mercatorZfromAltitude(1, lat);
+
+                size /= scale;
             }
 
             if (polygonIntersectsBufferedPoint(transformedPolygon, transformedPoint, size)) return true;
@@ -118,8 +141,8 @@ export function queryIntersectsCircle(queryGeometry: TilespaceQueryGeometry,
     return false;
 }
 
-function projectPoint(p: Point, z: number, pixelPosMatrix: Float32Array) {
-    const point = vec4.transformMat4([], [p.x, p.y, z, 1], pixelPosMatrix);
+function projectPoint(x: number, y: number, z: number, pixelPosMatrix: Float32Array) {
+    const point = vec4.transformMat4([], [x, y, z, 1], pixelPosMatrix);
     return new Point(point[0] / point[3], point[1] / point[3]);
 }
 

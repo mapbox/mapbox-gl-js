@@ -19,7 +19,7 @@ import type {Mat4, Vec4} from 'gl-matrix';
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
 import {calculateGlobeLabelMatrix} from '../geo/projection/globe_util.js';
-export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, projectVector, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
+export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, projectVector, projectClamped, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 type ProjectedSymbol = {|
     point: Point,
@@ -170,6 +170,17 @@ function projectVector(point: [number, number, number], matrix: Mat4): Projected
         point: new Point(pos[0] / w, pos[1] / w),
         signedDistanceFromCamera: w
     };
+}
+
+function projectClamped(point: [number, number, number], matrix: Mat4): Vec4 {
+    const pos = [point[0], point[1], point[2], 1];
+    vec4.transformMat4(pos, pos, matrix);
+
+    // Clamp distance to a positive value so we can avoid screen coordinate
+    // being flipped possibly due to perspective projection
+    const w = Math.max(pos[3], 0.000001);
+
+    return [pos[0] / w, pos[1] / w, pos[2] / w, w];
 }
 
 function getPerspectiveRatio(cameraToCenterDistance: number, signedDistanceFromCamera: number): number {

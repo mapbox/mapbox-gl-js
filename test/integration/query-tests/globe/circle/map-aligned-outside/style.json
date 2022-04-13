@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 400,
+      "width": 400,
+      "queryGeometry": [
+        280,
+        250
+      ]
+    }
+  },
+  "center": [
+    -142.456,
+    50
+  ],
+  "projection": {
+    "name": "globe"
+  },
+  "zoom": 1,
+  "pitch": 80,
+  "bearing": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          -122.45599994435906,
+          37.75724003196146
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 30,
+        "circle-color": "#ff0000",
+        "circle-pitch-alignment": "map"
+      }
+    }
+  ]
+}

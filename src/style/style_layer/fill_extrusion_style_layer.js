@@ -1,14 +1,16 @@
 // @flow
 
 import StyleLayer from '../style_layer.js';
-import FillExtrusionBucket, {ELEVATION_SCALE, ELEVATION_OFFSET} from '../../data/bucket/fill_extrusion_bucket.js';
+import FillExtrusionBucket, {ELEVATION_SCALE, ELEVATION_OFFSET, fillExtrusionHeightLift, resampleFillExtrusionPolygonsForGlobe} from '../../data/bucket/fill_extrusion_bucket.js';
 import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests.js';
 import {translateDistance, tilespaceTranslate} from '../query_utils.js';
 import properties from './fill_extrusion_style_layer_properties.js';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
 import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration.js';
-import {vec4} from 'gl-matrix';
+import {vec3, vec4} from 'gl-matrix';
+import EXTENT from '../../data/extent.js';
+import {CanonicalTileID} from '../../source/tile_id.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
 import type {BucketParameters} from '../../data/bucket.js';
@@ -87,8 +89,16 @@ class FillExtrusionStyleLayer extends StyleLayer {
         const isHidden = centroid[0] === 0 && centroid[1] === 1;
         if (isHidden) return false;
 
+        if (transform.projection.name === 'globe') {
+            // Fill extrusion geometry has to be resampled so that large planar polygons
+            // can be rendered on the curved surface
+            const bounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
+            const resampledGeometry = resampleFillExtrusionPolygonsForGlobe([geometry], bounds, queryGeometry.tileID.canonical);
+            geometry = resampledGeometry.map(clipped => clipped.polygon).flat();
+        }
+
         const demSampler = terrainVisible ? elevationHelper : null;
-        const projected = projectExtrusion(geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat);
+        const projected = projectExtrusion(transform, geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat, queryGeometry.tileID.canonical);
         const projectedBase = projected[0];
         const projectedTop = projected[1];
 
@@ -190,12 +200,88 @@ function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Poin
     return closestDistance === Infinity ? false : closestDistance;
 }
 
-function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: ?DEMSampler, centroid: Vec2, exaggeration: number, lat: number) {
-    if (demSampler) {
-        return projectExtrusion3D(geometry, zBase, zTop, translation, m, demSampler, centroid, exaggeration, lat);
+function projectExtrusion(tr: Transform, geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: ?DEMSampler, centroid: Vec2, exaggeration: number, lat: number, tileID: CanonicalTileID) {
+    if (tr.projection.name === 'globe') {
+        return projectExtrusionGlobe(tr, geometry, zBase, zTop, translation, m, demSampler, centroid, exaggeration, lat, tileID);
     } else {
-        return projectExtrusion2D(geometry, zBase, zTop, translation, m);
+        if (demSampler) {
+            return projectExtrusion3D(geometry, zBase, zTop, translation, m, demSampler, centroid, exaggeration, lat);
+        } else {
+            return projectExtrusion2D(geometry, zBase, zTop, translation, m);
+        }
     }
+}
+
+function projectExtrusionGlobe(tr: Transform, geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: ?DEMSampler, centroid: Vec2, exaggeration: number, lat: number, tileID: CanonicalTileID) {
+    const projectedBase = [];
+    const projectedTop = [];
+    const elevationScale = tr.projection.upVectorScale(tileID, tr.center.lat, tr.worldSize).metersToTile;
+    const basePoint = [0, 0, 0, 1];
+    const topPoint = [0, 0, 0, 1];
+
+    const setPoint = (point, x, y, z) => {
+        point[0] = x;
+        point[1] = y;
+        point[2] = z;
+        point[3] = 1;
+    };
+
+    // Fixed "lift" value is added to height so that 0-height fill extrusions wont clip with globe's surface
+    const lift = fillExtrusionHeightLift();
+
+    if (zBase > 0) {
+        zBase += lift;
+    }
+    zTop += lift;
+
+    for (const r of geometry) {
+        const ringBase = [];
+        const ringTop = [];
+        for (const p of r) {
+            const x = p.x + translation.x;
+            const y = p.y + translation.y;
+
+            // Reproject tile coordinate into ecef and apply elevation to correct direction
+            const reproj = tr.projection.projectTilePoint(x, y, tileID);
+            const dir = tr.projection.upVector(tileID, p.x, p.y);
+
+            let zBasePoint = zBase;
+            let zTopPoint = zTop;
+
+            if (demSampler) {
+                const offset = getTerrainHeightOffset(x, y, zBase, zTop, demSampler, centroid, exaggeration, lat);
+
+                zBasePoint += offset.base;
+                zTopPoint += offset.top;
+            }
+
+            if (zBase !== 0) {
+                setPoint(
+                    basePoint,
+                    reproj.x + dir[0] * elevationScale * zBasePoint,
+                    reproj.y + dir[1] * elevationScale * zBasePoint,
+                    reproj.z + dir[2] * elevationScale * zBasePoint);
+            } else {
+                setPoint(basePoint, reproj.x, reproj.y, reproj.z);
+            }
+
+            setPoint(
+                topPoint,
+                reproj.x + dir[0] * elevationScale * zTopPoint,
+                reproj.y + dir[1] * elevationScale * zTopPoint,
+                reproj.z + dir[2] * elevationScale * zTopPoint);
+
+            vec3.transformMat4(basePoint, basePoint, m);
+            vec3.transformMat4(topPoint, topPoint, m);
+
+            ringBase.push(toPoint(basePoint));
+            ringTop.push(toPoint(topPoint));
+        }
+        projectedBase.push(ringBase);
+        projectedTop.push(ringTop);
+    }
+
+    return [projectedBase, projectedTop];
 }
 
 /*

@@ -1,0 +1,64 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 500,
+      "height": 500,
+      "queryGeometry": [
+        [
+          230,
+          300
+        ],
+        [
+          330,
+          380
+        ]
+      ]
+    }
+  },
+  "center": [
+    0,
+    -89
+  ],
+  "zoom": 0.5,
+  "pitch": 0,
+  "bearing": 17.5,
+  "projection": {
+    "name": "globe"
+  },
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/places.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 5,
+        "circle-color": "#ff0000",
+        "circle-pitch-alignment": "map",
+        "circle-pitch-scale": "viewport"
+      }
+    }
+  ]
+}
