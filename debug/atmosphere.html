@@ -159,53 +159,53 @@ window.onload = function() {
         } : null);
     });
 
-    var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 1.0);
+    var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 1.0).listen();
     horizonBlend.onChange((value) => {
         map.setFog({
             "horizon-blend": value,
         });
     });
-    var starIntensity = fog.add(guiParams, 'starIntensity', 0.0, 1.0);
+    var starIntensity = fog.add(guiParams, 'starIntensity', 0.0, 1.0).listen();
     starIntensity.onChange((value) => {
         map.setFog({
             "star-intensity": value,
         });
     });
 
-    var colorAlpha = fog.add(guiParams, 'colorAlpha', 0.0, 1.0);
+    var colorAlpha = fog.add(guiParams, 'colorAlpha', 0.0, 1.0).listen();
     colorAlpha.onChange((value) => {
         map.setFog({
             "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + value + ')'
         });
     });
 
-    var color = fog.addColor(guiParams, 'color');
+    var color = fog.addColor(guiParams, 'color').listen();
     color.onChange((value) => {
         map.setFog({
             "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.colorAlpha + ')'
         });
     });
 
-    var skyAlpha = fog.add(guiParams, 'skyAlpha', 0.0, 1.0);
+    var skyAlpha = fog.add(guiParams, 'skyAlpha', 0.0, 1.0).listen();
     skyAlpha.onChange((value) => {
         map.setFog({
             "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + value + ')'
         });
     });
-    var highColor = fog.addColor(guiParams, 'highColor');
+    var highColor = fog.addColor(guiParams, 'highColor').listen();
     highColor.onChange((value) => {
         map.setFog({
             "high-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.skyAlpha + ')'
         });
     });
 
-    var spaceAlpha = fog.add(guiParams, 'spaceAlpha', 0.0, 1.0);
+    var spaceAlpha = fog.add(guiParams, 'spaceAlpha', 0.0, 1.0).listen();
     spaceAlpha.onChange((value) => {
         map.setFog({
             "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + value + ')'
         });
     });
-    var spaceColor = fog.addColor(guiParams, 'spaceColor');
+    var spaceColor = fog.addColor(guiParams, 'spaceColor').listen();
     spaceColor.onChange((value) => {
         map.setFog({
             "space-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.spaceAlpha + ')'
