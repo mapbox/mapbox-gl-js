@@ -17,7 +17,7 @@ const locale = {
     "ScaleControl.Kilometers": "كم",
     "ScaleControl.Miles": "ميل",
     "ScaleControl.NauticalMiles": "ميل بحري",
-    "ScrollZoomBlocker.CtrlMessage": "استخدم مفتاح ctrl + التمرير لتكبير الخريطة",
+    "ScrollZoomBlocker.CtrlMessage": "إستخدم مفتاح التحكم + التمرير لتكبير الخريطة",
     "ScrollZoomBlocker.CmdMessage": "استخدم مفتاح ⌘ + التمرير لتكبير الخريطة",
     "TouchPanBlocker.Message": "استخدم إصبعين لتحريك الخريطة"
 };
