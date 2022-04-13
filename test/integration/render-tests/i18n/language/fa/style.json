@@ -1,0 +1,44 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "height": 256,
+        "width": 256
+      }
+    },
+    "center": [-89.08, 42.14],
+    "zoom": 3,
+    "sprite": "local://sprites/sprite",
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "sources": {
+      "vector": {
+        "type": "vector",
+        "tiles": [
+          "local://tiles/i18n/fa/{z}-{x}-{y}.mvt"
+        ]
+      }
+    },
+    "layers": [
+      {
+        "id": "places-labels",
+        "type": "symbol",
+        "source": "vector",
+        "source-layer": "place_label",
+        "layout": {
+            "text-field": ["to-string", ["get", "name"]],
+            "text-font": [
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+            ]
+        },
+        "paint": {
+            "text-color": [
+                "case",
+                ["==", ["get", "name"], ["get", "name_local"]], "#4f7ca3",
+                "#000000"
+            ]
+        }
+      }
+    ]
+  }
+  

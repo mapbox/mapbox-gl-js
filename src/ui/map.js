@@ -260,60 +260,10 @@ const defaultOptions = {
  *   If a label has no translation for the selected language, it will display in the label's local language.
  *   By default, GL JS will select a user's preferred language as determined by the browser's `window.navigator.language` property.
  *   If the `locale` property is not set separately, this language will also be used to localize the UI for supported languages.
- *   The supported languages are:
- *
- *   - "ar": "Arabic"
- *   - "ca": "Catalan"
- *   - "cs": "Czech"
- *   - "da": "Danish"
- *   - "de": "German"
- *   - "el": "Greek"
- *   - "en": "English"
- *   - "es": "Spanish"
- *   - "fa": "Farsi"
- *   - "fi": "Finnish"
- *   - "fr": "French"
- *   - "he": "Hebrew"
- *   - "hu": "Hungarian"
- *   - "id": "Indonesian"
- *   - "it": "Italian"
- *   - "ja": "Japanese"
- *   - "ka": "Georgian"
- *   - "ko": "Korean"
- *   - "lv": "Latvian"
- *   - "ms": "Malay"
- *   - "nb": "Norwegian Bokmål"
- *   - "nl": "Dutch"
- *   - "no": "Norwegian"
- *   - "pl": "Polish"
- *   - "pt": "Portuguese"
- *   - "ro": "Romanian"
- *   - "ru": "Russian"
- *   - "sk": "Slovak"
- *   - "sl": "Slovenian"
- *   - "sr": "Serbian"
- *   - "sv": "Swedish"
- *   - "th": "Thai"
- *   - "tl": "Tagalog"
- *   - "tr": "Turkish"
- *   - "uk": "Ukrainian"
- *   - "vi": "Vietnamese"
- *   - "zh-Hans": "Simplified Chinese"
- *   - "zh-Hant": "Traditional Chinese".
  * @param {string} [options.worldview] Sets the map's worldview. A worldview determines the way that certain disputed boundaries
      * are rendered. By default, GL JS will not set a worldview so that the worldview of Mapbox tiles will be determined by the vector tile source's TileJSON.
      * Valid worldview strings must be an [ISO alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes). Unsupported
      * ISO alpha-2 codes will fall back to the TileJSON's default worldview. Invalid codes will result in a recoverable error.
-     * The supported worldviews are:
-     *
-     * - 'AR': "Argentina"
-     * - 'CN': "China"
-     * - 'IN': "India"
-     * - 'JP': "Japan"
-     * - 'MA': "Morocco"
-     * - 'RU': "Russia"
-     * - 'TR': "Turkey"
-     * - 'US': "United States".
  * @param {boolean} [options.optimizeForTerrain=true] With terrain on, if `true`, the map will render for performance priority, which may lead to layer reordering allowing to maximize performance (layers that are draped over terrain will be drawn first, including fill, line, background, hillshade and raster). Otherwise, if set to `false`, the map will always be drawn for layer order priority.
  * @param {boolean} [options.renderWorldCopies=true] If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
  * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire
