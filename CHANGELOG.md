@@ -1,7 +1,7 @@
 ## 2.8.1
 
 ### Bug fixes 🐞
-* Fix the special bundle for CSP-restricted environments that broke in the v2.8.0 release.
+* Fix the special bundle for CSP-restricted environments that broke in the 2.8.0 release. ([#11739](https://github.com/mapbox/mapbox-gl-js/pull/11739))
 
 ## 2.8.0
 
