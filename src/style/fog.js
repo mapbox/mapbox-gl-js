@@ -14,17 +14,25 @@ import type LngLat from '../geo/lng_lat.js';
 import type Transform from '../geo/transform.js';
 import type {StyleSetterOptions} from '../style/style.js';
 import type {FogState} from './fog_helpers.js';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
+import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 
 type Props = {|
     "range": DataConstantProperty<[number, number]>,
     "color": DataConstantProperty<Color>,
+    "high-color": DataConstantProperty<Color>,
+    "space-color": DataConstantProperty<Color>,
     "horizon-blend": DataConstantProperty<number>,
+    "star-intensity": DataConstantProperty<number>,
 |};
 
 const fogProperties: Properties<Props> = new Properties({
     "range": new DataConstantProperty(styleSpec.fog.range),
     "color": new DataConstantProperty(styleSpec.fog.color),
+    "high-color": new DataConstantProperty(styleSpec.fog["high-color"]),
+    "space-color": new DataConstantProperty(styleSpec.fog["space-color"]),
     "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
+    "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
 });
 
 const TRANSITION_SUFFIX = '-transition';
@@ -47,8 +55,16 @@ class Fog extends Evented {
     }
 
     get state(): FogState {
+        const tr = this._transform;
+        const isGlobe = tr.projection.name === 'globe';
+        const transitionT = globeToMercatorTransition(tr.zoom);
+        const range = this.properties.get('range');
+        const globeFixedFogRange = [0.5, 3];
         return {
-            range: this.properties.get('range'),
+            range: isGlobe ? [
+                interpolate(globeFixedFogRange[0], range[0], transitionT),
+                interpolate(globeFixedFogRange[1], range[1], transitionT)
+            ] : range,
             horizonBlend: this.properties.get('horizon-blend'),
             alpha: this.properties.get('color').a
         };
@@ -58,9 +74,16 @@ class Fog extends Evented {
         return (this._transitionable.serialize(): any);
     }
 
-    set(fog?: FogSpecification, options: StyleSetterOptions = {}) {
+    set(fog?: FogSpecification, old?: FogSpecification, options: StyleSetterOptions = {}) {
         if (this._validate(validateFog, fog, options)) {
             return;
+        }
+
+        for (const name of Object.keys(styleSpec.fog)) {
+            // Fallback to use default style specification when the properties wasn't set
+            if (fog && fog[name] === undefined && (!old || (old && old[name] === undefined))) {
+                fog[name] = styleSpec.fog[name].default;
+            }
         }
 
         for (const name in fog) {
@@ -77,7 +100,8 @@ class Fog extends Evented {
         if (!this._transform.projection.supportsFog) return 0;
 
         const fogColor = (this.properties && this.properties.get('color')) || 1.0;
-        const pitchFactor = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
+        const isGlobe = this._transform.projection.name === 'globe';
+        const pitchFactor = isGlobe ? 1.0 : smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
         return pitchFactor * fogColor.a;
     }
 

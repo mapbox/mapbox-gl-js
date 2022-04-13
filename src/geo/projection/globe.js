@@ -40,7 +40,7 @@ export default class Globe extends Mercator {
         super(options);
         this.requiresDraping = true;
         this.supportsWorldCopies = false;
-        this.supportsFog = false;
+        this.supportsFog = true;
         this.zAxisUnit = "pixels";
         this.unsupportedLayers = ['debug', 'custom'];
     }
@@ -84,6 +84,10 @@ export default class Globe extends Mercator {
     createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
         return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
+    }
+
+    createFogTileMatrix(tr: Transform): Float64Array {
+        return mat4.copy(new Float64Array(16), tr.globeMatrix);
     }
 
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {

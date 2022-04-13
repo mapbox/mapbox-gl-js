@@ -504,6 +504,15 @@ export function clone<T>(input: T): T {
 }
 
 /**
+ * Maps a value from a range between [min, max] to the range [outMin, outMax]
+ *
+ * @private
+ */
+export function mapValue(value: number, min: number, max: number, outMin: number, outMax: number): number {
+    return clamp((value - min) / (max - min) * (outMax - outMin) + outMin, outMin, outMax);
+}
+
+/**
  * Check if two arrays have at least one common element.
  *
  * @private

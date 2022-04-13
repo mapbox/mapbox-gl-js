@@ -69,7 +69,8 @@
                 "circle-pitch-scale": "map"
               }
             }
-          ]
+          ],
+          "fog": {}
         }],
         ["wait"]
       ]

@@ -9,10 +9,5 @@ const layout: StructArrayLayout = createLayout([
     {type: 'Float32', name: 'a_uv', components: 2}
 ]);
 
-export const atmosphereLayout: StructArrayLayout = createLayout([
-    {type: 'Float32', name: 'a_pos', components: 3},
-    {type: 'Float32', name: 'a_uv', components: 2}
-]);
-
 export default layout;
 export const {members, size, alignment} = layout;

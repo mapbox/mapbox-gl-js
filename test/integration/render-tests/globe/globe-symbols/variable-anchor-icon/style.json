@@ -47,6 +47,9 @@
       }
     }
   },
+  "fog": {
+    "star-intensity": 0
+  },
   "sprite": "local://sprites/sprite",
   "layers": [
     {

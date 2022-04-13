@@ -181,9 +181,10 @@ createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
 createStructArrayType('symbol_line_vertex', lineVertex, true);
 
-import globeAttributes, {atmosphereLayout} from '../src/terrain/globe_attributes.js';
+import globeAttributes from '../src/terrain/globe_attributes.js';
+import {atmosphereLayout} from '../src/render/atmosphere_attributes.js';
 createStructArrayType('globe_vertex', globeAttributes);
-createStructArrayType('globe_atmosphere_vertex', atmosphereLayout);
+createStructArrayType('atmosphere_vertex', atmosphereLayout);
 
 // feature index array
 createStructArrayType('feature_index', createLayout([

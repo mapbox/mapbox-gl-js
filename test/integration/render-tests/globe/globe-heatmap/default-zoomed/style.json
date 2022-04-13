@@ -16,6 +16,9 @@
     0,
     0
   ],
+  "fog": {
+    "star-intensity": 0
+  },
   "pitch": 70.0,
   "zoom": 4.5,
   "sources": {

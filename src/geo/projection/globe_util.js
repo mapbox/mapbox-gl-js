@@ -12,9 +12,9 @@ import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import {degToRad, smoothstep, clamp} from '../../util/util.js';
 import {vec3, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
-import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
+import {members as globeLayoutAttributes} from '../../terrain/globe_attributes.js';
 import posAttributes from '../../data/pos_attributes.js';
-import {TriangleIndexArray, GlobeVertexArray, GlobeAtmosphereVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
+import {TriangleIndexArray, GlobeVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
 
@@ -467,17 +467,12 @@ export class GlobeSharedBuffers {
     _gridIndexBuffer: IndexBuffer;
     _gridSegments: Array<SegmentVector>;
 
-    atmosphereVertexBuffer: VertexBuffer;
-    atmosphereIndexBuffer: IndexBuffer;
-    atmosphereSegments: SegmentVector;
-
     _wireframeIndexBuffer: IndexBuffer;
     _wireframeSegments: Array<SegmentVector>;
 
     constructor(context: Context) {
         this._createGrid(context);
         this._createPoles(context);
-        this._createAtmosphere(context);
     }
 
     destroy() {
@@ -488,9 +483,6 @@ export class GlobeSharedBuffers {
         this._poleSouthVertexBuffer.destroy();
         for (const segments of this._poleSegments) segments.destroy();
         for (const segments of this._gridSegments) segments.destroy();
-        this.atmosphereVertexBuffer.destroy();
-        this.atmosphereIndexBuffer.destroy();
-        this.atmosphereSegments.destroy();
 
         if (this._wireframeIndexBuffer) {
             this._wireframeIndexBuffer.destroy();
@@ -567,22 +559,6 @@ export class GlobeSharedBuffers {
 
         this._poleNorthVertexBuffer = context.createVertexBuffer(northVertices, globeLayoutAttributes, false);
         this._poleSouthVertexBuffer = context.createVertexBuffer(southVertices, globeLayoutAttributes, false);
-    }
-
-    _createAtmosphere(context: Context) {
-        const atmosphereVertices = new GlobeAtmosphereVertexArray();
-        atmosphereVertices.emplaceBack(-1, 1, 1, 0, 0);
-        atmosphereVertices.emplaceBack(1, 1, 1, 1, 0);
-        atmosphereVertices.emplaceBack(1, -1, 1, 1, 1);
-        atmosphereVertices.emplaceBack(-1, -1, 1, 0, 1);
-
-        const atmosphereTriangles = new TriangleIndexArray();
-        atmosphereTriangles.emplaceBack(0, 1, 2);
-        atmosphereTriangles.emplaceBack(2, 3, 0);
-
-        this.atmosphereVertexBuffer = context.createVertexBuffer(atmosphereVertices, atmosphereLayout.members);
-        this.atmosphereIndexBuffer = context.createIndexBuffer(atmosphereTriangles);
-        this.atmosphereSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
     }
 
     getGridBuffers(latitudinalLod: number): [VertexBuffer, IndexBuffer, SegmentVector] {

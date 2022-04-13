@@ -130,6 +130,10 @@ export default class Projection {
         return posMatrix;
     }
 
+    createFogTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
+        return this.createTileMatrix(tr, worldSize, id);
+    }
+
     upVector(id: CanonicalTileID, x: number, y: number): Vec3 { // eslint-disable-line
         return [0, 0, 1];
     }

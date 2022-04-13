@@ -77,12 +77,47 @@ class Color {
         return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
     }
 
+    /**
+     * Returns an RGBA array of values representing the color, unpremultiplied by A.
+     *
+     * @returns An array of RGBA color values in the range [0, 255].
+     */
     toArray(): [number, number, number, number] {
         const {r, g, b, a} = this;
         return a === 0 ? [0, 0, 0, 0] : [
             r * 255 / a,
             g * 255 / a,
             b * 255 / a,
+            a
+        ];
+    }
+
+    /**
+     * Returns a RGBA array of float values representing the color, unpremultiplied by A.
+     *
+     * @returns An array of RGBA color values in the range [0, 1].
+     */
+    toArray01(): [number, number, number, number] {
+        const {r, g, b, a} = this;
+        return a === 0 ? [0, 0, 0, 0] : [
+            r / a,
+            g / a,
+            b / a,
+            a
+        ];
+    }
+
+    /**
+     * Returns an RGBA array of values representing the color, premultiplied by A.
+     *
+     * @returns An array of RGBA color values in the range [0, 1].
+     */
+    toArray01PremultipliedAlpha(): [number, number, number, number] {
+        const {r, g, b, a} = this;
+        return [
+            r,
+            g,
+            b,
             a
         ];
     }

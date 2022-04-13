@@ -11,6 +11,7 @@
       ]
     }
   },
+  "fog": {},
   "sources": {
     "geojson": {
       "type": "geojson",

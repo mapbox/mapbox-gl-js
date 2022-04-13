@@ -3838,10 +3838,73 @@
         }
       }
     },
+    "high-color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#245cdf",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.9.0"
+        }
+      }
+    },
+    "space-color": {
+      "type": "color",
+      "property-type": "data-constant",
+
+      "default":
+      [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        4,
+        "#010b19",
+        7,
+        "#367ab9"
+      ],
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.9.0"
+        }
+      }
+    },
     "horizon-blend": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.1,
+      "default":
+      [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        4,
+        0.2,
+        7,
+        0.1
+      ],
       "minimum": 0,
       "maximum": 1,
       "expression": {
@@ -3855,6 +3918,39 @@
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
+        }
+      }
+    },
+    "star-intensity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default":
+      [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        5,
+        0.35,
+        6,
+        0
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.9.0"
         }
       }
     }
