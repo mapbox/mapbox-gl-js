@@ -76,7 +76,7 @@ void main() {
     // exponential curve
     // [0.0, 1.0] == inside the globe, > 1.0 == outside of the globe
     // https://www.desmos.com/calculator/l5v8lw9zby
-    float t = exp(-horizon_angle * pow(u_fadeout_range, -1.0));
+    float t = exp(-horizon_angle / u_fadeout_range);
 
     float alpha_0 = u_color.a;
     float alpha_1 = u_high_color.a;
