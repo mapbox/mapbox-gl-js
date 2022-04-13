@@ -42,7 +42,7 @@ export default [{
         chunkFileNames: 'shared.js'
     },
     treeshake: production,
-    plugins: plugins(minified, production, false, bench)
+    plugins: plugins({minified, production, bench})
 }, {
     // Next, bundle together the three "chunks" produced in the previous pass
     // into a single, final bundle. See rollup/bundle_prelude.js and

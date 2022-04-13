@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "2.8.0",
+  "version": "2.8.1",
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "license": "SEE LICENSE IN LICENSE.txt",
@@ -139,6 +139,7 @@
     "watch-query": "SUITE_NAME=query testem -f test/integration/testem/testem.js",
     "test-render": "SUITE_NAME=render CI=true testem ci -f test/integration/testem/testem.js",
     "test-render-prod": "BUILD=production SUITE_NAME=render CI=true testem ci -f test/integration/testem/testem.js",
+    "test-render-csp": "BUILD=csp SUITE_NAME=render CI=true testem ci -f test/integration/testem/testem.js",
     "test-query": "SUITE_NAME=query CI=true testem ci -f test/integration/testem/testem.js",
     "test-expressions": "build/run-node test/expression.test.js",
     "test-flow": "build/run-node build/generate-flow-typed-style-spec && flow .",
