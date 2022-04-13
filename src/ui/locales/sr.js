@@ -13,7 +13,7 @@ const locale = {
     "NavigationControl.ZoomIn": "Приближити мапу",
     "NavigationControl.ZoomOut": "Удаљити мапу",
     "ScaleControl.Feet": "фт",
-    "ScaleControl.Meters": "м",
+    "ScaleControl.Meters": "ми",
     "ScaleControl.Kilometers": "км",
     "ScaleControl.Miles": "ја",
     "ScaleControl.NauticalMiles": "нм",
