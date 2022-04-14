@@ -61,18 +61,25 @@ import terrainDepthVert from './terrain_depth.vertex.glsl';
 import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
 import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
+import preludeShadowFrag from './_prelude_shadow.fragment.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 import globeFrag from './globe_raster.fragment.glsl';
 import globeVert from './globe_raster.vertex.glsl';
 import atmosphereFrag from './atmosphere.fragment.glsl';
 import atmosphereVert from './atmosphere.vertex.glsl';
+import fillExtrusionShadowsFrag from './fill_extrusion_shadow.fragment.glsl';
+import fillExtrusionShadowsVert from './fill_extrusion_shadow.vertex.glsl';
+import groundShadowsFrag from './ground_shadow.fragment.glsl';
+import groundShadowsVert from './ground_shadow.vertex.glsl';
 
 export let preludeTerrain = {};
 export let preludeFog = {};
+export let preludeShadow = {};
 
 preludeTerrain = compile('', preludeTerrainVert, true);
 preludeFog = compile(preludeFogFrag, preludeFogVert, true);
+preludeShadow = compile(preludeShadowFrag, '', true);
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const preludeCommonSource = preludeCommon;
@@ -146,7 +153,9 @@ export default {
     skyboxGradient: compile(skyboxGradientFrag, skyboxVert),
     skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert),
     globeRaster: compile(globeFrag, globeVert),
-    globeAtmosphere: compile(atmosphereFrag, atmosphereVert)
+    globeAtmosphere: compile(atmosphereFrag, atmosphereVert),
+    fillExtrusionShadow: compile(fillExtrusionShadowsFrag, fillExtrusionShadowsVert),
+    groundShadow: compile(groundShadowsFrag, groundShadowsVert)
 };
 
 // Expand #pragmas to #ifdefs.
@@ -168,6 +177,9 @@ function compile(fragmentSource, vertexSource, isGlobalPrelude) {
         }
         if (preludeFog.staticUniforms) {
             staticUniforms = preludeFog.staticUniforms.concat(staticUniforms);
+        }
+        if (preludeShadow.staticUniforms) {
+            staticUniforms = preludeShadow.staticUniforms.concat(staticUniforms);
         }
     }
 
