@@ -4,7 +4,7 @@ import Point from '@mapbox/point-geometry';
 
 import {mat2, mat4, vec3, vec4} from 'gl-matrix';
 import * as symbolSize from './symbol_size.js';
-import {addDynamicAttributes} from '../data/bucket/symbol_bucket.js';
+import {addDynamicAttributes, updateGlobeVertexNormal} from '../data/bucket/symbol_bucket.js';
 import type Projection from '../geo/projection/projection.js';
 import type Painter from '../render/painter.js';
 import type Transform from '../geo/transform.js';
@@ -12,14 +12,15 @@ import type SymbolBucket from '../data/bucket/symbol_bucket.js';
 import type {
     GlyphOffsetArray,
     SymbolLineVertexArray,
-    SymbolDynamicLayoutArray
+    SymbolDynamicLayoutArray,
+    SymbolGlobeExtArray
 } from '../data/array_types.js';
 import type {Mat4, Vec3, Vec4} from 'gl-matrix';
 
 import {WritingMode} from '../symbol/shaping.js';
-import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
+import {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../source/tile_id.js';
 import {calculateGlobeLabelMatrix} from '../geo/projection/globe_util.js';
-export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, projectVector, projectClamped, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
+export {updateLineLabels, hideGlyphs, getLabelPlaneMatrixForRendering, getLabelPlaneMatrixForPlacement, getGlCoordMatrix, project, projectVector, projectClamped, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 type ProjectedSymbol = {|
     point: Vec3,
@@ -30,6 +31,7 @@ type PlacedGlyph = {|
     path: Array<Vec3>,
     point: Vec3,
     tilePath: Array<Point>,
+    up: Vec3
 |}
 
 const FlipState = {
@@ -87,18 +89,22 @@ const maxTangent = Math.tan(85 * Math.PI / 180);
 
 /*
  * Returns a matrix for converting from tile units to the correct label coordinate space.
+ * This variation of the function returns a label space matrix specialized for rendering.
+ * It transforms coordinates as-is to whatever the target space is (either 2D or 3D).
+ * See also `getLabelPlaneMatrixForPlacement`
  */
-function getLabelPlaneMatrix(posMatrix: Float32Array,
+function getLabelPlaneMatrixForRendering(posMatrix: Float32Array,
                              tileID: CanonicalTileID,
                              pitchWithMap: boolean,
                              rotateWithMap: boolean,
                              transform: Transform,
                              pixelsToTileUnits: Float32Array): Float32Array {
     const m = mat4.create();
+
     if (pitchWithMap) {
         if (transform.projection.name === 'globe') {
-            mat4.multiply(m, m, calculateGlobeLabelMatrix(transform, tileID));
-
+            const lm = calculateGlobeLabelMatrix(transform, tileID);
+            mat4.multiply(m, m, lm);
         } else {
             const s = mat2.invert([], pixelsToTileUnits);
             m[0] = s[0];
@@ -117,6 +123,32 @@ function getLabelPlaneMatrix(posMatrix: Float32Array,
 }
 
 /*
+ * Returns a matrix for converting from tile units to the correct label coordinate space.
+ * This variation of the function returns a matrix specialized for placement logic.
+ * Coordinates will be clamped to x&y 2D plane which is used with viewport and map aligned placement
+ * logic in most cases. Certain projections such as globe view will use 3D space for map aligned 
+ * label placement.
+ */
+function getLabelPlaneMatrixForPlacement(posMatrix: Float32Array,
+                             tileID: CanonicalTileID,
+                             pitchWithMap: boolean,
+                             rotateWithMap: boolean,
+                             transform: Transform,
+                             pixelsToTileUnits: Float32Array): Float32Array {
+    const m = getLabelPlaneMatrixForRendering(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits);
+
+    // Symbol placement logic is performed in 2D in most scenarios.
+    // For this reason project all coordinates to the xy-plane by discarding the z-component
+    if (transform.projection.name !== 'globe' || !pitchWithMap) {
+        // Pre-multiply by scaling z to 0
+        m[2] = m[6] = m[10] = m[14] = 0;
+    }
+
+    return m;
+}
+
+
+/*
  * Returns a matrix for converting from the correct label coordinate space to gl coords.
  */
 function getGlCoordMatrix(posMatrix: Float32Array,
@@ -127,7 +159,7 @@ function getGlCoordMatrix(posMatrix: Float32Array,
                           pixelsToTileUnits: Float32Array): Float32Array {
     if (pitchWithMap) {
         if (transform.projection.name === 'globe') {
-            const m = getLabelPlaneMatrix(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits);
+            const m = getLabelPlaneMatrixForRendering(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits);
             mat4.invert(m, m);
             mat4.multiply(m, posMatrix, m);
             return m;
@@ -218,6 +250,7 @@ function updateLineLabels(bucket: SymbolBucket,
     const tr = painter.transform;
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
     const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform.zoom);
+    const isGlobe = tr.projection.name === 'globe';
 
     const clippingBuffer = [256 / painter.width * 2 + 1, 256 / painter.height * 2 + 1];
 
@@ -225,6 +258,13 @@ function updateLineLabels(bucket: SymbolBucket,
         bucket.text.dynamicLayoutVertexArray :
         bucket.icon.dynamicLayoutVertexArray;
     dynamicLayoutVertexArray.clear();
+
+    let globeExtVertexArray: ?SymbolGlobeExtArray = null;
+    if (isGlobe) {
+        globeExtVertexArray = isText ?
+            bucket.text.globeExtVertexArray :
+            bucket.icon.globeExtVertexArray;
+    }
 
     const lineVertexArray = bucket.lineVertexArray;
     const placedSymbols = isText ? bucket.text.placedSymbolArray : bucket.icon.placedSymbolArray;
@@ -287,7 +327,7 @@ function updateLineLabels(bucket: SymbolBucket,
 
         const getElevationForPlacement = pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
         const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
-            bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, labelPlaneAnchorPoint.point, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tr.projection, tileID, pitchWithMap);
+            bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, labelPlaneAnchorPoint.point, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tr.projection, tileID, pitchWithMap);
 
         useVertical = placeUnflipped.useVertical;
 
@@ -295,15 +335,21 @@ function updateLineLabels(bucket: SymbolBucket,
         if (placeUnflipped.notEnoughRoom || useVertical ||
             (placeUnflipped.needsFlipping &&
              placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
-                 bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, labelPlaneAnchorPoint.point, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tr.projection, tileID, pitchWithMap).notEnoughRoom)) {
+                 bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, labelPlaneAnchorPoint.point, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tr.projection, tileID, pitchWithMap).notEnoughRoom)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
         }
     }
 
     if (isText) {
         bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
+        if (globeExtVertexArray) {
+            bucket.text.globeExtVertexBuffer.updateData(globeExtVertexArray);
+        }
     } else {
         bucket.icon.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
+        if (globeExtVertexArray) {
+            bucket.icon.globeExtVertexBuffer.updateData(globeExtVertexArray);
+        }
     }
 }
 
@@ -384,7 +430,7 @@ function requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio) {
     return (firstPoint.x > lastPoint.x) ? {needsFlipping: true} : null;
 }
 
-function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation, projection, tileID, pitchWithMap) {
+function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation, projection, tileID, pitchWithMap) {
     const fontScale = fontSize / 24;
     const lineOffsetX = symbol.lineOffsetX * fontScale;
     const lineOffsetY = symbol.lineOffsetY * fontScale;
@@ -454,8 +500,18 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         placedGlyphs = [singleGlyph];
     }
 
-    for (const glyph: any of placedGlyphs) {
-        addDynamicAttributes(dynamicLayoutVertexArray, new Point(glyph.point[0], glyph.point[1]), glyph.angle);
+    if (globeExtVertexArray) {
+        for (const glyph: any of placedGlyphs) {
+            updateGlobeVertexNormal(globeExtVertexArray, dynamicLayoutVertexArray.length + 0, glyph.up[0], glyph.up[1], glyph.up[2]);
+            updateGlobeVertexNormal(globeExtVertexArray, dynamicLayoutVertexArray.length + 1, glyph.up[0], glyph.up[1], glyph.up[2]);
+            updateGlobeVertexNormal(globeExtVertexArray, dynamicLayoutVertexArray.length + 2, glyph.up[0], glyph.up[1], glyph.up[2]);
+            updateGlobeVertexNormal(globeExtVertexArray, dynamicLayoutVertexArray.length + 3, glyph.up[0], glyph.up[1], glyph.up[2]);
+            addDynamicAttributes(dynamicLayoutVertexArray, glyph.point[0], glyph.point[1], glyph.point[2], glyph.angle);
+        }
+    } else {
+        for (const glyph: any of placedGlyphs) {
+            addDynamicAttributes(dynamicLayoutVertexArray, glyph.point[0], glyph.point[1], glyph.point[2], glyph.angle);
+        }
     }
     return {};
 }
@@ -600,7 +656,7 @@ function placeGlyphAlongLine(
     }
 
     if (axisZ[0] !== 0 || axisZ[1] !== 0 || axisZ[2] !== 1) {
-        // Label plane is not a flat plane
+        // Compute coordinate frame that is aligned to the tangent of the surface
         axisX[0] = axisZ[2];
         axisX[1] = 0;
         axisX[2] = -axisZ[0];
@@ -630,11 +686,12 @@ function placeGlyphAlongLine(
         point: labelPlanePoint,
         angle: segmentAngle,
         path: pathVertices,
-        tilePath
+        tilePath,
+        up: axisZ
     };
 }
 
-const hiddenGlyphAttributes = new Float32Array([-Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0]);
+const hiddenGlyphAttributes = new Float32Array([-Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0]);
 
 // Hide them by moving them offscreen. We still need to add them to the buffer
 // because the dynamic buffer is paired with a static buffer that doesn't get updated.
@@ -644,7 +701,7 @@ function hideGlyphs(num: number, dynamicLayoutVertexArray: SymbolDynamicLayoutAr
         dynamicLayoutVertexArray.resize(offset + 4);
         // Since all hidden glyphs have the same attributes, we can build up the array faster with a single call to Float32Array.set
         // for each set of four vertices, instead of calling addDynamicAttributes for each vertex.
-        dynamicLayoutVertexArray.float32.set(hiddenGlyphAttributes, offset * 3);
+        dynamicLayoutVertexArray.float32.set(hiddenGlyphAttributes, offset * 4);
     }
 }
 

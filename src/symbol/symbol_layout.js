@@ -430,7 +430,7 @@ function addFeature(bucket: SymbolBucket,
             const {x, y, z} = projection.projectTilePoint(anchor.x, anchor.y, canonicalId);
             globe = {
                 anchor: new Anchor(x, y, z, 0, undefined),
-                up: [0, 0, 1]
+                up: projection.upVector(canonicalId, anchor.x, anchor.y)
             };
         }
 

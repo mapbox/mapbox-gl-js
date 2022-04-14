@@ -33,7 +33,7 @@ import type SourceCache from '../source/source_cache.js';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type SymbolBucket, {SymbolBuffers} from '../data/bucket/symbol_bucket.js';
 import type Texture from '../render/texture.js';
-import type {OverscaledTileID} from '../source/tile_id.js';
+import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {UniformValues} from './uniform_binding.js';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program.js';
 import type {CrossTileID, VariableOffset} from '../symbol/placement.js';
@@ -133,7 +133,7 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
 
         const pixelsToTileUnits = painter.transform.calculatePixelsToTileUnitsMatrix(tile);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, pixelsToTileUnits);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrixForRendering(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, pixelsToTileUnits);
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
 
         if (size) {
@@ -203,8 +203,8 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             }
 
             const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
-            for (let g = 0; g < symbol.numGlyphs; g++) {
-                addDynamicAttributes(dynamicTextLayoutVertexArray, shiftedAnchor, angle);
+            for (let g = 0; g < symbol.numGlyphs; g++) {                // TODO
+                addDynamicAttributes(dynamicTextLayoutVertexArray, shiftedAnchor.x, shiftedAnchor.y, 0, angle);
             }
             //Only offset horizontal text icons
             if (updateTextFitIcon && symbol.associatedIconIndex >= 0) {
@@ -226,7 +226,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
                     symbolProjection.hideGlyphs(placedIcon.numGlyphs, dynamicIconLayoutVertexArray);
                 } else {
                     for (let g = 0; g < placedIcon.numGlyphs; g++) {
-                        addDynamicAttributes(dynamicIconLayoutVertexArray, shift.shiftedAnchor, shift.angle);
+                        addDynamicAttributes(dynamicIconLayoutVertexArray, shift.shiftedAnchor.x, shift.shiftedAnchor.y, shift.shiftedAnchor.z, shift.angle);
                     }
                 }
             }
@@ -275,12 +275,12 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         globeToMercatorTransition(tr.zoom) : 0.0;
     const tileRenderState: Array<SymbolTileRenderState> = [];
 
-    const baseDefines = ([]: any);
+    const defines = ([]: any);
     if (painter.terrain && pitchWithMap) {
-        baseDefines.push('PITCH_WITH_MAP_TERRAIN');
+        defines.push('PITCH_WITH_MAP_TERRAIN');
     }
     if (isGlobeProjection) {
-        baseDefines.push('PROJECTION_GLOBE_VIEW');
+        defines.push('PROJECTION_GLOBE_VIEW');
     }
 
     for (const coord of coords) {
@@ -324,9 +324,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         }
 
         const s = painter.transform.calculatePixelsToTileUnitsMatrix(tile);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, s);
+        const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, s);
         // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
-        const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(mat4.create(), labelPlaneMatrix) : identityMat4;
+        const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(mat4.create(), labelPlaneMatrixRendering) : identityMat4;
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, s);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
@@ -337,22 +337,17 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (alongLine) {
             const elevation = tr.elevation;
             const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, tr.projection) : (_ => [0, 0, 0]);
+            const labelPlaneMatrixPlacement = symbolProjection.getLabelPlaneMatrixForPlacement(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, s);
 
-            const lpm = [...labelPlaneMatrix];
-            const scale = mat4.create();
-            mat4.scale(scale, scale, [1, 1, 0]);
-            mat4.multiply(lpm, scale, lpm);
-
-            symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, lpm, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
+            symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrixPlacement, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
         }
 
-        const projectedPosOnViewport = alongLine || (isText && variablePlacement) || updateTextFitIcon;
+        const projectedPosOnLabelSpace = alongLine || (isText && variablePlacement) || updateTextFitIcon;
         const matrix = painter.translatePosMatrix(coord.projMatrix, tile, translate, translateAnchor),
-            uLabelPlaneMatrix = projectedPosOnViewport ? identityMat4 : labelPlaneMatrix,
+            uLabelPlaneMatrix = projectedPosOnLabelSpace ? identityMat4 : labelPlaneMatrixRendering,
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
         const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
 
-        const defines = projectedPosOnViewport ? baseDefines.concat(['PROJECTED_POS_ON_VIEWPORT']) : baseDefines;
         const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;
 
         let uniformValues;

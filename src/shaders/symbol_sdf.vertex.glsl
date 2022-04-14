@@ -1,7 +1,7 @@
 attribute vec4 a_pos_offset;
 attribute vec4 a_tex_size;
 attribute vec4 a_pixeloffset;
-attribute vec3 a_projected_pos;
+attribute vec4 a_projected_pos;
 attribute float a_fade_opacity;
 #ifdef PROJECTION_GLOBE_VIEW
 attribute vec3 a_globe_anchor;
@@ -65,7 +65,7 @@ void main() {
     float a_size_min = floor(a_size[0] * 0.5);
     vec2 a_pxoffset = a_pixeloffset.xy;
 
-    highp float segment_angle = -a_projected_pos[2];
+    highp float segment_angle = -a_projected_pos[3];
     float size;
 
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
@@ -133,13 +133,8 @@ void main() {
     }
 
 #ifdef PROJECTION_GLOBE_VIEW
-    #ifdef PROJECTED_POS_ON_VIEWPORT
-        vec3 proj_pos = mix_globe_mercator(vec3(a_projected_pos.xy, 0), mercator_pos, u_zoom_transition);
-        vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos.xy, 0.0, 1.0);
-    #else
-        vec3 proj_pos = mix_globe_mercator(a_globe_anchor + h, mercator_pos, u_zoom_transition);
-        vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos.xyz, 1.0);
-    #endif
+    vec3 proj_pos = mix_globe_mercator(a_projected_pos.xyz + h, mercator_pos, u_zoom_transition);
+    vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos, 1.0);
 #else
     vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, h.z, 1.0);
 #endif
@@ -156,7 +151,15 @@ void main() {
 #endif
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = occlusionFade(projected_point) * globe_occlusion_fade;
+#ifdef PROJECTION_GLOBE_VIEW
+    // Map aligned labels in globe view are aligned to the surface of the globe
+    vec3 xAxis = u_pitch_with_map ? normalize(vec3(a_globe_normal.z, 0.0, -a_globe_normal.x)) : vec3(1, 0, 0);
+    vec3 yAxis = u_pitch_with_map ? normalize(cross(a_globe_normal, xAxis)) : vec3(0, 1, 0);
+
+    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xyz / projected_pos.w + xAxis * offset.x + yAxis * offset.y, 1.0), AWAY, float(projected_point.w <= 0.0 || occlusion_fade == 0.0));
+#else
     gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projected_point.w <= 0.0 || occlusion_fade == 0.0));
+#endif
     float gamma_scale = gl_Position.w;
 
     float projection_transition_fade = 1.0;

@@ -252,17 +252,12 @@ export class Placement {
         const dynamicFilterNeedsFeature = styleLayer.dynamicFilterNeedsFeature();
         const pixelsToTiles = this.transform.calculatePixelsToTileUnitsMatrix(tile);
 
-        const textLabelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix,
+        const textLabelPlaneMatrix = projection.getLabelPlaneMatrixForPlacement(posMatrix,
                 tile.tileID.canonical,
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
                 pixelsToTiles);
-
-        // Symbol placement is done in 3d coordinates but we need only 2
-        const scaleMatrix = mat4.create();
-        mat4.scale(scaleMatrix, scaleMatrix, [1, 1, 0]);
-        mat4.multiply(textLabelPlaneMatrix, scaleMatrix, textLabelPlaneMatrix);
 
         let labelToScreenMatrix = null;
 

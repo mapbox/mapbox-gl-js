@@ -384,39 +384,6 @@ register(StructArrayLayout3i3f20, 'StructArrayLayout3i3f20');
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Float32[3]
- *
- * @private
- */
-class StructArrayLayout3f12 extends StructArray {
-    uint8: Uint8Array;
-    float32: Float32Array;
-
-    _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
-    }
-
-    emplaceBack(v0: number, v1: number, v2: number): number {
-        const i = this.length;
-        this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2);
-    }
-
-    emplace(i: number, v0: number, v1: number, v2: number): number {
-        const o4 = i * 3;
-        this.float32[o4 + 0] = v0;
-        this.float32[o4 + 1] = v1;
-        this.float32[o4 + 2] = v2;
-        return i;
-    }
-}
-
-StructArrayLayout3f12.prototype.bytesPerElement = 12;
-register(StructArrayLayout3f12, 'StructArrayLayout3f12');
-
-/**
- * Implementation of the StructArray layout:
  * [0]: Uint32[1]
  *
  * @private
@@ -614,6 +581,39 @@ class StructArrayLayout2ub2f12 extends StructArray {
 
 StructArrayLayout2ub2f12.prototype.bytesPerElement = 12;
 register(StructArrayLayout2ub2f12, 'StructArrayLayout2ub2f12');
+
+/**
+ * Implementation of the StructArray layout:
+ * [0]: Float32[3]
+ *
+ * @private
+ */
+class StructArrayLayout3f12 extends StructArray {
+    uint8: Uint8Array;
+    float32: Float32Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2);
+    }
+
+    emplace(i: number, v0: number, v1: number, v2: number): number {
+        const o4 = i * 3;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
+        return i;
+    }
+}
+
+StructArrayLayout3f12.prototype.bytesPerElement = 12;
+register(StructArrayLayout3f12, 'StructArrayLayout3f12');
 
 /**
  * Implementation of the StructArray layout:
@@ -1359,12 +1359,12 @@ export {
     StructArrayLayout6i12,
     StructArrayLayout4i4ui4i24,
     StructArrayLayout3i3f20,
-    StructArrayLayout3f12,
     StructArrayLayout1ul4,
     StructArrayLayout5i4f1i1ul2ui40,
     StructArrayLayout3i2i2i16,
     StructArrayLayout2f1f2i16,
     StructArrayLayout2ub2f12,
+    StructArrayLayout3f12,
     StructArrayLayout3ui6,
     StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1ub60,
     StructArrayLayout3i2f6i15ui1ul3f76,
@@ -1389,7 +1389,7 @@ export {
     StructArrayLayout8ui16 as DashLayoutArray,
     StructArrayLayout4i4ui4i24 as SymbolLayoutArray,
     StructArrayLayout3i3f20 as SymbolGlobeExtArray,
-    StructArrayLayout3f12 as SymbolDynamicLayoutArray,
+    StructArrayLayout4f16 as SymbolDynamicLayoutArray,
     StructArrayLayout1ul4 as SymbolOpacityArray,
     StructArrayLayout3i2i2i16 as CollisionBoxLayoutArray,
     StructArrayLayout2f1f2i16 as CollisionCircleLayoutArray,

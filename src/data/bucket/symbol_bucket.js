@@ -153,7 +153,7 @@ function addVertex(array, tileAnchorX, tileAnchorY, ox, oy, tx, ty, sizeVertex, 
     );
 }
 
-function addGlobeVertex(array, projAnchorX, projAnchorY, projAnchorZ) {
+function addGlobeVertex(array, projAnchorX, projAnchorY, projAnchorZ, normX, normY, normZ) {
     array.emplaceBack(
         // a_globe_anchor
         projAnchorX,
@@ -161,15 +161,25 @@ function addGlobeVertex(array, projAnchorX, projAnchorY, projAnchorZ) {
         projAnchorZ,
 
         // a_globe_normal
-        0, 0, 0
+        normX,
+        normY,
+        normZ
     );
 }
 
-function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, angle: number) {
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+function updateGlobeVertexNormal(array: SymbolGlobeExtArray, vertexIdx: number, normX: number, normY: number, normZ: number) {
+    // Modify float32 array directly. 20 bytes per entry, 3xInt16 for position, 3xfloat32 for normal
+    const offset = vertexIdx * 5 + 2;
+    array.float32[offset + 0] = normX;
+    array.float32[offset + 1] = normY;
+    array.float32[offset + 2] = normZ;
+}
+
+function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, x: number, y: number, z: number, angle: number) {
+    dynamicLayoutVertexArray.emplaceBack(x, y, z, angle);
+    dynamicLayoutVertexArray.emplaceBack(x, y, z, angle);
+    dynamicLayoutVertexArray.emplaceBack(x, y, z, angle);
+    dynamicLayoutVertexArray.emplaceBack(x, y, z, angle);
 }
 
 function containsRTLText(formattedText: Formatted): boolean {
@@ -231,7 +241,7 @@ export class SymbolBuffers {
             this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
             this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
             if (this.globeExtVertexArray.length > 0) {
-                this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, symbolGlobeExtAttributes.members);
+                this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, symbolGlobeExtAttributes.members, true);
             }
             // This is a performance hack so that we can write to opacityVertexArray with uint32s
             // even though the shaders read uint8s
@@ -499,7 +509,7 @@ class SymbolBucket implements Bucket {
 
             if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, canonical, tileTransform);
 
-            if (isGlobe && feature.type !== 1) {
+            if (isGlobe && feature.type !== 1 && canonical.z <= 5) {
                 // Resample long lines and polygons in globe view so that their length wont exceed ~0.19 radians (360/32 degrees).
                 // Otherwise lines could clip through the globe as the resolution is not enough to represent curved paths.
                 // The threshold value follows subdivision size used with fill extrusions
@@ -508,6 +518,9 @@ class SymbolBucket implements Bucket {
                 const mx = canonical.x;
                 const my = canonical.y;
 
+                // cos(11.25 degrees) = 0.98078528056
+                const cosAngleThreshold = 0.98078528056;
+
                 for (let i = 0; i < geom.length; i++) {
                     geom[i] = resamplePred(
                         geom[i],
@@ -515,9 +528,7 @@ class SymbolBucket implements Bucket {
                         (a, b) => {
                             const v0 = latLngToECEF(latFromMercatorY((a.y / EXTENT + my) / tiles), lngFromMercatorX((a.x / EXTENT + mx) / tiles), 1);
                             const v1 = latLngToECEF(latFromMercatorY((b.y / EXTENT + my) / tiles), lngFromMercatorX((b.x / EXTENT + mx) / tiles), 1);
-                            const cosAngle = vec3.dot(v0, v1);
-                            // cos(11.25 degrees) = 0.98078528056
-                            return cosAngle < 0.98078528056;
+                            return vec3.dot(v0, v1) < cosAngleThreshold;
                         });
                 }
             }
@@ -718,13 +729,17 @@ class SymbolBucket implements Bucket {
 
             if (globe) {
                 const globeAnchor = globe.anchor;
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z);
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z);
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z);
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z);
+                const up = globe.up;
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
+                
+                addDynamicAttributes(arrays.dynamicLayoutVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, angle);
+            } else {
+                addDynamicAttributes(arrays.dynamicLayoutVertexArray, tileAnchor.x, tileAnchor.y, tileAnchor.z, angle);
             }
 
-            addDynamicAttributes(arrays.dynamicLayoutVertexArray, tileAnchor, angle);
 
             indexArray.emplaceBack(index, index + 1, index + 2);
             indexArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -1108,4 +1123,4 @@ SymbolBucket.MAX_GLYPHS = 65535;
 SymbolBucket.addDynamicAttributes = addDynamicAttributes;
 
 export default SymbolBucket;
-export {addDynamicAttributes};
+export {addDynamicAttributes, updateGlobeVertexNormal};
