@@ -14,10 +14,6 @@ import Fog from '../style/fog.js';
 
 export default drawAtmosphere;
 
-function project(point, m) {
-    return vec3.transformMat4(point, point, m);
-}
-
 function drawAtmosphere(painter: Painter, fog: Fog) {
     const context = painter.context;
     const gl = context.gl;
@@ -25,16 +21,6 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
     const defines = tr.projection.name === 'globe' ? ['PROJECTION_GLOBE_VIEW', 'FOG'] : ['FOG'];
     const program = painter.useProgram('globeAtmosphere', null, ((defines: any): DynamicDefinesType[]));
-
-    // Render the gradient atmosphere by casting rays from screen pixels and determining their
-    // closest distance to the globe. This is done in view space where camera is located in the origo
-    // facing -z direction.
-    const zUnit = tr.projection.zAxisUnit === "meters" ? tr.pixelsPerMeter : 1.0;
-    const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, zUnit);
-
-    const center = [tr.globeMatrix[12], tr.globeMatrix[13], tr.globeMatrix[14]];
-    const globeCenterInViewSpace = project(center, viewMatrix);
-    const globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
 
     const transitionT = globeToMercatorTransition(tr.zoom);
 
@@ -58,8 +44,8 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
 
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
 
-    const globeCenterDistance = vec3.length(globeCenterInViewSpace);
-    const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(globeRadius, 2.0));
+    const globeCenterDistance = vec3.length(painter.globeCenterInViewSpace);
+    const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(painter.globeRadius, 2.0));
     const horizonAngle = Math.acos(distanceToHorizon / globeCenterDistance);
 
     const uniforms = atmosphereUniformValues(
@@ -69,8 +55,6 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
         tr.frustumCorners.BL,
         tr.frustumCorners.horizonL,
         tr.frustumCorners.horizonR,
-        globeCenterInViewSpace,
-        globeRadius,
         transitionT,
         horizonBlend,
         fogColor,

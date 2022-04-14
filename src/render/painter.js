@@ -160,6 +160,9 @@ class Painter {
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
     globeSharedBuffers: ?GlobeSharedBuffers;
+    globeCenterInViewSpace: [number, number, number];
+    globeRadius: number;
+    viewport: [number, number];
     atmosphereBuffer: AtmosphereBuffer;
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
@@ -188,6 +191,10 @@ class Painter {
         this._backgroundTiles = {};
         this._tileClippingMaskIDs = new Map();
         this._skippedStencilTileIDs = new Set();
+
+        this.globeCenterInViewSpace = [0, 0, 0];
+        this.globeRadius = 0;
+        this.viewport = [0, 0];
     }
 
     updateTerrain(style: Style, cameraChanging: boolean) {
@@ -554,8 +561,22 @@ class Painter {
             this.opaquePassCutoff = 0;
         }
 
-        if (this.transform.projection.name === 'globe' && !this.globeSharedBuffers) {
+        const isGlobe = this.transform.projection.name === 'globe';
+        if (isGlobe && !this.globeSharedBuffers) {
             this.globeSharedBuffers = new GlobeSharedBuffers(this.context);
+        }
+
+        if (isGlobe) {
+            const tr = this.transform;
+            const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
+            const globeCenter = [tr.globeMatrix[12], tr.globeMatrix[13], tr.globeMatrix[14]];
+
+            this.globeCenterInViewSpace = vec3.transformMat4(globeCenter, globeCenter, viewMatrix);
+            this.globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
+            this.viewport = [
+                tr.width * browser.devicePixelRatio,
+                tr.height * browser.devicePixelRatio
+            ];
         }
 
         // Following line is billing related code. Do not change. See LICENSE.txt
@@ -986,25 +1007,15 @@ class Painter {
         if (fog) {
             const fogOpacity = fog.getOpacity(this.transform.pitch);
             if (fogOpacity !== 0.0) {
-                const tr = this.transform;
-                const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
-                const center = [tr.globeMatrix[12], tr.globeMatrix[13], tr.globeMatrix[14]];
-                const globeCenterInViewSpace = vec3.transformMat4(center, center, viewMatrix);
-                const globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
-                const viewport = [
-                    tr.width * browser.devicePixelRatio,
-                    tr.height * browser.devicePixelRatio
-                ];
-
                 const fogUniforms = fogUniformValues(
                     this, fog, tileID, fogOpacity,
-                    tr.frustumCorners.TL,
-                    tr.frustumCorners.TR,
-                    tr.frustumCorners.BR,
-                    tr.frustumCorners.BL,
-                    globeCenterInViewSpace,
-                    globeRadius,
-                    viewport);
+                    this.transform.frustumCorners.TL,
+                    this.transform.frustumCorners.TR,
+                    this.transform.frustumCorners.BR,
+                    this.transform.frustumCorners.BL,
+                    this.globeCenterInViewSpace,
+                    this.globeRadius,
+                    this.viewport);
 
                 program.setFogUniformValues(context, fogUniforms);
             }
