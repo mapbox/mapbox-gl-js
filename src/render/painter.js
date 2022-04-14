@@ -191,10 +191,6 @@ class Painter {
         this._backgroundTiles = {};
         this._tileClippingMaskIDs = new Map();
         this._skippedStencilTileIDs = new Set();
-
-        this.globeCenterInViewSpace = [0, 0, 0];
-        this.globeRadius = 0;
-        this.viewport = [0, 0];
     }
 
     updateTerrain(style: Style, cameraChanging: boolean) {
@@ -577,6 +573,10 @@ class Painter {
                 tr.width * browser.devicePixelRatio,
                 tr.height * browser.devicePixelRatio
             ];
+        } else {
+            this.globeCenterInViewSpace = [0, 0, 0];
+            this.globeRadius = 0;
+            this.viewport = [0, 0];
         }
 
         // Following line is billing related code. Do not change. See LICENSE.txt
