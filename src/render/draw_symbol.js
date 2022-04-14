@@ -6,7 +6,7 @@ import drawCollisionDebug from './draw_collision_debug.js';
 import SegmentVector from '../data/segment.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
-import {mat4, vec3} from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 const identityMat4 = mat4.create();
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
