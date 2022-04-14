@@ -6,7 +6,7 @@ import drawCollisionDebug from './draw_collision_debug.js';
 import SegmentVector from '../data/segment.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
-import {mat4} from 'gl-matrix';
+import {mat4, vec3} from 'gl-matrix';
 const identityMat4 = mat4.create();
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
@@ -190,11 +190,17 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             // Usual case is that we take the projected anchor and add the pixel-based shift
             // calculated above. In the (somewhat weird) case of pitch-aligned text, we add an equivalent
             // tile-unit based shift to the anchor before projecting to the label plane.
-            const shiftedAnchor = pitchWithMap ?
-                symbolProjection.project(tileAnchor.add(shift), labelPlaneMatrix, anchorElevation * upVectorScale.metersToLabelSpace).point :
-                projectedAnchor.point.add(rotateWithMap ?
-                    shift.rotate(-transform.angle) :
-                    shift);
+            let shiftedAnchor: Point;
+
+            if (pitchWithMap) {
+                const vec = symbolProjection.project(tileAnchor.add(shift), labelPlaneMatrix, anchorElevation * upVectorScale.metersToLabelSpace).point;
+                shiftedAnchor = new Point(vec[0], vec[1]);
+            } else {
+                const rotatedShift = rotateWithMap ? shift.rotate(-transform.angle) : shift;
+
+                // pitchWithMap === false => we're in screen space and it's enough to update only x&y components
+                shiftedAnchor = new Point(projectedAnchor.point[0] + rotatedShift.x, projectedAnchor.point[1] + rotatedShift.y);
+            }
 
             const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
             for (let g = 0; g < symbol.numGlyphs; g++) {
@@ -331,7 +337,13 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (alongLine) {
             const elevation = tr.elevation;
             const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, tr.projection) : (_ => [0, 0, 0]);
-            symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
+
+            const lpm = [...labelPlaneMatrix];
+            const scale = mat4.create();
+            mat4.scale(scale, scale, [1, 1, 0]);
+            mat4.multiply(lpm, scale, lpm);
+
+            symbolProjection.updateLineLabels(bucket, coord.projMatrix, painter, isText, lpm, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
         }
 
         const projectedPosOnViewport = alongLine || (isText && variablePlacement) || updateTextFitIcon;
@@ -433,5 +445,5 @@ function drawSymbolElements(buffers, segments, layer, painter, program, depthMod
         uniformValues, layer.id, buffers.layoutVertexBuffer,
         buffers.indexBuffer, segments, layer.paint,
         painter.transform.zoom, buffers.programConfigurations.get(layer.id),
-        buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer);
+        buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.globeExtVertexBuffer);
 }
