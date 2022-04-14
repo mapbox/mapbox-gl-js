@@ -1,6 +1,7 @@
 // @flow
 
 import {symbolLayoutAttributes,
+    symbolGlobeExtAttributes,
     collisionVertexAttributes,
     collisionVertexAttributesExt,
     collisionBoxLayout,
@@ -8,6 +9,7 @@ import {symbolLayoutAttributes,
 } from './symbol_attributes.js';
 
 import {SymbolLayoutArray,
+    SymbolGlobeExtArray,
     SymbolDynamicLayoutArray,
     SymbolOpacityArray,
     CollisionBoxLayoutArray,
@@ -79,7 +81,7 @@ export type SingleCollisionBox = {
     elevation?: number;
     tileID?: OverscaledTileID;
 };
-import type {Mat4} from 'gl-matrix';
+import type {Mat4, Vec3} from 'gl-matrix';
 import type {SpritePositions} from '../../util/image.js';
 
 export type CollisionArrays = {
@@ -128,14 +130,14 @@ const shaderOpacityAttributes = [
     {name: 'a_fade_opacity', components: 1, type: 'Uint8', offset: 0}
 ];
 
-function addVertex(array, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, ox, oy, tx, ty, sizeVertex, isSDF: boolean, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY) {
+function addVertex(array, tileAnchorX, tileAnchorY, ox, oy, tx, ty, sizeVertex, isSDF: boolean, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY) {
     const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0])) : 0;
     const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1])) : 0;
 
     array.emplaceBack(
         // a_pos_offset
-        projectedAnchorX,
-        projectedAnchorY,
+        tileAnchorX,
+        tileAnchorY,
         Math.round(ox * 32),
         Math.round(oy * 32),
 
@@ -147,13 +149,19 @@ function addVertex(array, projectedAnchorX, projectedAnchorY, projectedAnchorZ, 
         pixelOffsetX * 16,
         pixelOffsetY * 16,
         minFontScaleX * 256,
-        minFontScaleY * 256,
+        minFontScaleY * 256
+    );
+}
 
-        // a_posz
-        projectedAnchorZ,
-        tileAnchorX,
-        tileAnchorY,
-        0
+function addGlobeVertex(array, projAnchorX, projAnchorY, projAnchorZ) {
+    array.emplaceBack(
+        // a_globe_anchor
+        projAnchorX,
+        projAnchorY,
+        projAnchorZ,
+
+        // a_globe_normal
+        0, 0, 0
     );
 }
 
@@ -189,6 +197,9 @@ export class SymbolBuffers {
     opacityVertexArray: SymbolOpacityArray;
     opacityVertexBuffer: VertexBuffer;
 
+    globeExtVertexArray: SymbolGlobeExtArray;
+    globeExtVertexBuffer: VertexBuffer;
+
     placedSymbolArray: PlacedSymbolArray;
 
     constructor(programConfigurations: ProgramConfigurationSet<SymbolStyleLayer>) {
@@ -199,6 +210,7 @@ export class SymbolBuffers {
         this.dynamicLayoutVertexArray = new SymbolDynamicLayoutArray();
         this.opacityVertexArray = new SymbolOpacityArray();
         this.placedSymbolArray = new PlacedSymbolArray();
+        this.globeExtVertexArray = new SymbolGlobeExtArray();
     }
 
     isEmpty(): boolean {
@@ -218,6 +230,9 @@ export class SymbolBuffers {
             this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
             this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
             this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
+            if (this.globeExtVertexArray.length > 0) {
+                this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, symbolGlobeExtAttributes.members);
+            }
             // This is a performance hack so that we can write to opacityVertexArray with uint32s
             // even though the shaders read uint8s
             this.opacityVertexBuffer.itemSize = 1;
@@ -235,6 +250,9 @@ export class SymbolBuffers {
         this.segments.destroy();
         this.dynamicLayoutVertexBuffer.destroy();
         this.opacityVertexBuffer.destroy();
+        if (this.globeExtVertexBuffer) {
+            this.globeExtVertexBuffer.destroy();
+        }
     }
 }
 
@@ -669,7 +687,7 @@ class SymbolBucket implements Bucket {
                alongLine: boolean,
                feature: SymbolFeature,
                writingMode: any,
-               labelAnchor: Anchor,
+               globe: ?{ anchor: Anchor, up: Vec3 },
                tileAnchor: Anchor,
                lineStartIndex: number,
                lineLength: number,
@@ -678,6 +696,7 @@ class SymbolBucket implements Bucket {
                canonical: CanonicalTileID) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
+        const globeExtVertexArray = arrays.globeExtVertexArray;
 
         const segment = arrays.segments.prepareSegment(4 * quads.length, layoutVertexArray, indexArray, this.canOverlap ? feature.sortKey : undefined);
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
@@ -692,12 +711,20 @@ class SymbolBucket implements Bucket {
             const index = segment.vertexLength;
 
             const y = glyphOffset[1];
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
 
-            addDynamicAttributes(arrays.dynamicLayoutVertexArray, labelAnchor, angle);
+            if (globe) {
+                const globeAnchor = globe.anchor;
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z);
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z);
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z);
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z);
+            }
+
+            addDynamicAttributes(arrays.dynamicLayoutVertexArray, tileAnchor, angle);
 
             indexArray.emplaceBack(index, index + 1, index + 2);
             indexArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -712,7 +739,9 @@ class SymbolBucket implements Bucket {
             }
         }
 
-        arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y,
+        const projectedAnchor = globe ? globe.anchor : tileAnchor;
+
+        arrays.placedSymbolArray.emplaceBack(projectedAnchor.x, projectedAnchor.y, projectedAnchor.z, tileAnchor.x, tileAnchor.y,
             glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart, vertexStartIndex,
             lineStartIndex, lineLength, (tileAnchor.segment: any),
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
