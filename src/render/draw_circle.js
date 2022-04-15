@@ -20,6 +20,10 @@ import type {UniformValues} from './uniform_binding.js';
 import type {CircleUniformsType} from './program/circle_program.js';
 import type Tile from '../source/tile.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
+import {
+    globeTileBounds,
+    globeDenormalizeECEF
+} from '../geo/projection/globe_util.js';
 
 export default drawCircles;
 
@@ -82,7 +86,8 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
         const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
-        const uniformValues = circleUniformValues(painter, coord, tile, invMatrix, mercatorCenter, layer);
+        const denormalizeMatrix = globeDenormalizeECEF(globeTileBounds(coord.canonical));
+        const uniformValues = circleUniformValues(painter, coord, tile, invMatrix, mercatorCenter, layer, denormalizeMatrix);
 
         const state: TileRenderState = {
             programConfiguration,

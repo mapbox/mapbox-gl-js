@@ -28,6 +28,7 @@ export type CircleUniformsType = {|
     'u_tile_id': Uniform3f,
     'u_zoom_transition': Uniform1f,
     'u_up_dir': Uniform3f,
+    'u_denormalize_matrix': UniformMatrix4f
 |};
 
 export type CircleDefinesType = 'PITCH_WITH_MAP' | 'SCALE_WITH_MAP' | 'PROJECTION_GLOBE_VIEW';
@@ -42,6 +43,7 @@ const circleUniforms = (context: Context, locations: UniformLocations): CircleUn
     'u_tile_id': new Uniform3f(context, locations.u_tile_id),
     'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
     'u_up_dir': new Uniform3f(context, locations.u_up_dir),
+    'u_denormalize_matrix': new UniformMatrix4f(context, locations.u_denormalize_matrix)
 });
 
 const identityMatrix = mat4.create();
@@ -52,7 +54,8 @@ const circleUniformValues = (
     tile: Tile,
     invMatrix: Float32Array,
     mercatorCenter: [number, number],
-    layer: CircleStyleLayer
+    layer: CircleStyleLayer,
+    denormalizeMatrix: Float64Array
 ): UniformValues<CircleUniformsType> => {
     const transform = painter.transform;
     const isGlobe = transform.projection.name === 'globe';
@@ -87,6 +90,7 @@ const circleUniformValues = (
         'u_tile_id': [0, 0, 0],
         'u_zoom_transition': 0,
         'u_up_dir': [0, 0, 0],
+        'u_denormalize_matrix': identityMatrix
     };
 
     if (isGlobe) {
@@ -95,6 +99,7 @@ const circleUniformValues = (
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = globeToMercatorTransition(transform.zoom);
         values['u_up_dir'] = (transform.projection.upVector(coord.canonical, mercatorCenter[0], mercatorCenter[1]): any);
+        values['u_denormalize_matrix'] = Float32Array.from(denormalizeMatrix);
     }
 
     return values;

@@ -14,7 +14,11 @@ import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
-import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import {
+    globeToMercatorTransition,
+    globeTileBounds,
+    globeDenormalizeECEF
+} from '../geo/projection/globe_util.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -114,13 +118,14 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             layer.paint.get('fill-extrusion-translate-anchor'));
 
         const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
+        const denormalizeMatrix = globeDenormalizeECEF(globeTileBounds(coord.canonical));
 
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
             fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
-                crossfade, tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
+                crossfade, tile, heightLift, globeToMercator, mercatorCenter, invMatrix, denormalizeMatrix) :
             fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
-                heightLift, globeToMercator, mercatorCenter, invMatrix);
+                heightLift, globeToMercator, mercatorCenter, invMatrix, denormalizeMatrix);
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
