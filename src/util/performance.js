@@ -1,9 +1,13 @@
 // @flow
 
 import window from '../util/window.js';
+const performance = window.performance;
+
+performance.mark('library-evaluate');
+
+import {isWorker} from '../util/util.js';
 import type {RequestParameters} from '../util/ajax.js';
 
-const performance = window.performance;
 
 export type PerformanceMetrics = {
     loadTime: number,
@@ -59,7 +63,7 @@ export const PerformanceUtils = {
         performance.measure(name, begin, end);
     },
     beginMeasure(name: string): PerformanceMark {
-        const mark = name + i++;
+        const mark = name;// + i++;
         performance.mark(mark);
         return {
             mark,
@@ -78,6 +82,12 @@ export const PerformanceUtils = {
         placementTime += time;
     },
     frame(timestamp: number, isRenderFrame: boolean) {
+        performance.mark('frame', {
+            detail: {
+                timestamp,
+                isRenderFrame
+            }
+        });
         const currTimestamp = timestamp;
         if (lastFrameTime != null) {
             const frameTime = currTimestamp - lastFrameTime;
@@ -175,9 +185,19 @@ export const PerformanceUtils = {
     },
 
     getWorkerPerformanceMetrics(): { timeOrigin: string, measures: Array<PerformanceEntry> } {
+        const entries = performance.getEntries().map(entry => {
+            const result = JSON.parse(JSON.stringify(entry));
+            if (entry.detail) {
+                Object.assign(result, {
+                    detail: entry.detail
+                });
+            }
+            return result;
+        });
         return JSON.parse(JSON.stringify({
+            scope: isWorker() ? 'Worker' : 'Window',
             timeOrigin: performance.timeOrigin,
-            measures: performance.getEntriesByType("measure")
+            entries
         }));
     }
 };

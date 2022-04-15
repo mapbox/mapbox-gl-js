@@ -19,7 +19,7 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
     json({
         exclude: 'src/style-spec/reference/v8.json'
     }),
-    production ? strip({
+    (production && !bench) ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*']
     }) : false,

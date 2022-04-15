@@ -1,5 +1,7 @@
 // @flow
 
+import {PerformanceUtils} from './util/performance.js';
+
 import assert from 'assert';
 import {supported} from '@mapbox/mapbox-gl-supported';
 
@@ -26,7 +28,6 @@ import WorkerPool from './util/worker_pool.js';
 import {prewarm, clearPrewarmedResources} from './util/global_worker_pool.js';
 import {clearTileCache} from './util/tile_request_cache.js';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils.js';
-import {PerformanceUtils} from './util/performance.js';
 import {FreeCameraOptions} from './ui/free_camera.js';
 import browser from './util/browser.js';
 
