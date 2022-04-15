@@ -9,7 +9,8 @@ varying vec3 v_fog_pos;
 vec3 fog_position(vec3 pos) {
     // The following function requires that u_fog_matrix be affine and
     // results in a vector with w = 1. Otherwise we must divide by w.
-    return (u_fog_matrix * vec4(pos, 1.0)).xyz;
+    vec4 p = u_fog_matrix * vec4(pos, 1.0);
+    return p.xyz / p.w;
 }
 
 vec3 fog_position(vec2 pos) {

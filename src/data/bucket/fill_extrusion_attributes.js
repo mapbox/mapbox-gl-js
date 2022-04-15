@@ -13,6 +13,7 @@ export const centroidAttributes: StructArrayLayout = createLayout([
 
 export const fillExtrusionAttributesExt: StructArrayLayout = createLayout([
     {name: 'a_pos_3', components: 3, type: 'Int16'},
+    {name: 'a_pos_3_2', components: 3, type: 'Float32'},
     {name: 'a_pos_normal_3', components: 3, type: 'Int16'}
 ]);
 

@@ -25,18 +25,18 @@ float mercatorYfromLat(float lat) {
     return (180.0 - (RAD_TO_DEG* log(tan(QUARTER_PI + lat / 2.0 * DEG_TO_RAD)))) / 360.0;
 }
 
-vec3 latLngToECEF(vec2 latLng) {
+vec3 latLngToECEF(vec2 latLng, float radius) {
     latLng = DEG_TO_RAD * latLng;
-    
+
     float cosLat = cos(latLng[0]);
     float sinLat = sin(latLng[0]);
     float cosLng = cos(latLng[1]);
     float sinLng = sin(latLng[1]);
 
     // Convert lat & lng to spherical representation. Use zoom=0 as a reference
-    float sx = cosLat * sinLng * GLOBE_RADIUS;
-    float sy = -sinLat * GLOBE_RADIUS;
-    float sz = cosLat * cosLng * GLOBE_RADIUS;
+    float sx = cosLat * sinLng * radius;
+    float sy = -sinLat * radius;
+    float sz = cosLat * cosLng * radius;
 
     return vec3(sx, sy, sz);
 }
@@ -44,10 +44,11 @@ vec3 latLngToECEF(vec2 latLng) {
 void main() {
 #ifdef GLOBE_POLES
     vec3 globe_pos = a_globe_pos;
+    vec3 globe_pos_2 = globe_pos;
     vec2 merc_pos = a_merc_pos;
     vec2 uv = a_uv;
 #else
-    // The 3rd row of u_grid_matrix is only used as a spare space to 
+    // The 3rd row of u_grid_matrix is only used as a spare space to
     // pass the following 3 uniforms to avoid explicitly introducing new ones.
     float tiles = u_grid_matrix[0][2];
     float idy = u_grid_matrix[1][2];
@@ -57,11 +58,12 @@ void main() {
 
     float mercatorY = mercatorYfromLat(latLng[0]);
     float uvY = mercatorY * tiles - idy;
-    
+
     float mercatorX = mercatorXfromLng(latLng[1]);
     float uvX = a_pos[0] * S;
 
-    vec3 globe_pos = latLngToECEF(latLng.xy);
+    vec3 globe_pos = latLngToECEF(latLng.xy, GLOBE_RADIUS);
+    vec3 globe_pos_2 = latLngToECEF(latLng.xy, 1.0);
     vec2 merc_pos = vec2(mercatorX, mercatorY);
     vec2 uv = vec2(uvX, uvY);
 #endif
@@ -93,6 +95,7 @@ void main() {
     gl_Position = u_proj_matrix * vec4(position, 1.0);
 
 #ifdef FOG
+    v_fog_pos = globe_pos_2 * 0.5 + 0.5; //fog_position(globe_pos);
     v_fog_pos = fog_position(globe_pos);
 #endif
 }

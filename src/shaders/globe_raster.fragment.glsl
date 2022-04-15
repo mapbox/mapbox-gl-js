@@ -7,6 +7,7 @@ void main() {
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
+    gl_FragColor = vec4(v_fog_pos, 1.0);
     gl_FragColor = color;
 #ifdef TERRAIN_WIREFRAME
     gl_FragColor = vec4(1.0, 0.0, 0.0, 0.8);

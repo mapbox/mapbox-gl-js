@@ -10,8 +10,10 @@ attribute vec2 a_centroid_pos;
 
 #ifdef PROJECTION_GLOBE_VIEW
 attribute vec3 a_pos_3;         // Projected position on the globe
+attribute vec3 a_pos_3_2;
 attribute vec3 a_pos_normal_3;  // Surface normal at the position
 
+uniform mat4 u_denormalize_matrix;
 uniform mat4 u_inv_rot_matrix;
 uniform vec2 u_merc_center;
 uniform vec3 u_tile_id;
@@ -70,6 +72,11 @@ void main() {
     vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * (pos.z + lift));
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, pos.xy, u_tile_id, u_merc_center) + u_up_dir * u_tile_up_scale * pos.z;
     pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
+
+    //vec4 p = u_denormalize_matrix * vec4(a_pos_3, 1.0);
+
+    //v_fog_pos = a_pos_3_2 * 0.5 + 0.5;//fog_position(p.xyz / p.w);
+    v_fog_pos = fog_position(a_pos_3_2);
 #endif
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
@@ -107,8 +114,4 @@ void main() {
     // so that shading is tinted with the complementary (opposite) color to the light color
     v_color.rgb += clamp(color.rgb * directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_color *= u_opacity;
-
-#ifdef FOG
-    v_fog_pos = fog_position(pos);
-#endif
 }

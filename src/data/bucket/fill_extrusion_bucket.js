@@ -64,10 +64,10 @@ function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
     );
 }
 
-function addGlobeExtVertex(vertexArray: FillExtrusionExtArray, pos: {x: number, y: number, z: number}, normal: Vec3) {
+function addGlobeExtVertex(vertexArray: FillExtrusionExtArray, pos: {x: number, y: number, z: number}, pos2: {x: number, y: number, z: number}, normal: Vec3) {
     const encode = 1 << 14;
     vertexArray.emplaceBack(
-        pos.x, pos.y, pos.z,
+        pos.x, pos.y, pos.z, pos2.x, pos2.y, pos2.z,
         normal[0] * encode, normal[1] * encode, normal[2] * encode);
 }
 
@@ -419,13 +419,16 @@ class FillExtrusionBucket implements Bucket {
                                 const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
                                 const projectedP2 = projection.projectTilePoint(p2.x, p2.y, canonical);
 
+                                const projectedP12 = projection.projectTilePoint2(p1.x, p1.y, canonical);
+                                const projectedP22 = projection.projectTilePoint2(p2.x, p2.y, canonical);
+
                                 const n1 = projection.upVector(canonical, p1.x, p1.y);
                                 const n2 = projection.upVector(canonical, p2.x, p2.y);
 
-                                addGlobeExtVertex(array, projectedP1, n1);
-                                addGlobeExtVertex(array, projectedP1, n1);
-                                addGlobeExtVertex(array, projectedP2, n2);
-                                addGlobeExtVertex(array, projectedP2, n2);
+                                addGlobeExtVertex(array, projectedP1, projectedP12, n1);
+                                addGlobeExtVertex(array, projectedP1, projectedP12, n1);
+                                addGlobeExtVertex(array, projectedP2, projectedP22, n2);
+                                addGlobeExtVertex(array, projectedP2, projectedP22, n2);
                             }
                         }
                     }
@@ -467,8 +470,9 @@ class FillExtrusionBucket implements Bucket {
                     if (isGlobe) {
                         const array: any = this.layoutVertexExtArray;
                         const projectedP = projection.projectTilePoint(p.x, p.y, canonical);
+                        const projectedP2 = projection.projectTilePoint2(p.x, p.y, canonical);
                         const n = projection.upVector(canonical, p.x, p.y);
-                        addGlobeExtVertex(array, projectedP, n);
+                        addGlobeExtVertex(array, projectedP, projectedP2, n);
                     }
                 }
             }

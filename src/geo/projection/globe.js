@@ -60,6 +60,17 @@ export default class Globe extends Mercator {
         return {x: pos[0], y: pos[1], z: pos[2]};
     }
 
+    projectTilePoint2(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {
+        const tiles = Math.pow(2.0, id.z);
+        const mx = (x / EXTENT + id.x) / tiles;
+        const my = (y / EXTENT + id.y) / tiles;
+        const lat = latFromMercatorY(my);
+        const lng = lngFromMercatorX(mx);
+        const pos = latLngToECEF(lat, lng); //, 1.0);
+
+        return {x: pos[0], y: pos[1], z: pos[2]};
+    }
+
     locationPoint(tr: Transform, lngLat: LngLat): Point {
         const pos = latLngToECEF(lngLat.lat, lngLat.lng);
         const up = vec3.normalize([], pos);
