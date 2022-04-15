@@ -1,6 +1,6 @@
 // @flow strict
 
-/* global IDBEnvironment */
+/* global EventTarget, IDBEnvironment */
 
 export interface Window extends EventTarget, IDBEnvironment {
     +caches: CacheStorage;
