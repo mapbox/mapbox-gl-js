@@ -88,3 +88,10 @@ do
 		aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file} --metadata-directive REPLACE --cache-control "no-cache"
 	fi
 done
+
+if [ "$2" = "dry-run" ]
+then
+	echo "aws cloudfront create-invalidation --distribution-id E63TZD2Y6O5KG --paths \"/mapbox-gl-js/v2-globe.beta/*\""
+else
+	aws cloudfront create-invalidation --distribution-id E63TZD2Y6O5KG --paths "/mapbox-gl-js/v2-globe.beta/*"
+fi
