@@ -17,7 +17,7 @@ export const plugins = (minified, production, test, bench) => [
     flow(),
     minifyStyleSpec(),
     json(),
-    production ? strip({
+    (production && !bench) ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*']
     }) : false,

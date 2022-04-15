@@ -25,7 +25,8 @@ export const WorkerPerformanceUtils = {
             const sums = {};
 
             for (const result of results) {
-                for (const measure of result.measures) {
+                const measures = result.entries.filter(e => e.entryType === 'measure');
+                for (const measure of measures) {
                     sums[measure.name] = (sums[measure.name] || 0) + measure.duration;
                 }
 
@@ -36,10 +37,13 @@ export const WorkerPerformanceUtils = {
                 metrics[name] = sums[name] / results.length;
             }
 
+            console.log(metrics.loadTime , metrics.workerInitialization , metrics.workerEvaluateScript , metrics.workerTask);
             metrics.workerIdle = metrics.loadTime - metrics.workerInitialization - metrics.workerEvaluateScript - metrics.workerTask;
             metrics.workerIdlePercent = metrics.workerIdle / metrics.loadTime;
 
             metrics.parseTile = metrics.parseTile1 + metrics.parseTile2;
+
+            metrics.timelines = [PerformanceUtils.getWorkerPerformanceMetrics()].concat(results);
 
             return callback(undefined, metrics);
         });

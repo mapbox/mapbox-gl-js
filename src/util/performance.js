@@ -1,9 +1,13 @@
 // @flow
 
-import window from '../util/window';
-import type {RequestParameters} from '../util/ajax';
-
+import window from '../util/window.js';
 const performance = window.performance;
+
+performance.mark('library-evaluate');
+
+import {isWorker} from '../util/util.js';
+import type {RequestParameters} from '../util/ajax.js';
+
 
 export type PerformanceMetrics = {
     loadTime: number,
@@ -49,8 +53,8 @@ export const PerformanceUtils = {
     measure(name: string, begin?: string, end?: string) {
         performance.measure(name, begin, end);
     },
-    beginMeasure(name: string) {
-        const mark = name + i++;
+    beginMeasure(name: string): PerformanceMark {
+        const mark = name;// + i++;
         performance.mark(mark);
         return {
             mark,
@@ -61,6 +65,12 @@ export const PerformanceUtils = {
         performance.measure(m.name, m.mark);
     },
     frame(timestamp: number, isRenderFrame: boolean) {
+        performance.mark('frame', {
+            detail: {
+                timestamp,
+                isRenderFrame
+            }
+        });
         const currTimestamp = timestamp;
         if (lastFrameTime != null) {
             const frameTime = currTimestamp - lastFrameTime;
@@ -152,10 +162,20 @@ export const PerformanceUtils = {
         return metrics;
     },
 
-    getWorkerPerformanceMetrics() {
+    getWorkerPerformanceMetrics(): { timeOrigin: string, measures: Array<PerformanceEntry> } {
+        const entries = performance.getEntries().map(entry => {
+            const result = JSON.parse(JSON.stringify(entry));
+            if (entry.detail) {
+                Object.assign(result, {
+                    detail: entry.detail
+                });
+            }
+            return result;
+        });
         return JSON.parse(JSON.stringify({
+            scope: isWorker() ? 'Worker' : 'Window',
             timeOrigin: performance.timeOrigin,
-            measures: performance.getEntriesByType("measure")
+            entries
         }));
     }
 };
