@@ -18,12 +18,22 @@ export default function(options: any, requestManager: RequestManager, language: 
             const result: any = pick(
                 // explicit source options take precedence over TileJSON
                 extend(tileJSON, options),
-                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding', 'language', 'worldview', 'worldview_default']
+                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding']
             );
 
             if (tileJSON.vector_layers) {
                 result.vectorLayers = tileJSON.vector_layers;
                 result.vectorLayerIds = result.vectorLayers.map((layer) => { return layer.id; });
+            }
+
+            if (tileJSON.language) {
+                result.language = tileJSON.language[tileJSON.id];
+            }
+
+            if (tileJSON.worldview) {
+                result.worldview = tileJSON.worldview[tileJSON.id];
+            } else if (tileJSON.worldview_default) {
+                result.worldview = tileJSON.worldview_default;
             }
 
             result.tiles = requestManager.canonicalizeTileset(result, options.url);

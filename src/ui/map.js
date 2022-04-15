@@ -1070,7 +1070,7 @@ class Map extends Camera {
         if (this.style) {
             for (const id in this.style._sourceCaches) {
                 const source = this.style._sourceCaches[id]._source;
-                if (source.language && source.language[source.id] !== language && source._setLanguage) {
+                if (source.language && source.language !== language && source._setLanguage) {
                     source._setLanguage(language);
                 }
             }
@@ -1102,7 +1102,7 @@ class Map extends Camera {
         if (this.style) {
             for (const id in this.style._sourceCaches) {
                 const source = this.style._sourceCaches[id]._source;
-                if (source.worldview && source.worldview[source.id] !== worldview && source._setWorldview) {
+                if (source.worldview && source.worldview !== worldview && source._setWorldview) {
                     source._setWorldview(worldview);
                 }
             }

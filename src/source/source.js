@@ -51,8 +51,8 @@ export interface Source {
     vectorLayerIds?: Array<string>,
     minTileCacheSize?: ?number;
     maxTileCacheSize?: ?number;
-    language?: Object;
-    worldview?: Object;
+    language?: ?string;
+    worldview?: ?string;
 
     hasTransition(): boolean;
     loaded(): boolean;
