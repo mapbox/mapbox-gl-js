@@ -1,39 +1,59 @@
-[<img width="300" alt="Mapbox logo" src="https://static-assets.mapbox.com/www/logos/mapbox-logo-black.png">](https://www.mapbox.com/)
+# Mapbox GL style specification & utilities
 
-**Mapbox GL JS** is a JavaScript library for interactive, customizable vector maps on the web. It takes map styles that conform to the
-[Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/), applies them to vector tiles that
-conform to the [Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec), and renders them using
-WebGL.
+This directory contains code and reference files that define the Mapbox GL style specification and provides some utilities for working with Mapbox styles.
 
-Mapbox GL JS is part of the [cross-platform Mapbox GL ecosystem](https://www.mapbox.com/maps/), which also includes
-compatible native SDKs for applications on [Android](https://docs.mapbox.com/android/maps/overview/),
-[iOS](https://docs.mapbox.com/ios/maps/overview/), [macOS](http://mapbox.github.io/mapbox-gl-native/macos),
-[Qt](https://github.com/mapbox/mapbox-gl-native/tree/master/platform/qt), and [React Native](https://github.com/mapbox/react-native-mapbox-gl/). Mapbox provides building blocks to add location features like maps, search, and navigation into any experience you
-create. To get started with GL JS or any of our other building blocks,
-[sign up for a Mapbox account](https://www.mapbox.com/signup/).
+## npm package
 
-In addition to GL JS, this repository contains code, issues, and test fixtures that are common to both GL JS and the
-native SDKs. For code and issues specific to the native SDKs, see the
-[mapbox/mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native/) repository.
+The Mapbox GL style specification and utilities are published as a seperate npm
+package so that they can be installed without the bulk of GL JS.
 
-- [Getting started with Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/overview/)
-- [Tutorials](https://docs.mapbox.com/help/tutorials/#web-apps)
-- [API documentation](https://docs.mapbox.com/mapbox-gl-js/api/)
-- [Examples](https://docs.mapbox.com/mapbox-gl-js/examples/)
-- [Style documentation](https://docs.mapbox.com/mapbox-gl-js/style-spec/)
-- [Open source styles](https://github.com/mapbox/mapbox-gl-styles)
-- [Contributor documentation](./CONTRIBUTING.md)
+    npm install @mapbox/mapbox-gl-style-spec
 
-[<img width="600" alt="Mapbox GL JS gallery of map images" src="https://static-assets.mapbox.com/www/mapbox-gl-js-gallery.png">](https://www.mapbox.com/mapbox-gljs)
+## CLI Tools
 
-**Caption:** (_Mapbox GL JS maps, left-to-right, top-to-bottom_): Custom styled point [clusters](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-cluster), custom style with points, [hexbin visualization](https://blog.mapbox.com/exploring-nyc-open-data-with-3d-hexbins-5af2b7d8bc46) on a [Dark style](https://www.mapbox.com/maps/dark) map with [`Popups`](https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup), data-driven [circles](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#circle) over a [`raster` layer](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#raster) with [satellite imagery](https://docs.mapbox.com/help/getting-started/satellite-imagery/), [3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/?topic=3D) with custom [`Markers`](https://docs.mapbox.com/mapbox-gl-js/api/markers/#marker), [Mapbox Movement data](https://docs.mapbox.com/data/movement/guides/) visualization.
+If you install this package globally, you will have access to several CLI tools.
 
-## License
+    npm install @mapbox/mapbox-gl-style-spec --global
 
-Copyright © 2021 Mapbox
 
-All rights reserved.
+### `gl-style-composite`
+```bash
+$ gl-style-composite style.json
+```
 
-Mapbox GL JS version 2.0 or higher (“Mapbox Web SDK”) must be used according to the Mapbox Terms of Service. This license allows developers with a current active Mapbox account to use and modify the Mapbox Web SDK. Developers may modify the Mapbox Web SDK code so long as the modifications do not change or interfere with marked portions of the code related to billing, accounting, and anonymized data collection. The Mapbox Web SDK sends only anonymized usage data, which Mapbox uses for fixing bugs and errors, accounting, and generating aggregated anonymized statistics. This license terminates automatically if a user no longer has an active Mapbox account.
+Will take a non-composited style and produce a [composite style](https://www.mapbox.com/blog/better-label-placement-in-mapbox-studio/).
 
-For the full license terms, please see the [Mapbox Terms of Service](https://www.mapbox.com/legal/tos/).
+### `gl-style-migrate`
+
+This repo contains scripts for migrating GL styles of any version to the latest version
+(currently v8). Migrate a style like this:
+
+```bash
+$ gl-style-migrate bright-v7.json > bright-v8.json
+```
+
+To migrate a file in place, you can use the `sponge` utility from the `moreutils` package:
+
+```bash
+$ brew install moreutils
+$ gl-style-migrate bright.json | sponge bright.json
+```
+
+### `gl-style-format`
+
+```bash
+$ gl-style-format style.json
+```
+
+Will format the given style JSON to use standard indentation and sorted object keys.
+
+### `gl-style-validate`
+
+```bash
+$ gl-style-validate style.json
+```
+
+Will validate the given style JSON and print errors to stdout. Provide a
+`--json` flag to get JSON output.
+
+To validate that a style can be uploaded to the Mapbox Styles API, use the `--mapbox-api-supported` flag.

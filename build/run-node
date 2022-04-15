@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-node --no-warnings --experimental-loader ./build/node-loader.js ${@}
