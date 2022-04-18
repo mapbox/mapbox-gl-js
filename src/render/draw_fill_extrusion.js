@@ -5,7 +5,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import EXTENT from '../data/extent.js';
-import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
+import FillExtrusionBucket, {fillExtrusionHeightLift} from '../data/bucket/fill_extrusion_bucket.js';
 import {
     fillExtrusionUniformValues,
     fillExtrusionPatternUniformValues,
@@ -15,8 +15,6 @@ import {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
-import type Transform from '../geo/transform.js';
-import {earthRadius} from '../geo/lng_lat.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -56,19 +54,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 }
 
-function fillExtrusionHeightLift(transform: Transform): number {
-    if (transform.projection.name !== 'globe') {
-        return 0;
-    }
-    // A rectangle covering globe is subdivided into a grid of 32 cells
-    // This information can be used to deduce a minimum lift value so that
-    // fill extrusions with 0 height will never go below the ground.
-    const angle = Math.PI / 32.0;
-    const tanAngle = Math.tan(angle);
-    const r = earthRadius;
-    return r * Math.sqrt(1.0 + 2.0 * tanAngle * tanAngle) - r;
-}
-
 function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
@@ -77,7 +62,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     const image = patternProperty.constantOr((1: any));
     const crossfade = layer.getCrossfadeParameters();
     const opacity = layer.paint.get('fill-extrusion-opacity');
-    const heightLift = fillExtrusionHeightLift(tr);
+    const heightLift = tr.projection.name === 'globe' ? fillExtrusionHeightLift() : 0;
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];

@@ -1,0 +1,44 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        -156.46728515625,
+        71.40617196718856
+      ],
+      "type": "Point"
+    },
+    "id": 200,
+    "properties": {
+      "featureclass": "cape",
+      "lat_y": 71.372637,
+      "long_x": -156.615894,
+      "name": "Point Barrow",
+      "region": "North America",
+      "scalerank": 4
+    },
+    "source": "places",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -166.81640625,
+        68.35464707908537
+      ],
+      "type": "Point"
+    },
+    "id": 199,
+    "properties": {
+      "featureclass": "cape",
+      "lat_y": 68.35638,
+      "long_x": -166.815582,
+      "name": "Cape Hope",
+      "region": "North America",
+      "scalerank": 4
+    },
+    "source": "places",
+    "state": {},
+    "type": "Feature"
+  }
+]

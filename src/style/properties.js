@@ -747,6 +747,7 @@ export class Properties<Props: Object> {
         this.defaultPossiblyEvaluatedValues = ({}: any);
         this.overridableProperties = ([]: any);
 
+        const defaultParameters = new EvaluationParameters(0, {});
         for (const property in properties) {
             const prop = properties[property];
             if (prop.specification.overridable) {
@@ -759,7 +760,7 @@ export class Properties<Props: Object> {
             this.defaultTransitioningPropertyValues[property] =
                 defaultTransitionablePropertyValue.untransitioned();
             this.defaultPossiblyEvaluatedValues[property] =
-                defaultPropertyValue.possiblyEvaluate(({}: any));
+                defaultPropertyValue.possiblyEvaluate(defaultParameters);
         }
     }
 }

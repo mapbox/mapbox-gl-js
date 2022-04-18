@@ -183,6 +183,7 @@ map.on('style.load', function() {
             ]
         }
     });
+    map.setFog({});
     var elevationDebug = document.getElementById('elevationDebug');
     map.on('mousemove', (e) => {
         const elevation = map.queryTerrainElevation(map.unproject(e.point));

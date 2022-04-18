@@ -13,12 +13,13 @@ import type Map from '../map.js';
 import type {AnimationOptions, CameraOptions} from '../camera.js';
 
 type Options = {
-    positionOptions?: PositionOptions,
-    fitBoundsOptions?: AnimationOptions & CameraOptions,
-    trackUserLocation?: boolean,
-    showAccuracyCircle?: boolean,
-    showUserLocation?: boolean,
-    showUserHeading?: boolean
+    positionOptions: PositionOptions,
+    fitBoundsOptions: AnimationOptions & CameraOptions,
+    trackUserLocation: boolean,
+    showAccuracyCircle: boolean,
+    showUserLocation: boolean,
+    showUserHeading: boolean,
+    geolocation: Geolocation,
 };
 
 type DeviceOrientationEvent = {
@@ -30,7 +31,7 @@ type DeviceOrientationEvent = {
     webkitCompassHeading?: number,
 }
 
-const defaultOptions: Options = {
+const defaultOptions = {
     positionOptions: {
         enableHighAccuracy: false,
         maximumAge: 0,
@@ -44,31 +45,6 @@ const defaultOptions: Options = {
     showUserLocation: true,
     showUserHeading: false
 };
-
-let supportsGeolocation;
-
-function checkGeolocationSupport(callback) {
-    if (supportsGeolocation !== undefined) {
-        callback(supportsGeolocation);
-
-    } else if (window.navigator.permissions !== undefined) {
-        // navigator.permissions has incomplete browser support
-        // http://caniuse.com/#feat=permissions-api
-        // Test for the case where a browser disables Geolocation because of an
-        // insecure origin
-        window.navigator.permissions.query({name: 'geolocation'}).then((p) => {
-            supportsGeolocation = p.state !== 'denied';
-            callback(supportsGeolocation);
-        });
-
-    } else {
-        supportsGeolocation = !!window.navigator.geolocation;
-        callback(supportsGeolocation);
-    }
-}
-
-let numberOfWatches = 0;
-let noTimeout = false;
 
 /**
  * A `GeolocateControl` control provides a button that uses the browser's geolocation
@@ -98,6 +74,7 @@ let noTimeout = false;
  * @param {Object} [options.showAccuracyCircle=true] By default, if `showUserLocation` is `true`, a transparent circle will be drawn around the user location indicating the accuracy (95% confidence level) of the user's location. Set to `false` to disable. Always disabled when `showUserLocation` is `false`.
  * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
  * @param {Object} [options.showUserHeading=false] If `true` an arrow will be drawn next to the user location dot indicating the device's heading. This only has affect when `trackUserLocation` is `true`.
+ * @param {Object} [options.geolocation=window.navigator.geolocation] `window.navigator.geolocation` by default; you can provide an object with the same shape to customize geolocation handling.
  *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
@@ -127,9 +104,14 @@ class GeolocateControl extends Evented {
     _heading: ?number;
     _updateMarkerRotationThrottled: Function;
 
-    constructor(options: Options) {
+    _numberOfWatches: number;
+    _noTimeout: boolean;
+    _supportsGeolocation: boolean;
+
+    constructor(options: $Shape<Options>) {
         super();
-        this.options = extend({}, defaultOptions, options);
+        const geolocation = window.navigator.geolocation;
+        this.options = extend({geolocation}, defaultOptions, options);
 
         bindAll([
             '_onSuccess',
@@ -144,19 +126,20 @@ class GeolocateControl extends Evented {
         ], this);
 
         this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20);
+        this._numberOfWatches = 0;
     }
 
     onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', `mapboxgl-ctrl mapboxgl-ctrl-group`);
-        checkGeolocationSupport(this._setupUI);
+        this._checkGeolocationSupport(this._setupUI);
         return this._container;
     }
 
     onRemove() {
         // clear the geolocation watch if exists
         if (this._geolocationWatchID !== undefined) {
-            window.navigator.geolocation.clearWatch(this._geolocationWatchID);
+            this.options.geolocation.clearWatch(this._geolocationWatchID);
             this._geolocationWatchID = (undefined: any);
         }
 
@@ -171,8 +154,26 @@ class GeolocateControl extends Evented {
         this._container.remove();
         this._map.off('zoom', this._onZoom);
         this._map = (undefined: any);
-        numberOfWatches = 0;
-        noTimeout = false;
+        this._numberOfWatches = 0;
+        this._noTimeout = false;
+    }
+
+    _checkGeolocationSupport(callback: (supported: boolean) => any) {
+        if (this._supportsGeolocation !== undefined) {
+            callback(this._supportsGeolocation);
+        } else if (window.navigator.permissions !== undefined) {
+            // navigator.permissions has incomplete browser support
+            // http://caniuse.com/#feat=permissions-api
+            // Test for the case where a browser disables Geolocation because of an
+            // insecure origin
+            window.navigator.permissions.query({name: 'geolocation'}).then((p) => {
+                this._supportsGeolocation = p.state !== 'denied';
+                callback(this._supportsGeolocation);
+            });
+        } else {
+            this._supportsGeolocation = !!this.geolocation;
+            callback(this._supportsGeolocation);
+        }
     }
 
     /**
@@ -383,7 +384,7 @@ class GeolocateControl extends Evented {
                 if (this._geolocationWatchID !== undefined) {
                     this._clearWatch();
                 }
-            } else if (error.code === 3 && noTimeout) {
+            } else if (error.code === 3 && this._noTimeout) {
                 // this represents a forced error state
                 // this was triggered to force immediate geolocation when a watch is already present
                 // see https://github.com/mapbox/mapbox-gl-js/issues/8214
@@ -545,9 +546,9 @@ class GeolocateControl extends Evented {
             case 'ACTIVE_LOCK':
             case 'ACTIVE_ERROR':
             case 'BACKGROUND_ERROR':
-                // turn off the GeolocateControl
-                numberOfWatches--;
-                noTimeout = false;
+                // turn off the Geolocate Control
+                this._numberOfWatches--;
+                this._noTimeout = false;
                 this._watchState = 'OFF';
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
@@ -605,17 +606,17 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
                 this._geolocateButton.setAttribute('aria-pressed', 'true');
 
-                numberOfWatches++;
+                this._numberOfWatches++;
                 let positionOptions;
-                if (numberOfWatches > 1) {
+                if (this._numberOfWatches > 1) {
                     positionOptions = {maximumAge:600000, timeout:0};
-                    noTimeout = true;
+                    this._noTimeout = true;
                 } else {
                     positionOptions = this.options.positionOptions;
-                    noTimeout = false;
+                    this._noTimeout = false;
                 }
 
-                this._geolocationWatchID = window.navigator.geolocation.watchPosition(
+                this._geolocationWatchID = this.options.geolocation.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
 
                 if (this.options.showUserHeading) {
@@ -623,7 +624,7 @@ class GeolocateControl extends Evented {
                 }
             }
         } else {
-            window.navigator.geolocation.getCurrentPosition(
+            this.options.geolocation.getCurrentPosition(
                 this._onSuccess, this._onError, this.options.positionOptions);
 
             // This timeout ensures that we still call finish() even if
@@ -659,7 +660,7 @@ class GeolocateControl extends Evented {
     }
 
     _clearWatch() {
-        window.navigator.geolocation.clearWatch(this._geolocationWatchID);
+        this.options.geolocation.clearWatch(this._geolocationWatchID);
 
         window.removeEventListener('deviceorientation', this._onDeviceOrientation);
         window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientation);

@@ -12,6 +12,7 @@
   "light": {
     "intensity": 1
   },
+  "fog": {},
   "sources": {
     "geojson": {
       "type": "geojson",

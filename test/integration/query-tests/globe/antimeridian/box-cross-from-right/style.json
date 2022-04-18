@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "queryGeometry": [
+        [80, 50],
+        [260, 90]
+      ]
+    }
+  },
+  "center": [-162.68, 53.92],
+  "zoom": 2.1,
+  "pitch": 0,
+  "bearing": 10,
+  "projection": {
+    "name": "globe"
+  },
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "places": {
+      "type": "geojson",
+      "data": "/test/integration/data/places.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "places",
+      "filter": ["==", "region", "North America"],
+      "paint": {
+        "circle-radius": 15,
+        "circle-color": "#ff0000",
+        "circle-pitch-alignment": "viewport",
+        "circle-pitch-scale": "viewport"
+      }
+    }
+  ]
+}

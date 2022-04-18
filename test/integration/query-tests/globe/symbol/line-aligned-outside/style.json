@@ -1,0 +1,78 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "collisionDebug": true,
+            "width": 512,
+            "height": 512,
+            "queryGeometry": [
+                [220, 260],
+                [290, 330]
+            ]
+        }
+    },
+    "projection": {
+        "name": "globe"
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 2,
+    "pitch": 60,
+    "bearing": 0,
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "maxzoom": 1,
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "properties": {
+                        "name": "a quite long line aligned line on globe"
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [ -36, 4 ],
+                            [ -18, 4 ],
+                            [ -8, 4 ],
+                            [ 0, 4 ],
+                            [ 8, 4 ],
+                            [ 18, 4 ],
+                            [ 36, 4 ]
+                        ]
+                    }
+
+                }]
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "white"
+            }
+        },
+        {
+            "id": "line",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "text-field": "{name}",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "symbol-placement": "line-center",
+                "text-pitch-alignment": "viewport",
+                "text-rotation-alignment": "map"
+            },
+            "interactive": true
+        }
+    ]
+}

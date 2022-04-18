@@ -26,6 +26,7 @@
       "tileSize": 256
     }
   },
+  "fog": {},
   "layers": [
     {
       "id": "satellite",

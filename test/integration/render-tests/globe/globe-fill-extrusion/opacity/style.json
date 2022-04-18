@@ -10,6 +10,9 @@
       ]
     }
   },
+  "fog": {
+    "star-intensity": 0
+  },
   "sources": {
     "rect": {
       "type": "geojson",

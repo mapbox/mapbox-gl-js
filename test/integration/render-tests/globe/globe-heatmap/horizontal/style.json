@@ -16,6 +16,9 @@
     0,
     20
   ],
+  "fog": {
+    "star-intensity": 0
+  },
   "zoom": 0.8,
   "sources": {
     "geojson": {

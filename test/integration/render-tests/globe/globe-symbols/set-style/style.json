@@ -133,7 +133,8 @@
                 "text-color": "turquoise"
               }
             }
-          ]
+          ],
+          "fog": {}
         }],
         ["wait"]
       ]

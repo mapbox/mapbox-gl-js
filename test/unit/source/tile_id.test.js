@@ -39,6 +39,7 @@ test('CanonicalTileID', (t) => {
     t.test('.url', (t) => {
         t.test('replaces {z}/{x}/{y}', (t) => {
             t.equal(new CanonicalTileID(1, 0, 0).url(['{z}/{x}/{y}.json']), '1/0/0.json');
+            t.equal(new CanonicalTileID(15, 9876, 4321).url(['{z}/{x}/{z}_{x}_{y}.json']), '15/9876/15_9876_4321.json');
             t.end();
         });
 

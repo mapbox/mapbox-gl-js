@@ -1,0 +1,133 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        -18.25927734375,
+        66.67038675925363
+      ],
+      "type": "Point"
+    },
+    "id": 226,
+    "properties": {
+      "featureclass": "island",
+      "lat_y": 66.669359,
+      "long_x": -18.251096,
+      "name": "Grmsey",
+      "region": "Europe",
+      "scalerank": 5,
+      "subregion": "Iceland"
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -32.49755859375,
+        83.62592032259863
+      ],
+      "type": "Point"
+    },
+    "id": 225,
+    "properties": {
+      "featureclass": "cape",
+      "lat_y": 83.626331,
+      "long_x": -32.491541,
+      "name": "Cape Morris Jesup",
+      "region": "North America",
+      "scalerank": 5,
+      "subregion": "Greenland"
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -22.12646484375,
+        70.1478274118401
+      ],
+      "type": "Point"
+    },
+    "id": 224,
+    "properties": {
+      "featureclass": "cape",
+      "lat_y": 70.150754,
+      "long_x": -22.122616,
+      "name": "Cape Brewster",
+      "region": "North America",
+      "scalerank": 5,
+      "subregion": "Greenland"
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -68.22509765625,
+        76.216441124408
+      ],
+      "type": "Point"
+    },
+    "id": 187,
+    "properties": {
+      "featureclass": "cape",
+      "lat_y": 76.218919,
+      "long_x": -68.218612,
+      "name": "Cape York",
+      "region": "North America",
+      "scalerank": 4,
+      "subregion": "Greenland"
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -114.41162109375,
+        82.70981999589654
+      ],
+      "type": "Point"
+    },
+    "id": 185,
+    "properties": {
+      "featureclass": "pole",
+      "lat_y": -48.865032,
+      "long_x": -123.401986,
+      "name": "North Magnetic Pole 2005 (est)",
+      "region": "Seven seas (open ocean)",
+      "scalerank": 3,
+      "subregion": "Arctic Ocean"
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        25.6640625,
+        71.15229435506137
+      ],
+      "type": "Point"
+    },
+    "id": 288,
+    "properties": {
+      "featureclass": "cape",
+      "lat_y": 71.18337,
+      "long_x": 25.662398,
+      "name": "Nordkapp",
+      "region": "Europe",
+      "scalerank": 5
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  }
+]

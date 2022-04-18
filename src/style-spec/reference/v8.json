@@ -3838,10 +3838,73 @@
         }
       }
     },
+    "high-color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#245cdf",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.9.0"
+        }
+      }
+    },
+    "space-color": {
+      "type": "color",
+      "property-type": "data-constant",
+
+      "default":
+      [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        4,
+        "#010b19",
+        7,
+        "#367ab9"
+      ],
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.9.0"
+        }
+      }
+    },
     "horizon-blend": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.1,
+      "default":
+      [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        4,
+        0.2,
+        7,
+        0.1
+      ],
       "minimum": 0,
       "maximum": 1,
       "expression": {
@@ -3855,6 +3918,39 @@
       "sdk-support": {
         "basic functionality": {
           "js": "2.3.0"
+        }
+      }
+    },
+    "star-intensity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default":
+      [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        5,
+        0.35,
+        6,
+        0
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.9.0"
         }
       }
     }
@@ -4083,6 +4179,9 @@
       },
       "transition": true,
       "doc": "Exaggerates the elevation of the terrain by multiplying the data from the DEM with this value.",
+      "requires": [
+        "source"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "2.0.0",
@@ -4879,6 +4978,32 @@
         ]
       },
       "property-type": "color-ramp"
+    },
+    "line-trim-offset": {
+      "type": "array",
+      "value": "number",
+      "doc": "The line part between [trim-start, trim-end] will be marked as transparent to make a route vanishing effect. The line trim-off offset is based on the whole line gradient range [0.0, 1.0]. If either 'trim-start' or 'trim-end' offset is out of valid range, the default range will be set.",
+      "length": 2,
+      "default": [0.0, 0.0],
+      "transition": false,
+      "requires": [
+          "line-gradient",
+          {
+              "source": "geojson",
+              "has": {
+                  "lineMetrics": true
+              }
+          }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0",
+          "android": "10.5.0",
+          "ios": "10.5.0",
+          "macos": "10.5.0"
+        }
+      },
+      "property-type": "constant"
     }
   },
   "paint_circle": {

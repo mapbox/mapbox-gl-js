@@ -3,7 +3,7 @@
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 
-import {mat4} from 'gl-matrix';
+import {mat4, vec3} from 'gl-matrix';
 import SourceCache from '../source/source_cache.js';
 import EXTENT from '../data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
@@ -40,8 +40,9 @@ import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
-import drawGlobeAtmosphere from './draw_globe_atmosphere.js';
+import drawAtmosphere from './draw_atmosphere.js';
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import {AtmosphereBuffer} from '../render/atmosphere_buffer.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
@@ -159,6 +160,7 @@ class Painter {
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
     globeSharedBuffers: ?GlobeSharedBuffers;
+    atmosphereBuffer: AtmosphereBuffer;
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
@@ -200,8 +202,12 @@ class Painter {
     }
 
     _updateFog(style: Style) {
+        // Globe makes use of thin fog overlay with a fixed fog range,
+        // so we can skip updating fog tile culling for this projection
+        const isGlobe = this.transform.projection.name === 'globe';
+
         const fog = style.fog;
-        if (!fog || fog.getOpacity(this.transform.pitch) < 1 || fog.properties.get('horizon-blend') < 0.03) {
+        if (!fog || isGlobe || fog.getOpacity(this.transform.pitch) < 1 || fog.properties.get('horizon-blend') < 0.03) {
             this.transform.fogCullDistSq = null;
             return;
         }
@@ -293,6 +299,8 @@ class Painter {
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
         this.loadTimeStamps.push(window.performance.now());
+
+        this.atmosphereBuffer = new AtmosphereBuffer(this.context);
     }
 
     getMercatorTileBoundsBuffers(): TileBoundsBuffers {
@@ -584,12 +592,7 @@ class Painter {
         this.context.viewport.set([0, 0, this.width, this.height]);
 
         // Clear buffers in preparation for drawing to the main framebuffer
-        // If fog is enabled, use the fog color as default clear color.
-        let clearColor = Color.transparent;
-        if (this.style.fog && this.style.fog.getOpacity(this.transform.pitch)) {
-            clearColor = this.style.fog.properties.get('color');
-        }
-        this.context.clear({color: options.showOverdrawInspector ? Color.black : clearColor, depth: 1});
+        this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
@@ -610,6 +613,10 @@ class Painter {
             }
         }
 
+        if (this.style.fog) {
+            drawAtmosphere(this, this.style.fog);
+        }
+
         // Sky pass ======================================================
         // Draw all sky layers bottom to top.
         // They are drawn at max depth, they are drawn after opaque and before
@@ -625,9 +632,6 @@ class Painter {
 
                 this.renderLayer(this, sourceCache, layer, coords);
             }
-        }
-        if (this.transform.projection.name === 'globe') {
-            drawGlobeAtmosphere(this);
         }
 
         // Translucent pass ===============================================
@@ -958,6 +962,9 @@ class Painter {
         if (this.debugOverlayTexture) {
             this.debugOverlayTexture.destroy();
         }
+        if (this.atmosphereBuffer) {
+            this.atmosphereBuffer.destroy();
+        }
     }
 
     prepareDrawTile() {
@@ -979,7 +986,27 @@ class Painter {
         if (fog) {
             const fogOpacity = fog.getOpacity(this.transform.pitch);
             if (fogOpacity !== 0.0) {
-                program.setFogUniformValues(context, fogUniformValues(this, fog, tileID, fogOpacity));
+                const tr = this.transform;
+                const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
+                const center = [tr.globeMatrix[12], tr.globeMatrix[13], tr.globeMatrix[14]];
+                const globeCenterInViewSpace = vec3.transformMat4(center, center, viewMatrix);
+                const globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
+                const viewport = [
+                    tr.width * browser.devicePixelRatio,
+                    tr.height * browser.devicePixelRatio
+                ];
+
+                const fogUniforms = fogUniformValues(
+                    this, fog, tileID, fogOpacity,
+                    tr.frustumCorners.TL,
+                    tr.frustumCorners.TR,
+                    tr.frustumCorners.BR,
+                    tr.frustumCorners.BL,
+                    globeCenterInViewSpace,
+                    globeRadius,
+                    viewport);
+
+                program.setFogUniformValues(context, fogUniforms);
             }
         }
     }

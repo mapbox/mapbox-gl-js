@@ -623,7 +623,7 @@ class LineBucket implements Bucket {
 
         // Constructs a second vertex buffer with higher precision line progress
         if (this.lineClips) {
-            this.layoutVertexArray2.emplaceBack(this.scaledDistance, this.lineClipsArray.length, this.lineSoFar);
+            this.layoutVertexArray2.emplaceBack(this.scaledDistance, this.lineClipsArray.length, this.lineClips.start, this.lineClips.end);
         }
 
         const e = segment.vertexLength++;

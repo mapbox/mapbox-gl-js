@@ -40,7 +40,7 @@ export default class Globe extends Mercator {
         super(options);
         this.requiresDraping = true;
         this.supportsWorldCopies = false;
-        this.supportsFog = false;
+        this.supportsFog = true;
         this.zAxisUnit = "pixels";
         this.unsupportedLayers = ['debug', 'custom'];
     }
@@ -84,6 +84,10 @@ export default class Globe extends Mercator {
     createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
         return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
+    }
+
+    createFogTileMatrix(tr: Transform): Float64Array {
+        return mat4.copy(new Float64Array(16), tr.globeMatrix);
     }
 
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
@@ -164,6 +168,11 @@ export default class Globe extends Mercator {
         return new MercatorCoordinate(mx, my);
     }
 
+    pointCoordinate3D(tr: Transform, x: number, y: number): ?Vec3 {
+        const mc = this.pointCoordinate(tr, x, y, 0);
+        return [mc.x, mc.y, mc.z];
+    }
+
     farthestPixelDistance(tr: Transform): number {
         const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
         const globePixelDistance = farthestPixelDistanceOnSphere(tr, pixelsPerMeter);
@@ -171,7 +180,10 @@ export default class Globe extends Mercator {
         if (t > 0.0) {
             const mercatorPixelsPerMeter = mercatorZfromAltitude(1, tr.center.lat) * tr.worldSize;
             const mercatorPixelDistance = farthestPixelDistanceOnPlane(tr, mercatorPixelsPerMeter);
-            return interpolate(globePixelDistance, mercatorPixelDistance, t);
+            const pixelRadius = tr.worldSize / (2.0 * Math.PI);
+            const approxTileArcHalfAngle = Math.max(tr.width, tr.height) / tr.worldSize * Math.PI;
+            const padding = pixelRadius * (1.0 - Math.cos(approxTileArcHalfAngle));
+            return interpolate(globePixelDistance, mercatorPixelDistance + padding, t);
         }
         return globePixelDistance;
     }

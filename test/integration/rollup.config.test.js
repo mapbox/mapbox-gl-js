@@ -11,6 +11,6 @@ export default {
         indent: false,
         file: `test/integration/dist/integration-test.js`
     },
-    plugins: plugins(false, false, true),
+    plugins: plugins({test: true}),
     external: [ 'tape', 'mapboxgl' ]
 };

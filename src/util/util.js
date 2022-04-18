@@ -139,7 +139,7 @@ export function polygonizeBounds(min: Point, max: Point, buffer: number = 0, clo
     const polygon = [minBuf, new Point(maxBuf.x, minBuf.y), maxBuf, new Point(minBuf.x, maxBuf.y)];
 
     if (close) {
-        polygon.push(minBuf);
+        polygon.push(minBuf.clone());
     }
     return polygon;
 }
@@ -501,6 +501,15 @@ export function clone<T>(input: T): T {
     } else {
         return input;
     }
+}
+
+/**
+ * Maps a value from a range between [min, max] to the range [outMin, outMax]
+ *
+ * @private
+ */
+export function mapValue(value: number, min: number, max: number, outMin: number, outMax: number): number {
+    return clamp((value - min) / (max - min) * (outMax - outMin) + outMin, outMin, outMax);
 }
 
 /**
