@@ -1,0 +1,77 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    45,
+    50
+  ],
+  "bearing": 90,
+  "projection": {
+    "name": "globe"
+  },
+  "fog": {},
+  "zoom": 1.5,
+  "sources": {
+    "lines": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [{
+          "type": "Feature",
+          "properties": {
+            "text": "Equator lines goes here"
+          },
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [-180, 0],
+              [180, 0]
+            ]
+          }
+        }, {
+          "type": "Feature",
+          "properties": {
+            "text": "Arctic circle"
+          },
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [-180, 66],
+              [180, 66]
+            ]
+          }
+        }]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line",
+      "type": "symbol",
+      "source": "lines",
+      "layout": {
+        "text-field": "{text}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "symbol-placement": "line-center",
+        "text-pitch-alignment": "map",
+        "text-keep-upright": true
+      }
+    }
+  ]
+}
