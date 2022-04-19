@@ -27,6 +27,9 @@ import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Transform from '../transform.js';
 import Point from '@mapbox/point-geometry';
 
+export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
+export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
+
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
@@ -366,9 +369,6 @@ export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
     return Float32Array.from(posMatrix);
 }
 
-export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
-export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
-
 export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
 }
@@ -413,9 +413,13 @@ export function getLatitudinalLod(lat: number): number {
     return lod;
 }
 
-const POLE_RAD = degToRad(85.0);
-const POLE_COS = Math.cos(POLE_RAD);
-const POLE_SIN = Math.sin(POLE_RAD);
+export function globeCenterToScreenPoint(tr: Transform): Point {
+    const pos = [0, 0, 0];
+    const matrix = mat4.identity(new Float64Array(16));
+    mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
+    vec3.transformMat4(pos, pos, matrix);
+    return new Point(pos[0], pos[1]);
+}
 
 function cameraPositionInECEF(tr: Transform): Array<number> {
     // Here "center" is the center of the globe. We refer to transform._center
@@ -440,15 +444,7 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
     return vec3.add([], centerToPivot, pivotToCamera);
 }
 
-export function globeCenterToScreenPoint(tr: Transform): Point {
-    const pos = [0, 0, 0];
-    const matrix = mat4.identity(new Float64Array(16));
-    mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
-    vec3.transformMat4(pos, pos, matrix);
-    return new Point(pos[0], pos[1]);
-}
-
-// Return the angle of the normal vector of the sphere relative to the camera at a screen point.
+// Return the angle of the normal vector of the sphere relative to the camera.
 // i.e. how much to tilt map-aligned markers.
 export function globeTiltAtLngLat(tr: Transform, lngLat: LngLat): number {
     const centerToPoint = latLngToECEF(lngLat.lat, lngLat.lng);
@@ -458,9 +454,13 @@ export function globeTiltAtLngLat(tr: Transform, lngLat: LngLat): number {
 }
 
 export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
-    // Consider 1% past the horizon not occluded, this allows popups to be dragged around the globe edge without fading.
+    // We consider 1% past the horizon not occluded, this allows popups to be dragged around the globe edge without fading.
     return (globeTiltAtLngLat(tr, lngLat) > Math.PI / 2 * 1.01);
 }
+
+const POLE_RAD = degToRad(85.0);
+const POLE_COS = Math.cos(POLE_RAD);
+const POLE_SIN = Math.sin(POLE_RAD);
 
 export class GlobeSharedBuffers {
     _poleNorthVertexBuffer: VertexBuffer;

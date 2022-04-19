@@ -411,7 +411,7 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _occluded(): boolean {
+    _behindTerrain(): boolean {
         const map = this._map;
         if (!map) return false;
         const unprojected = map.unproject(this._pos);
@@ -438,17 +438,14 @@ export default class Marker extends Evented {
         let opacity = (map._usingGlobe() && isLngLatBehindGlobe(map.transform, this._lngLat)) ? 0 : 1;
         if (opacity) {
             if (map.transform._terrainEnabled() && map.getTerrain()) {
-                opacity = this._occluded() ? TERRAIN_OCCLUDED_OPACITY : 1;
+                opacity = this._behindTerrain() ? TERRAIN_OCCLUDED_OPACITY : 1;
             }
             opacity *= (1.0 - map._queryFogOpacity(mapLocation));
         }
-        const pointerEvents = opacity ? 'auto' : 'none';
 
         this._element.style.opacity = `${opacity}`;
-        this._element.style.pointerEvents = pointerEvents;
+        this._element.style.pointerEvents = opacity ? 'auto' : 'none';
         if (this._popup) {
-            const container = this._popup._container;
-            if (container) { container.style.pointerEvents = pointerEvents; }
             this._popup._setOpacity(opacity);
         }
 
