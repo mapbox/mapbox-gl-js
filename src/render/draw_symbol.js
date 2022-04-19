@@ -190,21 +190,27 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             // Usual case is that we take the projected anchor and add the pixel-based shift
             // calculated above. In the (somewhat weird) case of pitch-aligned text, we add an equivalent
             // tile-unit based shift to the anchor before projecting to the label plane.
-            let shiftedAnchor: Point;
+            let shiftedAnchor: Vec3;
 
             if (pitchWithMap) {
-                const vec = symbolProjection.project(tileAnchor.add(shift), labelPlaneMatrix, anchorElevation * upVectorScale.metersToLabelSpace).point;
-                shiftedAnchor = new Point(vec[0], vec[1]);
+                const shiftedTileAnchor = tileAnchor.add(shift);
+                let {x, y, z} = projection.projectTilePoint(shiftedTileAnchor.x, shiftedTileAnchor.y, coord.canonical);
+
+                const reprojectedShiftedAnchor = [
+                    x + anchorElevation * upDir[0] * upVectorScale.metersToTile,
+                    y + anchorElevation * upDir[1] * upVectorScale.metersToTile,
+                    z + anchorElevation * upDir[2] * upVectorScale.metersToTile
+                ];
+
+                shiftedAnchor = symbolProjection.projectVector(reprojectedShiftedAnchor, labelPlaneMatrix).point;
             } else {
                 const rotatedShift = rotateWithMap ? shift.rotate(-transform.angle) : shift;
-
-                // pitchWithMap === false => we're in screen space and it's enough to update only x&y components
-                shiftedAnchor = new Point(projectedAnchor.point[0] + rotatedShift.x, projectedAnchor.point[1] + rotatedShift.y);
+                shiftedAnchor = [projectedAnchor.point[0] + rotatedShift.x, projectedAnchor.point[1] + rotatedShift.y, 0];
             }
 
             const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
-            for (let g = 0; g < symbol.numGlyphs; g++) {                // TODO
-                addDynamicAttributes(dynamicTextLayoutVertexArray, shiftedAnchor.x, shiftedAnchor.y, 0, angle);
+            for (let g = 0; g < symbol.numGlyphs; g++) {
+                addDynamicAttributes(dynamicTextLayoutVertexArray, shiftedAnchor[0], shiftedAnchor[1], shiftedAnchor[2], angle);
             }
             //Only offset horizontal text icons
             if (updateTextFitIcon && symbol.associatedIconIndex >= 0) {
@@ -226,7 +232,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
                     symbolProjection.hideGlyphs(placedIcon.numGlyphs, dynamicIconLayoutVertexArray);
                 } else {
                     for (let g = 0; g < placedIcon.numGlyphs; g++) {
-                        addDynamicAttributes(dynamicIconLayoutVertexArray, shift.shiftedAnchor.x, shift.shiftedAnchor.y, shift.shiftedAnchor.z, shift.angle);
+                        addDynamicAttributes(dynamicIconLayoutVertexArray, shift.shiftedAnchor[0], shift.shiftedAnchor[1], shift.shiftedAnchor[2], shift.angle);
                     }
                 }
             }
