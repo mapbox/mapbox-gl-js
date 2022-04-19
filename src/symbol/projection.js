@@ -111,9 +111,9 @@ function getLabelPlaneMatrixForRendering(posMatrix: Float32Array,
             m[1] = s[1];
             m[4] = s[2];
             m[5] = s[3];
-        }
-        if (!rotateWithMap) {
-            mat4.rotateZ(m, m, transform.angle);
+            if (!rotateWithMap) {
+                mat4.rotateZ(m, m, transform.angle);
+            }
         }
     } else {
         mat4.multiply(m, transform.labelPlaneMatrix, posMatrix);

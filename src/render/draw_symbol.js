@@ -6,7 +6,7 @@ import drawCollisionDebug from './draw_collision_debug.js';
 import SegmentVector from '../data/segment.js';
 import * as symbolProjection from '../symbol/projection.js';
 import * as symbolSize from '../symbol/symbol_size.js';
-import {mat4} from 'gl-matrix';
+import {mat4, vec3, vec4} from 'gl-matrix';
 const identityMat4 = mat4.create();
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
@@ -289,6 +289,21 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         defines.push('PROJECTION_GLOBE_VIEW');
     }
 
+    let cameraUpVector = [0, -1, 0];
+
+    if (isGlobeProjection && !rotateWithMap) {
+        // Each symbol rotating with the viewport requires per-instance information about
+        // how to align with the viewport. In 2D case rotation is shared between all of the symbols and
+        // hence embedded in the label plane matrix but in globe view this needs to be computed at runtime.
+        // Camera up vector together with surface normals can be used to find the correct orientation for each symbol.
+        const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1);
+        const viewToEcef = mat4.multiply([], viewMatrix, tr.globeMatrix);
+        mat4.invert(viewToEcef, viewToEcef);
+
+        cameraUpVector = vec4.transformMat4([], [0, 1, 0, 0], viewToEcef);
+        vec3.normalize(cameraUpVector, cameraUpVector);
+    }
+
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         const bucket: SymbolBucket = (tile.getBucket(layer): any);
@@ -360,14 +375,14 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (isSDF) {
             if (!bucket.iconsInText) {
                 uniformValues = symbolSDFUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter,
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix);
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector);
             } else {
                 uniformValues = symbolTextAndIconUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter,
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, invMatrix);
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector);
             }
         } else {
             uniformValues = symbolIconUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, invMatrix);
+                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector);
         }
 
         const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration, defines);

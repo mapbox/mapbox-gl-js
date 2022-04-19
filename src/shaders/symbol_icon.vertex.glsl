@@ -25,6 +25,7 @@ uniform bool u_is_text;
 uniform bool u_pitch_with_map;
 
 uniform vec2 u_texsize;
+uniform vec3 u_up_vector;
 
 #ifdef PROJECTION_GLOBE_VIEW
 uniform vec3 u_tile_id;
@@ -134,7 +135,7 @@ void main() {
     float occlusion_fade = occlusionFade(projected_point) * globe_occlusion_fade;
 #ifdef PROJECTION_GLOBE_VIEW
     // Map aligned labels in globe view are aligned to the surface of the globe
-    vec3 xAxis = u_pitch_with_map ? normalize(vec3(a_globe_normal.z, 0.0, -a_globe_normal.x)) : vec3(1, 0, 0);
+    vec3 xAxis = u_pitch_with_map ? normalize(cross(a_globe_normal, u_up_vector)) : vec3(1, 0, 0);
     vec3 yAxis = u_pitch_with_map ? normalize(cross(a_globe_normal, xAxis)) : vec3(0, 1, 0);
 
     gl_Position = mix(u_coord_matrix * vec4(projected_pos.xyz / projected_pos.w + xAxis * offset.x + yAxis * offset.y, 1.0), AWAY, float(projected_point.w <= 0.0 || occlusion_fade == 0.0));
