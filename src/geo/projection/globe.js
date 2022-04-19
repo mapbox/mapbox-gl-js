@@ -190,6 +190,6 @@ export default class Globe extends Mercator {
 
     upVectorScale(id: CanonicalTileID, latitude: number, worldSize: number): ElevationScale {
         const pixelsPerMeterAtLat = mercatorZfromAltitude(1, latitude) * worldSize;
-        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id)), metersToLabelSpace: pixelsPerMeterAtLat};
+        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id))};
     }
 }
