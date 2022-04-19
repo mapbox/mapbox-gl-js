@@ -226,9 +226,9 @@ class CollisionIndex {
                     projectedPath.map((p, index) => {
                         const elevation = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
                         p[2] = elevation[2];
-                        return projection.projectVector(p, labelToScreenMatrix);
+                        return projection.projectVector((p: any), labelToScreenMatrix);
                     }) :
-                    projectedPath.map(p => projection.projectVector(p, labelToScreenMatrix));
+                    projectedPath.map(p => projection.projectVector((p: any), labelToScreenMatrix));
 
                 // Do not try to place collision circles if even of the points is behind the camera.
                 // This is a plausible scenario with big camera pitch angles

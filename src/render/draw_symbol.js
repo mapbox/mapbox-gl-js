@@ -33,10 +33,11 @@ import type SourceCache from '../source/source_cache.js';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type SymbolBucket, {SymbolBuffers} from '../data/bucket/symbol_bucket.js';
 import type Texture from '../render/texture.js';
-import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
+import {OverscaledTileID} from '../source/tile_id.js';
 import type {UniformValues} from './uniform_binding.js';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program.js';
 import type {CrossTileID, VariableOffset} from '../symbol/placement.js';
+import type {Vec3} from 'gl-matrix';
 
 export default drawSymbols;
 
@@ -194,7 +195,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
 
             if (pitchWithMap) {
                 const shiftedTileAnchor = tileAnchor.add(shift);
-                let {x, y, z} = projection.projectTilePoint(shiftedTileAnchor.x, shiftedTileAnchor.y, coord.canonical);
+                const {x, y, z} = projection.projectTilePoint(shiftedTileAnchor.x, shiftedTileAnchor.y, coord.canonical);
 
                 const reprojectedShiftedAnchor = [
                     x + anchorElevation * upDir[0] * upVectorScale.metersToTile,
@@ -289,7 +290,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         defines.push('PROJECTION_GLOBE_VIEW');
     }
 
-    let cameraUpVector = [0, -1, 0];
+    const cameraUpVector = [0, -1, 0];
 
     if (isGlobeProjection && !rotateWithMap) {
         // Each symbol rotating with the viewport requires per-instance information about
@@ -300,7 +301,10 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const viewToEcef = mat4.multiply([], viewMatrix, tr.globeMatrix);
         mat4.invert(viewToEcef, viewToEcef);
 
-        cameraUpVector = vec4.transformMat4([], [0, 1, 0, 0], viewToEcef);
+        const up = vec4.transformMat4([], [0, 1, 0, 0], viewToEcef);
+        cameraUpVector[0] = up[0];
+        cameraUpVector[1] = up[1];
+        cameraUpVector[2] = up[2];
         vec3.normalize(cameraUpVector, cameraUpVector);
     }
 

@@ -734,12 +734,11 @@ class SymbolBucket implements Bucket {
                 addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
                 addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
                 addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
-                
+
                 addDynamicAttributes(arrays.dynamicLayoutVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, angle);
             } else {
                 addDynamicAttributes(arrays.dynamicLayoutVertexArray, tileAnchor.x, tileAnchor.y, tileAnchor.z, angle);
             }
-
 
             indexArray.emplaceBack(index, index + 1, index + 2);
             indexArray.emplaceBack(index + 1, index + 2, index + 3);

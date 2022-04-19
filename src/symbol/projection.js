@@ -18,7 +18,7 @@ import type {
 import type {Mat4, Vec3, Vec4} from 'gl-matrix';
 
 import {WritingMode} from '../symbol/shaping.js';
-import {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../source/tile_id.js';
+import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
 import {calculateGlobeLabelMatrix} from '../geo/projection/globe_util.js';
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrixForRendering, getLabelPlaneMatrixForPlacement, getGlCoordMatrix, project, projectVector, projectClamped, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
@@ -126,7 +126,7 @@ function getLabelPlaneMatrixForRendering(posMatrix: Float32Array,
  * Returns a matrix for converting from tile units to the correct label coordinate space.
  * This variation of the function returns a matrix specialized for placement logic.
  * Coordinates will be clamped to x&y 2D plane which is used with viewport and map aligned placement
- * logic in most cases. Certain projections such as globe view will use 3D space for map aligned 
+ * logic in most cases. Certain projections such as globe view will use 3D space for map aligned
  * label placement.
  */
 function getLabelPlaneMatrixForPlacement(posMatrix: Float32Array,
@@ -146,7 +146,6 @@ function getLabelPlaneMatrixForPlacement(posMatrix: Float32Array,
 
     return m;
 }
-
 
 /*
  * Returns a matrix for converting from the correct label coordinate space to gl coords.
@@ -447,8 +446,8 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         if (!firstAndLastGlyph) {
             return {notEnoughRoom: true};
         }
-        const firstVec = projectVector(firstAndLastGlyph.first.point, glCoordMatrix).point;
-        const lastVec = projectVector(firstAndLastGlyph.last.point, glCoordMatrix).point;
+        const firstVec = projectVector((firstAndLastGlyph.first.point: any), glCoordMatrix).point;
+        const lastVec = projectVector((firstAndLastGlyph.last.point: any), glCoordMatrix).point;
 
         const firstPoint = new Point(firstVec[0], firstVec[1]);
         const lastPoint = new Point(lastVec[0], lastVec[1]);
