@@ -3201,13 +3201,10 @@ test('Map', (t) => {
         });
     });
 
-    t.end();
-
     t.test('#snapToNorth', (t) => {
 
         t.test('snaps when less than < 7 degrees', (t) => {
             const map = createMap(t);
-
             map.on('load', () =>  {
                 map.setBearing(6);
                 t.equal(map.getBearing(), 6);
@@ -3221,7 +3218,6 @@ test('Map', (t) => {
 
         t.test('does not snap when > 7 degrees', (t) => {
             const map = createMap(t);
-
             map.on('load', () =>  {
                 map.setBearing(8);
                 t.equal(map.getBearing(), 8);
@@ -3235,7 +3231,6 @@ test('Map', (t) => {
 
         t.test('snaps when < bearingSnap', (t) => {
             const map = createMap(t, {"bearingSnap": 12});
-
             map.on('load', () =>  {
                 map.setBearing(11);
                 t.equal(map.getBearing(), 11);
@@ -3249,7 +3244,6 @@ test('Map', (t) => {
 
         t.test('does not snap when > bearingSnap', (t) => {
             const map = createMap(t, {"bearingSnap": 10});
-
             map.on('load', () =>  {
                 map.setBearing(11);
                 t.equal(map.getBearing(), 11);
@@ -3261,6 +3255,8 @@ test('Map', (t) => {
             });
         });
         t.end();
+    });
+    t.end();
 });
 
 function createStyle() {
