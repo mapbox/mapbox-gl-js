@@ -985,7 +985,7 @@ class Map extends Camera {
 
             return this;
 
-        } else throw new Error(`maxPitch must be greater than the current minPitch`);
+        } else throw new Error(`maxPitch must be greater than or equal to minPitch`);
     }
 
     /**
@@ -2466,13 +2466,16 @@ class Map extends Camera {
     /**
      * Sets the any combination of light values.
      *
-     * @param {Object} light Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
+     * @param {LightSpecification} light Light properties to set. Must conform to the [Light Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
-     * const layerVisibility = map.getLayoutProperty('my-layer', 'visibility');
-     * @see [Example: Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
+     * map.setLight({
+     *     "anchor": "viewport",
+     *     "color": "blue",
+     *     "intensity": 0.5
+     * });
      */
     setLight(light: LightSpecification, options: StyleSetterOptions = {}): this {
         this._lazyInitEmptyStyle();
@@ -2483,7 +2486,7 @@ class Map extends Camera {
     /**
      * Returns the value of the light object.
      *
-     * @returns {Object} Light properties of the style.
+     * @returns {LightSpecification} Light properties of the style.
      * @example
      * const light = map.getLight();
      */
@@ -2495,7 +2498,7 @@ class Map extends Camera {
     /**
      * Sets the terrain property of the style.
      *
-     * @param {Object} terrain Terrain properties to set. Must conform to the [Terrain Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/terrain/).
+     * @param {TerrainSpecification} terrain Terrain properties to set. Must conform to the [Terrain Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/terrain/).
      * If `null` or `undefined` is provided, function removes terrain.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
@@ -2522,7 +2525,7 @@ class Map extends Camera {
     /**
      * Returns the terrain specification or `null` if terrain isn't set on the map.
      *
-     * @returns {Object | null} Terrain specification properties of the style.
+     * @returns {TerrainSpecification | null} Terrain specification properties of the style.
      * @example
      * const terrain = map.getTerrain();
      */
@@ -2533,7 +2536,7 @@ class Map extends Camera {
     /**
      * Sets the fog property of the style.
      *
-     * @param {Object} fog The fog properties to set. Must conform to the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
+     * @param {FogSpecification} fog The fog properties to set. Must conform to the [Fog Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/fog/).
      * If `null` or `undefined` is provided, this function call removes the fog from the map.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
@@ -2553,7 +2556,7 @@ class Map extends Camera {
     /**
      * Returns the fog specification or `null` if fog is not set on the map.
      *
-     * @returns {Object} Fog specification properties of the style.
+     * @returns {FogSpecification} Fog specification properties of the style.
      * @example
      * const fog = map.getFog();
      */
