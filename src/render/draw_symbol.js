@@ -282,12 +282,12 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         globeToMercatorTransition(tr.zoom) : 0.0;
     const tileRenderState: Array<SymbolTileRenderState> = [];
 
-    const defines = ([]: any);
+    const baseDefines = ([]: any);
     if (painter.terrain && pitchWithMap) {
-        defines.push('PITCH_WITH_MAP_TERRAIN');
+        baseDefines.push('PITCH_WITH_MAP_TERRAIN');
     }
     if (isGlobeProjection) {
-        defines.push('PROJECTION_GLOBE_VIEW');
+        baseDefines.push('PROJECTION_GLOBE_VIEW');
     }
 
     const cameraUpVector = [0, -1, 0];
@@ -373,6 +373,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
         const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
 
+        const defines = projectedPosOnLabelSpace ? baseDefines.concat(['PROJECTED_POS_ON_VIEWPORT']) : baseDefines;
         const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;
 
         let uniformValues;

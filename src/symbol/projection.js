@@ -645,23 +645,28 @@ function placeGlyphAlongLine(
     const prevToCurrent = vec3.sub([], current, prev);
     const labelPlanePoint = vec3.scaleAndAdd([], prev, prevToCurrent, segmentInterpolationT);
 
-    // Find coordinate frame for the point.
-    const axisX = [1, 0, 0];
-    const axisY = [0, 1, 0];
     let axisZ = [0, 0, 1];
+    let diffX = prevToCurrent[0];
+    let diffY = prevToCurrent[1];
 
     if (pitchWithMap) {
         axisZ = reprojection.upVector(tileID.canonical, tilePoint.x, tilePoint.y);
-    }
 
-    if (axisZ[0] !== 0 || axisZ[1] !== 0 || axisZ[2] !== 1) {
-        // Compute coordinate frame that is aligned to the tangent of the surface
-        axisX[0] = axisZ[2];
-        axisX[1] = 0;
-        axisX[2] = -axisZ[0];
-        vec3.cross(axisY, axisZ, axisX);
-        vec3.normalize(axisX, axisX);
-        vec3.normalize(axisY, axisY);
+        if (axisZ[0] !== 0 || axisZ[1] !== 0 || axisZ[2] !== 1) {
+            // Compute coordinate frame that is aligned to the tangent of the surface
+            const axisX = [1, 0, 0];
+            const axisY = [0, 1, 0];
+
+            axisX[0] = axisZ[2];
+            axisX[1] = 0;
+            axisX[2] = -axisZ[0];
+            vec3.cross(axisY, axisZ, axisX);
+            vec3.normalize(axisX, axisX);
+            vec3.normalize(axisY, axisY);
+
+            diffX = vec3.dot(prevToCurrent, axisX);
+            diffY = vec3.dot(prevToCurrent, axisY);
+        }
     }
 
     // offset the point from the line to text-offset and icon-offset
@@ -672,8 +677,6 @@ function placeGlyphAlongLine(
         vec3.scaleAndAdd(labelPlanePoint, labelPlanePoint, offsetDir, lineOffsetY * dir);
     }
 
-    const diffX = vec3.dot(prevToCurrent, axisX);
-    const diffY = vec3.dot(prevToCurrent, axisY);
     const segmentAngle = angle + Math.atan2(diffY, diffX);
 
     pathVertices.push(labelPlanePoint);
