@@ -160,9 +160,6 @@ class Painter {
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
     globeSharedBuffers: ?GlobeSharedBuffers;
-    globeCenterInViewSpace: [number, number, number];
-    globeRadius: number;
-    viewport: [number, number];
     atmosphereBuffer: AtmosphereBuffer;
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
@@ -560,23 +557,6 @@ class Painter {
         const isGlobe = this.transform.projection.name === 'globe';
         if (isGlobe && !this.globeSharedBuffers) {
             this.globeSharedBuffers = new GlobeSharedBuffers(this.context);
-        }
-
-        if (isGlobe) {
-            const tr = this.transform;
-            const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
-            const globeCenter = [tr.globeMatrix[12], tr.globeMatrix[13], tr.globeMatrix[14]];
-
-            this.globeCenterInViewSpace = vec3.transformMat4(globeCenter, globeCenter, viewMatrix);
-            this.globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
-            this.viewport = [
-                tr.width * browser.devicePixelRatio,
-                tr.height * browser.devicePixelRatio
-            ];
-        } else {
-            this.globeCenterInViewSpace = [0, 0, 0];
-            this.globeRadius = 0;
-            this.viewport = [0, 0];
         }
 
         // Following line is billing related code. Do not change. See LICENSE.txt
@@ -1013,9 +993,12 @@ class Painter {
                     this.transform.frustumCorners.TR,
                     this.transform.frustumCorners.BR,
                     this.transform.frustumCorners.BL,
-                    this.globeCenterInViewSpace,
-                    this.globeRadius,
-                    this.viewport);
+                    this.transform.globeCenterInViewSpace,
+                    this.transform.globeRadius,
+                    [
+                        this.transform.width * browser.devicePixelRatio,
+                        this.transform.height * browser.devicePixelRatio
+                    ]);
 
                 program.setFogUniformValues(context, fogUniforms);
             }
