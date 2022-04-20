@@ -3265,6 +3265,61 @@ test('Map', (t) => {
         });
     });
 
+    t.test('#snapToNorth', (t) => {
+
+        t.test('snaps when less than < 7 degrees', (t) => {
+            const map = createMap(t);
+            map.on('load', () =>  {
+                map.setBearing(6);
+                t.equal(map.getBearing(), 6);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 0);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('does not snap when > 7 degrees', (t) => {
+            const map = createMap(t);
+            map.on('load', () =>  {
+                map.setBearing(8);
+                t.equal(map.getBearing(), 8);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 8);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('snaps when < bearingSnap', (t) => {
+            const map = createMap(t, {"bearingSnap": 12});
+            map.on('load', () =>  {
+                map.setBearing(11);
+                t.equal(map.getBearing(), 11);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 0);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('does not snap when > bearingSnap', (t) => {
+            const map = createMap(t, {"bearingSnap": 10});
+            map.on('load', () =>  {
+                map.setBearing(11);
+                t.equal(map.getBearing(), 11);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 11);
+                    t.end();
+                });
+            });
+        });
+        t.end();
+    });
     t.end();
 });
 
