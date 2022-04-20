@@ -3,7 +3,7 @@
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 
-import {mat4, vec3} from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache.js';
 import EXTENT from '../data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
@@ -554,8 +554,7 @@ class Painter {
             this.opaquePassCutoff = 0;
         }
 
-        const isGlobe = this.transform.projection.name === 'globe';
-        if (isGlobe && !this.globeSharedBuffers) {
+        if (this.transform.projection.name === 'globe' && !this.globeSharedBuffers) {
             this.globeSharedBuffers = new GlobeSharedBuffers(this.context);
         }
 
