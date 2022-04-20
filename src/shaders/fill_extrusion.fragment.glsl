@@ -24,24 +24,7 @@ float shadowOcclusionL1(vec4 pos, float bias) {
     pos.xyz = pos.xyz * 0.5 + 0.5;
     float fragDepth = min(pos.z, 0.999);
     vec2 uv = pos.xy;
-#if 1
     return step(unpack_depth(texture2D(u_image1, uv)) + bias, fragDepth);
-#else
-    vec2 texel = uv / u_texel_size - vec2(0.5);
-    vec2 f = fract(texel);
-
-    vec2 uv00 = (texel - f + 0.5) * u_texel_size;
-    vec2 uv10 = uv00 + vec2(u_texel_size, 0);
-    vec2 uv01 = uv00 + vec2(0, u_texel_size);
-    vec2 uv11 = uv00 + vec2(u_texel_size, u_texel_size);
-
-    float occlusion00 = step(unpack_depth(texture2D(u_image1, uv00)) + 0.005, fragDepth);
-    float occlusion10 = step(unpack_depth(texture2D(u_image1, uv10)) + 0.005, fragDepth);
-    float occlusion01 = step(unpack_depth(texture2D(u_image1, uv01)) + 0.005, fragDepth);
-    float occlusion11 = step(unpack_depth(texture2D(u_image1, uv11)) + 0.005, fragDepth);
-
-    return mix(mix(occlusion00, occlusion10, f.x), mix(occlusion01, occlusion11, f.x), f.y);
-#endif
 }
 
 float shadowOcclusionL0(vec4 pos, float bias) {
