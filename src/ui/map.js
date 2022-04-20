@@ -383,7 +383,7 @@ class Map extends Camera {
     _averageElevation: EasedVariable;
     _containerWidth: number;
     _containerHeight: number;
-    _language: ?string;
+    _language: string;
     _worldview: ?string;
 
     // `_explicitProjection represents projection as set by a call to map.setProjection()
@@ -1060,13 +1060,13 @@ class Map extends Camera {
     /**
      * Sets the map's language.
      *
-     * @param {string} language A string representing the desired language. `undefined` or `null` will remove the current map language and result in no translations being shown.
+     * @param {string} language A string representing the desired language. `undefined` or `null` will remove the current map language and reset the map to the default language as determined by `window.navigator.language`.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setLanguage('es');
      */
     setLanguage(language?: ?string): this {
-        this._language = language;
+        this._language = language || window.navigator.language;
         if (this.style) {
             for (const id in this.style._sourceCaches) {
                 const source = this.style._sourceCaches[id]._source;

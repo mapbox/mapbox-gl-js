@@ -2193,13 +2193,13 @@ test('Map', (t) => {
             });
         });
 
-        t.test('can remove language property', (t) => {
+        t.test('can reset language property to default', (t) => {
             const map = createMap(t);
             map.on('style.load', () => {
                 map.setLanguage('es');
                 t.equal(map.getLanguage(), 'es');
                 map.setLanguage();
-                t.notok(map.getLanguage());
+                t.equal(map.getLanguage(), window.navigator.language);
                 t.end();
             });
         });
