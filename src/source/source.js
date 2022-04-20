@@ -51,6 +51,8 @@ export interface Source {
     vectorLayerIds?: Array<string>,
     minTileCacheSize?: ?number;
     maxTileCacheSize?: ?number;
+    language?: ?string;
+    worldview?: ?string;
 
     hasTransition(): boolean;
     loaded(): boolean;
@@ -67,6 +69,8 @@ export interface Source {
     +abortTile?: (tile: Tile, callback: Callback<void>) => void;
     +unloadTile?: (tile: Tile, callback: Callback<void>) => void;
     +prepareTile?: (tile: Tile) => ?any;
+    +_setLanguage?: (language?: ?string) => Source;
+    +_setWorldview?: (worldview?: ?string) => Source;
 
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.

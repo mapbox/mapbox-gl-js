@@ -126,7 +126,9 @@ type MapOptions = {
     accessToken: string,
     testMode: ?boolean,
     locale?: Object,
-    projection?: ProjectionSpecification | string
+    projection?: ProjectionSpecification | string,
+    language?: string,
+    worldview?: string
 };
 
 const defaultMinZoom = -2;
@@ -253,6 +255,15 @@ const defaultOptions = {
  * @param {number} [options.pitch=0] The initial [pitch](https://docs.mapbox.com/help/glossary/camera#pitch) (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds=null] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
+ * @param {string} [options.language] A string representing the language used for the map's data and UI components. Languages can only be set on Mapbox vector tile sources.
+ *   Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
+ *   If a label has no translation for the selected language, it will display in the label's local language.
+ *   By default, GL JS will select a user's preferred language as determined by the browser's `window.navigator.language` property.
+ *   If the `locale` property is not set separately, this language will also be used to localize the UI for supported languages.
+ * @param {string} [options.worldview] Sets the map's worldview. A worldview determines the way that certain disputed boundaries
+     * are rendered. By default, GL JS will not set a worldview so that the worldview of Mapbox tiles will be determined by the vector tile source's TileJSON.
+     * Valid worldview strings must be an [ISO alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes). Unsupported
+     * ISO alpha-2 codes will fall back to the TileJSON's default worldview. Invalid codes will result in a recoverable error.
  * @param {boolean} [options.optimizeForTerrain=true] With terrain on, if `true`, the map will render for performance priority, which may lead to layer reordering allowing to maximize performance (layers that are draped over terrain will be drawn first, including fill, line, background, hillshade and raster). Otherwise, if set to `false`, the map will always be drawn for layer order priority.
  * @param {boolean} [options.renderWorldCopies=true] If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
  * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire
@@ -372,6 +383,8 @@ class Map extends Camera {
     _averageElevation: EasedVariable;
     _containerWidth: number;
     _containerHeight: number;
+    _language: string;
+    _worldview: ?string;
 
     // `_explicitProjection represents projection as set by a call to map.setProjection()
     // For the actual projection displayed, use `transform.projection`.
@@ -475,6 +488,8 @@ class Map extends Camera {
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
         this._optimizeForTerrain = options.optimizeForTerrain;
+        this._language = options.language || window.navigator.language;
+        this._worldview = options.worldview;
         this._renderTaskQueue = new TaskQueue();
         this._domRenderTaskQueue = new TaskQueue();
         this._controls = [];
@@ -1029,6 +1044,70 @@ class Map extends Camera {
     setRenderWorldCopies(renderWorldCopies?: ?boolean): this {
         this.transform.renderWorldCopies = renderWorldCopies;
         return this._update();
+    }
+
+    /**
+     * Returns the code for the map's language which is used for translating map labels.
+     *
+     * @returns {string} Returns the map's language code.
+     * @example
+     * const language = map.getLanguage();
+     */
+    getLanguage(): ?string {
+        return this._language;
+    }
+
+    /**
+     * Sets the map's language.
+     *
+     * @param {string} language A string representing the desired language. `undefined` or `null` will remove the current map language and reset the map to the default language as determined by `window.navigator.language`.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setLanguage('es');
+     */
+    setLanguage(language?: ?string): this {
+        this._language = language || window.navigator.language;
+        if (this.style) {
+            for (const id in this.style._sourceCaches) {
+                const source = this.style._sourceCaches[id]._source;
+                if (source.language && source.language !== language && source._setLanguage) {
+                    source._setLanguage(language);
+                }
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Returns the code for the map's worldview.
+     *
+     * @returns {string} Returns the map's worldview code.
+     * @example
+     * const worldview = map.getWorldview();
+     */
+    getWorldview(): ?string {
+        return this._worldview;
+    }
+
+    /**
+     * Sets the map's worldview.
+     *
+     * @param {string} worldview A string representing the desired worldview. `undefined` or `null` will cause the map to fall back to the TileJSON's default worldview.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setWorldView('JP');
+     */
+    setWorldview(worldview?: ?string): this {
+        this._worldview = worldview;
+        if (this.style) {
+            for (const id in this.style._sourceCaches) {
+                const source = this.style._sourceCaches[id]._source;
+                if (source.worldview && source.worldview !== worldview && source._setWorldview) {
+                    source._setWorldview(worldview);
+                }
+            }
+        }
+        return this;
     }
 
     /** @section {Point conversion} */

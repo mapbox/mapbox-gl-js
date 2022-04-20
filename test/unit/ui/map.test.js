@@ -46,6 +46,8 @@ test('Map', (t) => {
         t.ok(map.keyboard.isEnabled());
         t.ok(map.scrollZoom.isEnabled());
         t.ok(map.touchZoomRotate.isEnabled());
+        t.equal(map._language, window.navigator.language);
+        t.notok(map._worldview);
         t.throws(() => {
             new Map({
                 container: 'anElementIdWhichDoesNotExistInTheDocument',
@@ -2192,6 +2194,68 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.end();
+    });
+
+    t.test('#language', (t) => {
+        t.test('can instantiate map with language', (t) => {
+            const map = createMap(t, {language: 'uk'});
+            map.on('style.load', () => {
+                t.equal(map.getLanguage(), 'uk');
+                t.end();
+            });
+        });
+
+        t.test('sets and gets language property', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setLanguage('es');
+                t.equal(map.getLanguage(), 'es');
+                t.end();
+            });
+        });
+
+        t.test('can reset language property to default', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setLanguage('es');
+                t.equal(map.getLanguage(), 'es');
+                map.setLanguage();
+                t.equal(map.getLanguage(), window.navigator.language);
+                t.end();
+            });
+        });
+        t.end();
+    });
+
+    t.test('#worldview', (t) => {
+        t.test('can instantiate map with worldview', (t) => {
+            const map = createMap(t, {worldview: 'JP'});
+            map.on('style.load', () => {
+                t.equal(map.getWorldview(), 'JP');
+                t.end();
+            });
+        });
+
+        t.test('sets and gets worldview property', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setWorldview('JP');
+                t.equal(map.getWorldview(), 'JP');
+                t.end();
+            });
+        });
+
+        t.test('can remove worldview property', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setWorldview('JP');
+                t.equal(map.getWorldview(), 'JP');
+                map.setWorldview();
+                t.notOk(map.getWorldview());
+                t.end();
+            });
+        });
         t.end();
     });
 
