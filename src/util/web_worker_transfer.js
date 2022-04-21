@@ -52,17 +52,20 @@ const registry: Registry = {};
  *
  * @private
  */
-export function register<T: any>(klass: Class<T>, options: RegisterOptions<T> = {}) {
-    const name = klass.name;
+export function register<T: any>(klass: Class<T>, name: string, options: RegisterOptions<T> = {}) {
     assert(name, 'Can\'t register a class without a name.');
     assert(!registry[name], `${name} is already registered.`);
+    (Object.defineProperty: any)(klass, '_classRegistryKey', {
+        value: name,
+        writeable: false
+    });
     registry[name] = {
         klass,
         omit: options.omit || []
     };
 }
 
-register(Object);
+register(Object, 'Object');
 
 type SerializedGrid = { buffer: ArrayBuffer };
 
@@ -80,21 +83,20 @@ type SerializedGrid = { buffer: ArrayBuffer };
 
 Object.defineProperty(Grid, 'name', {value: 'Grid'});
 
-register(Grid);
+register(Grid, 'Grid');
 
-register(Color);
-register(Error);
-register(AJAXError);
-register(ResolvedImage);
+register(Color, 'Color');
+register(Error, 'Error');
+register(AJAXError, 'AJAXError');
+register(ResolvedImage, 'ResolvedImage');
+register(StylePropertyFunction, 'StylePropertyFunction');
+register(StyleExpression, 'StyleExpression', {omit: ['_evaluator']});
 
-register(StylePropertyFunction);
-register(StyleExpression, {omit: ['_evaluator']});
-
-register(ZoomDependentExpression);
-register(ZoomConstantExpression);
-register(CompoundExpression, {omit: ['_evaluate']});
+register(ZoomDependentExpression, 'ZoomDependentExpression');
+register(ZoomConstantExpression, 'ZoomConstantExpression');
+register(CompoundExpression, 'CompoundExpression', {omit: ['_evaluate']});
 for (const name in expressions) {
-    if (!registry[expressions[name].name]) register(expressions[name]);
+    if (!registry[(expressions[name]: any)._classRegistryKey]) register(expressions[name], `Expression${name}`);
 }
 
 function isArrayBuffer(val: any): boolean {
@@ -167,10 +169,11 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
 
     if (typeof input === 'object') {
         const klass = (input.constructor: any);
-        const name = klass.name;
-        if (!registry[name]) {
+        const name = klass._classRegistryKey;
+        if (!name) {
             throw new Error(`can't serialize object of unregistered class ${name}`);
         }
+        assert(registry[name]);
 
         const properties: SerializedObject = klass.serialize ?
             // (Temporary workaround) allow a class to provide static
