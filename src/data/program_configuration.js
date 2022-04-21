@@ -704,10 +704,10 @@ function layoutType(property, type, binderType) {
     return (layoutException && layoutException[binderType]) || defaultLayouts[type][binderType];
 }
 
-register(ConstantBinder);
-register(CrossFadedConstantBinder);
-register(SourceExpressionBinder);
-register(CrossFadedCompositeBinder);
-register(CompositeExpressionBinder);
-register(ProgramConfiguration, {omit: ['_buffers']});
-register(ProgramConfigurationSet);
+register(ConstantBinder, 'ConstantBinder');
+register(CrossFadedConstantBinder, 'CrossFadedConstantBinder');
+register(SourceExpressionBinder, 'SourceExpressionBinder');
+register(CrossFadedCompositeBinder, 'CrossFadedCompositeBinder');
+register(CompositeExpressionBinder, 'CompositeExpressionBinder');
+register(ProgramConfiguration, 'ProgramConfiguration', {omit: ['_buffers']});
+register(ProgramConfigurationSet, 'ProgramConfigurationSet');

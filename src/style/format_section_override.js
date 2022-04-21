@@ -54,4 +54,4 @@ export default class FormatSectionOverride<T> implements Expression {
     }
 }
 
-register(FormatSectionOverride, {omit: ['defaultValue']});
+register(FormatSectionOverride, 'FormatSectionOverride', {omit: ['defaultValue']});

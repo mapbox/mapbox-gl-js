@@ -144,5 +144,5 @@ export class RGBAImage {
     }
 }
 
-register(AlphaImage);
-register(RGBAImage);
+register(AlphaImage, 'AlphaImage');
+register(RGBAImage, 'RGBAImage');

@@ -191,5 +191,5 @@ function getQuadkey(z, x, y) {
     return quadkey;
 }
 
-register(CanonicalTileID);
-register(OverscaledTileID, {omit: ['projMatrix']});
+register(CanonicalTileID, 'CanonicalTileID');
+register(OverscaledTileID, 'OverscaledTileID', {omit: ['projMatrix']});
