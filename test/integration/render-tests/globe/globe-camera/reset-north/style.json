@@ -1,0 +1,43 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "operations": [
+        ["resetNorth"],
+        ["wait", 1000]
+      ]
+    }
+  },
+  "center": [ -90, 15 ],
+  "bearing": 165,
+  "pitch": 45,
+  "zoom": 2.00,
+  "projection": {
+    "name": "globe"
+  },
+  "fog": {
+    "star-intensity": 0
+  },
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "tileSize": 256
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "satellite",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}
