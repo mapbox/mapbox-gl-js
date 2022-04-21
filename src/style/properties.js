@@ -764,8 +764,8 @@ export class Properties<Props: Object> {
     }
 }
 
-register(DataDrivenProperty);
-register(DataConstantProperty);
-register(CrossFadedDataDrivenProperty);
-register(CrossFadedProperty);
-register(ColorRampProperty);
+register(DataDrivenProperty, 'DataDrivenProperty');
+register(DataConstantProperty, 'DataConstantProperty');
+register(CrossFadedDataDrivenProperty, 'CrossFadedDataDrivenProperty');
+register(CrossFadedProperty, 'CrossFadedProperty');
+register(ColorRampProperty, 'ColorRampProperty');
