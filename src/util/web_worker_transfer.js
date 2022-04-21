@@ -89,7 +89,6 @@ register(Color, 'Color');
 register(Error, 'Error');
 register(AJAXError, 'AJAXError');
 register(ResolvedImage, 'ResolvedImage');
-
 register(StylePropertyFunction, 'StylePropertyFunction');
 register(StyleExpression, 'StyleExpression', {omit: ['_evaluator']});
 
@@ -97,7 +96,7 @@ register(ZoomDependentExpression, 'ZoomDependentExpression');
 register(ZoomConstantExpression, 'ZoomConstantExpression');
 register(CompoundExpression, 'CompoundExpression', {omit: ['_evaluate']});
 for (const name in expressions) {
-    if (!registry[expressions[name]._classRegistryKey]) register(expressions[name], `Expression${name}`);
+    if (!registry[(expressions[name]: any)._classRegistryKey]) register(expressions[name], `Expression${name}`);
 }
 
 function isArrayBuffer(val: any): boolean {
