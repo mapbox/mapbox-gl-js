@@ -3,7 +3,7 @@
 import browser from '../util/browser.js';
 import window from '../util/window.js';
 
-import {mat4, vec3} from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache.js';
 import EXTENT from '../data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
@@ -986,25 +986,18 @@ class Painter {
         if (fog) {
             const fogOpacity = fog.getOpacity(this.transform.pitch);
             if (fogOpacity !== 0.0) {
-                const tr = this.transform;
-                const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
-                const center = [tr.globeMatrix[12], tr.globeMatrix[13], tr.globeMatrix[14]];
-                const globeCenterInViewSpace = vec3.transformMat4(center, center, viewMatrix);
-                const globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
-                const viewport = [
-                    tr.width * browser.devicePixelRatio,
-                    tr.height * browser.devicePixelRatio
-                ];
-
                 const fogUniforms = fogUniformValues(
                     this, fog, tileID, fogOpacity,
-                    tr.frustumCorners.TL,
-                    tr.frustumCorners.TR,
-                    tr.frustumCorners.BR,
-                    tr.frustumCorners.BL,
-                    globeCenterInViewSpace,
-                    globeRadius,
-                    viewport);
+                    this.transform.frustumCorners.TL,
+                    this.transform.frustumCorners.TR,
+                    this.transform.frustumCorners.BR,
+                    this.transform.frustumCorners.BL,
+                    this.transform.globeCenterInViewSpace,
+                    this.transform.globeRadius,
+                    [
+                        this.transform.width * browser.devicePixelRatio,
+                        this.transform.height * browser.devicePixelRatio
+                    ]);
 
                 program.setFogUniformValues(context, fogUniforms);
             }

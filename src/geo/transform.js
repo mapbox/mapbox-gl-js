@@ -98,6 +98,9 @@ class Transform {
     // globe coordinate transformation matrix
     globeMatrix: Float64Array;
 
+    globeCenterInViewSpace: [number, number, number];
+    globeRadius: number;
+
     inverseAdjustmentMatrix: Array<number>;
 
     minLng: number;
@@ -178,6 +181,8 @@ class Transform {
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
         this._projectionScaler = 1.0;
+        this.globeRadius = 0;
+        this.globeCenterInViewSpace = [0, 0, 0];
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -1767,8 +1772,16 @@ class Transform {
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
-        // globe matrix
-        this.globeMatrix = this.projection.name === 'globe' ? calculateGlobeMatrix(this) : m;
+        if (this.projection.name === 'globe') {
+            this.globeMatrix = calculateGlobeMatrix(this);
+
+            const globeCenter = [this.globeMatrix[12], this.globeMatrix[13], this.globeMatrix[14]];
+
+            this.globeCenterInViewSpace = vec3.transformMat4(globeCenter, globeCenter, worldToCamera);
+            this.globeRadius = this.worldSize / 2.0 / Math.PI - 1.0;
+        } else {
+            this.globeMatrix = m;
+        }
 
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
