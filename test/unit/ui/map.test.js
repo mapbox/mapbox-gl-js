@@ -1973,7 +1973,29 @@ test('Map', (t) => {
 
     t.test('#unproject', (t) => {
         const map = createMap(t);
-        t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+        t.test('In Mercator', (t) => {
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: -70.3125, lat: 57.326521225});
+            t.end();
+        });
+        t.test('In Globe', (t) => {
+            map.setProjection('globe');
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng:  -72.817409474, lat: 43.692434709});
+            t.end();
+        });
+        t.test('In Natural Earth', (t) => {
+            map.setProjection('naturalEarth');
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: -86.861020716, lat: 61.500721712});
+            t.end();
+        });
+        t.test('In Albers', (t) => {
+            map.setProjection('albers');
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: 44.605340721, lat: 79.981951054});
+            t.end();
+        });
         t.end();
     });
 
