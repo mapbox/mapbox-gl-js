@@ -1149,6 +1149,41 @@ test('camera', (t) => {
                 t.end();
             });
 
+            t.test('invoke `panBy` with specific amount', (t) => {
+                const camera = createCamera();
+                camera.transform.setProjection({name: 'globe'});
+
+                camera.panBy([100, 0], {duration: 0});
+                t.deepEqual(fixedLngLat(camera.getCenter()), {lng: 70.3125, lat: 0});
+                t.end();
+            });
+
+            t.test('invoke `panBy` with specific amount with rotated and pitched camera', (t) => {
+                const camera = createCamera();
+                camera.transform.setProjection({name: 'globe'});
+                camera.transform.bearing = 90;
+                camera.transform.pitch = 45;
+                camera.transform.zoom = 3;
+
+                // Expect linear movement to both directions
+                camera.panBy([700, 0], {duration: 0});
+                t.deepEqual(fixedLngLat(camera.getCenter()), {lng: 0, lat: -52.268157374});
+
+                camera.panBy([-700, 0], {duration: 0});
+                t.deepEqual(fixedLngLat(camera.getCenter()), {lng: 0, lat: 0});
+
+                t.end();
+            });
+
+            t.test('invoke `panTo` with specific amount', (t) => {
+                const camera = createCamera();
+                camera.transform.setProjection({name: 'globe'});
+
+                camera.panTo([100, 0], {duration: 0});
+                t.deepEqual(camera.getCenter(), {lng: 100, lat: 0});
+                t.end();
+            });
+
             t.end();
         });
 
