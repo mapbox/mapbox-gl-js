@@ -181,7 +181,7 @@ class Transform {
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
         this._projectionScaler = 1.0;
-        this.globeCenter = 0;
+        this.globeRadius = 0;
         this.globeCenterInViewSpace = [0, 0, 0];
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
