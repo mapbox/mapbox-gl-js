@@ -1056,6 +1056,99 @@ test('camera', (t) => {
                 t.end();
             });
 
+            t.test('reset north', (t) => {
+                const camera = createCamera();
+                const stub = t.stub(browser, 'now');
+                stub.callsFake(() => 0);
+
+                camera.transform.zoom = 4;
+                camera.transform.bearing = 160;
+                camera.transform.pitch = 20;
+                camera.transform.setProjection({name: 'globe'});
+
+                camera.resetNorth({easing: e => e});
+                camera.simulateFrame();
+
+                t.deepEqual(camera.transform.bearing, 160);
+
+                stub.callsFake(() => 250);
+                camera.simulateFrame();
+                t.deepEqual(camera.transform.bearing, 120);
+
+                stub.callsFake(() => 500);
+                camera.simulateFrame();
+                t.deepEqual(camera.transform.bearing, 80);
+
+                stub.callsFake(() => 750);
+                camera.simulateFrame();
+                t.deepEqual(camera.transform.bearing, 40);
+
+                stub.callsFake(() => 1000);
+                camera.simulateFrame();
+                t.deepEqual(camera.transform.bearing, 0);
+                t.deepEqual(camera.transform.pitch, 20);
+
+                t.end();
+            });
+
+            t.test('reset north and pitch', (t) => {
+                const camera = createCamera();
+                const stub = t.stub(browser, 'now');
+                stub.callsFake(() => 0);
+
+                camera.transform.zoom = 4;
+                camera.transform.bearing = 160;
+                camera.transform.pitch = 20;
+                camera.transform.setProjection({name: 'globe'});
+
+                camera.resetNorthPitch({easing: e => e});
+                camera.simulateFrame();
+
+                t.deepEqual(camera.transform.bearing, 160);
+                t.deepEqual(camera.transform.pitch, 20);
+
+                stub.callsFake(() => 250);
+                camera.simulateFrame();
+                t.deepEqual(camera.transform.bearing, 120);
+                t.deepEqual(camera.transform.pitch, 15);
+
+                stub.callsFake(() => 500);
+                camera.simulateFrame();
+                t.deepEqual(camera.transform.bearing, 80);
+                t.deepEqual(camera.transform.pitch, 10);
+
+                stub.callsFake(() => 750);
+                camera.simulateFrame();
+                t.deepEqual(camera.transform.bearing, 40);
+                t.deepEqual(camera.transform.pitch, 5);
+
+                stub.callsFake(() => 1000);
+                camera.simulateFrame();
+                t.deepEqual(camera.transform.bearing, 0);
+                t.deepEqual(camera.transform.pitch, 0);
+
+                t.end();
+            });
+
+            t.test('sets bearing', (t) => {
+                const camera = createCamera();
+                camera.transform.setProjection({name: 'globe'});
+
+                camera.setBearing(4);
+                t.deepEqual(camera.getBearing(), 4);
+                t.end();
+            });
+
+            t.test('sets center', (t) => {
+                const camera = createCamera();
+                camera.transform.setProjection({name: 'globe'});
+                camera.transform.zoom = 2;
+
+                camera.setCenter([1, 2]);
+                t.deepEqual(camera.getCenter(), {lng: 1, lat: 2});
+                t.end();
+            });
+
             t.end();
         });
 
