@@ -1,0 +1,28 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 160
+    }
+  },
+  "zoom": 20,
+  "pitch": 85,
+  "sources": {},
+  "fog": {
+    "color": "white",
+    "horizon-blend": 0.05,
+    "high-color": "rgba(0, 0, 255, 1)",
+    "space-color": "black",
+    "star-intensity": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }
+    }
+  ]
+}
