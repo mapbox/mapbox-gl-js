@@ -1932,6 +1932,29 @@ test('Map', (t) => {
         });
     });
 
+    t.test('#remove deletes gl resources used by the atmosphere', (t) => {
+        const style = extend(createStyle(), {zoom: 1});
+        const map = createMap(t, {style});
+
+        map.on('style.load', () => {
+            map.once('render', () => {
+                const atmosphereBuffers = map.painter.atmosphereBuffer;
+
+                t.ok(atmosphereBuffers);
+
+                t.true(atmosphereBuffers.vertexBuffer.buffer);
+                t.true(atmosphereBuffers.indexBuffer.buffer);
+
+                map.remove();
+
+                t.false(atmosphereBuffers.vertexBuffer.buffer);
+                t.false(atmosphereBuffers.indexBuffer.buffer);
+
+                t.end();
+            });
+        });
+    });
+
     t.test('#addControl', (t) => {
         const map = createMap(t);
         const control = {
