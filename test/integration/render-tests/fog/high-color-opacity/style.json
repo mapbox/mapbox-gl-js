@@ -2,8 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 512,
-      "height": 256
+      "width": 64,
+      "height": 160
     }
   },
   "zoom": 20,
