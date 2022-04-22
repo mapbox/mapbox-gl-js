@@ -26,7 +26,7 @@ test('round trip', (t) => {
         }
     }
 
-    register(Foo, {omit: ['_cached']});
+    register(Foo, 'Foo', {omit: ['_cached']});
 
     const foo = new Foo(10);
     const transferables = [];
@@ -64,7 +64,7 @@ test('custom serialization', (t) => {
         }
     }
 
-    register(Bar);
+    register(Bar, 'Bar');
 
     const bar = new Bar('a');
     t.assert(!bar._deserialized);

@@ -242,6 +242,6 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     }
 }
 
-register(CircleBucket, {omit: ['layers']});
+register(CircleBucket, 'CircleBucket', {omit: ['layers']});
 
 export default CircleBucket;
