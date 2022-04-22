@@ -2115,13 +2115,17 @@ class Map extends Camera {
      * or [`line-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-line-line-pattern).
      *
      * @param {string} id The ID of the image.
-     * @param {HTMLImageElement | ImageBitmap | ImageData | {width: number, height: number, data: (Uint8Array | Uint8ClampedArray)} | StyleImageInterface} image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
+     * @param {HTMLImageElement | ImageBitmap | ImageData | StyleImageInterface} image The image as an `HTMLImageElement`, [`ImageData`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData), [`ImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap) or object with `width`, `height`, and `data`
      * properties with the same format as `ImageData`.
      *
      * @example
-     * // If an image with the ID 'cat' already exists in the style's sprite,
-     * // replace that image with a new image, 'other-cat-icon.png'.
-     * if (map.hasImage('cat')) map.updateImage('cat', './other-cat-icon.png');
+    * // Load an image from an external URL.
+     * map.loadImage('http://placekitten.com/50/50', (error, image) => {
+     *     if (error) throw error;
+     *     // If an image with the ID 'cat' already exists in the style's sprite,
+     *     // replace that image with a new image, 'other-cat-icon.png'.
+     *     if (map.hasImage('cat')) map.updateImage('cat', image);
+     * });
      */
     updateImage(id: string,
         image: HTMLImageElement | ImageBitmap | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface) {
@@ -2146,7 +2150,9 @@ class Map extends Camera {
 
         if (width !== existingImage.data.width || height !== existingImage.data.height) {
             this.fire(new ErrorEvent(new Error(
-                'The width and height of the updated image must be that same as the previous version of the image')));
+                `The width and height of the updated image (${width}, ${height})
+                must be that same as the previous version of the image
+                (${existingImage.data.width}, ${existingImage.data.height})`)));
             return;
         }
 
