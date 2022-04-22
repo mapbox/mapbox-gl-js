@@ -89,6 +89,7 @@ function getPerspectiveTransform(w, h, x1, y1, x2, y2, x3, y3, x4, y4) {
  *
  * map.removeSource('some id');  // remove
  * @see [Example: Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
+ * @see [Example: Animate a series of images](https://www.mapbox.com/mapbox-gl-js/example/animate-images/)
  */
 class ImageSource extends Evented implements Source {
     type: string;
