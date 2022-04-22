@@ -24,6 +24,30 @@ function createStyleSource() {
     };
 }
 
+// Mock implementation of elevation
+const createElevation = (func, exaggeration) => {
+    return {
+        _exaggeration: exaggeration,
+        isDataAvailableAtPoint(_) {
+            return true;
+        },
+        getAtPointOrZero(point, def) {
+            return this.getAtPoint(point, def) || 0;
+        },
+        getAtPoint(point, def) {
+            return func(point) * this.exaggeration() || def;
+        },
+        getForTilePoints() {
+            return false;
+        },
+        getMinElevationBelowMSL: () => 0,
+
+        exaggeration() {
+            return this._exaggeration;
+        }
+    };
+};
+
 test('Map', (t) => {
     t.beforeEach((callback) => {
         window.useFakeXMLHttpRequest();
@@ -3437,6 +3461,53 @@ test('Map', (t) => {
             t.same(map.version, version);
             t.end();
         });
+        t.end();
+    });
+
+    t.test('#queryTerrainElevation', (t) => {
+        t.test('no elevation set', (t) => {
+            const map = createMap(t);
+            let elevation = map.queryTerrainElevation([25, 60]);
+            t.notOk(elevation);
+
+            elevation = map.queryTerrainElevation([0, 0]);
+            t.notOk(elevation);
+
+            t.end();
+        });
+
+        t.test('constant elevation', (t) => {
+            const map = createMap(t);
+            map.transform.elevation = createElevation(() => 100, 1.0);
+
+            let elevation = map.queryTerrainElevation([25, 60]);
+            t.equal(elevation, 100);
+
+            elevation = map.queryTerrainElevation([0, 0]);
+            t.equal(elevation, 100);
+
+            t.end();
+        });
+
+        t.test('elevation with exaggeration', (t) => {
+            const map = createMap(t);
+            map.transform.elevation = createElevation((point) => point.x + point.y, 0.1);
+
+            let elevation = map.queryTerrainElevation([0, 0]);
+            t.equal(fixedNum(elevation, 7), 0.1);
+
+            elevation = map.queryTerrainElevation([180, 0]);
+            t.equal(fixedNum(elevation, 7), 0.15);
+
+            elevation = map.queryTerrainElevation([-180, 85.051129]);
+            t.equal(fixedNum(elevation, 7), 0.0);
+
+            elevation = map.queryTerrainElevation([180, -85.051129]);
+            t.equal(fixedNum(elevation, 6), 0.2);
+
+            t.end();
+        });
+
         t.end();
     });
 
