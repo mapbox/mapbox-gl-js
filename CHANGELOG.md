@@ -1,3 +1,8 @@
+## 2.8.2
+
+### Bug fixes 🐞
+* Fix an issue where the special bundle for CSP-restricted environments was not compatible with further minification in some bundling setups. ([#11790](https://github.com/mapbox/mapbox-gl-js/pull/11790))
+
 ## 2.8.1
 
 ### Bug fixes 🐞
