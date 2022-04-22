@@ -1907,6 +1907,31 @@ test('Map', (t) => {
         });
     });
 
+    t.test('#remove deletes gl resources used by the globe', (t) => {
+        const style = extend(createStyle(), {zoom: 1});
+        const map = createMap(t, {style});
+        map.setProjection("globe");
+
+        map.on('style.load', () => {
+            map.once('render', () => {
+                map.remove();
+                const buffers = map.painter.globeSharedBuffers;
+                t.ok(buffers);
+
+                const checkBuffer = (name) => buffers[name] && ('buffer' in buffers[name]);
+
+                t.false(checkBuffer('_poleIndexBuffer'));
+                t.false(checkBuffer('_gridBuffer'));
+                t.false(checkBuffer('_gridIndexBuffer'));
+                t.false(checkBuffer('_poleNorthVertexBuffer'));
+                t.false(checkBuffer('_poleSouthVertexBuffer'));
+                t.false(checkBuffer('_wireframeIndexBuffer'));
+
+                t.end();
+            });
+        });
+    });
+
     t.test('#addControl', (t) => {
         const map = createMap(t);
         const control = {
