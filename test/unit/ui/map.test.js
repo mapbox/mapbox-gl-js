@@ -1932,7 +1932,7 @@ test('Map', (t) => {
         });
     });
 
-    t.test('#remove deletes gl resources used by the globe', (t) => {
+    t.test('#remove deletes gl resources used by the atmosphere', (t) => {
         const style = extend(createStyle(), {zoom: 1});
         const map = createMap(t, {style});
 
