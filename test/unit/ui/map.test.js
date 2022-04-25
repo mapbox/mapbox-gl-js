@@ -3420,6 +3420,26 @@ test('Map', (t) => {
         });
         t.end();
     });
+
+    t.test('map.version', (t) => {
+        const map = createMap(t);
+        const version = map.version;
+        t.test('returns version string', (t) => {
+            t.ok(version);
+            t.match(version, /^2\.[0-9]+\.[0-9]+(-dev|-beta\.[1-9])?$/);
+            t.end();
+        });
+        t.test('cannot be set', (t) => {
+            t.throws(() => {
+                map.version = "2.0.0-beta.9";
+            }, TypeError, 'Cannot set property version of #<Map> which has only a getter');
+            t.notSame(map.version, "2.0.0-beta.9");
+            t.same(map.version, version);
+            t.end();
+        });
+        t.end();
+    });
+
     t.end();
 });
 
