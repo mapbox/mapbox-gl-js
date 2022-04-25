@@ -127,7 +127,7 @@ test('BoxZoomHandler does not begin a box zoom if preventDefault is called on th
     t.end();
 });
 
-test('BoxZoomHandler cancels box zoom on spurious mousemove events', (t) => {
+test('BoxZoomHandler cancels a box zoom on spurious mousemove events', (t) => {
     const map = createMap(t);
 
     const boxzoomstart = t.spy();
@@ -155,7 +155,6 @@ test('BoxZoomHandler cancels box zoom on spurious mousemove events', (t) => {
     t.equal(boxzoomstart.callCount, 0);
     t.equal(boxzoomend.callCount, 0);
     t.equal(boxzoomcancel.callCount, 1);
-
 
     map.remove();
     t.end();
