@@ -47,10 +47,10 @@ test('BoxZoomHandler fires boxzoomcancel events at the appropriate time', (t) =>
 
     simulate.mousedown(map.getCanvas(), {shiftKey: true, clientX: 0, clientY: 0});
     map._renderTaskQueue.run();
+    t.equal(boxzoomcancel.callCount, 0);
 
     simulate.mouseup(map.getCanvas(), {shiftKey: false, clientX: 0, clientY: 0});
     map._renderTaskQueue.run();
-
     t.equal(boxzoomcancel.callCount, 1);
 
     map.remove();
