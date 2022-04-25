@@ -5,10 +5,12 @@ import Map from '../../../../src/ui/map.js';
 import * as DOM from '../../../../src/util/dom.js';
 import simulate from '../../../util/simulate_interaction.js';
 
-function createMap(t) {
+function createMap(t, proj = 'mercator') {
     t.stub(Map.prototype, '_detectMissingCSS');
     t.stub(Map.prototype, '_authenticate');
-    return new Map({container: DOM.create('div', '', window.document.body)});
+    const map = new Map({container: DOM.create('div', '', window.document.body)});
+    map.setProjection(proj);
+    return map;
 }
 
 // MouseEvent.buttons
@@ -21,20 +23,26 @@ test('Map#isMoving returns false by default', (t) => {
     t.end();
 });
 
-test('Map#isMoving returns true during a camera zoom animation', (t) => {
-    const map = createMap(t);
+test('Map#isMoving with various projections', (t) => {
+    const projections = ['globe', 'mercator'];
+    for (const proj of projections) {
+        test('Map#isMoving returns true during a camera zoom animation', (t) => {
+            const map = createMap(t, proj);
 
-    map.on('zoomstart', () => {
-        t.equal(map.isMoving(), true);
-    });
+            map.on('zoomstart', () => {
+                t.equal(map.isMoving(), true);
+            });
 
-    map.on('zoomend', () => {
-        t.equal(map.isMoving(), false);
-        map.remove();
-        t.end();
-    });
+            map.on('zoomend', () => {
+                t.equal(map.isMoving(), false);
+                map.remove();
+                t.end();
+            });
 
-    map.zoomTo(5, {duration: 0});
+            map.zoomTo(5, {duration: 0});
+        });
+    }
+    t.end();
 });
 
 test('Map#isMoving returns true when drag panning', (t) => {
