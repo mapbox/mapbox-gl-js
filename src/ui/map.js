@@ -3061,7 +3061,7 @@ class Map extends Camera {
                     cpuTime: renderCPUTime,
                     gpuTime: renderGPUTime
                 }));
-                performance.mark('frame-gpu', {
+                window.performance.mark('frame-gpu', {
                     startTime: frameStartTime,
                     detail: {
                         gpuTime: renderGPUTime
