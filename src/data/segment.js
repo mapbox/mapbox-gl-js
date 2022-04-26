@@ -72,5 +72,5 @@ class SegmentVector {
  */
 SegmentVector.MAX_VERTEX_ARRAY_LENGTH = Math.pow(2, 16) - 1;
 
-register(SegmentVector);
+register(SegmentVector, 'SegmentVector');
 export default SegmentVector;

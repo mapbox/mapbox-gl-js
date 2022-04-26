@@ -46,6 +46,8 @@ test('Map', (t) => {
         t.ok(map.keyboard.isEnabled());
         t.ok(map.scrollZoom.isEnabled());
         t.ok(map.touchZoomRotate.isEnabled());
+        t.equal(map._language, window.navigator.language);
+        t.notok(map._worldview);
         t.throws(() => {
             new Map({
                 container: 'anElementIdWhichDoesNotExistInTheDocument',
@@ -1905,6 +1907,54 @@ test('Map', (t) => {
         });
     });
 
+    t.test('#remove deletes gl resources used by the globe', (t) => {
+        const style = extend(createStyle(), {zoom: 1});
+        const map = createMap(t, {style});
+        map.setProjection("globe");
+
+        map.on('style.load', () => {
+            map.once('render', () => {
+                map.remove();
+                const buffers = map.painter.globeSharedBuffers;
+                t.ok(buffers);
+
+                const checkBuffer = (name) => buffers[name] && ('buffer' in buffers[name]);
+
+                t.false(checkBuffer('_poleIndexBuffer'));
+                t.false(checkBuffer('_gridBuffer'));
+                t.false(checkBuffer('_gridIndexBuffer'));
+                t.false(checkBuffer('_poleNorthVertexBuffer'));
+                t.false(checkBuffer('_poleSouthVertexBuffer'));
+                t.false(checkBuffer('_wireframeIndexBuffer'));
+
+                t.end();
+            });
+        });
+    });
+
+    t.test('#remove deletes gl resources used by the atmosphere', (t) => {
+        const style = extend(createStyle(), {zoom: 1});
+        const map = createMap(t, {style});
+
+        map.on('style.load', () => {
+            map.once('render', () => {
+                const atmosphereBuffers = map.painter.atmosphereBuffer;
+
+                t.ok(atmosphereBuffers);
+
+                t.true(atmosphereBuffers.vertexBuffer.buffer);
+                t.true(atmosphereBuffers.indexBuffer.buffer);
+
+                map.remove();
+
+                t.false(atmosphereBuffers.vertexBuffer.buffer);
+                t.false(atmosphereBuffers.indexBuffer.buffer);
+
+                t.end();
+            });
+        });
+    });
+
     t.test('#addControl', (t) => {
         const map = createMap(t);
         const control = {
@@ -1963,15 +2013,67 @@ test('Map', (t) => {
         t.end();
     });
 
+    function pointToFixed(p, n = 8) {
+        return {
+            'x': p.x.toFixed(n),
+            'y': p.y.toFixed(n)
+        };
+    }
+
     t.test('#project', (t) => {
         const map = createMap(t);
-        t.deepEqual(map.project([0, 0]), {x: 100, y: 100});
+
+        t.test('In Mercator', (t) => {
+            t.deepEqual(pointToFixed(map.project({lng: 0, lat: 0})), {x: 100, y: 100});
+            t.deepEqual(pointToFixed(map.project({lng: -70.3125, lat: 57.326521225})), {x: 0, y: 0});
+            t.end();
+        });
+        t.test('In Globe', (t) => {
+            map.setProjection('globe');
+            t.deepEqual(pointToFixed(map.project({lng: 0, lat: 0})), {x: 100, y: 100});
+            t.deepEqual(pointToFixed(map.project({lng:  -72.817409474, lat: 43.692434709})), {x: 53.61718415, y: 53.61718415});
+            t.end();
+        });
+        t.test('In Natural Earth', (t) => {
+            map.setProjection('naturalEarth');
+            t.deepEqual(pointToFixed(map.project({lng: 0, lat: 0})), {x: 100, y: 100});
+            t.deepEqual(pointToFixed(map.project({lng: -86.861020716, lat: 61.500721712})), {x: 0, y: 0});
+            t.end();
+        });
+        t.test('In Albers', (t) => {
+            map.setProjection('albers');
+            t.deepEqual(pointToFixed(map.project({lng: 0, lat: 0})), {x: 100, y: 100});
+            t.deepEqual(pointToFixed(map.project({lng: 44.605340721, lat: 79.981951054})), {x: 0, y: 0});
+            t.end();
+        });
         t.end();
     });
 
     t.test('#unproject', (t) => {
         const map = createMap(t);
-        t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+        t.test('In Mercator', (t) => {
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: -70.3125, lat: 57.326521225});
+            t.end();
+        });
+        t.test('In Globe', (t) => {
+            map.setProjection('globe');
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng:  -72.817409474, lat: 43.692434709});
+            t.end();
+        });
+        t.test('In Natural Earth', (t) => {
+            map.setProjection('naturalEarth');
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: -86.861020716, lat: 61.500721712});
+            t.end();
+        });
+        t.test('In Albers', (t) => {
+            map.setProjection('albers');
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: 44.605340721, lat: 79.981951054});
+            t.end();
+        });
         t.end();
     });
 
@@ -2192,6 +2294,68 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.end();
+    });
+
+    t.test('#language', (t) => {
+        t.test('can instantiate map with language', (t) => {
+            const map = createMap(t, {language: 'uk'});
+            map.on('style.load', () => {
+                t.equal(map.getLanguage(), 'uk');
+                t.end();
+            });
+        });
+
+        t.test('sets and gets language property', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setLanguage('es');
+                t.equal(map.getLanguage(), 'es');
+                t.end();
+            });
+        });
+
+        t.test('can reset language property to default', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setLanguage('es');
+                t.equal(map.getLanguage(), 'es');
+                map.setLanguage();
+                t.equal(map.getLanguage(), window.navigator.language);
+                t.end();
+            });
+        });
+        t.end();
+    });
+
+    t.test('#worldview', (t) => {
+        t.test('can instantiate map with worldview', (t) => {
+            const map = createMap(t, {worldview: 'JP'});
+            map.on('style.load', () => {
+                t.equal(map.getWorldview(), 'JP');
+                t.end();
+            });
+        });
+
+        t.test('sets and gets worldview property', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setWorldview('JP');
+                t.equal(map.getWorldview(), 'JP');
+                t.end();
+            });
+        });
+
+        t.test('can remove worldview property', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setWorldview('JP');
+                t.equal(map.getWorldview(), 'JP');
+                map.setWorldview();
+                t.notOk(map.getWorldview());
+                t.end();
+            });
+        });
         t.end();
     });
 
@@ -3199,6 +3363,81 @@ test('Map', (t) => {
                 t.fail(`styleimagemissing fired for value ${id}`);
             });
         });
+    });
+
+    t.test('#snapToNorth', (t) => {
+
+        t.test('snaps when less than < 7 degrees', (t) => {
+            const map = createMap(t);
+            map.on('load', () =>  {
+                map.setBearing(6);
+                t.equal(map.getBearing(), 6);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 0);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('does not snap when > 7 degrees', (t) => {
+            const map = createMap(t);
+            map.on('load', () =>  {
+                map.setBearing(8);
+                t.equal(map.getBearing(), 8);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 8);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('snaps when < bearingSnap', (t) => {
+            const map = createMap(t, {"bearingSnap": 12});
+            map.on('load', () =>  {
+                map.setBearing(11);
+                t.equal(map.getBearing(), 11);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 0);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('does not snap when > bearingSnap', (t) => {
+            const map = createMap(t, {"bearingSnap": 10});
+            map.on('load', () =>  {
+                map.setBearing(11);
+                t.equal(map.getBearing(), 11);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 11);
+                    t.end();
+                });
+            });
+        });
+        t.end();
+    });
+
+    t.test('map.version', (t) => {
+        const map = createMap(t);
+        const version = map.version;
+        t.test('returns version string', (t) => {
+            t.ok(version);
+            t.match(version, /^2\.[0-9]+\.[0-9]+(-dev|-beta\.[1-9])?$/);
+            t.end();
+        });
+        t.test('cannot be set', (t) => {
+            t.throws(() => {
+                map.version = "2.0.0-beta.9";
+            }, TypeError, 'Cannot set property version of #<Map> which has only a getter');
+            t.notSame(map.version, "2.0.0-beta.9");
+            t.same(map.version, version);
+            t.end();
+        });
+        t.end();
     });
 
     t.end();

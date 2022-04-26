@@ -1,0 +1,50 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        ["setLayoutProperty", "symbol", "icon-image", "triangle-12"],
+        ["wait"],
+        ["setLayoutProperty", "symbol", "icon-size", 3],
+        ["wait"],
+        ["setLayoutProperty", "symbol", "icon-rotate", 10],
+        ["wait"]
+      ]
+    }
+  },
+  "fog": {
+    "star-intensity": 0
+  },
+  "projection": {
+    "name": "globe"
+  },
+  "zoom": 1.5,
+  "transition": {
+    "duration": 0
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "circle-12"
+      }
+    }
+  ]
+}

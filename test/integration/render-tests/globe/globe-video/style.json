@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    -122,
+    0
+  ],
+  "fog": {},
+  "projection": {
+    "name": "globe"
+  },
+  "zoom": 2,
+  "bearing": -96,
+  "sources": {
+    "video": {
+      "type": "video",
+      "coordinates": [
+        [
+          -152,
+          0
+        ],
+        [
+          -122,
+          30
+        ],
+        [
+          -92,
+          0
+        ],
+        [
+          -122,
+          -30
+        ]
+      ],
+      "urls": [
+        "https://static-assets.mapbox.com/mapbox-gl-js/drone.mp4",
+        "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "video",
+      "type": "raster",
+      "source": "video",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

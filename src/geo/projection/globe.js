@@ -21,7 +21,6 @@ import {
     globeTileBounds,
     globeNormalizeECEF,
     globeDenormalizeECEF,
-    globeECEFUnitsToPixelScale,
     globeECEFNormalizationScale,
     globeToMercatorTransition
 } from './globe_util.js';
@@ -91,19 +90,13 @@ export default class Globe extends Mercator {
     }
 
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
-        const {center, worldSize} = tr;
-        const ecefUnitsToPixels = globeECEFUnitsToPixelScale(worldSize);
+        const {center} = tr;
         const matrix = mat4.identity(new Float64Array(16));
         const encode = globeNormalizeECEF(globeTileBounds(id));
         mat4.multiply(matrix, matrix, encode);
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
-        mat4.scale(matrix, matrix, [1.0 / ecefUnitsToPixels, 1.0 / ecefUnitsToPixels, 1.0]);
-
-        const ecefUnitsToMercatorPixels = tr.pixelsPerMeter / mercatorZfromAltitude(1.0, center.lat) / EXTENT;
-
-        mat4.scale(matrix, matrix, [ecefUnitsToMercatorPixels, ecefUnitsToMercatorPixels, 1.0]);
-
+        mat4.scale(matrix, matrix, [tr._projectionScaler, tr._projectionScaler, 1.0]);
         return Float32Array.from(matrix);
     }
 

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<style>
+    .map-overlay {
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        position: absolute;
+        width: 200px;
+        top: 0;
+        left: 0;
+        padding: 10px;
+    }
+        
+    .map-overlay .map-overlay-inner {
+        background-color: #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+        
+    .map-overlay-inner fieldset {
+        border: none;
+        padding: 0;
+        margin: 0 0 10px;
+    }
+        
+    .map-overlay-inner fieldset:last-child {
+        margin: 0;
+    }
+        
+    .map-overlay-inner select {
+        width: 100%;
+    }
+        
+    .map-overlay-inner label {
+        display: block;
+        font-weight: bold;
+        margin: 0 0 5px;
+    }
+        
+    .map-overlay-inner button {
+        display: inline-block;
+        width: 36px;
+        height: 20px;
+        border: none;
+        cursor: pointer;
+    }
+        
+    .map-overlay-inner button:focus {
+        outline: none;
+    }
+        
+    .map-overlay-inner button:hover {
+        box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.1);
+    }
+</style>
+<div id='map'></div>
+<div class="map-overlay top">
+    <div class="map-overlay-inner">
+        <fieldset>
+            <label>Select language</label>
+            <select id="language" name="language">
+                <option value="ar">Arabic ('ar')</option>
+                <option value="ca">Catalan ('ca')</option>
+                <option value="cs">Czech ('cs')</option>
+                <option value="da">Danish ('da')</option>
+                <option value="de">German ('de')</option>
+                <option value="el">Greek ('el')</option>
+                <option value="en" selected>English ('en')</option>
+                <option value="es">Spanish ('es')</option>
+                <option value="fa">Farsi ('fa')</option>
+                <option value="fi">Finnish ('fi')</option>
+                <option value="fr">French ('fr')</option>
+                <option value="he">Hebrew ('he')</option>
+                <option value="hu">Hungarian ('hu')</option>
+                <option value="id">Indonesian ('id')</option>
+                <option value="it">Italian ('it')</option>
+                <option value="ja">Japanese ('ja')</option>
+                <option value="ka">Georgian ('ka')</option>
+                <option value="ko">Korean ('ko')</option>
+                <option value="lv">Latvian ('lv')</option>
+                <option value="ms">Malay ('ms')</option>
+                <option value="nb">Norwegian Bokmål ('nb')</option>
+                <option value="nl">Dutch ('nl')</option>
+                <option value="no">Norwegian ('no')</option>
+                <option value="pl">Polish ('pl')</option>
+                <option value="pt">Portuguese ('pt')</option>
+                <option value="ro">Romanian ('ro')</option>
+                <option value="ru">Russian ('ru')</option>
+                <option value="sk">Slovak ('sk')</option>
+                <option value="sl">Slovenian ('sl')</option>
+                <option value="sr">Serbian ('sr')</option>
+                <option value="sv">Swedish ('sv')</option>
+                <option value="th">Thai ('th')</option>
+                <option value="tl">Tagalog ('tl')</option>
+                <option value="tr">Turkish ('tr')</option>
+                <option value="uk">Ukrainian ('uk')</option>
+                <option value="vi">Vietnamese ('vi')</option>
+                <option value="zh-Hans">Simplified Chinese ('zh-Hans')</option>
+                <option value="zh-Hant">Traditional Chinese ('zh-Hant')</option>
+            </select>
+        </fieldset>
+        <fieldset>
+            <label>Select worldview</label>
+            <select id="worldview" name="worldview">
+                <option value="AR">Argentina ('AR')</option>
+                <option value="CN">China ('CN')</option>
+                <option value="IN">India ('IN')</option>
+                <option value="JP">Japan ('JP')</option>
+                <option value="MA">Morocco ('MA')</option>
+                <option value="RU">Russia ('RU')</option>
+                <option value="TR">Turkey ('TR')</option>
+                <option value="US" selected>United States ('US')</option>
+            </select>
+        </fieldset>
+    </div>
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+const language = document.getElementById('language');
+const worldview = document.getElementById('worldview');
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true,
+    language: language.value,
+    worldview: worldview.value
+});
+
+mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
+
+map.on('style.load', () => {
+    map.addSource('mapbox://mapbox.mapbox-streets-v8-i18n', {
+        type: 'vector',
+        url: 'mapbox://mapbox.mapbox-streets-v8-i18n',
+    });
+
+    map.addLayer({
+        "id": "places",
+        "type": "circle",
+        "source": "mapbox://mapbox.mapbox-streets-v8-i18n",
+        "source-layer": "place_label",
+        "layout": {},
+        "paint": {
+            "circle-radius": 3,
+            "circle-color": [
+                "case",
+                ["==", ["get", "name"], ["get", "name_local"]], "#4f7ca3",
+                "#000000"
+            ]
+        }
+    });
+
+    map.addLayer({
+        "id": "places-labels",
+        "type": "symbol",
+        "source": "mapbox://mapbox.mapbox-streets-v8-i18n",
+        "source-layer": "place_label",
+        "layout": {
+            "text-field": ["to-string", ["get", "name"]],
+            "text-anchor": "bottom-left",
+            "text-size": [
+                "case",
+                ["==", ["get", "name"], ["get", "name_local"]], 10,
+                12
+            ],
+            "text-font": [
+                "Source Code Pro Semibold",
+                "Arial Unicode MS Regular"
+            ],
+            "text-offset": [0.4, -0.1],
+            "text-allow-overlap": true,
+            "text-justify": "left"
+        },
+        "paint": {
+            "text-color": [
+                "case",
+                ["==", ["get", "name"], ["get", "name_local"]], "#4f7ca3",
+                "#000000"
+            ]
+        }
+    });
+
+    map.addLayer({
+        "id": "borders",
+        "type": "line",
+        "source": "mapbox://mapbox.mapbox-streets-v8-i18n",
+        "source-layer": "admin",
+        "layout": {
+            "line-cap": "round",
+            "line-join": "round"
+        },
+        "paint": {
+            "line-width": 2,
+            "line-opacity": 0.5,
+            "line-color": [
+                "case",
+                ["==", ["get", "worldview"], "US"], "#0074D9",
+                ["==", ["get", "worldview"], "IN"], "#7FDBFF",
+                ["==", ["get", "worldview"], "CN"], "#FF851B",
+                ["==", ["get", "worldview"], "JP"], "#FFDC00",
+                ["==", ["get", "worldview"], "RU"], "#eb4034",
+                ["==", ["get", "worldview"], "MA"], "#17b03b",
+                ["==", ["get", "worldview"], "AR"], "#182acc",
+                ["==", ["get", "worldview"], "TR"], "#9e106a",
+                "#34b5cf"
+            ]
+        }
+    });
+
+    map.addLayer({
+        "id": "borders-labels",
+        "type": "symbol",
+        "source": "mapbox://mapbox.mapbox-streets-v8-i18n",
+        "source-layer": "admin",
+        "layout": {
+            "text-field": ["to-string", ["get", "worldview"]],
+            "text-size": 14,
+            "text-font": [
+                "Source Code Pro Semibold",
+                "Arial Unicode MS Regular"
+            ],
+            "text-anchor": "center",
+            "text-allow-overlap": true,
+            "symbol-placement": "line",
+            "symbol-spacing": 20,
+            "text-keep-upright": true
+        },
+        "paint": {
+            "text-color": [
+                "case",
+                ["==", ["get", "worldview"], "US"], "#0074D9",
+                ["==", ["get", "worldview"], "IN"], "#7FDBFF",
+                ["==", ["get", "worldview"], "CN"], "#FF851B",
+                ["==", ["get", "worldview"], "JP"], "#FFDC00",
+                ["==", ["get", "worldview"], "RU"], "#eb4034",
+                ["==", ["get", "worldview"], "MA"], "#17b03b",
+                ["==", ["get", "worldview"], "AR"], "#182acc",
+                ["==", ["get", "worldview"], "TR"], "#9e106a",
+                "#79a0a8"
+            ]
+        }
+    });
+});
+
+language.addEventListener('change', (e) => {
+    map.setLanguage(e.target.value);
+});
+
+worldview.addEventListener('change', (e) => {
+    map.setWorldview(e.target.value);
+});
+
+</script>
+</body>
+</html>

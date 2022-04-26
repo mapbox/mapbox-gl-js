@@ -85,13 +85,20 @@ export class RequestManager {
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
-    normalizeSourceURL(url: string, accessToken?: string): string {
+    normalizeSourceURL(url: string, accessToken?: ?string, language?: ?string, worldview?: ?string): string {
         if (!isMapboxURL(url)) return url;
         const urlObject = parseUrl(url);
         urlObject.path = `/v4/${urlObject.authority}.json`;
         // TileJSON requests need a secure flag appended to their URLs so
         // that the server knows to send SSL-ified resource references.
         urlObject.params.push('secure');
+        if (language) {
+            urlObject.params.push(`language=${language}`);
+        }
+        if (worldview) {
+            urlObject.params.push(`worldview=${worldview}`);
+        }
+
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 

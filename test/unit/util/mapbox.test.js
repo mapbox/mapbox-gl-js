@@ -123,6 +123,21 @@ test("mapbox", (t) => {
                 t.end();
             });
 
+            t.test('adds language query parameter', (t) => {
+                t.equal(manager.normalizeSourceURL('mapbox://user.map?foo=bar', 'token', 'es'), 'https://api.mapbox.com/v4/user.map.json?foo=bar&secure&language=es&access_token=token');
+                t.end();
+            });
+
+            t.test('adds worldview query parameter', (t) => {
+                t.equal(manager.normalizeSourceURL('mapbox://user.map?foo=bar', 'token', null, 'JP'), 'https://api.mapbox.com/v4/user.map.json?foo=bar&secure&worldview=JP&access_token=token');
+                t.end();
+            });
+
+            t.test('adds language and worldview query parameters', (t) => {
+                t.equal(manager.normalizeSourceURL('mapbox://user.map?foo=bar', 'token', 'es', 'JP'), 'https://api.mapbox.com/v4/user.map.json?foo=bar&secure&language=es&worldview=JP&access_token=token');
+                t.end();
+            });
+
             t.test('throws an error if no access token is provided', (t) => {
                 config.ACCESS_TOKEN = null;
                 t.throws(() => { manager.normalizeSourceURL('mapbox://user.map'); }, 'An API access token is required to use Mapbox GL.');
