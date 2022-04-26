@@ -21,7 +21,7 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
     }),
     (production && !bench) ? strip({
         sourceMap: true,
-        functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*']
+        functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*', 'performance.mark']
     }) : false,
     production || bench ? unassert() : false,
     test ? replace({
