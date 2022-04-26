@@ -53,7 +53,8 @@ const exported = {
     config,
     /**
      * Initializes resources like WebWorkers that can be shared across maps to lower load
-     * times in some situations. `mapboxgl.workerUrl` and `mapboxgl.workerCount`, if being
+     * times in some situations. [`mapboxgl.workerUrl`](https://docs.mapbox.com/mapbox-gl-js/api/properties/#workerurl)
+     * and [`mapboxgl.workerCount`](https://docs.mapbox.com/mapbox-gl-js/api/properties/#workercount), if being
      * used, must be set before `prewarm()` is called to have an effect.
      *
      * By default, the lifecycle of these resources is managed automatically, and they are
@@ -61,10 +62,10 @@ const exported = {
      * resources ahead of time and ensures they are not cleared when the last `Map`
      * is removed from the page. This allows them to be re-used by new `Map` instances that
      * are created later. They can be manually cleared by calling
-     * `mapboxgl.clearPrewarmedResources()`. This is only necessary if your web page
-     * remains active but stops using maps altogether. `prewarm()` is idempotent
-     * and has guards against being executed multiple times, and any resources
-     * allocated by `prewarm()` are created synchronously.
+     * [`mapboxgl.clearPrewarmedResources()`](https://docs.mapbox.com/mapbox-gl-js/api/properties/#clearprewarmedresources).
+     * This is only necessary if your web page remains active but stops using maps altogether.
+     * `prewarm()` is idempotent and has guards against being executed multiple times,
+     * and any resources allocated by `prewarm()` are created synchronously.
      *
      * This is primarily useful when using Mapbox GL JS maps in a single page app,
      * in which a user navigates between various views, resulting in
@@ -76,7 +77,7 @@ const exported = {
      */
     prewarm,
     /**
-     * Clears up resources that have previously been created by `mapboxgl.prewarm()`.
+     * Clears up resources that have previously been created by [`mapboxgl.prewarm()](https://docs.mapbox.com/mapbox-gl-js/api/properties/#prewarm)`.
      * Note that this is typically not necessary. You should only call this function
      * if you expect the user of your app to not return to a Map view at any point
      * in your application.
