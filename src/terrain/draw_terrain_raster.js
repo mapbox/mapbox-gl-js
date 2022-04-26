@@ -162,7 +162,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
-    const isAntialias = painter.style.map._antialias ? false : true;
+    const isAntialias = !painter.style.map._antialias;
 
     // Render the gradient atmosphere by casting rays from screen pixels and determining their
     // closest distance to the globe. This is done in view space where camera is located in the origo
