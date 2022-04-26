@@ -34,8 +34,9 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const stencilMode = StencilMode.disabled;
         // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
         const colorMode = new ColorMode([gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
+        const resolutionScaling = painter.transform.projection.name === 'globe' ? 0.5 : 0.25;
 
-        bindFramebuffer(context, painter, layer);
+        bindFramebuffer(context, painter, layer, resolutionScaling);
 
         context.clear({color: Color.transparent});
 
@@ -84,16 +85,19 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     }
 }
 
-function bindFramebuffer(context, painter, layer) {
+function bindFramebuffer(context, painter, layer, scaling) {
     const gl = context.gl;
-    context.activeTexture.set(gl.TEXTURE1);
+    const width = painter.width * scaling;
+    const height = painter.height * scaling;
 
-    // Use a 4x downscaled screen texture for better performance
-    context.viewport.set([0, 0, painter.width / 4, painter.height / 4]);
+    context.activeTexture.set(gl.TEXTURE1);
+    context.viewport.set([0, 0, width, height]);
 
     let fbo = layer.heatmapFbo;
 
-    if (!fbo) {
+    if (!fbo || (fbo && (fbo.width !== width || fbo.height !== height))) {
+        if (fbo) { fbo.destroy(); }
+
         const texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -101,9 +105,9 @@ function bindFramebuffer(context, painter, layer) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        fbo = layer.heatmapFbo = context.createFramebuffer(painter.width / 4, painter.height / 4, false);
+        fbo = layer.heatmapFbo = context.createFramebuffer(width, height, false);
 
-        bindTextureToFramebuffer(context, painter, texture, fbo);
+        bindTextureToFramebuffer(context, painter, texture, fbo, width, height);
 
     } else {
         gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
@@ -111,12 +115,12 @@ function bindFramebuffer(context, painter, layer) {
     }
 }
 
-function bindTextureToFramebuffer(context, painter, texture, fbo) {
+function bindTextureToFramebuffer(context, painter, texture, fbo, width, height) {
     const gl = context.gl;
     // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
     // Otherwise, fall back to a low precision texture
     const internalFormat = context.extRenderToTextureHalfFloat ? context.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE;
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA, internalFormat, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, internalFormat, null);
     fbo.colorAttachment.set(texture);
 }
 
