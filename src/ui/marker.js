@@ -436,10 +436,9 @@ export default class Marker extends Evented {
         }
         const mapLocation = map.unproject(pos);
         let opacity;
-        if (map._usingGlobe() && isLngLatBehindGlobe(map.transform, this._lngLat)){
+        if (map._usingGlobe() && isLngLatBehindGlobe(map.transform, this._lngLat)) {
             opacity = 0;
-        }
-        else {
+        } else {
             opacity = 1 - map._queryFogOpacity(mapLocation);
             if (map.transform._terrainEnabled() && map.getTerrain() && this._behindTerrain()) {
                 opacity *= TERRAIN_OCCLUDED_OPACITY;
