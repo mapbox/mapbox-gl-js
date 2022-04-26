@@ -143,7 +143,11 @@ function renderTextureToMap(painter, layer) {
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    painter.useProgram('heatmapTexture').draw(context, gl.TRIANGLES,
+    const program = painter.useProgram('heatmapTexture');
+
+    painter.prepareDrawProgram(context, program);
+
+    program.draw(context, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
         heatmapTextureUniformValues(painter, layer, 0, 1),
         layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
