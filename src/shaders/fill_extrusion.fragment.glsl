@@ -1,17 +1,22 @@
 
-uniform sampler2D u_image0;
-uniform sampler2D u_image1;
-uniform float u_shadow_intensity;
-uniform float u_texel_size;
-uniform vec3 u_cascade_distances;
 
 uniform lowp vec3 u_lightpos;
 
 varying vec4 v_color;
-varying vec3 v_normal;
-varying vec4 v_pos_light_view_0;
-varying vec4 v_pos_light_view_1;
+
+#ifdef RENDER_SHADOWS
+uniform sampler2D u_image0;
+uniform sampler2D u_image1;
+uniform mat4 u_light_matrix_0;
+uniform mat4 u_light_matrix_1;
+
+uniform float u_shadow_intensity;
+uniform float u_texel_size;
+uniform vec3 u_cascade_distances;
+
+varying vec3 v_pos;
 varying float v_depth;
+varying vec3 v_normal;
 
 float unpack_depth(vec4 rgba_depth)
 {
@@ -93,10 +98,10 @@ float shadowOcclusionL0(vec4 pos, float bias) {
 
     return clamp(value / 9.0, 0.0, 1.0);
 }
+#endif
 
 void main() {
-
-    vec4 color = v_color;
+    vec4 color;
 
 #ifdef RENDER_SHADOWS
     highp vec3 n = normalize(v_normal);
@@ -106,8 +111,8 @@ void main() {
     float biasT = pow(NDotL, 1.0);
     float biasL0 = mix(0.02, 0.008, biasT);
     float biasL1 = mix(0.02, 0.008, biasT);
-    float occlusionL0 = shadowOcclusionL0(v_pos_light_view_0, biasL0);
-    float occlusionL1 = shadowOcclusionL1(v_pos_light_view_1, biasL1);
+    float occlusionL0 = shadowOcclusionL0(u_light_matrix_0 * vec4(v_pos, 1), biasL0);
+    float occlusionL1 = shadowOcclusionL1(u_light_matrix_1 * vec4(v_pos, 1), biasL1);
     float occlusion = 0.0; 
 
     // Alleviate projective aliasing by forcing backfacing triangles to be occluded
@@ -120,6 +125,9 @@ void main() {
 
     occlusion = mix(occlusion, 1.0, backfacing);
     color.xyz = v_color.xyz * mix(1.0, 1.0 - u_shadow_intensity, occlusion);
+    color.a = v_color.a;
+#else
+    color = v_color;
 #endif
 
 #ifdef FOG

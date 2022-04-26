@@ -1,10 +1,10 @@
 uniform mat4 u_matrix;
 
 attribute vec4 a_pos_normal_ed;
+attribute vec2 a_centroid_pos;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
-
 
 void main() {
     #pragma mapbox: initialize highp float base
@@ -25,5 +25,22 @@ void main() {
 
     float t = top_up_ny.x;
 
-    gl_Position = u_matrix * vec4(pos_nx.xy, t > 0.0 ? height : base, 1);
+    vec2 centroid_pos = vec2(0.0);
+#if defined(HAS_CENTROID) || defined(TERRAIN)
+    centroid_pos = a_centroid_pos;
+#endif
+
+#ifdef TERRAIN
+    bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
+    float ele = elevation(pos_nx.xy);
+    float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
+    // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
+    float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
+    vec3 pos = vec3(pos_nx.xy, h);
+#else
+    vec3 pos = vec3(pos_nx.xy, t > 0.0 ? height : base);
+#endif
+
+    float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
+    gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
 }

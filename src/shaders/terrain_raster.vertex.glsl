@@ -10,6 +10,11 @@ varying vec2 v_pos0;
 varying float v_fog_opacity;
 #endif
 
+#ifdef RENDER_SHADOWS
+varying vec3 v_pos;
+varying float v_depth;
+#endif
+
 const float skirtOffset = 24575.0;
 const float wireframeOffset = 0.00015;
 
@@ -25,5 +30,10 @@ void main() {
 
 #ifdef FOG
     v_fog_opacity = fog(fog_position(vec3(decodedPos, elevation)));
+#endif
+
+#ifdef RENDER_SHADOWS
+    v_pos = vec3(decodedPos, elevation);
+    v_depth = gl_Position.w;
 #endif
 }

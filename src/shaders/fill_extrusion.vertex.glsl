@@ -1,6 +1,4 @@
 uniform mat4 u_matrix;
-uniform mat4 u_light_matrix_0;
-uniform mat4 u_light_matrix_1;
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
@@ -22,10 +20,9 @@ uniform vec3 u_up_dir;
 uniform float u_height_lift;
 #endif
 
+varying vec3 v_pos;
 varying vec4 v_color;
 varying vec3 v_normal;
-varying vec4 v_pos_light_view_0;
-varying vec4 v_pos_light_view_1;
 varying float v_depth;
 
 #pragma mapbox: define highp float base
@@ -81,6 +78,12 @@ void main() {
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
 
+#ifdef RENDER_SHADOWS
+    v_pos = pos;
+    v_normal = normal;
+    v_depth = gl_Position.w;
+#endif
+
     // Relative luminance (how dark/bright is the surface color?)
     float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
 
@@ -113,12 +116,6 @@ void main() {
     // so that shading is tinted with the complementary (opposite) color to the light color
     v_color.rgb += clamp(color.rgb * directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_color *= u_opacity;
-
-    float light_z = t > 0.0 ? height : base;
-    v_pos_light_view_0 = u_light_matrix_0 * vec4(pos_nx.xy, light_z, 1);
-    v_pos_light_view_1 = u_light_matrix_1 * vec4(pos_nx.xy, light_z, 1);
-    v_normal = normal;
-    v_depth = gl_Position.w;
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);
