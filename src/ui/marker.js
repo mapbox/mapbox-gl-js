@@ -444,7 +444,7 @@ export default class Marker extends Evented {
         }
 
         this._element.style.opacity = `${opacity}`;
-        this._element.style.pointerEvents = opacity ? 'auto' : 'none';
+        this._element.style.pointerEvents = opacity > 0 ? 'auto' : 'none';
         if (this._popup) {
             this._popup._setOpacity(opacity);
         }
