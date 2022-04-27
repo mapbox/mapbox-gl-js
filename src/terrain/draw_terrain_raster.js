@@ -246,7 +246,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 const drawPole = (program, vertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter), 
+                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
                     "globe_pole_raster", vertexBuffer, indexBuffer, segment);
 
                 terrain.setupElevationDraw(tile, program, {});
