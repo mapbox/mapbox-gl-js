@@ -563,17 +563,17 @@ test('Popup is positioned and occluded correctly on globe', (t) => {
         .addTo(map);
 
     t.same(popup._pos, map.project([45, 0]));
-    t.same(popup._content.style.opacity, 1);
+    t.same(popup._container.style.opacity, 1);
     t.same(popup._content.style.pointerEvents, 'auto');
 
     popup.setLngLat([270, 0]);
     t.same(popup._pos, map.project([270, 0]));
-    t.same(popup._content.style.opacity, 0);
+    t.same(popup._container.style.opacity, 0);
     t.same(popup._content.style.pointerEvents, 'none');
 
     popup.setLngLat([0, 45]);
     t.same(popup._pos, map.project([0, 45]));
-    t.same(popup._content.style.opacity, 1);
+    t.same(popup._container.style.opacity, 1);
     t.same(popup._content.style.pointerEvents, 'auto');
 
     t.end();
