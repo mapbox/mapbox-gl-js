@@ -1,14 +1,17 @@
 uniform sampler2D u_image0;
 varying vec2 v_pos0;
 
+#ifndef FOG
 uniform vec3 u_frustum_tl;
 uniform vec3 u_frustum_tr;
 uniform vec3 u_frustum_br;
 uniform vec3 u_frustum_bl;
 uniform highp vec3 u_globe_pos;
 uniform highp float u_globe_radius;
-uniform bool u_is_antialias;
 uniform vec2 u_viewport;
+#endif
+
+uniform bool u_is_antialias;
 
 void main() {
     if (u_is_antialias) {

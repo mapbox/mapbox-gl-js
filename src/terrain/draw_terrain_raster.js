@@ -163,7 +163,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
     const isAntialias = !painter.style.map._antialias;
-    const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio]
+    const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
 
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe

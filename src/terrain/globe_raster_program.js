@@ -96,13 +96,13 @@ const globeRasterUniformValues = (
     mercCenter: [number, number],
     gridMatrix: ?Array<number>,
     isAntialias: boolean,
-    frustumDirTl: [number, number, number],
-    frustumDirTr: [number, number, number],
-    frustumDirBr: [number, number, number],
-    frustumDirBl: [number, number, number],
-    globePosition: [number, number, number],
+    frustumDirTl: Array<number>,
+    frustumDirTr: Array<number>,
+    frustumDirBr: Array<number>,
+    frustumDirBl: Array<number>,
+    globePosition: Array<number>,
     globeRadius: number,
-    viewport: [number, number]
+    viewport: Array<number>
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
     'u_globe_matrix': globeMatrix,
