@@ -12,9 +12,7 @@ uniform vec2 u_viewport;
 #endif
 
 void main() {
-#if defined(GLOBE_POLES) || !defined(CUSTOM_ANTIALIASING)
-    vec4 color = texture2D(u_image0, v_pos0);
-#else
+#if defined(CUSTOM_ANTIALIASING) && defined(USE_STANDARD_DERIVATIVES) && !defined(GLOBE_POLES)
     vec2 uv = gl_FragCoord.xy / u_viewport;
 
     vec3 ray_dir = mix(
@@ -27,11 +25,15 @@ void main() {
     vec3 closest_point = dot(u_globe_pos, dir) * dir;
     float norm_dist_from_center = 1.0 - length(closest_point - u_globe_pos) / u_globe_radius;
 
-    const float antialias_distance_px = 4.0;
-    float antialias = smoothstep(0.0, antialias_distance_px / max(u_viewport.x, u_viewport.y), norm_dist_from_center);
+    const float antialias_pixel = 4.0;
+    float antialias_factor = antialias_pixel * fwidth(norm_dist_from_center);
+    float antialias = smoothstep(0.0, antialias_factor, norm_dist_from_center);
 
     vec4 raster = texture2D(u_image0, v_pos0);
-    vec4 color = vec4(raster.rgb * antialias, raster.a * antialias);
+
+    gl_FragColor = vec4(raster.rgb * antialias, raster.a * antialias);
+#else
+    vec4 color = texture2D(u_image0, v_pos0);
 #endif
 #ifdef FOG
     color = vec4(fog_dither(fog_apply_premultiplied(color, v_fog_pos)));

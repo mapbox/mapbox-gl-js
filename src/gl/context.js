@@ -65,6 +65,7 @@ class Context {
     extTextureFilterAnisotropicMax: any;
     extTextureHalfFloat: any;
     extRenderToTextureHalfFloat: any;
+    extStandardDerivative: any;
     extTimerQuery: any;
 
     extTextureFilterAnisotropicForceOff: boolean;
@@ -120,6 +121,7 @@ class Context {
             gl.getExtension('OES_texture_half_float_linear');
             this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
         }
+        this.extStandardDerivative = gl.getExtension('OES_standard_derivatives');
 
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
