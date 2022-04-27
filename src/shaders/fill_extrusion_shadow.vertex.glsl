@@ -1,19 +1,14 @@
 uniform mat4 u_matrix;
 
 attribute vec4 a_pos_normal_ed;
-attribute vec2 a_lightmap_uv;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 
-#pragma mapbox: define highp vec4 color
-
-//varying vec4 v_depth;
 
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
-    #pragma mapbox: initialize highp vec4 color
 
     vec3 pos_nx = floor(a_pos_normal_ed.xyz * 0.5);
     // The least significant bits of a_pos_normal_ed.xy hold:

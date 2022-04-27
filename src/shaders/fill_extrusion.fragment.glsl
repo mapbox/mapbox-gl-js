@@ -95,6 +95,10 @@ float shadowOcclusionL0(vec4 pos, float bias) {
 }
 
 void main() {
+
+    vec4 color = v_color;
+
+#ifdef RENDER_SHADOWS
     highp vec3 n = normalize(v_normal);
     vec3 lightdir = normalize(u_lightpos);
     float NdotSL = clamp(dot(n, lightdir), 0.0, 1.0);
@@ -113,14 +117,10 @@ void main() {
         occlusion = occlusionL0;
     else if (v_depth < u_cascade_distances.y)
         occlusion = occlusionL1;
-    else
-        occlusion = 0.0;
-    
-    occlusion = mix(occlusion, 1.0, backfacing);
 
-    vec4 color;
+    occlusion = mix(occlusion, 1.0, backfacing);
     color.xyz = v_color.xyz * mix(1.0, 1.0 - u_shadow_intensity, occlusion);
-    color.a = v_color.a;
+#endif
 
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos)).rgb;
