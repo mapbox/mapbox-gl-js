@@ -7,7 +7,7 @@ import {globeRasterUniformValues} from './globe_raster_program.js';
 import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
-import {easeCubicInOut, getColumn} from '../util/util.js';
+import {easeCubicInOut} from '../util/util.js';
 import browser from '../util/browser.js';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import type Painter from '../render/painter.js';
@@ -15,8 +15,7 @@ import type SourceCache from '../source/source_cache.js';
 import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
-import {vec3, mat4} from 'gl-matrix';
-import type {Vec3, Mat4} from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 import {
     calculateGlobeMercatorMatrix,
     globeToMercatorTransition,
@@ -164,19 +163,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
     const isAntialias = !painter.style.map._antialias;
-
-    // Render the gradient atmosphere by casting rays from screen pixels and determining their
-    // closest distance to the globe. This is done in view space where camera is located in the origo
-    // facing -z direction.
-    const viewMatrix = tr._camera.getWorldToCamera(tr.worldSize, 1.0);
-    const viewToProj = tr._camera.getCameraToClipPerspective(tr._fov, tr.width / tr.height, tr._nearZ, tr._farZ);
-    const projToView = mat4.invert([], viewToProj);
-
-    const project = (point: Vec3, m: Mat4): [number, number, number] => {
-        vec3.transformMat4(point, point, m);
-        return [point[0], point[1], point[2]];
-    };
-
     const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio]
 
     batches.forEach(isWireframe => {
