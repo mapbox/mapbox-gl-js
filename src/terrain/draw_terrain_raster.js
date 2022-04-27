@@ -162,7 +162,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
-    const isAntialias = !painter.style.map._antialias;
+    const isAntialias = !painter.style.map._antialias && globeToMercatorTransition(tr.zoom) === 0.0;
     const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
 
     batches.forEach(isWireframe => {
@@ -247,8 +247,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 const drawPole = (program, vertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter, isAntialias,
-                    tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL, 
-                    tr.globeCenterInViewSpace, tr.globeRadius, viewport), 
+                    tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
+                    tr.globeCenterInViewSpace, tr.globeRadius, viewport),
                     "globe_pole_raster", vertexBuffer, indexBuffer, segment);
 
                 terrain.setupElevationDraw(tile, program, {});
