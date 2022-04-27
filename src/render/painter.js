@@ -985,22 +985,20 @@ class Painter {
 
         if (fog) {
             const fogOpacity = fog.getOpacity(this.transform.pitch);
-            if (fogOpacity !== 0.0) {
-                const fogUniforms = fogUniformValues(
-                    this, fog, tileID, fogOpacity,
-                    this.transform.frustumCorners.TL,
-                    this.transform.frustumCorners.TR,
-                    this.transform.frustumCorners.BR,
-                    this.transform.frustumCorners.BL,
-                    this.transform.globeCenterInViewSpace,
-                    this.transform.globeRadius,
-                    [
-                        this.transform.width * browser.devicePixelRatio,
-                        this.transform.height * browser.devicePixelRatio
-                    ]);
+            const fogUniforms = fogUniformValues(
+                this, fog, tileID, fogOpacity,
+                this.transform.frustumCorners.TL,
+                this.transform.frustumCorners.TR,
+                this.transform.frustumCorners.BR,
+                this.transform.frustumCorners.BL,
+                this.transform.globeCenterInViewSpace,
+                this.transform.globeRadius,
+                [
+                    this.transform.width * browser.devicePixelRatio,
+                    this.transform.height * browser.devicePixelRatio
+                ]);
 
-                program.setFogUniformValues(context, fogUniforms);
-            }
+            program.setFogUniformValues(context, fogUniforms);
         }
     }
 
