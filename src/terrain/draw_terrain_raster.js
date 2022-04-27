@@ -8,6 +8,7 @@ import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
 import {easeCubicInOut, getColumn} from '../util/util.js';
+import browser from '../util/browser.js';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import type Painter from '../render/painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -176,16 +177,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         return [point[0], point[1], point[2]];
     };
 
-    // Compute direction vectors to each corner point of the view frustum
-    const frustumTl = project([-1, 1, 1], projToView);
-    const frustumTr = project([1, 1, 1], projToView);
-    const frustumBr = project([1, -1, 1], projToView);
-    const frustumBl = project([-1, -1, 1], projToView);
-
-    const center = getColumn(tr.globeMatrix, 3);
-    const globeCenterInViewSpace = project([center[0], center[1], center[2]], viewMatrix);
-    const globeRadius = tr.worldSize / 2.0 / Math.PI - 1.0;
-    const viewport = [tr.width, tr.height];
+    const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio]
 
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
@@ -226,7 +218,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix,
                 globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix, isAntialias,
-                frustumTl, frustumTr, frustumBr, frustumBl, globeCenterInViewSpace, globeRadius, viewport);
+                tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -268,9 +260,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 const drawPole = (program, vertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
+                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter,
                     "globe_pole_raster", vertexBuffer, indexBuffer, segment, isAntialias,
-                    frustumTl, frustumTr, frustumBr, frustumBl, globeCenterInViewSpace, globeRadius, viewport);
+                    tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport));
 
                 terrain.setupElevationDraw(tile, program, {});
 
