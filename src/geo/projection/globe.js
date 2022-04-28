@@ -3,7 +3,7 @@ import {mat4, vec3, vec4} from 'gl-matrix';
 import {Ray} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
 import LngLat from '../lng_lat.js';
-import {degToRad, radToDeg, getColumn, shortestAngle, clamp} from '../../util/util.js';
+import {degToRad, radToDeg, getColumn, shortestAngle, clamp, smoothstep} from '../../util/util.js';
 import MercatorCoordinate, {
     lngFromMercatorX,
     latFromMercatorY,
@@ -172,7 +172,17 @@ export default class Globe extends Mercator {
             const pixelRadius = tr.worldSize / (2.0 * Math.PI);
             const approxTileArcHalfAngle = Math.max(tr.width, tr.height) / tr.worldSize * Math.PI;
             const padding = pixelRadius * (1.0 - Math.cos(approxTileArcHalfAngle));
-            return interpolate(globePixelDistance, mercatorPixelDistance + padding, t);
+
+            // During transition to mercator we would like to keep
+            // the far plane lower to ensure that geometries (e.g. circles) that are far away and are not supposed
+            // to be rendered get culled out correctly. see https://github.com/mapbox/mapbox-gl-js/issues/11476
+            // To achieve we choose a different interpolation for determining the far plane value.
+            // For pitch values of 60 and lower we use a regular linear interpolation.
+            // For higher values of pitch we use a degree 5 polynomial.
+            // The values are chosen empirically.
+            const c0 = interpolate(globePixelDistance, mercatorPixelDistance + padding, t);
+            const c1 = interpolate(globePixelDistance, mercatorPixelDistance + padding, Math.pow(t, 5.0));
+            return interpolate(c0, c1, smoothstep(60.0, 61.0, tr.pitch));
         }
         return globePixelDistance;
     }
