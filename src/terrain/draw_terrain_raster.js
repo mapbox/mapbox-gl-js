@@ -204,7 +204,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix,
                 globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix, isAntialias,
-                tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport);
+                tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
+                tr.globeCenterInViewSpace, tr.globeRadius, viewport);
 
             setShaderMode(shaderMode, isWireframe);
 
