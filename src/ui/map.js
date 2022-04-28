@@ -2345,9 +2345,11 @@ class Map extends Camera {
      * // Add the layer before the existing `cities` layer
      * }, 'cities');
      *
-     * @see [Example: Create and style clusters](https://docs.mapbox.com/mapbox-gl-js/example/cluster/)
-     * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
-     * @see [Example: Add a WMS source](https://docs.mapbox.com/mapbox-gl-js/example/wms/)
+     * @see [Example: Select features around a clicked point](https://docs.mapbox.com/mapbox-gl-js/example/queryrenderedfeatures-around-point/) (fill layer)
+     * @see [Example: Add a new layer below labels](https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/)
+     * @see [Example: Create and style clusters](https://docs.mapbox.com/mapbox-gl-js/example/cluster/) (circle layer)
+     * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/) (line layer)
+     * @see [Example: Add a WMS layer](https://docs.mapbox.com/mapbox-gl-js/example/wms/) (raster layer)
      */
     addLayer(layer: LayerSpecification | CustomLayerInterface, beforeId?: string): this {
         this._lazyInitEmptyStyle();
