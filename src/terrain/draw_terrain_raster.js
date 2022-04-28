@@ -162,7 +162,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
-    const isAntialias = !painter.style.map._antialias;
+    const useCustomAntialiasing = !painter.style.map._antialias && globeToMercatorTransition(tr.zoom) === 0.0;
     const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
 
     batches.forEach(isWireframe => {
@@ -203,7 +203,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const gridMatrix = getGridMatrix(coord.canonical, tileCornersLatLng, latitudinalLod);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix, isAntialias,
+                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix, useCustomAntialiasing,
                 tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
                 tr.globeCenterInViewSpace, tr.globeRadius, viewport);
 
