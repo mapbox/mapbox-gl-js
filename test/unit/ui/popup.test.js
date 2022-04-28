@@ -553,6 +553,32 @@ test('Popup offset can be set via setOffset', (t) => {
     t.end();
 });
 
+test('Popup is positioned and occluded correctly on globe', (t) => {
+    const map = createMap(t, {width: 1024});
+    map.setProjection('globe');
+
+    const popup = new Popup()
+        .setLngLat([45, 0])
+        .setText('Test')
+        .addTo(map);
+
+    t.same(popup._pos, map.project([45, 0]));
+    t.same(popup._content.style.opacity, 1);
+    t.same(popup._content.style.pointerEvents, 'auto');
+
+    popup.setLngLat([270, 0]);
+    t.same(popup._pos, map.project([270, 0]));
+    t.same(popup._content.style.opacity, 0);
+    t.same(popup._content.style.pointerEvents, 'none');
+
+    popup.setLngLat([0, 45]);
+    t.same(popup._pos, map.project([0, 45]));
+    t.same(popup._content.style.opacity, 1);
+    t.same(popup._content.style.pointerEvents, 'auto');
+
+    t.end();
+});
+
 test('Popup can be removed and added again (#1477)', (t) => {
     const map = createMap(t);
 

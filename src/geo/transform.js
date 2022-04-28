@@ -1921,7 +1921,7 @@ class Transform {
     _terrainEnabled(): boolean {
         if (!this._elevation) return false;
         if (!this.projection.supportsTerrain) {
-            warnOnce('Terrain is not yet supported with alternate projections. Use mercator to enable terrain.');
+            warnOnce('Terrain is not yet supported with alternate projections. Use mercator or globe to enable terrain.');
             return false;
         }
         return true;
