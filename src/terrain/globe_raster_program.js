@@ -118,7 +118,7 @@ const globeRasterUniformValues = (
     'u_frustum_bl': frustumDirBl ? frustumDirBl : [0, 0, 0],
     'u_globe_pos': globePosition ? globePosition : [0, 0, 0],
     'u_globe_radius': globeRadius ? globeRadius : 0,
-    'u_viewport': viewport ? viewport: [0, 0],
+    'u_viewport': viewport ? viewport : [0, 0],
 });
 
 const atmosphereUniformValues = (
