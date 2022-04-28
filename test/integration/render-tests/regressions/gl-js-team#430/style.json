@@ -1,0 +1,23 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.001
+    }
+  },
+  "projection": {
+    "name": "globe"
+  },
+  "zoom": 1,
+  "sources": {},
+  "fog": {
+    "color": "rgba(0, 0, 0, 0)",
+    "horizon-blend": 0.05,
+    "high-color": "rgba(0, 0, 255, 1)",
+    "space-color": "rgba(15, 15, 80, 1)",
+    "star-intensity": 0.5
+  },
+  "layers": []
+}
