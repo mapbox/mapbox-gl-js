@@ -17,8 +17,6 @@ void main() {
 #ifdef GLOBE_POLES
     vec4 color = texture2D(u_image0, v_pos0);
 #else
-    float antialias = 1.0;
-
     if (u_is_antialias) {
         vec2 uv = gl_FragCoord.xy / u_viewport;
 
@@ -33,15 +31,16 @@ void main() {
         float norm_dist_from_center = 1.0 - length(closest_point - u_globe_pos) / u_globe_radius;
 
         const float antialias_distance_px = 4.0;
-        antialias = smoothstep(0.0, antialias_distance_px / max(u_viewport.x, u_viewport.y), norm_dist_from_center);
+        float antialias = smoothstep(0.0, antialias_distance_px / max(u_viewport.x, u_viewport.y), norm_dist_from_center);
+
+        vec4 raster = texture2D(u_image0, v_pos0);
+        vec4 color = vec4(raster.rgb * antialias, raster.a * antialias);
+    } else {
+        vec4 color = texture2D(u_image0, v_pos0);
     }
-
-    vec4 raster = texture2D(u_image0, v_pos0);
-
-    vec4 color = vec4(raster.rgb * antialias, raster.a * antialias);
 #endif
 #ifdef FOG
-    color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
+    color = vec4(fog_dither(fog_apply_premultiplied(color, v_fog_pos)));
 #endif
     gl_FragColor = color;
 #ifdef TERRAIN_WIREFRAME
