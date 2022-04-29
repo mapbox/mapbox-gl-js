@@ -11,8 +11,6 @@ uniform highp float u_globe_radius;
 uniform vec2 u_viewport;
 #endif
 
-uniform bool u_is_antialias;
-
 void main() {
 #if defined(GLOBE_POLES) || !defined(CUSTOM_ANTIALIASING)
     vec4 color = texture2D(u_image0, v_pos0);

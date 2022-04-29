@@ -203,7 +203,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const gridMatrix = getGridMatrix(coord.canonical, tileCornersLatLng, latitudinalLod);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix, useCustomAntialiasing,
+                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix,
                 tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
                 tr.globeCenterInViewSpace, tr.globeRadius, viewport);
 
