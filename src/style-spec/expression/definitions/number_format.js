@@ -81,7 +81,7 @@ export default class NumberFormat implements Expression {
             currency = context.parse(options['currency'], 1, StringType);
             if (!currency) return null;
         }
-        
+
         let unit = null;
         if (options['unit']) {
             unit = context.parse(options['unit'], 1, StringType);
@@ -106,7 +106,7 @@ export default class NumberFormat implements Expression {
     evaluate(ctx: EvaluationContext): string {
         return new Intl.NumberFormat(this.locale ? this.locale.evaluate(ctx) : [],
             {
-                style: 
+                style:
                     (this.currency && "currency") ||
                     (this.unit && "unit") ||
                     "decimal",
