@@ -142,11 +142,13 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
     let program, programMode;
     const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
+    const tr = painter.transform;
+    const useCustomAntialiasing = !painter.style.map._antialias && globeToMercatorTransition(tr.zoom) === 0.0;
 
     const setShaderMode = (mode, isWireframe) => {
         if (programMode === mode)
             return;
-        const defines = [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
+        const defines = useCustomAntialiasing ? [shaderDefines[mode], 'CUSTOM_ANTIALIASING', 'PROJECTION_GLOBE_VIEW'] : [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
         if (isWireframe) {
             defines.push(shaderDefines[showWireframe]);
         }
@@ -157,12 +159,10 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const colorMode = painter.colorModeForRenderPass();
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     vertexMorphing.update(now);
-    const tr = painter.transform;
     const globeMercatorMatrix = calculateGlobeMercatorMatrix(tr);
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
-    const useCustomAntialiasing = !painter.style.map._antialias && globeToMercatorTransition(tr.zoom) === 0.0;
     const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
 
     batches.forEach(isWireframe => {
