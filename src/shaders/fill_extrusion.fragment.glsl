@@ -101,9 +101,9 @@ void main() {
 #ifdef RENDER_SHADOWS
     highp vec3 n = normalize(v_normal);
     vec3 lightdir = normalize(u_lightpos);
-    float NdotSL = clamp(dot(n, lightdir), 0.0, 1.0);
+    float NDotL = clamp(dot(n, lightdir), 0.0, 1.0);
 
-    float biasT = pow(NdotSL, 1.0);
+    float biasT = pow(NDotL, 1.0);
     float biasL0 = mix(0.02, 0.008, biasT);
     float biasL1 = mix(0.02, 0.008, biasT);
     float occlusionL0 = shadowOcclusionL0(v_pos_light_view_0, biasL0);
@@ -111,7 +111,7 @@ void main() {
     float occlusion = 0.0; 
 
     // Alleviate projective aliasing by forcing backfacing triangles to be occluded
-    float backfacing = 1.0 - step(0.1, NdotSL);
+    float backfacing = 1.0 - smoothstep(0.0, 0.1, NDotL);
 
     if (v_depth < u_cascade_distances.x)
         occlusion = occlusionL0;
