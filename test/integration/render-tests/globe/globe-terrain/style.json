@@ -2,21 +2,20 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "width": 256,
-      "allowed": 0.001,
-      "operations": [
-        ["setProjection", "globe"],
-        ["wait"]
-      ]
+      "height": 512,
+      "width": 512,
+      "allowed": 0.001
     }
   },
-  "center": [-113.32296, 35.94662],
-  "zoom": 12.1,
-  "pitch": 85,
-  "bearing": 64.5,
+  "projection": {
+    "name": "globe"
+  },
+  "center": [72.42, 37.062],
+  "zoom": 5.1,
+  "pitch": 70,
   "terrain": {
-    "source": "rgbterrain"
+    "source": "rgbterrain",
+    "exaggeration": 10.0
   },
   "sources": {
     "rgbterrain": {
@@ -26,24 +25,20 @@
       ],
       "maxzoom": 12,
       "tileSize": 256
-    },
-    "satellite": {
-      "type": "raster",
-      "tiles": [
-        "local://tiles/{z}-{x}-{y}.satellite.png"
-      ],
-      "maxzoom": 17,
-      "tileSize": 256
     }
   },
   "layers": [
     {
-      "id": "raster",
-      "type": "raster",
-      "source": "satellite",
+      "id": "background",
+      "type": "background",
       "paint": {
-        "raster-fade-duration": 0
+        "background-color": "white"
       }
+    },
+    {
+      "id": "hillshade",
+      "type": "hillshade",
+      "source": "rgbterrain"
     }
   ]
 }
