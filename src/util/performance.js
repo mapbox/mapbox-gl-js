@@ -101,7 +101,7 @@ export const PerformanceUtils = {
         return metrics;
     },
 
-    getWorkerPerformanceMetrics(): { timeOrigin: string, measures: Array<PerformanceEntry> } {
+    getWorkerPerformanceMetrics(): { timeOrigin: string, entries: Array<Object>, scope: string } {
         const entries = performance.getEntries().map(entry => {
             const result = entry.toJSON();
             if (entry.detail) {
