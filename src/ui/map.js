@@ -3015,6 +3015,8 @@ class Map extends Camera {
      * @private
      */
     _render(paintStartTimeStamp: number) {
+        const m = PerformanceUtils.beginMeasure('render');
+
         let gpuTimer;
         const extTimerQuery = this.painter.context.extTimerQuery;
         const frameStartTime = browser.now();
@@ -3022,8 +3024,6 @@ class Map extends Camera {
             gpuTimer = extTimerQuery.createQueryEXT();
             extTimerQuery.beginQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
         }
-
-        const m = PerformanceUtils.beginMeasure('render');
 
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
         this.painter.context.setDirty();
@@ -3139,7 +3139,7 @@ class Map extends Camera {
             this.style._releaseSymbolFadeTiles();
         }
 
-        if (this.listens('gpu-timing-frame')) {
+        if (gpuTimer) {
             const renderCPUTime = browser.now() - frameStartTime;
             extTimerQuery.endQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
             setTimeout(() => {
@@ -3149,6 +3149,12 @@ class Map extends Camera {
                     cpuTime: renderCPUTime,
                     gpuTime: renderGPUTime
                 }));
+                window.performance.mark('frame-gpu', {
+                    startTime: frameStartTime,
+                    detail: {
+                        gpuTime: renderGPUTime
+                    }
+                });
             }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
         }
 
