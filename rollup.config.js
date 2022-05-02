@@ -5,8 +5,8 @@ import banner from './build/banner';
 
 const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
-const production = BUILD === 'production';
 const bench = BUILD === 'bench';
+const production = BUILD === 'production' || bench;
 
 function buildType(build, minified) {
     switch (build) {

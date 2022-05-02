@@ -1,5 +1,7 @@
 // @flow
 
+import {PerformanceUtils} from './util/performance.js';
+
 import assert from 'assert';
 import supported from '@mapbox/mapbox-gl-supported';
 
@@ -16,19 +18,18 @@ import Style from './style/style';
 import LngLat from './geo/lng_lat';
 import LngLatBounds from './geo/lng_lat_bounds';
 import Point from '@mapbox/point-geometry';
-import MercatorCoordinate from './geo/mercator_coordinate';
-import {Evented} from './util/evented';
-import config from './util/config';
-import {Debug} from './util/debug';
-import {isSafari} from './util/util';
-import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
-import WorkerPool from './util/worker_pool';
-import {prewarm, clearPrewarmedResources} from './util/global_worker_pool';
-import {clearTileCache} from './util/tile_request_cache';
-import {WorkerPerformanceUtils} from './util/worker_performance_utils';
-import {PerformanceUtils} from './util/performance';
-import {FreeCameraOptions} from './ui/free_camera';
-import browser from './util/browser';
+import MercatorCoordinate from './geo/mercator_coordinate.js';
+import {Evented} from './util/evented.js';
+import config from './util/config.js';
+import {Debug} from './util/debug.js';
+import {isSafari} from './util/util.js';
+import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin.js';
+import WorkerPool from './util/worker_pool.js';
+import {prewarm, clearPrewarmedResources} from './util/global_worker_pool.js';
+import {clearTileCache} from './util/tile_request_cache.js';
+import {WorkerPerformanceUtils} from './util/worker_performance_utils.js';
+import {FreeCameraOptions} from './ui/free_camera.js';
+import browser from './util/browser.js';
 
 const exported = {
     version,
