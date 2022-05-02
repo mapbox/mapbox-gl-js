@@ -45,14 +45,14 @@ float fog_opacity(float t) {
 }
 
 float globe_glow_progress() {
-    vec2 uv = gl_FragCoord.xy / u_viewport;
-    vec3 ray_dir = mix(
+    highp vec2 uv = gl_FragCoord.xy / u_viewport;
+    highp vec3 ray_dir = mix(
         mix(u_frustum_tl, u_frustum_tr, uv.x),
         mix(u_frustum_bl, u_frustum_br, uv.x),
         1.0 - uv.y);
-    vec3 dir = normalize(ray_dir);
-    vec3 closest_point = dot(u_globe_pos, dir) * dir;
-    float sdf = length(closest_point - u_globe_pos) / u_globe_radius;
+    highp vec3 dir = normalize(ray_dir);
+    highp vec3 closest_point = dot(u_globe_pos, dir) * dir;
+    highp float sdf = length(closest_point - u_globe_pos) / u_globe_radius;
     return sdf + PI * 0.5;
 }
 
