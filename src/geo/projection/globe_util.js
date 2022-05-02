@@ -185,7 +185,13 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     }
 
     if (bounds.contains(tr.center)) {
+        // Extend the aabb by encapsulating the center point
         cornerMax[2] = 0.0;
+        const point = tr.point;
+        const center = [point.x * scale, point.y * scale, 0];
+        vec3.min(cornerMin, cornerMin, center);
+        vec3.max(cornerMax, cornerMax, center);
+
         return new Aabb(cornerMin, cornerMax);
     }
 
