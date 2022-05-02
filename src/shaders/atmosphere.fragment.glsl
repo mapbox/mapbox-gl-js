@@ -14,7 +14,7 @@ uniform mat4 u_rotation_matrix;
 varying highp vec3 v_ray_dir;
 varying highp vec3 v_horizon_dir;
 
-float random(vec3 p) {
+highp float random(highp vec3 p) {
     p = fract(p * vec3(23.2342, 97.1231, 91.2342));
     p += dot(p.zxy, p.yxz + 123.1234);
     return fract(p.x * p.y);
@@ -114,7 +114,7 @@ void main() {
     vec3 D = vec3(uv_remap, 1.0);
 
     // Accumulate star field
-    float star_field = 0.0;
+    highp float star_field = 0.0;
 
     if (u_star_intensity > 0.0) {
         // Create stars of various scales and offset to improve randomness
