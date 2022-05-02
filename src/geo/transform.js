@@ -141,7 +141,7 @@ class Transform {
     _distanceTileDataCache: {[_: number]: FeatureDistanceData};
     _camera: FreeCamera;
     _centerAltitude: number;
-    _centerAltitudeValidForExaggeration: number;
+    _centerAltitudeValidForExaggeration: ?number;
     _horizonShift: number;
     _projectionScaler: number;
     _nearZ: number;
@@ -177,7 +177,6 @@ class Transform {
         this._distanceTileDataCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
-        this._centerAltitudeValidForExaggeration = 0;
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
         this._projectionScaler = 1.0;
@@ -396,7 +395,7 @@ class Transform {
             // Elevation data not loaded yet, reset
             this._centerAltitude = 0;
             this._seaLevelZoom = null;
-            this._centerAltitudeValidForExaggeration = 0;
+            this._centerAltitudeValidForExaggeration = undefined;
             return;
         }
         const elevation: Elevation = this._elevation;
@@ -406,7 +405,7 @@ class Transform {
     }
 
     _updateSeaLevelZoom() {
-        if (this._centerAltitudeValidForExaggeration === 0) {
+        if (this._centerAltitudeValidForExaggeration === undefined) {
             return;
         }
         const height = this.cameraToCenterDistance;
