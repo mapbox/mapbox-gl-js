@@ -36,7 +36,7 @@ void main() {
     vec4 color = texture2D(u_image0, v_pos0);
 #endif
 #ifdef FOG
-    color = fog_dither(fog_dither(fog_apply_premultiplied(color, v_fog_pos)));
+    color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
     gl_FragColor = color;
 #ifdef TERRAIN_WIREFRAME
