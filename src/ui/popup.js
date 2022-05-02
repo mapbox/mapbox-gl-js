@@ -555,10 +555,10 @@ export default class Popup extends Evented {
         const width = container.offsetWidth;
         const height = container.offsetHeight;
 
-        const isTop = pos.y + bottomY < height;
-        const isBottom = pos.y > map.transform.height - height;
-        const isLeft = pos.x < width / 2;
-        const isRight = pos.x > map.transform.width - width / 2;
+        const isTop = pos.y + bottomY < height + map.transform.padding.top;
+        const isBottom = pos.y > map.transform.height - height - map.transform.padding.bottom;
+        const isLeft = pos.x < width / 2 + map.transform.padding.left;
+        const isRight = pos.x > map.transform.width - width / 2 - map.transform.padding.right;
 
         if (isTop) {
             if (isLeft) return 'top-left';

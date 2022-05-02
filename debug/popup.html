@@ -25,6 +25,13 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/streets-v10',
     hash: true
 });
+map.showPadding = true;
+map.setPadding({
+    left: 10,
+    right: 20,
+    top: 30,
+    bottom: 40
+});
 
 var popup = new mapboxgl.Popup({closeButton: false, closeOnClick: false})
     .trackPointer()
