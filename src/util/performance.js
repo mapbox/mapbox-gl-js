@@ -103,7 +103,7 @@ export const PerformanceUtils = {
 
     getWorkerPerformanceMetrics(): { timeOrigin: string, measures: Array<PerformanceEntry> } {
         const entries = performance.getEntries().map(entry => {
-            const result = JSON.parse(JSON.stringify(entry));
+            const result = entry.toJSON();
             if (entry.detail) {
                 Object.assign(result, {
                     detail: entry.detail
