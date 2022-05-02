@@ -111,11 +111,11 @@ export const PerformanceUtils = {
             }
             return result;
         });
-        return JSON.parse(JSON.stringify({
+        return {
             scope: isWorker() ? 'Worker' : 'Window',
             timeOrigin: performance.timeOrigin,
             entries
-        }));
+        };
     }
 };
 
