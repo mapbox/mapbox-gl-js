@@ -12,7 +12,7 @@ uniform vec2 u_viewport;
 #endif
 
 void main() {
-#if defined(CUSTOM_ANTIALIASING)
+#ifdef CUSTOM_ANTIALIASING
     vec2 uv = gl_FragCoord.xy / u_viewport;
 
     vec3 ray_dir = mix(

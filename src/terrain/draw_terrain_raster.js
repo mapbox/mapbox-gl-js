@@ -147,15 +147,12 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                                   !!context.extStandardDerivative && globeToMercatorTransition(tr.zoom) === 0.0;
 
     const setShaderMode = (mode, isWireframe) => {
-        if (programMode === mode)
-            return;
+        if (programMode === mode) return;
         const defines = [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
-        if (useCustomAntialiasing) {
-            defines.push('CUSTOM_ANTIALIASING');
-        }
-        if (isWireframe) {
-            defines.push(shaderDefines[showWireframe]);
-        }
+
+        if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
+        if (isWireframe) defines.push(shaderDefines[showWireframe]);
+
         program = painter.useProgram('globeRaster', null, defines);
         programMode = mode;
     };
@@ -230,7 +227,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     // Render the poles.
     if (sharedBuffers) {
         const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
-        if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
+        if (!useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
         program = painter.useProgram('globeRaster', null, defines);
         for (const coord of tileIDs) {
