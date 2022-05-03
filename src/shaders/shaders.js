@@ -96,8 +96,6 @@ precision highp float;
 
 #endif`;
 export const preludeFragPrecisionQualifiers = `
-#extension GL_OES_standard_derivatives : enable
-
 #ifdef GL_ES
 precision mediump float;
 #else
@@ -115,6 +113,8 @@ precision mediump float;
 #endif
 
 #endif`;
+
+export const standardDerivativesExt = '#extension GL_OES_standard_derivatives : enable\n'
 
 export default {
     background: compile(backgroundFrag, backgroundVert),

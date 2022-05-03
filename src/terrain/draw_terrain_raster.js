@@ -25,6 +25,7 @@ import {
     getLatitudinalLod
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
+import { map } from 'd3';
 
 export {
     drawTerrainRaster,
@@ -143,7 +144,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     let program, programMode;
     const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
     const tr = painter.transform;
-    const useCustomAntialiasing = !painter.style.map._antialias && globeToMercatorTransition(tr.zoom) === 0.0;
+    const useCustomAntialiasing = !painter.style.map._antialias && !!context.extStandardDerivative && globeToMercatorTransition(tr.zoom) === 0.0;
 
     const setShaderMode = (mode, isWireframe) => {
         if (programMode === mode)
