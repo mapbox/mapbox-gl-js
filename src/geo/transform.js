@@ -6,7 +6,7 @@ import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAlt
 import {getProjection} from './projection/index.js';
 import {tileAABB} from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner, warnOnce, deepEqual} from '../util/util.js';
+import {wrap, clamp, pick, radToDeg, degToRad, getAABBOriginSquareDist, furthestTileCorner, warnOnce, deepEqual} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
@@ -955,7 +955,7 @@ class Transform {
                 vec4.transformMat4(min, min, fogTileMatrix);
                 vec4.transformMat4(max, max, fogTileMatrix);
 
-                const sqDist = getAABBPointSquareDist(min, max);
+                const sqDist = getAABBOriginSquareDist(min, max);
 
                 if (sqDist === 0) { return true; }
 

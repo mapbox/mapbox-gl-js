@@ -102,22 +102,19 @@ export function getBounds(points: Point[]): { min: Point, max: Point} {
 }
 
 /**
- * Returns the square of the 2D distance between an AABB defined by min and max and a point.
- * If point is null or undefined, the AABB distance from the origin (0,0) is returned.
+ * Returns the square of the 2D distance between an AABB defined by min and max and the origin (0,0).
  *
  * @param {Point} min The minimum extent of the AABB.
  * @param {Point} max The maximum extent of the AABB.
- * @param {Point} [point] The point to compute the distance from, may be undefined.
  * @returns {number} The square distance from the AABB, 0.0 if the AABB contains the point.
  */
-export function getAABBPointSquareDist(min: Point, max: Point, point: ?Point): number {
+export function getAABBOriginSquareDist(min: Point, max: Point): number {
     let sqDist = 0.0;
 
     for (let i = 0; i < 2; ++i) {
-        const v = point ? point[i] : 0.0;
         assert(min[i] < max[i], 'Invalid aabb min and max inputs, min[i] must be < max[i].');
-        if (min[i] > v) sqDist += (min[i] - v) * (min[i] - v);
-        if (max[i] < v) sqDist += (v - max[i]) * (v - max[i]);
+        if (min[i] > 0.0) sqDist += min[i] * min[i];
+        if (max[i] < 0.0) sqDist += max[i] * max[i];
     }
 
     return sqDist;
