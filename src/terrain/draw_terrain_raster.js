@@ -143,7 +143,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     let program, programMode;
     const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
     const tr = painter.transform;
-    const useCustomAntialiasing = !painter.style.map._antialias && !!context.extStandardDerivative && globeToMercatorTransition(tr.zoom) === 0.0;
+    const useCustomAntialiasing = !painter.style.map._antialias && !context.extUseCustomGlobeAntiAliasingForceOff &&
+                                  !!context.extStandardDerivative && globeToMercatorTransition(tr.zoom) === 0.0;
 
     const setShaderMode = (mode, isWireframe) => {
         if (programMode === mode)

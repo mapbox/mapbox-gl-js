@@ -69,6 +69,7 @@ class Context {
     extTimerQuery: any;
 
     extTextureFilterAnisotropicForceOff: boolean;
+    extUseCustomGlobeAntiAliasingForceOff: boolean;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
@@ -115,6 +116,7 @@ class Context {
             this.extTextureFilterAnisotropicMax = gl.getParameter(this.extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
         }
         this.extTextureFilterAnisotropicForceOff = false;
+        this.extUseCustomGlobeAntiAliasingForceOff = false;
 
         this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
         if (this.extTextureHalfFloat) {
