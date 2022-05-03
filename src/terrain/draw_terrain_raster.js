@@ -148,7 +148,10 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const setShaderMode = (mode, isWireframe) => {
         if (programMode === mode)
             return;
-        const defines = useCustomAntialiasing ? [shaderDefines[mode], 'CUSTOM_ANTIALIASING', 'PROJECTION_GLOBE_VIEW'] : [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
+        const defines = [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
+        if (useCustomAntialiasing) {
+            defines.push('CUSTOM_ANTIALIASING');
+        }
         if (isWireframe) {
             defines.push(shaderDefines[showWireframe]);
         }
@@ -201,11 +204,14 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const tileCenterLatitude = (tileCornersLatLng[0][0] + tileCornersLatLng[1][0]) / 2.0;
             const latitudinalLod = getLatitudinalLod(tileCenterLatitude);
             const gridMatrix = getGridMatrix(coord.canonical, tileCornersLatLng, latitudinalLod);
+            const transitionT = globeToMercatorTransition(tr.zoom);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix,
-                tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
-                tr.globeCenterInViewSpace, tr.globeRadius, viewport);
+                transitionT, mercatorCenter,
+                tr.frustumCorners.TL, tr.frustumCorners.TR,
+                tr.frustumCorners.BR, tr.frustumCorners.BL,
+                tr.globeCenterInViewSpace, tr.globeRadius,
+                viewport, gridMatrix);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -227,6 +233,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     // Render the poles.
     if (sharedBuffers) {
         const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
+        if (useCustomAntialiasing) {
+            defines.push('CUSTOM_ANTIALIASING');
+        }
         program = painter.useProgram('globeRaster', null, defines);
         for (const coord of tileIDs) {
             // Fill poles by extrapolating adjacent border tiles
@@ -245,10 +254,15 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
 
+                const uniformValues = globeRasterUniformValues(tr.projMatrix, poleMatrix,
+                    poleMatrix, 0.0, mercatorCenter,
+                    tr.frustumCorners.TL, tr.frustumCorners.TR,
+                    tr.frustumCorners.BR, tr.frustumCorners.BL,
+                    tr.globeCenterInViewSpace, tr.globeRadius, viewport);
+
                 const drawPole = (program, vertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
-                    "globe_pole_raster", vertexBuffer, indexBuffer, segment);
+                    uniformValues, "globe_pole_raster", vertexBuffer, indexBuffer, segment);
 
                 terrain.setupElevationDraw(tile, program, {});
 

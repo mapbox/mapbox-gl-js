@@ -27,7 +27,7 @@ float mercatorYfromLat(float lat) {
 
 vec3 latLngToECEF(vec2 latLng) {
     latLng = DEG_TO_RAD * latLng;
-    
+
     float cosLat = cos(latLng[0]);
     float sinLat = sin(latLng[0]);
     float cosLng = cos(latLng[1]);
@@ -47,7 +47,7 @@ void main() {
     vec2 merc_pos = a_merc_pos;
     vec2 uv = a_uv;
 #else
-    // The 3rd row of u_grid_matrix is only used as a spare space to 
+    // The 3rd row of u_grid_matrix is only used as a spare space to
     // pass the following 3 uniforms to avoid explicitly introducing new ones.
     float tiles = u_grid_matrix[0][2];
     float idy = u_grid_matrix[1][2];
@@ -57,7 +57,7 @@ void main() {
 
     float mercatorY = mercatorYfromLat(latLng[0]);
     float uvY = mercatorY * tiles - idy;
-    
+
     float mercatorX = mercatorXfromLng(latLng[1]);
     float uvX = a_pos[0] * S;
 
