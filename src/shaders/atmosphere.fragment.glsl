@@ -5,7 +5,6 @@ uniform vec4 u_space_color;
 uniform vec4 u_high_color;
 uniform float u_star_intensity;
 uniform float u_star_size;
-uniform float u_star_density;
 uniform float u_horizon_angle;
 uniform mat4 u_rotation_matrix;
 
@@ -25,7 +24,8 @@ float stars(vec3 p, float scale, vec2 offset) {
     vec3 q = fract(position) - 0.5;
     vec3 id = floor(position);
 
-    float random_visibility = step(random(id), u_star_density);
+    float star_density = 0.0;
+    float random_visibility = step(random(id), star_density);
     float circle = smoothstep(0.5 + u_star_intensity, 0.5, length(q));
 
     return circle * random_visibility;

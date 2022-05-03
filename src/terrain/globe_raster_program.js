@@ -41,7 +41,6 @@ export type AtmosphereUniformsType = {|
     'u_space_color': Uniform4f,
     'u_star_intensity': Uniform1f,
     'u_star_size': Uniform1f,
-    'u_star_density': Uniform1f,
     'u_horizon_angle': Uniform1f,
     'u_rotation_matrix': UniformMatrix4f
 |};
@@ -72,7 +71,6 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_high_color': new Uniform4f(context, locations.u_high_color),
     'u_space_color': new Uniform4f(context, locations.u_space_color),
     'u_star_intensity': new Uniform1f(context, locations.u_star_intensity),
-    'u_star_density': new Uniform1f(context, locations.u_star_density),
     'u_star_size': new Uniform1f(context, locations.u_star_size),
     'u_horizon_angle': new Uniform1f(context, locations.u_horizon_angle),
     'u_rotation_matrix': new UniformMatrix4f(context, locations.u_rotation_matrix)
@@ -130,7 +128,6 @@ const atmosphereUniformValues = (
     'u_space_color': spaceColor,
     'u_star_intensity': starIntensity,
     'u_star_size': 5.0 * browser.devicePixelRatio,
-    'u_star_density': 0.0,
     'u_horizon_angle': horizonAngle,
     'u_rotation_matrix': rotationMatrix
 });
