@@ -206,7 +206,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const gridMatrix = getGridMatrix(coord.canonical, tileCornersLatLng, latitudinalLod);
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix, globeToMercatorTransition(tr.zoom),
-                mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, 
+                mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
                 tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, gridMatrix);
 
             setShaderMode(shaderMode, isWireframe);
@@ -230,6 +230,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     if (sharedBuffers) {
         const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
+ 
         program = painter.useProgram('globeRaster', null, defines);
         for (const coord of tileIDs) {
             // Fill poles by extrapolating adjacent border tiles
@@ -248,15 +249,12 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
 
-                const poleUniformValues = globeRasterUniformValues(tr.projMatrix, poleMatrix,
-                    poleMatrix, 0.0, mercatorCenter,
-                    tr.frustumCorners.TL, tr.frustumCorners.TR,
-                    tr.frustumCorners.BR, tr.frustumCorners.BL,
-                    tr.globeCenterInViewSpace, tr.globeRadius, viewport);
-
                 const drawPole = (program, vertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                    poleUniformValues, "globe_pole_raster", vertexBuffer, indexBuffer, segment);
+                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter,
+                    tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
+                    tr.globeCenterInViewSpace, tr.globeRadius, viewport), "globe_pole_raster", vertexBuffer,
+                    indexBuffer, segment);
 
                 terrain.setupElevationDraw(tile, program, {});
 
