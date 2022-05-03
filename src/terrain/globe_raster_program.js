@@ -92,14 +92,14 @@ const globeRasterUniformValues = (
     globeMercatorMatrix: Float32Array,
     zoomTransition: number,
     mercCenter: [number, number],
-    gridMatrix: ?Array<number>,
-    frustumDirTl: ?[number, number, number],
-    frustumDirTr: ?[number, number, number],
-    frustumDirBr: ?[number, number, number],
-    frustumDirBl: ?[number, number, number],
-    globePosition: ?[number, number, number],
-    globeRadius: ?number,
-    viewport: ?[number, number]
+    frustumDirTl: [number, number, number],
+    frustumDirTr: [number, number, number],
+    frustumDirBr: [number, number, number],
+    frustumDirBl: [number, number, number],
+    globePosition: [number, number, number],
+    globeRadius: number,
+    viewport: [number, number],
+    gridMatrix: ?Array<number>
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
     'u_globe_matrix': globeMatrix,
@@ -107,14 +107,14 @@ const globeRasterUniformValues = (
     'u_zoom_transition': zoomTransition,
     'u_merc_center': mercCenter,
     'u_image0': 0,
-    'u_grid_matrix': gridMatrix ? Float32Array.from(gridMatrix) : new Float32Array(9),
-    'u_frustum_tl': frustumDirTl ? frustumDirTl : [0, 0, 0],
-    'u_frustum_tr': frustumDirTr ? frustumDirTr : [0, 0, 0],
-    'u_frustum_br': frustumDirBr ? frustumDirBr : [0, 0, 0],
-    'u_frustum_bl': frustumDirBl ? frustumDirBl : [0, 0, 0],
-    'u_globe_pos': globePosition ? globePosition : [0, 0, 0],
-    'u_globe_radius': globeRadius ? globeRadius : 0,
-    'u_viewport': viewport ? viewport : [0, 0],
+    'u_frustum_tl': frustumDirTl,
+    'u_frustum_tr': frustumDirTr,
+    'u_frustum_br': frustumDirBr,
+    'u_frustum_bl': frustumDirBl,
+    'u_globe_pos': globePosition,
+    'u_globe_radius': globeRadius,
+    'u_viewport': viewport,
+    'u_grid_matrix': gridMatrix ? Float32Array.from(gridMatrix) : new Float32Array(9)
 });
 
 const atmosphereUniformValues = (

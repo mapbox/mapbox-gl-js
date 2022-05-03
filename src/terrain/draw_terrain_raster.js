@@ -202,10 +202,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const latitudinalLod = getLatitudinalLod(tileCenterLatitude);
             const gridMatrix = getGridMatrix(coord.canonical, tileCornersLatLng, latitudinalLod);
             const uniformValues = globeRasterUniformValues(
-                tr.projMatrix, globeMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix,
-                tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
-                tr.globeCenterInViewSpace, tr.globeRadius, viewport);
+                tr.projMatrix, globeMatrix, globeMercatorMatrix, globeToMercatorTransition(tr.zoom),
+                mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, 
+                tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, gridMatrix);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -245,10 +244,15 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
 
+                const poleUniformValues = globeRasterUniformValues(tr.projMatrix, poleMatrix,
+                    poleMatrix, 0.0, mercatorCenter,
+                    tr.frustumCorners.TL, tr.frustumCorners.TR,
+                    tr.frustumCorners.BR, tr.frustumCorners.BL,
+                    tr.globeCenterInViewSpace, tr.globeRadius, viewport);
+
                 const drawPole = (program, vertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
-                    "globe_pole_raster", vertexBuffer, indexBuffer, segment);
+                    poleUniformValues, "globe_pole_raster", vertexBuffer, indexBuffer, segment);
 
                 terrain.setupElevationDraw(tile, program, {});
 
