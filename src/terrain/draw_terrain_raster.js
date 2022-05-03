@@ -25,7 +25,6 @@ import {
     getLatitudinalLod
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
-import { map } from 'd3';
 
 export {
     drawTerrainRaster,
