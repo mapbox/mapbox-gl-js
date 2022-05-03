@@ -148,7 +148,10 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const setShaderMode = (mode, isWireframe) => {
         if (programMode === mode)
             return;
-        const defines = useCustomAntialiasing ? [shaderDefines[mode], 'CUSTOM_ANTIALIASING', 'PROJECTION_GLOBE_VIEW'] : [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
+        const defines = [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
+        if (useCustomAntialiasing) {
+            defines.push('CUSTOM_ANTIALIASING');
+        }
         if (isWireframe) {
             defines.push(shaderDefines[showWireframe]);
         }

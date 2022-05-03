@@ -32,7 +32,7 @@ void main() {
         return;
     }
 
-    const float antialias_pixel = 4.0;
+    const float antialias_pixel = 2.0;
     float antialias_factor = antialias_pixel * fwidth(norm_dist_from_center);
     float antialias = smoothstep(0.0, antialias_factor, norm_dist_from_center);
 
