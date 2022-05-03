@@ -27,7 +27,7 @@ void main() {
 
     // Compare against 0.99 instead of 1.0 to give enough room for the custom
     // antialiasing that might be applied from globe_raster.fragment.glsl
-    if (norm_dist_from_center < 0.99) {
+    if (norm_dist_from_center <= 0.99) {
         gl_FragColor = u_color;
         return;
     }

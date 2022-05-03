@@ -229,6 +229,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     // Render the poles.
     if (sharedBuffers) {
         const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
+        if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
         program = painter.useProgram('globeRaster', null, defines);
         for (const coord of tileIDs) {
             // Fill poles by extrapolating adjacent border tiles
