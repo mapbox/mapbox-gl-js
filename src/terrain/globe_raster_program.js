@@ -33,10 +33,6 @@ export type GlobeRasterUniformsType = {|
 |};
 
 export type AtmosphereUniformsType = {|
-    'u_frustum_tl': Uniform3f,
-    'u_frustum_tr': Uniform3f,
-    'u_frustum_br': Uniform3f,
-    'u_frustum_bl': Uniform3f,
     'u_horizon': Uniform1f,
     'u_transition': Uniform1f,
     'u_fadeout_range': Uniform1f,
@@ -46,7 +42,6 @@ export type AtmosphereUniformsType = {|
     'u_star_intensity': Uniform1f,
     'u_star_size': Uniform1f,
     'u_star_density': Uniform1f,
-    'u_temporal_offset': Uniform1f,
     'u_horizon_angle': Uniform1f,
     'u_rotation_matrix': UniformMatrix4f
 |};
@@ -70,10 +65,6 @@ const globeRasterUniforms = (context: Context, locations: UniformLocations): Glo
 });
 
 const atmosphereUniforms = (context: Context, locations: UniformLocations): AtmosphereUniformsType => ({
-    'u_frustum_tl': new Uniform3f(context, locations.u_frustum_tl),
-    'u_frustum_tr': new Uniform3f(context, locations.u_frustum_tr),
-    'u_frustum_br': new Uniform3f(context, locations.u_frustum_br),
-    'u_frustum_bl': new Uniform3f(context, locations.u_frustum_bl),
     'u_horizon': new Uniform1f(context, locations.u_horizon),
     'u_transition': new Uniform1f(context, locations.u_transition),
     'u_fadeout_range': new Uniform1f(context, locations.u_fadeout_range),
@@ -83,7 +74,6 @@ const atmosphereUniforms = (context: Context, locations: UniformLocations): Atmo
     'u_star_intensity': new Uniform1f(context, locations.u_star_intensity),
     'u_star_density': new Uniform1f(context, locations.u_star_density),
     'u_star_size': new Uniform1f(context, locations.u_star_size),
-    'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset),
     'u_horizon_angle': new Uniform1f(context, locations.u_horizon_angle),
     'u_rotation_matrix': new UniformMatrix4f(context, locations.u_rotation_matrix)
 });
@@ -122,10 +112,6 @@ const globeRasterUniformValues = (
 });
 
 const atmosphereUniformValues = (
-    frustumDirTl: [number, number, number],
-    frustumDirTr: [number, number, number],
-    frustumDirBr: [number, number, number],
-    frustumDirBl: [number, number, number],
     horizon: number,
     transitionT: number,
     fadeoutRange: number,
@@ -133,14 +119,9 @@ const atmosphereUniformValues = (
     highColor: [number, number, number, number],
     spaceColor: [number, number, number, number],
     starIntensity: number,
-    temporalOffset: number,
     horizonAngle: number,
     rotationMatrix: Float32Array
 ): UniformValues<AtmosphereUniformsType> => ({
-    'u_frustum_tl': frustumDirTl,
-    'u_frustum_tr': frustumDirTr,
-    'u_frustum_br': frustumDirBr,
-    'u_frustum_bl': frustumDirBl,
     'u_horizon': horizon,
     'u_transition': transitionT,
     'u_fadeout_range': fadeoutRange,
@@ -150,7 +131,6 @@ const atmosphereUniformValues = (
     'u_star_intensity': starIntensity,
     'u_star_size': 5.0 * browser.devicePixelRatio,
     'u_star_density': 0.0,
-    'u_temporal_offset': temporalOffset,
     'u_horizon_angle': horizonAngle,
     'u_rotation_matrix': rotationMatrix
 });

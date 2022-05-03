@@ -4,6 +4,10 @@ uniform mediump vec4 u_fog_color;
 uniform mediump vec2 u_fog_range;
 uniform mediump float u_fog_horizon_blend;
 uniform mediump mat4 u_fog_matrix;
+uniform highp vec3 u_frustum_tl;
+uniform highp vec3 u_frustum_tr;
+uniform highp vec3 u_frustum_br;
+uniform highp vec3 u_frustum_bl;
 varying vec3 v_fog_pos;
 
 float fog_range(float depth) {

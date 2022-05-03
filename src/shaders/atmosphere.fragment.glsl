@@ -1,7 +1,5 @@
 uniform float u_transition;
 uniform highp float u_fadeout_range;
-uniform highp float u_temporal_offset;
-uniform vec3 u_start_color;
 uniform vec4 u_color;
 uniform vec4 u_space_color;
 uniform vec4 u_high_color;
@@ -133,8 +131,7 @@ void main() {
         c += star_field * alpha_2;
     }
 
-    // Dither
-    c = dither(c, gl_FragCoord.xy + u_temporal_offset);
+    c = fog_dither(c);
 
 
     gl_FragColor = vec4(c, a);
