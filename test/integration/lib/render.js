@@ -176,7 +176,7 @@ async function runTest(t) {
         // Disable anisotropic filtering on render tests
         map.painter.context.extTextureFilterAnisotropicForceOff = true;
         // Disable globe antialiasing on render tests
-        map.painter.context.extUseCustomGlobeAntiAliasingForceOff = false;
+        map.painter.context.extUseCustomGlobeAntiAliasingForceOff = true;
         const gl = map.painter.context.gl;
         await map.once('load');
         // Disable vertex morphing by default
