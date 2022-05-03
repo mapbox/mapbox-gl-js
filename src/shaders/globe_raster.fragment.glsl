@@ -31,7 +31,7 @@ void main() {
 
     vec4 raster = texture2D(u_image0, v_pos0);
 
-    gl_FragColor = vec4(raster.rgb * antialias, raster.a * antialias);
+    vec4 color = vec4(raster.rgb * antialias, raster.a * antialias);
 #else
     vec4 color = texture2D(u_image0, v_pos0);
 #endif
