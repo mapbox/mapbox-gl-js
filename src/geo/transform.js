@@ -146,6 +146,7 @@ class Transform {
     _projectionScaler: number;
     _nearZ: number;
     _farZ: number;
+    _fogEnabled: boolean;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
@@ -182,6 +183,7 @@ class Transform {
         this._projectionScaler = 1.0;
         this.globeRadius = 0;
         this.globeCenterInViewSpace = [0, 0, 0];
+        this._fogEnabled = false;
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -211,6 +213,7 @@ class Transform {
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
         clone.frustumCorners = this.frustumCorners;
+        clone._fogEnabled = this._fogEnabled;
         return clone;
     }
 
@@ -388,6 +391,11 @@ class Transform {
         this.scale = this.zoomScale(z);
         this.tileZoom = Math.floor(z);
         this.zoomFraction = z - this.tileZoom;
+    }
+
+    set fogEnabled(fogEnabled: boolean) {
+        this._fogEnabled = fogEnabled;
+        this._calcMatrices();
     }
 
     _updateCameraOnTerrain() {
@@ -1716,8 +1724,10 @@ class Transform {
         // as tile elevations are in tile coordinates and relative to center elevation.
         this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
 
-        const clipToCamera = mat4.invert([], cameraToClip);
-        this.frustumCorners = FrustumCorners.fromInvProjectionMatrix(clipToCamera, this.horizonLineFromTop(), this.height);
+        if (this._fogEnabled) {
+            const clipToCamera = mat4.invert([], cameraToClip);
+            this.frustumCorners = FrustumCorners.fromInvProjectionMatrix(clipToCamera, this.horizonLineFromTop(), this.height);
+        }
 
         const view = new Float32Array(16);
         mat4.identity(view);
@@ -1788,6 +1798,7 @@ class Transform {
     }
 
     _calcFogMatrices() {
+        if (!this._fogEnabled) return;
         this._fogTileMatrixCache = {};
 
         const cameraWorldSize = this.cameraWorldSize;

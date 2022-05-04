@@ -204,6 +204,8 @@ class Painter {
         const isGlobe = this.transform.projection.name === 'globe';
 
         const fog = style.fog;
+        this.transform.fogEnabled = fog !== undefined;
+
         if (!fog || isGlobe || fog.getOpacity(this.transform.pitch) < 1 || fog.properties.get('horizon-blend') < 0.03) {
             this.transform.fogCullDistSq = null;
             return;
@@ -948,7 +950,6 @@ class Painter {
     }
 
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
-
         // Fog is not enabled when rendering to texture so we
         // can safely skip uploading uniforms in that case
         if (this.terrain && this.terrain.renderingToTexture) {

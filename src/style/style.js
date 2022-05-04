@@ -538,6 +538,7 @@ class Style extends Evented {
             if (this.fog) {
                 this.fog.updateTransitions(parameters);
             }
+            this.map.transform.fogEnabled = this.fog !== undefined;
 
             this._resetUpdates();
         }
@@ -1554,12 +1555,14 @@ class Style extends Evented {
             delete this.fog;
             delete this.stylesheet.fog;
             this._markersNeedUpdate = true;
+            this.map.transform.fogEnabled = false;
             return;
         }
 
         if (!this.fog) {
             // Initialize Fog
             this._createFog(fogOptions);
+            this.map.transform.fogEnabled = true;
         } else {
             // Updating fog
             const fog = this.fog;

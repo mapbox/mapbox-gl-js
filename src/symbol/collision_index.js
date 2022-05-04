@@ -420,6 +420,7 @@ class CollisionIndex {
             // Do not perform symbol occlusion on globe due to fog fixed range
             const isGlobe = this.transform.projection.name === 'globe';
             if (this.fogState && tileID && !isGlobe) {
+                this.transform.fogEnabled = true;
                 const fogOpacity = getFogOpacityAtTileCoord(this.fogState, point[0], point[1], point[2], tileID.toUnwrapped(), this.transform);
                 behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
             }
