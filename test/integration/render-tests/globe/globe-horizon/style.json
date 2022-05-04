@@ -4,6 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
+      "allowed": 0.00025,
       "operations": [
         ["setProjection", "globe"],
         ["wait"]
@@ -12,8 +13,11 @@
   },
   "center": [
     20.5,
-    12.57    
+    12.57
   ],
+  "fog": {
+    "star-intensity": 0
+  },
   "zoom": 0.88,
   "pitch": 85.0,
   "bearing": 123.69,

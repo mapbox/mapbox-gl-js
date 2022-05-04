@@ -1,0 +1,30 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "projection": {
+    "name": "globe"
+  },
+  "zoom": 0,
+  "sources": {},
+  "fog": {
+    "color": "white",
+    "horizon-blend": 0.05,
+    "high-color": "rgba(0, 0, 255, 0.5)",
+    "space-color": "black",
+    "star-intensity": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }
+    }
+  ]
+}

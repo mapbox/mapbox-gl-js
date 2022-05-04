@@ -3,13 +3,14 @@
 import Tile from './tile.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import TileCache from './tile_cache.js';
-import {asyncAll, keysDifference, values} from '../util/util.js';
+import {asyncAll, keysDifference, values, clamp} from '../util/util.js';
 import Context from '../gl/context.js';
 import Point from '@mapbox/point-geometry';
 import browser from '../util/browser.js';
-import {OverscaledTileID} from './tile_id.js';
+import {OverscaledTileID, CanonicalTileID} from './tile_id.js';
 import assert from 'assert';
 import SourceFeatureState from './source_state.js';
+import {mercatorXfromLng} from '../geo/mercator_coordinate.js';
 
 import type {Source} from './source.js';
 import type {SourceSpecification} from '../style-spec/types.js';
@@ -876,6 +877,9 @@ class SourceCache extends Evented {
         const transform = this.transform;
         if (!transform) return tileResults;
 
+        const isGlobe = transform.projection.name === 'globe';
+        const centerX = mercatorXfromLng(transform.center.lng);
+
         for (const tileID in this._tiles) {
             const tile = this._tiles[tileID];
             if (visualizeQueryGeometry) {
@@ -886,9 +890,41 @@ class SourceCache extends Evented {
                 continue;
             }
 
-            const tileResult = queryGeometry.containsTile(tile, transform, use3DQuery);
-            if (tileResult) {
-                tileResults.push(tileResult);
+            // An array of wrap values for the tile [-1, 0, 1]. The default value is 0 but -1 or 1 wrapping
+            // might be required in globe view due to globe's surface being continuous.
+            let tilesToCheck;
+
+            if (isGlobe) {
+                // Compare distances to copies of the tile to see if a wrapped one should be used.
+                const id = tile.tileID.canonical;
+                assert(tile.tileID.wrap === 0);
+
+                if (id.z === 0) {
+                    // Render the zoom level 0 tile twice as the query polygon might span over the antimeridian
+                    const distances = [
+                        Math.abs(clamp(centerX, ...tileBoundsX(id, -1)) - centerX),
+                        Math.abs(clamp(centerX, ...tileBoundsX(id, 1)) - centerX)
+                    ];
+
+                    tilesToCheck = [0, distances.indexOf(Math.min(...distances)) * 2 - 1];
+                } else {
+                    const distances = [
+                        Math.abs(clamp(centerX, ...tileBoundsX(id, -1)) - centerX),
+                        Math.abs(clamp(centerX, ...tileBoundsX(id, 0)) - centerX),
+                        Math.abs(clamp(centerX, ...tileBoundsX(id, 1)) - centerX)
+                    ];
+
+                    tilesToCheck = [distances.indexOf(Math.min(...distances)) - 1];
+                }
+            } else {
+                tilesToCheck = [0];
+            }
+
+            for (const wrap of tilesToCheck) {
+                const tileResult = queryGeometry.containsTile(tile, transform, use3DQuery, wrap);
+                if (tileResult) {
+                    tileResults.push(tileResult);
+                }
             }
         }
         return tileResults;
@@ -1030,6 +1066,11 @@ function compareTileId(a: OverscaledTileID, b: OverscaledTileID): number {
 
 function isRasterType(type): boolean {
     return type === 'raster' || type === 'image' || type === 'video';
+}
+
+function tileBoundsX(id: CanonicalTileID, wrap: number): [number, number] {
+    const tiles = 1 << id.z;
+    return [id.x / tiles + wrap, (id.x + 1) / tiles + wrap];
 }
 
 export default SourceCache;

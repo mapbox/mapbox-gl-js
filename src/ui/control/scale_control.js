@@ -93,8 +93,9 @@ function updateScale(map, container, options) {
     const maxWidth = (options && options.maxWidth) || 100;
 
     const y = map._containerHeight / 2;
-    const left = map.unproject([0, y]);
-    const right = map.unproject([maxWidth, y]);
+    const x = (map._containerWidth / 2) - maxWidth / 2;
+    const left = map.unproject([x, y]);
+    const right = map.unproject([x + maxWidth, y]);
     const maxMeters = left.distanceTo(right);
     // The real distance corresponding to 100px scale length is rounded off to
     // near pretty number and the scale length for the same is found out.

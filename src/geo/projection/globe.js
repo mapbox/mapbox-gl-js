@@ -21,7 +21,6 @@ import {
     globeTileBounds,
     globeNormalizeECEF,
     globeDenormalizeECEF,
-    globeECEFUnitsToPixelScale,
     globeECEFNormalizationScale,
     globeToMercatorTransition
 } from './globe_util.js';
@@ -40,7 +39,7 @@ export default class Globe extends Mercator {
         super(options);
         this.requiresDraping = true;
         this.supportsWorldCopies = false;
-        this.supportsFog = false;
+        this.supportsFog = true;
         this.zAxisUnit = "pixels";
         this.unsupportedLayers = ['debug', 'custom'];
     }
@@ -86,20 +85,18 @@ export default class Globe extends Mercator {
         return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
     }
 
+    createFogTileMatrix(tr: Transform): Float64Array {
+        return mat4.copy(new Float64Array(16), tr.globeMatrix);
+    }
+
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
-        const {center, worldSize} = tr;
-        const ecefUnitsToPixels = globeECEFUnitsToPixelScale(worldSize);
+        const {center} = tr;
         const matrix = mat4.identity(new Float64Array(16));
         const encode = globeNormalizeECEF(globeTileBounds(id));
         mat4.multiply(matrix, matrix, encode);
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
-        mat4.scale(matrix, matrix, [1.0 / ecefUnitsToPixels, 1.0 / ecefUnitsToPixels, 1.0]);
-
-        const ecefUnitsToMercatorPixels = tr.pixelsPerMeter / mercatorZfromAltitude(1.0, center.lat) / EXTENT;
-
-        mat4.scale(matrix, matrix, [ecefUnitsToMercatorPixels, ecefUnitsToMercatorPixels, 1.0]);
-
+        mat4.scale(matrix, matrix, [tr._projectionScaler, tr._projectionScaler, 1.0]);
         return Float32Array.from(matrix);
     }
 
@@ -164,6 +161,11 @@ export default class Globe extends Mercator {
         return new MercatorCoordinate(mx, my);
     }
 
+    pointCoordinate3D(tr: Transform, x: number, y: number): ?Vec3 {
+        const mc = this.pointCoordinate(tr, x, y, 0);
+        return [mc.x, mc.y, mc.z];
+    }
+
     farthestPixelDistance(tr: Transform): number {
         const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
         const globePixelDistance = farthestPixelDistanceOnSphere(tr, pixelsPerMeter);
@@ -171,7 +173,10 @@ export default class Globe extends Mercator {
         if (t > 0.0) {
             const mercatorPixelsPerMeter = mercatorZfromAltitude(1, tr.center.lat) * tr.worldSize;
             const mercatorPixelDistance = farthestPixelDistanceOnPlane(tr, mercatorPixelsPerMeter);
-            return interpolate(globePixelDistance, mercatorPixelDistance, t);
+            const pixelRadius = tr.worldSize / (2.0 * Math.PI);
+            const approxTileArcHalfAngle = Math.max(tr.width, tr.height) / tr.worldSize * Math.PI;
+            const padding = pixelRadius * (1.0 - Math.cos(approxTileArcHalfAngle));
+            return interpolate(globePixelDistance, mercatorPixelDistance + padding, t);
         }
         return globePixelDistance;
     }

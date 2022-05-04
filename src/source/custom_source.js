@@ -2,6 +2,7 @@
 
 import Tile from './tile.js';
 import window from '../util/window.js';
+import TileBounds from './tile_bounds.js';
 import RasterTileSource from './raster_tile_source.js';
 import {extend, pick} from '../util/util.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
@@ -10,11 +11,14 @@ import type Map from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type {Source} from './source.js';
 import type {Callback} from '../types/callback.js';
+import type {OverscaledTileID} from './tile_id.js';
 
 type DataType = 'raster';
 
 function isRaster(data: any): boolean {
-    return data instanceof window.ImageBitmap || data instanceof window.HTMLCanvasElement;
+    return data instanceof window.ImageData ||
+        data instanceof window.ImageBitmap ||
+        data instanceof window.HTMLCanvasElement;
 }
 
 /**
@@ -102,6 +106,17 @@ function isRaster(data: any): boolean {
  */
 
 /**
+ * Optional method called during a render frame to check if there is a tile to render.
+ *
+ * @function
+ * @memberof CustomSourceInterface
+ * @instance
+ * @name hasTile
+ * @param {{ z: number, x: number, y: number }} tile Tile name to prepare in the XYZ scheme format.
+ * @returns {boolean} True if tile exists, otherwise false.
+ */
+
+/**
  * Optional method called during a render frame to allow a source to prepare and modify a tile texture if needed.
  *
  * @function
@@ -133,6 +148,8 @@ export type CustomSourceInterface<T> = {
     scheme: ?string;
     tileSize: ?number,
     attribution: ?string,
+    bounds: ?[number, number, number, number];
+    hasTile: ?(tileID: { z: number, x: number, y: number }) => boolean,
     loadTile: (tileID: { z: number, x: number, y: number }, options: { signal: AbortSignal }) => Promise<T>,
     prepareTile: ?(tileID: { z: number, x: number, y: number }) => ?T,
     unloadTile: ?(tileID: { z: number, x: number, y: number }) => void,
@@ -149,17 +166,17 @@ class CustomSource<T> extends Evented implements Source {
     maxzoom: number;
     tileSize: number;
     attribution: string;
-    roundZoom: boolean;
 
+    roundZoom: boolean;
+    tileBounds: ?TileBounds;
     minTileCacheSize: ?number;
     maxTileCacheSize: ?number;
-
-    _dataType: ?DataType;
-    _implementation: CustomSourceInterface<T>;
 
     _map: Map;
     _loaded: boolean;
     _dispatcher: Dispatcher;
+    _dataType: ?DataType;
+    _implementation: CustomSourceInterface<T>;
 
     constructor(id: string, implementation: CustomSourceInterface<T>, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -184,6 +201,10 @@ class CustomSource<T> extends Evented implements Source {
 
         if (!this._implementation.loadTile) {
             this.fire(new ErrorEvent(new Error(`Missing loadTile implementation for ${this.id} custom source`)));
+        }
+
+        if (this._implementation.bounds) {
+            this.tileBounds = new TileBounds(this._implementation.bounds, this.minzoom, this.maxzoom);
         }
 
         // $FlowFixMe[prop-missing]
@@ -223,23 +244,41 @@ class CustomSource<T> extends Evented implements Source {
         }
     }
 
-    loadTile(tile: Tile, callback: Callback<void>) {
+    hasTile(tileID: OverscaledTileID): boolean {
+        if (this._implementation.hasTile) {
+            const {x, y, z} = tileID.canonical;
+            return this._implementation.hasTile({x, y, z});
+        }
+
+        return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
+    }
+
+    loadTile(tile: Tile, callback: Callback<void>): void {
         const {x, y, z} = tile.tileID.canonical;
         const controller = new window.AbortController();
         const signal = controller.signal;
 
+        const request = this._implementation.loadTile({x, y, z}, {signal});
+        if (!request) {
+            // Create an empty image and set the tile state to `loaded`
+            // if the implementation didn't return the async tile request
+            const emptyImage = {width: this.tileSize, height: this.tileSize, data: null};
+            this.loadTileData(tile, (emptyImage: any));
+            tile.state = 'loaded';
+            return callback(null);
+        }
+
         // $FlowFixMe[prop-missing]
-        tile.request = this._implementation.loadTile({x, y, z}, {signal})
-            .then(tileLoaded.bind(this))
+        request.cancel = () => controller.abort();
+
+        // $FlowFixMe[prop-missing]
+        tile.request = request.then(tileLoaded.bind(this))
             .catch(error => {
-                // silence AbortError and 404 errors
-                if (error.code === 20 || error.code === 404) return;
+                // silence AbortError
+                if (error.code === 20) return;
                 tile.state = 'errored';
                 callback(error);
             });
-
-        // $FlowFixMe[prop-missing]
-        tile.request.cancel = () => controller.abort();
 
         function tileLoaded(data) {
             delete tile.request;
@@ -249,8 +288,19 @@ class CustomSource<T> extends Evented implements Source {
                 return callback(null);
             }
 
-            if (!data) return callback(null);
-            if (!isRaster(data)) return callback(new Error(`Can't infer data type for ${this.id}, only raster data supported at the moment`));
+            if (!data) {
+                // Create an empty image and set the tile state to `loaded`
+                // if the implementation returned no tile data
+                const emptyImage = {width: this.tileSize, height: this.tileSize, data: null};
+                this.loadTileData(tile, (emptyImage: any));
+                tile.state = 'loaded';
+                return callback(null);
+            }
+
+            if (!isRaster(data)) {
+                tile.state = 'errored';
+                return callback(new Error(`Can't infer data type for ${this.id}, only raster data supported at the moment`));
+            }
 
             this.loadTileData(tile, data);
             tile.state = 'loaded';
@@ -275,12 +325,13 @@ class CustomSource<T> extends Evented implements Source {
         const data = this._implementation.prepareTile({x, y, z});
         if (!data) return null;
 
-        RasterTileSource.loadTileData(tile, (data: any), this._map.painter);
+        this.loadTileData(tile, data);
+        tile.state = 'loaded';
         return data;
     }
 
     unloadTile(tile: Tile, callback: Callback<void>): void {
-        RasterTileSource.unloadTileData(tile, this._map.painter);
+        this.unloadTileData(tile);
         if (this._implementation.unloadTile) {
             const {x, y, z} = tile.tileID.canonical;
             this._implementation.unloadTile({x, y, z});
@@ -307,6 +358,7 @@ class CustomSource<T> extends Evented implements Source {
             tileSize: this.tileSize,
             minzoom: this.minzoom,
             maxzoom: this.maxzoom,
+            roundZoom: this.roundZoom
         });
 
         return tileIDs.map(tileID => ({x: tileID.canonical.x, y: tileID.canonical.y, z: tileID.canonical.z}));

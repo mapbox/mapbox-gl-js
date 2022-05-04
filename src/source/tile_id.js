@@ -31,9 +31,9 @@ export class CanonicalTileID {
 
         return urls[(this.x + this.y) % urls.length]
             .replace('{prefix}', (this.x % 16).toString(16) + (this.y % 16).toString(16))
-            .replace('{z}', String(this.z))
-            .replace('{x}', String(this.x))
-            .replace('{y}', String(scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y))
+            .replace(/{z}/g, String(this.z))
+            .replace(/{x}/g, String(this.x))
+            .replace(/{y}/g, String(scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y))
             .replace('{quadkey}', quadkey)
             .replace('{bbox-epsg-3857}', bbox);
     }
@@ -191,5 +191,5 @@ function getQuadkey(z, x, y) {
     return quadkey;
 }
 
-register(CanonicalTileID);
-register(OverscaledTileID, {omit: ['projMatrix']});
+register(CanonicalTileID, 'CanonicalTileID');
+register(OverscaledTileID, 'OverscaledTileID', {omit: ['projMatrix']});

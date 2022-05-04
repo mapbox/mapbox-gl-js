@@ -76,4 +76,4 @@ export default class GlyphAtlas {
     }
 }
 
-register(GlyphAtlas);
+register(GlyphAtlas, 'GlyphAtlas');

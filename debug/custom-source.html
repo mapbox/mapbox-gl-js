@@ -8,11 +8,16 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        #controls { position: absolute; top: 0; left: 0; }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
+<div id='controls'>
+    <input id="slider" type="range" list="colors" min="0" step="1">
+    <datalist id="colors"></datalist>
+</div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -20,42 +25,73 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    center: [-74.5, 40],
-    zoom: 2,
-    style: {
-        version: 8,
-        sources: {},
-        layers: []
-    },
+    center: [0, 0],
+    zoom: 0,
+    style: 'mapbox://styles/mapbox/light-v10',
     hash: true
 });
+
+const tileSize = 256;
+const colors = ['#74a9cf', '#3690c0', '#0570b0', '#045a8d'];
+let currentColor = colors[0];
 
 map.on('load', () => {
     map.addSource('custom-source', {
         type: 'custom',
-        tileSize: 256,
-        attribution: 'Map tiles by <a target="_top" rel="noopener" href="http://stamen.com">Stamen Design</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>',
-        async loadTile(tile, {signal}) {
-            const tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg';
-            const url = tilesUrl
-                .replace('{z}', String(tile.z))
-                .replace('{x}', String(tile.x))
-                .replace('{y}', String(tile.y));
+        tileSize,
+        async loadTile({z, x, y}) {
+            const tileSize = 256;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = tileSize;
+            const context = canvas.getContext('2d');
+            context.fillStyle = 'red';
+            context.fillRect(0, 0, tileSize, tileSize);
 
-            const response = await fetch(url, {signal});
-            const data = await response.arrayBuffer();
+            context.font = '18px serif';
+            context.fillStyle = 'white';
+            context.textAlign = 'center';
+            context.fillText(`${z}/${x}/${y}`, tileSize / 2, tileSize / 2, tileSize);
 
-            const blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
-            const imageBitmap = await window.createImageBitmap(blob);
+            const imageData = context.getImageData(0, 0, tileSize, tileSize);
+            return imageData;
+        },
+        prepareTile({z, x, y}) {
+            const tileSize = 256;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = tileSize;
+            const context = canvas.getContext('2d');
+            context.fillStyle = currentColor;
+            context.fillRect(0, 0, tileSize, tileSize);
 
-            return imageBitmap;
+            context.font = '18px serif';
+            context.fillStyle = 'white';
+            context.textAlign = 'center';
+            context.fillText(`${z}/${x}/${y}`, tileSize / 2, tileSize / 2, tileSize);
+
+            const imageData = context.getImageData(0, 0, tileSize, tileSize);
+            return imageData;
+        },
+        hasTile({z, x, y}) {
+            return (x + y) % 2 === 0;
         }
     });
 
     map.addLayer({
         id: 'custom-source',
         type: 'raster',
-        source: 'custom-source'
+        source: 'custom-source',
+        paint: {
+            'raster-opacity': 0.75,
+            'raster-fade-duration': 0
+        }
+    });
+
+    const slider = document.getElementById('slider');
+    slider.value = 0;
+    slider.max = colors.length - 1;
+    slider.addEventListener('input', (e) => {
+        currentColor = colors[e.target.value];
+        map.triggerRepaint();
     });
 });
 

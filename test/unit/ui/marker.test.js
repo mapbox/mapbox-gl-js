@@ -1002,14 +1002,14 @@ test('Globe', (t) => {
         });
     });
 
-    test('Marker is positioned on globe surface', (t) => {
+    test('Marker is positioned on globe edge', (t) => {
         const map = createMap(t);
         const marker = new Marker()
-            .setLngLat([90, 0])
+            .setLngLat([85, 0])
             .addTo(map);
         map._domRenderTaskQueue.run();
 
-        t.match(marker.getElement().style.transform, " translate(384px,256px)");
+        t.match(marker.getElement().style.transform, " translate(377px,256px)");
         map.setProjection('globe');
         map.once('render', () => {
             t.match(marker.getElement().style.transform, "translate(330px,256px)");
@@ -1043,7 +1043,7 @@ test('Globe', (t) => {
     function rotation(marker, dimension) {
         const transform = marker.getElement().style.transform;
         const reg = new RegExp(`rotate${dimension}\\(([-.e0-9]+)deg\\)`);
-        return +Number.parseFloat(transform.match(reg)[1]).toFixed(9);
+        return +Number.parseFloat(transform.match(reg)[1]).toFixed();
     }
 
     test('Globe with pitchAlignment and rotationAlingment: map, changing longitude', (t) => {
@@ -1058,11 +1058,12 @@ test('Globe', (t) => {
         t.notMatch(transform(marker), "rotateX");
         t.notMatch(transform(marker), "rotateZ");
 
-        marker.setLngLat([90, 0]);
+        marker.setLngLat([84, 0]);
         map.once('render', () => {
             t.match(transform(marker), "translate(330px,256px)");
             t.same(rotation(marker, "X"), 0);
-            t.same(rotation(marker, "Y"), 88.975673489);
+            t.same(rotation(marker, "Y"), 90);
+            t.same(marker.getElement().style.opacity, 1.0);
             map.remove();
             t.end();
         });
@@ -1072,20 +1073,20 @@ test('Globe', (t) => {
         const map = createMap(t);
         map.setProjection('globe');
         const marker = new Marker({rotationAlignment: 'map', pitchAlignment: 'map'})
-            .setLngLat([0, 89])
+            .setLngLat([0, 84])
             .addTo(map);
         map._domRenderTaskQueue.run();
 
         t.match(transform(marker), "translate(256px,182px)");
-        t.same(rotation(marker, "X"), 88.975673489);
+        t.same(rotation(marker, "X"), 90);
         t.same(rotation(marker, "Y"), 0);
 
         marker.setLngLat([-45, 45]);
         map.on('render', () => {
             t.match(transform(marker), "translate(217px,201px)");
-            t.same(rotation(marker, "X"), 38.465875602);
-            t.same(rotation(marker, "Y"), -27.2758027);
-            t.same(rotation(marker, "Z"), 38.030140844);
+            t.same(rotation(marker, "X"), 38);
+            t.same(rotation(marker, "Y"), -27);
+            t.same(rotation(marker, "Z"), 38);
             map.remove();
             t.end();
         });
@@ -1114,19 +1115,19 @@ test('Globe', (t) => {
         t.notMatch(transform(m1), "rotateZ");
 
         t.match(transform(m2), "translate(256px,200px)");
-        t.same(rotation(m2, "X"), 49.299382704);
+        t.same(rotation(m2, "X"), 49);
         t.same(rotation(m2, "Y"), 0);
         t.notMatch(transform(m1), "rotateZ");
 
         t.match(transform(m3), "translate(256px,296px)");
-        t.same(rotation(m3, "X"), -32.835045377);
+        t.same(rotation(m3, "X"), -33);
         t.same(rotation(m3, "Y"), 0);
         t.notMatch(transform(m1), "rotateZ");
 
         t.match(transform(m4), "translate(295px,311px)");
-        t.same(rotation(m4, "X"), -38.465875602);
-        t.same(rotation(m4, "Y"), 27.2758027);
-        t.same(rotation(m4, "Z"), 38.030140843);
+        t.same(rotation(m4, "X"), -38);
+        t.same(rotation(m4, "Y"), 27);
+        t.same(rotation(m4, "Z"), 38);
 
         map.setPitch(45);
         map.once('render', () => {
@@ -1136,19 +1137,19 @@ test('Globe', (t) => {
             t.notMatch(transform(m1), "rotateZ");
 
             t.match(transform(m2), "translate(256px,234px)");
-            t.same(rotation(m2, "X"), 85.512269796);
+            t.same(rotation(m2, "X"), 92);
             t.same(rotation(m2, "Y"), 0);
             t.notMatch(transform(m1), "rotateZ");
 
             t.match(transform(m3), "translate(256px,294px)");
-            t.same(rotation(m3, "X"), 11.861002077);
+            t.same(rotation(m3, "X"), 12);
             t.same(rotation(m3, "Y"), 0);
             t.notMatch(transform(m1), "rotateZ");
 
             t.match(transform(m4), "translate(297px,327px)");
-            t.same(rotation(m4, "X"), -10.677882737);
-            t.same(rotation(m4, "Y"), 25.158956455);
-            t.same(rotation(m4, "Z"), 29.578463693);
+            t.same(rotation(m4, "X"), -11);
+            t.same(rotation(m4, "Y"), 25);
+            t.same(rotation(m4, "Z"), 30);
 
             map.setPitch(30);
             map.once('render', () => {
@@ -1158,19 +1159,19 @@ test('Globe', (t) => {
                 t.notMatch(transform(m1), "rotateZ");
 
                 t.match(transform(m2), "translate(256px,220px)");
-                t.same(rotation(m2, "X"), 78.903346373);
+                t.same(rotation(m2, "X"), 78);
                 t.same(rotation(m2, "Y"), 0);
                 t.notMatch(transform(m1), "rotateZ");
 
                 t.match(transform(m3), "translate(256px,297px)");
-                t.same(rotation(m3, "X"), -2.826321362);
+                t.same(rotation(m3, "X"), -3);
                 t.same(rotation(m3, "Y"), 0);
                 t.notMatch(transform(m1), "rotateZ");
 
                 t.match(transform(m4), "translate(296px,326px)");
-                t.same(rotation(m4, "X"), -19.579260926);
-                t.same(rotation(m4, "Y"), 23.961063055);
-                t.same(rotation(m4, "Z"), 30.522423436);
+                t.same(rotation(m4, "X"), -20);
+                t.same(rotation(m4, "Y"), 24);
+                t.same(rotation(m4, "Z"), 31);
 
                 map.remove();
                 t.end();

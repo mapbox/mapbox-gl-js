@@ -85,6 +85,36 @@ class Ray {
     }
 }
 
+class FrustumCorners {
+    TL: [number, number, number];
+    TR: [number, number, number];
+    BR: [number, number, number];
+    BL: [number, number, number];
+    horizon: number;
+
+    constructor(TL_: [number, number, number], TR_: [number, number, number], BR_: [number, number, number], BL_: [number, number, number], horizon_: number) {
+        this.TL = TL_;
+        this.TR = TR_;
+        this.BR = BR_;
+        this.BL = BL_;
+        this.horizon = horizon_;
+    }
+
+    static fromInvProjectionMatrix(invProj: Array<number>, horizonFromTop: number, viewportHeight: number): FrustumCorners {
+        const TLClip = [-1, 1, 1];
+        const TRClip = [1, 1, 1];
+        const BRClip = [1, -1, 1];
+        const BLClip = [-1, -1, 1];
+
+        const TL = vec3.transformMat4(TLClip, TLClip, invProj);
+        const TR = vec3.transformMat4(TRClip, TRClip, invProj);
+        const BR = vec3.transformMat4(BRClip, BRClip, invProj);
+        const BL = vec3.transformMat4(BLClip, BLClip, invProj);
+
+        return new FrustumCorners(TL, TR, BR, BL, horizonFromTop / viewportHeight);
+    }
+}
+
 class Frustum {
     points: Array<Array<number>>;
     planes: Array<Array<number>>;
@@ -240,5 +270,6 @@ class Aabb {
 export {
     Aabb,
     Frustum,
+    FrustumCorners,
     Ray
 };

@@ -13,15 +13,15 @@ import replace from '@rollup/plugin-replace';
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
 
-export const plugins = (minified, production, test, bench) => [
+export const plugins = ({minified, production, test, bench, keepClassNames}) => [
     flow(),
     minifyStyleSpec(),
     json({
         exclude: 'src/style-spec/reference/v8.json'
     }),
-    production ? strip({
+    (production && !bench) ? strip({
         sourceMap: true,
-        functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*']
+        functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*', 'performance.mark']
     }) : false,
     production || bench ? unassert() : false,
     test ? replace({
@@ -33,7 +33,8 @@ export const plugins = (minified, production, test, bench) => [
         compress: {
             pure_getters: true,
             passes: 3
-        }
+        },
+        keep_classnames: keepClassNames
     }) : false,
     resolve({
         browser: true,

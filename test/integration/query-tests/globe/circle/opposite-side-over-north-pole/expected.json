@@ -1,0 +1,67 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        -32.49755859375,
+        83.62592032259863
+      ],
+      "type": "Point"
+    },
+    "id": 225,
+    "properties": {
+      "featureclass": "cape",
+      "lat_y": 83.626331,
+      "long_x": -32.491541,
+      "name": "Cape Morris Jesup",
+      "region": "North America",
+      "scalerank": 5,
+      "subregion": "Greenland"
+    },
+    "source": "places",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -156.46728515625,
+        71.40617196718856
+      ],
+      "type": "Point"
+    },
+    "id": 200,
+    "properties": {
+      "featureclass": "cape",
+      "lat_y": 71.372637,
+      "long_x": -156.615894,
+      "name": "Point Barrow",
+      "region": "North America",
+      "scalerank": 4
+    },
+    "source": "places",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -68.22509765625,
+        76.216441124408
+      ],
+      "type": "Point"
+    },
+    "id": 187,
+    "properties": {
+      "featureclass": "cape",
+      "lat_y": 76.218919,
+      "long_x": -68.218612,
+      "name": "Cape York",
+      "region": "North America",
+      "scalerank": 4,
+      "subregion": "Greenland"
+    },
+    "source": "places",
+    "state": {},
+    "type": "Feature"
+  }
+]

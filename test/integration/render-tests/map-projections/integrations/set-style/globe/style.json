@@ -10,6 +10,8 @@
           ["setStyle", "local://mapbox-gl-styles/styles/satellite-v9.json"],
           ["wait"],
           ["setStyle", "local://mapbox-gl-styles/styles/basic-v9.json"],
+          ["wait"],
+          ["setFog", {"star-intensity": 0}],
           ["wait"]
         ]
       }

@@ -74,7 +74,10 @@
                 "circle-pitch-scale": "map"
               }
             }
-          ]
+          ],
+          "fog": {
+            "star-intensity": 0
+          }
         }],
         ["wait"],
         ["setProjection", "mercator"],

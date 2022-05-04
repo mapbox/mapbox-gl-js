@@ -215,6 +215,6 @@ class LineAtlas {
     }
 }
 
-register(LineAtlas);
+register(LineAtlas, 'LineAtlas');
 
 export default LineAtlas;

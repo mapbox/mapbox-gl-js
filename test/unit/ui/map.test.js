@@ -24,6 +24,30 @@ function createStyleSource() {
     };
 }
 
+// Mock implementation of elevation
+const createElevation = (func, exaggeration) => {
+    return {
+        _exaggeration: exaggeration,
+        isDataAvailableAtPoint(_) {
+            return true;
+        },
+        getAtPointOrZero(point, def) {
+            return this.getAtPoint(point, def) || 0;
+        },
+        getAtPoint(point, def) {
+            return func(point) * this.exaggeration() || def;
+        },
+        getForTilePoints() {
+            return false;
+        },
+        getMinElevationBelowMSL: () => 0,
+
+        exaggeration() {
+            return this._exaggeration;
+        }
+    };
+};
+
 test('Map', (t) => {
     t.beforeEach((callback) => {
         window.useFakeXMLHttpRequest();
@@ -46,6 +70,8 @@ test('Map', (t) => {
         t.ok(map.keyboard.isEnabled());
         t.ok(map.scrollZoom.isEnabled());
         t.ok(map.touchZoomRotate.isEnabled());
+        t.equal(map._language, window.navigator.language);
+        t.notok(map._worldview);
         t.throws(() => {
             new Map({
                 container: 'anElementIdWhichDoesNotExistInTheDocument',
@@ -519,8 +545,8 @@ test('Map', (t) => {
                 fog.set({'range': [2, 5]});
                 fog.updateTransitions({transition: true}, {});
                 fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
-                t.deepEqual(fog.properties.get('range')[0], 1);
-                t.deepEqual(fog.properties.get('range')[1], 3);
+                t.deepEqual(fog.properties.get('range')[0], 1.25);
+                t.deepEqual(fog.properties.get('range')[1], 7.5);
                 fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
                 t.deepEqual(fog.properties.get('range')[0], 2);
                 t.deepEqual(fog.properties.get('range')[1], 5);
@@ -532,11 +558,33 @@ test('Map', (t) => {
                 fog.set({'horizon-blend': 0.5});
                 fog.updateTransitions({transition: true}, {});
                 fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
-                t.deepEqual(fog.properties.get('horizon-blend'), 0.25);
+                t.deepEqual(fog.properties.get('horizon-blend'), 0.3);
                 fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
                 t.deepEqual(fog.properties.get('horizon-blend'), 0.5);
                 fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
                 t.deepEqual(fog.properties.get('horizon-blend'), 0.5);
+
+                fog.set({'star-intensity-transition': {duration: 3000}});
+                fog.set({'star-intensity': 0.5});
+                fog.updateTransitions({transition: true}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                t.deepEqual(fog.properties.get('star-intensity'), 0.25);
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                t.deepEqual(fog.properties.get('star-intensity'), 0.5);
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                t.deepEqual(fog.properties.get('star-intensity'), 0.5);
+
+                fog.set({'high-color-transition': {duration: 3000}});
+                fog.set({'high-color': 'blue'});
+                fog.updateTransitions({transition: true}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                t.deepEqual(fog.properties.get('high-color'), new Color(0.0, 0.0, 1.0, 1));
+
+                fog.set({'space-color-transition': {duration: 3000}});
+                fog.set({'space-color': 'blue'});
+                fog.updateTransitions({transition: true}, {});
+                fog.recalculate({zoom: 16, zoomHistory: {}, now: 5000});
+                t.deepEqual(fog.properties.get('space-color'), new Color(0.0, 0.0, 1.0, 1));
 
                 t.end();
             });
@@ -545,7 +593,7 @@ test('Map', (t) => {
                 const fog = new Fog({});
                 const fogSpy = t.spy(fog, '_validate');
 
-                fog.set({color: [444]}, {validate: false});
+                fog.set({color: [444]}, {}, {validate: false});
                 fog.updateTransitions({transition: false}, {});
                 fog.recalculate({zoom: 16, zoomHistory: {}, now: 10});
 
@@ -1883,6 +1931,54 @@ test('Map', (t) => {
         });
     });
 
+    t.test('#remove deletes gl resources used by the globe', (t) => {
+        const style = extend(createStyle(), {zoom: 1});
+        const map = createMap(t, {style});
+        map.setProjection("globe");
+
+        map.on('style.load', () => {
+            map.once('render', () => {
+                map.remove();
+                const buffers = map.painter.globeSharedBuffers;
+                t.ok(buffers);
+
+                const checkBuffer = (name) => buffers[name] && ('buffer' in buffers[name]);
+
+                t.false(checkBuffer('_poleIndexBuffer'));
+                t.false(checkBuffer('_gridBuffer'));
+                t.false(checkBuffer('_gridIndexBuffer'));
+                t.false(checkBuffer('_poleNorthVertexBuffer'));
+                t.false(checkBuffer('_poleSouthVertexBuffer'));
+                t.false(checkBuffer('_wireframeIndexBuffer'));
+
+                t.end();
+            });
+        });
+    });
+
+    t.test('#remove deletes gl resources used by the atmosphere', (t) => {
+        const style = extend(createStyle(), {zoom: 1});
+        const map = createMap(t, {style});
+
+        map.on('style.load', () => {
+            map.once('render', () => {
+                const atmosphereBuffers = map.painter.atmosphereBuffer;
+
+                t.ok(atmosphereBuffers);
+
+                t.true(atmosphereBuffers.vertexBuffer.buffer);
+                t.true(atmosphereBuffers.indexBuffer.buffer);
+
+                map.remove();
+
+                t.false(atmosphereBuffers.vertexBuffer.buffer);
+                t.false(atmosphereBuffers.indexBuffer.buffer);
+
+                t.end();
+            });
+        });
+    });
+
     t.test('#addControl', (t) => {
         const map = createMap(t);
         const control = {
@@ -1941,15 +2037,67 @@ test('Map', (t) => {
         t.end();
     });
 
+    function pointToFixed(p, n = 8) {
+        return {
+            'x': p.x.toFixed(n),
+            'y': p.y.toFixed(n)
+        };
+    }
+
     t.test('#project', (t) => {
         const map = createMap(t);
-        t.deepEqual(map.project([0, 0]), {x: 100, y: 100});
+
+        t.test('In Mercator', (t) => {
+            t.deepEqual(pointToFixed(map.project({lng: 0, lat: 0})), {x: 100, y: 100});
+            t.deepEqual(pointToFixed(map.project({lng: -70.3125, lat: 57.326521225})), {x: 0, y: 0});
+            t.end();
+        });
+        t.test('In Globe', (t) => {
+            map.setProjection('globe');
+            t.deepEqual(pointToFixed(map.project({lng: 0, lat: 0})), {x: 100, y: 100});
+            t.deepEqual(pointToFixed(map.project({lng:  -72.817409474, lat: 43.692434709})), {x: 53.61718415, y: 53.61718415});
+            t.end();
+        });
+        t.test('In Natural Earth', (t) => {
+            map.setProjection('naturalEarth');
+            t.deepEqual(pointToFixed(map.project({lng: 0, lat: 0})), {x: 100, y: 100});
+            t.deepEqual(pointToFixed(map.project({lng: -86.861020716, lat: 61.500721712})), {x: 0, y: 0});
+            t.end();
+        });
+        t.test('In Albers', (t) => {
+            map.setProjection('albers');
+            t.deepEqual(pointToFixed(map.project({lng: 0, lat: 0})), {x: 100, y: 100});
+            t.deepEqual(pointToFixed(map.project({lng: 44.605340721, lat: 79.981951054})), {x: 0, y: 0});
+            t.end();
+        });
         t.end();
     });
 
     t.test('#unproject', (t) => {
         const map = createMap(t);
-        t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+        t.test('In Mercator', (t) => {
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: -70.3125, lat: 57.326521225});
+            t.end();
+        });
+        t.test('In Globe', (t) => {
+            map.setProjection('globe');
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng:  -72.817409474, lat: 43.692434709});
+            t.end();
+        });
+        t.test('In Natural Earth', (t) => {
+            map.setProjection('naturalEarth');
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: -86.861020716, lat: 61.500721712});
+            t.end();
+        });
+        t.test('In Albers', (t) => {
+            map.setProjection('albers');
+            t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: 44.605340721, lat: 79.981951054});
+            t.end();
+        });
         t.end();
     });
 
@@ -2170,6 +2318,68 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.end();
+    });
+
+    t.test('#language', (t) => {
+        t.test('can instantiate map with language', (t) => {
+            const map = createMap(t, {language: 'uk'});
+            map.on('style.load', () => {
+                t.equal(map.getLanguage(), 'uk');
+                t.end();
+            });
+        });
+
+        t.test('sets and gets language property', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setLanguage('es');
+                t.equal(map.getLanguage(), 'es');
+                t.end();
+            });
+        });
+
+        t.test('can reset language property to default', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setLanguage('es');
+                t.equal(map.getLanguage(), 'es');
+                map.setLanguage();
+                t.equal(map.getLanguage(), window.navigator.language);
+                t.end();
+            });
+        });
+        t.end();
+    });
+
+    t.test('#worldview', (t) => {
+        t.test('can instantiate map with worldview', (t) => {
+            const map = createMap(t, {worldview: 'JP'});
+            map.on('style.load', () => {
+                t.equal(map.getWorldview(), 'JP');
+                t.end();
+            });
+        });
+
+        t.test('sets and gets worldview property', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setWorldview('JP');
+                t.equal(map.getWorldview(), 'JP');
+                t.end();
+            });
+        });
+
+        t.test('can remove worldview property', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.setWorldview('JP');
+                t.equal(map.getWorldview(), 'JP');
+                map.setWorldview();
+                t.notOk(map.getWorldview());
+                t.end();
+            });
+        });
         t.end();
     });
 
@@ -3177,6 +3387,128 @@ test('Map', (t) => {
                 t.fail(`styleimagemissing fired for value ${id}`);
             });
         });
+    });
+
+    t.test('#snapToNorth', (t) => {
+
+        t.test('snaps when less than < 7 degrees', (t) => {
+            const map = createMap(t);
+            map.on('load', () =>  {
+                map.setBearing(6);
+                t.equal(map.getBearing(), 6);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 0);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('does not snap when > 7 degrees', (t) => {
+            const map = createMap(t);
+            map.on('load', () =>  {
+                map.setBearing(8);
+                t.equal(map.getBearing(), 8);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 8);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('snaps when < bearingSnap', (t) => {
+            const map = createMap(t, {"bearingSnap": 12});
+            map.on('load', () =>  {
+                map.setBearing(11);
+                t.equal(map.getBearing(), 11);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 0);
+                    t.end();
+                });
+            });
+        });
+
+        t.test('does not snap when > bearingSnap', (t) => {
+            const map = createMap(t, {"bearingSnap": 10});
+            map.on('load', () =>  {
+                map.setBearing(11);
+                t.equal(map.getBearing(), 11);
+                map.snapToNorth();
+                map.once('idle', () => {
+                    t.equal(map.getBearing(), 11);
+                    t.end();
+                });
+            });
+        });
+        t.end();
+    });
+
+    t.test('map.version', (t) => {
+        const map = createMap(t);
+        const version = map.version;
+        t.test('returns version string', (t) => {
+            t.ok(version);
+            t.match(version, /^2\.[0-9]+\.[0-9]+(-dev|-beta\.[1-9])?$/);
+            t.end();
+        });
+        t.test('cannot be set', (t) => {
+            t.throws(() => {
+                map.version = "2.0.0-beta.9";
+            }, TypeError, 'Cannot set property version of #<Map> which has only a getter');
+            t.notSame(map.version, "2.0.0-beta.9");
+            t.same(map.version, version);
+            t.end();
+        });
+        t.end();
+    });
+
+    t.test('#queryTerrainElevation', (t) => {
+        t.test('no elevation set', (t) => {
+            const map = createMap(t);
+            let elevation = map.queryTerrainElevation([25, 60]);
+            t.notOk(elevation);
+
+            elevation = map.queryTerrainElevation([0, 0]);
+            t.notOk(elevation);
+
+            t.end();
+        });
+
+        t.test('constant elevation', (t) => {
+            const map = createMap(t);
+            map.transform.elevation = createElevation(() => 100, 1.0);
+
+            let elevation = map.queryTerrainElevation([25, 60]);
+            t.equal(elevation, 100);
+
+            elevation = map.queryTerrainElevation([0, 0]);
+            t.equal(elevation, 100);
+
+            t.end();
+        });
+
+        t.test('elevation with exaggeration', (t) => {
+            const map = createMap(t);
+            map.transform.elevation = createElevation((point) => point.x + point.y, 0.1);
+
+            let elevation = map.queryTerrainElevation([0, 0]);
+            t.equal(fixedNum(elevation, 7), 0.1);
+
+            elevation = map.queryTerrainElevation([180, 0]);
+            t.equal(fixedNum(elevation, 7), 0.15);
+
+            elevation = map.queryTerrainElevation([-180, 85.051129]);
+            t.equal(fixedNum(elevation, 7), 0.0);
+
+            elevation = map.queryTerrainElevation([180, -85.051129]);
+            t.equal(fixedNum(elevation, 6), 0.2);
+
+            t.end();
+        });
+
+        t.end();
     });
 
     t.end();

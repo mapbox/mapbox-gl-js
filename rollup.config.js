@@ -6,8 +6,8 @@ import {fileURLToPath} from 'url';
 
 const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
-const production = BUILD === 'production';
 const bench = BUILD === 'bench';
+const production = BUILD === 'production' || bench;
 
 function buildType(build, minified) {
     switch (build) {
@@ -42,7 +42,7 @@ export default [{
         chunkFileNames: 'shared.js'
     },
     treeshake: production,
-    plugins: plugins(minified, production, false, bench)
+    plugins: plugins({minified, production, bench})
 }, {
     // Next, bundle together the three "chunks" produced in the previous pass
     // into a single, final bundle. See rollup/bundle_prelude.js and

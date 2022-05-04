@@ -91,7 +91,10 @@ export type TerrainSpecification = {|
 export type FogSpecification = {|
     "range"?: PropertyValueSpecification<[number, number]>,
     "color"?: PropertyValueSpecification<ColorSpecification>,
-    "horizon-blend"?: PropertyValueSpecification<number>
+    "high-color"?: PropertyValueSpecification<ColorSpecification>,
+    "space-color"?: PropertyValueSpecification<ColorSpecification>,
+    "horizon-blend"?: PropertyValueSpecification<number>,
+    "star-intensity"?: PropertyValueSpecification<number>
 |}
 
 export type ProjectionSpecification = {|
@@ -229,7 +232,8 @@ export type LineLayerSpecification = {|
         "line-blur"?: DataDrivenPropertyValueSpecification<number>,
         "line-dasharray"?: DataDrivenPropertyValueSpecification<Array<number>>,
         "line-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
-        "line-gradient"?: ExpressionSpecification
+        "line-gradient"?: ExpressionSpecification,
+        "line-trim-offset"?: [number, number]
     |}
 |}
 

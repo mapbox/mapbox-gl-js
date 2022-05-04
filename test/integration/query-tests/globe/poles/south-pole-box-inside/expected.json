@@ -1,0 +1,108 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        137.8564453125,
+        -64.51064316846676
+      ],
+      "type": "Point"
+    },
+    "id": 184,
+    "properties": {
+      "featureclass": "pole",
+      "lat_y": -48.865032,
+      "long_x": -123.401986,
+      "name": "South Magnetic Pole 2005 (est)",
+      "region": "Antarctica",
+      "scalerank": 3,
+      "subregion": "Southern Ocean"
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -127.6171875,
+        -74.49641311694309
+      ],
+      "type": "Point"
+    },
+    "id": 171,
+    "properties": {
+      "featureclass": "island",
+      "lat_y": -50.959168,
+      "long_x": -72.995002,
+      "name": "Dean I.",
+      "region": "Antarctica",
+      "scalerank": 3
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -145.6787109375,
+        -75.59587329063447
+      ],
+      "type": "Point"
+    },
+    "id": 170,
+    "properties": {
+      "featureclass": "island",
+      "lat_y": -50.959168,
+      "long_x": -72.995002,
+      "name": "Newman I.",
+      "region": "Antarctica",
+      "scalerank": 3
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -131.484375,
+        -74.48466225015636
+      ],
+      "type": "Point"
+    },
+    "id": 169,
+    "properties": {
+      "featureclass": "island",
+      "lat_y": -50.959168,
+      "long_x": -72.995002,
+      "name": "Grant I.",
+      "region": "Antarctica",
+      "scalerank": 3
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -116.89453125,
+        -74.06786624952264
+      ],
+      "type": "Point"
+    },
+    "id": 168,
+    "properties": {
+      "featureclass": "island",
+      "lat_y": -50.959168,
+      "long_x": -72.995002,
+      "name": "Wright I.",
+      "region": "Antarctica",
+      "scalerank": 3
+    },
+    "source": "geojson",
+    "state": {},
+    "type": "Feature"
+  }
+]

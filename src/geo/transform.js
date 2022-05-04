@@ -10,7 +10,7 @@ import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestT
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import {Frustum, Ray} from '../util/primitives.js';
+import {Frustum, FrustumCorners, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
@@ -18,6 +18,7 @@ import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjus
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import {calculateGlobeMatrix} from '../geo/projection/globe_util.js';
+import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
 import type {Elevation} from '../terrain/elevation.js';
@@ -97,6 +98,9 @@ class Transform {
     // globe coordinate transformation matrix
     globeMatrix: Float64Array;
 
+    globeCenterInViewSpace: [number, number, number];
+    globeRadius: number;
+
     inverseAdjustmentMatrix: Array<number>;
 
     minLng: number;
@@ -107,6 +111,8 @@ class Transform {
     worldMaxX: number;
     worldMinY: number;
     worldMaxY: number;
+
+    frustumCorners: FrustumCorners;
 
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
@@ -135,7 +141,7 @@ class Transform {
     _distanceTileDataCache: {[_: number]: FeatureDistanceData};
     _camera: FreeCamera;
     _centerAltitude: number;
-    _centerAltitudeValidForExaggeration: number;
+    _centerAltitudeValidForExaggeration: ?number;
     _horizonShift: number;
     _projectionScaler: number;
     _nearZ: number;
@@ -171,10 +177,11 @@ class Transform {
         this._distanceTileDataCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
-        this._centerAltitudeValidForExaggeration = 0;
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
         this._projectionScaler = 1.0;
+        this.globeRadius = 0;
+        this.globeCenterInViewSpace = [0, 0, 0];
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -203,6 +210,7 @@ class Transform {
         clone._camera = this._camera.clone();
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
+        clone.frustumCorners = this.frustumCorners;
         return clone;
     }
 
@@ -299,7 +307,7 @@ class Transform {
     }
 
     get cameraPixelsPerMeter(): number {
-        return this.projection.pixelsPerMeter(this.center.lat, this.cameraWorldSize);
+        return mercatorZfromAltitude(this.center.lat, this.cameraWorldSize);
     }
 
     get centerOffset(): Point {
@@ -387,7 +395,7 @@ class Transform {
             // Elevation data not loaded yet, reset
             this._centerAltitude = 0;
             this._seaLevelZoom = null;
-            this._centerAltitudeValidForExaggeration = 0;
+            this._centerAltitudeValidForExaggeration = undefined;
             return;
         }
         const elevation: Elevation = this._elevation;
@@ -397,7 +405,7 @@ class Transform {
     }
 
     _updateSeaLevelZoom() {
-        if (this._centerAltitudeValidForExaggeration === 0) {
+        if (this._centerAltitudeValidForExaggeration === undefined) {
             return;
         }
         const height = this.cameraToCenterDistance;
@@ -1227,8 +1235,7 @@ class Transform {
      */
     pointCoordinate3D(p: Point): MercatorCoordinate {
         if (!this.elevation) return this.pointCoordinate(p);
-        const elevation = this.elevation;
-        let raycast = this.elevation.pointCoordinate(p);
+        let raycast: ?Vec3 = this.projection.pointCoordinate3D(this, p.x, p.y);
         if (raycast) return new MercatorCoordinate(raycast[0], raycast[1], raycast[2]);
         let start = 0, end = this.horizonLineFromTop();
         if (p.y > end) return this.pointCoordinate(p); // holes between tiles below horizon line or below bottom.
@@ -1238,7 +1245,7 @@ class Transform {
 
         for (let i = 0; i < samples && end - start > threshold; i++) {
             r.y = interpolate(start, end, 0.66); // non uniform binary search favoring points closer to horizon.
-            const rCast = elevation.pointCoordinate(r);
+            const rCast = this.projection.pointCoordinate3D(this, r.x, r.y);
             if (rCast) {
                 end = r.y;
                 raycast = rCast;
@@ -1263,7 +1270,7 @@ class Transform {
             const horizon = this.horizonLineFromTop();
             return p.y < horizon;
         } else {
-            return !this.elevation.pointCoordinate(p);
+            return !this.projection.pointCoordinate3D(this, p.x, p.y);
         }
     }
 
@@ -1442,7 +1449,7 @@ class Transform {
             return cache[fogTileMatrixKey];
         }
 
-        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.cameraWorldSize);
+        const posMatrix = this.projection.createFogTileMatrix(this, this.cameraWorldSize, unwrappedTileID);
         mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
         cache[fogTileMatrixKey] = new Float32Array(posMatrix);
@@ -1709,6 +1716,9 @@ class Transform {
         // as tile elevations are in tile coordinates and relative to center elevation.
         this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
 
+        const clipToCamera = mat4.invert([], cameraToClip);
+        this.frustumCorners = FrustumCorners.fromInvProjectionMatrix(clipToCamera, this.horizonLineFromTop(), this.height);
+
         const view = new Float32Array(16);
         mat4.identity(view);
         mat4.scale(view, view, [1, -1, 1]);
@@ -1761,8 +1771,16 @@ class Transform {
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
-        // globe matrix
-        this.globeMatrix = this.projection.name === 'globe' ? calculateGlobeMatrix(this) : m;
+        if (this.projection.name === 'globe') {
+            this.globeMatrix = calculateGlobeMatrix(this);
+
+            const globeCenter = [this.globeMatrix[12], this.globeMatrix[13], this.globeMatrix[14]];
+
+            this.globeCenterInViewSpace = vec3.transformMat4(globeCenter, globeCenter, worldToCamera);
+            this.globeRadius = this.worldSize / 2.0 / Math.PI - 1.0;
+        } else {
+            this.globeMatrix = m;
+        }
 
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
@@ -1782,7 +1800,7 @@ class Transform {
         // - p = p - cameraOrigin
         // - p.xy = p.xy * cameraWorldSize * windowScaleFactor
         // - p.z  = p.z  * cameraPixelsPerMeter * windowScaleFactor
-        const windowScaleFactor = 1 / this.height;
+        const windowScaleFactor = 1 / this.height / this._projectionScaler;
         const metersToPixel = [cameraWorldSize, cameraWorldSize, cameraPixelsPerMeter];
         vec3.scale(metersToPixel, metersToPixel, windowScaleFactor);
         vec3.scale(cameraPos, cameraPos, -1);
@@ -1902,7 +1920,7 @@ class Transform {
     _terrainEnabled(): boolean {
         if (!this._elevation) return false;
         if (!this.projection.supportsTerrain) {
-            warnOnce('Terrain is not yet supported with alternate projections. Use mercator to enable terrain.');
+            warnOnce('Terrain is not yet supported with alternate projections. Use mercator or globe to enable terrain.');
             return false;
         }
         return true;
@@ -1993,9 +2011,16 @@ class Transform {
      * the camera is right above the center of the map.
      */
     getCameraPoint(): Point {
-        const pitch = this._pitch;
-        const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
-        return this.centerPoint.add(new Point(0, yOffset));
+        if (this.projection.name === 'globe') {
+            // Find precise location of the projected camera position on the curved surface
+            const center = [this.globeMatrix[12], this.globeMatrix[13], this.globeMatrix[14]];
+            const pos = projectClamped(center, this.pixelMatrix);
+            return new Point(pos[0], pos[1]);
+        } else {
+            const pitch = this._pitch;
+            const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
+            return this.centerPoint.add(new Point(0, yOffset));
+        }
     }
 }
 

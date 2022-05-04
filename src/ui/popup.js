@@ -9,10 +9,12 @@ import Point from '@mapbox/point-geometry';
 import window from '../util/window.js';
 import smartWrap from '../util/smart_wrap.js';
 import {type Anchor, anchorTranslate} from './anchor.js';
+import {isLngLatBehindGlobe} from '../geo/projection/globe_util.js';
 
 import type Map from './map.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {PointLike} from '@mapbox/point-geometry';
+import type Marker from './marker.js';
 
 const defaultOptions = {
     closeButton: true,
@@ -111,6 +113,7 @@ export default class Popup extends Evented {
     _pos: ?Point;
     _anchor: Anchor;
     _classList: Set<string>;
+    _marker: ?Marker;
 
     constructor(options: PopupOptions) {
         super();
@@ -625,6 +628,11 @@ export default class Popup extends Evented {
             });
         }
 
+        if (!this._marker && map._usingGlobe()) {
+            const opacity = isLngLatBehindGlobe(map.transform, this._lngLat) ? 0 : 1;
+            this._setOpacity(opacity);
+        }
+
         this._updateClassList();
     }
 
@@ -641,11 +649,12 @@ export default class Popup extends Evented {
     }
 
     _setOpacity(opacity: number) {
+        if (this._container) {
+            this._container.style.opacity = `${opacity}`;
+        }
         if (this._content) {
-            this._content.style.opacity = `${opacity}`;
             this._content.style.pointerEvents = opacity ? 'auto' : 'none';
         }
-        if (this._tip)  this._tip.style.opacity = `${opacity}`;
     }
 }
 

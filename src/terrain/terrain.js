@@ -1153,7 +1153,7 @@ export class Terrain extends Elevation {
             // 1. overlap is handled by proxy render to texture tiles (there is no overlap there)
             // 2. here we handle only brief zoom out semi-transparent color intensity flickering
             //    and that is avoided fine by stenciling primitives as part of drawing (instead of additional tile quad step).
-            this._overlapStencilMode.ref = this.painter._tileClippingMaskIDs.get(id.key) || 0;
+            this._overlapStencilMode.ref = this.painter._tileClippingMaskIDs[id.key];
         } // else this._overlapStencilMode.ref is set to a single value used per proxy tile, in _setupStencil.
         return this._overlapStencilMode;
     }
@@ -1162,15 +1162,14 @@ export class Terrain extends Elevation {
         const painter = this.painter;
         const context = this.painter.context;
         const gl = context.gl;
-        painter._tileClippingMaskIDs.clear();
+        painter._tileClippingMaskIDs = {};
         context.setColorMode(ColorMode.disabled);
         context.setDepthMode(DepthMode.disabled);
 
         const program = painter.useProgram('clippingMask');
 
         for (const tileID of proxiedCoords) {
-            const id = --ref;
-            painter._tileClippingMaskIDs.set(tileID.key, id);
+            const id = painter._tileClippingMaskIDs[tileID.key] = --ref;
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),

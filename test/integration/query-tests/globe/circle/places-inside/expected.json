@@ -1,0 +1,44 @@
+[
+    {
+      "geometry": {
+        "coordinates": [
+          -35.5078125,
+          -5.156598738411162
+        ],
+        "type": "Point"
+      },
+      "id": 311,
+      "properties": {
+        "featureclass": "cape",
+        "lat_y": -5.193476,
+        "long_x": -35.447654,
+        "name": "Cabo de São Roque",
+        "region": "South America",
+        "scalerank": 5
+      },
+      "source": "geojson",
+      "state": {},
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -39.990234375,
+          -2.855262784366573
+        ],
+        "type": "Point"
+      },
+      "id": 310,
+      "properties": {
+        "featureclass": "cape",
+        "lat_y": -2.85044,
+        "long_x": -40.067208,
+        "name": "Ponta de Jericoacoara",
+        "region": "South America",
+        "scalerank": 5
+      },
+      "source": "geojson",
+      "state": {},
+      "type": "Feature"
+    }
+  ]

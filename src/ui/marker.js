@@ -13,7 +13,7 @@ import type Popup from './popup.js';
 import type {LngLatLike} from "../geo/lng_lat.js";
 import type {MapMouseEvent, MapTouchEvent} from './events.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import {globeTiltAtScreenPoint, globeCenterToScreenPoint} from '../geo/projection/globe_util.js';
+import {globeTiltAtLngLat, globeCenterToScreenPoint, isLngLatBehindGlobe} from '../geo/projection/globe_util.js';
 
 type Options = {
     element?: HTMLElement,
@@ -32,10 +32,10 @@ const defaultHeight = 41;
 const defaultWidth = 27;
 
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
-// Zoom levels to transition "upright" aligned markers in globe view.
+// Zoom levels to transition "horizon" aligned markers in globe view.
 const ALIGN_TO_HORIZON_BELOW_ZOOM = 4;
 const ALIGN_TO_SCREEN_ABOVE_ZOOM = 6; // Can't be larger than GLOBE_ZOOM_THRESHOLD_MAX.
-const MAX_PITCH = 80; // Ensure that markers with "upright" pitch alignment doen't disappear completely (as they would at pitch 90)
+const MAX_PITCH = 80; // Ensure that markers with "horizon" pitch alignment doen't disappear completely (as they would at pitch 90)
 
 /**
  * Creates a marker component.
@@ -338,6 +338,7 @@ export default class Marker extends Evented {
                 } : this._offset;
             }
             this._popup = popup;
+            popup._marker = this;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
             this._element.setAttribute('role', 'button');
@@ -415,20 +416,17 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _occluded(unprojected: LngLat): boolean {
+    _behindTerrain(): boolean {
         const map = this._map;
         if (!map) return false;
+        const unprojected = map.unproject(this._pos);
         const camera = map.getFreeCameraOptions();
-        if (camera.position) {
-            const cameraLngLat = camera.position.toLngLat();
-            const shortestDistance = cameraLngLat.distanceTo(unprojected);
-            const distanceToMarker = cameraLngLat.distanceTo(this._lngLat);
-            // In globe view, we only occlude if past ~100 km from cameraLngLat (i.e. screen center).
-            // This fixes an issue where a marker at screen center results in very small distances,
-            // with the error introduced from `map.unproject(pos)` occasionally causing the marker to be incorrectly occluded.
-            return shortestDistance < distanceToMarker * 0.9 && (!map._usingGlobe() || distanceToMarker > 100000);
-        }
-        return false;
+        if (!camera.position) return false;
+        const cameraLngLat = camera.position.toLngLat();
+        const toClosestSurface = cameraLngLat.distanceTo(unprojected);
+        const toMarker = cameraLngLat.distanceTo(this._lngLat);
+        return toClosestSurface < toMarker * 0.9;
+
     }
 
     _evaluateOpacity() {
@@ -442,22 +440,19 @@ export default class Marker extends Evented {
             return;
         }
         const mapLocation = map.unproject(pos);
-        let opacity = 1;
-        if (map._usingGlobe()) {
-            opacity = this._occluded(mapLocation) ? 0 : 1;
-        } else if (map.transform._terrainEnabled() && map.getTerrain()) {
-            opacity = this._occluded(mapLocation) ? TERRAIN_OCCLUDED_OPACITY : 1;
+        let opacity;
+        if (map._usingGlobe() && isLngLatBehindGlobe(map.transform, this._lngLat)) {
+            opacity = 0;
+        } else {
+            opacity = 1 - map._queryFogOpacity(mapLocation);
+            if (map.transform._terrainEnabled() && map.getTerrain() && this._behindTerrain()) {
+                opacity *= TERRAIN_OCCLUDED_OPACITY;
+            }
         }
 
-        const fogOpacity = map._queryFogOpacity(mapLocation);
-        opacity *= (1.0 - fogOpacity);
-        const pointerEvents = opacity ? 'auto' : 'none';
-
         this._element.style.opacity = `${opacity}`;
-        this._element.style.pointerEvents = pointerEvents;
+        this._element.style.pointerEvents = opacity > 0 ? 'auto' : 'none';
         if (this._popup) {
-            const container = this._popup._container;
-            if (container) { container.style.pointerEvents = pointerEvents; }
             this._popup._setOpacity(opacity);
         }
 
@@ -478,9 +473,9 @@ export default class Marker extends Evented {
 
         const xy = this._calculateXYTransform();
         const z = this._calculateZTransform();
-        // In globe `upright` alignment, we adjust first pitch, then rotation so that the marker
+        // In globe `horizon` alignment, we adjust first pitch, then rotation so that the marker
         // is always compressed vertically and appears to be popping out from the map.
-        const rotation = this.getPitchAlignment() === 'upright' ? z + xy : xy + z;
+        const rotation = this.getPitchAlignment() === 'horizon' ? z + xy : xy + z;
         const offset = this._offset.mult(this._scale);
 
         this._element.style.transform = `
@@ -501,7 +496,7 @@ export default class Marker extends Evented {
                 const pitch = map.getPitch();
                 return pitch ? `rotateX(${pitch}deg)` : '';
             } // "map" alignment on globe
-            const tilt = radToDeg(globeTiltAtScreenPoint(map.transform, pos));
+            const tilt = radToDeg(globeTiltAtLngLat(map.transform, pos));
             const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
             const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
             const yTilt = posFromCenter.x * tiltOverDist;
@@ -509,8 +504,8 @@ export default class Marker extends Evented {
             if (!xTilt && !yTilt) { return ''; }
             return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
         }
-        if (map._usingGlobe()) {         // "upright" with globe
-            const pitch = MAX_PITCH * (1 - radToDeg(globeTiltAtScreenPoint(map.transform, pos)) / 90);
+        if (map._usingGlobe()) {         // 'horizon" alignment on globe
+            const pitch = MAX_PITCH * (1 - radToDeg(globeTiltAtLngLat(map.transform, this._lngLat)) / 90);
             let zoomTransition = 1;
             const zoom = map.getZoom();
             const centerPoint = globeCenterToScreenPoint(map.transform);
@@ -521,7 +516,7 @@ export default class Marker extends Evented {
             }
             return `rotateX(${pitch * zoomTransition}deg)`;
         }
-        return ''; // Upright without globe (or at high zooms) behavies as viewport
+        return ''; // 'horizon' without globe (or at high zooms) behavies as viewport
     }
 
     _calculateZTransform(): string {
@@ -542,7 +537,7 @@ export default class Marker extends Evented {
                 return radToDeg(Math.atan2(diff.y, diff.x)) - 90;
             }
             return this._rotation - map.getBearing();
-        } else if (this._rotationAlignment === "upright" && map._usingGlobe()) {
+        } else if (this._rotationAlignment === "horizon" && map._usingGlobe()) {
             const zoom = map.getZoom();
             const centerPoint = globeCenterToScreenPoint(map.transform);
             let zoomTransition = 1;
@@ -810,7 +805,7 @@ export default class Marker extends Evented {
      */
     getRotationAlignment(): string {
         return (this._rotationAlignment === `auto` ||
-            (this._map && this._rotationAlignment === 'upright' && !this._map._usingGlobe())) ?
+            (this._map && this._rotationAlignment === 'horizon' && !this._map._usingGlobe())) ?
             'viewport' : this._rotationAlignment;
     }
 
@@ -836,7 +831,7 @@ export default class Marker extends Evented {
      * const alignment = marker.getPitchAlignment();
      */
     getPitchAlignment(): string {
-        if (this._map && this._pitchAlignment === 'upright' && !this._map._usingGlobe()) { return 'viewport'; }
+        if (this._map && this._pitchAlignment === 'horizon' && !this._map._usingGlobe()) { return 'viewport'; }
         return this._pitchAlignment === 'auto' ? this.getRotationAlignment() : this._pitchAlignment;
     }
 }

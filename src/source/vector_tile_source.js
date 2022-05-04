@@ -71,6 +71,8 @@ class VectorTileSource extends Evented implements Source {
     _loaded: boolean;
     _tileWorkers: {[string]: Actor};
     _deduped: DedupedRequest;
+    language: ?string;
+    worldview: ?string;
 
     constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -104,10 +106,15 @@ class VectorTileSource extends Evented implements Source {
     load() {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
-        this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, (err, tileJSON) => {
+        const language = this.map._language;
+        const worldview = this.map._worldview;
+        this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, language, worldview, (err, tileJSON) => {
             this._tileJSONRequest = null;
             this._loaded = true;
             if (err) {
+                if (language) console.warn(`Ensure that your requested language string is a valid BCP-47 code. Found: ${language}`);
+                if (worldview && worldview.length !== 2) console.warn(`Requested worldview strings must be a valid ISO alpha-2 code. Found: ${worldview}`);
+
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
                 extend(this, tileJSON);
@@ -196,6 +203,22 @@ class VectorTileSource extends Evented implements Source {
         this.setSourceProperty(() => {
             this.url = url;
             this._options.url = url;
+        });
+
+        return this;
+    }
+
+    _setLanguage(language?: ?string): this {
+        this.setSourceProperty(() => {
+            this.language = language;
+        });
+
+        return this;
+    }
+
+    _setWorldview(worldview?: ?string): this {
+        this.setSourceProperty(() => {
+            this.worldview = worldview;
         });
 
         return this;

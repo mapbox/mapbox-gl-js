@@ -747,6 +747,7 @@ export class Properties<Props: Object> {
         this.defaultPossiblyEvaluatedValues = ({}: any);
         this.overridableProperties = ([]: any);
 
+        const defaultParameters = new EvaluationParameters(0, {});
         for (const property in properties) {
             const prop = properties[property];
             if (prop.specification.overridable) {
@@ -759,13 +760,13 @@ export class Properties<Props: Object> {
             this.defaultTransitioningPropertyValues[property] =
                 defaultTransitionablePropertyValue.untransitioned();
             this.defaultPossiblyEvaluatedValues[property] =
-                defaultPropertyValue.possiblyEvaluate(({}: any));
+                defaultPropertyValue.possiblyEvaluate(defaultParameters);
         }
     }
 }
 
-register(DataDrivenProperty);
-register(DataConstantProperty);
-register(CrossFadedDataDrivenProperty);
-register(CrossFadedProperty);
-register(ColorRampProperty);
+register(DataDrivenProperty, 'DataDrivenProperty');
+register(DataConstantProperty, 'DataConstantProperty');
+register(CrossFadedDataDrivenProperty, 'CrossFadedDataDrivenProperty');
+register(CrossFadedProperty, 'CrossFadedProperty');
+register(ColorRampProperty, 'ColorRampProperty');

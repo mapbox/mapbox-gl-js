@@ -6,8 +6,7 @@
       "width": 1105,
       "height": 676,
       "operations": [
-        ["setProjection", "globe"],
-        ["wait"]
+        ["setProjection", "globe"]
       ]
     }
   },

@@ -12,12 +12,13 @@ import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import {degToRad, smoothstep, clamp} from '../../util/util.js';
 import {vec3, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
-import {members as globeLayoutAttributes, atmosphereLayout} from '../../terrain/globe_attributes.js';
+import {members as globeLayoutAttributes} from '../../terrain/globe_attributes.js';
 import posAttributes from '../../data/pos_attributes.js';
-import {TriangleIndexArray, GlobeVertexArray, GlobeAtmosphereVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
+import {TriangleIndexArray, GlobeVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
 
+import type LngLat from '../lng_lat.js';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
 import type {Vec3, Mat4} from 'gl-matrix';
@@ -25,6 +26,9 @@ import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Transform from '../transform.js';
 import Point from '@mapbox/point-geometry';
+
+export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
+export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
@@ -126,15 +130,13 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
 
 export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: CanonicalTileID): Aabb {
     const scale = numTiles / tr.worldSize;
-    const to1to1Units = (cornerMin: Vec3, cornerMax: Vec3) => {
-        vec3.scale(cornerMin, cornerMin, scale);
-        vec3.scale(cornerMax, cornerMax, scale);
-    };
 
     const mx = Number.MAX_VALUE;
     const cornerMax = [-mx, -mx, -mx];
     const cornerMin = [mx, mx, mx];
-    const m = calculateGlobeMatrix(tr);
+    const m = mat4.identity(new Float64Array(16));
+    mat4.scale(m, m, [scale, scale, scale]);
+    mat4.multiply(m, m, tr.globeMatrix);
 
     if (tileId.z <= 1) {
         // Compute minimum bounding box that fully encapsulates
@@ -148,7 +150,6 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
             vec3.max(cornerMax, cornerMax, corners[i]);
         }
 
-        to1to1Units(cornerMin, cornerMax);
         return new Aabb(cornerMin, cornerMax);
     }
 
@@ -184,8 +185,13 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     }
 
     if (bounds.contains(tr.center)) {
+        // Extend the aabb by encapsulating the center point
         cornerMax[2] = 0.0;
-        to1to1Units(cornerMin, cornerMax);
+        const point = tr.point;
+        const center = [point.x * scale, point.y * scale, 0];
+        vec3.min(cornerMin, cornerMin, center);
+        vec3.max(cornerMax, cornerMax, center);
+
         return new Aabb(cornerMin, cornerMax);
     }
 
@@ -241,7 +247,6 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     vec3.min(cornerMin, cornerMin, arcBounds);
     vec3.max(cornerMax, cornerMax, arcBounds);
 
-    to1to1Units(cornerMin, cornerMax);
     return new Aabb(cornerMin, cornerMax);
 }
 
@@ -370,9 +375,6 @@ export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
     return Float32Array.from(posMatrix);
 }
 
-export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
-export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
-
 export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
 }
@@ -417,9 +419,13 @@ export function getLatitudinalLod(lat: number): number {
     return lod;
 }
 
-const POLE_RAD = degToRad(85.0);
-const POLE_COS = Math.cos(POLE_RAD);
-const POLE_SIN = Math.sin(POLE_RAD);
+export function globeCenterToScreenPoint(tr: Transform): Point {
+    const pos = [0, 0, 0];
+    const matrix = mat4.identity(new Float64Array(16));
+    mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
+    vec3.transformMat4(pos, pos, matrix);
+    return new Point(pos[0], pos[1]);
+}
 
 function cameraPositionInECEF(tr: Transform): Array<number> {
     // Here "center" is the center of the globe. We refer to transform._center
@@ -444,23 +450,23 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
     return vec3.add([], centerToPivot, pivotToCamera);
 }
 
-// Return the angle of the normal vector of the sphere relative to the camera at a screen point.
+// Return the angle of the normal vector of the sphere relative to the camera.
 // i.e. how much to tilt map-aligned markers.
-export function globeTiltAtScreenPoint(tr: Transform, point: Point): number {
-    const lngLat = tr.pointLocation(point);
+export function globeTiltAtLngLat(tr: Transform, lngLat: LngLat): number {
     const centerToPoint = latLngToECEF(lngLat.lat, lngLat.lng);
     const centerToCamera = cameraPositionInECEF(tr);
     const pointToCamera = vec3.subtract([], centerToCamera, centerToPoint);
     return vec3.angle(pointToCamera, centerToPoint);
 }
 
-export function globeCenterToScreenPoint(tr: Transform): Point {
-    const pos = [0, 0, 0];
-    const matrix = mat4.identity(new Float64Array(16));
-    mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
-    vec3.transformMat4(pos, pos, matrix);
-    return new Point(pos[0], pos[1]);
+export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
+    // We consider 1% past the horizon not occluded, this allows popups to be dragged around the globe edge without fading.
+    return (globeTiltAtLngLat(tr, lngLat) > Math.PI / 2 * 1.01);
 }
+
+const POLE_RAD = degToRad(85.0);
+const POLE_COS = Math.cos(POLE_RAD);
+const POLE_SIN = Math.sin(POLE_RAD);
 
 export class GlobeSharedBuffers {
     _poleNorthVertexBuffer: VertexBuffer;
@@ -472,17 +478,12 @@ export class GlobeSharedBuffers {
     _gridIndexBuffer: IndexBuffer;
     _gridSegments: Array<SegmentVector>;
 
-    atmosphereVertexBuffer: VertexBuffer;
-    atmosphereIndexBuffer: IndexBuffer;
-    atmosphereSegments: SegmentVector;
-
     _wireframeIndexBuffer: IndexBuffer;
     _wireframeSegments: Array<SegmentVector>;
 
     constructor(context: Context) {
         this._createGrid(context);
         this._createPoles(context);
-        this._createAtmosphere(context);
     }
 
     destroy() {
@@ -493,9 +494,6 @@ export class GlobeSharedBuffers {
         this._poleSouthVertexBuffer.destroy();
         for (const segments of this._poleSegments) segments.destroy();
         for (const segments of this._gridSegments) segments.destroy();
-        this.atmosphereVertexBuffer.destroy();
-        this.atmosphereIndexBuffer.destroy();
-        this.atmosphereSegments.destroy();
 
         if (this._wireframeIndexBuffer) {
             this._wireframeIndexBuffer.destroy();
@@ -572,22 +570,6 @@ export class GlobeSharedBuffers {
 
         this._poleNorthVertexBuffer = context.createVertexBuffer(northVertices, globeLayoutAttributes, false);
         this._poleSouthVertexBuffer = context.createVertexBuffer(southVertices, globeLayoutAttributes, false);
-    }
-
-    _createAtmosphere(context: Context) {
-        const atmosphereVertices = new GlobeAtmosphereVertexArray();
-        atmosphereVertices.emplaceBack(-1, 1, 1, 0, 0);
-        atmosphereVertices.emplaceBack(1, 1, 1, 1, 0);
-        atmosphereVertices.emplaceBack(1, -1, 1, 1, 1);
-        atmosphereVertices.emplaceBack(-1, -1, 1, 0, 1);
-
-        const atmosphereTriangles = new TriangleIndexArray();
-        atmosphereTriangles.emplaceBack(0, 1, 2);
-        atmosphereTriangles.emplaceBack(2, 3, 0);
-
-        this.atmosphereVertexBuffer = context.createVertexBuffer(atmosphereVertices, atmosphereLayout.members);
-        this.atmosphereIndexBuffer = context.createIndexBuffer(atmosphereTriangles);
-        this.atmosphereSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
     }
 
     getGridBuffers(latitudinalLod: number): [VertexBuffer, IndexBuffer, SegmentVector] {

@@ -1,23 +1,29 @@
-# 13.23.1
+## 13.24.0
+### 🐞 Bug fixes
 
+* Fix error on `gl-style-validate` script. ([#11538](https://github.com/mapbox/mapbox-gl-js/pull/11538))
+* Allow the second argument to the `in` expression operator to be an empty string. ([#11547](https://github.com/mapbox/mapbox-gl-js/pull/11547))
+* Fix error on some valid `filter` expressions. ([#11475](https://github.com/mapbox/mapbox-gl-js/pull/11475))
+
+## 13.23.1
 ### ✨ Features and improvements
 
 * Improve `coalesce` expressions to return a `ResolvedImage` when images are missing. ([#11371](https://github.com/mapbox/mapbox-gl-js/pull/11371))
 
-# 13.23.0
+## 13.23.0
 
 ### ✨ Features and improvements
 
 * Add a `projection` root property that allows a non-mercator projection to be set as a style's default projection. ([#11124](https://github.com/mapbox/mapbox-gl-js/pull/11124))
 * Add support for using `["pitch"]` and `["distance-from-camera"]` expressions within the `filter` of a symbol layer. ([#10795](https://github.com/mapbox/mapbox-gl-js/pull/10795))
 
-# 13.22.0
+## 13.22.0
 
 ### ✨ Features and improvements
 
 * Added `protected` field to mapbox-api-supported validation. ([#10968](https://github.com/mapbox/mapbox-gl-js/pull/10968))
 
-# 13.21.0
+## 13.21.0
 
 ### ✨ Features and improvements
 * Add support for `text-writing-mode` property when using `symbol-placement: line` text labels. ([#10647](https://github.com/mapbox/mapbox-gl-js/pull/10647))

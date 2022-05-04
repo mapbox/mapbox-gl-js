@@ -2,7 +2,7 @@
 
 import {test} from '../../util/test.js';
 
-import {degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util.js';
+import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util.js';
 
 import Point from '@mapbox/point-geometry';
 
@@ -167,6 +167,20 @@ test('util', (t) => {
         t.equal(clamp(1, 0, 1), 1);
         t.equal(clamp(200, 0, 180), 180);
         t.equal(clamp(-200, 0, 180), 0);
+        t.end();
+    });
+
+    t.test('mapValue', (t) => {
+        t.equal(mapValue(5, 0, 10, 0, 1), 0.5);
+        t.equal(mapValue(0, -10, 10, 0, 1), 0.5);
+        t.equal(mapValue(12, 0, 5, 0, 1), 1);
+        t.equal(mapValue(-10, -5, 5, 0, 1), 0);
+
+        t.equal(mapValue(5, 0, 10, -5, 5), 0);
+        t.equal(mapValue(0, -10, 10, -5, 10), 2.5);
+        t.equal(mapValue(12, 0, 5, -1, 0), 0);
+        t.equal(mapValue(5, -10, 10, -5, -4), -4.25);
+
         t.end();
     });
 

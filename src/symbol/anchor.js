@@ -23,6 +23,6 @@ class Anchor extends Point {
     }
 }
 
-register(Anchor);
+register(Anchor, 'Anchor');
 
 export default Anchor;

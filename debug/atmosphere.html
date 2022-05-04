@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        .mapboxgl-canvas {
+          background-image: url("https://img.favpng.com/9/21/21/royalty-free-photography-illustration-png-favpng-d38x16Mw2kxSFqtUSXG8gT5CQ_t.jpg");
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='access_token_generated.js'></script>
+<script>
+
+var GUIParams = function() {
+    this.enable = true;
+    this.style = 'streets-v11';
+    this.start = 0.8;
+    this.end = 8.0;
+    this.color = [255, 255, 255];
+    this.highColor = [0, 0, 0];
+    this.spaceColor = [0, 0, 0];
+    this.spaceAlpha = 1.0;
+    this.colorAlpha = 1.0;
+    this.skyAlpha = 1.0;
+    this.horizonBlend = 0.5;
+    this.starIntensity = 0.15;
+    this.presets = 'preset1';
+};
+
+var guiParams = new GUIParams();
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 10,
+    center: [78.7193, 36.2927],
+    pitch: 75,
+    bearing: -10,
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true,
+    projection: 'globe'
+});
+
+function updatePreset(value) {
+    // 'mapbox/streets-v11',
+    // 'mapbox/satellite-streets-v11',
+    // 'mapbox/light-v10',
+    // 'mapbox/dark-v10',
+    // 'mapbox/outdoors-v11',
+    // 'mapbox/satellite-v9',
+    if (value === 'preset1') {
+        guiParams.enable = true;
+        guiParams.style = 'satellite-streets-v11';
+        guiParams.color = [220, 159, 159];
+        guiParams.highColor = [36, 92, 223];
+        guiParams.spaceColor = [0, 0, 0];
+        guiParams.spaceAlpha = 1.0;
+        guiParams.colorAlpha = 1.0;
+        guiParams.skyAlpha = 0.7;
+        guiParams.horizonBlend = 0.5;
+        guiParams.starIntensity = 0.15;
+    } else if (value === 'preset2') {
+        guiParams.enable = true;
+        guiParams.style = 'satellite-v9';
+        guiParams.color = [225, 225, 225];
+        guiParams.highColor = [44, 73, 175];
+        guiParams.spaceColor = [11, 11, 25];
+        guiParams.spaceAlpha = 1.0;
+        guiParams.colorAlpha = 1.0;
+        guiParams.skyAlpha = 1;
+        guiParams.horizonBlend = 0.025;
+        guiParams.starIntensity = 0.150;
+    } else if (value === 'preset3') {
+        guiParams.enable = true;
+        guiParams.style = 'light-v10';
+        guiParams.color = [200, 160, 160];
+        guiParams.highColor = [200, 200, 200];
+        guiParams.spaceColor = [57, 72, 85];
+        guiParams.spaceAlpha = 1.0;
+        guiParams.colorAlpha = 0.5;
+        guiParams.skyAlpha = 1;
+        guiParams.horizonBlend = 0.05;
+        guiParams.starIntensity = 0.2;
+    } else if (value === 'preset4') {
+        guiParams.enable = true;
+        guiParams.style = 'streets-v11';
+        guiParams.color = [255, 255, 255];
+        guiParams.highColor = [19, 122, 255];
+        guiParams.spaceColor = [0, 0, 0];
+        guiParams.spaceAlpha = 1.0;
+        guiParams.colorAlpha = 1;
+        guiParams.skyAlpha = 1;
+        guiParams.horizonBlend = 0.3;
+        guiParams.starIntensity = 1.0;
+    } else if (value === 'preset5') {
+        guiParams.enable = true;
+        guiParams.style = 'dark-v10';
+        guiParams.color = [13, 13, 13];
+        guiParams.highColor = [255, 255, 255];
+        guiParams.spaceColor = [50, 50, 50];
+        guiParams.spaceAlpha = 1.0;
+        guiParams.colorAlpha = 1;
+        guiParams.skyAlpha = 0.5;
+        guiParams.horizonBlend = 0.025;
+        guiParams.starIntensity = 0.1;
+    } else if (value === 'preset6') {
+        guiParams.enable = true;
+        guiParams.style = 'outdoors-v11';
+        guiParams.color = [85, 119, 140];
+        guiParams.highColor = [36, 92, 223];
+        guiParams.spaceColor = [2, 20, 50];
+        guiParams.spaceAlpha = 1.0;
+        guiParams.colorAlpha = 0.8;
+        guiParams.skyAlpha = 1.0;
+        guiParams.horizonBlend = 1;
+        guiParams.starIntensity = 0.75;
+    }
+    map.setStyle('mapbox://styles/mapbox/' + guiParams.style);
+}
+
+updatePreset('preset1');
+
+window.onload = function() {
+    var gui = new dat.GUI(); // eslint-disable-line
+
+    var presets = gui.add(guiParams, 'presets', [
+        'preset1',
+        'preset2',
+        'preset3',
+        'preset4',
+        'preset5',
+        'preset6'
+    ]);
+
+    presets.onFinishChange((value) => {
+        updatePreset(value);
+    });
+
+    var fog = gui.addFolder('Atmosphere');
+    var enable = fog.add(guiParams, 'enable');
+    enable.onFinishChange((value) => {
+        map.setFog(value ? {
+            "range": [guiParams.start, guiParams.end],
+            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
+            "horizon-blend": guiParams.horizonBlend,
+            "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + guiParams.skyAlpha + ')',
+            "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + guiParams.spaceAlpha + ')',
+            "star-intensity": guiParams.starIntensity
+        } : null);
+    });
+
+    var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 1.0).listen();
+    horizonBlend.onChange((value) => {
+        map.setFog({
+            "horizon-blend": value,
+        });
+    });
+    var starIntensity = fog.add(guiParams, 'starIntensity', 0.0, 1.0).listen();
+    starIntensity.onChange((value) => {
+        map.setFog({
+            "star-intensity": value,
+        });
+    });
+
+    var colorAlpha = fog.add(guiParams, 'colorAlpha', 0.0, 1.0).listen();
+    colorAlpha.onChange((value) => {
+        map.setFog({
+            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + value + ')'
+        });
+    });
+
+    var color = fog.addColor(guiParams, 'color').listen();
+    color.onChange((value) => {
+        map.setFog({
+            "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.colorAlpha + ')'
+        });
+    });
+
+    var skyAlpha = fog.add(guiParams, 'skyAlpha', 0.0, 1.0).listen();
+    skyAlpha.onChange((value) => {
+        map.setFog({
+            "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + value + ')'
+        });
+    });
+    var highColor = fog.addColor(guiParams, 'highColor').listen();
+    highColor.onChange((value) => {
+        map.setFog({
+            "high-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.skyAlpha + ')'
+        });
+    });
+
+    var spaceAlpha = fog.add(guiParams, 'spaceAlpha', 0.0, 1.0).listen();
+    spaceAlpha.onChange((value) => {
+        map.setFog({
+            "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + value + ')'
+        });
+    });
+    var spaceColor = fog.addColor(guiParams, 'spaceColor').listen();
+    spaceColor.onChange((value) => {
+        map.setFog({
+            "space-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.spaceAlpha + ')'
+        });
+    });
+};
+
+map.on('style.load', function() {
+    map.setFog({
+        "range": [guiParams.start, guiParams.end],
+        "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
+        "horizon-blend": guiParams.horizonBlend,
+        "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + guiParams.skyAlpha + ')',
+        "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + guiParams.spaceAlpha + ')',
+        "star-intensity": guiParams.starIntensity
+    });
+});
+
+</script>
+</body>
+</html>
