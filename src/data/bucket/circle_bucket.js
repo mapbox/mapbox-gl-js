@@ -231,7 +231,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 addCircleVertex(this.layoutVertexArray, x, y, -1, 1);
 
                 this.indexArray.emplaceBack(index, index + 1, index + 2);
-                this.indexArray.emplaceBack(index, index + 3, index + 2);
+                this.indexArray.emplaceBack(index, index + 2, index + 3);
 
                 segment.vertexLength += 4;
                 segment.primitiveLength += 2;
