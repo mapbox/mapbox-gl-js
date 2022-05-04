@@ -63,7 +63,7 @@
     },
     "fog": {
       "type": "fog",
-      "doc": "A global effect that fades layers and markers based on their distance to the camera. The fog can be used to approximate the effect of atmosphere on distant objects and enhance the depth perception of the map when used with terrain or 3D features."
+      "doc": "A global effect that fades layers and markers based on their distance to the camera. The fog can be used to approximate the effect of atmosphere on distant objects and enhance the depth perception of the map when used with terrain or 3D features. Note: fog is renamed to atmosphere in the Android and iOS SDKs and planned to be changed in GL-JS v.3.0.0."
     },
     "sources": {
       "required": true,
@@ -3816,7 +3816,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.3.0"
+          "js": "2.3.0",
+          "android": "10.6.0",
+          "ios": "10.6.0"
         }
       }
     },
@@ -3831,10 +3833,12 @@
         ]
       },
       "transition": true,
-      "doc": "The color of the fog. Using opacity is recommended only for smoothly transitioning fog on/off as anything less than 100% opacity results in more tiles loaded and drawn.",
+      "doc": "The color of the atmosphere region immediately below the horizon and within the `range` and above the horizon and within `horizon-blend`. Using opacity is recommended only for smoothly transitioning fog on/off as anything less than 100% opacity results in more tiles loaded and drawn.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.3.0"
+          "js": "2.3.0",
+          "android": "10.6.0",
+          "ios": "10.6.0"
         }
       }
     },
@@ -3849,10 +3853,12 @@
         ]
       },
       "transition": true,
-      "doc": "",
+      "doc": "The color of the atmosphere region above the horizon, `high-color` extends further above the horizon than the `color` property and its spread can be controlled with `horizon-blend`. The opacity can be set to `0` to remove the high atmosphere color contribution.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.9.0"
+          "js": "2.9.0",
+          "android": "10.6.0",
+          "ios": "10.6.0"
         }
       }
     },
@@ -3881,10 +3887,12 @@
         ]
       },
       "transition": true,
-      "doc": "",
+      "doc": "The color of the region above the horizon and after the end of the `horizon-blend` contribution. The opacity can be set to `0` to have a transparent background.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.9.0"
+          "js": "2.9.0",
+          "android": "10.6.0",
+          "ios": "10.6.0"
         }
       }
     },
@@ -3914,10 +3922,12 @@
         ]
       },
       "transition": true,
-      "doc": "Horizon blend applies a smooth fade from the color of the fog to the color of the sky. A value of zero leaves a sharp transition from fog to sky. Increasing the value blends the color of fog into increasingly high angles of the sky.",
+      "doc": "Horizon blend applies a smooth fade from the color of the atmosphere to the color of space. A value of zero leaves a sharp transition from atmosphere to space. Increasing the value blends the color of atmosphere into increasingly high angles of the sky.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.3.0"
+          "js": "2.3.0",
+          "android": "10.6.0",
+          "ios": "10.6.0"
         }
       }
     },
@@ -3947,10 +3957,12 @@
         ]
       },
       "transition": true,
-      "doc": "",
+      "doc": "A value controlling the star intensity where `0` will show no stars and `1` will show stars at their maximum intensity.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.9.0"
+          "js": "2.9.0",
+          "android": "10.6.0",
+          "ios": "10.6.0"
         }
       }
     }
