@@ -1,7 +1,6 @@
 
 import {test} from '../../../util/test.js';
 import {createMap} from '../../../util/index.js';
-import window from '../../../../src/util/window.js';
 import ScaleControl from '../../../../src/ui/control/scale_control.js';
 
 test('ScaleControl appears in bottom-left by default', (t) => {
