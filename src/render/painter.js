@@ -132,8 +132,7 @@ class Painter {
     quadTriangleIndexBuffer: IndexBuffer;
     mercatorBoundsBuffer: VertexBuffer;
     mercatorBoundsSegments: SegmentVector;
-    _tileClippingMaskIDs: Map<number, number>;
-    _skippedStencilTileIDs: Set<number>;
+    _tileClippingMaskIDs: {[_: number]: number };
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
@@ -186,8 +185,6 @@ class Painter {
         this.gpuTimers = {};
         this.frameCounter = 0;
         this._backgroundTiles = {};
-        this._tileClippingMaskIDs = new Map();
-        this._skippedStencilTileIDs = new Set();
     }
 
     updateTerrain(style: Style, cameraChanging: boolean) {
@@ -333,8 +330,7 @@ class Painter {
 
         this.nextStencilID = 1;
         this.currentStencilSource = undefined;
-        this._tileClippingMaskIDs.clear();
-        this._skippedStencilTileIDs.clear();
+        this._tileClippingMaskIDs = {};
 
         // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
@@ -350,8 +346,7 @@ class Painter {
     resetStencilClippingMasks() {
         if (!this.terrain) {
             this.currentStencilSource = undefined;
-            this._tileClippingMaskIDs.clear();
-            this._skippedStencilTileIDs.clear();
+            this._tileClippingMaskIDs = {};
         }
     }
 
@@ -360,69 +355,48 @@ class Painter {
             return;
         }
 
-        const renderableSkippedTileIDs = [];
-        let dirtyStencilClippingMasks = false;
         if (this._tileClippingMaskIDs && !this.terrain) {
+            let dirtyStencilClippingMasks = false;
             // Equivalent tile set is already rendered in stencil
             for (const coord of tileIDs) {
-                if (!this._tileClippingMaskIDs.has(coord.key)) {
+                if (this._tileClippingMaskIDs[coord.key] === undefined) {
                     dirtyStencilClippingMasks = true;
-                }
-                if (this._skippedStencilTileIDs.has(coord.key)) {
-                    if (!sourceCache.getTile(coord).getBucket(layer)) {
-                        continue;
-                    }
-                    this._skippedStencilTileIDs.delete(coord.key);
-                    renderableSkippedTileIDs.push(coord);
+                    break;
                 }
             }
-            if (!dirtyStencilClippingMasks && renderableSkippedTileIDs.length === 0) {
+            if (!dirtyStencilClippingMasks) {
                 return;
             }
         }
 
+        this.currentStencilSource = sourceCache.id;
+
         const context = this.context;
         const gl = context.gl;
-        context.setColorMode(ColorMode.disabled);
-        context.setDepthMode(DepthMode.disabled);
-        const program = this.useProgram('clippingMask');
 
-        const renderStencil = (tileID) => {
-            const tile = sourceCache.getTile(tileID);
-            const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
-            program.draw(context, gl.TRIANGLES, DepthMode.disabled,
-                // Tests will pass if the new ref is greater than the previous value, and ref value will be written to stencil buffer.
-                new StencilMode({func: gl.GREATER, mask: 0xFF}, this._tileClippingMaskIDs.get(tileID.key) || 0, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
-                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
-                '$clipping', tileBoundsBuffer,
-                tileBoundsIndexBuffer, tileBoundsSegments);
-        };
-
-        if (!dirtyStencilClippingMasks && renderableSkippedTileIDs.length > 0) {
-            for (const tileID of renderableSkippedTileIDs) {
-                renderStencil(tileID);
-            }
-        } else {
-            if (this._tileClippingMaskIDs.size === 0 || this.nextStencilID + tileIDs.length > 256) {
-                // we'll run out of fresh IDs so we need to clear and start from scratch
-                this.clearStencil();
-            }
-
-            this._tileClippingMaskIDs.clear();
-            this._skippedStencilTileIDs.clear();
-
-            for (const tileID of tileIDs) {
-                this._tileClippingMaskIDs.set(tileID.key, this.nextStencilID++);
-                if (!sourceCache.getTile(tileID).getBucket(layer)) {
-                    this._skippedStencilTileIDs.add(tileID.key);
-                    continue;
-                }
-                renderStencil(tileID);
-            }
+        if (this.nextStencilID + tileIDs.length > 256) {
+            // we'll run out of fresh IDs so we need to clear and start from scratch
+            this.clearStencil();
         }
 
-        if (this._skippedStencilTileIDs.size === 0) {
-            this.currentStencilSource = sourceCache.id;
+        context.setColorMode(ColorMode.disabled);
+        context.setDepthMode(DepthMode.disabled);
+
+        const program = this.useProgram('clippingMask');
+
+        this._tileClippingMaskIDs = {};
+
+        for (const tileID of tileIDs) {
+            const tile = sourceCache.getTile(tileID);
+            const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
+            const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
+
+            program.draw(context, gl.TRIANGLES, DepthMode.disabled,
+            // Tests will always pass, and ref value will be written to stencil buffer.
+            new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
+            ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
+            '$clipping', tileBoundsBuffer,
+            tileBoundsIndexBuffer, tileBoundsSegments);
         }
     }
 
@@ -441,7 +415,7 @@ class Painter {
     stencilModeForClipping(tileID: OverscaledTileID): $ReadOnly<StencilMode>  {
         if (this.terrain) return this.terrain.stencilModeForRTTOverlap(tileID);
         const gl = this.context.gl;
-        return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs.get(tileID.key) || 0, 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
+        return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
     /*
