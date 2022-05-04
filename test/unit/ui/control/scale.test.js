@@ -1,6 +1,7 @@
 
 import {test} from '../../../util/test.js';
 import {createMap} from '../../../util/index.js';
+import window from '../../../../src/util/window.js';
 import ScaleControl from '../../../../src/ui/control/scale_control.js';
 
 test('ScaleControl appears in bottom-left by default', (t) => {
@@ -35,6 +36,23 @@ test('ScaleControl should change unit of distance after calling setUnit', (t) =>
     map._domRenderTaskQueue.run();
     contents = map.getContainer().querySelector(selector).innerHTML;
     t.match(contents, /mi/);
+    t.end();
+});
+
+test('ScaleControl should change language after calling map.setLanguage', (t) => {
+    const map = createMap(t);
+    const scale = new ScaleControl();
+    const selector = '.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale';
+    map.addControl(scale);
+    map._domRenderTaskQueue.run();
+
+    let contents = map.getContainer().querySelector(selector).innerHTML;
+    t.match(contents, /km/);
+
+    map.setLanguage('ru');
+    map._domRenderTaskQueue.run();
+    contents = map.getContainer().querySelector(selector).innerHTML;
+    t.match(contents, /км/);
     t.end();
 });
 

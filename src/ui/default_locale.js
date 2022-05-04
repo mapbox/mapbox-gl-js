@@ -12,11 +12,7 @@ const defaultLocale = {
     'NavigationControl.ResetBearing': 'Reset bearing to north',
     'NavigationControl.ZoomIn': 'Zoom in',
     'NavigationControl.ZoomOut': 'Zoom out',
-    'ScaleControl.Feet': 'ft',
-    'ScaleControl.Meters': 'm',
-    'ScaleControl.Kilometers': 'km',
-    'ScaleControl.Miles': 'mi',
-    'ScaleControl.NauticalMiles': 'nm',
+    'ScaleControl.NauticalMiles': 'nmi',
     'ScrollZoomBlocker.CtrlMessage': 'Use ctrl + scroll to zoom the map',
     'ScrollZoomBlocker.CmdMessage': 'Use ⌘ + scroll to zoom the map',
     'TouchPanBlocker.Message': 'Use two fingers to move the map'
