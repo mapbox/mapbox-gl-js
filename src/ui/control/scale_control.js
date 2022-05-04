@@ -44,7 +44,7 @@ class ScaleControl {
         this.options = extend({}, defaultOptions, options);
 
         bindAll([
-            '_onUpdate',
+            '_update',
             'setUnit'
         ], this);
     }
@@ -53,7 +53,7 @@ class ScaleControl {
         return 'bottom-left';
     }
 
-    _onUpdate() {
+    _update() {
         updateScale(this._map, this._container, this._language, this.options);
     }
 
@@ -63,21 +63,21 @@ class ScaleControl {
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-scale', map.getContainer());
         this._container.dir = 'auto';
 
-        this._map.on('move', this._onUpdate);
-        this._onUpdate();
+        this._map.on('move', this._update);
+        this._update();
 
         return this._container;
     }
 
     onRemove() {
         this._container.remove();
-        this._map.off('move', this._onUpdate);
+        this._map.off('move', this._update);
         this._map = (undefined: any);
     }
 
     _setLanguage(language: string) {
         this._language = language;
-        this._onUpdate();
+        this._update();
     }
 
     /**
@@ -87,7 +87,7 @@ class ScaleControl {
      */
     setUnit(unit: Unit) {
         this.options.unit = unit;
-        this._onUpdate();
+        this._update();
     }
 }
 
